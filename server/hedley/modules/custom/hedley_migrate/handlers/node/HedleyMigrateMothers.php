@@ -2,30 +2,30 @@
 
 /**
  * @file
- * Contains \HedleyMigrateItems.
+ * Contains \HedleyMigrateMothers.
  */
 
 /**
- * Class HedleyMigrateItems.
+ * Class HedleyMigrateMothers.
  */
-class HedleyMigrateItems extends HedleyMigrateBase {
+class HedleyMigrateMothers extends HedleyMigrateBase {
 
   public $entityType = 'node';
-  public $bundle = 'item';
+  public $bundle = 'mother';
 
   /**
    * {@inheritdoc}
    */
   public function __construct($arguments) {
     parent::__construct($arguments);
-    $this->description = t('Import Item from the CSV.');
+    $this->description = t('Import Mothers from the CSV.');
     $this->dependencies = [
       'HedleyMigrateUsers',
     ];
 
     $column_names = [
       'title',
-      'field_image',
+      'field_avatar',
     ];
 
     $columns = [];
@@ -33,7 +33,7 @@ class HedleyMigrateItems extends HedleyMigrateBase {
       $columns[] = [$column_name, $column_name];
     }
 
-    $source_file = $this->getMigrateDirectory() . '/csv/item.csv';
+    $source_file = $this->getMigrateDirectory() . '/csv/mother.csv';
     $options = array('header_rows' => 1);
     $this->source = new MigrateSourceCSV($source_file, $columns, $options);
 
