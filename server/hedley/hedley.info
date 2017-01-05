@@ -5,7 +5,6 @@ core = 7.x
 
 ; Core
 dependencies[] = block
-dependencies[] = comment
 dependencies[] = contextual
 dependencies[] = dblog
 dependencies[] = image
@@ -40,7 +39,7 @@ dependencies[] = views
 dependencies[] = views_bulk_operations
 
 ; Hedley
+dependencies[] = hedley_patient
 dependencies[] = hedley_pusher
 dependencies[] = hedley_restful
-dependencies[] = hedley_item
 dependencies[] = hedley_user
