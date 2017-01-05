@@ -1,4 +1,5 @@
 name = Hedley Patient
+description = Mother and Child related code.
 core = 7.x
 package = Hedley
 dependencies[] = ctools
