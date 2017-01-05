@@ -10,9 +10,9 @@
 
 
 # The profile used to install the platform.
-PROFILE_NAME="sensors"
+PROFILE_NAME="hedley"
 # The human name of the install profile
-PROFILE_TITLE="Sensors"
+PROFILE_TITLE="Hedley"
 
 
 # Modify the URL below to match your local domain the site will be accessible on.
@@ -67,11 +67,28 @@ MYSQL_DB_NAME="drupal"
 # - $UNATTENDED (0/1)   : Is the script run unattended.
 ##
 
+
 # Post install script.
-# function post_install {}
+function post_install {
+  chmod 777 www/sites/default/settings.php
+
+  # Pusher integration.
+  echo "\$conf['hedley_pusher_app_id'] = 'pusher_app_id';"  >> www/sites/default/settings.php
+  echo "\$conf['hedley_pusher_app_key'] = 'pusher_app_key';"  >> www/sites/default/settings.php
+  echo "\$conf['hedley_pusher_app_secret'] = 'pusher_app_secret';"  >> www/sites/default/settings.php
+  echo "\$conf['hedley_pusher_app_cluster'] = 'pusher_app_cluster';"  >> www/sites/default/settings.php
+}
 
 # Post upgrade script.
 # function post_upgrade {}
 
 # Post reset script.
-# function post_reset {}
+function post_reset {
+  chmod 777 www/sites/default/settings.php
+
+  # Pusher integration.
+  echo "\$conf['hedley_pusher_app_id'] = '<your-app-id>';"  >> www/sites/default/settings.php
+  echo "\$conf['hedley_pusher_app_key'] = '<your-app-key>';"  >> www/sites/default/settings.php
+  echo "\$conf['hedley_pusher_app_secret'] = '<your-app-secret>';"  >> www/sites/default/settings.php
+  echo "\$conf['hedley_pusher_app_cluster'] = '<your-app-cluster>';"  >> www/sites/default/settings.php
+}

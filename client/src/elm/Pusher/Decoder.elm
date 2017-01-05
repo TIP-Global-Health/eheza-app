@@ -3,13 +3,14 @@ module Pusher.Decoder exposing (decodePusherEvent)
 import Json.Decode as Json exposing (Decoder, andThen, at, fail, field, map, map2, string)
 import Json.Decode.Pipeline exposing (custom, decode, optional, required, requiredAt)
 import Pusher.Model exposing (..)
-import Sensor.Decoder exposing (decodeSensor)
+import Item.Decoder exposing (decodeItem)
+import Item.Model exposing (Item)
 
 
 decodePusherEvent : Decoder PusherEvent
 decodePusherEvent =
     decode PusherEvent
-        |> requiredAt [ "data", "sensor" ] string
+        |> requiredAt [ "data", "id" ] string
         |> custom decodePusherEventData
 
 
@@ -19,15 +20,14 @@ decodePusherEventData =
         |> andThen
             (\type_ ->
                 case type_ of
-                    "sensor__create" ->
-                        map SensorCreate decodeSensorCreateData
+                    "item__update" ->
+                        map ItemUpdate decodeItemUpdateData
 
                     _ ->
                         fail (type_ ++ " is not a recognized 'type' for PusherEventData.")
             )
 
 
-decodeSensorCreateData : Decoder SensorCreateData
-decodeSensorCreateData =
-    decode SensorCreateData
-        |> requiredAt [ "data", "0" ] decodeSensor
+decodeItemUpdateData : Decoder Item
+decodeItemUpdateData =
+    field "data" decodeItem

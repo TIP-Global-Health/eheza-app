@@ -22,11 +22,11 @@ delta2url previous current =
         PageNotFound ->
             Just <| UrlChange NewEntry "/#404"
 
-        PageSensor id ->
-            Just <| UrlChange NewEntry ("#sensor/" ++ id)
+        Item id ->
+            Just <| UrlChange NewEntry ("/#item/" ++ id)
 
-        Sensors ->
-            Just <| UrlChange NewEntry "#"
+        Dashboard ->
+            Just <| UrlChange NewEntry "/#"
 
 
 location2messages : Location -> List Msg
@@ -42,8 +42,8 @@ location2messages location =
 parseUrl : Parser (Msg -> c) c
 parseUrl =
     oneOf
-        [ map (SetActivePage Sensors) (s "")
-        , map (\id -> SetActivePage <| PageSensor (toString id)) (s "sensor" </> int)
+        [ map (SetActivePage Dashboard) (s "")
+        , map (\id -> SetActivePage <| Item (toString id)) (s "item" </> int)
         , map (SetActivePage Login) (s "login")
         , map (SetActivePage MyAccount) (s "my-account")
         ]

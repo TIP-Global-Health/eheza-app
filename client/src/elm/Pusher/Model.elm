@@ -1,18 +1,13 @@
 module Pusher.Model exposing (..)
 
-import Sensor.Model exposing (Sensor, SensorId)
+import Item.Model exposing (Item, ItemId)
 
 
 type alias PusherEvent =
-    { sensorId : SensorId
+    { itemId : ItemId
     , data : PusherEventData
     }
 
 
 type PusherEventData
-    = SensorCreate SensorCreateData
-
-
-type alias SensorCreateData =
-    { sensor : Sensor
-    }
+    = ItemUpdate Item

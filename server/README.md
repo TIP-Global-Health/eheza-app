@@ -1,6 +1,4 @@
-[![Build Status](https://travis-ci.org/Gizra/sensors.svg)](https://travis-ci.org/Gizra/sensors)
-
-# Drupal 7 - Install Profile Sensors
+# Drupal 7 - Install Profile Hedley
 
 This is a starting base to create Drupal 7 websites using an install profile.
 
@@ -10,7 +8,7 @@ This is a starting base to create Drupal 7 websites using an install profile.
 **Warning:** you need to setup [Drush](https://github.com/drush-ops/drush)
 first or the installation and update scripts will not work.
 
-Clone the project from [GitHub](https://github.com/Gizra/sensors).
+Clone the project from [GitHub](https://github.com/Gizra/hedley).
 
 #### Create config file
 
@@ -59,9 +57,9 @@ You can Reinstall the platform any type by running the install script.
    subfolders of the profile.
 4. Download and extract Drupal 7 core in the /www folder
 5. Create an empty sites/default/files directory
-6. Makes a symlink within the /www/profiles directory to the /sensors
+6. Makes a symlink within the /www/profiles directory to the /hedley
    directory.
-7. Run the Drupal installer (Drush) using the Sensors profile.
+7. Run the Drupal installer (Drush) using the Hedley profile.
 
 #### Warning!
 
@@ -97,5 +95,5 @@ when you run the upgrade script.
    subfolders of the profile.
 5. Download and extract Drupal 7 core in the /www folder.
 6. Makes a symlink within the /www/profiles directory to the
-   /sensors 7. directory.
+   /hedley 7. directory.
 7. Restore the backup of the sites/default folder.
