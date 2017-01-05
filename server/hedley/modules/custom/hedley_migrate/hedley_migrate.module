@@ -11,7 +11,8 @@
 function hedley_migrate_migrate_api() {
   $migrations = array(
     // Nodes.
-    'HedleyMigrateMothers',
+    'HedleyMigrateChild',
+    'HedleyMigrateMother',
     // Users.
     'HedleyMigrateUsers',
   );

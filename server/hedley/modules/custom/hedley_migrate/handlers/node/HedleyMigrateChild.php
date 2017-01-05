@@ -2,30 +2,29 @@
 
 /**
  * @file
- * Contains \HedleyMigrateMothers.
+ * Contains \HedleyMigrateChild.
  */
 
 /**
- * Class HedleyMigrateMothers.
+ * Class HedleyMigrateChild.
  */
-class HedleyMigrateMothers extends HedleyMigrateBase {
+class HedleyMigrateChild extends HedleyMigrateBase {
 
   public $entityType = 'node';
-  public $bundle = 'mother';
+  public $bundle = 'child';
 
   /**
    * {@inheritdoc}
    */
   public function __construct($arguments) {
     parent::__construct($arguments);
-    $this->description = t('Import Mothers from the CSV.');
+    $this->description = t('Import Children from the CSV.');
     $this->dependencies = [
       'HedleyMigrateUsers',
     ];
 
     $column_names = [
       'title',
-      'field_avatar',
     ];
 
     $columns = [];
@@ -33,7 +32,7 @@ class HedleyMigrateMothers extends HedleyMigrateBase {
       $columns[] = [$column_name, $column_name];
     }
 
-    $source_file = $this->getMigrateDirectory() . '/csv/mother.csv';
+    $source_file = $this->getMigrateDirectory() . '/csv/child.csv';
     $options = array('header_rows' => 1);
     $this->source = new MigrateSourceCSV($source_file, $columns, $options);
 
@@ -55,11 +54,11 @@ class HedleyMigrateMothers extends HedleyMigrateBase {
 
     $this->addSimpleMappings($simple_fields);
 
-    $this->addFieldMapping('field_image', 'field_image');
-    $this->addFieldMapping('field_image:file_replace')
+    $this->addFieldMapping('field_avatar', 'field_avatar');
+    $this->addFieldMapping('field_avatar:file_replace')
       ->defaultValue(FILE_EXISTS_REPLACE);
 
-    $this->addFieldMapping('field_image:source_dir')
+    $this->addFieldMapping('field_avatar:source_dir')
       ->defaultValue($this->getMigrateDirectory() . '/images/');
 
     $this->addFieldMapping('uid', 'author')
