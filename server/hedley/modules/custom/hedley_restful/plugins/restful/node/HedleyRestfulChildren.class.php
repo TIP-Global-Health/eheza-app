@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Contains HedleyRestfulItems.
+ * Contains HedleyRestfulChildren.
  */
 
 /**
- * Class HedleyRestfulItems.
+ * Class HedleyRestfulChildren.
  */
-class HedleyRestfulItems extends HedleyRestfulEntityBaseNode {
+class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
 
   /**
    * {@inheritdoc}
@@ -25,8 +25,8 @@ class HedleyRestfulItems extends HedleyRestfulEntityBaseNode {
       ];
     }
 
-    $public_fields['image'] = [
-      'property' => 'field_image',
+    $public_fields['avatar'] = [
+      'property' => 'field_avatar',
       'process_callbacks' => [
         [$this, 'imageProcess'],
       ],
