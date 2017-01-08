@@ -44,7 +44,18 @@ function hedley_patient_trigger_pusher_on_item_data_change($node) {
 
   $account = user_load($node->uid);
 
-  $handler = restful_get_restful_handler('items');
+  switch ($node->type) {
+    case 'child':
+      $handler_name = 'children';
+      break;
+
+    case 'mother':
+      $handler_name = 'children';
+      break;
+
+  }
+
+  $handler = restful_get_restful_handler($handler_name);
   $handler->setAccount($account);
   $data = $handler->get($node->nid);
 
