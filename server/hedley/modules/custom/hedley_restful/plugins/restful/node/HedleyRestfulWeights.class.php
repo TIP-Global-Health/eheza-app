@@ -44,6 +44,10 @@ class HedleyRestfulWeights extends HedleyRestfulEntityBaseNode {
       ],
     ];
 
+    $public_fields['status'] = [
+      'property' => 'field_activity_status',
+    ];
+
     return $public_fields;
   }
 

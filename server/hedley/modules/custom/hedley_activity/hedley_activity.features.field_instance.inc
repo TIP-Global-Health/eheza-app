@@ -10,6 +10,47 @@
 function hedley_activity_field_default_field_instances() {
   $field_instances = array();
 
+  // Exported field_instance: 'node-weight-field_activity_status'.
+  $field_instances['node-weight-field_activity_status'] = array(
+    'bundle' => 'weight',
+    'default_value' => array(
+      0 => array(
+        'value' => 'pending',
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 3,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_activity_status',
+    'label' => 'Status',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 0,
+    ),
+  );
+
   // Exported field_instance: 'node-weight-field_child'.
   $field_instances['node-weight-field_child'] = array(
     'bundle' => 'weight',
@@ -108,6 +149,7 @@ function hedley_activity_field_default_field_instances() {
   // Included for use with string extractors like potx.
   t('Child');
   t('Date');
+  t('Status');
 
   return $field_instances;
 }
