@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulWeights.
  */
-class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
+class HedleyRestfulWeights extends HedleyRestfulEntityBaseNode {
 
   /**
    * {@inheritdoc}
@@ -16,7 +16,7 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $field_names = [];
+    $field_names = ['field_date'];
 
     foreach ($field_names as $field_name) {
       $public_name = str_replace('field_', '', $field_name);
@@ -25,16 +25,8 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       ];
     }
 
-    $public_fields['avatar'] = [
-      'property' => 'field_avatar',
-      'process_callbacks' => [
-        [$this, 'imageProcess'],
-      ],
-      'image_styles' => ['large'],
-    ];
-
-    $public_fields['children'] = [
-      'property' => 'field_children',
+    $public_fields['child'] = [
+      'property' => 'field_child',
       'resource' => [
         // Bundle name.
         'child' => [

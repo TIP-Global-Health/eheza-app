@@ -5,3 +5,59 @@
  */
 
 include_once 'hedley_activity.features.inc';
+
+function hedley_activity_get_activity_node_types() {
+  return ['weight'];
+}
+
+/**
+ * Implements hook_node_insert().
+ */
+function hedley_activity_node_insert($node) {
+  hedley_activity_trigger_pusher_on_item_data_change($node);
+}
+
+/**
+ * Implements hook_node_update().
+ */
+function hedley_activity_node_update($node) {
+  if (!in_array($node->type, hedley_activity_get_activity_node_types())) {
+    return;
+  }
+  // Make sure we get updated data.
+  entity_get_controller('node')->resetCache();
+  hedley_activity_trigger_pusher_on_item_data_change($node);
+}
+
+/**
+ * Trigger a pusher event for a Item data.
+ *
+ * @param object $node
+ *   A Item data node type.
+ */
+function hedley_activity_trigger_pusher_on_item_data_change($node) {
+  if (!in_array($node->type, hedley_activity_get_activity_node_types())) {
+    return;
+  }
+
+  if ($node->status == NODE_NOT_PUBLISHED) {
+    // Node is not published.
+    return;
+  }
+
+  $account = user_load($node->uid);
+
+  switch ($node->type) {
+    case 'weight':
+      $handler_name = 'weights';
+      break;
+  }
+
+  $handler = restful_get_restful_handler($handler_name);
+  $handler->setAccount($account);
+  $data = $handler->get($node->nid);
+
+  $event_name = $node->type . '__update';
+
+  hedley_pusher_trigger_event('general', $event_name, $data[0]);
+}

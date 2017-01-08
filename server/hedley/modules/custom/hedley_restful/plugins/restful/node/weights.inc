@@ -6,12 +6,12 @@
  */
 
 $plugin = array(
-  'label' => t('Mothers'),
-  'resource' => 'mothers',
-  'name' => 'mothers',
+  'label' => t('Weights'),
+  'resource' => 'weights',
+  'name' => 'weights',
   'entity_type' => 'node',
-  'bundle' => 'mother',
-  'description' => t('Exports the Mother bundle.'),
+  'bundle' => 'weight',
+  'description' => t('Exports the Weight bundle.'),
   'class' => 'HedleyRestfulWeights',
   'authentication_types' => TRUE,
 );
