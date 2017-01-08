@@ -28,7 +28,7 @@ class HedleyRestfulWeights extends HedleyRestfulEntityBaseNode {
     $public_fields['date'] = [
       'property' => 'field_date',
       'process_callbacks' => [
-        [$this, 'dateProcess'],
+        [$this, 'convertTimestampToIso8601'],
       ],
     ];
 
