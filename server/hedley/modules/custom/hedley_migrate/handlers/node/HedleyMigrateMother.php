@@ -56,7 +56,10 @@ class HedleyMigrateMother extends HedleyMigrateBase {
 
     $this->addSimpleMappings($simple_fields);
 
-    $this->addFieldMapping('field_avatar', 'field_avatar');
+    // Map the file name to the title.
+    $this->addFieldMapping('field_avatar', 'title')
+      ->callbacks([$this, 'avatarProcess']);
+
     $this->addFieldMapping('field_avatar:file_replace')
       ->defaultValue(FILE_EXISTS_REPLACE);
 

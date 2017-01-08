@@ -38,7 +38,10 @@ class HedleyMigrateUsers extends HedleyMigrateBase {
     $this->addFieldMapping('mail', 'email');
     $this->addFieldMapping('pass', 'pass');
 
-    $this->addFieldMapping('field_avatar', 'avatar');
+    // Map the file name to the title.
+    $this->addFieldMapping('field_avatar', 'name')
+      ->callbacks([$this, 'avatarProcess']);
+
     $this->addFieldMapping('field_avatar:file_replace')
       ->defaultValue(FILE_EXISTS_REPLACE);
 
