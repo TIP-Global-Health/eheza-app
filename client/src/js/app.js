@@ -19,7 +19,7 @@ elmApp.ports.pusherKey.subscribe(function(appKey) {
       var channel = pusher.subscribe(channelName);
 
       var eventNames = [
-        'item__update',
+        'activity__update',
       ];
 
       eventNames.forEach(function(eventName) {
