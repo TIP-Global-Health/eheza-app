@@ -21,7 +21,7 @@ function hedley_patient_field_default_field_instances() {
         'module' => 'image',
         'settings' => array(
           'image_link' => '',
-          'image_style' => '',
+          'image_style' => 'large',
         ),
         'type' => 'image',
         'weight' => 0,
@@ -71,7 +71,7 @@ function hedley_patient_field_default_field_instances() {
         'module' => 'image',
         'settings' => array(
           'image_link' => '',
-          'image_style' => '',
+          'image_style' => 'medium',
         ),
         'type' => 'image',
         'weight' => 2,
@@ -110,8 +110,8 @@ function hedley_patient_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-mother-field_child'.
-  $field_instances['node-mother-field_child'] = array(
+  // Exported field_instance: 'node-mother-field_children'.
+  $field_instances['node-mother-field_children'] = array(
     'bundle' => 'mother',
     'default_value' => NULL,
     'deleted' => 0,
@@ -121,10 +121,10 @@ function hedley_patient_field_default_field_instances() {
         'label' => 'above',
         'module' => 'entityreference',
         'settings' => array(
-          'link' => FALSE,
+          'link' => 1,
         ),
         'type' => 'entityreference_label',
-        'weight' => 1,
+        'weight' => 3,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -134,8 +134,8 @@ function hedley_patient_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_child',
-    'label' => 'Child',
+    'field_name' => 'field_children',
+    'label' => 'Children',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -145,14 +145,14 @@ function hedley_patient_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => -3,
+      'weight' => 0,
     ),
   );
 
   // Translatables
   // Included for use with string extractors like potx.
   t('Avatar');
-  t('Child');
+  t('Children');
 
   return $field_instances;
 }
