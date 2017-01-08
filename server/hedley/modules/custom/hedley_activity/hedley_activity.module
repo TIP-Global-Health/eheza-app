@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Code for the Hedley Activity feature.
@@ -6,6 +7,12 @@
 
 include_once 'hedley_activity.features.inc';
 
+/**
+ * Return the activity related node types.
+ *
+ * @return array
+ *   String with the node type machine names.
+ */
 function hedley_activity_get_activity_node_types() {
   return ['weight'];
 }

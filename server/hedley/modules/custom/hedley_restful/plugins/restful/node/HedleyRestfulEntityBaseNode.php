@@ -67,4 +67,17 @@ abstract class HedleyRestfulEntityBaseNode extends \RestfulEntityBaseNode {
     );
   }
 
+  /**
+   * Convert timestamp to ISO 8601.
+   *
+   * @param int $timestamp
+   *   The timestamp.
+   *
+   * @return string
+   *   The ISO 8601 formatted timestamp.
+   */
+  protected function dateProcess($timestamp) {
+    return date('c', $timestamp);
+  }
+
 }

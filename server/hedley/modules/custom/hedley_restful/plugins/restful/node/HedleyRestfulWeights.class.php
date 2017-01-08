@@ -16,7 +16,7 @@ class HedleyRestfulWeights extends HedleyRestfulEntityBaseNode {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $field_names = ['field_date'];
+    $field_names = [];
 
     foreach ($field_names as $field_name) {
       $public_name = str_replace('field_', '', $field_name);
@@ -24,6 +24,13 @@ class HedleyRestfulWeights extends HedleyRestfulEntityBaseNode {
         'property' => $field_name,
       ];
     }
+
+    $public_fields['date'] = [
+      'property' => 'field_date',
+      'process_callbacks' => [
+        [$this, 'dateProcess'],
+      ],
+    ];
 
     $public_fields['child'] = [
       'property' => 'field_child',
