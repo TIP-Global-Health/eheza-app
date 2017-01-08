@@ -34,7 +34,7 @@ class HedleyRestfulWeights extends HedleyRestfulActivityBase {
    * @return string
    *   The type name.
    */
-  protected function getType() {
+  protected static function getType() {
     return 'weight';
   }
 
