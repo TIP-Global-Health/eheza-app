@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Contains HedleyRestfulWeights.
+ * Contains HedleyRestfulActivityBase.
  */
 
 /**
- * Class HedleyRestfulWeights.
+ * Class HedleyRestfulActivityBase.
  */
-class HedleyRestfulWeights extends HedleyRestfulEntityBaseNode {
+abstract class HedleyRestfulActivityBase extends HedleyRestfulEntityBaseNode {
 
   /**
    * {@inheritdoc}
@@ -16,14 +16,9 @@ class HedleyRestfulWeights extends HedleyRestfulEntityBaseNode {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $field_names = [];
-
-    foreach ($field_names as $field_name) {
-      $public_name = str_replace('field_', '', $field_name);
-      $public_fields[$public_name] = [
-        'property' => $field_name,
-      ];
-    }
+    $public_fields['type'] = [
+      'callback' => 'static::getType',
+    ];
 
     $public_fields['date'] = [
       'property' => 'field_date',

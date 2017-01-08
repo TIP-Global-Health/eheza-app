@@ -5,4 +5,5 @@ package = Hedley
 dependencies[] = restful
 dependencies[] = entity_validator
 
+files[] = plugins/restful/node/activity/HedleyRestfulActivityBase.class.php
 files[] = plugins/restful/node/HedleyRestfulEntityBaseNode.php

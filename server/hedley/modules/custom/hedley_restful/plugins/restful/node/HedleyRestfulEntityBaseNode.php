@@ -66,4 +66,5 @@ abstract class HedleyRestfulEntityBaseNode extends \RestfulEntityBaseNode {
       'styles' => $value['image_styles'],
     );
   }
+
 }
