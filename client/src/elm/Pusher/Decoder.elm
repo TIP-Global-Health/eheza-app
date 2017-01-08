@@ -20,7 +20,7 @@ decodePusherEventData =
         |> andThen
             (\type_ ->
                 case type_ of
-                    "item__update" ->
+                    "activity__update" ->
                         map ItemUpdate decodeItemUpdateData
 
                     _ ->

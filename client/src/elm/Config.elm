@@ -6,7 +6,7 @@ import Dict exposing (..)
 
 local : Model
 local =
-    { backendUrl = "http://localhost/drupal-elm-starter/server/www"
+    { backendUrl = "http://localhost/ihangane/server/www"
     , name = "local"
     , pusherKey = "ba4608c38aa09c23227b"
     }
@@ -14,7 +14,7 @@ local =
 
 production : Model
 production =
-    { backendUrl = "https://dev-drupal-elm-starter.pantheonsite.io"
+    { backendUrl = "https://***REMOVED***"
     , name = "gh-pages"
     , pusherKey = "f0d7df56f0d4928ea6d8"
     }
