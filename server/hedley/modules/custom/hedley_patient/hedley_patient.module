@@ -50,7 +50,7 @@ function hedley_patient_trigger_pusher_on_item_data_change($node) {
       break;
 
     case 'mother':
-      $handler_name = 'children';
+      $handler_name = 'mothers';
       break;
 
   }
