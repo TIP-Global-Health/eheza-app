@@ -2,11 +2,11 @@
 
 /**
  * @file
- * Contains HedleyRestfulMothers.
+ * Contains HedleyRestfulWeights.
  */
 
 /**
- * Class HedleyRestfulMothers.
+ * Class HedleyRestfulWeights.
  */
 class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
 
@@ -31,6 +31,18 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
         [$this, 'imageProcess'],
       ],
       'image_styles' => ['large'],
+    ];
+
+    $public_fields['children'] = [
+      'property' => 'field_children',
+      'resource' => [
+        // Bundle name.
+        'child' => [
+          // Resource name.
+          'name' => 'children',
+          'full_view' => TRUE,
+        ],
+      ],
     ];
 
     return $public_fields;
