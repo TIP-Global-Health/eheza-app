@@ -68,7 +68,6 @@ class HedleyMigrateWeight extends HedleyMigrateBase {
     $this->addFieldMapping('field_date', 'field_date')
       ->callbacks([$this, 'dateProcess']);
   }
-  }
 
 }
 
