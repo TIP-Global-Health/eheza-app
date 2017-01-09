@@ -8,13 +8,17 @@
 include_once 'hedley_activity.features.inc';
 
 /**
- * Return the activity related node types.
+ * Return the activity related node types and RESTful resource handler name.
  *
  * @return array
- *   String with the node type machine names.
+ *   Array keyed by the node type machine name, and the RESTful resource handler
+ *   name as value.
  */
-function hedley_activity_get_activity_node_types() {
-  return ['weight'];
+function hedley_activity_get_activity_node_types_and_restful_name() {
+  return [
+    'height' => 'heights',
+    'weight' => 'weights',
+  ];
 }
 
 /**
@@ -28,7 +32,7 @@ function hedley_activity_node_insert($node) {
  * Implements hook_node_update().
  */
 function hedley_activity_node_update($node) {
-  if (!in_array($node->type, hedley_activity_get_activity_node_types())) {
+  if (!in_array($node->type, array_keys(hedley_activity_get_activity_node_types_and_restful_name()))) {
     return;
   }
   // Make sure we get updated data.
@@ -43,7 +47,7 @@ function hedley_activity_node_update($node) {
  *   A Item data node type.
  */
 function hedley_activity_trigger_pusher_on_item_data_change($node) {
-  if (!in_array($node->type, hedley_activity_get_activity_node_types())) {
+  if (!in_array($node->type, array_keys(hedley_activity_get_activity_node_types_and_restful_name()))) {
     return;
   }
 
@@ -54,13 +58,9 @@ function hedley_activity_trigger_pusher_on_item_data_change($node) {
 
   $account = user_load($node->uid);
 
-  switch ($node->type) {
-    case 'weight':
-      $handler_name = 'weights';
-      break;
-  }
+  $handler_names = hedley_activity_get_activity_node_types_and_restful_name();
 
-  $handler = restful_get_restful_handler($handler_name);
+  $handler = restful_get_restful_handler($handler_names[$node->type]);
   $handler->setAccount($account);
   $data = $handler->get($node->nid);
 
