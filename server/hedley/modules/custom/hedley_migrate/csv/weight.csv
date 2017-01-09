@@ -1,0 +1,8 @@
+title,field_child,field_date,field_activity_status,field_weight
+weight1,Fabrice,-1 month,pending,7
+weight2,Gratien,-1 month,completed,5
+weight3,Gratien,today,pending,6
+weight4,Ngarambe,-1 month,completed,6
+weight5,Ngarambe,today,pending,5
+weight6,Emmy,-1 week,completed,8
+weight7,Aya,-2 month,completed,7
