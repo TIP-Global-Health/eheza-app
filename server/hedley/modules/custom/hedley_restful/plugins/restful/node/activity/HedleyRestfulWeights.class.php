@@ -25,7 +25,7 @@ class HedleyRestfulWeights extends HedleyRestfulActivityBase {
       ];
     }
 
-    $public_fields['field_weight'] = [
+    $public_fields['weight'] = [
       'property' => 'field_weight',
     ];
 

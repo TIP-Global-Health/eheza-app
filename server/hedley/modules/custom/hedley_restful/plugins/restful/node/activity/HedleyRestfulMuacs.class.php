@@ -25,15 +25,15 @@ class HedleyRestfulMuacs extends HedleyRestfulActivityBase {
       ];
     }
 
-    $public_fields['field_middle_circumference'] = [
+    $public_fields['middle_circumference'] = [
       'property' => 'field_middle_circumference',
     ];
 
-    $public_fields['field_upper_circumference'] = [
+    $public_fields['upper_circumference'] = [
       'property' => 'field_upper_circumference',
     ];
 
-    $public_fields['field_arm_circumference'] = [
+    $public_fields['arm_circumference'] = [
       'property' => 'field_arm_circumference',
     ];
 
