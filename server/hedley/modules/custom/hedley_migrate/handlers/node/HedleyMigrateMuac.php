@@ -14,8 +14,8 @@ class HedleyMigrateMuac extends HedleyMigrateBase {
   public $bundle = 'muac';
 
   /**
-   *    * {@inheritdoc}
-   *       */
+   * {@inheritdoc}
+   */
   public function __construct($arguments) {
     parent::__construct($arguments);
     $this->description = t('Import Muacs from the CSV.');
