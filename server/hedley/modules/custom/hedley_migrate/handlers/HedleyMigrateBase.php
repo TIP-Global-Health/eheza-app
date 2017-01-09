@@ -31,6 +31,12 @@ abstract class HedleyMigrateBase extends Migration {
 
   /**
    * Add a JPG extensions to the file name.
+   *
+   * @param string $name
+   *   A user name.
+   *
+   * @param string
+   *   A file name.
    */
   public function avatarProcess($name) {
     return $name . '.jpg';
@@ -38,6 +44,12 @@ abstract class HedleyMigrateBase extends Migration {
 
   /**
    * Convert a date string to a timestamp.
+   *
+   * @param string $date
+   *   A string containing a date.
+   *
+   * @return int
+   *   A timestamp.
    */
   public function dateProcess($date) {
     return strtotime($date);
