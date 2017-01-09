@@ -1,4 +1,4 @@
-title,child,date,status,weight
+title,field_child,field_date,field_activity_status,field_weight
 weight1,Fabrice,-1 month,pending,7
 weight2,Gratien,-1 month,completed,5
 weight3,Gratien,today,pending,6
