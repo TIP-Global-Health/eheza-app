@@ -35,7 +35,7 @@ abstract class HedleyMigrateBase extends Migration {
    * @param string $name
    *   A user name.
    *
-   * @param string
+   * @return string
    *   A file name.
    */
   public function avatarProcess($name) {
