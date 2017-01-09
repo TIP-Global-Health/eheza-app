@@ -39,5 +39,4 @@ class HedleyRestfulActivities extends RestfulEntityBaseMultipleBundles {
     return $public_fields;
   }
 
-
 }
