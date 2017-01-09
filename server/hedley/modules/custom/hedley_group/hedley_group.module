@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * @file
+ * Code for the Hedley Group feature.
+ */
+
+include_once 'hedley_group.features.inc';
