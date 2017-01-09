@@ -45,7 +45,8 @@ view user model =
             , action "javascript:void(0);"
             , class "ui stacked segment"
             ]
-            [ div [ inputClasses ]
+            [ div [] [ img [ src "logo.png" ] [] ]
+            , div [ inputClasses ]
                 [ input
                     [ type_ "text"
                     , placeholder "Name"
