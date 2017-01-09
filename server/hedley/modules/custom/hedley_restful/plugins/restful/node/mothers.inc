@@ -12,6 +12,6 @@ $plugin = array(
   'entity_type' => 'node',
   'bundle' => 'mother',
   'description' => t('Exports the Mother bundle.'),
-  'class' => 'HedleyRestfulWeights',
+  'class' => 'HedleyRestfulMothers',
   'authentication_types' => TRUE,
 );
