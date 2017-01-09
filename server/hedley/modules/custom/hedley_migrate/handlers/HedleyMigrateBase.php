@@ -36,4 +36,11 @@ abstract class HedleyMigrateBase extends Migration {
     return $name . '.jpg';
   }
 
+  /**
+   * Convert a date string to a timestamp.
+   */
+  public function dateProcess($date) {
+    return strtotime($date);
+  }
+
 }
