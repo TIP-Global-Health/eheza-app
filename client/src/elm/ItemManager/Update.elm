@@ -176,7 +176,7 @@ fetchAllItemsFromBackend : BackendUrl -> String -> Model -> ( Model, Cmd Msg )
 fetchAllItemsFromBackend backendUrl accessToken model =
     let
         command =
-            HttpBuilder.get (backendUrl ++ "/api/items")
+            HttpBuilder.get (backendUrl ++ "/api/activities")
                 |> withQueryParams [ ( "access_token", accessToken ) ]
                 |> sendWithHandler decodeItemsFromResponse HandleFetchedItems
     in
