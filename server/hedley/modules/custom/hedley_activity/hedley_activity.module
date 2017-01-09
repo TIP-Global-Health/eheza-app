@@ -14,7 +14,10 @@ include_once 'hedley_activity.features.inc';
  *   String with the node type machine names.
  */
 function hedley_activity_get_activity_node_types() {
-  return ['weight'];
+  return [
+    'height',
+    'weight',
+  ];
 }
 
 /**
@@ -55,6 +58,10 @@ function hedley_activity_trigger_pusher_on_item_data_change($node) {
   $account = user_load($node->uid);
 
   switch ($node->type) {
+    case 'height':
+      $handler_name = 'heights';
+      break;
+
     case 'weight':
       $handler_name = 'weights';
       break;
