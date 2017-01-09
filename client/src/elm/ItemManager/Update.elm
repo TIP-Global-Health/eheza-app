@@ -163,6 +163,8 @@ fetchItemFromBackend : BackendUrl -> String -> ItemId -> Model -> ( Model, Cmd M
 fetchItemFromBackend backendUrl accessToken itemId model =
     let
         command =
+            -- @todo: We need to know which activity type it is, in order to
+            -- call to correct RESTful resource.
             HttpBuilder.get (backendUrl ++ "/api/items/" ++ itemId)
                 |> withQueryParams [ ( "access_token", accessToken ) ]
                 |> sendWithHandler decodeItemFromResponse (HandleFetchedItem itemId)
