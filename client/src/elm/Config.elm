@@ -8,15 +8,31 @@ local : Model
 local =
     { backendUrl = "http://localhost/ihangane/server/www"
     , name = "local"
-    , pusherKey = "ba4608c38aa09c23227b"
+    , pusherKey = "0c51c25a2b95b0b33a99"
     }
 
 
-production : Model
-production =
+***REMOVED*** : Model
+***REMOVED*** =
     { backendUrl = "https://***REMOVED***"
-    , name = "gh-pages"
-    , pusherKey = "f0d7df56f0d4928ea6d8"
+    , name = "***REMOVED***"
+    , pusherKey = "***REMOVED***"
+    }
+
+
+***REMOVED*** : Model
+***REMOVED*** =
+    { backendUrl = "https://***REMOVED***"
+    , name = "***REMOVED***"
+    , pusherKey = "***REMOVED***"
+    }
+
+
+livePantheon : Model
+livePantheon =
+    { backendUrl = "https://***REMOVED***"
+    , name = "livePantheon"
+    , pusherKey = "***REMOVED***"
     }
 
 
@@ -24,5 +40,7 @@ configs : Dict String Model
 configs =
     Dict.fromList
         [ ( "localhost", local )
-        , ( "dev-drupal-elm-starter.pantheonsite.io", production )
+        , ( "***REMOVED***", ***REMOVED*** )
+        , ( "***REMOVED***", ***REMOVED*** )
+        , ( "***REMOVED***", livePantheon )
         ]
