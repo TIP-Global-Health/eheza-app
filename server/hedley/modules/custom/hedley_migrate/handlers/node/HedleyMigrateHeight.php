@@ -54,16 +54,14 @@ class HedleyMigrateHeight extends HedleyMigrateBase {
 
     $simple_fields = drupal_map_assoc([
       'title',
+      'field_activity_status',
+      'field_height',
     ]);
 
     $this->addSimpleMappings($simple_fields);
 
     $this->addFieldMapping('field_child', 'field_child')
       ->sourceMigration('HedleyMigrateChild');
-
-    $this->addFieldMapping('field_activity_status', 'field_activity_status');
-
-    $this->addFieldMapping('field_height', 'field_height');
 
     $this->addFieldMapping('field_date', 'field_date')
       ->callbacks([$this, 'dateProcess']);
