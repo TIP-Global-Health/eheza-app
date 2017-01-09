@@ -35,7 +35,10 @@ view user model =
         error =
             case user of
                 Failure err ->
-                    div [ class "ui error" ] [ viewError err ]
+                    div [ class "ui error message" ]
+                        [ div [ class "header" ] [ text "Error" ]
+                        , viewError err
+                        ]
 
                 _ ->
                     div [] []
