@@ -25,6 +25,10 @@ class HedleyRestfulHeights extends HedleyRestfulActivityBase {
       ];
     }
 
+    $public_fields['height'] = [
+      'property' => 'field_height',
+    ];
+
     return $public_fields;
   }
 

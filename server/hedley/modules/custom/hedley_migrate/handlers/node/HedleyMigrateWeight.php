@@ -54,16 +54,14 @@ class HedleyMigrateWeight extends HedleyMigrateBase {
 
     $simple_fields = drupal_map_assoc([
       'title',
+      'field_activity_status',
+      'field_weight',
     ]);
 
     $this->addSimpleMappings($simple_fields);
 
     $this->addFieldMapping('field_child', 'field_child')
       ->sourceMigration('HedleyMigrateChild');
-
-    $this->addFieldMapping('field_activity_status', 'field_activity_status');
-
-    $this->addFieldMapping('field_weight', 'field_weight');
 
     $this->addFieldMapping('field_date', 'field_date')
       ->callbacks([$this, 'dateProcess']);

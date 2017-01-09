@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Contains HedleyRestfulWeights.
+ * Contains HedleyRestfulMuacs.
  */
 
 /**
- * Class HedleyRestfulWeights.
+ * Class HedleyRestfulMuacs.
  */
-class HedleyRestfulWeights extends HedleyRestfulActivityBase {
+class HedleyRestfulMuacs extends HedleyRestfulActivityBase {
 
   /**
    * {@inheritdoc}
@@ -25,8 +25,16 @@ class HedleyRestfulWeights extends HedleyRestfulActivityBase {
       ];
     }
 
-    $public_fields['weight'] = [
-      'property' => 'field_weight',
+    $public_fields['middle_circumference'] = [
+      'property' => 'field_middle_circumference',
+    ];
+
+    $public_fields['upper_circumference'] = [
+      'property' => 'field_upper_circumference',
+    ];
+
+    $public_fields['arm_circumference'] = [
+      'property' => 'field_arm_circumference',
     ];
 
     return $public_fields;
@@ -39,7 +47,7 @@ class HedleyRestfulWeights extends HedleyRestfulActivityBase {
    *   The type name.
    */
   protected static function getType() {
-    return 'weight';
+    return 'muac';
   }
 
 }

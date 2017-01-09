@@ -2,23 +2,23 @@
 
 /**
  * @file
- * Contains \HedleyMigrateHeight.
+ * Contains \HedleyMigrateMuac.
  */
 
 /**
- * Class HedleyMigrateHeight.
+ * Class HedleyMigrateMuac.
  */
-class HedleyMigrateHeight extends HedleyMigrateBase {
+class HedleyMigrateMuac extends HedleyMigrateBase {
 
   public $entityType = 'node';
-  public $bundle = 'height';
+  public $bundle = 'muac';
 
   /**
    * {@inheritdoc}
    */
   public function __construct($arguments) {
     parent::__construct($arguments);
-    $this->description = t('Import Heights from the CSV.');
+    $this->description = t('Import Muacs from the CSV.');
     $this->dependencies = [
       'HedleyMigrateChild',
     ];
@@ -28,7 +28,9 @@ class HedleyMigrateHeight extends HedleyMigrateBase {
       'field_child',
       'field_date',
       'field_activity_status',
-      'field_height',
+      'field_middle_circumference',
+      'field_upper_circumference',
+      'field_arm_circumference',
     ];
 
     $columns = [];
@@ -36,7 +38,7 @@ class HedleyMigrateHeight extends HedleyMigrateBase {
       $columns[] = [$column_name, $column_name];
     }
 
-    $source_file = $this->getMigrateDirectory() . '/csv/height.csv';
+    $source_file = $this->getMigrateDirectory() . '/csv/muac.csv';
     $options = array('header_rows' => 1);
     $this->source = new MigrateSourceCSV($source_file, $columns, $options);
 
@@ -55,7 +57,9 @@ class HedleyMigrateHeight extends HedleyMigrateBase {
     $simple_fields = drupal_map_assoc([
       'title',
       'field_activity_status',
-      'field_height',
+      'field_middle_circumference',
+      'field_upper_circumference',
+      'field_arm_circumference',
     ]);
 
     $this->addSimpleMappings($simple_fields);
