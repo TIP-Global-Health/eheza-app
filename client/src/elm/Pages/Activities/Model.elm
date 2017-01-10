@@ -1,61 +1,88 @@
-module Pages.Activities.Model exposing (Activity, Model, activityList)
+module Pages.Activities.Model exposing (ActivityIdentity, ActivityReport, Model, activityList)
 
 
 type alias Model =
-    List Activity
+    List ActivityReport
 
 
-type alias Activity =
+type alias ActivityIdentity =
     { name : String
     , icon : String
+    }
+
+
+type alias ActivityReport =
+    { activity : ActivityIdentity
     , remaining : Int
     }
 
 
 activityList : Model
 activityList =
-    [ { name = "Weight"
-      , icon = "law"
+    [ { activity =
+            { name = "Weight"
+            , icon = "law"
+            }
       , remaining = 3
       }
-    , { name = "Height"
-      , icon = "line chart"
+    , { activity =
+            { name = "Height"
+            , icon = "line chart"
+            }
       , remaining = 2
       }
-    , { name = "MUAC"
-      , icon = "treatment"
+    , { activity =
+            { name = "MUAC"
+            , icon = "treatment"
+            }
       , remaining = 4
       }
-    , { name = "Education"
-      , icon = "student"
+    , { activity =
+            { name = "Education"
+            , icon = "student"
+            }
       , remaining = 5
       }
-    , { name = "Nutrition signs"
-      , icon = "heartbeat"
+    , { activity =
+            { name = "Nutrition signs"
+            , icon = "heartbeat"
+            }
       , remaining = 4
       }
-    , { name = "Aheza"
-      , icon = "food"
+    , { activity =
+            { name = "Aheza"
+            , icon = "food"
+            }
       , remaining = 7
       }
-    , { name = "Family planning"
-      , icon = "users"
+    , { activity =
+            { name = "Family planning"
+            , icon = "users"
+            }
       , remaining = 4
       }
-    , { name = "HIV"
-      , icon = "doctor"
+    , { activity =
+            { name = "HIV"
+            , icon = "doctor"
+            }
       , remaining = 4
       }
-    , { name = "Attendance"
-      , icon = "thumbs outline up"
+    , { activity =
+            { name = "Attendance"
+            , icon = "thumbs outline up"
+            }
       , remaining = 0
       }
-    , { name = "Take pictures"
-      , icon = "photo"
+    , { activity =
+            { name = "Take pictures"
+            , icon = "photo"
+            }
       , remaining = 0
       }
-    , { name = "Progress reports"
-      , icon = "bar chart"
+    , { activity =
+            { name = "Progress reports"
+            , icon = "bar chart"
+            }
       , remaining = 0
       }
     ]

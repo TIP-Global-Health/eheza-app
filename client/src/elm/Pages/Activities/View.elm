@@ -3,7 +3,7 @@ module Pages.Activities.View exposing (view)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import List as List
-import Pages.Activities.Model exposing (Activity, Model, activityList)
+import Pages.Activities.Model exposing (ActivityReport, Model, activityList)
 import Pages.Activities.Utils exposing (isActivityOpen, isActivityCompleted)
 
 
@@ -23,12 +23,12 @@ view =
             ]
 
 
-viewActivity : Activity -> Html a
-viewActivity activity =
+viewActivity : ActivityReport -> Html a
+viewActivity report =
     div [ class "ui card activities__item" ]
-        [ a [ href "#" ] [ i [ class (activity.icon ++ " icon") ] [] ]
+        [ a [ href "#" ] [ i [ class (report.activity.icon ++ " icon") ] [] ]
         , div [ class "content" ]
-            [ a [ class "header activities__item__title" ] [ text activity.name ]
-            , div [ class "meta" ] [ text ((toString activity.remaining) ++ " remaining") ]
+            [ a [ class "header activities__item__title" ] [ text report.activity.name ]
+            , div [ class "meta" ] [ text ((toString report.remaining) ++ " remaining") ]
             ]
         ]

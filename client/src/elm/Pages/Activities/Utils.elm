@@ -1,13 +1,13 @@
 module Pages.Activities.Utils exposing (isActivityOpen, isActivityCompleted)
 
-import Pages.Activities.Model exposing (Activity)
+import Pages.Activities.Model exposing (ActivityReport)
 
 
-isActivityOpen : Activity -> Bool
+isActivityOpen : ActivityReport -> Bool
 isActivityOpen activity =
     activity.remaining /= 0
 
 
-isActivityCompleted : Activity -> Bool
+isActivityCompleted : ActivityReport -> Bool
 isActivityCompleted activity =
     (isActivityOpen activity) == False
