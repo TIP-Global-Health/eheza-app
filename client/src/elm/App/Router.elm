@@ -13,6 +13,9 @@ delta2url previous current =
         AccessDenied ->
             Nothing
 
+        Activities ->
+            Just <| UrlChange NewEntry "#activities"
+
         Login ->
             Just <| UrlChange NewEntry "#login"
 
@@ -44,6 +47,7 @@ parseUrl : Parser (Msg -> c) c
 parseUrl =
     oneOf
         [ map (SetActivePage Dashboard) (s "")
+        , map (SetActivePage Activities) (s "activities")
         , map (\id -> SetActivePage <| Item (toString id)) (s "item" </> int)
         , map (SetActivePage Login) (s "login")
         , map (SetActivePage MyAccount) (s "my-account")

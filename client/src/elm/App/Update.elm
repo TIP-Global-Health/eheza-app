@@ -1,7 +1,7 @@
 port module App.Update exposing (init, update, subscriptions)
 
 import App.Model exposing (..)
-import App.PageType exposing (Page(..))
+import App.PageType exposing (Page(..), authenticatedPages)
 import Config
 import Date
 import Dict
@@ -192,7 +192,7 @@ update msg model =
 and if not return a access denied page.
 
 If the user is authenticated, don't allow them to revisit Login page. Do the
-opposite for anonumous user - don't allow them to visit the MyAccount page.
+opposite for anonymous user - don't allow them to visit the MyAccount page.
 -}
 setActivePageAccess : WebData User -> Page -> Page
 setActivePageAccess user page =
@@ -204,7 +204,7 @@ setActivePageAccess user page =
                 page
 
         _ ->
-            if page == MyAccount then
+            if List.member page authenticatedPages then
                 AccessDenied
             else
                 page

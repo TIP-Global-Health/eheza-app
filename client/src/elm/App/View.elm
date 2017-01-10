@@ -7,6 +7,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, classList, href, src, style, target)
 import Html.Events exposing (onClick)
 import User.Model exposing (..)
+import Pages.Activities.View exposing (..)
 import Pages.Login.View exposing (..)
 import Pages.MyAccount.View exposing (..)
 import Pages.PageNotFound.View exposing (..)
@@ -62,6 +63,11 @@ viewSidebar model =
                     , onClick <| SetActivePage Dashboard
                     ]
                     [ text "Dashboard" ]
+                , a
+                    [ class "item"
+                    , onClick <| SetActivePage Activities
+                    ]
+                    [ text "Activities" ]
                 , span
                     [ class "item"
                     ]
@@ -149,6 +155,9 @@ viewMainContent model =
             case model.activePage of
                 AccessDenied ->
                     div [] [ text "Access denied" ]
+
+                Activities ->
+                    Pages.Activities.View.view
 
                 Login ->
                     Html.map PageLogin (Pages.Login.View.view model.user model.pageLogin)
