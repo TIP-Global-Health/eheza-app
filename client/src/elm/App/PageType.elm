@@ -1,4 +1,4 @@
-module App.PageType exposing (Page(..))
+module App.PageType exposing (Page(..), authenticatedPages)
 
 {-| Prevent circular dependency.
 -}
@@ -16,3 +16,11 @@ type Page
     | Login
     | MyAccount
     | PageNotFound
+
+
+authenticatedPages : List Page
+authenticatedPages =
+    [ Activities
+    , Dashboard
+    , MyAccount
+    ]

@@ -1,7 +1,7 @@
 port module App.Update exposing (init, update, subscriptions)
 
 import App.Model exposing (..)
-import App.PageType exposing (Page(..))
+import App.PageType exposing (Page(..), authenticatedPages)
 import Config
 import Date
 import Dict
@@ -204,9 +204,7 @@ setActivePageAccess user page =
                 page
 
         _ ->
-            if page == MyAccount then
-                AccessDenied
-            else if page == Activities then
+            if List.member page authenticatedPages then
                 AccessDenied
             else
                 page
