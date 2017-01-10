@@ -3,7 +3,7 @@ module Pages.Activities.View exposing (view)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import List as List
-import Pages.Activities.Model exposing (ActivityReport, Model, activityList)
+import Pages.Activities.Model exposing (ActivityReport, activityList)
 import Pages.Activities.Utils exposing (isActivityOpen, isActivityCompleted)
 
 

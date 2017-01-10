@@ -10,4 +10,4 @@ isActivityOpen activity =
 
 isActivityCompleted : ActivityReport -> Bool
 isActivityCompleted activity =
-    (isActivityOpen activity) == False
+    not <| isActivityOpen activity

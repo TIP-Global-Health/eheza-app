@@ -1,8 +1,4 @@
-module Pages.Activities.Model exposing (ActivityIdentity, ActivityReport, Model, activityList)
-
-
-type alias Model =
-    List ActivityReport
+module Pages.Activities.Model exposing (ActivityIdentity, ActivityReport, activityList)
 
 
 type alias ActivityIdentity =
@@ -17,7 +13,7 @@ type alias ActivityReport =
     }
 
 
-activityList : Model
+activityList : List ActivityReport
 activityList =
     [ { activity =
             { name = "Weight"
