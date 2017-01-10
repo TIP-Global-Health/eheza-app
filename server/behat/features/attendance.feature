@@ -9,11 +9,11 @@ Feature: Check attendance functionality
     Then  I should see the image moves to the here list
 
     Examples:
-    | customer               |
-    | Delphine Uwamahoro     |
-    | Theophila Huriro Uwaca |
-    | Wendy Leonard          |
-    | Ann Doung              |
+    | customer                |
+    | Delphine Uwamahoro      |
+    | Theophila Huriro Uwaca  |
+    | Wendy Leonard           |
+    | Ann Doung               |
 
   Scenario: New mother arrives that is not on the list
     Given I login as nurse
