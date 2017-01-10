@@ -1,6 +1,6 @@
 module App.PageType exposing (Page(..))
 
-{-| Prevent circula dependency.
+{-| Prevent circular dependency.
 -}
 
 
@@ -10,6 +10,7 @@ type alias ItemId =
 
 type Page
     = AccessDenied
+    | Activities
     | Dashboard
     | Item ItemId
     | Login

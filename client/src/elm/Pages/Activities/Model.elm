@@ -1,4 +1,4 @@
-module Pages.Activities.Model exposing (Activity, Model)
+module Pages.Activities.Model exposing (Activity, Model, activityList)
 
 
 type alias Model =
