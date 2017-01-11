@@ -1,4 +1,4 @@
-module Pages.Items.Model exposing (..)
+module Pages.Patients.Model exposing (..)
 
 import App.PageType exposing (Page(..))
 import Table

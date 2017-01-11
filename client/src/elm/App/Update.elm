@@ -5,8 +5,8 @@ import App.PageType exposing (Page(..), authenticatedPages)
 import Config
 import Date
 import Dict
-import ItemManager.Model
-import ItemManager.Update
+import PatientManager.Model
+import PatientManager.Update
 import Json.Decode exposing (decodeValue, bool)
 import Json.Encode exposing (Value)
 import Pages.Login.Update
@@ -84,15 +84,15 @@ update msg model =
                 , accessTokenPort ""
                 )
 
-            MsgItemManager subMsg ->
+            MsgPatientManager subMsg ->
                 case model.user of
                     Success user ->
                         let
                             ( val, cmds, redirectPage ) =
-                                ItemManager.Update.update model.currentDate backendUrl model.accessToken user subMsg model.pageItem
+                                PatientManager.Update.update model.currentDate backendUrl model.accessToken user subMsg model.pagePatient
 
                             modelUpdated =
-                                { model | pageItem = val }
+                                { model | pagePatient = val }
 
                             ( modelUpdatedWithSetPage, setPageCmds ) =
                                 Maybe.map
@@ -104,7 +104,7 @@ update msg model =
                         in
                             ( modelUpdatedWithSetPage
                             , Cmd.batch
-                                [ Cmd.map MsgItemManager cmds
+                                [ Cmd.map MsgPatientManager cmds
                                 , setPageCmds
                                 ]
                             )
@@ -167,12 +167,12 @@ update msg model =
                         -- For a few, we also delegate some initialization
                         case activePage of
                             Dashboard ->
-                                -- If we're showing a `Items` page, make sure we `Subscribe`
-                                update (MsgItemManager ItemManager.Model.FetchAll) model
+                                -- If we're showing a `Patients` page, make sure we `Subscribe`
+                                update (MsgPatientManager PatientManager.Model.FetchAll) model
 
-                            Item id ->
-                                -- If we're showing a `Item`, make sure we `Subscribe`
-                                update (MsgItemManager (ItemManager.Model.Subscribe id)) model
+                            Patient id ->
+                                -- If we're showing a `Patient`, make sure we `Subscribe`
+                                update (MsgPatientManager (PatientManager.Model.Subscribe id)) model
 
                             _ ->
                                 ( model, Cmd.none )
@@ -213,7 +213,7 @@ setActivePageAccess user page =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Sub.map MsgItemManager <| ItemManager.Update.subscriptions model.pageItem model.activePage
+        [ Sub.map MsgPatientManager <| PatientManager.Update.subscriptions model.pagePatient model.activePage
         , Time.every minute Tick
         , offline (decodeValue bool >> HandleOfflineEvent)
         ]

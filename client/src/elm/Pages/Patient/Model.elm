@@ -1,4 +1,4 @@
-module Pages.Item.Model
+module Pages.Patient.Model
     exposing
         ( Msg(..)
         )

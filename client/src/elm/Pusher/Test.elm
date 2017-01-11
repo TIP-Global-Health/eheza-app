@@ -18,22 +18,22 @@ decodeTest =
                     json =
                         """
 {
-    "eventType" : "item__update",
+    "eventType" : "patient__update",
     "data" : {
       "id" : "100",
-      "label" : "new-item"
+      "label" : "new-patient"
     }
 
 }
             """
 
                     expectedResult =
-                        { itemId = "100"
+                        { patientId = "100"
                         , data =
-                            { name = "new-item"
+                            { name = "new-patient"
                             , image = "http://placehold.it/350x150"
                             }
-                                |> ItemUpdate
+                                |> PatientUpdate
                         }
                 in
                     Expect.equal (Ok expectedResult) (decodeString decodePusherEvent json)

@@ -3,24 +3,24 @@ module Pages.Dashboard.View exposing (view)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Item.Model exposing (Item, ItemId)
+import Patient.Model exposing (Patient, PatientId)
 import User.Model exposing (User)
 
 
-view : User -> ItemsDict -> Html Msg
-view currentUser items =
+view : User -> PatientsDict -> Html Msg
+view currentUser patients =
     div []
         [ h1 [ class "ui header" ] [ text "Dashboard" ]
         , div [ class "ui divider" ] []
-        , viewActiveIncidents items
+        , viewActiveIncidents patients
         ]
 
 
-viewActiveIncidents : ItemsDict -> Html Msg
-viewActiveIncidents items =
+viewActiveIncidents : PatientsDict -> Html Msg
+viewActiveIncidents patients =
     let
         orderedIncidentes =
-            getOrderedIncidents items
+            getOrderedIncidents patients
     in
         -- @todo: Filter out
         if (List.isEmpty orderedIncidentes) then
@@ -31,8 +31,8 @@ viewActiveIncidents items =
         else
             div [ class "ui cards" ]
                 (List.map
-                    (\{ itemId, item, incidentId, incident } ->
-                        Html.map (MsgIncident itemId incidentId) (Incident.View.view ( itemId, item ) ( incidentId, incident ) IncidentViewFull)
+                    (\{ patientId, patient, incidentId, incident } ->
+                        Html.map (MsgIncident patientId incidentId) (Incident.View.view ( patientId, patient ) ( incidentId, incident ) IncidentViewFull)
                     )
                     orderedIncidentes
                 )

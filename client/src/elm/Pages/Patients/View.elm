@@ -1,4 +1,4 @@
-module Pages.Items.View exposing (view)
+module Pages.Patients.View exposing (view)
 
 import App.PageType exposing (Page(..))
 import Date exposing (Date)
@@ -6,39 +6,39 @@ import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
-import Pages.Items.Model exposing (Model, Msg(..))
-import Item.Model exposing (Item, ItemId, ItemsDict)
+import Pages.Patients.Model exposing (Model, Msg(..))
+import Patient.Model exposing (Patient, PatientId, PatientsDict)
 import Table exposing (..)
 import User.Model exposing (User)
 
 
-view : Date -> User -> ItemsDict -> Model -> Html Msg
-view currentDate currentUser items model =
+view : Date -> User -> PatientsDict -> Model -> Html Msg
+view currentDate currentUser patients model =
     let
         lowerQuery =
             String.toLower model.query
 
-        acceptableItems =
+        acceptablePatients =
             Dict.filter
-                (\itemId item ->
-                    (String.contains lowerQuery << String.toLower << .name) item
+                (\patientId patient ->
+                    (String.contains lowerQuery << String.toLower << .name) patient
                 )
-                items
+                patients
                 |> Dict.toList
 
         searchResult =
-            if List.isEmpty acceptableItems then
-                if Dict.isEmpty items then
-                    -- No items are present, so it means we are fethcing
+            if List.isEmpty acceptablePatients then
+                if Dict.isEmpty patients then
+                    -- No patients are present, so it means we are fethcing
                     -- them.
                     div [] []
                 else
-                    div [ class "ui segment" ] [ text "No items found" ]
+                    div [ class "ui segment" ] [ text "No patients found" ]
             else
-                Table.view config model.tableState acceptableItems
+                Table.view config model.tableState acceptablePatients
     in
         div []
-            [ h1 [] [ text "Items" ]
+            [ h1 [] [ text "Patients" ]
             , div [ class "ui input" ]
                 [ input
                     [ placeholder "Search by Name"
@@ -50,19 +50,19 @@ view currentDate currentUser items model =
             ]
 
 
-config : Table.Config ( ItemId, Item ) Msg
+config : Table.Config ( PatientId, Patient ) Msg
 config =
     Table.customConfig
-        { toId = \( itemId, _ ) -> itemId
+        { toId = \( patientId, _ ) -> patientId
         , toMsg = SetTableState
         , columns =
             [ Table.veryCustomColumn
                 { name = "Name"
                 , viewData =
-                    \( itemId, item ) ->
+                    \( patientId, patient ) ->
                         Table.HtmlDetails []
-                            [ a [ href "#", onClick <| SetRedirectPage <| App.PageType.Item itemId ]
-                                [ text item.name ]
+                            [ a [ href "#", onClick <| SetRedirectPage <| App.PageType.Patient patientId ]
+                                [ text patient.name ]
                             ]
                 , sorter = Table.increasingOrDecreasingBy <| Tuple.second >> .name
                 }

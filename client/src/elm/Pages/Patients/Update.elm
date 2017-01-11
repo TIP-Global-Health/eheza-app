@@ -1,14 +1,14 @@
-module Pages.Items.Update exposing (update)
+module Pages.Patients.Update exposing (update)
 
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import User.Model exposing (..)
-import Pages.Items.Model exposing (Model, Msg(..))
-import Item.Model exposing (ItemsDict)
+import Pages.Patients.Model exposing (Model, Msg(..))
+import Patient.Model exposing (PatientsDict)
 
 
-update : BackendUrl -> String -> User -> Msg -> ItemsDict -> Model -> ( Model, Cmd Msg, Maybe Page )
-update backendUrl accessToken user msg items model =
+update : BackendUrl -> String -> User -> Msg -> PatientsDict -> Model -> ( Model, Cmd Msg, Maybe Page )
+update backendUrl accessToken user msg patients model =
     case msg of
         SetRedirectPage page ->
             ( model, Cmd.none, Just page )

@@ -11,7 +11,7 @@ import Pages.Activities.View exposing (..)
 import Pages.Login.View exposing (..)
 import Pages.MyAccount.View exposing (..)
 import Pages.PageNotFound.View exposing (..)
-import ItemManager.View exposing (..)
+import PatientManager.View exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
@@ -97,7 +97,7 @@ navbarAnonymous model =
         , onClick <| SetActivePage Login
         ]
         [ text "Login" ]
-    , viewPageNotFoundItem model.activePage
+    , viewPageNotFoundPatient model.activePage
     ]
 
 
@@ -108,11 +108,11 @@ navbarAuthenticated model =
         , onClick <| SetActivePage MyAccount
         ]
         [ text "My Account" ]
-    , viewPageNotFoundItem model.activePage
+    , viewPageNotFoundPatient model.activePage
     , div [ class "right menu" ]
         [ viewAvatar model.user
         , a
-            [ class "ui item"
+            [ class "ui patient"
             , onClick <| Logout
             ]
             [ text "Logout" ]
@@ -120,8 +120,8 @@ navbarAuthenticated model =
     ]
 
 
-viewPageNotFoundItem : Page -> Html Msg
-viewPageNotFoundItem activePage =
+viewPageNotFoundPatient : Page -> Html Msg
+viewPageNotFoundPatient activePage =
     a
         [ classByPage PageNotFound activePage
         , onClick <| SetActivePage PageNotFound
@@ -135,7 +135,7 @@ viewAvatar user =
         Success user_ ->
             a
                 [ onClick <| SetActivePage MyAccount
-                , class "ui item"
+                , class "ui patient"
                 ]
                 [ img
                     [ class "ui avatar image"
@@ -176,22 +176,22 @@ viewMainContent model =
                     -- the user information.
                     case model.user of
                         Success user ->
-                            Html.map MsgItemManager <|
-                                ItemManager.View.viewItems model.currentDate user model.pageItem
+                            Html.map MsgPatientManager <|
+                                PatientManager.View.viewPatients model.currentDate user model.pagePatient
 
                         _ ->
                             div []
                                 [ i [ class "notched circle loading icon" ] [] ]
 
-                Item id ->
+                Patient id ->
                     -- We get the user information before diving down a level, since
                     -- Pages.LiveSession can't do anything sensible without a user, and it is
                     -- at this higher level that we could present a UI related to loading
                     -- the user information.
                     case model.user of
                         Success user ->
-                            Html.map MsgItemManager <|
-                                ItemManager.View.viewPageItem model.currentDate id user model.pageItem
+                            Html.map MsgPatientManager <|
+                                PatientManager.View.viewPagePatient model.currentDate id user model.pagePatient
 
                         _ ->
                             div []
@@ -212,12 +212,12 @@ viewMainContent model =
                 viewContent
 
 
-{-| Get menu items classes. This function gets the active page and checks if
+{-| Get menu patients classes. This function gets the active page and checks if
 it is indeed the page used.
 -}
 classByPage : Page -> Page -> Attribute a
 classByPage page activePage =
     classList
-        [ ( "item", True )
+        [ ( "patient", True )
         , ( "active", page == activePage )
         ]

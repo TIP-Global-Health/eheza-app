@@ -4,7 +4,7 @@ module App.PageType exposing (Page(..), authenticatedPages)
 -}
 
 
-type alias ItemId =
+type alias PatientId =
     String
 
 
@@ -12,7 +12,7 @@ type Page
     = AccessDenied
     | Activities
     | Dashboard
-    | Item ItemId
+    | Patient PatientId
     | Login
     | MyAccount
     | PageNotFound

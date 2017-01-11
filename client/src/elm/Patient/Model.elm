@@ -1,8 +1,8 @@
-module Item.Model
+module Patient.Model
     exposing
-        ( Item
-        , ItemId
-        , ItemsDict
+        ( Patient
+        , PatientId
+        , PatientsDict
         )
 
 import Dict exposing (Dict)
@@ -10,20 +10,20 @@ import Child.Model exposing (Child)
 import Mother.Model exposing (Mother)
 
 
-type alias ItemId =
+type alias PatientId =
     String
 
 
-type Patient
+type PatientType
     = PatientChild Child
     | PatientMother Mother
 
 
-type alias Item =
+type alias Patient =
     { name : String
     , image : String
     }
 
 
-type alias ItemsDict =
-    Dict ItemId Item
+type alias PatientsDict =
+    Dict PatientId Patient
