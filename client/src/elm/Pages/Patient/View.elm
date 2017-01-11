@@ -83,6 +83,15 @@ viewMother currentDate currentUser motherId mother children =
                 )
                 children
             )
+
+        childrenList =
+            if List.isEmpty mother.children then
+                div [] [ text "No children registered in the system" ]
+            else
+                div []
+                    [ text <| "Children: "
+                    , ul [] childrenInfo
+                    ]
     in
         div []
             [ div
@@ -96,7 +105,6 @@ viewMother currentDate currentUser motherId mother children =
                 ]
             , div
                 [ class "ui divider" ]
-                [ text <| "Children: "
-                , ul [] childrenInfo
-                ]
+                []
+            , childrenList
             ]
