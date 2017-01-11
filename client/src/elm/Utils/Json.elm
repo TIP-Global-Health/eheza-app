@@ -5,6 +5,7 @@ module Utils.Json
         , decodeError
         , decodeFloat
         , decodeInt
+        , decodeIntAsString
         , decodeListAsDict
         , decodeListAsDictByProperty
         , decodeNullAsEmptyArray
@@ -77,6 +78,16 @@ decodeInt =
                         Err _ ->
                             fail "Cannot convert string to integer"
                 )
+        ]
+
+
+{-| Cast Int to String.
+-}
+decodeIntAsString : Decoder String
+decodeIntAsString =
+    oneOf
+        [ string
+        , int |> andThen (\val -> succeed <| toString val)
         ]
 
 

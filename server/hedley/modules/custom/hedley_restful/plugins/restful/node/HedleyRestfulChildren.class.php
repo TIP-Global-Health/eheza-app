@@ -63,8 +63,8 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
    * @param int $nid
    *   The child node ID.
    *
-   * @return string
-   *   The Mother node ID, casted to string.
+   * @return int
+   *   The Mother node ID.
    */
   protected function getMother($nid) {
     $query = new EntityFieldQuery();
@@ -79,10 +79,10 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
 
     if (empty($result['node'])) {
       // In case we somehow don't have a mother.
-      return "0";
+      return 0;
     }
 
-    return (string)key($result['node']);
+    return key($result['node']);
   }
 
 }
