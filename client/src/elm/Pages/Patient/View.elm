@@ -58,35 +58,32 @@ viewChild currentDate currentUser childId child motherWebData =
             ]
 
 
-viewMother : Date -> User -> MotherId -> Mother -> WebData (List Child) -> Html Msg
-viewMother currentDate currentUser motherId mother childrenWebData =
+viewMother : Date -> User -> MotherId -> Mother -> List (WebData Child) -> Html Msg
+viewMother currentDate currentUser motherId mother children =
     let
         childrenInfo =
-            case childrenWebData of
-                Success children ->
-                    div []
-                        [ text <| "Children: "
-                        , ul []
-                            (List.map
-                                (\child ->
-                                    a
-                                        [ href "#"
-                                          -- , onClick <| SetRedirectPage (App.PageType.Patient child.motherId)
-                                        ]
-                                        [ text child.name ]
-                                )
-                                children
-                            )
-                        ]
+            (List.map
+                (\childWebData ->
+                    case childWebData of
+                        Success child ->
+                            li []
+                                [ a
+                                    [ href "#"
+                                      -- , onClick <| SetRedirectPage (App.PageType.Patient child.motherId)
+                                    ]
+                                    [ text child.name ]
+                                ]
 
-                Loading ->
-                    div []
-                        [ text <| "Children: "
-                        , i [ class "icon loading spinner" ] []
-                        ]
+                        Loading ->
+                            li []
+                                [ i [ class "icon loading spinner" ] []
+                                ]
 
-                _ ->
-                    div [] []
+                        _ ->
+                            div [] []
+                )
+                children
+            )
     in
         div []
             [ div
@@ -100,5 +97,7 @@ viewMother currentDate currentUser motherId mother childrenWebData =
                 ]
             , div
                 [ class "ui divider" ]
-                []
+                [ text <| "Children: "
+                , ul [] childrenInfo
+                ]
             ]

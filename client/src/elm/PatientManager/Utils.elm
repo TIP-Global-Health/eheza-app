@@ -15,9 +15,28 @@ import PatientManager.Model as PatientManager
 import RemoteData exposing (RemoteData(..), WebData)
 
 
-getChildren : ChildId -> PatientManager.Model -> WebData (List Child)
-getChildren childId model =
-    NotAsked
+getChildren : Mother -> PatientManager.Model -> List (WebData Child)
+getChildren mother model =
+    List.map
+        (\childId ->
+            getPatient childId model |> getChild
+        )
+        mother.children
+
+
+getChild : WebData Patient -> WebData Child
+getChild patientWebData =
+    case patientWebData of
+        Success patient ->
+            case patient.info of
+                PatientChild child ->
+                    Success child
+
+                _ ->
+                    NotAsked
+
+        _ ->
+            Loading
 
 
 getMother : MotherId -> PatientManager.Model -> WebData Mother

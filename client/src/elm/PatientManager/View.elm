@@ -70,6 +70,6 @@ viewPagePatient currentDate id user model =
                 PatientMother mother ->
                     let
                         childrenWebData =
-                            getChildren id model
+                            getChildren mother model
                     in
                         div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewMother currentDate user id mother childrenWebData ]
