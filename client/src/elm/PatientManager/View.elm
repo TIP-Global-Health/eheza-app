@@ -1,42 +1,42 @@
-module ItemManager.View
+module PatientManager.View
     exposing
-        ( viewPageItem
-        , viewItems
+        ( viewPagePatient
+        , viewPatients
         )
 
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
-import Pages.Item.View
+import Pages.Patient.View
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
-import Pages.Items.View
-import Item.Model exposing (ItemId, ItemsDict)
-import ItemManager.Model exposing (..)
-import ItemManager.Utils exposing (getItem, unwrapItemsDict)
+import Pages.Patients.View
+import Patient.Model exposing (PatientId, PatientsDict)
+import PatientManager.Model exposing (..)
+import PatientManager.Utils exposing (getPatient, unwrapPatientsDict)
 import RemoteData exposing (RemoteData(..))
 import User.Model exposing (User)
 import Utils.WebData exposing (viewError)
 
 
-{-| Show all Items page.
+{-| Show all Patients page.
 -}
-viewItems : Date -> User -> Model -> Html Msg
-viewItems currentDate user model =
+viewPatients : Date -> User -> Model -> Html Msg
+viewPatients currentDate user model =
     let
-        items =
-            unwrapItemsDict model.items
+        patients =
+            unwrapPatientsDict model.patients
     in
         div []
-            [ Html.map MsgPagesItems <| Pages.Items.View.view currentDate user items model.itemsPage
+            [ Html.map MsgPagesPatients <| Pages.Patients.View.view currentDate user patients model.patientsPage
             ]
 
 
-{-| Show the Item page.
+{-| Show the Patient page.
 -}
-viewPageItem : Date -> ItemId -> User -> Model -> Html Msg
-viewPageItem currentDate id user model =
-    case getItem id model of
+viewPagePatient : Date -> PatientId -> User -> Model -> Html Msg
+viewPagePatient currentDate id user model =
+    case getPatient id model of
         NotAsked ->
             -- This shouldn't happen, but if it does, we provide
             -- a button to load the editor
@@ -44,7 +44,7 @@ viewPageItem currentDate id user model =
                 [ class "ui button"
                 , onClick <| Subscribe id
                 ]
-                [ text "Re-load Item" ]
+                [ text "Re-load Patient" ]
 
         Loading ->
             div [] []
@@ -59,6 +59,6 @@ viewPageItem currentDate id user model =
                     [ text "Retry" ]
                 ]
 
-        Success item ->
+        Success patient ->
             div []
-                [ Html.map (MsgPagesItem id) <| Pages.Item.View.view currentDate user id item ]
+                [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.view currentDate user id patient ]

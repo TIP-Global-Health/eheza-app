@@ -66,6 +66,9 @@ class HedleyMigrateMother extends HedleyMigrateBase {
     $this->addFieldMapping('field_avatar:source_dir')
       ->defaultValue($this->getMigrateDirectory() . '/images/');
 
+    $this->addFieldMapping('field_children', 'field_children')
+      ->sourceMigration('HedleyMigrateChild');
+
     $this->addFieldMapping('uid', 'author')
       ->sourceMigration('HedleyMigrateUsers')
       ->defaultValue(1);

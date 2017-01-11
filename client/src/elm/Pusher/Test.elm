@@ -1,9 +1,8 @@
 module Pusher.Test exposing (all)
 
-import Date
-import Dict
 import Expect
 import Json.Decode exposing (decodeString)
+import Patient.Model exposing (PatientType(..))
 import Pusher.Decoder exposing (..)
 import Pusher.Model exposing (..)
 import Test exposing (Test, describe, test)
@@ -18,22 +17,29 @@ decodeTest =
                     json =
                         """
 {
-    "eventType" : "item__update",
+    "eventType" : "activity__update",
     "data" : {
+      "type" : "child",
       "id" : "100",
-      "label" : "new-item"
+      "label" : "new-patient",
+      "mother": "7"
     }
 
 }
             """
 
                     expectedResult =
-                        { itemId = "100"
+                        { patientId = "100"
                         , data =
-                            { name = "new-item"
-                            , image = "http://placehold.it/350x150"
-                            }
-                                |> ItemUpdate
+                            PatientUpdate
+                                { info =
+                                    PatientChild
+                                        { name = "new-patient"
+                                        , image = "http://placehold.it/350x150"
+                                        , motherId = "7"
+                                        }
+                                , activities = ""
+                                }
                         }
                 in
                     Expect.equal (Ok expectedResult) (decodeString decodePusherEvent json)

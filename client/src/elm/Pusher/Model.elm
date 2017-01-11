@@ -1,13 +1,13 @@
 module Pusher.Model exposing (..)
 
-import Item.Model exposing (Item, ItemId)
+import Patient.Model exposing (Patient, PatientId)
 
 
 type alias PusherEvent =
-    { itemId : ItemId
+    { patientId : PatientId
     , data : PusherEventData
     }
 
 
 type PusherEventData
-    = ItemUpdate Item
+    = PatientUpdate Patient

@@ -5,7 +5,7 @@ import Config.Model
 import Date exposing (Date)
 import Pages.Login.Model exposing (emptyModel, Model)
 import RemoteData exposing (RemoteData(..), WebData)
-import ItemManager.Model exposing (emptyModel, Model)
+import PatientManager.Model exposing (emptyModel, Model)
 import Time exposing (Time)
 import User.Model exposing (..)
 
@@ -13,7 +13,7 @@ import User.Model exposing (..)
 type Msg
     = HandleOfflineEvent (Result String Bool)
     | Logout
-    | MsgItemManager ItemManager.Model.Msg
+    | MsgPatientManager PatientManager.Model.Msg
     | PageLogin Pages.Login.Model.Msg
     | SetActivePage Page
     | SetCurrentDate Date
@@ -27,7 +27,7 @@ type alias Model =
     , currentDate : Date
     , offline : Bool
     , pageLogin : Pages.Login.Model.Model
-    , pageItem : ItemManager.Model.Model
+    , pagePatient : PatientManager.Model.Model
     , user : WebData User
     }
 
@@ -46,6 +46,6 @@ emptyModel =
     , currentDate = Date.fromTime 0
     , offline = False
     , pageLogin = Pages.Login.Model.emptyModel
-    , pageItem = ItemManager.Model.emptyModel
+    , pagePatient = PatientManager.Model.emptyModel
     , user = NotAsked
     }

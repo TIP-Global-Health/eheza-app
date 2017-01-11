@@ -16,6 +16,10 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
+    $public_fields['type'] = [
+      'callback' => 'static::getType',
+    ];
+
     $field_names = [];
 
     foreach ($field_names as $field_name) {
@@ -30,7 +34,7 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       'process_callbacks' => [
         [$this, 'imageProcess'],
       ],
-      'image_styles' => ['large'],
+      'image_styles' => ['large', 'thumbnail'],
     ];
 
     $public_fields['children'] = [
@@ -40,12 +44,22 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
         'child' => [
           // Resource name.
           'name' => 'children',
-          'full_view' => TRUE,
+          'full_view' => FALSE,
         ],
       ],
     ];
 
     return $public_fields;
+  }
+
+  /**
+   * Return the type of the patient.
+   *
+   * @return string
+   *   The type name.
+   */
+  protected static function getType() {
+    return 'mother';
   }
 
 }

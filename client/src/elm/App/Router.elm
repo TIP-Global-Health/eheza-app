@@ -25,8 +25,8 @@ delta2url previous current =
         PageNotFound ->
             Just <| UrlChange NewEntry "#404"
 
-        Item id ->
-            Just <| UrlChange NewEntry ("#item/" ++ id)
+        Patient id ->
+            Just <| UrlChange NewEntry ("#patient/" ++ id)
 
         Dashboard ->
             -- Hack to allow dashboard to change the URL.
@@ -48,7 +48,7 @@ parseUrl =
     oneOf
         [ map (SetActivePage Dashboard) (s "")
         , map (SetActivePage Activities) (s "activities")
-        , map (\id -> SetActivePage <| Item (toString id)) (s "item" </> int)
+        , map (\id -> SetActivePage <| Patient (toString id)) (s "patient" </> int)
         , map (SetActivePage Login) (s "login")
         , map (SetActivePage MyAccount) (s "my-account")
         ]

@@ -1,18 +1,18 @@
-port module ItemManager.Update exposing (update, subscriptions)
+port module PatientManager.Update exposing (update, subscriptions)
 
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict exposing (Dict)
-import Item.Model exposing (Item, ItemId)
-import ItemManager.Decoder exposing (decodeItemFromResponse, decodeItemsFromResponse)
-import ItemManager.Model exposing (..)
-import ItemManager.Utils exposing (..)
+import Patient.Model exposing (Patient, PatientId)
+import PatientManager.Decoder exposing (decodePatientFromResponse, decodePatientsFromResponse)
+import PatientManager.Model exposing (..)
+import PatientManager.Utils exposing (..)
 import Json.Decode exposing (decodeValue)
 import Json.Encode exposing (Value)
 import HttpBuilder exposing (get, withQueryParams)
-import Pages.Item.Update
-import Pages.Items.Update
+import Pages.Patient.Update
+import Pages.Patients.Update
 import Pusher.Decoder exposing (decodePusherEvent)
 import Pusher.Model exposing (PusherEventData(..))
 import RemoteData exposing (RemoteData(..))
@@ -26,11 +26,11 @@ update currentDate backendUrl accessToken user msg model =
         Subscribe id ->
             -- Note that we're waiting to get the response from the server
             -- before we subscribe to the Pusher events.
-            case getItem id model of
+            case getPatient id model of
                 NotAsked ->
                     let
                         ( updatedModel, updatedCmds ) =
-                            fetchItemFromBackend backendUrl accessToken id model
+                            fetchPatientFromBackend backendUrl accessToken id model
                     in
                         ( updatedModel
                         , updatedCmds
@@ -43,7 +43,7 @@ update currentDate backendUrl accessToken user msg model =
                 Failure _ ->
                     let
                         ( val, cmds ) =
-                            fetchItemFromBackend backendUrl accessToken id model
+                            fetchPatientFromBackend backendUrl accessToken id model
                     in
                         ( val
                         , cmds
@@ -54,7 +54,7 @@ update currentDate backendUrl accessToken user msg model =
                     ( model, Cmd.none, Nothing )
 
         Unsubscribe id ->
-            ( { model | items = Dict.remove id model.items }
+            ( { model | patients = Dict.remove id model.patients }
             , Cmd.none
             , Nothing
             )
@@ -62,24 +62,24 @@ update currentDate backendUrl accessToken user msg model =
         FetchAll ->
             let
                 ( val, cmds ) =
-                    fetchAllItemsFromBackend backendUrl accessToken model
+                    fetchAllPatientsFromBackend backendUrl accessToken model
             in
                 ( val, cmds, Nothing )
 
-        MsgPagesItem id subMsg ->
-            case getItem id model of
-                Success item ->
+        MsgPagesPatient id subMsg ->
+            case getPatient id model of
+                Success patient ->
                     let
                         ( subModel, subCmd, redirectPage ) =
-                            Pages.Item.Update.update backendUrl accessToken user subMsg item
+                            Pages.Patient.Update.update backendUrl accessToken user subMsg patient
                     in
-                        ( { model | items = Dict.insert id (Success subModel) model.items }
-                        , Cmd.map (MsgPagesItem id) subCmd
+                        ( { model | patients = Dict.insert id (Success subModel) model.patients }
+                        , Cmd.map (MsgPagesPatient id) subCmd
                         , redirectPage
                         )
 
                 _ ->
-                    -- We've received a message for a Item which we either
+                    -- We've received a message for a Patient which we either
                     -- aren't subscribed to, or dont' have initial data for yet.
                     -- This normally wouldn't happen, though we may needd to think
                     -- about synchronization between obtaining our initial data and
@@ -89,44 +89,44 @@ update currentDate backendUrl accessToken user msg model =
                     -- data and the pusher messages to know.)
                     ( model, Cmd.none, Nothing )
 
-        MsgPagesItems subMsg ->
+        MsgPagesPatients subMsg ->
             let
                 ( subModel, subCmd, redirectPage ) =
-                    Pages.Items.Update.update backendUrl accessToken user subMsg (unwrapItemsDict model.items) model.itemsPage
+                    Pages.Patients.Update.update backendUrl accessToken user subMsg (unwrapPatientsDict model.patients) model.patientsPage
             in
-                ( { model | itemsPage = subModel }
-                , Cmd.map MsgPagesItems subCmd
+                ( { model | patientsPage = subModel }
+                , Cmd.map MsgPagesPatients subCmd
                 , redirectPage
                 )
 
-        HandleFetchedItems (Ok items) ->
-            ( { model | items = wrapItemsDict items }
+        HandleFetchedPatients (Ok patients) ->
+            ( { model | patients = wrapPatientsDict patients }
             , Cmd.none
             , Nothing
             )
 
-        HandleFetchedItems (Err err) ->
+        HandleFetchedPatients (Err err) ->
             let
                 _ =
-                    Debug.log "HandleFetchedItems" err
+                    Debug.log "HandleFetchedPatients" err
             in
                 ( model, Cmd.none, Nothing )
 
-        HandleFetchedItem itemId (Ok item) ->
+        HandleFetchedPatient patientId (Ok patient) ->
             let
-                -- Let Item settings fetch own data.
+                -- Let Patient settings fetch own data.
                 -- @todo: Pass the activePage here, so we can fetch
                 -- data only when really needed.
                 updatedModel =
-                    { model | items = Dict.insert itemId (Success item) model.items }
+                    { model | patients = Dict.insert patientId (Success patient) model.patients }
             in
                 ( updatedModel
                 , Cmd.none
                 , Nothing
                 )
 
-        HandleFetchedItem itemId (Err err) ->
-            ( { model | items = Dict.insert itemId (Failure err) model.items }
+        HandleFetchedPatient patientId (Err err) ->
+            ( { model | patients = Dict.insert patientId (Failure err) model.patients }
             , Cmd.none
             , Nothing
             )
@@ -135,10 +135,10 @@ update currentDate backendUrl accessToken user msg model =
             case result of
                 Ok event ->
                     case event.data of
-                        ItemUpdate data ->
-                            -- For now we just update the item in the items Dict. But this
+                        PatientUpdate data ->
+                            -- For now we just update the patient in the patients Dict. But this
                             -- can be used to pipe the pushed data to child components.
-                            ( { model | items = Dict.insert event.itemId (Success data) model.items }
+                            ( { model | patients = Dict.insert event.patientId (Success data) model.patients }
                             , Cmd.none
                             , Nothing
                             )
@@ -152,35 +152,35 @@ update currentDate backendUrl accessToken user msg model =
                         ( model, Cmd.none, Nothing )
 
 
-{-| A single port for all messages coming in from pusher for a `Item` ... they
-will flow in once `subscribeItem` is called. We'll wrap the structures on
+{-| A single port for all messages coming in from pusher for a `Patient` ... they
+will flow in once `subscribePatient` is called. We'll wrap the structures on
 the Javascript side so that we can dispatch them from here.
 -}
-port pusherItemMessages : (Value -> msg) -> Sub msg
+port pusherPatientMessages : (Value -> msg) -> Sub msg
 
 
-fetchItemFromBackend : BackendUrl -> String -> ItemId -> Model -> ( Model, Cmd Msg )
-fetchItemFromBackend backendUrl accessToken itemId model =
+fetchPatientFromBackend : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg )
+fetchPatientFromBackend backendUrl accessToken patientId model =
     let
         command =
             -- @todo: We need to know which activity type it is, in order to
             -- call to correct RESTful resource.
-            HttpBuilder.get (backendUrl ++ "/api/items/" ++ itemId)
+            HttpBuilder.get (backendUrl ++ "/api/patients/" ++ patientId)
                 |> withQueryParams [ ( "access_token", accessToken ) ]
-                |> sendWithHandler decodeItemFromResponse (HandleFetchedItem itemId)
+                |> sendWithHandler decodePatientFromResponse (HandleFetchedPatient patientId)
     in
-        ( { model | items = Dict.insert itemId Loading model.items }
+        ( { model | patients = Dict.insert patientId Loading model.patients }
         , command
         )
 
 
-fetchAllItemsFromBackend : BackendUrl -> String -> Model -> ( Model, Cmd Msg )
-fetchAllItemsFromBackend backendUrl accessToken model =
+fetchAllPatientsFromBackend : BackendUrl -> String -> Model -> ( Model, Cmd Msg )
+fetchAllPatientsFromBackend backendUrl accessToken model =
     let
         command =
-            HttpBuilder.get (backendUrl ++ "/api/activities")
+            HttpBuilder.get (backendUrl ++ "/api/patients")
                 |> withQueryParams [ ( "access_token", accessToken ) ]
-                |> sendWithHandler decodeItemsFromResponse HandleFetchedItems
+                |> sendWithHandler decodePatientsFromResponse HandleFetchedPatients
     in
         ( model
         , command
@@ -189,4 +189,4 @@ fetchAllItemsFromBackend backendUrl accessToken model =
 
 subscriptions : Model -> Page -> Sub Msg
 subscriptions model activePage =
-    pusherItemMessages (decodeValue decodePusherEvent >> HandlePusherEvent)
+    pusherPatientMessages (decodeValue decodePusherEvent >> HandlePusherEvent)
