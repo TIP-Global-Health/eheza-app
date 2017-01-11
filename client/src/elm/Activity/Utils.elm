@@ -186,23 +186,35 @@ getPendingNumberPerActivity activityType patients =
 
 hasPendingChildActivity : ChildActivityType -> Child -> Bool
 hasPendingChildActivity childActivityType child =
-    case childActivityType of
-        ChildPicture ->
-            False
+    let
+        property =
+            case childActivityType of
+                ChildPicture ->
+                    .childPicture
 
-        Height ->
-            False
+                Height ->
+                    .height
 
-        Weight ->
-            False
+                Weight ->
+                    .weight
 
-        Muac ->
-            False
+                Muac ->
+                    .muac
 
-        ProgressReport ->
-            False
+                ProgressReport ->
+                    .progressReport
+    in
+        Maybe.map
+            (\date ->
+                -- @todo: Check date is now.
+                True
+            )
+            (child.childActivityDates |> property)
+            |> Maybe.withDefault False
 
 
+{-| @todo: Implement
+-}
 hasPendingMotherActivity : MotherActivityType -> Mother -> Bool
 hasPendingMotherActivity motherActivityType mother =
     case motherActivityType of
