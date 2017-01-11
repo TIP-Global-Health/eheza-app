@@ -12,7 +12,7 @@ import Pages.Patient.View
 import Pages.Patients.View
 import Patient.Model exposing (PatientId, PatientsDict, PatientType(..))
 import PatientManager.Model exposing (..)
-import PatientManager.Utils exposing (getPatient, unwrapPatientsDict)
+import PatientManager.Utils exposing (getMotherOfChild, getPatient, unwrapPatientsDict)
 import RemoteData exposing (RemoteData(..))
 import User.Model exposing (User)
 import Utils.WebData exposing (viewError)
@@ -63,7 +63,7 @@ viewPagePatient currentDate id user model =
                 PatientChild child ->
                     let
                         motherWebData =
-                            getPatient child.motherId model
+                            getMotherOfChild child.motherId model
                     in
                         div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewChild currentDate user id child motherWebData ]
 

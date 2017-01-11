@@ -17,28 +17,29 @@ import RemoteData exposing (RemoteData(..), WebData)
 import User.Model exposing (User)
 
 
-viewChild : Date -> User -> ChildId -> Child -> WebData Patient -> Html Msg
+viewChild : Date -> User -> ChildId -> Child -> WebData Mother -> Html Msg
 viewChild currentDate currentUser childId child motherWebData =
     let
         motherInfo =
             case motherWebData of
-                Success patient ->
-                    case patient.info of
-                        PatientMother mother ->
-                            div []
-                                [ text <| "Mother: "
-                                , a
-                                    [ href "#"
-                                    , onClick <| SetRedirectPage (App.PageType.Patient child.motherId)
-                                    ]
-                                    [ text mother.name ]
-                                ]
+                Success mother ->
+                    div []
+                        [ text <| "Mother: "
+                        , a
+                            [ href "#"
+                            , onClick <| SetRedirectPage (App.PageType.Patient child.motherId)
+                            ]
+                            [ text mother.name ]
+                        ]
 
-                        _ ->
-                            div [] []
+                Loading ->
+                    div []
+                        [ text <| "Mother: "
+                        , i [ class "icon loading spinner" ] []
+                        ]
 
                 _ ->
-                    div [] [ i [ class "icon loading spinner" ] [] ]
+                    div [] []
     in
         div []
             [ div
