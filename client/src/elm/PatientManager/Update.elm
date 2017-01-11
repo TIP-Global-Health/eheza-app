@@ -178,7 +178,7 @@ fetchAllPatientsFromBackend : BackendUrl -> String -> Model -> ( Model, Cmd Msg 
 fetchAllPatientsFromBackend backendUrl accessToken model =
     let
         command =
-            HttpBuilder.get (backendUrl ++ "/api/activities")
+            HttpBuilder.get (backendUrl ++ "/api/patients")
                 |> withQueryParams [ ( "access_token", accessToken ) ]
                 |> sendWithHandler decodePatientsFromResponse HandleFetchedPatients
     in
