@@ -1,4 +1,9 @@
-module Pages.Patient.View exposing (view)
+module Pages.Patient.View
+    exposing
+        ( view
+        , viewChild
+        , viewMother
+        )
 
 import Child.Model exposing (Child, ChildId)
 import Date exposing (Date)
