@@ -18,6 +18,10 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
 
     $field_names = [];
 
+    $public_fields['type'] = [
+      'callback' => 'static::getType',
+    ];
+
     foreach ($field_names as $field_name) {
       $public_name = str_replace('field_', '', $field_name);
       $public_fields[$public_name] = [
@@ -30,10 +34,20 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
       'process_callbacks' => [
         [$this, 'imageProcess'],
       ],
-      'image_styles' => ['large'],
+      'image_styles' => ['large', 'thumbnail'],
     ];
 
     return $public_fields;
+  }
+
+  /**
+   * Return the type of the patient.
+   *
+   * @return string
+   *   The type name.
+   */
+  protected static function getType() {
+    return 'child';
   }
 
 }
