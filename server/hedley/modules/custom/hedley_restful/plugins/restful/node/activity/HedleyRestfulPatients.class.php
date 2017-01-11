@@ -58,9 +58,14 @@ class HedleyRestfulPatients extends RestfulEntityBaseMultipleBundles {
     $handlers = [];
     $resources_info = $this->getBundles();
 
-    foreach ($entities as $entity) {
+    foreach ($entities as $entity_id => $entity) {
       // Call each handler by its registered bundle.
       list($id,, $bundle) = entity_extract_ids($this->getEntityType(), $entity);
+
+      if (empty($resources_info[$bundle])) {
+        throw new RestfulBadRequestException(format_string('@id ID is not a valid Child or Mother.', ['@id' => $entity_id]));
+      }
+
       if (empty($handlers[$bundle])) {
         $version = $this->getVersion();
         $handlers[$bundle] = restful_get_restful_handler($resources_info[$bundle], $version['major'], $version['minor']);
