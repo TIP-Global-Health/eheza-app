@@ -7,7 +7,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Pages.Patients.Model exposing (Model, Msg(..), PatientFilter(..))
-import Patient.Model exposing (Patient, PatientId, PatientType, PatientsDict)
+import Patient.Model exposing (Patient, PatientId, PatientType(..), PatientsDict)
 import Patient.Utils exposing (getPatientName)
 import Table exposing (..)
 import User.Model exposing (User)
@@ -21,8 +21,33 @@ view currentDate currentUser patients model =
 
         acceptablePatients =
             Dict.filter
-                (\patientId patientType ->
-                    String.contains lowerQuery (String.toLower <| getPatientName patientType)
+                (\patientId patient ->
+                    let
+                        validName =
+                            String.contains lowerQuery (String.toLower <| getPatientName patient)
+
+                        validType =
+                            case model.patientFilter of
+                                All ->
+                                    True
+
+                                Child ->
+                                    case patient.info of
+                                        PatientChild _ ->
+                                            True
+
+                                        _ ->
+                                            False
+
+                                Mother ->
+                                    case patient.info of
+                                        PatientMother _ ->
+                                            True
+
+                                        _ ->
+                                            False
+                    in
+                        validName && validType
                 )
                 patients
                 |> Dict.toList
