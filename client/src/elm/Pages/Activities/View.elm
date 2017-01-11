@@ -24,7 +24,7 @@ view currentDate user patients =
 
         pendingActivitiesView =
             if List.isEmpty pendingActivities then
-                div [] [ text "No pending activities" ]
+                div [] []
             else
                 div [] (List.map viewActivity pendingActivities)
 
