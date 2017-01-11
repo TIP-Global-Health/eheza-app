@@ -61,7 +61,11 @@ viewPagePatient currentDate id user model =
         Success patient ->
             case patient.info of
                 PatientChild child ->
-                    div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewChild currentDate user id child ]
+                    let
+                        motherWebData =
+                            getPatient child.motherId model
+                    in
+                        div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewChild currentDate user id child motherWebData ]
 
                 PatientMother mother ->
                     div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewMother currentDate user id mother ]
