@@ -11,6 +11,6 @@ type alias MotherId =
 
 type alias Mother =
     { name : String
-    , icon : String
+    , image : String
     , children : List ChildId
     }
