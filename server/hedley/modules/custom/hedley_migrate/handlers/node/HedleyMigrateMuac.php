@@ -26,7 +26,6 @@ class HedleyMigrateMuac extends HedleyMigrateBase {
     $column_names = [
       'title',
       'field_child',
-      'field_date',
       'field_activity_status',
       'field_middle_circumference',
       'field_upper_circumference',
@@ -67,8 +66,6 @@ class HedleyMigrateMuac extends HedleyMigrateBase {
     $this->addFieldMapping('field_child', 'field_child')
       ->sourceMigration('HedleyMigrateChild');
 
-    $this->addFieldMapping('field_date', 'field_date')
-      ->callbacks([$this, 'dateProcess']);
   }
 
 }

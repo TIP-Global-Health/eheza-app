@@ -26,6 +26,7 @@ class HedleyMigrateChild extends HedleyMigrateBase {
 
     $column_names = [
       'title',
+      'field_mother',
     ];
 
     $columns = [];
