@@ -3,12 +3,6 @@ module Activity.Model exposing (..)
 import Date exposing (Date)
 
 
-type alias ActivityIdentity =
-    { name : String
-    , icon : String
-    }
-
-
 type ActivityType
     = Child ChildActivityType
     | Mother MotherActivityType
@@ -32,12 +26,6 @@ type MotherActivityType
     | NutritionSigns
 
 
-type alias ActivityReport =
-    { activity : ActivityIdentity
-    , remaining : Int
-    }
-
-
 type alias ChildActivityDates =
     { childPicture : Maybe Date
     , height : Maybe Date
@@ -47,7 +35,19 @@ type alias ChildActivityDates =
     }
 
 
-activityList : List ActivityReport
+type alias ActivityIdentity =
+    { name : String
+    , icon : String
+    }
+
+
+type alias ActivityListItem =
+    { activity : ActivityIdentity
+    , remaining : Int
+    }
+
+
+activityList : List ActivityListItem
 activityList =
     [ { activity =
             { name = "Weight"
