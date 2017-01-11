@@ -120,17 +120,35 @@ update currentDate backendUrl accessToken user msg model =
                 updatedModel =
                     { model | patients = Dict.insert patientId (Success patient) model.patients }
             in
-                -- @todo: Lazy load only when we are fetching a Patient page.
                 case patient.info of
                     PatientChild child ->
                         -- Lazy load the Mother of the child.
                         update currentDate backendUrl accessToken user (Subscribe child.motherId) updatedModel
 
                     PatientMother mother ->
-                        ( updatedModel
-                        , Cmd.none
-                        , Nothing
-                        )
+                        let
+                            ( modelUpdatedAfterFetchingChildren, cmdsAfterFetchingChildren ) =
+                                List.foldl
+                                    (\childId accum ->
+                                        let
+                                            model =
+                                                Tuple.first accum
+
+                                            cmds =
+                                                Tuple.second accum
+
+                                            ( newModel, newCmds, _ ) =
+                                                update currentDate backendUrl accessToken user (Subscribe childId) model
+                                        in
+                                            ( newModel, [ newCmds ] ++ cmds )
+                                    )
+                                    ( updatedModel, [] )
+                                    mother.children
+                        in
+                            ( modelUpdatedAfterFetchingChildren
+                            , Cmd.batch cmdsAfterFetchingChildren
+                            , Nothing
+                            )
 
         HandleFetchedPatient patientId (Err err) ->
             ( { model | patients = Dict.insert patientId (Failure err) model.patients }
