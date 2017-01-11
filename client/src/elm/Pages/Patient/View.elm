@@ -12,7 +12,6 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Mother.Model exposing (Mother, MotherId)
 import Pages.Patient.Model exposing (Msg(..))
-import Patient.Model exposing (PatientId, Patient, PatientType(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import User.Model exposing (User)
 
@@ -58,18 +57,18 @@ viewChild currentDate currentUser childId child motherWebData =
             ]
 
 
-viewMother : Date -> User -> MotherId -> Mother -> List (WebData Child) -> Html Msg
+viewMother : Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Html Msg
 viewMother currentDate currentUser motherId mother children =
     let
         childrenInfo =
             (List.map
                 (\childWebData ->
                     case childWebData of
-                        Success child ->
+                        Success ( childId, child ) ->
                             li []
                                 [ a
                                     [ href "#"
-                                      -- , onClick <| SetRedirectPage (App.PageType.Patient child.motherId)
+                                    , onClick <| SetRedirectPage (App.PageType.Patient childId)
                                     ]
                                     [ text child.name ]
                                 ]
