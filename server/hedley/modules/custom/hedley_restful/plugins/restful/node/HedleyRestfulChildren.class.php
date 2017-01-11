@@ -16,7 +16,12 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $field_names = [];
+    $field_names = [
+      'field_date_height',
+      'field_date_muac',
+      'field_date_picture',
+      'field_date_weight',
+    ];
 
     $public_fields['type'] = [
       'callback' => 'static::getType',
@@ -41,6 +46,18 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
       'property' => 'nid',
       'process_callbacks' => [
         [$this, 'getMother'],
+      ],
+    ];
+
+    $public_fields['mother'] = [
+      'property' => 'field_mother',
+      'resource' => [
+        // Bundle name.
+        'mother' => [
+          // Resource name.
+          'name' => 'mothers',
+          'full_view' => FALSE,
+        ],
       ],
     ];
 

@@ -20,7 +20,10 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       'callback' => 'static::getType',
     ];
 
-    $field_names = [];
+    $field_names = [
+      'field_date_family_planning',
+      'field_date_picture',
+    ];
 
     foreach ($field_names as $field_name) {
       $public_name = str_replace('field_', '', $field_name);
@@ -35,18 +38,6 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
         [$this, 'imageProcess'],
       ],
       'image_styles' => ['large', 'thumbnail'],
-    ];
-
-    $public_fields['children'] = [
-      'property' => 'field_children',
-      'resource' => [
-        // Bundle name.
-        'child' => [
-          // Resource name.
-          'name' => 'children',
-          'full_view' => FALSE,
-        ],
-      ],
     ];
 
     return $public_fields;
