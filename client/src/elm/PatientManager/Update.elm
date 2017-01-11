@@ -4,7 +4,7 @@ import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict exposing (Dict)
-import Patient.Model exposing (Patient, PatientId)
+import Patient.Model exposing (Patient, PatientId, PatientType(..))
 import PatientManager.Decoder exposing (decodePatientFromResponse, decodePatientsFromResponse)
 import PatientManager.Model exposing (..)
 import PatientManager.Utils exposing (..)
@@ -50,8 +50,14 @@ update currentDate backendUrl accessToken user msg model =
                         , Nothing
                         )
 
-                Success _ ->
-                    ( model, Cmd.none, Nothing )
+                Success patient ->
+                    case patient.info of
+                        PatientChild child ->
+                            -- Lazy load the Mother of the child.
+                            update currentDate backendUrl accessToken user (Subscribe child.motherId) model
+
+                        PatientMother mother ->
+                            ( model, Cmd.none, Nothing )
 
         Unsubscribe id ->
             ( { model | patients = Dict.remove id model.patients }
