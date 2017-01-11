@@ -1,8 +1,8 @@
-title,field_child,field_date,field_activity_status,field_middle_circumference,field_upper_circumference,field_arm_circumference
-muac1,Fabrice,-1 month,pending,30,25,7
-muac2,Gratien,-1 month,completed,25,21,6
-muac3,Gratien,today,pending,30,24,6
-muac4,Ngarambe,-1 month,completed,34,23,5
-muac5,Ngarambe,today,pending,26,21,6
-muac6,Emmy,-1 week,completed,32,30,7
-muac7,Aya,-2 month,completed,21,19,6
+title,field_child,field_activity_status,field_middle_circumference,field_upper_circumference,field_arm_circumference
+muac1,Fabrice,pending,30,25,7
+muac2,Gratien,completed,25,21,6
+muac3,Gratien,pending,30,24,6
+muac4,Ngarambe,completed,34,23,5
+muac5,Ngarambe,pending,26,21,6
+muac6,Emmy,completed,32,30,7
+muac7,Aya,completed,21,19,6
