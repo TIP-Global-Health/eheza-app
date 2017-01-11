@@ -112,7 +112,7 @@ config =
                     \( patientId, patient ) ->
                         Table.HtmlDetails []
                             [ a [ href "#", onClick <| SetRedirectPage <| App.PageType.Patient patientId ]
-                                [ img [ src <| getPatientAvatarThumb patient ] []
+                                [ img [ src <| getPatientAvatarThumb patient, class "ui avatar image" ] []
                                 , text <| getPatientName patient
                                 ]
                             ]
