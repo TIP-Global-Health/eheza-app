@@ -7,6 +7,7 @@ module Utils.Json
         , decodeInt
         , decodeListAsDict
         , decodeListAsDictByProperty
+        , decodeNullAsEmptyArray
         )
 
 import Date exposing (Date)
@@ -92,4 +93,18 @@ decodeListAsDictByProperty property keyDecoder valDecoder stringFunc =
                 List.map (\( id, value ) -> ( stringFunc id, value )) valList
                     |> Dict.fromList
                     |> succeed
+            )
+
+
+decodeNullAsEmptyArray : Decoder (List a)
+decodeNullAsEmptyArray =
+    (nullable <| list value)
+        |> andThen
+            (\val ->
+                case val of
+                    Nothing ->
+                        succeed []
+
+                    Just res ->
+                        fail <| "Expected Null, not an array with length: " ++ (toString <| List.length res)
             )

@@ -12,5 +12,5 @@ type alias MotherId =
 type alias Mother =
     { name : String
     , image : String
-    , children : Maybe (List ChildId)
+    , children : List ChildId
     }
