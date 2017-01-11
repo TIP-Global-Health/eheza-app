@@ -57,11 +57,11 @@ getActivityTypeList =
 @todo: Check Date, not just "pending"
 -}
 getActivityList : Date -> PatientsDict -> List ActivityListItem
-getActivityList currentDate pateints =
+getActivityList currentDate patients =
     List.map
         (\activityType ->
             { activity = getActivityNameAndIcon activityType
-            , remaining = getPendingNumberPerActivity activityType pateints
+            , remaining = getPendingNumberPerActivity activityType patients
             }
         )
         getActivityTypeList
