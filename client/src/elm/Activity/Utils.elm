@@ -1,6 +1,7 @@
 module Activity.Utils
     exposing
-        ( getActivityNameAndIcon
+        ( getActivityList
+        , getActivityNameAndIcon
         , getPendingNumberPerActivity
         )
 
@@ -32,6 +33,24 @@ getActivityDict currentDate pateints =
         pateints
 
 
+getActivityTypeList : List ActivityType
+getActivityTypeList =
+    [ Activity.Model.Child ChildPicture
+    , Activity.Model.Child Height
+    , Activity.Model.Child Muac
+    , Activity.Model.Child ProgressReport
+    , Activity.Model.Child Weight
+      -- Mother
+    , Activity.Model.Mother Aheza
+    , Activity.Model.Mother Attendance
+    , Activity.Model.Mother Education
+    , Activity.Model.Mother FamilyPlanning
+    , Activity.Model.Mother Hiv
+    , Activity.Model.Mother MotherPicture
+    , Activity.Model.Mother NutritionSigns
+    ]
+
+
 {-| Get the pending and completed activities.
 
 @todo: Add also "future"?
@@ -39,73 +58,13 @@ getActivityDict currentDate pateints =
 -}
 getActivityList : Date -> PatientsDict -> List ActivityListItem
 getActivityList currentDate pateints =
-    [ { activity =
-            { name = "Weight"
-            , icon = "law"
+    List.map
+        (\activityType ->
+            { activity = getActivityNameAndIcon activityType
+            , remaining = getPendingNumberPerActivity activityType pateints
             }
-      , remaining = 3
-      }
-    , { activity =
-            { name = "Height"
-            , icon = "line chart"
-            }
-      , remaining = 2
-      }
-    , { activity =
-            { name = "MUAC"
-            , icon = "treatment"
-            }
-      , remaining = 4
-      }
-    , { activity =
-            { name = "Education"
-            , icon = "student"
-            }
-      , remaining = 5
-      }
-    , { activity =
-            { name = "Nutrition signs"
-            , icon = "heartbeat"
-            }
-      , remaining = 4
-      }
-    , { activity =
-            { name = "Aheza"
-            , icon = "food"
-            }
-      , remaining = 7
-      }
-    , { activity =
-            { name = "Family planning"
-            , icon = "users"
-            }
-      , remaining = 4
-      }
-    , { activity =
-            { name = "HIV"
-            , icon = "doctor"
-            }
-      , remaining = 4
-      }
-    , { activity =
-            { name = "Attendance"
-            , icon = "thumbs outline up"
-            }
-      , remaining = 0
-      }
-    , { activity =
-            { name = "Take pictures"
-            , icon = "photo"
-            }
-      , remaining = 0
-      }
-    , { activity =
-            { name = "Progress reports"
-            , icon = "bar chart"
-            }
-      , remaining = 0
-      }
-    ]
+        )
+        getActivityTypeList
 
 
 getActivityNameAndIcon : ActivityType -> ActivityIdentity
@@ -114,42 +73,42 @@ getActivityNameAndIcon activityType =
         Child childActivityType ->
             case childActivityType of
                 ChildPicture ->
-                    ActivityIdentity "" ""
+                    ActivityIdentity "Take pictures (Child)" "photo"
 
                 Height ->
-                    ActivityIdentity "" ""
+                    ActivityIdentity "Height" "line chart"
 
                 Weight ->
-                    ActivityIdentity "" ""
+                    ActivityIdentity "Weight" "law"
 
                 Muac ->
-                    ActivityIdentity "" ""
+                    ActivityIdentity "MUAC" "treatment"
 
                 ProgressReport ->
-                    ActivityIdentity "" ""
+                    ActivityIdentity "Progress reports" "bar chart"
 
         Mother motherActivityType ->
             case motherActivityType of
                 Aheza ->
-                    ActivityIdentity "" ""
+                    ActivityIdentity "Aheza" "food"
 
                 Attendance ->
-                    ActivityIdentity "" ""
+                    ActivityIdentity "Attendance" "thumbs outline up"
 
                 Education ->
-                    ActivityIdentity "" ""
+                    ActivityIdentity "Education" "student"
 
                 FamilyPlanning ->
-                    ActivityIdentity "" ""
+                    ActivityIdentity "Family planning" "users"
 
                 Hiv ->
-                    ActivityIdentity "" ""
+                    ActivityIdentity "HIV" "doctor"
 
                 MotherPicture ->
-                    ActivityIdentity "" ""
+                    ActivityIdentity "Take pictures (Mother)" "photo"
 
                 NutritionSigns ->
-                    ActivityIdentity "" ""
+                    ActivityIdentity "Nutrition signs" "heartbeat"
 
 
 getPendingNumberPerActivity : ActivityType -> PatientsDict -> Int

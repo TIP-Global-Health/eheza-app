@@ -11,9 +11,9 @@ type ActivityType
 type ChildActivityType
     = ChildPicture
     | Height
-    | Weight
     | Muac
     | ProgressReport
+    | Weight
 
 
 type MotherActivityType

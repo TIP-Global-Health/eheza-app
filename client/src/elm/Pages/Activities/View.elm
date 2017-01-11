@@ -1,14 +1,17 @@
 module Pages.Activities.View exposing (view)
 
+import Activity.Utils exposing (getActivityList)
+import Date exposing (Date)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import List as List
+import Patient.Model exposing (PatientsDict)
 import Pages.Activities.Model exposing (ActivityReport, activityList)
 import Pages.Activities.Utils exposing (isActivityOpen, isActivityCompleted)
 
 
-view : Html a
-view =
+view : Date -> PatientsDict -> Html a
+view currentDate patients =
     let
         model =
             activityList
