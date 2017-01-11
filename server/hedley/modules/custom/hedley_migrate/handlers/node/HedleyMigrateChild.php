@@ -20,6 +20,7 @@ class HedleyMigrateChild extends HedleyMigrateBase {
     parent::__construct($arguments);
     $this->description = t('Import Children from the CSV.');
     $this->dependencies = [
+      'HedleyMigrateMother',
       'HedleyMigrateUsers',
     ];
 
@@ -53,6 +54,9 @@ class HedleyMigrateChild extends HedleyMigrateBase {
     ]);
 
     $this->addSimpleMappings($simple_fields);
+
+    $this->addFieldMapping('field_mother', 'field_mother')
+      ->sourceMigration('HedleyMigrateMother');
 
     // Map the file name to the title.
     $this->addFieldMapping('field_avatar', 'title')

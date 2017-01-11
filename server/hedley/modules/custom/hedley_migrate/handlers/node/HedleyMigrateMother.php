@@ -21,12 +21,10 @@ class HedleyMigrateMother extends HedleyMigrateBase {
     $this->description = t('Import Mothers from the CSV.');
     $this->dependencies = [
       'HedleyMigrateUsers',
-      'HedleyMigrateChild',
     ];
 
     $column_names = [
       'title',
-      'field_children',
     ];
 
     $columns = [];
@@ -65,9 +63,6 @@ class HedleyMigrateMother extends HedleyMigrateBase {
 
     $this->addFieldMapping('field_avatar:source_dir')
       ->defaultValue($this->getMigrateDirectory() . '/images/');
-
-    $this->addFieldMapping('field_children', 'field_children')
-      ->sourceMigration('HedleyMigrateChild');
 
     $this->addFieldMapping('uid', 'author')
       ->sourceMigration('HedleyMigrateUsers')
