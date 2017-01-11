@@ -47,12 +47,13 @@ viewChild currentDate currentUser childId child motherWebData =
                     [ class "ui header" ]
                     [ text child.name ]
                 ]
-            , div []
+            , div [ class "ui card" ]
                 [ img [ src child.image ] []
+                , div [ class "content" ] [ motherInfo ]
                 ]
             , div
                 [ class "ui divider" ]
-                [ motherInfo ]
+                []
             ]
 
 
