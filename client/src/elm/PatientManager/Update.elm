@@ -50,14 +50,8 @@ update currentDate backendUrl accessToken user msg model =
                         , Nothing
                         )
 
-                Success patient ->
-                    case patient.info of
-                        PatientChild child ->
-                            -- Lazy load the Mother of the child.
-                            update currentDate backendUrl accessToken user (Subscribe child.motherId) model
-
-                        PatientMother mother ->
-                            ( model, Cmd.none, Nothing )
+                Success _ ->
+                    ( model, Cmd.none, Nothing )
 
         Unsubscribe id ->
             ( { model | patients = Dict.remove id model.patients }
@@ -126,10 +120,17 @@ update currentDate backendUrl accessToken user msg model =
                 updatedModel =
                     { model | patients = Dict.insert patientId (Success patient) model.patients }
             in
-                ( updatedModel
-                , Cmd.none
-                , Nothing
-                )
+                -- @todo: Lazy load only when we are fetching a Patient page.
+                case patient.info of
+                    PatientChild child ->
+                        -- Lazy load the Mother of the child.
+                        update currentDate backendUrl accessToken user (Subscribe child.motherId) updatedModel
+
+                    PatientMother mother ->
+                        ( updatedModel
+                        , Cmd.none
+                        , Nothing
+                        )
 
         HandleFetchedPatient patientId (Err err) ->
             ( { model | patients = Dict.insert patientId (Failure err) model.patients }
