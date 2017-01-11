@@ -45,15 +45,12 @@ class HedleyRestfulPatients extends RestfulEntityBaseMultipleBundles {
     // Use the correct RESTful resource to view the IDs.
     // See \RestfulEntityBaseMultipleBundles::getList().
     // @todo: Move this into RESTful.
-
     $account = $this->getAccount();
     $request = $this->getRequest();
 
     // Pre-load all entities.
     $entity_type = $this->entityType;
     $entities = entity_load($entity_type, $ids);
-
-    $return = [];
 
     $handlers = [];
     $resources_info = $this->getBundles();
