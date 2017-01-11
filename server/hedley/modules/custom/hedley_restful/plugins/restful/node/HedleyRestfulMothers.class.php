@@ -20,12 +20,10 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       'callback' => 'static::getType',
     ];
 
-    $field_names = [
-      'field_date_family_planning',
-      'field_date_picture',
+    $date_field_names = [
     ];
 
-    foreach ($field_names as $field_name) {
+    foreach ($date_field_names as $field_name) {
       $public_name = str_replace('field_', '', $field_name);
       $public_fields[$public_name] = [
         'property' => $field_name,
@@ -39,6 +37,20 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       ],
       'image_styles' => ['large', 'thumbnail'],
     ];
+
+    foreach (array_keys(field_info_instances($this->getEntityType(), $this->getBundle())) as $field_name) {
+      if (strpos($field_name, 'field_date') !== 0) {
+        // Not a date field.
+        continue;
+      }
+      $public_name = str_replace('field_', '', $field_name);
+      $public_fields[$public_name] = [
+        'property' => $field_name,
+        'process_callbacks' => [
+          [$this, 'convertTimestampToIso8601'],
+        ],
+      ];
+    }
 
     return $public_fields;
   }

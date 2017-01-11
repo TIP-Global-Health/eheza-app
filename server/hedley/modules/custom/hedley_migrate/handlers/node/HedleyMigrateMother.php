@@ -25,6 +25,8 @@ class HedleyMigrateMother extends HedleyMigrateBase {
 
     $column_names = [
       'title',
+      'field_date_family_planning',
+      'field_date_picture',
     ];
 
     $columns = [];
@@ -53,6 +55,12 @@ class HedleyMigrateMother extends HedleyMigrateBase {
     ]);
 
     $this->addSimpleMappings($simple_fields);
+
+    $this->addDateFields([
+      'field_date_family_planning',
+      'field_date_picture',
+    ]);
+
 
     // Map the file name to the title.
     $this->addFieldMapping('field_avatar', 'title')
