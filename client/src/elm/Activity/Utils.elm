@@ -171,28 +171,35 @@ hasPendingChildActivity currentDate childActivityType child =
             |> Maybe.withDefault False
 
 
-{-| @todo: Implement
--}
 hasPendingMotherActivity : Date -> MotherActivityType -> Mother -> Bool
 hasPendingMotherActivity currentDate motherActivityType mother =
-    case motherActivityType of
-        Aheza ->
-            False
+    let
+        property =
+            case motherActivityType of
+                Aheza ->
+                    .aheza
 
-        Attendance ->
-            False
+                Attendance ->
+                    .attendance
 
-        Education ->
-            False
+                Education ->
+                    .education
 
-        FamilyPlanning ->
-            False
+                FamilyPlanning ->
+                    .familyPlanning
 
-        Hiv ->
-            False
+                Hiv ->
+                    .hiv
 
-        MotherPicture ->
-            False
+                MotherPicture ->
+                    .motherPicture
 
-        NutritionSigns ->
-            False
+                NutritionSigns ->
+                    .nutritionSigns
+    in
+        Maybe.map
+            (\date ->
+                Date.toTime date <= Date.toTime currentDate
+            )
+            (mother.activityDates |> property)
+            |> Maybe.withDefault False
