@@ -52,6 +52,13 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       ];
     }
 
+    $public_fields['children'] = [
+      'property' => 'nid',
+      'process_callbacks' => [
+        [$this, 'getChildren'],
+      ],
+    ];
+
     return $public_fields;
   }
 
@@ -63,6 +70,29 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
    */
   protected static function getType() {
     return 'mother';
+  }
+
+  /**
+   * Get the Child(s) node IDs.
+   *
+   * @param int $nid
+   *   The Mother node Id.
+   *
+   * @return array
+   *   Array with the children node IDs.
+   */
+  protected function getChildren($nid) {
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'child')
+      ->fieldCondition('field_mother', 'target_id', $nid)
+      ->propertyCondition('status', NODE_PUBLISHED)
+      // Prevent any abuse.
+      ->range(0, 50)
+      ->execute();
+
+    return !empty($result['node']) ? array_keys($result['node']) : [];
   }
 
 }
