@@ -12,5 +12,5 @@ decodeChild : Decoder Child
 decodeChild =
     decode Child
         |> required "label" string
-        |> optionalAt [ "image", "styles", "large" ] string "http://placehold.it/350x150"
+        |> optionalAt [ "avatar", "styles", "large" ] string "http://placehold.it/350x150"
         |> required "mother" string
