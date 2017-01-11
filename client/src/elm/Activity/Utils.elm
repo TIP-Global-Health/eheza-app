@@ -167,7 +167,7 @@ hasPendingChildActivity currentDate childActivityType child =
             (\date ->
                 Date.toTime date <= Date.toTime currentDate
             )
-            (child.childActivityDates |> property)
+            (child.activityDates |> property)
             |> Maybe.withDefault False
 
 

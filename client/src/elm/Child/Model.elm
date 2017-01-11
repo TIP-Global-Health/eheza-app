@@ -15,5 +15,5 @@ type alias Child =
     { name : String
     , image : String
     , motherId : Maybe MotherId
-    , childActivityDates : ChildActivityDates
+    , activityDates : ChildActivityDates
     }

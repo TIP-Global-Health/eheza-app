@@ -35,6 +35,17 @@ type alias ChildActivityDates =
     }
 
 
+type alias MotherActivityDates =
+    { aheza : Maybe Date
+    , attendance : Maybe Date
+    , education : Maybe Date
+    , familyPlanning : Maybe Date
+    , hiv : Maybe Date
+    , motherPicture : Maybe Date
+    , nutritionSigns : Maybe Date
+    }
+
+
 type alias ActivityIdentity =
     { name : String
     , icon : String
