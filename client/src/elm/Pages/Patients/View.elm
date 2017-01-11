@@ -6,7 +6,7 @@ import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
-import Pages.Patients.Model exposing (Model, Msg(..))
+import Pages.Patients.Model exposing (Model, Msg(..), PatientFilter(..))
 import Patient.Model exposing (Patient, PatientId, PatientType, PatientsDict)
 import Patient.Utils exposing (getPatientName)
 import Table exposing (..)
@@ -46,9 +46,33 @@ view currentDate currentUser patients model =
                     , onInput SetQuery
                     ]
                     []
+                , viewPatientFilter model
                 ]
             , searchResult
             ]
+
+
+viewPatientFilter : Model -> Html Msg
+viewPatientFilter model =
+    div []
+        [ select
+            [ class "ui dropdown"
+              -- , value model.patientFilter
+            ]
+            [ option
+                [ onClick <| SetPatientFilter All
+                ]
+                [ text "All" ]
+            , option
+                [ onClick <| SetPatientFilter Child
+                ]
+                [ text "Children" ]
+            , option
+                [ onClick <| SetPatientFilter Mother
+                ]
+                [ text "Mothers" ]
+            ]
+        ]
 
 
 config : Table.Config ( PatientId, Patient ) Msg

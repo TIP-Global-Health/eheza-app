@@ -5,19 +5,28 @@ import Table
 
 
 type alias Model =
-    { tableState : Table.State
+    { patientFilter : PatientFilter
     , query : String
+    , tableState : Table.State
     }
 
 
+type PatientFilter
+    = Child
+    | Mother
+    | All
+
+
 type Msg
-    = SetRedirectPage Page
+    = SetPatientFilter PatientFilter
+    | SetRedirectPage Page
     | SetTableState Table.State
     | SetQuery String
 
 
 emptyModel : Model
 emptyModel =
-    { tableState = Table.initialSort "Name"
+    { patientFilter = All
     , query = ""
+    , tableState = Table.initialSort "Name"
     }

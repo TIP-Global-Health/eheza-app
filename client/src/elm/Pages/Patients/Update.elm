@@ -10,6 +10,12 @@ import Patient.Model exposing (PatientsDict)
 update : BackendUrl -> String -> User -> Msg -> PatientsDict -> Model -> ( Model, Cmd Msg, Maybe Page )
 update backendUrl accessToken user msg patients model =
     case msg of
+        SetPatientFilter patientFilter ->
+            ( { model | patientFilter = patientFilter }
+            , Cmd.none
+            , Nothing
+            )
+
         SetRedirectPage page ->
             ( model, Cmd.none, Just page )
 
