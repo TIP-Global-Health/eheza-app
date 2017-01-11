@@ -122,11 +122,13 @@ update currentDate backendUrl accessToken user msg model =
             in
                 case patient.info of
                     PatientChild child ->
-                        -- Lazy load the Mother of the child.
+                        -- Lazy load the Mother.
                         update currentDate backendUrl accessToken user (Subscribe child.motherId) updatedModel
 
                     PatientMother mother ->
                         let
+                            -- Lazy load the Children, by iterating over the
+                            -- children IDs and fetching them.
                             ( modelUpdatedAfterFetchingChildren, cmdsAfterFetchingChildren ) =
                                 List.foldl
                                     (\childId accum ->
