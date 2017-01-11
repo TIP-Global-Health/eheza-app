@@ -1,15 +1,15 @@
 module Pages.Activities.Model exposing (ActivityIdentity, ActivityReport, activityList)
 
 
-type alias ActivityIdentity =
-    { name : String
-    , icon : String
-    }
-
-
 type alias ActivityReport =
     { activity : ActivityIdentity
     , remaining : Int
+    }
+
+
+type alias ActivityIdentity =
+    { name : String
+    , icon : String
     }
 
 
