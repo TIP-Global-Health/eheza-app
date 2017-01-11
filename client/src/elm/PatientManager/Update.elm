@@ -122,8 +122,13 @@ update currentDate backendUrl accessToken user msg model =
             in
                 case patient.info of
                     PatientChild child ->
-                        -- Lazy load the Mother.
-                        update currentDate backendUrl accessToken user (Subscribe child.motherId) updatedModel
+                        -- Lazy load the Mother if they are already connected.
+                        Maybe.map
+                            (\motherId ->
+                                update currentDate backendUrl accessToken user (Subscribe motherId) updatedModel
+                            )
+                            child.motherId
+                            |> Maybe.withDefault ( updatedModel, Cmd.none, Nothing )
 
                     PatientMother mother ->
                         let

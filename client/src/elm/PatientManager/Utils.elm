@@ -40,19 +40,24 @@ getChild childId patientWebData =
             Loading
 
 
-getMother : MotherId -> PatientManager.Model -> WebData Mother
-getMother motherId model =
-    case getPatient motherId model of
-        Success patient ->
-            case patient.info of
-                PatientMother mother ->
-                    Success mother
+getMother : Maybe MotherId -> PatientManager.Model -> WebData Mother
+getMother maybeMotherId model =
+    Maybe.map
+        (\motherId ->
+            case getPatient motherId model of
+                Success patient ->
+                    case patient.info of
+                        PatientMother mother ->
+                            Success mother
+
+                        _ ->
+                            NotAsked
 
                 _ ->
-                    NotAsked
-
-        _ ->
-            Loading
+                    Loading
+        )
+        maybeMotherId
+        |> Maybe.withDefault NotAsked
 
 
 getPatient : PatientId -> PatientManager.Model -> WebData Patient

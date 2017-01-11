@@ -1,5 +1,7 @@
 module Child.Model exposing (..)
 
+import Activity.Model exposing (ChildActivityDates)
+
 
 type alias ChildId =
     String
@@ -12,5 +14,6 @@ type alias MotherId =
 type alias Child =
     { name : String
     , image : String
-    , motherId : MotherId
+    , motherId : Maybe MotherId
+    , childActivityDates : ChildActivityDates
     }

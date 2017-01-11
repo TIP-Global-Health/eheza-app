@@ -1,5 +1,7 @@
 module Activity.Model exposing (..)
 
+import Date exposing (Date)
+
 
 type alias ActivityIdentity =
     { name : String
@@ -33,6 +35,15 @@ type MotherActivityType
 type alias ActivityReport =
     { activity : ActivityIdentity
     , remaining : Int
+    }
+
+
+type alias ChildActivityDates =
+    { childPicture : Maybe Date
+    , height : Maybe Date
+    , muac : Maybe Date
+    , progressReport : Maybe Date
+    , weight : Maybe Date
     }
 
 
