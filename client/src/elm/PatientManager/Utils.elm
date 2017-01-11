@@ -1,14 +1,58 @@
 module PatientManager.Utils
     exposing
-        ( getPatient
+        ( getChildren
+        , getMother
+        , getPatient
         , wrapPatientsDict
         , unwrapPatientsDict
         )
 
+import Child.Model exposing (Child, ChildId)
 import Dict exposing (Dict)
-import Patient.Model exposing (Patient, PatientId, PatientsDict)
+import Mother.Model exposing (Mother, MotherId)
+import Patient.Model exposing (Patient, PatientId, PatientType(..), PatientsDict)
 import PatientManager.Model as PatientManager
 import RemoteData exposing (RemoteData(..), WebData)
+
+
+getChildren : Mother -> PatientManager.Model -> List (WebData ( ChildId, Child ))
+getChildren mother model =
+    List.map
+        (\childId ->
+            getPatient childId model
+                |> getChild childId
+        )
+        mother.children
+
+
+getChild : ChildId -> WebData Patient -> WebData ( ChildId, Child )
+getChild childId patientWebData =
+    case patientWebData of
+        Success patient ->
+            case patient.info of
+                PatientChild child ->
+                    Success ( childId, child )
+
+                _ ->
+                    NotAsked
+
+        _ ->
+            Loading
+
+
+getMother : MotherId -> PatientManager.Model -> WebData Mother
+getMother motherId model =
+    case getPatient motherId model of
+        Success patient ->
+            case patient.info of
+                PatientMother mother ->
+                    Success mother
+
+                _ ->
+                    NotAsked
+
+        _ ->
+            Loading
 
 
 getPatient : PatientId -> PatientManager.Model -> WebData Patient

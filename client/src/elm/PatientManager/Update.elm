@@ -4,7 +4,7 @@ import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict exposing (Dict)
-import Patient.Model exposing (Patient, PatientId)
+import Patient.Model exposing (Patient, PatientId, PatientType(..))
 import PatientManager.Decoder exposing (decodePatientFromResponse, decodePatientsFromResponse)
 import PatientManager.Model exposing (..)
 import PatientManager.Utils exposing (..)
@@ -120,10 +120,37 @@ update currentDate backendUrl accessToken user msg model =
                 updatedModel =
                     { model | patients = Dict.insert patientId (Success patient) model.patients }
             in
-                ( updatedModel
-                , Cmd.none
-                , Nothing
-                )
+                case patient.info of
+                    PatientChild child ->
+                        -- Lazy load the Mother.
+                        update currentDate backendUrl accessToken user (Subscribe child.motherId) updatedModel
+
+                    PatientMother mother ->
+                        let
+                            -- Lazy load the Children, by iterating over the
+                            -- children IDs and fetching them.
+                            ( modelUpdatedAfterFetchingChildren, cmdsAfterFetchingChildren ) =
+                                List.foldl
+                                    (\childId accum ->
+                                        let
+                                            model =
+                                                Tuple.first accum
+
+                                            cmds =
+                                                Tuple.second accum
+
+                                            ( newModel, newCmds, _ ) =
+                                                update currentDate backendUrl accessToken user (Subscribe childId) model
+                                        in
+                                            ( newModel, [ newCmds ] ++ cmds )
+                                    )
+                                    ( updatedModel, [] )
+                                    mother.children
+                        in
+                            ( modelUpdatedAfterFetchingChildren
+                            , Cmd.batch cmdsAfterFetchingChildren
+                            , Nothing
+                            )
 
         HandleFetchedPatient patientId (Err err) ->
             ( { model | patients = Dict.insert patientId (Failure err) model.patients }

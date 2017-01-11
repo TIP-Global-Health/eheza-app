@@ -1,56 +1,110 @@
-module Pages.Patient.View exposing (view)
+module Pages.Patient.View
+    exposing
+        ( viewChild
+        , viewMother
+        )
 
+import App.PageType
 import Child.Model exposing (Child, ChildId)
 import Date exposing (Date)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
 import Mother.Model exposing (Mother, MotherId)
 import Pages.Patient.Model exposing (Msg(..))
-import Patient.Model exposing (PatientId, Patient, PatientType(..))
+import RemoteData exposing (RemoteData(..), WebData)
 import User.Model exposing (User)
 
 
-view : Date -> User -> PatientId -> Patient -> Html Msg
-view currentDate currentUser patientId patient =
-    case patient.info of
-        PatientChild child ->
-            viewChild currentDate currentUser patientId child
+viewChild : Date -> User -> ChildId -> Child -> WebData Mother -> Html Msg
+viewChild currentDate currentUser childId child motherWebData =
+    let
+        motherInfo =
+            case motherWebData of
+                Success mother ->
+                    div []
+                        [ text <| "Mother: "
+                        , a
+                            [ href "#"
+                            , onClick <| SetRedirectPage (App.PageType.Patient child.motherId)
+                            ]
+                            [ text mother.name ]
+                        ]
 
-        PatientMother mother ->
-            viewMother currentDate currentUser patientId mother
+                Loading ->
+                    div []
+                        [ text <| "Mother: "
+                        , i [ class "icon loading spinner" ] []
+                        ]
 
-
-viewChild : Date -> User -> ChildId -> Child -> Html Msg
-viewChild currentDate currentUser childId child =
-    div []
-        [ div
-            [ class "ui secondary pointing fluid menu" ]
-            [ h1
-                [ class "ui header" ]
-                [ text child.name ]
+                _ ->
+                    div [] []
+    in
+        div []
+            [ div
+                [ class "ui secondary pointing fluid menu" ]
+                [ h1
+                    [ class "ui header" ]
+                    [ text child.name ]
+                ]
+            , div [ class "ui card" ]
+                [ img [ src child.image ] []
+                , div [ class "content" ] [ motherInfo ]
+                ]
+            , div
+                [ class "ui divider" ]
+                []
             ]
-        , div []
-            [ img [ src child.image ] []
-            ]
-        , div
-            [ class "ui divider" ]
-            [ text <| "Mother ID: " ++ child.motherId ]
-        ]
 
 
-viewMother : Date -> User -> MotherId -> Mother -> Html Msg
-viewMother currentDate currentUser motherId mother =
-    div []
-        [ div
-            [ class "ui secondary pointing fluid menu" ]
-            [ h1
-                [ class "ui header" ]
-                [ text mother.name ]
+viewMother : Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Html Msg
+viewMother currentDate currentUser motherId mother children =
+    let
+        childrenInfo =
+            (List.map
+                (\childWebData ->
+                    case childWebData of
+                        Success ( childId, child ) ->
+                            li []
+                                [ a
+                                    [ href "#"
+                                    , onClick <| SetRedirectPage (App.PageType.Patient childId)
+                                    ]
+                                    [ text child.name ]
+                                ]
+
+                        Loading ->
+                            li []
+                                [ i [ class "icon loading spinner" ] []
+                                ]
+
+                        _ ->
+                            div [] []
+                )
+                children
+            )
+
+        childrenList =
+            if List.isEmpty mother.children then
+                div [] [ text "No children registered in the system" ]
+            else
+                div []
+                    [ text <| "Children: "
+                    , ul [] childrenInfo
+                    ]
+    in
+        div []
+            [ div
+                [ class "ui secondary pointing fluid menu" ]
+                [ h1
+                    [ class "ui header" ]
+                    [ text mother.name ]
+                ]
+            , div []
+                [ img [ src mother.image ] []
+                ]
+            , div
+                [ class "ui divider" ]
+                []
+            , childrenList
             ]
-        , div []
-            [ img [ src mother.image ] []
-            ]
-        , div
-            [ class "ui divider" ]
-            []
-        ]

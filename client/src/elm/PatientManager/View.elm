@@ -4,16 +4,15 @@ module PatientManager.View
         , viewPatients
         )
 
-import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
-import Pages.Patient.View
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
+import Pages.Patient.View
 import Pages.Patients.View
-import Patient.Model exposing (PatientId, PatientsDict)
+import Patient.Model exposing (PatientId, PatientsDict, PatientType(..))
 import PatientManager.Model exposing (..)
-import PatientManager.Utils exposing (getPatient, unwrapPatientsDict)
+import PatientManager.Utils exposing (getChildren, getMother, getPatient, unwrapPatientsDict)
 import RemoteData exposing (RemoteData(..))
 import User.Model exposing (User)
 import Utils.WebData exposing (viewError)
@@ -60,5 +59,17 @@ viewPagePatient currentDate id user model =
                 ]
 
         Success patient ->
-            div []
-                [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.view currentDate user id patient ]
+            case patient.info of
+                PatientChild child ->
+                    let
+                        motherWebData =
+                            getMother child.motherId model
+                    in
+                        div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewChild currentDate user id child motherWebData ]
+
+                PatientMother mother ->
+                    let
+                        childrenWebData =
+                            getChildren mother model
+                    in
+                        div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewMother currentDate user id mother childrenWebData ]
