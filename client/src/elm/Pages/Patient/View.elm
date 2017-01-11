@@ -4,10 +4,12 @@ module Pages.Patient.View
         , viewMother
         )
 
+import App.PageType
 import Child.Model exposing (Child, ChildId)
 import Date exposing (Date)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
 import Mother.Model exposing (Mother, MotherId)
 import Pages.Patient.Model exposing (Msg(..))
 import Patient.Model exposing (PatientId, Patient, PatientType(..))
@@ -23,7 +25,14 @@ viewChild currentDate currentUser childId child motherWebData =
                 Success patient ->
                     case patient.info of
                         PatientMother mother ->
-                            div [] [ text mother.name ]
+                            div []
+                                [ text <| "Mother: "
+                                , a
+                                    [ href "#"
+                                    , onClick <| SetRedirectPage (App.PageType.Patient child.motherId)
+                                    ]
+                                    [ text mother.name ]
+                                ]
 
                         _ ->
                             div [] []
