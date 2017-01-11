@@ -8,7 +8,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Pages.Patients.Model exposing (Model, Msg(..), PatientFilter(..))
 import Patient.Model exposing (Patient, PatientId, PatientType(..), PatientsDict)
-import Patient.Utils exposing (getPatientName)
+import Patient.Utils exposing (getPatientAvatarThumb, getPatientName)
 import Table exposing (..)
 import User.Model exposing (User)
 
@@ -112,7 +112,9 @@ config =
                     \( patientId, patient ) ->
                         Table.HtmlDetails []
                             [ a [ href "#", onClick <| SetRedirectPage <| App.PageType.Patient patientId ]
-                                [ text <| getPatientName patient ]
+                                [ img [ src <| getPatientAvatarThumb patient ] []
+                                , text <| getPatientName patient
+                                ]
                             ]
                 , sorter = Table.increasingOrDecreasingBy <| Tuple.second >> getPatientName
                 }

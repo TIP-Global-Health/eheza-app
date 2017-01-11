@@ -1,9 +1,20 @@
 module Patient.Utils
     exposing
-        ( getPatientName
+        ( getPatientAvatarThumb
+        , getPatientName
         )
 
 import Patient.Model exposing (Patient, PatientType(..))
+
+
+getPatientAvatarThumb : Patient -> String
+getPatientAvatarThumb patient =
+    case patient.info of
+        PatientChild child ->
+            .image child
+
+        PatientMother mother ->
+            .image mother
 
 
 getPatientName : Patient -> String
