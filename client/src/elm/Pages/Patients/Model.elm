@@ -12,13 +12,13 @@ type alias Model =
 
 
 type PatientFilter
-    = Child
-    | Mother
-    | All
+    = All
+    | Children
+    | Mothers
 
 
 type Msg
-    = SetPatientFilter PatientFilter
+    = SetPatientFilter String
     | SetRedirectPage Page
     | SetTableState Table.State
     | SetQuery String

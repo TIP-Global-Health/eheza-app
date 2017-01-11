@@ -31,7 +31,7 @@ view currentDate currentUser patients model =
                                 All ->
                                     True
 
-                                Child ->
+                                Children ->
                                     case patient.info of
                                         PatientChild _ ->
                                             True
@@ -39,7 +39,7 @@ view currentDate currentUser patients model =
                                         _ ->
                                             False
 
-                                Mother ->
+                                Mothers ->
                                     case patient.info of
                                         PatientMother _ ->
                                             True
@@ -82,21 +82,17 @@ viewPatientFilter model =
     div []
         [ select
             [ class "ui dropdown"
-              -- , value model.patientFilter
+            , value <| toString model.patientFilter
+            , onInput SetPatientFilter
             ]
-            [ option
-                [ onClick <| SetPatientFilter All
-                ]
-                [ text "All" ]
-            , option
-                [ onClick <| SetPatientFilter Child
-                ]
-                [ text "Children" ]
-            , option
-                [ onClick <| SetPatientFilter Mother
-                ]
-                [ text "Mothers" ]
-            ]
+            (List.map
+                (\filterType ->
+                    option
+                        [ value <| toString filterType ]
+                        [ text <| toString filterType ]
+                )
+                [ All, Children, Mothers ]
+            )
         ]
 
 
