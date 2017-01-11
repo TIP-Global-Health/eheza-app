@@ -166,6 +166,10 @@ update msg model =
                     ( modelUpdated, command ) =
                         -- For a few, we also delegate some initialization
                         case activePage of
+                            Activities ->
+                                -- If we're showing a `Activities` page, make sure we `Subscribe`
+                                update (MsgPatientManager PatientManager.Model.FetchAll) model
+
                             Dashboard ->
                                 -- If we're showing a `Patients` page, make sure we `Subscribe`
                                 update (MsgPatientManager PatientManager.Model.FetchAll) model
