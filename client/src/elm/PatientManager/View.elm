@@ -1,6 +1,7 @@
 module PatientManager.View
     exposing
-        ( viewPagePatient
+        ( viewActivities
+        , viewPagePatient
         , viewPatients
         )
 
@@ -8,6 +9,7 @@ import Date exposing (Date)
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
+import Pages.Activities.View
 import Pages.Patient.View
 import Pages.Patients.View
 import Patient.Model exposing (PatientId, PatientsDict, PatientType(..))
@@ -73,3 +75,14 @@ viewPagePatient currentDate id user model =
                             getChildren mother model
                     in
                         div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewMother currentDate user id mother childrenWebData ]
+
+
+viewActivities : Date -> User -> Model -> Html Msg
+viewActivities currentDate user model =
+    let
+        patients =
+            unwrapPatientsDict model.patients
+    in
+        div []
+            [ Html.map MsgPagesActivities <| Pages.Activities.View.view currentDate user patients
+            ]

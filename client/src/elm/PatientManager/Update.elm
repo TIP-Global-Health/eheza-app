@@ -11,6 +11,7 @@ import PatientManager.Utils exposing (..)
 import Json.Decode exposing (decodeValue)
 import Json.Encode exposing (Value)
 import HttpBuilder exposing (get, withQueryParams)
+import Pages.Activities.Update
 import Pages.Patient.Update
 import Pages.Patients.Update
 import Pusher.Decoder exposing (decodePusherEvent)
@@ -65,6 +66,16 @@ update currentDate backendUrl accessToken user msg model =
                     fetchAllPatientsFromBackend backendUrl accessToken model
             in
                 ( val, cmds, Nothing )
+
+        MsgPagesActivities subMsg ->
+            let
+                ( subCmd, redirectPage ) =
+                    Pages.Activities.Update.update backendUrl accessToken user subMsg (unwrapPatientsDict model.patients)
+            in
+                ( model
+                , Cmd.map MsgPagesActivities subCmd
+                , redirectPage
+                )
 
         MsgPagesPatient id subMsg ->
             case getPatient id model of

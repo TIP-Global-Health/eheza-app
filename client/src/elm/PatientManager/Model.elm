@@ -2,6 +2,7 @@ module PatientManager.Model exposing (..)
 
 import Dict exposing (Dict)
 import Http
+import Pages.Activities.Model
 import Pages.Patient.Model
 import Pages.Patients.Model
 import Pusher.Model exposing (PusherEvent)
@@ -39,6 +40,7 @@ type Msg
     = Subscribe PatientId
     | Unsubscribe PatientId
     | FetchAll
+    | MsgPagesActivities Pages.Activities.Model.Msg
     | MsgPagesPatient PatientId Pages.Patient.Model.Msg
     | MsgPagesPatients Pages.Patients.Model.Msg
     | HandleFetchedPatient PatientId (Result Http.Error Patient)
