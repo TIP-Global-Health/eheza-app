@@ -61,7 +61,7 @@ getActivityList currentDate patients =
     List.map
         (\activityType ->
             { activity = getActivityNameAndIcon activityType
-            , remaining = getPendingNumberPerActivity activityType patients
+            , remaining = getPendingNumberPerActivity currentDate activityType patients
             }
         )
         getActivityTypeList
@@ -111,8 +111,8 @@ getActivityNameAndIcon activityType =
                     ActivityIdentity "Nutrition signs" "heartbeat"
 
 
-getPendingNumberPerActivity : ActivityType -> PatientsDict -> Int
-getPendingNumberPerActivity activityType patients =
+getPendingNumberPerActivity : Date -> ActivityType -> PatientsDict -> Int
+getPendingNumberPerActivity currentDate activityType patients =
     Dict.foldl
         (\_ patient accum ->
             let
@@ -121,7 +121,7 @@ getPendingNumberPerActivity activityType patients =
                         PatientChild child ->
                             case activityType of
                                 Child childActivityType ->
-                                    hasPendingChildActivity childActivityType child
+                                    hasPendingChildActivity currentDate childActivityType child
 
                                 _ ->
                                     False
@@ -129,7 +129,7 @@ getPendingNumberPerActivity activityType patients =
                         PatientMother mother ->
                             case activityType of
                                 Mother motherActivityType ->
-                                    hasPendingMotherActivity motherActivityType mother
+                                    hasPendingMotherActivity currentDate motherActivityType mother
 
                                 _ ->
                                     False
@@ -143,8 +143,8 @@ getPendingNumberPerActivity activityType patients =
         patients
 
 
-hasPendingChildActivity : ChildActivityType -> Child -> Bool
-hasPendingChildActivity childActivityType child =
+hasPendingChildActivity : Date -> ChildActivityType -> Child -> Bool
+hasPendingChildActivity currentDate childActivityType child =
     let
         property =
             case childActivityType of
@@ -165,8 +165,7 @@ hasPendingChildActivity childActivityType child =
     in
         Maybe.map
             (\date ->
-                -- @todo: Check date is now.
-                True
+                Date.toTime date <= Date.toTime currentDate
             )
             (child.childActivityDates |> property)
             |> Maybe.withDefault False
@@ -174,8 +173,8 @@ hasPendingChildActivity childActivityType child =
 
 {-| @todo: Implement
 -}
-hasPendingMotherActivity : MotherActivityType -> Mother -> Bool
-hasPendingMotherActivity motherActivityType mother =
+hasPendingMotherActivity : Date -> MotherActivityType -> Mother -> Bool
+hasPendingMotherActivity currentDate motherActivityType mother =
     case motherActivityType of
         Aheza ->
             False
