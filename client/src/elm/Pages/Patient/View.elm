@@ -13,7 +13,7 @@ view currentDate currentUser patientId patient =
     let
         -- @todo: move to Patient.View
         ( name, image ) =
-            case patient of
+            case patient.info of
                 PatientChild child ->
                     ( child.name
                     , child.image

@@ -7,7 +7,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Pages.Patients.Model exposing (Model, Msg(..))
-import Patient.Model exposing (Patient, PatientId, PatientsDict)
+import Patient.Model exposing (Patient, PatientId, PatientType, PatientsDict)
+import Patient.Utils exposing (getPatientName)
 import Table exposing (..)
 import User.Model exposing (User)
 
@@ -20,8 +21,8 @@ view currentDate currentUser patients model =
 
         acceptablePatients =
             Dict.filter
-                (\patientId patient ->
-                    (String.contains lowerQuery << String.toLower << .name) patient
+                (\patientId patientType ->
+                    String.contains lowerQuery (String.toLower <| getPatientName patientType)
                 )
                 patients
                 |> Dict.toList
@@ -62,9 +63,9 @@ config =
                     \( patientId, patient ) ->
                         Table.HtmlDetails []
                             [ a [ href "#", onClick <| SetRedirectPage <| App.PageType.Patient patientId ]
-                                [ text patient.name ]
+                                [ text <| getPatientName patient ]
                             ]
-                , sorter = Table.increasingOrDecreasingBy <| Tuple.second >> .name
+                , sorter = Table.increasingOrDecreasingBy <| Tuple.second >> getPatientName
                 }
             ]
         , customizations = { defaultCustomizations | tableAttrs = [ class "ui celled table" ] }
