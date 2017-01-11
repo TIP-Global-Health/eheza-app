@@ -44,7 +44,7 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
         'child' => [
           // Resource name.
           'name' => 'children',
-          'full_view' => TRUE,
+          'full_view' => FALSE,
         ],
       ],
     ];

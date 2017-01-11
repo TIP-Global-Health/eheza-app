@@ -13,4 +13,4 @@ decodeMother =
     decode Mother
         |> required "label" string
         |> optionalAt [ "image", "styles", "large" ] string "http://placehold.it/350x150"
-        |> required "children" (list string)
+        |> required "children" (nullable <| list string)
