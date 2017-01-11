@@ -58,19 +58,47 @@ viewChild currentDate currentUser childId child motherWebData =
             ]
 
 
-viewMother : Date -> User -> MotherId -> Mother -> Html Msg
-viewMother currentDate currentUser motherId mother =
-    div []
-        [ div
-            [ class "ui secondary pointing fluid menu" ]
-            [ h1
-                [ class "ui header" ]
-                [ text mother.name ]
+viewMother : Date -> User -> MotherId -> Mother -> WebData (List Child) -> Html Msg
+viewMother currentDate currentUser motherId mother childrenWebData =
+    let
+        childrenInfo =
+            case childrenWebData of
+                Success children ->
+                    div []
+                        [ text <| "Children: "
+                        , ul []
+                            (List.map
+                                (\child ->
+                                    a
+                                        [ href "#"
+                                          -- , onClick <| SetRedirectPage (App.PageType.Patient child.motherId)
+                                        ]
+                                        [ text child.name ]
+                                )
+                                children
+                            )
+                        ]
+
+                Loading ->
+                    div []
+                        [ text <| "Children: "
+                        , i [ class "icon loading spinner" ] []
+                        ]
+
+                _ ->
+                    div [] []
+    in
+        div []
+            [ div
+                [ class "ui secondary pointing fluid menu" ]
+                [ h1
+                    [ class "ui header" ]
+                    [ text mother.name ]
+                ]
+            , div []
+                [ img [ src mother.image ] []
+                ]
+            , div
+                [ class "ui divider" ]
+                []
             ]
-        , div []
-            [ img [ src mother.image ] []
-            ]
-        , div
-            [ class "ui divider" ]
-            []
-        ]
