@@ -9,7 +9,7 @@ import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Patient.Model exposing (PatientTypeFilter(..))
 
 
-viewPatientTypeFilter : (String -> msg) -> a -> Html msg
+viewPatientTypeFilter : (String -> msg) -> PatientTypeFilter -> Html msg
 viewPatientTypeFilter msg patientTypeFilter =
     div []
         [ select

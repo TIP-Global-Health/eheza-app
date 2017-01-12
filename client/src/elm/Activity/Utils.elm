@@ -1,6 +1,7 @@
 module Activity.Utils
     exposing
         ( getActivityList
+        , getActivityTypeList
         , getActivityNameAndIcon
         , getPendingNumberPerActivity
         )
