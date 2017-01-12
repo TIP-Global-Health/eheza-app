@@ -69,10 +69,10 @@ update currentDate backendUrl accessToken user msg model =
 
         MsgPagesActivities subMsg ->
             let
-                ( subCmd, redirectPage ) =
-                    Pages.Activities.Update.update backendUrl accessToken user subMsg (unwrapPatientsDict model.patients)
+                ( subModel, subCmd, redirectPage ) =
+                    Pages.Activities.Update.update backendUrl accessToken user subMsg (unwrapPatientsDict model.patients) model.activitiesPage
             in
-                ( model
+                ( { model | activitiesPage = subModel }
                 , Cmd.map MsgPagesActivities subCmd
                 , redirectPage
                 )

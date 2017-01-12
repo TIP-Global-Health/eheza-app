@@ -6,8 +6,9 @@ import Date exposing (Date)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import List as List
-import Patient.Model exposing (PatientTypeFilter(..), PatientsDict)
 import Pages.Activities.Model exposing (Model, Msg(..))
+import Patient.Model exposing (PatientTypeFilter(..), PatientsDict)
+import Patient.View exposing (viewPatientTypeFilter)
 import User.Model exposing (User)
 
 
@@ -39,7 +40,8 @@ view currentDate user patients model =
                     ]
     in
         div []
-            [ h2 [ class "ui header" ] [ text "Activities to complete" ]
+            [ viewPatientTypeFilter SetPatientTypeFilter model.patientTypeFilter
+            , h2 [ class "ui header" ] [ text "Activities to complete" ]
             , div [ class "ui cards activities activities_todo" ] [ pendingActivitiesView ]
             , noPendingActivitiesView
             ]

@@ -9,7 +9,8 @@ type alias Model =
 
 
 type Msg
-    = SetRedirectPage Page
+    = SetPatientTypeFilter String
+    | SetRedirectPage Page
 
 
 emptyModel : Model
