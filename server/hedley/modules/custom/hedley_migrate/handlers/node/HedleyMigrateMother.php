@@ -61,7 +61,6 @@ class HedleyMigrateMother extends HedleyMigrateBase {
       'field_date_picture',
     ]);
 
-
     // Map the file name to the title.
     $this->addFieldMapping('field_avatar', 'title')
       ->callbacks([$this, 'avatarProcess']);

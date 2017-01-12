@@ -20,8 +20,7 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       'callback' => 'static::getType',
     ];
 
-    $date_field_names = [
-    ];
+    $date_field_names = [];
 
     foreach ($date_field_names as $field_name) {
       $public_name = str_replace('field_', '', $field_name);

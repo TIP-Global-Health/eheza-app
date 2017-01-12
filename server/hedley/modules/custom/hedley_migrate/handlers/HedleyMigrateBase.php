@@ -59,6 +59,7 @@ abstract class HedleyMigrateBase extends Migration {
    * Add date fields.
    *
    * @param array $field_names
+   *   The date related field names.
    */
   public function addDateFields(array $field_names) {
     foreach ($field_names as $field_name) {

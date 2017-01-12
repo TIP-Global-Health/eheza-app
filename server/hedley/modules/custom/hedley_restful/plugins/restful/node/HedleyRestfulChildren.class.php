@@ -16,8 +16,7 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $field_names = [
-    ];
+    $field_names = [];
 
     $public_fields['type'] = [
       'callback' => 'static::getType',
