@@ -3,26 +3,26 @@ module Pages.Patients.Update exposing (update)
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import User.Model exposing (..)
-import Pages.Patients.Model exposing (Model, Msg(..), PatientFilter(..))
-import Patient.Model exposing (PatientsDict)
+import Pages.Patients.Model exposing (Model, Msg(..))
+import Patient.Model exposing (PatientTypeFilter(..), PatientsDict)
 
 
 update : BackendUrl -> String -> User -> Msg -> PatientsDict -> Model -> ( Model, Cmd Msg, Maybe Page )
 update backendUrl accessToken user msg patients model =
     case msg of
-        SetPatientFilter patientFilterString ->
+        SetPatientTypeFilter patientTypeFilterString ->
             let
-                patientFilter =
-                    if patientFilterString == "All" then
+                patientTypeFilter =
+                    if patientTypeFilterString == "All" then
                         All
-                    else if patientFilterString == "Children" then
+                    else if patientTypeFilterString == "Children" then
                         Children
-                    else if patientFilterString == "Mothers" then
+                    else if patientTypeFilterString == "Mothers" then
                         Mothers
                     else
-                        model.patientFilter
+                        model.patientTypeFilter
             in
-                ( { model | patientFilter = patientFilter }
+                ( { model | patientTypeFilter = patientTypeFilter }
                 , Cmd.none
                 , Nothing
                 )

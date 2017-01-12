@@ -12,7 +12,7 @@ import Html.Events exposing (onClick)
 import Pages.Activities.View
 import Pages.Patient.View
 import Pages.Patients.View
-import Patient.Model exposing (PatientId, PatientsDict, PatientType(..))
+import Patient.Model exposing (PatientId, PatientsDict, PatientType(..), PatientTypeFilter(..))
 import PatientManager.Model exposing (..)
 import PatientManager.Utils exposing (getChildren, getMother, getPatient, unwrapPatientsDict)
 import RemoteData exposing (RemoteData(..))
@@ -84,5 +84,5 @@ viewActivities currentDate user model =
             unwrapPatientsDict model.patients
     in
         div []
-            [ Html.map MsgPagesActivities <| Pages.Activities.View.view currentDate user patients
+            [ Html.map MsgPagesActivities <| Pages.Activities.View.view currentDate user All patients
             ]

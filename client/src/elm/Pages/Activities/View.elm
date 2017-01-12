@@ -6,15 +6,16 @@ import Date exposing (Date)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import List as List
-import Patient.Model exposing (PatientsDict)
+import Patient.Model exposing (PatientTypeFilter(..), PatientsDict)
+import Pages.Activities.Model exposing (Msg(..))
 import User.Model exposing (User)
 
 
-view : Date -> User -> PatientsDict -> Html a
-view currentDate user patients =
+view : Date -> User -> PatientTypeFilter -> PatientsDict -> Html Msg
+view currentDate user patientTypeFilter patients =
     let
         allActivityList =
-            getActivityList currentDate patients
+            getActivityList currentDate patientTypeFilter patients
 
         pendingActivities =
             List.filter (\activity -> activity.remaining > 0) allActivityList

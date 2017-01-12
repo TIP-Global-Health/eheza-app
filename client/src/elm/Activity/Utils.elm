@@ -10,61 +10,54 @@ import Child.Model exposing (Child)
 import Date exposing (Date)
 import Dict exposing (Dict)
 import Mother.Model exposing (Mother)
-import Patient.Model exposing (PatientsDict, PatientType(..))
+import Patient.Model exposing (PatientsDict, PatientTypeFilter(..), PatientType(..))
 
 
-{-|
+getActivityTypeList : PatientTypeFilter -> List ActivityType
+getActivityTypeList patientTypeFilter =
+    let
+        childrenActivities =
+            [ Activity.Model.Child ChildPicture
+            , Activity.Model.Child Height
+            , Activity.Model.Child Muac
+            , Activity.Model.Child ProgressReport
+            , Activity.Model.Child Weight
+            ]
 
-@todo: Use EveryDict
+        mothersActivities =
+            [ Activity.Model.Mother Aheza
+            , Activity.Model.Mother Attendance
+            , Activity.Model.Mother Education
+            , Activity.Model.Mother FamilyPlanning
+            , Activity.Model.Mother Hiv
+            , Activity.Model.Mother MotherPicture
+            , Activity.Model.Mother NutritionSigns
+            ]
+    in
+        case patientTypeFilter of
+            All ->
+                childrenActivities ++ mothersActivities
 
--}
-getActivityDict : Date -> PatientsDict -> Dict String Int
-getActivityDict currentDate pateints =
-    Dict.foldl
-        (\_ patient resultDict ->
-            case patient.info of
-                PatientChild child ->
-                    resultDict
+            Children ->
+                childrenActivities
 
-                PatientMother mother ->
-                    resultDict
-        )
-        Dict.empty
-        pateints
-
-
-getActivityTypeList : List ActivityType
-getActivityTypeList =
-    [ Activity.Model.Child ChildPicture
-    , Activity.Model.Child Height
-    , Activity.Model.Child Muac
-    , Activity.Model.Child ProgressReport
-    , Activity.Model.Child Weight
-      -- Mother
-    , Activity.Model.Mother Aheza
-    , Activity.Model.Mother Attendance
-    , Activity.Model.Mother Education
-    , Activity.Model.Mother FamilyPlanning
-    , Activity.Model.Mother Hiv
-    , Activity.Model.Mother MotherPicture
-    , Activity.Model.Mother NutritionSigns
-    ]
+            Mothers ->
+                mothersActivities
 
 
 {-| Get the pending and completed activities.
 
 @todo: Add also "future"?
-@todo: Check Date, not just "pending"
 -}
-getActivityList : Date -> PatientsDict -> List ActivityListItem
-getActivityList currentDate patients =
+getActivityList : Date -> PatientTypeFilter -> PatientsDict -> List ActivityListItem
+getActivityList currentDate patientTypeFilter patients =
     List.map
         (\activityType ->
             { activity = getActivityNameAndIcon activityType
             , remaining = getPendingNumberPerActivity currentDate activityType patients
             }
         )
-        getActivityTypeList
+        (getActivityTypeList patientTypeFilter)
 
 
 getActivityNameAndIcon : ActivityType -> ActivityIdentity
