@@ -28,10 +28,13 @@ checkbox msg activityType =
         activityIdentity =
             getActivityIdentity activityType
     in
-        label
-            []
-            [ input [ type_ "checkbox", onClick msg ] []
-            , div []
+        div
+            [ class "ui checkbox" ]
+            [ input
+                [ type_ "checkbox", onClick msg ]
+                []
+            , label
+                []
                 [ i [ class <| activityIdentity.icon ++ " icon" ] []
                 , text activityIdentity.name
                 ]
