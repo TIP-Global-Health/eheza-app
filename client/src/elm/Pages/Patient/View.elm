@@ -20,25 +20,30 @@ viewChild : Date -> User -> ChildId -> Child -> WebData Mother -> Html Msg
 viewChild currentDate currentUser childId child motherWebData =
     let
         motherInfo =
-            case motherWebData of
-                Success mother ->
-                    div []
-                        [ text <| "Mother: "
-                        , a
-                            [ href "#"
-                            , onClick <| SetRedirectPage (App.PageType.Patient child.motherId)
-                            ]
-                            [ text mother.name ]
-                        ]
+            case child.motherId of
+                Nothing ->
+                    div [] [ text "Link to mother" ]
 
-                Loading ->
-                    div []
-                        [ text <| "Mother: "
-                        , i [ class "icon loading spinner" ] []
-                        ]
+                Just motherId ->
+                    case motherWebData of
+                        Success mother ->
+                            div []
+                                [ text <| "Mother: "
+                                , a
+                                    [ href "#"
+                                    , onClick <| SetRedirectPage (App.PageType.Patient motherId)
+                                    ]
+                                    [ text mother.name ]
+                                ]
 
-                _ ->
-                    div [] []
+                        Loading ->
+                            div []
+                                [ text <| "Mother: "
+                                , i [ class "icon loading spinner" ] []
+                                ]
+
+                        _ ->
+                            div [] []
     in
         div []
             [ div

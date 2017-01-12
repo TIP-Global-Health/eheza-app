@@ -20,9 +20,9 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       'callback' => 'static::getType',
     ];
 
-    $field_names = [];
+    $date_field_names = [];
 
-    foreach ($field_names as $field_name) {
+    foreach ($date_field_names as $field_name) {
       $public_name = str_replace('field_', '', $field_name);
       $public_fields[$public_name] = [
         'property' => $field_name,
@@ -37,15 +37,24 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       'image_styles' => ['large', 'thumbnail'],
     ];
 
-    $public_fields['children'] = [
-      'property' => 'field_children',
-      'resource' => [
-        // Bundle name.
-        'child' => [
-          // Resource name.
-          'name' => 'children',
-          'full_view' => FALSE,
+    foreach (array_keys(field_info_instances($this->getEntityType(), $this->getBundle())) as $field_name) {
+      if (strpos($field_name, 'field_date') !== 0) {
+        // Not a date field.
+        continue;
+      }
+      $public_name = str_replace('field_', '', $field_name);
+      $public_fields[$public_name] = [
+        'property' => $field_name,
+        'process_callbacks' => [
+          [$this, 'convertTimestampToIso8601'],
         ],
+      ];
+    }
+
+    $public_fields['children'] = [
+      'property' => 'nid',
+      'process_callbacks' => [
+        [$this, 'getChildren'],
       ],
     ];
 
@@ -60,6 +69,29 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
    */
   protected static function getType() {
     return 'mother';
+  }
+
+  /**
+   * Get the Child(s) node IDs.
+   *
+   * @param int $nid
+   *   The Mother node Id.
+   *
+   * @return array
+   *   Array with the children node IDs.
+   */
+  protected function getChildren($nid) {
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'child')
+      ->fieldCondition('field_mother', 'target_id', $nid)
+      ->propertyCondition('status', NODE_PUBLISHED)
+      // Prevent any abuse.
+      ->range(0, 50)
+      ->execute();
+
+    return !empty($result['node']) ? array_keys($result['node']) : [];
   }
 
 }

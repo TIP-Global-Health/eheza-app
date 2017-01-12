@@ -1,10 +1,6 @@
 module Activity.Model exposing (..)
 
-
-type alias ActivityIdentity =
-    { name : String
-    , icon : String
-    }
+import Date exposing (Date)
 
 
 type ActivityType
@@ -15,9 +11,9 @@ type ActivityType
 type ChildActivityType
     = ChildPicture
     | Height
-    | Weight
     | Muac
     | ProgressReport
+    | Weight
 
 
 type MotherActivityType
@@ -30,13 +26,39 @@ type MotherActivityType
     | NutritionSigns
 
 
-type alias ActivityReport =
+type alias ChildActivityDates =
+    { childPicture : Maybe Date
+    , height : Maybe Date
+    , muac : Maybe Date
+    , progressReport : Maybe Date
+    , weight : Maybe Date
+    }
+
+
+type alias MotherActivityDates =
+    { aheza : Maybe Date
+    , attendance : Maybe Date
+    , education : Maybe Date
+    , familyPlanning : Maybe Date
+    , hiv : Maybe Date
+    , motherPicture : Maybe Date
+    , nutritionSigns : Maybe Date
+    }
+
+
+type alias ActivityIdentity =
+    { name : String
+    , icon : String
+    }
+
+
+type alias ActivityListItem =
     { activity : ActivityIdentity
     , remaining : Int
     }
 
 
-activityList : List ActivityReport
+activityList : List ActivityListItem
 activityList =
     [ { activity =
             { name = "Weight"

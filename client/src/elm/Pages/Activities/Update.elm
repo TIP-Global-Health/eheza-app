@@ -1,9 +1,9 @@
-module Pages.Patients.Update exposing (update)
+module Pages.Activities.Update exposing (update)
 
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import User.Model exposing (..)
-import Pages.Patients.Model exposing (Model, Msg(..))
+import Pages.Activities.Model exposing (Model, Msg(..))
 import Patient.Model exposing (PatientTypeFilter(..), PatientsDict)
 
 
@@ -29,15 +29,3 @@ update backendUrl accessToken user msg patients model =
 
         SetRedirectPage page ->
             ( model, Cmd.none, Just page )
-
-        SetQuery newQuery ->
-            ( { model | query = newQuery }
-            , Cmd.none
-            , Nothing
-            )
-
-        SetTableState newState ->
-            ( { model | tableState = newState }
-            , Cmd.none
-            , Nothing
-            )

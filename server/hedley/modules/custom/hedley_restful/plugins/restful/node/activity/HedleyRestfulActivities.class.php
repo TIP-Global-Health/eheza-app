@@ -16,10 +16,6 @@ class HedleyRestfulActivities extends RestfulEntityBaseMultipleBundles {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $public_fields['date'] = [
-      'property' => 'field_date',
-    ];
-
     $public_fields['child'] = [
       'property' => 'field_child',
       'resource' => [

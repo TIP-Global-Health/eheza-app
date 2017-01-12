@@ -1,7 +1,7 @@
 port module App.Update exposing (init, update, subscriptions)
 
 import App.Model exposing (..)
-import App.PageType exposing (Page(..), authenticatedPages)
+import App.PageType exposing (Page(..))
 import Config
 import Date
 import Dict
@@ -166,6 +166,10 @@ update msg model =
                     ( modelUpdated, command ) =
                         -- For a few, we also delegate some initialization
                         case activePage of
+                            Activities ->
+                                -- If we're showing a `Activities` page, make sure we `Subscribe`
+                                update (MsgPatientManager PatientManager.Model.FetchAll) model
+
                             Dashboard ->
                                 -- If we're showing a `Patients` page, make sure we `Subscribe`
                                 update (MsgPatientManager PatientManager.Model.FetchAll) model
@@ -204,10 +208,7 @@ setActivePageAccess user page =
                 page
 
         _ ->
-            if List.member page authenticatedPages then
-                AccessDenied
-            else
-                page
+            page
 
 
 subscriptions : Model -> Sub Msg

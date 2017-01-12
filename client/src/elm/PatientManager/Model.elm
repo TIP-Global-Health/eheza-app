@@ -2,6 +2,7 @@ module PatientManager.Model exposing (..)
 
 import Dict exposing (Dict)
 import Http
+import Pages.Activities.Model
 import Pages.Patient.Model
 import Pages.Patients.Model
 import Pusher.Model exposing (PusherEvent)
@@ -22,7 +23,8 @@ derive it from fetching a `Patient` through `WebData` ... it's simplest to
 just stay within the `WebData` container.
 -}
 type alias Model =
-    { patients : Dict PatientId (WebData Patient)
+    { activitiesPage : Pages.Activities.Model.Model
+    , patients : Dict PatientId (WebData Patient)
     , patientsPage : Pages.Patients.Model.Model
     }
 
@@ -39,6 +41,7 @@ type Msg
     = Subscribe PatientId
     | Unsubscribe PatientId
     | FetchAll
+    | MsgPagesActivities Pages.Activities.Model.Msg
     | MsgPagesPatient PatientId Pages.Patient.Model.Msg
     | MsgPagesPatients Pages.Patients.Model.Msg
     | HandleFetchedPatient PatientId (Result Http.Error Patient)
@@ -48,6 +51,7 @@ type Msg
 
 emptyModel : Model
 emptyModel =
-    { patients = Dict.empty
+    { activitiesPage = Pages.Activities.Model.emptyModel
+    , patients = Dict.empty
     , patientsPage = Pages.Patients.Model.emptyModel
     }

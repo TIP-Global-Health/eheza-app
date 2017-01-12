@@ -26,7 +26,6 @@ class HedleyMigrateWeight extends HedleyMigrateBase {
     $column_names = [
       'title',
       'field_child',
-      'field_date',
       'field_activity_status',
       'field_weight',
     ];
@@ -63,8 +62,6 @@ class HedleyMigrateWeight extends HedleyMigrateBase {
     $this->addFieldMapping('field_child', 'field_child')
       ->sourceMigration('HedleyMigrateChild');
 
-    $this->addFieldMapping('field_date', 'field_date')
-      ->callbacks([$this, 'dateProcess']);
   }
 
 }

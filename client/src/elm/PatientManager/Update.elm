@@ -11,6 +11,7 @@ import PatientManager.Utils exposing (..)
 import Json.Decode exposing (decodeValue)
 import Json.Encode exposing (Value)
 import HttpBuilder exposing (get, withQueryParams)
+import Pages.Activities.Update
 import Pages.Patient.Update
 import Pages.Patients.Update
 import Pusher.Decoder exposing (decodePusherEvent)
@@ -65,6 +66,16 @@ update currentDate backendUrl accessToken user msg model =
                     fetchAllPatientsFromBackend backendUrl accessToken model
             in
                 ( val, cmds, Nothing )
+
+        MsgPagesActivities subMsg ->
+            let
+                ( subModel, subCmd, redirectPage ) =
+                    Pages.Activities.Update.update backendUrl accessToken user subMsg (unwrapPatientsDict model.patients) model.activitiesPage
+            in
+                ( { model | activitiesPage = subModel }
+                , Cmd.map MsgPagesActivities subCmd
+                , redirectPage
+                )
 
         MsgPagesPatient id subMsg ->
             case getPatient id model of
@@ -122,8 +133,13 @@ update currentDate backendUrl accessToken user msg model =
             in
                 case patient.info of
                     PatientChild child ->
-                        -- Lazy load the Mother.
-                        update currentDate backendUrl accessToken user (Subscribe child.motherId) updatedModel
+                        -- Lazy load the Mother if they are already connected.
+                        Maybe.map
+                            (\motherId ->
+                                update currentDate backendUrl accessToken user (Subscribe motherId) updatedModel
+                            )
+                            child.motherId
+                            |> Maybe.withDefault ( updatedModel, Cmd.none, Nothing )
 
                     PatientMother mother ->
                         let

@@ -2,6 +2,7 @@ module Patient.Model
     exposing
         ( Patient
         , PatientId
+        , PatientTypeFilter(..)
         , PatientType(..)
         , PatientsDict
         )
@@ -21,11 +22,15 @@ type PatientType
 
 
 type alias Patient =
-    -- @todo: Replace with Dict of activities.
     { info : PatientType
-    , activities : String
     }
 
 
 type alias PatientsDict =
     Dict PatientId Patient
+
+
+type PatientTypeFilter
+    = All
+    | Children
+    | Mothers

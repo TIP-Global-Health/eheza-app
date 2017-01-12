@@ -7,7 +7,6 @@ import Html exposing (..)
 import Html.Attributes exposing (class, classList, href, src, style, target)
 import Html.Events exposing (onClick)
 import User.Model exposing (..)
-import Pages.Activities.View exposing (..)
 import Pages.Login.View exposing (..)
 import Pages.MyAccount.View exposing (..)
 import Pages.PageNotFound.View exposing (..)
@@ -157,7 +156,13 @@ viewMainContent model =
                     div [] [ text "Access denied" ]
 
                 Activities ->
-                    Pages.Activities.View.view
+                    case model.user of
+                        Success user ->
+                            Html.map MsgPatientManager <|
+                                PatientManager.View.viewActivities model.currentDate user model.pagePatient
+
+                        _ ->
+                            div [] [ i [ class "notched circle loading icon" ] [] ]
 
                 Login ->
                     Html.map PageLogin (Pages.Login.View.view model.user model.pageLogin)
@@ -170,10 +175,6 @@ viewMainContent model =
                     Pages.PageNotFound.View.view
 
                 Dashboard ->
-                    -- We get the user information before diving down a level, since
-                    -- Pages.LiveSession can't do anything sensible without a user, and it is
-                    -- at this higher level that we could present a UI related to loading
-                    -- the user information.
                     case model.user of
                         Success user ->
                             Html.map MsgPatientManager <|
@@ -184,18 +185,13 @@ viewMainContent model =
                                 [ i [ class "notched circle loading icon" ] [] ]
 
                 Patient id ->
-                    -- We get the user information before diving down a level, since
-                    -- Pages.LiveSession can't do anything sensible without a user, and it is
-                    -- at this higher level that we could present a UI related to loading
-                    -- the user information.
                     case model.user of
                         Success user ->
                             Html.map MsgPatientManager <|
                                 PatientManager.View.viewPagePatient model.currentDate id user model.pagePatient
 
                         _ ->
-                            div []
-                                [ i [ class "notched circle loading icon" ] [] ]
+                            div [] [ i [ class "notched circle loading icon" ] [] ]
     in
         case model.user of
             NotAsked ->

@@ -20,13 +20,6 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulEntityBaseNode {
       'callback' => 'static::getType',
     ];
 
-    $public_fields['date'] = [
-      'property' => 'field_date',
-      'process_callbacks' => [
-        [$this, 'convertTimestampToIso8601'],
-      ],
-    ];
-
     $public_fields['child'] = [
       'property' => 'field_child',
       'resource' => [

@@ -6,9 +6,10 @@ import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
-import Pages.Patients.Model exposing (Model, Msg(..), PatientFilter(..))
-import Patient.Model exposing (Patient, PatientId, PatientType(..), PatientsDict)
+import Pages.Patients.Model exposing (Model, Msg(..))
+import Patient.Model exposing (Patient, PatientId, PatientType(..), PatientTypeFilter(..), PatientsDict)
 import Patient.Utils exposing (getPatientAvatarThumb, getPatientName)
+import Patient.View exposing (viewPatientTypeFilter)
 import Table exposing (..)
 import User.Model exposing (User)
 
@@ -27,7 +28,7 @@ view currentDate currentUser patients model =
                             String.contains lowerQuery (String.toLower <| getPatientName patient)
 
                         validType =
-                            case model.patientFilter of
+                            case model.patientTypeFilter of
                                 All ->
                                     True
 
@@ -71,29 +72,10 @@ view currentDate currentUser patients model =
                     , onInput SetQuery
                     ]
                     []
-                , viewPatientFilter model
+                , viewPatientTypeFilter SetPatientTypeFilter model.patientTypeFilter
                 ]
             , searchResult
             ]
-
-
-viewPatientFilter : Model -> Html Msg
-viewPatientFilter model =
-    div []
-        [ select
-            [ class "ui dropdown"
-            , value <| toString model.patientFilter
-            , onInput SetPatientFilter
-            ]
-            (List.map
-                (\filterType ->
-                    option
-                        [ value <| toString filterType ]
-                        [ text <| toString filterType ]
-                )
-                [ All, Children, Mothers ]
-            )
-        ]
 
 
 config : Table.Config ( PatientId, Patient ) Msg

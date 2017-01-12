@@ -16,7 +16,6 @@ decodePatient : Decoder Patient
 decodePatient =
     decode Patient
         |> custom decodePatientType
-        |> hardcoded ""
 
 
 decodePatientType : Decoder PatientType

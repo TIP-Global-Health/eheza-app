@@ -1,24 +1,19 @@
 module Pages.Patients.Model exposing (..)
 
 import App.PageType exposing (Page(..))
+import Patient.Model exposing (PatientTypeFilter(..))
 import Table
 
 
 type alias Model =
-    { patientFilter : PatientFilter
+    { patientTypeFilter : PatientTypeFilter
     , query : String
     , tableState : Table.State
     }
 
 
-type PatientFilter
-    = All
-    | Children
-    | Mothers
-
-
 type Msg
-    = SetPatientFilter String
+    = SetPatientTypeFilter String
     | SetRedirectPage Page
     | SetTableState Table.State
     | SetQuery String
@@ -26,7 +21,7 @@ type Msg
 
 emptyModel : Model
 emptyModel =
-    { patientFilter = All
+    { patientTypeFilter = All
     , query = ""
     , tableState = Table.initialSort "Name"
     }
