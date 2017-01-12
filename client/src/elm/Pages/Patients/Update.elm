@@ -10,6 +10,12 @@ import Patient.Model exposing (PatientTypeFilter(..), PatientsDict)
 update : BackendUrl -> String -> User -> Msg -> PatientsDict -> Model -> ( Model, Cmd Msg, Maybe Page )
 update backendUrl accessToken user msg patients model =
     case msg of
+        SetActivityTypeFilter ->
+            ( model
+            , Cmd.none
+            , Nothing
+            )
+
         SetPatientTypeFilter patientTypeFilterString ->
             let
                 patientTypeFilter =

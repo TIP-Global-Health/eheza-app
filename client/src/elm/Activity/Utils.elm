@@ -2,7 +2,7 @@ module Activity.Utils
     exposing
         ( getActivityList
         , getActivityTypeList
-        , getActivityNameAndIcon
+        , getActivityIdentity
         , getPendingNumberPerActivity
         )
 
@@ -54,15 +54,15 @@ getActivityList : Date -> PatientTypeFilter -> PatientsDict -> List ActivityList
 getActivityList currentDate patientTypeFilter patients =
     List.map
         (\activityType ->
-            { activity = getActivityNameAndIcon activityType
+            { activity = getActivityIdentity activityType
             , remaining = getPendingNumberPerActivity currentDate activityType patients
             }
         )
         (getActivityTypeList patientTypeFilter)
 
 
-getActivityNameAndIcon : ActivityType -> ActivityIdentity
-getActivityNameAndIcon activityType =
+getActivityIdentity : ActivityType -> ActivityIdentity
+getActivityIdentity activityType =
     case activityType of
         Child childActivityType ->
             case childActivityType of

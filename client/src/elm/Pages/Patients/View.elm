@@ -1,5 +1,6 @@
 module Pages.Patients.View exposing (view)
 
+import Activity.View exposing (viewActivityTypeFilter)
 import App.PageType exposing (Page(..))
 import Date exposing (Date)
 import Dict
@@ -74,6 +75,7 @@ view currentDate currentUser patients model =
                     []
                 , viewPatientTypeFilter SetPatientTypeFilter model.patientTypeFilter
                 ]
+            , viewActivityTypeFilter SetActivityTypeFilter model.patientTypeFilter
             , searchResult
             ]
 
