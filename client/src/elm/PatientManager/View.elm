@@ -84,5 +84,5 @@ viewActivities currentDate user model =
             unwrapPatientsDict model.patients
     in
         div []
-            [ Html.map MsgPagesActivities <| Pages.Activities.View.view currentDate user All patients
+            [ Html.map MsgPagesActivities <| Pages.Activities.View.view currentDate user patients model.activitiesPage
             ]

@@ -23,7 +23,8 @@ derive it from fetching a `Patient` through `WebData` ... it's simplest to
 just stay within the `WebData` container.
 -}
 type alias Model =
-    { patients : Dict PatientId (WebData Patient)
+    { activitiesPage : Pages.Activities.Model.Model
+    , patients : Dict PatientId (WebData Patient)
     , patientsPage : Pages.Patients.Model.Model
     }
 
@@ -50,6 +51,7 @@ type Msg
 
 emptyModel : Model
 emptyModel =
-    { patients = Dict.empty
+    { activitiesPage = Pages.Activities.Model.emptyModel
+    , patients = Dict.empty
     , patientsPage = Pages.Patients.Model.emptyModel
     }

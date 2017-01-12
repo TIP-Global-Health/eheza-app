@@ -9,6 +9,7 @@ import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Pages.Patients.Model exposing (Model, Msg(..))
 import Patient.Model exposing (Patient, PatientId, PatientType(..), PatientTypeFilter(..), PatientsDict)
 import Patient.Utils exposing (getPatientAvatarThumb, getPatientName)
+import Patient.View exposing (viewPatientTypeFilter)
 import Table exposing (..)
 import User.Model exposing (User)
 
@@ -71,29 +72,10 @@ view currentDate currentUser patients model =
                     , onInput SetQuery
                     ]
                     []
-                , viewPatientTypeFilter model
+                , viewPatientTypeFilter SetPatientTypeFilter model.patientTypeFilter
                 ]
             , searchResult
             ]
-
-
-viewPatientTypeFilter : Model -> Html Msg
-viewPatientTypeFilter model =
-    div []
-        [ select
-            [ class "ui dropdown"
-            , value <| toString model.patientTypeFilter
-            , onInput SetPatientTypeFilter
-            ]
-            (List.map
-                (\filterType ->
-                    option
-                        [ value <| toString filterType ]
-                        [ text <| toString filterType ]
-                )
-                [ All, Children, Mothers ]
-            )
-        ]
 
 
 config : Table.Config ( PatientId, Patient ) Msg
