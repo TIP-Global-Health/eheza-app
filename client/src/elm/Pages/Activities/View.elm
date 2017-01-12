@@ -27,9 +27,9 @@ view currentDate user patients model =
 
         pendingActivitiesView =
             if List.isEmpty pendingActivities then
-                div [] []
+                []
             else
-                div [] (List.map viewActivity pendingActivities)
+                List.map viewActivity pendingActivities
 
         noPendingActivitiesView =
             if List.isEmpty noPendingActivities then
@@ -43,7 +43,7 @@ view currentDate user patients model =
         div []
             [ viewPatientTypeFilter SetPatientTypeFilter model.patientTypeFilter
             , h2 [ class "ui header" ] [ text "Activities to complete" ]
-            , div [ class "ui cards activities activities_todo" ] [ pendingActivitiesView ]
+            , div [ class "ui cards activities activities_todo" ] pendingActivitiesView
             , noPendingActivitiesView
             ]
 
