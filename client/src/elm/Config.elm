@@ -6,7 +6,7 @@ import Dict exposing (..)
 
 local : Model
 local =
-    { backendUrl = "http://localhost/ihangane/server/www"
+    { backendUrl = "http://ihangane.dev"
     , name = "local"
     , pusherKey = "0c51c25a2b95b0b33a99"
     }
