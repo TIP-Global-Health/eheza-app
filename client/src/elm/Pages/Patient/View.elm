@@ -170,6 +170,5 @@ viewActivity report =
         [ a [ href "#" ] [ i [ class (report.activity.icon ++ " icon") ] [] ]
         , div [ class "content" ]
             [ a [ class "header activities__item__title" ] [ text report.activity.name ]
-            , div [ class "meta" ] [ text "@todo: Date" ]
             ]
         ]
