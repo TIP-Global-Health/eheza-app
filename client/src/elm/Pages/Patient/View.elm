@@ -146,7 +146,7 @@ viewActivityCards currentDate user patients patientTypeFilter =
             if List.isEmpty pendingActivities then
                 []
             else
-                List.map viewActivity pendingActivities
+                List.map viewActivityListItem pendingActivities
 
         noPendingActivitiesView =
             if List.isEmpty noPendingActivities then
@@ -154,7 +154,7 @@ viewActivityCards currentDate user patients patientTypeFilter =
             else
                 div []
                     [ h2 [ class "ui header" ] [ text "Activities completed" ]
-                    , div [ class "ui cards activities activities_complete" ] (List.map viewActivity noPendingActivities)
+                    , div [ class "ui cards activities activities_complete" ] (List.map viewActivityListItem noPendingActivities)
                     ]
     in
         div []
@@ -164,8 +164,8 @@ viewActivityCards currentDate user patients patientTypeFilter =
             ]
 
 
-viewActivity : ActivityListItem -> Html a
-viewActivity report =
+viewActivityListItem : ActivityListItem -> Html a
+viewActivityListItem report =
     div [ class "ui card activities__item" ]
         [ a [ href "#" ] [ i [ class (report.activity.icon ++ " icon") ] [] ]
         , div [ class "content" ]
