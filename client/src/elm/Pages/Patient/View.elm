@@ -4,14 +4,18 @@ module Pages.Patient.View
         , viewMother
         )
 
+import Activity.Model exposing (ActivityListItem)
+import Activity.Utils exposing (getActivityList)
 import App.PageType
 import Child.Model exposing (Child, ChildId)
 import Date exposing (Date)
+import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Mother.Model exposing (Mother, MotherId)
 import Pages.Patient.Model exposing (Msg(..))
+import Patient.Model exposing (Patient, PatientId, PatientTypeFilter, PatientsDict)
 import RemoteData exposing (RemoteData(..), WebData)
 import User.Model exposing (User)
 
@@ -113,3 +117,55 @@ viewMother currentDate currentUser motherId mother children =
                 []
             , childrenList
             ]
+
+
+
+-- @todo: Cleanup code duplication
+
+
+viewActivityCards : Date -> User -> ( PatientId, Patient ) -> PatientTypeFilter -> Html Msg
+viewActivityCards currentDate user ( patientId, patient ) patientTypeFilter =
+    let
+        patients =
+            Dict.insert patientId patient Dict.empty
+
+        allActivityList =
+            getActivityList currentDate patientTypeFilter patients
+
+        pendingActivities =
+            List.filter (\activity -> activity.remaining > 0) allActivityList
+
+        noPendingActivities =
+            List.filter (\activity -> activity.remaining == 0) allActivityList
+
+        pendingActivitiesView =
+            if List.isEmpty pendingActivities then
+                []
+            else
+                List.map viewActivity pendingActivities
+
+        noPendingActivitiesView =
+            if List.isEmpty noPendingActivities then
+                div [] []
+            else
+                div []
+                    [ h2 [ class "ui header" ] [ text "Activities completed" ]
+                    , div [ class "ui cards activities activities_complete" ] (List.map viewActivity noPendingActivities)
+                    ]
+    in
+        div []
+            [ h2 [ class "ui header" ] [ text "Activities to complete" ]
+            , div [ class "ui cards activities activities_todo" ] pendingActivitiesView
+            , noPendingActivitiesView
+            ]
+
+
+viewActivity : ActivityListItem -> Html a
+viewActivity report =
+    div [ class "ui card activities__item" ]
+        [ a [ href "#" ] [ i [ class (report.activity.icon ++ " icon") ] [] ]
+        , div [ class "content" ]
+            [ a [ class "header activities__item__title" ] [ text report.activity.name ]
+            , div [ class "meta" ] [ text <| toString report.remaining ++ " remaining" ]
+            ]
+        ]
