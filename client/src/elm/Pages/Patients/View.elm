@@ -65,7 +65,7 @@ view currentDate currentUser patients model =
                                 False
                                 model.activityTypeFilter
                     in
-                        validName && validType
+                        validName && validType && validActivityTypeFilter
                 )
                 patients
                 |> Dict.toList
