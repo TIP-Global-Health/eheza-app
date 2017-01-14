@@ -15,7 +15,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Mother.Model exposing (Mother, MotherId)
 import Pages.Patient.Model exposing (Msg(..))
-import Patient.Model exposing (Patient, PatientId, PatientTypeFilter, PatientsDict)
+import Patient.Model exposing (Patient, PatientId, PatientTypeFilter(..), PatientsDict)
 import RemoteData exposing (RemoteData(..), WebData)
 import User.Model exposing (User)
 
@@ -48,6 +48,10 @@ viewChild currentDate currentUser childId child motherWebData =
 
                         _ ->
                             div [] []
+
+        patients =
+            -- @todo: Add mkChild
+            Dict.insert childId ({ info = Patient.Model.PatientChild child }) Dict.empty
     in
         div []
             [ div
@@ -63,6 +67,9 @@ viewChild currentDate currentUser childId child motherWebData =
             , div
                 [ class "ui divider" ]
                 []
+            , div []
+                [ viewActivityCards currentDate currentUser patients Children
+                ]
             ]
 
 
@@ -123,12 +130,9 @@ viewMother currentDate currentUser motherId mother children =
 -- @todo: Cleanup code duplication
 
 
-viewActivityCards : Date -> User -> ( PatientId, Patient ) -> PatientTypeFilter -> Html Msg
-viewActivityCards currentDate user ( patientId, patient ) patientTypeFilter =
+viewActivityCards : Date -> User -> PatientsDict -> PatientTypeFilter -> Html Msg
+viewActivityCards currentDate user patients patientTypeFilter =
     let
-        patients =
-            Dict.insert patientId patient Dict.empty
-
         allActivityList =
             getActivityList currentDate patientTypeFilter patients
 
@@ -166,6 +170,6 @@ viewActivity report =
         [ a [ href "#" ] [ i [ class (report.activity.icon ++ " icon") ] [] ]
         , div [ class "content" ]
             [ a [ class "header activities__item__title" ] [ text report.activity.name ]
-            , div [ class "meta" ] [ text <| toString report.remaining ++ " remaining" ]
+            , div [ class "meta" ] [ text "@todo: Date" ]
             ]
         ]
