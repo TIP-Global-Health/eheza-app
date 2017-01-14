@@ -2,7 +2,6 @@ module Pages.Activities.View exposing (view)
 
 import Activity.Model exposing (ActivityListItem)
 import Activity.Utils exposing (getActivityList)
-import Activity.View exposing (viewActivityTypeFilter)
 import Date exposing (Date)
 import Html exposing (..)
 import Html.Attributes exposing (..)

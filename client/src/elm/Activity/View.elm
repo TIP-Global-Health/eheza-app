@@ -28,14 +28,17 @@ checkbox msg activityType =
         activityIdentity =
             getActivityIdentity activityType
     in
-        div
-            [ class "ui checkbox" ]
-            [ input
-                [ type_ "checkbox", onClick msg ]
-                []
-            , label
-                []
-                [ i [ class <| activityIdentity.icon ++ " icon" ] []
-                , text activityIdentity.name
+        -- Adding a wrapping div, so checkbox are below each other.
+        div []
+            [ div
+                [ class "ui checkbox" ]
+                [ input
+                    [ type_ "checkbox", onClick msg ]
+                    []
+                , label
+                    []
+                    [ i [ class <| activityIdentity.icon ++ " icon" ] []
+                    , text activityIdentity.name
+                    ]
                 ]
             ]

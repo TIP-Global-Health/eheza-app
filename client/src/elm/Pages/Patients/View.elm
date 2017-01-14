@@ -75,9 +75,33 @@ view currentDate currentUser patients model =
                     []
                 , viewPatientTypeFilter SetPatientTypeFilter model.patientTypeFilter
                 ]
-            , viewActivityTypeFilter SetActivityTypeFilter model.patientTypeFilter
+            , viewActivityTypeFilterWrapper model.patientTypeFilter
             , searchResult
             ]
+
+
+viewActivityTypeFilterWrapper : PatientTypeFilter -> Html Msg
+viewActivityTypeFilterWrapper patientTypeFilter =
+    case patientTypeFilter of
+        All ->
+            div []
+                [ h3 [] [ text "Children" ]
+                , viewActivityTypeFilter SetActivityTypeFilter Children
+                , h3 [] [ text "Mothers" ]
+                , viewActivityTypeFilter SetActivityTypeFilter Mothers
+                ]
+
+        Children ->
+            div []
+                [ h3 [] [ text "Children" ]
+                , viewActivityTypeFilter SetActivityTypeFilter Children
+                ]
+
+        Mothers ->
+            div []
+                [ h3 [] [ text "Mothers" ]
+                , viewActivityTypeFilter SetActivityTypeFilter Mothers
+                ]
 
 
 config : Table.Config ( PatientId, Patient ) Msg
