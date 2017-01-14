@@ -1,6 +1,7 @@
 module Pages.Patients.Model exposing (..)
 
 import Activity.Model exposing (ActivityType)
+import Activity.Utils exposing (getActivityTypeList)
 import App.PageType exposing (Page(..))
 import Set exposing (Set)
 import Patient.Model exposing (PatientTypeFilter(..))
@@ -25,7 +26,7 @@ type Msg
 
 emptyModel : Model
 emptyModel =
-    { activityTypeFilter = Set.empty
+    { activityTypeFilter = Set.fromList <| List.map toString (getActivityTypeList All)
     , patientTypeFilter = All
     , query = ""
     , tableState = Table.initialSort "Name"
