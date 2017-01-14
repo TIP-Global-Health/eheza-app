@@ -1,5 +1,7 @@
 module Pages.Patients.View exposing (view)
 
+import Activity.Model exposing (ActivityType)
+import Activity.Utils exposing (getPendingNumberPerActivity)
 import Activity.View exposing (viewActivityTypeFilter)
 import App.PageType exposing (Page(..))
 import Date exposing (Date)
@@ -11,7 +13,6 @@ import Pages.Patients.Model exposing (Model, Msg(..))
 import Patient.Model exposing (Patient, PatientId, PatientType(..), PatientTypeFilter(..), PatientsDict)
 import Patient.Utils exposing (getPatientAvatarThumb, getPatientName)
 import Patient.View exposing (viewPatientTypeFilter)
-import Set exposing (Set)
 import Table exposing (..)
 import User.Model exposing (User)
 
@@ -49,6 +50,20 @@ view currentDate currentUser patients model =
 
                                         _ ->
                                             False
+
+                        validActivityTypeFilter =
+                            List.foldl
+                                (\activityType accum ->
+                                    if
+                                        accum == True
+                                        -- We already have found an existing pending activity.
+                                    then
+                                        True
+                                    else
+                                        getPendingNumberPerActivity currentDate activityType (Dict.insert patientId patient Dict.empty) > 0
+                                )
+                                False
+                                model.activityTypeFilter
                     in
                         validName && validType
                 )
@@ -81,7 +96,7 @@ view currentDate currentUser patients model =
             ]
 
 
-viewActivityTypeFilterWrapper : PatientTypeFilter -> Set String -> Html Msg
+viewActivityTypeFilterWrapper : PatientTypeFilter -> List ActivityType -> Html Msg
 viewActivityTypeFilterWrapper patientTypeFilter activityTypeFilter =
     let
         childTypeFilters =

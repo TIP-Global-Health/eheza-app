@@ -2,9 +2,9 @@ module Pages.Patients.Update exposing (update)
 
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
+import List.Extra as List
 import Pages.Patients.Model exposing (Model, Msg(..))
 import Patient.Model exposing (PatientTypeFilter(..), PatientsDict)
-import Set
 import User.Model exposing (..)
 
 
@@ -15,9 +15,14 @@ update backendUrl accessToken user msg patients model =
             let
                 activityTypeFilterUpdated =
                     if isChecked then
-                        Set.insert (toString activityType) model.activityTypeFilter
+                        activityType :: model.activityTypeFilter
                     else
-                        Set.remove (toString activityType) model.activityTypeFilter
+                        Maybe.map
+                            (\index ->
+                                List.drop index model.activityTypeFilter
+                            )
+                            (List.findIndex ((==) activityType) model.activityTypeFilter)
+                            |> Maybe.withDefault model.activityTypeFilter
             in
                 ( { model | activityTypeFilter = activityTypeFilterUpdated }
                 , Cmd.none

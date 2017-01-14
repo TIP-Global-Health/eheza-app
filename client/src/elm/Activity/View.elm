@@ -12,7 +12,7 @@ import Patient.Model exposing (PatientTypeFilter(..))
 import Set exposing (Set)
 
 
-viewActivityTypeFilter : (ActivityType -> Bool -> msg) -> PatientTypeFilter -> Set String -> Html msg
+viewActivityTypeFilter : (ActivityType -> Bool -> msg) -> PatientTypeFilter -> List ActivityType -> Html msg
 viewActivityTypeFilter msg patientTypeFilter activityTypeFilter =
     div []
         (List.map
@@ -23,7 +23,7 @@ viewActivityTypeFilter msg patientTypeFilter activityTypeFilter =
         )
 
 
-checkbox : (ActivityType -> Bool -> msg) -> ActivityType -> Set String -> Html msg
+checkbox : (ActivityType -> Bool -> msg) -> ActivityType -> List ActivityType -> Html msg
 checkbox msg activityType activityTypeFilter =
     let
         activityIdentity =
@@ -36,7 +36,7 @@ checkbox msg activityType activityTypeFilter =
                 [ input
                     [ type_ "checkbox"
                     , onCheck (msg activityType)
-                    , checked <| Set.member (toString activityType) activityTypeFilter
+                    , checked <| List.member activityType activityTypeFilter
                     ]
                     []
                 , label

@@ -3,13 +3,12 @@ module Pages.Patients.Model exposing (..)
 import Activity.Model exposing (ActivityType)
 import Activity.Utils exposing (getActivityTypeList)
 import App.PageType exposing (Page(..))
-import Set exposing (Set)
 import Patient.Model exposing (PatientTypeFilter(..))
 import Table
 
 
 type alias Model =
-    { activityTypeFilter : Set String
+    { activityTypeFilter : List ActivityType
     , patientTypeFilter : PatientTypeFilter
     , query : String
     , tableState : Table.State
@@ -26,7 +25,7 @@ type Msg
 
 emptyModel : Model
 emptyModel =
-    { activityTypeFilter = Set.fromList <| List.map toString (getActivityTypeList All)
+    { activityTypeFilter = getActivityTypeList All
     , patientTypeFilter = All
     , query = ""
     , tableState = Table.initialSort "Name"
