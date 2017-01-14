@@ -21,22 +21,27 @@ view model =
             Config.View.view
 
         _ ->
-            div []
-                [ div [ class "ui container main" ]
-                    [ viewSidebar model
-                    , div
-                        [ class "pusher" ]
-                        [ div
-                            [ class "ui grid container" ]
-                            [ div
-                                [ class "ui main grid" ]
-                                [ viewMainContent model
-                                ]
+            div [ class "ui inverted masthead segment" ]
+                [ div [ class "ui container" ]
+                    [ div [ class "ui large inverted secondary pointing menu" ]
+                        [ a [ class "toc item" ]
+                            [ href "#" ]
+                        , a [ class "item" ]
+                            [ text "Admin" ]
+                            [ href "#" ]
+                        , a [ class "item" ]
+                            [ text "Ativities" ]
+                            [ href "#" ]
+                        , a [ class "item" ]
+                            [ text "Dashboard" ]
+                            [ href "#" ]
+                        , div [ class "right item" ]
+                            [ a [ class "ui inverted button " ]
+                                [ text "Sign Out" ]
                             ]
                         ]
                     ]
                 ]
-
 
 viewSidebar : Model -> Html Msg
 viewSidebar model =
