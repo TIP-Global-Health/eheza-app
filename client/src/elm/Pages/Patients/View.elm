@@ -11,6 +11,7 @@ import Pages.Patients.Model exposing (Model, Msg(..))
 import Patient.Model exposing (Patient, PatientId, PatientType(..), PatientTypeFilter(..), PatientsDict)
 import Patient.Utils exposing (getPatientAvatarThumb, getPatientName)
 import Patient.View exposing (viewPatientTypeFilter)
+import Set exposing (Set)
 import Table exposing (..)
 import User.Model exposing (User)
 
@@ -75,33 +76,33 @@ view currentDate currentUser patients model =
                     []
                 , viewPatientTypeFilter SetPatientTypeFilter model.patientTypeFilter
                 ]
-            , viewActivityTypeFilterWrapper model.patientTypeFilter
+            , viewActivityTypeFilterWrapper model.patientTypeFilter model.activityTypeFilter
             , searchResult
             ]
 
 
-viewActivityTypeFilterWrapper : PatientTypeFilter -> Html Msg
-viewActivityTypeFilterWrapper patientTypeFilter =
-    case patientTypeFilter of
-        All ->
-            div []
-                [ h3 [] [ text "Children" ]
-                , viewActivityTypeFilter SetActivityTypeFilter Children
-                , h3 [] [ text "Mothers" ]
-                , viewActivityTypeFilter SetActivityTypeFilter Mothers
-                ]
+viewActivityTypeFilterWrapper : PatientTypeFilter -> Set String -> Html Msg
+viewActivityTypeFilterWrapper patientTypeFilter activityTypeFilter =
+    let
+        childTypeFilters =
+            [ h3 [] [ text "Children" ]
+            , viewActivityTypeFilter SetActivityTypeFilter Children activityTypeFilter
+            ]
 
-        Children ->
-            div []
-                [ h3 [] [ text "Children" ]
-                , viewActivityTypeFilter SetActivityTypeFilter Children
-                ]
+        motherTypeFilters =
+            [ h3 [] [ text "Mothers" ]
+            , viewActivityTypeFilter SetActivityTypeFilter Mothers activityTypeFilter
+            ]
+    in
+        case patientTypeFilter of
+            All ->
+                div [] (childTypeFilters ++ motherTypeFilters)
 
-        Mothers ->
-            div []
-                [ h3 [] [ text "Mothers" ]
-                , viewActivityTypeFilter SetActivityTypeFilter Mothers
-                ]
+            Children ->
+                div [] childTypeFilters
+
+            Mothers ->
+                div [] motherTypeFilters
 
 
 config : Table.Config ( PatientId, Patient ) Msg

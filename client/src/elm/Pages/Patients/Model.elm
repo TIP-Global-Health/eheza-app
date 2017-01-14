@@ -2,12 +2,13 @@ module Pages.Patients.Model exposing (..)
 
 import Activity.Model exposing (ActivityType)
 import App.PageType exposing (Page(..))
+import Set exposing (Set)
 import Patient.Model exposing (PatientTypeFilter(..))
 import Table
 
 
 type alias Model =
-    { activityTypeFilter : List ActivityType
+    { activityTypeFilter : Set String
     , patientTypeFilter : PatientTypeFilter
     , query : String
     , tableState : Table.State
@@ -15,7 +16,7 @@ type alias Model =
 
 
 type Msg
-    = SetActivityTypeFilter
+    = SetActivityTypeFilter ActivityType Bool
     | SetPatientTypeFilter String
     | SetRedirectPage Page
     | SetTableState Table.State
@@ -24,7 +25,7 @@ type Msg
 
 emptyModel : Model
 emptyModel =
-    { activityTypeFilter = []
+    { activityTypeFilter = Set.empty
     , patientTypeFilter = All
     , query = ""
     , tableState = Table.initialSort "Name"

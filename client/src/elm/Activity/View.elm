@@ -7,23 +7,24 @@ import Activity.Model exposing (ActivityType)
 import Activity.Utils exposing (getActivityIdentity, getActivityTypeList)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (on, onClick, onInput, onWithOptions)
+import Html.Events exposing (on, onCheck, onClick, onInput, onWithOptions)
 import Patient.Model exposing (PatientTypeFilter(..))
+import Set exposing (Set)
 
 
-viewActivityTypeFilter : msg -> PatientTypeFilter -> Html msg
-viewActivityTypeFilter msg patientTypeFilter =
+viewActivityTypeFilter : (ActivityType -> Bool -> msg) -> PatientTypeFilter -> Set String -> Html msg
+viewActivityTypeFilter msg patientTypeFilter activityTypeFilter =
     div []
         (List.map
             (\activityType ->
-                checkbox msg activityType
+                checkbox msg activityType activityTypeFilter
             )
             (getActivityTypeList patientTypeFilter)
         )
 
 
-checkbox : msg -> ActivityType -> Html msg
-checkbox msg activityType =
+checkbox : (ActivityType -> Bool -> msg) -> ActivityType -> Set String -> Html msg
+checkbox msg activityType activityTypeFilter =
     let
         activityIdentity =
             getActivityIdentity activityType
@@ -33,7 +34,10 @@ checkbox msg activityType =
             [ div
                 [ class "ui checkbox" ]
                 [ input
-                    [ type_ "checkbox", onClick msg ]
+                    [ type_ "checkbox"
+                    , onCheck (msg activityType)
+                    , checked <| Set.member (toString activityType) activityTypeFilter
+                    ]
                     []
                 , label
                     []
