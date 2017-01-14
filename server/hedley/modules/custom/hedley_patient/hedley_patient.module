@@ -59,7 +59,7 @@ function hedley_patient_trigger_pusher_on_item_data_change($node) {
   $handler->setAccount($account);
   $data = $handler->get($node->nid);
 
-  $event_name = $node->type . '__update';
+  $event_name = 'patient__update';
 
   hedley_pusher_trigger_event('general', $event_name, $data[0]);
 }
