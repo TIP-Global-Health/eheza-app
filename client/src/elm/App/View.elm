@@ -24,8 +24,7 @@ view model =
             div []
                 [ viewSidebar model
                 , div [ class "pusher" ]
-                    [ viewHeader model 
-
+                    [ viewHeader model
                     , div [ class "ui main container" ]
                         [ viewMainContent model
                         ]
@@ -48,10 +47,14 @@ viewHeader model =
                                 []
                             ]
                         , a
-                            [ class "item"
+                            [ class " header item"
                             , onClick <| SetActivePage MyAccount
                             ]
-                            [ text user.name ]
+                            [ i
+                                [ class "user icon" ]
+                                []
+                            , text user.name
+                            ]
                         , a
                             [ class "item"
                             , onClick <| SetActivePage Activities
@@ -69,12 +72,7 @@ viewHeader model =
                         , span
                             [ class "item"
                             ]
-                            [ text <|
-                                if model.offline then
-                                    "Not Connected"
-                                else
-                                    "Connected"
-                            , i
+                            [ i
                                 [ classList
                                     [ ( "icon wifi", True )
                                     , ( "disabled", model.offline )
@@ -97,10 +95,14 @@ viewSidebar model =
             div
                 [ class "ui vertical inverted sidebar menu" ]
                 [ a
-                    [ class "item"
+                    [ class " header item"
                     , onClick <| SetActivePage MyAccount
                     ]
-                    [ text user.name ]
+                    [ i
+                        [ class "user icon" ]
+                        []
+                    , text user.name
+                    ]
                 , a
                     [ class "item"
                     , onClick <| SetActivePage Activities
