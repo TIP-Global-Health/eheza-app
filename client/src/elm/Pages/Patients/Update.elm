@@ -2,14 +2,27 @@ module Pages.Patients.Update exposing (update)
 
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
-import User.Model exposing (..)
 import Pages.Patients.Model exposing (Model, Msg(..))
 import Patient.Model exposing (PatientTypeFilter(..), PatientsDict)
+import User.Model exposing (..)
 
 
 update : BackendUrl -> String -> User -> Msg -> PatientsDict -> Model -> ( Model, Cmd Msg, Maybe Page )
 update backendUrl accessToken user msg patients model =
     case msg of
+        SetActivityTypeFilter activityType isChecked ->
+            let
+                activityTypeFilterUpdated =
+                    if isChecked then
+                        activityType :: model.activityTypeFilter
+                    else
+                        List.filter ((/=) activityType) model.activityTypeFilter
+            in
+                ( { model | activityTypeFilter = activityTypeFilterUpdated }
+                , Cmd.none
+                , Nothing
+                )
+
         SetPatientTypeFilter patientTypeFilterString ->
             let
                 patientTypeFilter =

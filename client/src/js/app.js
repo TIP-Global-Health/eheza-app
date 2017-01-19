@@ -19,7 +19,7 @@ elmApp.ports.pusherKey.subscribe(function(appKey) {
       var channel = pusher.subscribe(channelName);
 
       var eventNames = [
-        'activity__update',
+        'patient__update',
       ];
 
       eventNames.forEach(function(eventName) {
@@ -30,7 +30,7 @@ elmApp.ports.pusherKey.subscribe(function(appKey) {
                 eventType: eventName,
                 data: data
             };
-            elmApp.ports.pusherItemMessages.send(event);
+            elmApp.ports.pusherPatientMessages.send(event);
         });
       });
   }

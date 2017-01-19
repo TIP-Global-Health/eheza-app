@@ -1,5 +1,8 @@
 module Pages.Patients.View exposing (view)
 
+import Activity.Model exposing (ActivityType)
+import Activity.Utils exposing (getPendingNumberPerActivity)
+import Activity.View exposing (viewActivityTypeFilter)
 import App.PageType exposing (Page(..))
 import Date exposing (Date)
 import Dict
@@ -47,8 +50,22 @@ view currentDate currentUser patients model =
 
                                         _ ->
                                             False
+
+                        validActivityTypeFilter =
+                            List.foldl
+                                (\activityType accum ->
+                                    if
+                                        accum == True
+                                        -- We already have found an existing pending activity.
+                                    then
+                                        True
+                                    else
+                                        getPendingNumberPerActivity currentDate activityType (Dict.insert patientId patient Dict.empty) > 0
+                                )
+                                False
+                                model.activityTypeFilter
                     in
-                        validName && validType
+                        validName && validType && validActivityTypeFilter
                 )
                 patients
                 |> Dict.toList
@@ -74,8 +91,33 @@ view currentDate currentUser patients model =
                     []
                 , viewPatientTypeFilter SetPatientTypeFilter model.patientTypeFilter
                 ]
+            , viewActivityTypeFilterWrapper model.patientTypeFilter model.activityTypeFilter
             , searchResult
             ]
+
+
+viewActivityTypeFilterWrapper : PatientTypeFilter -> List ActivityType -> Html Msg
+viewActivityTypeFilterWrapper patientTypeFilter activityTypeFilter =
+    let
+        childTypeFilters =
+            [ h3 [] [ text "Children" ]
+            , viewActivityTypeFilter SetActivityTypeFilter Children activityTypeFilter
+            ]
+
+        motherTypeFilters =
+            [ h3 [] [ text "Mothers" ]
+            , viewActivityTypeFilter SetActivityTypeFilter Mothers activityTypeFilter
+            ]
+    in
+        case patientTypeFilter of
+            All ->
+                div [] (childTypeFilters ++ motherTypeFilters)
+
+            Children ->
+                div [] childTypeFilters
+
+            Mothers ->
+                div [] motherTypeFilters
 
 
 config : Table.Config ( PatientId, Patient ) Msg
