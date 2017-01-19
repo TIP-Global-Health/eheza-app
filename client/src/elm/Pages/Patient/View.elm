@@ -4,14 +4,18 @@ module Pages.Patient.View
         , viewMother
         )
 
+import Activity.Model exposing (ActivityListItem)
+import Activity.Utils exposing (getActivityList)
 import App.PageType
 import Child.Model exposing (Child, ChildId)
 import Date exposing (Date)
+import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Mother.Model exposing (Mother, MotherId)
 import Pages.Patient.Model exposing (Msg(..))
+import Patient.Model exposing (Patient, PatientId, PatientTypeFilter(..), PatientsDict)
 import RemoteData exposing (RemoteData(..), WebData)
 import User.Model exposing (User)
 
@@ -44,6 +48,10 @@ viewChild currentDate currentUser childId child motherWebData =
 
                         _ ->
                             div [] []
+
+        patients =
+            -- @todo: Add mkChild
+            Dict.insert childId ({ info = Patient.Model.PatientChild child }) Dict.empty
     in
         div []
             [ div
@@ -59,6 +67,9 @@ viewChild currentDate currentUser childId child motherWebData =
             , div
                 [ class "ui divider" ]
                 []
+            , div []
+                [ viewActivityCards currentDate currentUser patients Children
+                ]
             ]
 
 
@@ -97,6 +108,10 @@ viewMother currentDate currentUser motherId mother children =
                     [ text <| "Children: "
                     , ul [] childrenInfo
                     ]
+
+        patients =
+            -- @todo: Add mkMother
+            Dict.insert motherId ({ info = Patient.Model.PatientMother mother }) Dict.empty
     in
         div []
             [ div
@@ -112,4 +127,58 @@ viewMother currentDate currentUser motherId mother children =
                 [ class "ui divider" ]
                 []
             , childrenList
+            , div
+                [ class "ui divider" ]
+                []
+            , div []
+                [ viewActivityCards currentDate currentUser patients Mothers
+                ]
             ]
+
+
+
+-- @todo: Cleanup code duplication
+
+
+viewActivityCards : Date -> User -> PatientsDict -> PatientTypeFilter -> Html Msg
+viewActivityCards currentDate user patients patientTypeFilter =
+    let
+        allActivityList =
+            getActivityList currentDate patientTypeFilter patients
+
+        pendingActivities =
+            List.filter (\activity -> activity.remaining > 0) allActivityList
+
+        noPendingActivities =
+            List.filter (\activity -> activity.remaining == 0) allActivityList
+
+        pendingActivitiesView =
+            if List.isEmpty pendingActivities then
+                []
+            else
+                List.map viewActivityListItem pendingActivities
+
+        noPendingActivitiesView =
+            if List.isEmpty noPendingActivities then
+                div [] []
+            else
+                div []
+                    [ h2 [ class "ui header" ] [ text "Activities completed" ]
+                    , div [ class "ui cards activities activities_complete" ] (List.map viewActivityListItem noPendingActivities)
+                    ]
+    in
+        div []
+            [ h2 [ class "ui header" ] [ text "Activities to complete" ]
+            , div [ class "ui cards activities activities_todo" ] pendingActivitiesView
+            , noPendingActivitiesView
+            ]
+
+
+viewActivityListItem : ActivityListItem -> Html a
+viewActivityListItem report =
+    div [ class "ui card activities__item" ]
+        [ a [ href "#" ] [ i [ class (report.activity.icon ++ " icon") ] [] ]
+        , div [ class "content" ]
+            [ a [ class "header activities__item__title" ] [ text report.activity.name ]
+            ]
+        ]
