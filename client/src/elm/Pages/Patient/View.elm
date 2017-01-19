@@ -108,6 +108,10 @@ viewMother currentDate currentUser motherId mother children =
                     [ text <| "Children: "
                     , ul [] childrenInfo
                     ]
+
+        patients =
+            -- @todo: Add mkMother
+            Dict.insert motherId ({ info = Patient.Model.PatientMother mother }) Dict.empty
     in
         div []
             [ div
@@ -123,6 +127,12 @@ viewMother currentDate currentUser motherId mother children =
                 [ class "ui divider" ]
                 []
             , childrenList
+            , div
+                [ class "ui divider" ]
+                []
+            , div []
+                [ viewActivityCards currentDate currentUser patients Mothers
+                ]
             ]
 
 
