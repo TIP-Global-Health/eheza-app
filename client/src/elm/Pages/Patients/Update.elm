@@ -1,10 +1,26 @@
-module Pages.Patients.Update exposing (update)
+module Pages.Patients.Update exposing (update, urlFragment)
 
+import Activity.Encoder exposing (encodeActivityType)
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Pages.Patients.Model exposing (Model, Msg(..))
 import Patient.Model exposing (PatientTypeFilter(..), PatientsDict)
 import User.Model exposing (..)
+
+
+{-| What should we show in the part of the URL we will be asked to decode?
+-}
+urlFragment : Model -> String
+urlFragment model =
+    model.activityTypeFilter
+        |> List.map encodeActivityType
+        |> String.join "&"
+        |> (\fragment ->
+                if fragment == "" then
+                    ""
+                else
+                    "activites=" ++ fragment
+           )
 
 
 update : BackendUrl -> String -> User -> Msg -> PatientsDict -> Model -> ( Model, Cmd Msg, Maybe Page )

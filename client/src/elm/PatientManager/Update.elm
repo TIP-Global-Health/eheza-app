@@ -1,4 +1,4 @@
-port module PatientManager.Update exposing (update, subscriptions)
+port module PatientManager.Update exposing (update, subscriptions, dashboardUrlFragment)
 
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
@@ -19,6 +19,14 @@ import Pusher.Model exposing (PusherEventData(..))
 import RemoteData exposing (RemoteData(..))
 import User.Model exposing (User)
 import Utils.WebData exposing (sendWithHandler)
+
+
+{-| If we're on the `Dashboard` page, what should we show in the part of the URL
+that we'll be asked to decode?
+-}
+dashboardUrlFragment : Model -> String
+dashboardUrlFragment model =
+    Pages.Patients.Update.urlFragment model.patientsPage
 
 
 update : Date -> BackendUrl -> String -> User -> Msg -> Model -> ( Model, Cmd Msg, Maybe Page )
