@@ -49,6 +49,7 @@ type alias MotherActivityDates =
 type alias ActivityIdentity =
     { name : String
     , icon : String
+    , activityType : ActivityType
     }
 
 

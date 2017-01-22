@@ -2,9 +2,11 @@ module Pages.Activities.View exposing (view)
 
 import Activity.Model exposing (ActivityListItem)
 import Activity.Utils exposing (getActivityList)
+import App.PageType exposing (Page(..))
 import Date exposing (Date)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
 import List as List
 import Pages.Activities.Model exposing (Model, Msg(..))
 import Patient.Model exposing (PatientTypeFilter(..), PatientsDict)
@@ -47,10 +49,14 @@ view currentDate user patients model =
             ]
 
 
-viewActivity : ActivityListItem -> Html a
+viewActivity : ActivityListItem -> Html Msg
 viewActivity report =
     div [ class "ui card activities__item" ]
-        [ a [ href "#" ] [ i [ class (report.activity.icon ++ " icon") ] [] ]
+        [ a
+            [ href "#"
+            , onClick <| SetRedirectPage <| Dashboard [ report.activity.activityType ]
+            ]
+            [ i [ class (report.activity.icon ++ " icon") ] [] ]
         , div [ class "content" ]
             [ a [ class "header activities__item__title" ] [ text report.activity.name ]
             , div [ class "meta" ] [ text <| toString report.remaining ++ " remaining" ]

@@ -63,46 +63,50 @@ getActivityList currentDate patientTypeFilter patients =
 
 getActivityIdentity : ActivityType -> ActivityIdentity
 getActivityIdentity activityType =
-    case activityType of
-        Child childActivityType ->
-            case childActivityType of
-                ChildPicture ->
-                    ActivityIdentity "Take pictures (Child)" "photo"
+    let
+        identityVal =
+            case activityType of
+                Child childActivityType ->
+                    case childActivityType of
+                        ChildPicture ->
+                            ActivityIdentity "Take pictures (Child)" "photo"
 
-                Height ->
-                    ActivityIdentity "Height" "line chart"
+                        Height ->
+                            ActivityIdentity "Height" "line chart"
 
-                Weight ->
-                    ActivityIdentity "Weight" "law"
+                        Weight ->
+                            ActivityIdentity "Weight" "law"
 
-                Muac ->
-                    ActivityIdentity "MUAC" "treatment"
+                        Muac ->
+                            ActivityIdentity "MUAC" "treatment"
 
-                ProgressReport ->
-                    ActivityIdentity "Progress reports" "bar chart"
+                        ProgressReport ->
+                            ActivityIdentity "Progress reports" "bar chart"
 
-        Mother motherActivityType ->
-            case motherActivityType of
-                Aheza ->
-                    ActivityIdentity "Aheza" "food"
+                Mother motherActivityType ->
+                    case motherActivityType of
+                        Aheza ->
+                            ActivityIdentity "Aheza" "food"
 
-                Attendance ->
-                    ActivityIdentity "Attendance" "thumbs outline up"
+                        Attendance ->
+                            ActivityIdentity "Attendance" "thumbs outline up"
 
-                Education ->
-                    ActivityIdentity "Education" "student"
+                        Education ->
+                            ActivityIdentity "Education" "student"
 
-                FamilyPlanning ->
-                    ActivityIdentity "Family planning" "users"
+                        FamilyPlanning ->
+                            ActivityIdentity "Family planning" "users"
 
-                Hiv ->
-                    ActivityIdentity "HIV" "doctor"
+                        Hiv ->
+                            ActivityIdentity "HIV" "doctor"
 
-                MotherPicture ->
-                    ActivityIdentity "Take pictures (Mother)" "photo"
+                        MotherPicture ->
+                            ActivityIdentity "Take pictures (Mother)" "photo"
 
-                NutritionSigns ->
-                    ActivityIdentity "Nutrition signs" "heartbeat"
+                        NutritionSigns ->
+                            ActivityIdentity "Nutrition signs" "heartbeat"
+    in
+        identityVal activityType
 
 
 getPendingNumberPerActivity : Date -> ActivityType -> PatientsDict -> Int
