@@ -37,7 +37,9 @@ viewChild currentDate currentUser childId child motherWebData =
                                     [ href "#"
                                     , onClick <| SetRedirectPage (App.PageType.Patient motherId)
                                     ]
-                                    [ text mother.name ]
+                                    [ img [ src mother.image, class "ui avatar image" ] []
+                                    , text mother.name
+                                    ]
                                 ]
 
                         Loading ->
@@ -60,9 +62,11 @@ viewChild currentDate currentUser childId child motherWebData =
                     [ class "ui header" ]
                     [ text child.name ]
                 ]
-            , div [ class "ui card" ]
-                [ img [ src child.image ] []
-                , div [ class "content" ] [ motherInfo ]
+            , div [ class "ui grid" ]
+                [ div [ class "six wide column" ]
+                    [ img [ class "ui medium rounded image", src child.image ] []
+                    ]
+                , div [ class "content six wide column" ] [ motherInfo ]
                 ]
             , div
                 [ class "ui divider" ]
@@ -86,7 +90,9 @@ viewMother currentDate currentUser motherId mother children =
                                     [ href "#"
                                     , onClick <| SetRedirectPage (App.PageType.Patient childId)
                                     ]
-                                    [ text child.name ]
+                                    [ img [ src child.image, class "ui avatar image" ] []
+                                    , text child.name
+                                    ]
                                 ]
 
                         Loading ->
@@ -120,13 +126,12 @@ viewMother currentDate currentUser motherId mother children =
                     [ class "ui header" ]
                     [ text mother.name ]
                 ]
-            , div []
-                [ img [ src mother.image ] []
+            , div [ class "ui grid" ]
+                [ div [ class "six wide column" ]
+                    [ img [ class "ui medium rounded image", src mother.image ] []
+                    ]
+                , div [ class "six wide column" ] [ childrenList ]
                 ]
-            , div
-                [ class "ui divider" ]
-                []
-            , childrenList
             , div
                 [ class "ui divider" ]
                 []
@@ -163,13 +168,13 @@ viewActivityCards currentDate user patients patientTypeFilter =
                 div [] []
             else
                 div []
-                    [ h2 [ class "ui header" ] [ text "Activities completed" ]
-                    , div [ class "ui cards activities activities_complete" ] (List.map viewActivityListItem noPendingActivities)
+                    [ h2 [ class "ui header activities" ] [ text "Activities completed" ]
+                    , div [ class "ui cards activities completed" ] (List.map viewActivityListItem noPendingActivities)
                     ]
     in
         div []
-            [ h2 [ class "ui header" ] [ text "Activities to complete" ]
-            , div [ class "ui cards activities activities_todo" ] pendingActivitiesView
+            [ h2 [ class "ui header activities" ] [ text "Activities to complete" ]
+            , div [ class "ui cards activities pending" ] pendingActivitiesView
             , noPendingActivitiesView
             ]
 

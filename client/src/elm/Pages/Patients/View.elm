@@ -100,24 +100,31 @@ viewActivityTypeFilterWrapper : PatientTypeFilter -> List ActivityType -> Html M
 viewActivityTypeFilterWrapper patientTypeFilter activityTypeFilter =
     let
         childTypeFilters =
-            [ h3 [] [ text "Children" ]
-            , viewActivityTypeFilter SetActivityTypeFilter Children activityTypeFilter
+            [ div [ class "six wide column" ]
+                [ h3 [] [ text "Children" ]
+                , viewActivityTypeFilter SetActivityTypeFilter Children activityTypeFilter
+                ]
             ]
 
         motherTypeFilters =
-            [ h3 [] [ text "Mothers" ]
-            , viewActivityTypeFilter SetActivityTypeFilter Mothers activityTypeFilter
+            [ div [ class "six wide column" ]
+                [ h3 [] [ text "Mothers" ]
+                , viewActivityTypeFilter SetActivityTypeFilter Mothers activityTypeFilter
+                ]
             ]
+
+        wrapperClasses =
+            class "ui grid activity-type-filter"
     in
         case patientTypeFilter of
             All ->
-                div [] (childTypeFilters ++ motherTypeFilters)
+                div [ wrapperClasses ] (childTypeFilters ++ motherTypeFilters)
 
             Children ->
-                div [] childTypeFilters
+                div [ wrapperClasses ] childTypeFilters
 
             Mothers ->
-                div [] motherTypeFilters
+                div [ wrapperClasses ] motherTypeFilters
 
 
 config : Table.Config ( PatientId, Patient ) Msg
