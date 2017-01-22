@@ -51,14 +51,18 @@ view currentDate user patients model =
 
 viewActivity : ActivityListItem -> Html Msg
 viewActivity report =
-    div [ class "ui card activities__item" ]
-        [ a
-            [ href "#"
-            , onClick <| SetRedirectPage <| Dashboard [ report.activity.activityType ]
+    let
+        redirect =
+            onClick <| SetRedirectPage <| Dashboard [ report.activity.activityType ]
+    in
+        div [ class "ui card activities__item" ]
+            [ a
+                [ href "#"
+                , redirect
+                ]
+                [ i [ class (report.activity.icon ++ " icon") ] [] ]
+            , div [ class "content" ]
+                [ a [ class "header activities__item__title", redirect ] [ text report.activity.name ]
+                , div [ class "meta" ] [ text <| toString report.remaining ++ " remaining" ]
+                ]
             ]
-            [ i [ class (report.activity.icon ++ " icon") ] [] ]
-        , div [ class "content" ]
-            [ a [ class "header activities__item__title" ] [ text report.activity.name ]
-            , div [ class "meta" ] [ text <| toString report.remaining ++ " remaining" ]
-            ]
-        ]
