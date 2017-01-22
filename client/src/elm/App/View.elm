@@ -63,7 +63,7 @@ viewHeader model =
                             [ text "Activities" ]
                         , a
                             [ class "item"
-                            , onClick <| SetActivePage <| Dashboard [ Child ChildPicture ]
+                            , onClick <| SetActivePage <| Dashboard []
                             ]
                             [ text "Patients" ]
                         , div [ class "right item" ]

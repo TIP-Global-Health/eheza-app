@@ -181,7 +181,7 @@ update msg model =
                                             activityTypes
 
                                     ( modelUpdatedDashboard, _ ) =
-                                        update (MsgPatientManager <| PatientManager.Model.SetActivityTypeFilters activityTypes) model
+                                        update (MsgPatientManager <| PatientManager.Model.SetActivityTypeFilters activityTypesUpdated) model
                                 in
                                     -- If we're showing a `Patients` page, make sure we `Subscribe`
                                     update (MsgPatientManager PatientManager.Model.FetchAll) modelUpdatedDashboard
