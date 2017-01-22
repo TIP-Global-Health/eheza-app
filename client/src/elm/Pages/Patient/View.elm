@@ -60,9 +60,11 @@ viewChild currentDate currentUser childId child motherWebData =
                     [ class "ui header" ]
                     [ text child.name ]
                 ]
-            , div [ class "ui card" ]
-                [ img [ src child.image ] []
-                , div [ class "content" ] [ motherInfo ]
+            , div [ class "ui grid" ]
+                [ div [ class "six wide column" ]
+                    [ img [ class "ui medium rounded image", src child.image ] []
+                    ]
+                , div [ class "content six wide column" ] [ motherInfo ]
                 ]
             , div
                 [ class "ui divider" ]
@@ -120,13 +122,12 @@ viewMother currentDate currentUser motherId mother children =
                     [ class "ui header" ]
                     [ text mother.name ]
                 ]
-            , div []
-                [ img [ src mother.image ] []
+            , div [ class "ui grid" ]
+                [ div [ class "six wide column" ]
+                    [ img [ class "ui medium rounded image", src mother.image ] []
+                    ]
+                , div [ class "six wide column" ] [ childrenList ]
                 ]
-            , div
-                [ class "ui divider" ]
-                []
-            , childrenList
             , div
                 [ class "ui divider" ]
                 []
