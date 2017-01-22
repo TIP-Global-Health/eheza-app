@@ -22,20 +22,70 @@ view model =
 
         _ ->
             div []
-                [ div [ class "ui container main" ]
-                    [ viewSidebar model
-                    , div
-                        [ class "pusher" ]
-                        [ div
-                            [ class "ui grid container" ]
-                            [ div
-                                [ class "ui main grid" ]
-                                [ viewMainContent model
+                [ viewSidebar model
+                , div [ class "pusher" ]
+                    [ viewHeader model
+                    , div [ class "ui main container" ]
+                        [ viewMainContent model
+                        ]
+                    ]
+                ]
+
+
+viewHeader : Model -> Html Msg
+viewHeader model =
+    case model.user of
+        Success user ->
+            div [ class "ui inverted masthead segment" ]
+                [ div [ class "ui container" ]
+                    [ div [ class "ui large inverted secondary pointing menu" ]
+                        [ a
+                            [ class "toc item"
+                            , href "#"
+                            ]
+                            [ i [ class "sidebar icon" ]
+                                []
+                            ]
+                        , a
+                            [ class " header item"
+                            , onClick <| SetActivePage MyAccount
+                            ]
+                            [ i
+                                [ class "user icon" ]
+                                []
+                            , text user.name
+                            ]
+                        , a
+                            [ class "item"
+                            , onClick <| SetActivePage Activities
+                            ]
+                            [ text "Activities" ]
+                        , a
+                            [ class "item"
+                            , onClick <| SetActivePage Dashboard
+                            ]
+                            [ text "Dashboard" ]
+                        , div [ class "right item" ]
+                            [ a [ class "ui inverted button " ]
+                                [ text "Sign Out" ]
+                            ]
+                        , span
+                            [ class "item"
+                            ]
+                            [ i
+                                [ classList
+                                    [ ( "icon wifi", True )
+                                    , ( "disabled", model.offline )
+                                    ]
                                 ]
+                                []
                             ]
                         ]
                     ]
                 ]
+
+        _ ->
+            div [] []
 
 
 viewSidebar : Model -> Html Msg
@@ -43,20 +93,21 @@ viewSidebar model =
     case model.user of
         Success user ->
             div
-                [ class "ui visible sidebar inverted vertical menu" ]
+                [ class "ui vertical inverted sidebar menu" ]
                 [ a
-                    [ class "item"
+                    [ class " header item"
                     , onClick <| SetActivePage MyAccount
                     ]
-                    [ h4
-                        [ class "ui grey header" ]
-                        [ text user.name ]
+                    [ i
+                        [ class "user icon" ]
+                        []
+                    , text user.name
                     ]
                 , a
                     [ class "item"
-                    , onClick Logout
+                    , onClick <| SetActivePage Activities
                     ]
-                    [ text "Sign Out" ]
+                    [ text "Activities" ]
                 , a
                     [ class "item"
                     , onClick <| SetActivePage Dashboard
@@ -64,9 +115,9 @@ viewSidebar model =
                     [ text "Dashboard" ]
                 , a
                     [ class "item"
-                    , onClick <| SetActivePage Activities
+                    , onClick Logout
                     ]
-                    [ text "Activities" ]
+                    [ text "Sign Out" ]
                 , span
                     [ class "item"
                     ]
