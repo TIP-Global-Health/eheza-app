@@ -66,7 +66,10 @@ viewHeader model =
                             ]
                             [ text "Dashboard" ]
                         , div [ class "right item" ]
-                            [ a [ class "ui inverted button " ]
+                            [ a
+                                [ class "ui inverted button"
+                                , onClick Logout
+                                ]
                                 [ text "Sign Out" ]
                             ]
                         , span
