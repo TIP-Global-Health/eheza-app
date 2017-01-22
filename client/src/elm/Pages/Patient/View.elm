@@ -37,7 +37,9 @@ viewChild currentDate currentUser childId child motherWebData =
                                     [ href "#"
                                     , onClick <| SetRedirectPage (App.PageType.Patient motherId)
                                     ]
-                                    [ text mother.name ]
+                                    [ img [ src mother.image, class "ui avatar image" ] []
+                                    , text mother.name
+                                    ]
                                 ]
 
                         Loading ->
