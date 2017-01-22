@@ -163,13 +163,13 @@ viewActivityCards currentDate user patients patientTypeFilter =
                 div [] []
             else
                 div []
-                    [ h2 [ class "ui header" ] [ text "Activities completed" ]
-                    , div [ class "ui cards activities activities_complete" ] (List.map viewActivityListItem noPendingActivities)
+                    [ h2 [ class "ui header activities" ] [ text "Activities completed" ]
+                    , div [ class "ui cards activities completed" ] (List.map viewActivityListItem noPendingActivities)
                     ]
     in
         div []
-            [ h2 [ class "ui header" ] [ text "Activities to complete" ]
-            , div [ class "ui cards activities activities_todo" ] pendingActivitiesView
+            [ h2 [ class "ui header activities" ] [ text "Activities to complete" ]
+            , div [ class "ui cards activities pending" ] pendingActivitiesView
             , noPendingActivitiesView
             ]
 

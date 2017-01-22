@@ -1,3 +1,5 @@
+@import "activities";
+@import "elm-plot";
 @import "patients";
 
 .hidden.menu {
@@ -71,100 +73,4 @@
 
 copy-button button {
   height: 37px;
-}
-
-// Elm-Plot
-
-
-/* Standard styles */
-
-.elm-plot {
-	position: relative;
-}
-
-.elm-plot__inner {
-	stroke: #c3c3c3;
-	fill: #c3c3c3;
-}
-
-.elm-plot__grid__line {
-	stroke: #c3c3c3;
-}
-
-.elm-plot__hint {
-	position: absolute;
-	pointer-events: none;
-}
-
-.elm-plot__hint__line {
-	width: 1px;
-	background-color: #000;
-	pointer-events: none;
-}
-
-.elm-plot__hint__default-view {
-	position: absolute;
-	top: 20%;
-	padding: 10px;
-	background-color: #eee;
-	width: 200px;
-	text-align: left;
-	border-radius: 3px;
-	box-shadow: 5px 5px 20px -5px rgba(0,0,0,0.25);
-}
-
-
-.elm-plot__hint__default-view--left {
-	left: 10px;
-}
-
-.elm-plot__hint__default-view--right {
-	transform: translateX(-100%);
-	left: -10px;
-}
-
-.login-container {
-
-  header {
-    text-align: center;
-    margin-bottom: 50px;
-  }
-
-  main {
-    padding: 50px;
-    max-width: 400px;
-    margin: 0 auto;
-    background: lavender;
-    border-radius: 5px;
-  }
-
-}
-
-
-.activities {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-}
-
-.activities__item {
-  text-align: center;
-  flex: 0 0 160px;
-  margin: 20px;
-  justify-content: center;
-
-  a {
-    color: black;
-  }
-
-  i {
-    font-size: 60px;
-    line-height: 80px;
-    margin-bottom: 20px;
-  }
-
-  .activities__item__progress {
-    margin-top: 10px;
-  }
-
 }

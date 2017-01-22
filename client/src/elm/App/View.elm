@@ -64,7 +64,7 @@ viewHeader model =
                             [ class "item"
                             , onClick <| SetActivePage Dashboard
                             ]
-                            [ text "Dashboard" ]
+                            [ text "Patients" ]
                         , div [ class "right item" ]
                             [ a
                                 [ class "ui inverted button"
@@ -115,7 +115,7 @@ viewSidebar model =
                     [ class "item"
                     , onClick <| SetActivePage Dashboard
                     ]
-                    [ text "Dashboard" ]
+                    [ text "Patients" ]
                 , a
                     [ class "item"
                     , onClick Logout

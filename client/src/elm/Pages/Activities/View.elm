@@ -35,14 +35,14 @@ view currentDate user patients model =
                 div [] []
             else
                 div []
-                    [ h2 [ class "ui header" ] [ text "Activities completed" ]
-                    , div [ class "ui cards activities activities_complete" ] (List.map viewActivity noPendingActivities)
+                    [ h2 [ class "ui header activities" ] [ text "Activities completed" ]
+                    , div [ class "ui cards activities completed" ] (List.map viewActivity noPendingActivities)
                     ]
     in
         div []
             [ viewPatientTypeFilter SetPatientTypeFilter model.patientTypeFilter
-            , h2 [ class "ui header" ] [ text "Activities to complete" ]
-            , div [ class "ui cards activities activities_todo" ] pendingActivitiesView
+            , h2 [ class "ui header activities" ] [ text "Activities to complete" ]
+            , div [ class "ui cards activities pending" ] pendingActivitiesView
             , noPendingActivitiesView
             ]
 
