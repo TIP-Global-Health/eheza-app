@@ -111,7 +111,10 @@ viewActivityTypeFilterWrapper patientTypeFilter activityTypeFilter =
     in
         case patientTypeFilter of
             All ->
-                div [] (childTypeFilters ++ motherTypeFilters)
+                div [ class "ui grid" ]
+                    [ div [ class "six wide column" ] childTypeFilters
+                    , div [ class "six wide column" ] motherTypeFilters
+                    ]
 
             Children ->
                 div [] childTypeFilters
