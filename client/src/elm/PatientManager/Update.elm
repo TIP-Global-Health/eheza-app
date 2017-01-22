@@ -1,4 +1,4 @@
-port module PatientManager.Update exposing (update, subscriptions)
+port module PatientManager.Update exposing (update, subscriptions, dashboardUrlFragment)
 
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
@@ -13,12 +13,21 @@ import Json.Encode exposing (Value)
 import HttpBuilder exposing (get, withQueryParams)
 import Pages.Activities.Update
 import Pages.Patient.Update
+import Pages.Patients.Model
 import Pages.Patients.Update
 import Pusher.Decoder exposing (decodePusherEvent)
 import Pusher.Model exposing (PusherEventData(..))
 import RemoteData exposing (RemoteData(..))
 import User.Model exposing (User)
 import Utils.WebData exposing (sendWithHandler)
+
+
+{-| If we're on the `Dashboard` page, what should we show in the part of the URL
+that we'll be asked to decode?
+-}
+dashboardUrlFragment : Model -> String
+dashboardUrlFragment model =
+    Pages.Patients.Update.urlFragment model.patientsPage
 
 
 update : Date -> BackendUrl -> String -> User -> Msg -> Model -> ( Model, Cmd Msg, Maybe Page )
@@ -193,6 +202,9 @@ update currentDate backendUrl accessToken user msg model =
                     in
                         -- We'll log the error decoding the pusher event
                         ( model, Cmd.none, Nothing )
+
+        SetActivityTypeFilters activityTypeFilters ->
+            update currentDate backendUrl accessToken user (MsgPagesPatients <| Pages.Patients.Model.SetActivityTypeFilters activityTypeFilters) model
 
 
 {-| A single port for all messages coming in from pusher for a `Patient` ... they

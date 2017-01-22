@@ -1,3 +1,30 @@
 .ui.header.activities {
   margin-top: 20px;
 }
+
+.activities {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.activities__item {
+  text-align: center;
+  flex: 0 0 160px;
+  margin: 20px;
+  justify-content: center;
+
+  a {
+    color: black;
+  }
+
+  i {
+    font-size: 60px;
+    line-height: 80px;
+    margin-bottom: 20px;
+  }
+
+  .activities__item__progress {
+      margin-top: 10px;
+  }
+}

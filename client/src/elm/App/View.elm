@@ -1,5 +1,6 @@
 module App.View exposing (..)
 
+import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import App.Model exposing (..)
 import App.PageType exposing (Page(..))
 import Config.View
@@ -62,7 +63,7 @@ viewHeader model =
                             [ text "Activities" ]
                         , a
                             [ class "item"
-                            , onClick <| SetActivePage Dashboard
+                            , onClick <| SetActivePage <| Dashboard []
                             ]
                             [ text "Patients" ]
                         , div [ class "right item" ]
@@ -113,7 +114,7 @@ viewSidebar model =
                     [ text "Activities" ]
                 , a
                     [ class "item"
-                    , onClick <| SetActivePage Dashboard
+                    , onClick <| SetActivePage <| Dashboard []
                     ]
                     [ text "Patients" ]
                 , a
@@ -228,7 +229,7 @@ viewMainContent model =
                     -- We don't need to pass any cmds, so we can call the view directly
                     Pages.PageNotFound.View.view
 
-                Dashboard ->
+                Dashboard _ ->
                     case model.user of
                         Success user ->
                             Html.map MsgPatientManager <|

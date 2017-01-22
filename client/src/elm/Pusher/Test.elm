@@ -1,5 +1,6 @@
 module Pusher.Test exposing (all)
 
+import Activity.Model exposing (emptyChildActivityDates)
 import Expect
 import Json.Decode exposing (decodeString)
 import Patient.Model exposing (PatientType(..))
@@ -17,12 +18,17 @@ decodeTest =
                     json =
                         """
 {
-    "eventType" : "activity__update",
+    "eventType" : "patient__update",
     "data" : {
       "type" : "child",
       "id" : "100",
       "label" : "new-patient",
-      "mother": "7"
+      "mother": "7",
+      "date_picture": null,
+      "date_height" : null,
+      "date_muac" : null,
+      "date_progress_report" : null,
+      "date_weight" : null
     }
 
 }
@@ -36,9 +42,9 @@ decodeTest =
                                     PatientChild
                                         { name = "new-patient"
                                         , image = "http://placehold.it/350x150"
-                                        , motherId = "7"
+                                        , motherId = Just "7"
+                                        , activityDates = emptyChildActivityDates
                                         }
-                                , activities = ""
                                 }
                         }
                 in
