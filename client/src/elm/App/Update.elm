@@ -220,7 +220,12 @@ setActivePageAccess user page =
                 page
 
         _ ->
-            page
+            if page == Login then
+                page
+            else if page == PageNotFound then
+                page
+            else
+                AccessDenied
 
 
 subscriptions : Model -> Sub Msg
