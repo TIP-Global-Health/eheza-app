@@ -1,10 +1,12 @@
 port module App.Update exposing (init, update, subscriptions)
 
+import Activity.Utils exposing (getActivityTypeList)
 import App.Model exposing (..)
 import App.PageType exposing (Page(..))
 import Config
 import Date
 import Dict
+import Patient.Model exposing (PatientTypeFilter(..))
 import PatientManager.Model
 import PatientManager.Update
 import Json.Decode exposing (decodeValue, bool)
@@ -135,7 +137,7 @@ update msg model =
                                         case modelUpdated.activePage of
                                             Login ->
                                                 -- Redirect to the dashboard.
-                                                Dashboard
+                                                Dashboard []
 
                                             _ ->
                                                 -- Keep the active page.
@@ -170,9 +172,19 @@ update msg model =
                                 -- If we're showing a `Activities` page, make sure we `Subscribe`
                                 update (MsgPatientManager PatientManager.Model.FetchAll) model
 
-                            Dashboard ->
-                                -- If we're showing a `Patients` page, make sure we `Subscribe`
-                                update (MsgPatientManager PatientManager.Model.FetchAll) model
+                            Dashboard activityTypes ->
+                                let
+                                    activityTypesUpdated =
+                                        if List.isEmpty activityTypes then
+                                            getActivityTypeList All
+                                        else
+                                            activityTypes
+
+                                    ( modelUpdatedDashboard, _ ) =
+                                        update (MsgPatientManager <| PatientManager.Model.SetActivityTypeFilters activityTypes) model
+                                in
+                                    -- If we're showing a `Patients` page, make sure we `Subscribe`
+                                    update (MsgPatientManager PatientManager.Model.FetchAll) modelUpdatedDashboard
 
                             Patient id ->
                                 -- If we're showing a `Patient`, make sure we `Subscribe`

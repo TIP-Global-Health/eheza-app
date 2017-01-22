@@ -1,5 +1,6 @@
 module App.Router exposing (delta2url, location2messages)
 
+import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import App.Model exposing (..)
 import App.PageType exposing (..)
 import Navigation exposing (Location)
@@ -29,7 +30,7 @@ delta2url previous current =
         Patient id ->
             Just <| UrlChange NewEntry ("#patient/" ++ id)
 
-        Dashboard ->
+        Dashboard _ ->
             let
                 fragment =
                     PatientManager.Update.dashboardUrlFragment current.pagePatient
@@ -57,7 +58,7 @@ location2messages location =
 parseUrl : Parser (Msg -> c) c
 parseUrl =
     oneOf
-        [ map (SetActivePage Dashboard) (s "")
+        [ map (SetActivePage <| Dashboard []) (s "")
         , map (SetActivePage Activities) (s "activities")
         , map (\id -> SetActivePage <| Patient (toString id)) (s "patient" </> int)
         , map (SetActivePage Login) (s "login")

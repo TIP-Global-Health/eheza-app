@@ -39,6 +39,12 @@ update backendUrl accessToken user msg patients model =
                 , Nothing
                 )
 
+        SetActivityTypeFilters activityTypeFilters ->
+            ( { model | activityTypeFilter = activityTypeFilters }
+            , Cmd.none
+            , Nothing
+            )
+
         SetPatientTypeFilter patientTypeFilterString ->
             let
                 patientTypeFilter =

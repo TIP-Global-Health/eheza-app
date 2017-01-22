@@ -17,6 +17,7 @@ type alias Model =
 
 type Msg
     = SetActivityTypeFilter ActivityType Bool
+    | SetActivityTypeFilters (List ActivityType)
     | SetPatientTypeFilter String
     | SetRedirectPage Page
     | SetTableState Table.State

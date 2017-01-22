@@ -1,5 +1,6 @@
 module PatientManager.Model exposing (..)
 
+import Activity.Model exposing (ActivityType)
 import Dict exposing (Dict)
 import Http
 import Pages.Activities.Model
@@ -47,6 +48,7 @@ type Msg
     | HandleFetchedPatient PatientId (Result Http.Error Patient)
     | HandleFetchedPatients (Result Http.Error PatientsDict)
     | HandlePusherEvent (Result String PusherEvent)
+    | SetActivityTypeFilters (List ActivityType)
 
 
 emptyModel : Model

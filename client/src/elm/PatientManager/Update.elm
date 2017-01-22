@@ -13,6 +13,7 @@ import Json.Encode exposing (Value)
 import HttpBuilder exposing (get, withQueryParams)
 import Pages.Activities.Update
 import Pages.Patient.Update
+import Pages.Patients.Model
 import Pages.Patients.Update
 import Pusher.Decoder exposing (decodePusherEvent)
 import Pusher.Model exposing (PusherEventData(..))
@@ -201,6 +202,9 @@ update currentDate backendUrl accessToken user msg model =
                     in
                         -- We'll log the error decoding the pusher event
                         ( model, Cmd.none, Nothing )
+
+        SetActivityTypeFilters activityTypeFilters ->
+            update currentDate backendUrl accessToken user (MsgPagesPatients <| Pages.Patients.Model.SetActivityTypeFilters activityTypeFilters) model
 
 
 {-| A single port for all messages coming in from pusher for a `Patient` ... they
