@@ -1,43 +1,34 @@
-sudo: require
-
+sudo: required
 language: php
 php:
-  - 5.6
-
+- 5.6
 env:
+  matrix:
   - BUILD_SERVER=1
   - BUILD_CLIENT=1
-  - CODE_REVIEW=1
-    REVIEW_STANDARD="Drupal"
-  - CODE_REVIEW=1
-    REVIEW_STANDARD="DrupalPractice"
-
+  - BUILD_WEBDRIVERIO=1 BUILD_SERVER=1
+  - CODE_REVIEW=1 REVIEW_STANDARD="Drupal"
+  - CODE_REVIEW=1 REVIEW_STANDARD="DrupalPractice"
+  - SHELL_REVIEW=1
 services:
-  - docker
-
-cache:
-  directories:
-    - sysconfcpus
-
+- docker
 before_install:
-  - composer self-update
-  - export PATH="$HOME/.config/composer/vendor/bin:$PATH"
-
+- export PATH="$HOME/.config/composer/vendor/bin:$PATH"
+- "([ ! -z $BUILD_WEBDRIVERIO ] && sudo pip install docker-compose) || :"
 install:
-  - $TRAVIS_BUILD_DIR/ci-scripts/install_client.sh
-  - $TRAVIS_BUILD_DIR/ci-scripts/install_coder.sh
-  - $TRAVIS_BUILD_DIR/ci-scripts/install_server.sh
-
+- "$TRAVIS_BUILD_DIR/ci-scripts/install_client.sh"
+- "$TRAVIS_BUILD_DIR/ci-scripts/install_coder.sh"
+- "$TRAVIS_BUILD_DIR/ci-scripts/install_server.sh"
+- "$TRAVIS_BUILD_DIR/ci-scripts/install_shell.sh"
 before_script:
-  - $TRAVIS_BUILD_DIR/ci-scripts/prepare_client.sh
-
+- "$TRAVIS_BUILD_DIR/ci-scripts/prepare_client.sh"
 script:
-  - $TRAVIS_BUILD_DIR/ci-scripts/test_client.sh
-  - $TRAVIS_BUILD_DIR/ci-scripts/test_coder.sh
-  - $TRAVIS_BUILD_DIR/ci-scripts/test_server.sh
-
+- "$TRAVIS_BUILD_DIR/ci-scripts/test_client.sh"
+- "$TRAVIS_BUILD_DIR/ci-scripts/test_coder.sh"
+- "$TRAVIS_BUILD_DIR/ci-scripts/test_server.sh"
+- "$TRAVIS_BUILD_DIR/ci-scripts/test_shell.sh"
 cache:
   directories:
-    - client/elm-stuff/build-artifacts
-    - client/elm-stuff/packages
-    - client/sysconfcpus
+  - client/elm-stuff/packages
+  - client/sysconfcpus
+  - travis-cache
