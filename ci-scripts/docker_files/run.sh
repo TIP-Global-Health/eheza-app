@@ -10,8 +10,8 @@ if [ -z "$DOCKER_DEBUG" ]; then
   bash preparing_server.sh
   bash preparing_client.sh
 
-  bash run_simpletest.sh
   bash run_webdriverio.sh
+  bash run_simpletest.sh
 
   bash post_cache.sh
 
@@ -21,8 +21,8 @@ else
   bash preparing_server.sh || :
   bash preparing_client.sh || :
 
-  bash run_simpletest.sh || :
   bash run_webdriverio.sh || :
+  bash run_simpletest.sh || :
 
   bash
 fi
