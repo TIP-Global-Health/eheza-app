@@ -29,4 +29,3 @@ services:
         environment:
             - BUILD_WEBDRIVERIO
             # This above means that we pass it from the shell env.
-            - DOCKER_DEBUG=1
