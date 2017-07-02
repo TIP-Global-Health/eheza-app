@@ -169,7 +169,8 @@ function hedley_standard_install() {
 
   user_role_grant_permissions(DRUPAL_AUTHENTICATED_RID, $permissions);
 
-  // Create a default role for site administrators, with all available permissions assigned.
+  // Create a default role for site administrators, with all available
+  // permissions assigned.
   $admin_role = new stdClass();
   $admin_role->name = 'administrator';
   $admin_role->weight = 2;
@@ -177,6 +178,21 @@ function hedley_standard_install() {
   user_role_grant_permissions($admin_role->rid, array_keys(module_invoke_all('permission')));
   // Set this as the administrator role.
   variable_set('user_admin_role', $admin_role->rid);
+
+  // Creating a Nurse role and add the
+  $nurse_role = new stdClass();
+  $nurse_role->name = 'nurse';
+  user_role_save($nurse_role);
+
+  $role = user_role_load_by_name('nurse');
+
+  $permissions[] = "create mother content";
+  $permissions[] = "edit any mother content";
+  $permissions[] = "edit own mother content";
+  $permissions[] = "delete any mother content";
+  $permissions[] = "delete own mother content";
+
+  user_role_grant_permissions($role->rid, $permissions);
 
   // Assign user 1 the "administrator" role.
   db_insert('users_roles')

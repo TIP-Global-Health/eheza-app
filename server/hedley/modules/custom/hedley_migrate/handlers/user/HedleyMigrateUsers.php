@@ -63,4 +63,23 @@ class HedleyMigrateUsers extends HedleyMigrateBase {
     );
   }
 
+  /**
+   * Assign role to the user.
+   */
+  function complete($entity, $row) {
+
+    if (!$row->role) {
+      return;
+    }
+
+    $names = explode(",", $row->role);
+
+    foreach ($names as $name) {
+      $role = user_role_load_by_name($name);
+      $entity->roles[$role->rid] = $row->role;
+    }
+
+    user_save($entity);
+  }
+
 }
