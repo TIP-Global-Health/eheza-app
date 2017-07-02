@@ -1,0 +1,17 @@
+<?php
+
+/**
+ * @file
+ *
+ * Testing module for hedley.
+ */
+
+function hedley_tests_node_insert($node) {
+
+  if ($node->type != 'hedley_tests_node_type') {
+    return;
+  }
+
+  hedley_pusher_trigger_event('hedley_test', 'node_created', ['title' => $node->title]);
+
+}

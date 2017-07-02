@@ -3,3 +3,8 @@ core = 7.x
 description = "Hedley Pusher integration."
 package = Hedley
 dependencies[] = composer_manager
+
+
+; Simpletests
+files[] = tests/HedlyTestsBase.php
+files[] = tests/PusherBatchEvents.test
