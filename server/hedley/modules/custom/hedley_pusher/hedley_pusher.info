@@ -5,5 +5,4 @@ package = Hedley
 dependencies[] = composer_manager
 
 ; Simpletests
-files[] = tests/HedleyPusherTestBase.php
 files[] = tests/HedleyPusherTestBatchEvents.test
