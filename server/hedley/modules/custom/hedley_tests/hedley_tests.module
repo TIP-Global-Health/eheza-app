@@ -15,5 +15,4 @@ function hedley_tests_node_insert($node) {
   }
 
   hedley_pusher_trigger_event('hedley_test', 'node_created', ['title' => $node->title]);
-
 }
