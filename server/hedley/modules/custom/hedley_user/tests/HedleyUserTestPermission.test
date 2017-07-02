@@ -1,0 +1,62 @@
+<?php
+
+/**
+ * @file
+ * Class HedleyUserTestPermission.
+ */
+
+/**
+ * Class HedleyUserTestPermission.
+ */
+class HedleyUserTestPermission extends DrupalWebTestCase {
+
+  /**
+   * The profile name.
+   *
+   * @var string
+   */
+  protected $profile = 'hedley';
+
+  /**
+   * The nurse user account.
+   *
+   * @var stdClass
+   */
+  protected $nurse;
+
+  /**
+   * A dummy user object.
+   *
+   * @var stdClass
+   */
+  protected $member;
+
+  /**
+   * Overrides DrupalWebTestCase::setUp().
+   */
+  protected function setUp() {
+    parent::setUp();
+    $this->nurse = $this->drupalCreateUser(['create mother content']);
+    $this->member = $this->drupalCreateuser();
+  }
+
+  /**
+   * Get info.
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Testing access for a mother node type',
+      'description' => 'Verify the node access for the nurse content type.',
+      'group' => 'Hedley',
+    );
+  }
+
+  /**
+   * Trigger events and verify they'll exists at the end of the page request.
+   */
+  public function testMotherNodeAccess() {
+    $this->assertTrue(node_access('create', 'mother', $this->nurse));
+    $this->assertFalse(node_access('create', 'mother', $this->member));
+  }
+
+}

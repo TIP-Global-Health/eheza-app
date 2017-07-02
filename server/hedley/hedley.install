@@ -184,15 +184,14 @@ function hedley_standard_install() {
   $nurse_role->name = 'nurse';
   user_role_save($nurse_role);
 
-  $role = user_role_load_by_name('nurse');
-
+  $permissions = [];
   $permissions[] = "create mother content";
   $permissions[] = "edit any mother content";
   $permissions[] = "edit own mother content";
   $permissions[] = "delete any mother content";
   $permissions[] = "delete own mother content";
 
-  user_role_grant_permissions($role->rid, $permissions);
+  user_role_grant_permissions($nurse_role->rid, $permissions);
 
   // Assign user 1 the "administrator" role.
   db_insert('users_roles')
