@@ -9,7 +9,7 @@ describe('login page', function() {
         browser.setValueSafe('[name="username"]', 'admin');
         browser.setValueSafe('[name="password"]', 'admin');
         browser.submitForm(loginForm);
-        browser.waitForVisible('h1=Petients');
+        browser.waitForVisible('h1=Patients');
 
         // Logout session.
         browser.click('.masthead .right .ui.button');
