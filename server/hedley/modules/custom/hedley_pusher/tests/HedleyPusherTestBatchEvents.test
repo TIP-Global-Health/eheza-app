@@ -2,11 +2,11 @@
 
 /**
  * @file
- * Class PusherBatchEvents.
+ * Class HedleyPusherTestBatchEvents.
  */
 
 /**
- * Class HedleyEventsByLanguage.
+ * Class HedleyPusherTestBatchEvents.
  */
 class HedleyPusherTestBatchEvents extends DrupalWebTestCase {
 
