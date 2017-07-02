@@ -7,7 +7,7 @@
  *
  * todo: find a better location.
  */
-class HedlyTestsBase extends DrupalWebTestCase {
+class HedleyPusherTestBase extends DrupalWebTestCase {
 
   /**
    * The profile name.

@@ -6,5 +6,5 @@ dependencies[] = composer_manager
 
 
 ; Simpletests
-files[] = tests/HedlyTestsBase.php
-files[] = tests/PusherBatchEvents.test
+files[] = tests/HedleyPusherTestBase.php
+files[] = tests/HedleyPusherTestBatchEvents.test

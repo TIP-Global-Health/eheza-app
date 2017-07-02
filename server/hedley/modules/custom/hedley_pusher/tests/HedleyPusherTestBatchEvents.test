@@ -8,7 +8,7 @@
 /**
  * Class HedleyEventsByLanguage.
  */
-class PusherBatchEvents extends HedlyTestsBase {
+class HedleyPusherTestBatchEvents extends HedleyPusherTestBase{
 
   /**
    * Get info.

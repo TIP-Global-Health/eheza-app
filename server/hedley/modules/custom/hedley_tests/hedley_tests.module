@@ -2,10 +2,12 @@
 
 /**
  * @file
- *
  * Testing module for hedley.
  */
 
+/**
+ * Implements hook_node_insert().
+ */
 function hedley_tests_node_insert($node) {
 
   if ($node->type != 'hedley_tests_node_type') {
