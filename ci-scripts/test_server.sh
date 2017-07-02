@@ -81,15 +81,13 @@ docker-compose --file=docker-compose.yml ps -q server.local | xargs docker inspe
       echo -n "* Video of the failed WebdriverIO test [$FAILED_SPEC]($URL)." | tee -a $GH_COMMENT
       echo ""
       printf '\\n' >> $GH_COMMENT
-      echo "$GH_COMMENT"
+
     done;
     echo '"}' >> $GH_COMMENT
-    echo "$GH_COMMENT"
 
     # Todo: make it non-Gizra specific by detecting the user of the repository.
     PR_URL=$(curl -H "Authorization: token $GH_TOKEN" -s  https://api.github.com/repos/"$GH_REPO"/pulls?head=Gizra:"${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}" | grep '"url"' | head -n1  | cut -d'"' -f 4)
     PR_URL=${PR_URL/\/pulls\//\/issues\/}
-    echo "$PR_URL"
     if [[ -z "${PR_URL// }" ]]; then
       echo "Failed to detect related GitHub issue"
     else
