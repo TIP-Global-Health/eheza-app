@@ -1,14 +1,16 @@
 module Config exposing (..)
 
+import LocalConfig exposing (localConfigs)
 import Config.Model as Config exposing (Model)
 import Dict exposing (..)
+import Pusher.Model exposing (Cluster(..), PusherAppKey)
 
 
-local : Model
-local =
-    { backendUrl = "http://localhost/ihangane/server/www"
-    , name = "local"
-    , pusherKey = "0c51c25a2b95b0b33a99"
+***REMOVED*** : Model
+***REMOVED*** =
+    { backendUrl = "https://***REMOVED***"
+    , name = "***REMOVED***"
+    , pusherKey = PusherAppKey "***REMOVED***" UsEast1
     }
 
 
@@ -16,15 +18,7 @@ local =
 ***REMOVED*** =
     { backendUrl = "https://***REMOVED***"
     , name = "***REMOVED***"
-    , pusherKey = "***REMOVED***"
-    }
-
-
-***REMOVED*** : Model
-***REMOVED*** =
-    { backendUrl = "https://***REMOVED***"
-    , name = "***REMOVED***"
-    , pusherKey = "***REMOVED***"
+    , pusherKey = PusherAppKey "***REMOVED***" UsEast1
     }
 
 
@@ -32,15 +26,15 @@ livePantheon : Model
 livePantheon =
     { backendUrl = "https://***REMOVED***"
     , name = "livePantheon"
-    , pusherKey = "***REMOVED***"
+    , pusherKey = PusherAppKey "***REMOVED***" UsEast1
     }
 
 
 configs : Dict String Model
 configs =
     Dict.fromList
-        [ ( "localhost", local )
-        , ( "***REMOVED***", ***REMOVED*** )
+        [ ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", livePantheon )
         ]
+        |> Dict.union localConfigs

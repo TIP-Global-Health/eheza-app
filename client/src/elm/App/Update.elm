@@ -10,6 +10,7 @@ import Http
 import Patient.Model exposing (PatientTypeFilter(..))
 import PatientManager.Model
 import PatientManager.Update
+import Pusher.Utils exposing (getClusterName)
 import Json.Decode exposing (decodeValue, bool)
 import Json.Encode exposing (Value)
 import Pages.Login.Update
@@ -35,7 +36,10 @@ init flags =
                 Just config ->
                     let
                         defaultCmds =
-                            [ pusherKey config.pusherKey
+                            [ pusherKey
+                                ( config.pusherKey.key
+                                , getClusterName config.pusherKey.cluster
+                                )
                             , Task.perform SetCurrentDate Date.now
                             ]
 
@@ -255,9 +259,9 @@ subscriptions model =
 port accessTokenPort : String -> Cmd msg
 
 
-{-| Send Pusher key to JS.
+{-| Send Pusher key and cluster to JS.
 -}
-port pusherKey : String -> Cmd msg
+port pusherKey : ( String, String ) -> Cmd msg
 
 
 {-| Get a singal if internet connection is lost.

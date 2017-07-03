@@ -45,3 +45,6 @@ dependencies[] = hedley_patient
 dependencies[] = hedley_pusher
 dependencies[] = hedley_restful
 dependencies[] = hedley_user
+
+; Base class for SimpleTests.
+files[] = HedleyWebTestBase.inc

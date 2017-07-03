@@ -9,3 +9,6 @@ features[field_base][] = field_avatar
 features[field_base][] = field_phone
 features[field_instance][] = user-user-field_avatar
 features[field_instance][] = user-user-field_phone
+
+; Tests
+files[] = tests/HedleyUserAccess.test
