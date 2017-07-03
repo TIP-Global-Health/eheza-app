@@ -42,11 +42,14 @@ function drush_hedley_migrate_pre_generate_content() {
  * Alters Devel Generate-based content to match business logic constraints.
  */
 function hedley_migrate_node_presave($node) {
-  $generate = drupal_static('hedley_migrate_generate');
-  if (!$generate) {
-    // Not in a generate-content Drush command.
+  if (!drupal_is_cli()) {
     return;
   }
+//  $generate = drupal_static('hedley_migrate_generate');
+//  if (!$generate) {
+//    // Not in a generate-content Drush command.
+//    return;
+//  }
 
   if (!$node->uid) {
     // User can't be anonymous, get a random user(not admin or anonymous).
