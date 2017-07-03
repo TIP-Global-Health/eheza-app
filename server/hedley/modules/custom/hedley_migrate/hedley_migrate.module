@@ -63,9 +63,16 @@ function hedley_migrate_node_presave($node) {
     $node->uid = array_rand($result['user']);
   }
 
-  if ($node->type == 'weight') {
-    _hedley_migrate_preprocess_weight($node);
+  switch ($node->type) {
+    case 'weight':
+      _hedley_migrate_preprocess_weight($node);
+      break;
+
+    case 'height':
+      _hedley_migrate_preprocess_height($node);
+      break;
   }
+
 }
 
 /**
@@ -74,10 +81,22 @@ function hedley_migrate_node_presave($node) {
  * @param object $node
  *   Site node object.
  */
-
 function _hedley_migrate_preprocess_weight($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
 
   // Adjust children's weight to realistic figures.
   $wrapper->field_weight->set(rand(0.5, 60));
+}
+
+/**
+ * Alters devel generated Sites to satisfy business logic.
+ *
+ * @param object $node
+ *   Site node object.
+ */
+function _hedley_migrate_preprocess_height($node) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  // Adjust children's height to realistic figures.
+  $wrapper->field_height->set(rand(30, 160));
 }
