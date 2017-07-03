@@ -274,6 +274,27 @@ function import_demo_content {
     echo -e  "${BGYELLOW}                                                                 ${RESTORE}"
   fi
 
+  echo "Generating users."
+  drush generate-users 50
+
+  echo "Generating Mothers."
+  drush generate-content 20 0 --types=mother
+
+  echo "Generating Children."
+  drush generate-content 20 0 --types=child
+
+  echo "Generating Heights."
+  drush generate-content 40 0 --types=height
+
+  echo "Generating Weights."
+  drush generate-content 40 0 --types=weight
+
+  echo "Generating Weights."
+  drush generate-content 40 0 --types=muac
+
+  echo "Generating Items."
+  drush generate-content 200 0 --types=item
+
   cd $ROOT
   echo
 }
