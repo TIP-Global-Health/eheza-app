@@ -1,0 +1,93 @@
+<?php
+
+/**
+ * @file
+ * Various access-control related tests.
+ */
+
+/**
+ * HedleyUserAccess tests.
+ */
+class HedleyUserAccess extends HedleyWebTestBase {
+
+  /**
+   * Activates the User-related modules for the tests.
+   *
+   * @inheritdoc
+   */
+  public function setUp() {
+    parent::setUp(['hedley_user']);
+  }
+
+  /**
+   * Info hook.
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'HedleyUserAccess tests',
+      'description' => 'Tests various access control mechanisms.',
+      'group' => 'Hedley',
+    ];
+  }
+
+  /**
+   * Entry point for the test.
+   */
+  public function testAccessControl() {
+    $this->anonymousAccess();
+  }
+
+  /**
+   * Anonymous access test.
+   */
+  public function anonymousAccess() {
+    $anonymous_paths_access = [
+      'user' => TRUE,
+      'user/1' => FALSE,
+      'node' => FALSE,
+    ];
+
+    foreach ($anonymous_paths_access as $path => $anonymous_allowed) {
+      $this->pathAccessCheck($path, $anonymous_allowed);
+    }
+  }
+
+  /**
+   * Checks if the given path is accessible or not for the given user.
+   *
+   * @param string $path
+   *   Valid Drupal path to perform a GET request against.
+   * @param bool $allowed
+   *   TRUE if the path should be accessible.
+   * @param object|null $account
+   *   Optional; account to use for the query. If not set, anonymous is used.
+   */
+  protected function pathAccessCheck($path, $allowed = TRUE, $account = NULL) {
+    // Login with the user or use anonymous.
+    if ($account === NULL) {
+      $name = 'anonymous';
+      $this->drupalLogout();
+    }
+    else {
+      $name = $account->name;
+      $this->drupalLogin($account);
+    }
+
+    $this->drupalGet($path);
+    $headers = $this->drupalGetHeaders();
+    // The :status is structured like this:
+    // HTTP/1.1 200 Ok.
+    // $this->>assertResponse() cannot handle multiple matches or ranges.
+    $code = explode(' ', $headers[':status'])[1];
+    if (!$allowed) {
+      // Matching 4XX status codes, not available, many kinds.
+      // Use-cases mostly: 401 and 403 for denied.
+      $this->assertTrue(4 == (int) ($code / 100), $path . ' is not accessible for ' . $name);
+    }
+    else {
+      // Matching 2XX status codes, not available, many kinds.
+      $this->assertTrue(2 == (int) ($code / 100), $path . ' is accessible for ' . $name);
+    }
+  }
+
+}

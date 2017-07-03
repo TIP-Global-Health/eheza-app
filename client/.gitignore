@@ -3,3 +3,5 @@ node_modules
 serve
 dist
 bower_components
+LocalConfig.elm
+errorShots
