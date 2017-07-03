@@ -27,3 +27,53 @@ function hedley_migrate_migrate_api() {
 
   return $api;
 }
+
+/**
+ * Grabs the Migrate Content context.
+ */
+function drush_hedley_migrate_pre_generate_content() {
+  $generate = &drupal_static('hedley_migrate_generate');
+  $generate = TRUE;
+}
+
+/**
+ * Implements hook_node_presave().
+ *
+ * Alters Devel Generate-based content to match business logic constraints.
+ */
+function hedley_migrate_node_presave($node) {
+  $generate = &drupal_static('hedley_migrate_generate');
+  if (!$generate) {
+    // Not in a generate-content Drush command.
+    return;
+  }
+
+  if ($node->uid === 0) {
+    // User can't be anonymous, get a random user(not admin or anonymous).
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'user')
+      ->propertyCondition('uid', [0, 1], 'NOT IN')
+      ->execute();
+
+    $node->uid = array_rand($result['user']);
+  }
+
+  if ($node->type == 'weight') {
+    _hedley_migrate_preprocess_weight($node);
+  }
+}
+
+/**
+ * Alters devel generated Sites to satisfy business logic.
+ *
+ * @param object $node
+ *   Site node object.
+ */
+
+function _hedley_migrate_preprocess_weight($node) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  // A kids suppose to weight something between 2KG to 60KG.
+  $wrapper->field_weight->set(rand(2, 60));
+}
