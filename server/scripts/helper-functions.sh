@@ -289,7 +289,7 @@ function import_demo_content {
   echo "Generating Weights."
   drush generate-content 40 0 --types=weight
 
-  echo "Generating Weights."
+  echo "Generating MUACs."
   drush generate-content 40 0 --types=muac
 
   echo "Generating Items."
