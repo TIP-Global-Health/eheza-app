@@ -9,6 +9,7 @@ Make sure the following are installed:
 ## Installation
 
 * `npm install`
+* `bower install`
 * `elm-package install -y`
 * `cp src/elm/LocalConfig.Example.elm src/elm/LocalConfig.elm`
 
