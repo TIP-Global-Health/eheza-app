@@ -45,11 +45,12 @@ function hedley_migrate_node_presave($node) {
   if (!drupal_is_cli()) {
     return;
   }
-//  $generate = drupal_static('hedley_migrate_generate');
-//  if (!$generate) {
-//    // Not in a generate-content Drush command.
-//    return;
-//  }
+
+  $generate = drupal_static('hedley_migrate_generate');
+  if (!$generate) {
+    // Not in a generate-content Drush command.
+    return;
+  }
 
   if (!$node->uid) {
     // User can't be anonymous, get a random user(not admin or anonymous).
