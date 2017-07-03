@@ -42,18 +42,19 @@ function drush_hedley_migrate_pre_generate_content() {
  * Alters Devel Generate-based content to match business logic constraints.
  */
 function hedley_migrate_node_presave($node) {
-  $generate = &drupal_static('hedley_migrate_generate');
+  $generate = drupal_static('hedley_migrate_generate');
   if (!$generate) {
     // Not in a generate-content Drush command.
     return;
   }
 
-  if ($node->uid === 0) {
+  if (!$node->uid) {
     // User can't be anonymous, get a random user(not admin or anonymous).
     $query = new EntityFieldQuery();
     $result = $query
       ->entityCondition('entity_type', 'user')
       ->propertyCondition('uid', [0, 1], 'NOT IN')
+      ->range(0, 200)
       ->execute();
 
     $node->uid = array_rand($result['user']);
@@ -74,6 +75,6 @@ function hedley_migrate_node_presave($node) {
 function _hedley_migrate_preprocess_weight($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
 
-  // A kids suppose to weight something between 2KG to 60KG.
-  $wrapper->field_weight->set(rand(2, 60));
+  // Adjust children's weight to realistic figures.
+  $wrapper->field_weight->set(rand(0.5, 60));
 }
