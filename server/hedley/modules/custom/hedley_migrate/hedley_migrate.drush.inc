@@ -2,5 +2,5 @@
 
 /**
  * @file
- * Generate Circuit-specific demo content via Drush.
+ * Generate Hedley demo content via Drush.
  */
