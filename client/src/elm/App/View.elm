@@ -228,7 +228,7 @@ viewMainContent language model =
 
                 PageNotFound ->
                     -- We don't need to pass any cmds, so we can call the view directly
-                    Pages.PageNotFound.View.view
+                    Pages.PageNotFound.View.view language
 
                 Dashboard _ ->
                     case model.user of
