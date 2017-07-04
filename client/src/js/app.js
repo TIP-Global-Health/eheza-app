@@ -11,7 +11,6 @@ elmApp.ports.accessTokenPort.subscribe(function(accessToken) {
  * Port the 'Pusher' events names into our Elm's app.
  */
 elmApp.ports.pusherKey.subscribe(function (appKey) {
-  console.log(appKey);
   var pusher = new Pusher(appKey[0], {
     cluster: appKey[1]
   });
