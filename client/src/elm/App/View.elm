@@ -19,7 +19,7 @@ view : Model -> Html Msg
 view model =
     case model.config of
         Failure err ->
-            Config.View.view
+            Config.View.view model.language
 
         _ ->
             div []
