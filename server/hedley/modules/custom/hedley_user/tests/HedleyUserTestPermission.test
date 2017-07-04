@@ -8,7 +8,7 @@
 /**
  * Class HedleyUserTestPermission.
  */
-class HedleyUserTestPermission extends DrupalWebTestCase {
+class HedleyUserTestPermission extends HedleyWebTestBase {
 
   /**
    * The profile name.
@@ -32,12 +32,33 @@ class HedleyUserTestPermission extends DrupalWebTestCase {
   protected $member;
 
   /**
+   * An array if objects.
+   *
+   * @var stdClass[]
+   */
+  protected $nodes;
+
+  /**
    * Overrides DrupalWebTestCase::setUp().
    */
-  protected function setUp() {
+  public function setUp() {
     parent::setUp();
-    $this->nurse = $this->drupalCreateUser(['create mother content']);
-    $this->member = $this->drupalCreateuser();
+    $this->nurse = $this->drupalCreateUser([
+      'create mother content',
+      'manage unpublished measurement node',
+    ]);
+    $this->member = $this->drupalCreateuser(['access content']);
+
+    // List of nodes.
+    $this->nodes['mother'] = $this->drupalCreateNode(['type' => 'mother']);
+
+    foreach (['height', 'weight', 'muac'] as $type) {
+      $node = $this->drupalCreateNode(['type' => $type]);
+      $wrapper = entity_metadata_wrapper('node', $node);
+      $wrapper->field_activity_status->set('pending');
+      $wrapper->save();
+      $this->nodes['pending'][$type] = $node;
+    }
   }
 
   /**
@@ -54,9 +75,31 @@ class HedleyUserTestPermission extends DrupalWebTestCase {
   /**
    * Trigger events and verify they'll exists at the end of the page request.
    */
-  public function testMotherNodeAccess() {
-    $this->assertTrue(node_access('create', 'mother', $this->nurse));
+  public function testNodeAccess() {
+    // Make sure an anonymous user can't access the front page and a node page.
+    $this->drupalGet('<front>');
+    $this->assertResponse(403);
+    $this->assertFalse(node_access('view', $this->nodes['mother'], user_load(0)));
+
+    // Checking permission for an authenticated user.
+    $this->assertTrue(node_access('view', $this->nodes['mother'], $this->member));
     $this->assertFalse(node_access('create', 'mother', $this->member));
+    $this->assertFalse(node_access('edit', $this->nodes['mother'], $this->member));
+
+    foreach ($this->nodes['pending'] as $node) {
+      $this->assertFalse(node_access('view', $node, $this->member));
+      $this->assertFalse(node_access('edit', $node, $this->member));
+      $this->assertFalse(node_access('delete', $node, $this->member));
+    }
+
+    // Check access for nurses.
+    $this->assertTrue(node_access('create', 'mother', $this->nurse));
+    foreach ($this->nodes['pending'] as $node) {
+      $this->assertTrue(node_access('view', $node, $this->nurse));
+      $this->assertTrue(node_access('edit', $node, $this->nurse));
+      $this->assertTrue(node_access('delete', $node, $this->nurse));
+    }
+
   }
 
 }

@@ -157,16 +157,6 @@ function hedley_standard_install() {
     'access user profiles',
     filter_permission_name($filtered_html_format),
   );
-
-  // Add content permissions.
-  foreach (array_keys(node_type_get_types()) as $content_type) {
-    $permissions[] = "create $content_type content";
-    $permissions[] = "edit any $content_type content";
-    $permissions[] = "edit own $content_type content";
-    $permissions[] = "delete any $content_type content";
-    $permissions[] = "delete own $content_type content";
-  }
-
   user_role_grant_permissions(DRUPAL_AUTHENTICATED_RID, $permissions);
 
   // Create a default role for site administrators, with all available
@@ -190,6 +180,7 @@ function hedley_standard_install() {
   $permissions[] = "edit own mother content";
   $permissions[] = "delete any mother content";
   $permissions[] = "delete own mother content";
+  $permissions[] = "manage unpublished measurement node";
 
   user_role_grant_permissions($nurse_role->rid, $permissions);
 
