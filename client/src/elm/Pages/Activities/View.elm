@@ -43,7 +43,7 @@ view language currentDate user patients model =
                     ]
     in
         div []
-            [ viewPatientTypeFilter SetPatientTypeFilter model.patientTypeFilter
+            [ viewPatientTypeFilter language SetPatientTypeFilter model.patientTypeFilter
             , h2 [ class "ui header activities" ] [ text "Activities to complete" ]
             , div [ class "ui cards activities pending" ] pendingActivitiesView
             , noPendingActivitiesView

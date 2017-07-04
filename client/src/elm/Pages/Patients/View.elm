@@ -90,7 +90,7 @@ view language currentDate currentUser patients model =
                     , onInput SetQuery
                     ]
                     []
-                , viewPatientTypeFilter SetPatientTypeFilter model.patientTypeFilter
+                , viewPatientTypeFilter language SetPatientTypeFilter model.patientTypeFilter
                 ]
             , viewActivityTypeFilterWrapper language model.patientTypeFilter model.activityTypeFilter
             , searchResult
