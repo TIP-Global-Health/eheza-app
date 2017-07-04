@@ -84,7 +84,7 @@ viewMain language user model =
                     , class "ui large fluid primary button"
                     ]
                     [ span [ hidden <| not isLoading ] [ spinner ]
-                    , span [ hidden isLoading ] [ text "Login" ]
+                    , span [ hidden isLoading ] [ text <| translate language Trans.Login ]
                     ]
                 ]
             , error
