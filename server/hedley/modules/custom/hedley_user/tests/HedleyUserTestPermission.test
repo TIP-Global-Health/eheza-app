@@ -67,8 +67,8 @@ class HedleyUserTestPermission extends HedleyWebTestBase {
    */
   public static function getInfo() {
     return array(
-      'name' => 'Testing access for a mother node type',
-      'description' => 'Verify the node access for the nurse content type.',
+      'name' => 'Testing nodes access for users',
+      'description' => 'Verify the node access in a couple of modes.',
       'group' => 'Hedley',
     );
   }
