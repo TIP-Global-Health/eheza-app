@@ -30,7 +30,7 @@ viewPatients language currentDate user model =
             unwrapPatientsDict model.patients
     in
         div []
-            [ Html.map MsgPagesPatients <| Pages.Patients.View.view currentDate user patients model.patientsPage
+            [ Html.map MsgPagesPatients <| Pages.Patients.View.view language currentDate user patients model.patientsPage
             ]
 
 

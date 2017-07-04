@@ -14,11 +14,12 @@ import Patient.Model exposing (Patient, PatientId, PatientType(..), PatientTypeF
 import Patient.Utils exposing (getPatientAvatarThumb, getPatientName)
 import Patient.View exposing (viewPatientTypeFilter)
 import Table exposing (..)
+import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
 
 
-view : Date -> User -> PatientsDict -> Model -> Html Msg
-view currentDate currentUser patients model =
+view : Language -> Date -> User -> PatientsDict -> Model -> Html Msg
+view language currentDate currentUser patients model =
     let
         lowerQuery =
             String.toLower model.query
@@ -91,13 +92,13 @@ view currentDate currentUser patients model =
                     []
                 , viewPatientTypeFilter SetPatientTypeFilter model.patientTypeFilter
                 ]
-            , viewActivityTypeFilterWrapper model.patientTypeFilter model.activityTypeFilter
+            , viewActivityTypeFilterWrapper language model.patientTypeFilter model.activityTypeFilter
             , searchResult
             ]
 
 
-viewActivityTypeFilterWrapper : PatientTypeFilter -> List ActivityType -> Html Msg
-viewActivityTypeFilterWrapper patientTypeFilter activityTypeFilter =
+viewActivityTypeFilterWrapper : Language -> PatientTypeFilter -> List ActivityType -> Html Msg
+viewActivityTypeFilterWrapper language patientTypeFilter activityTypeFilter =
     let
         childTypeFilters =
             [ div [ class "six wide column" ]
