@@ -26,6 +26,7 @@ class HedleyMigrateUsers extends HedleyMigrateBase {
       ['pass', t('User password')],
       ['email', t('User email')],
       ['avatar', t('User avatar')],
+      ['role', t('User role')]
     );
 
     $source_file = $this->getMigrateDirectory() . '/csv/user.csv';
@@ -51,6 +52,8 @@ class HedleyMigrateUsers extends HedleyMigrateBase {
     $this->addFieldMapping(('status'))
       ->defaultValue(1);
 
+    $this->addFieldMapping('role_names', 'role');
+
     $this->map = new MigrateSQLMap($this->machineName,
       array(
         'name' => array(
@@ -61,25 +64,6 @@ class HedleyMigrateUsers extends HedleyMigrateBase {
       ),
       MigrateDestinationUser::getKeySchema()
     );
-  }
-
-  /**
-   * Assign role to the user.
-   */
-  public function complete($entity, $row) {
-
-    if (!$row->role) {
-      return;
-    }
-
-    $names = explode(",", $row->role);
-
-    foreach ($names as $name) {
-      $role = user_role_load_by_name($name);
-      $entity->roles[$role->rid] = $row->role;
-    }
-
-    user_save($entity);
   }
 
 }
