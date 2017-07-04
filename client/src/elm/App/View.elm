@@ -214,7 +214,7 @@ viewMainContent model =
                     case model.user of
                         Success user ->
                             Html.map MsgPatientManager <|
-                                PatientManager.View.viewActivities model.currentDate user model.pagePatient
+                                PatientManager.View.viewActivities model.language model.currentDate user model.pagePatient
 
                         _ ->
                             div [] [ i [ class "notched circle loading icon" ] [] ]
@@ -233,7 +233,7 @@ viewMainContent model =
                     case model.user of
                         Success user ->
                             Html.map MsgPatientManager <|
-                                PatientManager.View.viewPatients model.currentDate user model.pagePatient
+                                PatientManager.View.viewPatients model.language model.currentDate user model.pagePatient
 
                         _ ->
                             div []
@@ -243,7 +243,7 @@ viewMainContent model =
                     case model.user of
                         Success user ->
                             Html.map MsgPatientManager <|
-                                PatientManager.View.viewPagePatient model.currentDate id user model.pagePatient
+                                PatientManager.View.viewPagePatient model.language model.currentDate id user model.pagePatient
 
                         _ ->
                             div [] [ i [ class "notched circle loading icon" ] [] ]

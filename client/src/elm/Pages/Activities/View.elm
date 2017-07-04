@@ -11,11 +11,12 @@ import List as List
 import Pages.Activities.Model exposing (Model, Msg(..))
 import Patient.Model exposing (PatientTypeFilter(..), PatientsDict)
 import Patient.View exposing (viewPatientTypeFilter)
+import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
 
 
-view : Date -> User -> PatientsDict -> Model -> Html Msg
-view currentDate user patients model =
+view : Language -> Date -> User -> PatientsDict -> Model -> Html Msg
+view language currentDate user patients model =
     let
         allActivityList =
             getActivityList currentDate model.patientTypeFilter patients
