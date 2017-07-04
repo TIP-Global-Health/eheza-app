@@ -18,7 +18,13 @@ type alias TranslationSet =
 
 type TranslationId
     = AccessDenied
+    | Activities
     | Login
+    | Logout
+    | MyAccount
+    | Page404
+    | Patients
+    | SignOut
 
 
 translate : Language -> TranslationId -> String
@@ -29,8 +35,26 @@ translate lang trans =
                 AccessDenied ->
                     { english = "Access denied" }
 
+                Activities ->
+                    { english = "Activities" }
+
                 Login ->
                     { english = "Login" }
+
+                Logout ->
+                    { english = "Logout" }
+
+                MyAccount ->
+                    { english = "My Account" }
+
+                Page404 ->
+                    { english = "404 page" }
+
+                Patients ->
+                    { english = "Patients" }
+
+                SignOut ->
+                    { english = "Sign Out" }
 
     in
         case lang of

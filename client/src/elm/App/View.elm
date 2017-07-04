@@ -61,18 +61,18 @@ viewHeader language model =
                             [ class "item"
                             , onClick <| SetActivePage Activities
                             ]
-                            [ text "Activities" ]
+                            [ text <| translate language Trans.Activities ]
                         , a
                             [ class "item"
                             , onClick <| SetActivePage <| Dashboard []
                             ]
-                            [ text "Patients" ]
+                            [ text <| translate language Trans.Patients ]
                         , div [ class "right item" ]
                             [ a
                                 [ class "ui inverted button"
                                 , onClick Logout
                                 ]
-                                [ text "Sign Out" ]
+                                [ text <| translate language Trans.SignOut ]
                             ]
                         , span
                             [ class "item"
@@ -112,17 +112,17 @@ viewSidebar language model =
                     [ class "item"
                     , onClick <| SetActivePage Activities
                     ]
-                    [ text "Activities" ]
+                    [ text <| translate language Trans.Activities ]
                 , a
                     [ class "item"
                     , onClick <| SetActivePage <| Dashboard []
                     ]
-                    [ text "Patients" ]
+                    [ text <| translate language Trans.Patients ]
                 , a
                     [ class "item"
                     , onClick Logout
                     ]
-                    [ text "Sign Out" ]
+                    [ text <| translate language Trans.SignOut ]
                 , span
                     [ class "item"
                     ]
@@ -151,7 +151,7 @@ navbarAnonymous language model =
         [ classByPage Login model.activePage
         , onClick <| SetActivePage Login
         ]
-        [ text "Login" ]
+        [ text <| translate language Trans.Login ]
     , viewPageNotFoundPatient language model.activePage
     ]
 
@@ -162,7 +162,7 @@ navbarAuthenticated language model =
         [ classByPage MyAccount model.activePage
         , onClick <| SetActivePage MyAccount
         ]
-        [ text "My Account" ]
+        [ text <| translate language Trans.MyAccount ]
     , viewPageNotFoundPatient language model.activePage
     , div [ class "right menu" ]
         [ viewAvatar language model.user
@@ -170,7 +170,7 @@ navbarAuthenticated language model =
             [ class "ui patient"
             , onClick <| Logout
             ]
-            [ text "Logout" ]
+            [ text <| translate language Trans.Logout ]
         ]
     ]
 
@@ -181,7 +181,7 @@ viewPageNotFoundPatient language activePage =
         [ classByPage PageNotFound activePage
         , onClick <| SetActivePage PageNotFound
         ]
-        [ text "404 page" ]
+        [ text <| translate language Trans.Page404 ]
 
 
 viewAvatar : Language -> WebData User -> Html Msg
@@ -209,7 +209,7 @@ viewMainContent language model =
         viewContent =
             case model.activePage of
                 AccessDenied ->
-                    div [] [ text "Access denied" ]
+                    div [] [ text <| translate language Trans.AccessDenied ]
 
                 Activities ->
                     case model.user of
