@@ -5,20 +5,21 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Pages.Login.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
+import Translate as Trans exposing (translate, Language)
 import User.Model exposing (..)
 import Utils.WebData exposing (viewError)
 
 
-view : WebData User -> Model -> Html Msg
-view user model =
+view : Language -> WebData User -> Model -> Html Msg
+view language user model =
     div [ class "login-container" ]
-        [ viewHeader model
-        , viewMain user model
+        [ viewHeader language model
+        , viewMain language user model
         ]
 
 
-viewHeader : Model -> Html Msg
-viewHeader model =
+viewHeader : Language -> Model -> Html Msg
+viewHeader language model =
     Html.header []
         [ a [ id "logo", href "/" ]
             [ img [ src "logo.png", alt "Logo" ] []
@@ -26,8 +27,8 @@ viewHeader model =
         ]
 
 
-viewMain : WebData User -> Model -> Html Msg
-viewMain user model =
+viewMain : Language -> WebData User -> Model -> Html Msg
+viewMain language user model =
     let
         spinner =
             i [ class "notched circle loading icon" ] []

@@ -221,7 +221,7 @@ viewMainContent language model =
                             div [] [ i [ class "notched circle loading icon" ] [] ]
 
                 Login ->
-                    Html.map PageLogin (Pages.Login.View.view model.user model.pageLogin)
+                    Html.map PageLogin (Pages.Login.View.view language model.user model.pageLogin)
 
                 MyAccount ->
                     Pages.MyAccount.View.view model.user
