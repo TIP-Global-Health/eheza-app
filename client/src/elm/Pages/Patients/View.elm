@@ -78,12 +78,12 @@ view language currentDate currentUser patients model =
                     -- them.
                     div [] []
                 else
-                    div [ class "ui segment" ] [ text "No patients found" ]
+                    div [ class "ui segment" ] [ text <| translate language Trans.NoPatientsFound ]
             else
                 Table.view config model.tableState acceptablePatients
     in
         div []
-            [ h1 [] [ text "Patients" ]
+            [ h1 [] [ text <| translate language Trans.Patients ]
             , div [ class "ui input" ]
                 [ input
                     [ placeholder "Search by Name"
@@ -102,14 +102,14 @@ viewActivityTypeFilterWrapper language patientTypeFilter activityTypeFilter =
     let
         childTypeFilters =
             [ div [ class "six wide column" ]
-                [ h3 [] [ text "Children" ]
+                [ h3 [] [ text <| translate language Trans.Children ]
                 , viewActivityTypeFilter SetActivityTypeFilter Children activityTypeFilter
                 ]
             ]
 
         motherTypeFilters =
             [ div [ class "six wide column" ]
-                [ h3 [] [ text "Mothers" ]
+                [ h3 [] [ text <| translate language Trans.Mothers ]
                 , viewActivityTypeFilter SetActivityTypeFilter Mothers activityTypeFilter
                 ]
             ]
