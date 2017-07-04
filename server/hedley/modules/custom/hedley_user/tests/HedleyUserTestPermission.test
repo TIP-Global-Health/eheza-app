@@ -20,7 +20,7 @@ class HedleyUserTestPermission extends HedleyWebTestBase {
   /**
    * The nurse user account.
    *
-   * @var /stdClass
+   * @var \stdClass
    */
   protected $nurse;
 
