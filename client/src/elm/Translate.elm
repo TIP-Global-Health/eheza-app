@@ -34,6 +34,8 @@ type TranslationId
     | Page404
     | PageNotFoundMsg
     | Patients
+    | ReloadPatient
+    | Retry
     | SignOut
 
 
@@ -92,6 +94,12 @@ translate lang trans =
 
                 Patients ->
                     { english = "Patients" }
+
+                ReloadPatient ->
+                    { english = "Re-load Patient" }
+
+                Retry ->
+                    { english = "Retry" }
 
                 SignOut ->
                     { english = "Sign Out" }

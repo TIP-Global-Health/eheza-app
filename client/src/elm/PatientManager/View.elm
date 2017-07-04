@@ -46,7 +46,7 @@ viewPagePatient language currentDate id user model =
                 [ class "ui button"
                 , onClick <| Subscribe id
                 ]
-                [ text "Re-load Patient" ]
+                [ text <| translate language Trans.ReloadPatient ]
 
         Loading ->
             div [] []
@@ -58,7 +58,7 @@ viewPagePatient language currentDate id user model =
                     [ class "ui button"
                     , onClick <| Subscribe id
                     ]
-                    [ text "Retry" ]
+                    [ text <| translate language Trans.Retry ]
                 ]
 
         Success patient ->
