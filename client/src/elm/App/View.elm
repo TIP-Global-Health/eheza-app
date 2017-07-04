@@ -224,7 +224,7 @@ viewMainContent language model =
                     Html.map PageLogin (Pages.Login.View.view language model.user model.pageLogin)
 
                 MyAccount ->
-                    Pages.MyAccount.View.view model.user
+                    Pages.MyAccount.View.view language model.user
 
                 PageNotFound ->
                     -- We don't need to pass any cmds, so we can call the view directly

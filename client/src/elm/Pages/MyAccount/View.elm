@@ -3,14 +3,15 @@ module Pages.MyAccount.View exposing (view)
 import Html exposing (a, div, h2, i, p, text, img, Html)
 import Html.Attributes exposing (class, href, src)
 import RemoteData exposing (RemoteData(..), WebData)
+import Translate as Trans exposing (translate, Language)
 import User.Model exposing (..)
 
 
 -- VIEW
 
 
-view : WebData User -> Html a
-view user =
+view : Language -> WebData User -> Html a
+view language user =
     let
         ( name, avatar ) =
             case user of
