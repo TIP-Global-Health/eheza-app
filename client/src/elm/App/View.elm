@@ -13,6 +13,7 @@ import Pages.MyAccount.View exposing (..)
 import Pages.PageNotFound.View exposing (..)
 import PatientManager.View exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
+import Translate as Trans exposing (translate, Language)
 
 
 view : Model -> Html Msg
@@ -23,18 +24,18 @@ view model =
 
         _ ->
             div []
-                [ viewSidebar model
+                [ viewSidebar model.language model
                 , div [ class "pusher" ]
-                    [ viewHeader model
+                    [ viewHeader model.language model
                     , div [ class "ui main container" ]
-                        [ viewMainContent model
+                        [ viewMainContent model.language model
                         ]
                     ]
                 ]
 
 
-viewHeader : Model -> Html Msg
-viewHeader model =
+viewHeader : Language -> Model -> Html Msg
+viewHeader language model =
     case model.user of
         Success user ->
             div [ class "ui inverted masthead segment" ]
@@ -92,8 +93,8 @@ viewHeader model =
             div [] []
 
 
-viewSidebar : Model -> Html Msg
-viewSidebar model =
+viewSidebar : Language -> Model -> Html Msg
+viewSidebar language model =
     case model.user of
         Success user ->
             div
@@ -144,27 +145,27 @@ viewSidebar model =
             div [] []
 
 
-navbarAnonymous : Model -> List (Html Msg)
-navbarAnonymous model =
+navbarAnonymous : Language -> Model -> List (Html Msg)
+navbarAnonymous language model =
     [ a
         [ classByPage Login model.activePage
         , onClick <| SetActivePage Login
         ]
         [ text "Login" ]
-    , viewPageNotFoundPatient model.activePage
+    , viewPageNotFoundPatient language model.activePage
     ]
 
 
-navbarAuthenticated : Model -> List (Html Msg)
-navbarAuthenticated model =
+navbarAuthenticated : Language -> Model -> List (Html Msg)
+navbarAuthenticated language model =
     [ a
         [ classByPage MyAccount model.activePage
         , onClick <| SetActivePage MyAccount
         ]
         [ text "My Account" ]
-    , viewPageNotFoundPatient model.activePage
+    , viewPageNotFoundPatient language model.activePage
     , div [ class "right menu" ]
-        [ viewAvatar model.user
+        [ viewAvatar language model.user
         , a
             [ class "ui patient"
             , onClick <| Logout
@@ -174,8 +175,8 @@ navbarAuthenticated model =
     ]
 
 
-viewPageNotFoundPatient : Page -> Html Msg
-viewPageNotFoundPatient activePage =
+viewPageNotFoundPatient : Language -> Page -> Html Msg
+viewPageNotFoundPatient language activePage =
     a
         [ classByPage PageNotFound activePage
         , onClick <| SetActivePage PageNotFound
@@ -183,8 +184,8 @@ viewPageNotFoundPatient activePage =
         [ text "404 page" ]
 
 
-viewAvatar : WebData User -> Html Msg
-viewAvatar user =
+viewAvatar : Language -> WebData User -> Html Msg
+viewAvatar language user =
     case user of
         Success user_ ->
             a
@@ -202,8 +203,8 @@ viewAvatar user =
             div [] []
 
 
-viewMainContent : Model -> Html Msg
-viewMainContent model =
+viewMainContent : Language -> Model -> Html Msg
+viewMainContent language model =
     let
         viewContent =
             case model.activePage of
