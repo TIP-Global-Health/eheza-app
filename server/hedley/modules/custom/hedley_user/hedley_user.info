@@ -12,3 +12,4 @@ features[field_instance][] = user-user-field_phone
 
 ; Simpletests.
 files[] = tests/HedleyUserTestPermission.test
+files[] = tests/HedleyUserAccess.test

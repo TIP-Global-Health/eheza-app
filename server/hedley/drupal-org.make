@@ -99,7 +99,10 @@ projects[views_bulk_operations][version] = "3.3"
 
 ; Development
 projects[devel][subdir] = "development"
-projects[devel][version] = "1.5"
+projects[devel][download][type] = git
+projects[devel][download][branch] = 7.x-1.x
+projects[devel][download][revision] = 2f0db7d7dd41af26fdd71033a2c0258a133efef8
+projects[devel][patch][] = "https://www.drupal.org/files/issues/2879092-devel-generate-php7-warning-4.patch"
 
 projects[migrate][subdir] = "development"
 projects[migrate][version] = "2.8"

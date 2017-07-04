@@ -1,0 +1,4 @@
+name = Hedley Tests
+description = Module for testsing
+core = 7.x
+hidden = true
