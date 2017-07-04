@@ -68,14 +68,14 @@ viewPagePatient language currentDate id user model =
                         motherWebData =
                             getMother child.motherId model
                     in
-                        div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewChild currentDate user id child motherWebData ]
+                        div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewChild language currentDate user id child motherWebData ]
 
                 PatientMother mother ->
                     let
                         childrenWebData =
                             getChildren mother model
                     in
-                        div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewMother currentDate user id mother childrenWebData ]
+                        div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewMother language currentDate user id mother childrenWebData ]
 
 
 viewActivities : Language -> Date -> User -> Model -> Html Msg
