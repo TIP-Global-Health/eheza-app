@@ -22,10 +22,12 @@ type TranslationId
     | ActivitiesCompleted
     | ActivitiesToComplete
     | Dashboard
+    | LinkToMother
     | Login
     | Logout
     | MyAccount
     | NoActiveIncidents
+    | NoChildrenRegisteredInTheSystem
     | Page404
     | PageNotFoundMsg
     | Patients
@@ -52,6 +54,9 @@ translate lang trans =
                 Dashboard ->
                     { english = "Dashboard" }
 
+                LinkToMother ->
+                    { english = "Link to mother" }
+
                 Login ->
                     { english = "Login" }
 
@@ -63,6 +68,9 @@ translate lang trans =
 
                 NoActiveIncidents ->
                     { english = "No active incidents" }
+
+                NoChildrenRegisteredInTheSystem ->
+                    { english = "No children registered in the system" }
 
                 Page404 ->
                     { english = "404 page" }

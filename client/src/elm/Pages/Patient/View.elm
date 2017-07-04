@@ -27,7 +27,7 @@ viewChild language currentDate currentUser childId child motherWebData =
         motherInfo =
             case child.motherId of
                 Nothing ->
-                    div [] [ text "Link to mother" ]
+                    div [] [ text <| translate language Trans.LinkToMother ]
 
                 Just motherId ->
                     case motherWebData of
@@ -109,7 +109,7 @@ viewMother language currentDate currentUser motherId mother children =
 
         childrenList =
             if List.isEmpty mother.children then
-                div [] [ text "No children registered in the system" ]
+                div [] [ text <| translate language Trans.NoChildrenRegisteredInTheSystem ]
             else
                 div []
                     [ text <| "Children: "
@@ -169,12 +169,12 @@ viewActivityCards language currentDate user patients patientTypeFilter =
                 div [] []
             else
                 div []
-                    [ h2 [ class "ui header activities" ] [ text "Activities completed" ]
+                    [ h2 [ class "ui header activities" ] [ text <| translate language Trans.ActivitiesCompleted ]
                     , div [ class "ui cards activities completed" ] (List.map (viewActivityListItem language) noPendingActivities)
                     ]
     in
         div []
-            [ h2 [ class "ui header activities" ] [ text "Activities to complete" ]
+            [ h2 [ class "ui header activities" ] [ text <| translate language Trans.ActivitiesToComplete ]
             , div [ class "ui cards activities pending" ] pendingActivitiesView
             , noPendingActivitiesView
             ]
