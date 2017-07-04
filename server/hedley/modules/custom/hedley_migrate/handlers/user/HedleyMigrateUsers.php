@@ -66,7 +66,7 @@ class HedleyMigrateUsers extends HedleyMigrateBase {
   /**
    * Assign role to the user.
    */
-  function complete($entity, $row) {
+  public function complete($entity, $row) {
 
     if (!$row->role) {
       return;

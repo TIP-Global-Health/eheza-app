@@ -20,21 +20,21 @@ class HedleyUserTestPermission extends HedleyWebTestBase {
   /**
    * The nurse user account.
    *
-   * @var stdClass
+   * @var /stdClass
    */
   protected $nurse;
 
   /**
    * A dummy user object.
    *
-   * @var stdClass
+   * @var \stdClass
    */
   protected $member;
 
   /**
    * An array if objects.
    *
-   * @var stdClass[]
+   * @var \stdClass[]
    */
   protected $nodes;
 
@@ -42,6 +42,7 @@ class HedleyUserTestPermission extends HedleyWebTestBase {
    * Overrides DrupalWebTestCase::setUp().
    */
   public function setUp() {
+
     parent::setUp();
     $this->nurse = $this->drupalCreateUser([
       'create mother content',
