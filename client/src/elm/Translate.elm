@@ -19,6 +19,8 @@ type alias TranslationSet =
 type TranslationId
     = AccessDenied
     | Activities
+    | ActivitiesCompleted
+    | ActivitiesToComplete
     | Login
     | Logout
     | MyAccount
@@ -37,6 +39,12 @@ translate lang trans =
 
                 Activities ->
                     { english = "Activities" }
+
+                ActivitiesCompleted ->
+                    { english = "ActivitiesCompleted" }
+
+                ActivitiesToComplete ->
+                    { english = "ActivitiesToComplete" }
 
                 Login ->
                     { english = "Login" }

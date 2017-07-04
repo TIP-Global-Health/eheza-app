@@ -38,13 +38,13 @@ view language currentDate user patients model =
                 div [] []
             else
                 div []
-                    [ h2 [ class "ui header activities" ] [ text "Activities completed" ]
+                    [ h2 [ class "ui header activities" ] [ text <| translate language Trans.ActivitiesCompleted ]
                     , div [ class "ui cards activities completed" ] (List.map viewActivity noPendingActivities)
                     ]
     in
         div []
             [ viewPatientTypeFilter language SetPatientTypeFilter model.patientTypeFilter
-            , h2 [ class "ui header activities" ] [ text "Activities to complete" ]
+            , h2 [ class "ui header activities" ] [ text <| translate language Trans.ActivitiesToComplete ]
             , div [ class "ui cards activities pending" ] pendingActivitiesView
             , noPendingActivitiesView
             ]
