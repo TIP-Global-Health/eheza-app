@@ -1,6 +1,5 @@
 module App.View exposing (..)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import App.Model exposing (..)
 import App.PageType exposing (Page(..))
 import Config.View
