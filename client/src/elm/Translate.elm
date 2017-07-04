@@ -27,6 +27,7 @@ type TranslationId
     | MyAccount
     | NoActiveIncidents
     | Page404
+    | PageNotFoundMsg
     | Patients
     | SignOut
 
@@ -65,6 +66,9 @@ translate lang trans =
 
                 Page404 ->
                     { english = "404 page" }
+
+                PageNotFoundMsg ->
+                    { english = "Sorry, nothing found in this URL." }
 
                 Patients ->
                     { english = "Patients" }

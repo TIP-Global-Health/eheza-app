@@ -11,5 +11,5 @@ import Translate as Trans exposing (translate, Language)
 view : Language -> Html a
 view language =
     div [ class "ui segment center aligned" ]
-        [ h2 [] [ text "Sorry, nothing found in this URL." ]
+        [ h2 [] [ text <| translate language Trans.PageNotFoundMsg ]
         ]
