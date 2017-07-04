@@ -86,7 +86,9 @@ function hedley_activity_permission() {
  */
 function hedley_activity_node_access($node, $op, $account) {
 
-  if (!in_array($node->type, ['weight', 'height', 'muac'])) {
+  $type = is_object($node) ? $node->type : $node;
+
+  if (!in_array($type, ['weight', 'height', 'muac'])) {
     // Not a measurement node. Skipping.
     return NODE_ACCESS_IGNORE;
   }
