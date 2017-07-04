@@ -11,7 +11,7 @@ import User.Model exposing (User)
 view : Language -> User -> PatientsDict -> Html Msg
 view language currentUser patients =
     div []
-        [ h1 [ class "ui header" ] [ text "Dashboard" ]
+        [ h1 [ class "ui header" ] [ text <| translate language Trans.Dashboard ]
         , div [ class "ui divider" ] []
         , viewActiveIncidents language patients
         ]
@@ -27,7 +27,7 @@ viewActiveIncidents language patients =
         if (List.isEmpty orderedIncidentes) then
             div [ style [ ( "font-size", "300%" ) ] ]
                 [ i [ class "ui icon check circle teal huge" ] []
-                , text "No active incidents!"
+                , text <| translate language Trans.NoActiveIncidents ++ "!"
                 ]
         else
             div [ class "ui cards" ]

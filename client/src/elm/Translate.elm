@@ -21,9 +21,11 @@ type TranslationId
     | Activities
     | ActivitiesCompleted
     | ActivitiesToComplete
+    | Dashboard
     | Login
     | Logout
     | MyAccount
+    | NoActiveIncidents
     | Page404
     | Patients
     | SignOut
@@ -46,6 +48,9 @@ translate lang trans =
                 ActivitiesToComplete ->
                     { english = "ActivitiesToComplete" }
 
+                Dashboard ->
+                    { english = "Dashboard" }
+
                 Login ->
                     { english = "Login" }
 
@@ -54,6 +59,9 @@ translate lang trans =
 
                 MyAccount ->
                     { english = "My Account" }
+
+                NoActiveIncidents ->
+                    { english = "No active incidents" }
 
                 Page404 ->
                     { english = "404 page" }
