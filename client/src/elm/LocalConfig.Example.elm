@@ -10,7 +10,7 @@ local =
     { backendUrl = "http://localhost/ihangane/server/www"
     , name = "local"
     , pusherKey = PusherAppKey "" UsEast1
-    , debug = False
+    , debug = True
     }
 
 
