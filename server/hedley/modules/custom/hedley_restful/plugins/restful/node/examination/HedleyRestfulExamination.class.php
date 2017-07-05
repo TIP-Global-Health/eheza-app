@@ -2,11 +2,11 @@
 
 /**
  * @file
- * Contains HedleyRestfulChildren.
+ * Contains HedleyRestfulExamination.
  */
 
 /**
- * Class HedleyRestfulChildren.
+ * Class HedleyRestfulExamination.
  */
 class HedleyRestfulExamination extends HedleyRestfulEntityBaseNode {
 
@@ -18,6 +18,13 @@ class HedleyRestfulExamination extends HedleyRestfulEntityBaseNode {
 
     $public_fields['group'] = [
       'property' => 'field_group',
+      'resource' => [
+        // Bundle name.
+        'group' => [
+          // Resource name.
+          'name' => 'group',
+        ],
+      ],
     ];
 
     $public_fields['last_assessment'] = [
