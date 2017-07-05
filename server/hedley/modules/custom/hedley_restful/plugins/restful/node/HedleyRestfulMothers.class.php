@@ -58,6 +58,13 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       ],
     ];
 
+    $public_fields['last_assessment'] = [
+      'property' => 'field_last_assessment',
+      'process_callbacks' => [
+        [$this, 'convertTimestampToIso8601'],
+      ],
+    ];
+
     return $public_fields;
   }
 
