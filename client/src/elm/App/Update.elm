@@ -10,6 +10,7 @@ import Http
 import Patient.Model exposing (PatientTypeFilter(..))
 import PatientManager.Model
 import PatientManager.Update
+import Pusher.Model
 import Pusher.Utils exposing (getClusterName)
 import Json.Decode exposing (decodeValue, bool)
 import Json.Encode exposing (Value)
@@ -39,6 +40,7 @@ init flags =
                             [ pusherKey
                                 ( config.pusherKey.key
                                 , getClusterName config.pusherKey.cluster
+                                , Pusher.Model.eventNames
                                 )
                             , Task.perform SetCurrentDate Date.now
                             ]
@@ -262,7 +264,7 @@ port accessTokenPort : String -> Cmd msg
 
 {-| Send Pusher key and cluster to JS.
 -}
-port pusherKey : ( String, String ) -> Cmd msg
+port pusherKey : ( String, String, List String ) -> Cmd msg
 
 
 {-| Get a singal if internet connection is lost.

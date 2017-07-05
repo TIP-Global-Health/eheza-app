@@ -9,7 +9,7 @@ projects[admin_views][subdir] = "contrib"
 projects[admin_views][version] = "1.6"
 
 projects[auto_entitylabel][subdir] = "contrib"
-projects[auto_entitylabel][version] = "1.3"
+projects[auto_entitylabel][version] = "1.4"
 
 projects[ctools][subdir] = "contrib"
 projects[ctools][version] = "1.12"
@@ -28,14 +28,13 @@ projects[email][subdir] = "contrib"
 projects[email][version] = "1.3"
 
 projects[entity][subdir] = "contrib"
-projects[entity][version] = "1.6"
-projects[entity][patch][] = "https://www.drupal.org/files/issues/2086225-entity-access-check-node-create-3.patch"
+projects[entity][version] = "1.8"
 
 projects[entitycache][subdir] = "contrib"
 projects[entitycache][version] = 1.2
 
 projects[entityreference][subdir] = "contrib"
-projects[entityreference][version] = "1.2"
+projects[entityreference][version] = "1.4"
 
 projects[entity_validator][subdir] = "contrib"
 projects[entity_validator][version] = "1.2"
@@ -68,7 +67,7 @@ projects[mimemail][version] = 1.0-beta3
 projects[mimemail][subdir] = "contrib"
 
 projects[module_filter][subdir] = "contrib"
-projects[module_filter][version] = 2.0
+projects[module_filter][version] = 2.1
 
 projects[og][subdir] = "contrib"
 projects[og][version] = 2.x
@@ -89,13 +88,13 @@ projects[title][subdir] = "contrib"
 projects[title][version] = "1.0-alpha7"
 
 projects[token][subdir] = "contrib"
-projects[token][version] = "1.6"
+projects[token][version] = "1.7"
 
 projects[views][subdir] = "contrib"
-projects[views][version] = "3.15"
+projects[views][version] = "3.16"
 
 projects[views_bulk_operations][subdir] = "contrib"
-projects[views_bulk_operations][version] = "3.3"
+projects[views_bulk_operations][version] = "3.4"
 
 ; Development
 projects[devel][subdir] = "development"
