@@ -13,28 +13,29 @@ import Pages.MyAccount.View exposing (..)
 import Pages.PageNotFound.View exposing (..)
 import PatientManager.View exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
+import Translate as Trans exposing (translate, Language)
 
 
 view : Model -> Html Msg
 view model =
     case model.config of
         Failure err ->
-            Config.View.view
+            Config.View.view model.language
 
         _ ->
             div []
-                [ viewSidebar model
+                [ viewSidebar model.language model
                 , div [ class "pusher" ]
-                    [ viewHeader model
+                    [ viewHeader model.language model
                     , div [ class "ui main container" ]
-                        [ viewMainContent model
+                        [ viewMainContent model.language model
                         ]
                     ]
                 ]
 
 
-viewHeader : Model -> Html Msg
-viewHeader model =
+viewHeader : Language -> Model -> Html Msg
+viewHeader language model =
     case model.user of
         Success user ->
             div [ class "ui inverted masthead segment" ]
@@ -60,18 +61,18 @@ viewHeader model =
                             [ class "item"
                             , onClick <| SetActivePage Activities
                             ]
-                            [ text "Activities" ]
+                            [ text <| translate language Trans.Activities ]
                         , a
                             [ class "item"
                             , onClick <| SetActivePage <| Dashboard []
                             ]
-                            [ text "Patients" ]
+                            [ text <| translate language Trans.Patients ]
                         , div [ class "right item" ]
                             [ a
                                 [ class "ui inverted button"
                                 , onClick Logout
                                 ]
-                                [ text "Sign Out" ]
+                                [ text <| translate language Trans.SignOut ]
                             ]
                         , span
                             [ class "item"
@@ -92,8 +93,8 @@ viewHeader model =
             div [] []
 
 
-viewSidebar : Model -> Html Msg
-viewSidebar model =
+viewSidebar : Language -> Model -> Html Msg
+viewSidebar language model =
     case model.user of
         Success user ->
             div
@@ -111,25 +112,26 @@ viewSidebar model =
                     [ class "item"
                     , onClick <| SetActivePage Activities
                     ]
-                    [ text "Activities" ]
+                    [ text <| translate language Trans.Activities ]
                 , a
                     [ class "item"
                     , onClick <| SetActivePage <| Dashboard []
                     ]
-                    [ text "Patients" ]
+                    [ text <| translate language Trans.Patients ]
                 , a
                     [ class "item"
                     , onClick Logout
                     ]
-                    [ text "Sign Out" ]
+                    [ text <| translate language Trans.SignOut ]
                 , span
                     [ class "item"
                     ]
                     [ text <|
-                        if model.offline then
-                            "Not Connected"
-                        else
-                            "Connected"
+                        translate language <|
+                            if model.offline then
+                                Trans.NotConnected
+                            else
+                                Trans.Connected
                     , i
                         [ classList
                             [ ( "icon wifi", True )
@@ -144,47 +146,47 @@ viewSidebar model =
             div [] []
 
 
-navbarAnonymous : Model -> List (Html Msg)
-navbarAnonymous model =
+navbarAnonymous : Language -> Model -> List (Html Msg)
+navbarAnonymous language model =
     [ a
         [ classByPage Login model.activePage
         , onClick <| SetActivePage Login
         ]
-        [ text "Login" ]
-    , viewPageNotFoundPatient model.activePage
+        [ text <| translate language Trans.Login ]
+    , viewPageNotFoundPatient language model.activePage
     ]
 
 
-navbarAuthenticated : Model -> List (Html Msg)
-navbarAuthenticated model =
+navbarAuthenticated : Language -> Model -> List (Html Msg)
+navbarAuthenticated language model =
     [ a
         [ classByPage MyAccount model.activePage
         , onClick <| SetActivePage MyAccount
         ]
-        [ text "My Account" ]
-    , viewPageNotFoundPatient model.activePage
+        [ text <| translate language Trans.MyAccount ]
+    , viewPageNotFoundPatient language model.activePage
     , div [ class "right menu" ]
-        [ viewAvatar model.user
+        [ viewAvatar language model.user
         , a
             [ class "ui patient"
             , onClick <| Logout
             ]
-            [ text "Logout" ]
+            [ text <| translate language Trans.Logout ]
         ]
     ]
 
 
-viewPageNotFoundPatient : Page -> Html Msg
-viewPageNotFoundPatient activePage =
+viewPageNotFoundPatient : Language -> Page -> Html Msg
+viewPageNotFoundPatient language activePage =
     a
         [ classByPage PageNotFound activePage
         , onClick <| SetActivePage PageNotFound
         ]
-        [ text "404 page" ]
+        [ text <| translate language Trans.Page404 ]
 
 
-viewAvatar : WebData User -> Html Msg
-viewAvatar user =
+viewAvatar : Language -> WebData User -> Html Msg
+viewAvatar language user =
     case user of
         Success user_ ->
             a
@@ -202,38 +204,38 @@ viewAvatar user =
             div [] []
 
 
-viewMainContent : Model -> Html Msg
-viewMainContent model =
+viewMainContent : Language -> Model -> Html Msg
+viewMainContent language model =
     let
         viewContent =
             case model.activePage of
                 AccessDenied ->
-                    div [] [ text "Access denied" ]
+                    div [] [ text <| translate language Trans.AccessDenied ]
 
                 Activities ->
                     case model.user of
                         Success user ->
                             Html.map MsgPatientManager <|
-                                PatientManager.View.viewActivities model.currentDate user model.pagePatient
+                                PatientManager.View.viewActivities model.language model.currentDate user model.pagePatient
 
                         _ ->
                             div [] [ i [ class "notched circle loading icon" ] [] ]
 
                 Login ->
-                    Html.map PageLogin (Pages.Login.View.view model.user model.pageLogin)
+                    Html.map PageLogin (Pages.Login.View.view language model.user model.pageLogin)
 
                 MyAccount ->
-                    Pages.MyAccount.View.view model.user
+                    Pages.MyAccount.View.view language model.user
 
                 PageNotFound ->
                     -- We don't need to pass any cmds, so we can call the view directly
-                    Pages.PageNotFound.View.view
+                    Pages.PageNotFound.View.view language
 
                 Dashboard _ ->
                     case model.user of
                         Success user ->
                             Html.map MsgPatientManager <|
-                                PatientManager.View.viewPatients model.currentDate user model.pagePatient
+                                PatientManager.View.viewPatients model.language model.currentDate user model.pagePatient
 
                         _ ->
                             div []
@@ -243,7 +245,7 @@ viewMainContent model =
                     case model.user of
                         Success user ->
                             Html.map MsgPatientManager <|
-                                PatientManager.View.viewPagePatient model.currentDate id user model.pagePatient
+                                PatientManager.View.viewPagePatient model.language model.currentDate id user model.pagePatient
 
                         _ ->
                             div [] [ i [ class "notched circle loading icon" ] [] ]
