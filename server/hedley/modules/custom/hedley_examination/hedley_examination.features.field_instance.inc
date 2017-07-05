@@ -54,8 +54,8 @@ function hedley_examination_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-examination-field_date'.
-  $field_instances['node-examination-field_date'] = array(
+  // Exported field_instance: 'node-examination-field_last_assessment'.
+  $field_instances['node-examination-field_last_assessment'] = array(
     'bundle' => 'examination',
     'deleted' => 0,
     'description' => '',
@@ -82,7 +82,7 @@ function hedley_examination_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_date',
+    'field_name' => 'field_last_assessment',
     'label' => 'Date',
     'required' => 1,
     'settings' => array(

@@ -16,6 +16,7 @@ function hedley_migrate_migrate_api() {
     'HedleyMigrateMother',
     'HedleyMigrateMuac',
     'HedleyMigrateWeight',
+    'HedleyMigrateGroup',
     // Users.
     'HedleyMigrateUsers',
   );
