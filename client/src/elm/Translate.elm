@@ -23,6 +23,11 @@ type TranslationId
     | ActivitiesToComplete
     | Children
     | Dashboard
+    | ErrorBadUrl
+    | ErrorBadPayload
+    | ErrorBadStatus
+    | ErrorNetworkError
+    | ErrorTimeout
     | LinkToMother
     | Login
     | Logout
@@ -61,6 +66,21 @@ translate lang trans =
 
                 Dashboard ->
                     { english = "Dashboard" }
+
+                ErrorBadUrl ->
+                    { english = "URL is not valid." }
+
+                ErrorBadPayload ->
+                    { english = "The server responded with data of an unexpected type." }
+
+                ErrorBadStatus ->
+                    { english = "The server indicated the following error:" }
+
+                ErrorNetworkError ->
+                    { english = "There was a network error." }
+
+                ErrorTimeout ->
+                    { english = "The network request timed out." }
 
                 LinkToMother ->
                     { english = "Link to mother" }

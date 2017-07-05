@@ -13,23 +13,23 @@ viewError : Language -> Http.Error -> Html any
 viewError language error =
     case error of
         Http.BadUrl message ->
-            div [] [ text "URL is not valid." ]
+            div [] [ text <| translate language Trans.ErrorBadUrl ]
 
         Http.BadPayload message _ ->
             div []
-                [ p [] [ text "The server responded with data of an unexpected type." ]
+                [ p [] [ text <| translate language Trans.ErrorBadPayload ]
                 , p [] [ text message ]
                 ]
 
         Http.NetworkError ->
-            div [] [ text "There was a network error." ]
+            div [] [ text <| translate language Trans.ErrorNetworkError ]
 
         Http.Timeout ->
-            div [] [ text "The network request timed out." ]
+            div [] [ text <| translate language Trans.ErrorTimeout ]
 
         Http.BadStatus response ->
             div []
-                [ div [] [ text "The server indicated the following error:" ]
+                [ div [] [ text <| translate language Trans.ErrorBadStatus ]
                 , div [] [ text response.status.message ]
                 ]
 
