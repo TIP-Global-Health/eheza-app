@@ -20,9 +20,9 @@ emptyNode =
 
 
 {-| Conditionally show Html. A bit cleaner than using if expressions in middle
-    of an html block:
-    showIf True <| text "I'm shown"
-    showIf False <| text "I'm not shown"
+of an html block:
+showIf True <| text "I'm shown"
+showIf False <| text "I'm not shown"
 -}
 showIf : Bool -> Html msg -> Html msg
 showIf condition html =
@@ -40,7 +40,7 @@ showMaybe =
 
 
 {-| Displays a debugging segment if debugging is enabled, otherwise renders
-    nothing.
+nothing.
 -}
 debugView : Model -> Html msg -> Html msg
 debugView config html =
