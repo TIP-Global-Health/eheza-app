@@ -22,26 +22,34 @@ type TranslationId
     | ActivitiesCompleted
     | ActivitiesToComplete
     | Children
+    | Connected
     | Dashboard
     | ErrorBadUrl
     | ErrorBadPayload
     | ErrorBadStatus
+    | ErrorCheckLocalConfig
+    | ErrorConfigurationError
     | ErrorNetworkError
     | ErrorTimeout
     | LinkToMother
     | Login
     | Logout
+    | Mother
     | Mothers
     | MyAccount
     | NoActiveIncidents
     | NoChildrenRegisteredInTheSystem
     | NoPatientsFound
+    | NotConnected
     | Page404
     | PageNotFoundMsg
     | Patients
+    | ReportRemaining Int
     | ReloadPatient
     | Retry
+    | SearchByName
     | SignOut
+    | WelcomeUser String
 
 
 translate : Language -> TranslationId -> String
@@ -64,6 +72,9 @@ translate lang trans =
                 Children ->
                     { english = "Children" }
 
+                Connected ->
+                    { english = "Connected" }
+
                 Dashboard ->
                     { english = "Dashboard" }
 
@@ -75,6 +86,12 @@ translate lang trans =
 
                 ErrorBadStatus ->
                     { english = "The server indicated the following error:" }
+
+                ErrorCheckLocalConfig ->
+                    { english = "Check your LocalConfig.elm file and make sure you have defined the enviorement properly" }
+
+                ErrorConfigurationError ->
+                    { english = "Configuration error" }
 
                 ErrorNetworkError ->
                     { english = "There was a network error." }
@@ -91,6 +108,9 @@ translate lang trans =
                 Logout ->
                     { english = "Logout" }
 
+                Mother ->
+                    { english = "Mother: " }
+
                 Mothers ->
                     { english = "Mothers" }
 
@@ -98,13 +118,16 @@ translate lang trans =
                     { english = "My Account" }
 
                 NoActiveIncidents ->
-                    { english = "No active incidents" }
+                    { english = "No active incidents!" }
 
                 NoChildrenRegisteredInTheSystem ->
                     { english = "No children registered in the system" }
 
                 NoPatientsFound ->
                     { english = "No patients found" }
+
+                NotConnected ->
+                    { english = "Not Connected" }
 
                 Page404 ->
                     { english = "404 page" }
@@ -115,14 +138,23 @@ translate lang trans =
                 Patients ->
                     { english = "Patients" }
 
+                ReportRemaining remaining ->
+                    { english = toString remaining ++ " remaning" }
+
                 ReloadPatient ->
                     { english = "Re-load Patient" }
 
                 Retry ->
                     { english = "Retry" }
 
+                SearchByName ->
+                    { english = "Search by Name" }
+
                 SignOut ->
                     { english = "Sign Out" }
+
+                WelcomeUser name ->
+                    { english = "Welcome " ++ name }
 
     in
         case lang of

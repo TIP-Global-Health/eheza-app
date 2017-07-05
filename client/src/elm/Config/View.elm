@@ -12,6 +12,6 @@ view : Language -> Html msg
 view language =
     div
         [ class "config-error" ]
-        [ h2 [] [ text "Configuration error" ]
-        , div [] [ text "Check your LocalConfig.elm file and make sure you have defined the enviorement properly" ]
+        [ h2 [] [ text <| translate language Trans.ErrorConfigurationError ]
+        , div [] [ text <| translate language Trans.ErrorCheckLocalConfig ]
         ]

@@ -24,6 +24,6 @@ view language user =
         div [ class "ui centered card" ]
             [ div [ class "image" ] [ avatar ]
             , div [ class "content" ]
-                [ div [ class "header" ] [ text <| "Welcome " ++ name ]
+                [ div [ class "header" ] [ text <| translate language <| Trans.WelcomeUser name ]
                 ]
             ]

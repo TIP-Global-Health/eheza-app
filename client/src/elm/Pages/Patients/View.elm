@@ -86,7 +86,7 @@ view language currentDate currentUser patients model =
             [ h1 [] [ text <| translate language Trans.Patients ]
             , div [ class "ui input" ]
                 [ input
-                    [ placeholder "Search by Name"
+                    [ placeholder <| translate language Trans.SearchByName
                     , onInput SetQuery
                     ]
                     []

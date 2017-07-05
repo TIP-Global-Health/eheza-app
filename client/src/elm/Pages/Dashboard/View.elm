@@ -27,7 +27,7 @@ viewActiveIncidents language patients =
         if (List.isEmpty orderedIncidentes) then
             div [ style [ ( "font-size", "300%" ) ] ]
                 [ i [ class "ui icon check circle teal huge" ] []
-                , text <| translate language Trans.NoActiveIncidents ++ "!"
+                , text <| translate language Trans.NoActiveIncidents
                 ]
         else
             div [ class "ui cards" ]

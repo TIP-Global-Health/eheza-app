@@ -31,7 +31,7 @@ view language currentDate user patients model =
             if List.isEmpty pendingActivities then
                 []
             else
-                List.map viewActivity pendingActivities
+                List.map (viewActivity language) pendingActivities
 
         noPendingActivitiesView =
             if List.isEmpty noPendingActivities then
@@ -39,7 +39,7 @@ view language currentDate user patients model =
             else
                 div []
                     [ h2 [ class "ui header activities" ] [ text <| translate language Trans.ActivitiesCompleted ]
-                    , div [ class "ui cards activities completed" ] (List.map viewActivity noPendingActivities)
+                    , div [ class "ui cards activities completed" ] (List.map (viewActivity language) noPendingActivities)
                     ]
     in
         div []
@@ -50,8 +50,8 @@ view language currentDate user patients model =
             ]
 
 
-viewActivity : ActivityListItem -> Html Msg
-viewActivity report =
+viewActivity : Language -> ActivityListItem -> Html Msg
+viewActivity language report =
     let
         redirect =
             onClick <| SetRedirectPage <| Dashboard [ report.activity.activityType ]
@@ -64,6 +64,6 @@ viewActivity report =
                 [ i [ class (report.activity.icon ++ " icon") ] [] ]
             , div [ class "content" ]
                 [ a [ class "header activities__item__title", redirect ] [ text report.activity.name ]
-                , div [ class "meta" ] [ text <| toString report.remaining ++ " remaining" ]
+                , div [ class "meta" ] [ text <| translate language <| Trans.ReportRemaining report.remaining ]
                 ]
             ]
