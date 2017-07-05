@@ -1,6 +1,5 @@
 module App.Router exposing (delta2url, location2messages)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import App.Model exposing (..)
 import App.PageType exposing (..)
 import Navigation exposing (Location)

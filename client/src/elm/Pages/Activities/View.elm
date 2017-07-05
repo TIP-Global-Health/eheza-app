@@ -11,11 +11,12 @@ import List as List
 import Pages.Activities.Model exposing (Model, Msg(..))
 import Patient.Model exposing (PatientTypeFilter(..), PatientsDict)
 import Patient.View exposing (viewPatientTypeFilter)
+import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
 
 
-view : Date -> User -> PatientsDict -> Model -> Html Msg
-view currentDate user patients model =
+view : Language -> Date -> User -> PatientsDict -> Model -> Html Msg
+view language currentDate user patients model =
     let
         allActivityList =
             getActivityList currentDate model.patientTypeFilter patients
@@ -30,27 +31,27 @@ view currentDate user patients model =
             if List.isEmpty pendingActivities then
                 []
             else
-                List.map viewActivity pendingActivities
+                List.map (viewActivity language) pendingActivities
 
         noPendingActivitiesView =
             if List.isEmpty noPendingActivities then
                 div [] []
             else
                 div []
-                    [ h2 [ class "ui header activities" ] [ text "Activities completed" ]
-                    , div [ class "ui cards activities completed" ] (List.map viewActivity noPendingActivities)
+                    [ h2 [ class "ui header activities" ] [ text <| translate language Trans.ActivitiesCompleted ]
+                    , div [ class "ui cards activities completed" ] (List.map (viewActivity language) noPendingActivities)
                     ]
     in
         div []
-            [ viewPatientTypeFilter SetPatientTypeFilter model.patientTypeFilter
-            , h2 [ class "ui header activities" ] [ text "Activities to complete" ]
+            [ viewPatientTypeFilter language SetPatientTypeFilter model.patientTypeFilter
+            , h2 [ class "ui header activities" ] [ text <| translate language Trans.ActivitiesToComplete ]
             , div [ class "ui cards activities pending" ] pendingActivitiesView
             , noPendingActivitiesView
             ]
 
 
-viewActivity : ActivityListItem -> Html Msg
-viewActivity report =
+viewActivity : Language -> ActivityListItem -> Html Msg
+viewActivity language report =
     let
         redirect =
             onClick <| SetRedirectPage <| Dashboard [ report.activity.activityType ]
@@ -63,6 +64,6 @@ viewActivity report =
                 [ i [ class (report.activity.icon ++ " icon") ] [] ]
             , div [ class "content" ]
                 [ a [ class "header activities__item__title", redirect ] [ text report.activity.name ]
-                , div [ class "meta" ] [ text <| toString report.remaining ++ " remaining" ]
+                , div [ class "meta" ] [ text <| translate language <| Trans.ReportRemaining report.remaining ]
                 ]
             ]
