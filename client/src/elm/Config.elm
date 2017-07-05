@@ -11,6 +11,7 @@ import Pusher.Model exposing (Cluster(..), PusherAppKey)
     { backendUrl = "https://***REMOVED***"
     , name = "***REMOVED***"
     , pusherKey = PusherAppKey "***REMOVED***" UsEast1
+    , debug = False
     }
 
 
@@ -19,6 +20,7 @@ import Pusher.Model exposing (Cluster(..), PusherAppKey)
     { backendUrl = "https://***REMOVED***"
     , name = "***REMOVED***"
     , pusherKey = PusherAppKey "***REMOVED***" UsEast1
+    , debug = False
     }
 
 
@@ -27,6 +29,7 @@ livePantheon =
     { backendUrl = "https://***REMOVED***"
     , name = "livePantheon"
     , pusherKey = PusherAppKey "***REMOVED***" UsEast1
+    , debug = False
     }
 
 

@@ -9,7 +9,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onCheck, onClick, onInput, onWithOptions)
 import Patient.Model exposing (PatientTypeFilter(..))
-import Set exposing (Set)
 
 
 viewActivityTypeFilter : (ActivityType -> Bool -> msg) -> PatientTypeFilter -> List ActivityType -> Html msg
