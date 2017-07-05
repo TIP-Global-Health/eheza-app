@@ -10,6 +10,7 @@ local =
     { backendUrl = "http://server.local"
     , name = "local"
     , pusherKey = PusherAppKey "" UsEast1
+    , debug = True
     }
 
 
