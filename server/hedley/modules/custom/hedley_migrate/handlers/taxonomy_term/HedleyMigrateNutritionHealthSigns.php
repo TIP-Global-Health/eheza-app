@@ -15,6 +15,7 @@ class HedleyMigrateNutritionHealthSigns extends HedleyMigrateBase {
 
   protected $csvColumns = [
     'id',
+    'name',
   ];
 
   protected $simpleMappings = [
@@ -29,6 +30,7 @@ class HedleyMigrateNutritionHealthSigns extends HedleyMigrateBase {
     $this->description = t('Import Nutrition/Health Signs from the CSV.');
 
     $column_names = [
+      'id',
       'name',
     ];
 
@@ -41,13 +43,13 @@ class HedleyMigrateNutritionHealthSigns extends HedleyMigrateBase {
     $options = array('header_rows' => 1);
     $this->source = new MigrateSourceCSV($source_file, $columns, $options);
 
-    $key = array(
-      'name' => array(
+    $key = [
+      'id' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
-      ),
-    );
+      ],
+    ];
 
     $this->destination = new MigrateDestinationTerm($this->bundle);
 
