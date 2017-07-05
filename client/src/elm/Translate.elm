@@ -43,12 +43,14 @@ type TranslationId
     | NotConnected
     | Page404
     | PageNotFoundMsg
+    | Password
     | Patients
     | ReportRemaining Int
     | ReloadPatient
     | Retry
     | SearchByName
     | SignOut
+    | Username
     | WelcomeUser String
 
 
@@ -135,6 +137,9 @@ translate lang trans =
                 PageNotFoundMsg ->
                     { english = "Sorry, nothing found in this URL." }
 
+                Password ->
+                    { english = "Password" }
+
                 Patients ->
                     { english = "Patients" }
 
@@ -152,6 +157,9 @@ translate lang trans =
 
                 SignOut ->
                     { english = "Sign Out" }
+
+                Username ->
+                    { english = "Username" }
 
                 WelcomeUser name ->
                     { english = "Welcome " ++ name }

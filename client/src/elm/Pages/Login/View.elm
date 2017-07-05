@@ -62,7 +62,7 @@ viewMain language user model =
                     [ input
                         [ type_ "text"
                         , name "username"
-                        , placeholder "Username"
+                        , placeholder <| translate language Trans.Username
                         , onInput SetName
                         , value model.loginForm.name
                         ]
@@ -71,7 +71,7 @@ viewMain language user model =
                 , div [ class "field" ]
                     [ input
                         [ type_ "password"
-                        , placeholder "Password"
+                        , placeholder <| translate language Trans.Password
                         , name "password"
                         , onInput SetPassword
                         , value model.loginForm.pass
