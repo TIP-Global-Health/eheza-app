@@ -2,9 +2,7 @@
 set -e
 
 # 1. Make sure you have the alias setup (use `drush sa` too see the aliases).
-# 2. Make sure you have a settings.php file in the Pantheon repo, as it is needed
-#    for drush si to work.
-# 3. Make sure you have Terminus (from Pantheon.io) in your path.
+# 2. Make sure you have Terminus (from Pantheon.io) in your path.
 
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
