@@ -22,6 +22,7 @@ logic, not less.
 Each `Pages.Patient.Model.Model` is wrapped in a `WebData`, because we
 derive it from fetching a `Patient` through `WebData` ... it's simplest to
 just stay within the `WebData` container.
+
 -}
 type alias Model =
     { activitiesPage : Pages.Activities.Model.Model
@@ -32,11 +33,12 @@ type alias Model =
 
 {-| Our messages:
 
-* `Subscribe` means "fetch the Patient and listen to its pusher events"
+  - `Subscribe` means "fetch the Patient and listen to its pusher events"
 
-* `Unsubscribe` means "forget the Patient and stop listening to its pusher events"
+  - `Unsubscribe` means "forget the Patient and stop listening to its pusher events"
 
-* `MsgPagesPatient` is a message to route to a Patient viewer
+  - `MsgPagesPatient` is a message to route to a Patient viewer
+
 -}
 type Msg
     = Subscribe PatientId
