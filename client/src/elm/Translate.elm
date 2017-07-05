@@ -111,7 +111,7 @@ translate lang trans =
                     { english = "Logout" }
 
                 Mother ->
-                    { english = "Mother: " }
+                    { english = "Mother" }
 
                 Mothers ->
                     { english = "Mothers" }

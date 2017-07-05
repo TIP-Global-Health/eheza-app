@@ -33,7 +33,7 @@ viewChild language currentDate currentUser childId child motherWebData =
                     case motherWebData of
                         Success mother ->
                             div []
-                                [ text <| translate language Trans.Mother
+                                [ text <| translate language Trans.Mother ++ ": "
                                 , a
                                     [ href "#"
                                     , onClick <| SetRedirectPage (App.PageType.Patient motherId)
@@ -45,7 +45,7 @@ viewChild language currentDate currentUser childId child motherWebData =
 
                         Loading ->
                             div []
-                                [ text <| translate language Trans.Mother
+                                [ text <| translate language Trans.Mother ++ ": "
                                 , i [ class "icon loading spinner" ] []
                                 ]
 
