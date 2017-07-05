@@ -18,16 +18,15 @@ class HedleyMigrateExamination extends HedleyMigrateBase {
    */
   public function __construct($arguments) {
     parent::__construct($arguments);
-    $this->description = t('Import Weights from the CSV.');
+    $this->description = t('Import Examination from the CSV.');
     $this->dependencies = [
-      'HedleyMigrateChild',
+      'HedleyMigrateGroup',
     ];
 
     $column_names = [
       'title',
-      'field_child',
-      'field_activity_status',
-      'field_weight',
+      'field_group',
+      'field_last_assessment',
     ];
 
     $columns = [];
@@ -35,7 +34,7 @@ class HedleyMigrateExamination extends HedleyMigrateBase {
       $columns[] = [$column_name, $column_name];
     }
 
-    $source_file = $this->getMigrateDirectory() . '/csv/weight.csv';
+    $source_file = $this->getMigrateDirectory() . '/csv/examination.csv';
     $options = array('header_rows' => 1);
     $this->source = new MigrateSourceCSV($source_file, $columns, $options);
 
@@ -53,14 +52,13 @@ class HedleyMigrateExamination extends HedleyMigrateBase {
 
     $simple_fields = drupal_map_assoc([
       'title',
-      'field_activity_status',
-      'field_weight',
+      'field_last_assessment',
     ]);
 
     $this->addSimpleMappings($simple_fields);
 
-    $this->addFieldMapping('field_child', 'field_child')
-      ->sourceMigration('HedleyMigrateChild');
+    $this->addFieldMapping('field_group', 'field_group')
+      ->sourceMigration('HedleyMigrateGroup');
 
   }
 

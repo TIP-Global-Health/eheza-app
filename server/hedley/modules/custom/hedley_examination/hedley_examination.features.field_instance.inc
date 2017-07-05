@@ -83,7 +83,7 @@ function hedley_examination_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_last_assessment',
-    'label' => 'Date',
+    'label' => 'Last assessment',
     'required' => 1,
     'settings' => array(
       'default_value' => 'now',
@@ -155,7 +155,7 @@ function hedley_examination_field_default_field_instances() {
   // Translatables
   // Included for use with string extractors like potx.
   t('Body');
-  t('Date');
+  t('Last assessment');
   t('group');
 
   return $field_instances;

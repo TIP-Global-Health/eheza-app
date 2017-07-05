@@ -18,7 +18,7 @@ class HedleyMigrateGroup extends HedleyMigrateBase {
    */
   public function __construct($arguments) {
     parent::__construct($arguments);
-    $this->description = t('Import Weights from the CSV.');
+    $this->description = t('Import Groups from the CSV.');
 
     $column_names = [
       'id',
