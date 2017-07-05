@@ -7,6 +7,7 @@ import Pages.Login.Model exposing (emptyModel, Model)
 import RemoteData exposing (RemoteData(..), WebData)
 import PatientManager.Model exposing (emptyModel, Model)
 import Time exposing (Time)
+import Translate exposing (Language(..))
 import User.Model exposing (..)
 
 
@@ -25,6 +26,7 @@ type alias Model =
     , activePage : Page
     , config : RemoteData String Config.Model.Model
     , currentDate : Date
+    , language : Language
     , offline : Bool
     , pageLogin : Pages.Login.Model.Model
     , pagePatient : PatientManager.Model.Model
@@ -44,6 +46,7 @@ emptyModel =
     , activePage = Login
     , config = NotAsked
     , currentDate = Date.fromTime 0
+    , language = English
     , offline = False
     , pageLogin = Pages.Login.Model.emptyModel
     , pagePatient = PatientManager.Model.emptyModel

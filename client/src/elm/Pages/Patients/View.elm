@@ -14,11 +14,12 @@ import Patient.Model exposing (Patient, PatientId, PatientType(..), PatientTypeF
 import Patient.Utils exposing (getPatientAvatarThumb, getPatientName)
 import Patient.View exposing (viewPatientTypeFilter)
 import Table exposing (..)
+import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
 
 
-view : Date -> User -> PatientsDict -> Model -> Html Msg
-view currentDate currentUser patients model =
+view : Language -> Date -> User -> PatientsDict -> Model -> Html Msg
+view language currentDate currentUser patients model =
     let
         lowerQuery =
             String.toLower model.query
@@ -77,38 +78,38 @@ view currentDate currentUser patients model =
                     -- them.
                     div [] []
                 else
-                    div [ class "ui segment" ] [ text "No patients found" ]
+                    div [ class "ui segment" ] [ text <| translate language Trans.NoPatientsFound ]
             else
                 Table.view config model.tableState acceptablePatients
     in
         div []
-            [ h1 [] [ text "Patients" ]
+            [ h1 [] [ text <| translate language Trans.Patients ]
             , div [ class "ui input" ]
                 [ input
-                    [ placeholder "Search by Name"
+                    [ placeholder <| translate language Trans.SearchByName
                     , onInput SetQuery
                     ]
                     []
-                , viewPatientTypeFilter SetPatientTypeFilter model.patientTypeFilter
+                , viewPatientTypeFilter language SetPatientTypeFilter model.patientTypeFilter
                 ]
-            , viewActivityTypeFilterWrapper model.patientTypeFilter model.activityTypeFilter
+            , viewActivityTypeFilterWrapper language model.patientTypeFilter model.activityTypeFilter
             , searchResult
             ]
 
 
-viewActivityTypeFilterWrapper : PatientTypeFilter -> List ActivityType -> Html Msg
-viewActivityTypeFilterWrapper patientTypeFilter activityTypeFilter =
+viewActivityTypeFilterWrapper : Language -> PatientTypeFilter -> List ActivityType -> Html Msg
+viewActivityTypeFilterWrapper language patientTypeFilter activityTypeFilter =
     let
         childTypeFilters =
             [ div [ class "six wide column" ]
-                [ h3 [] [ text "Children" ]
+                [ h3 [] [ text <| translate language Trans.Children ]
                 , viewActivityTypeFilter SetActivityTypeFilter Children activityTypeFilter
                 ]
             ]
 
         motherTypeFilters =
             [ div [ class "six wide column" ]
-                [ h3 [] [ text "Mothers" ]
+                [ h3 [] [ text <| translate language Trans.Mothers ]
                 , viewActivityTypeFilter SetActivityTypeFilter Mothers activityTypeFilter
                 ]
             ]
