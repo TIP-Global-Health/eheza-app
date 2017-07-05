@@ -47,7 +47,7 @@ viewMain language user model =
         error =
             case user of
                 Failure err ->
-                    div [ class "ui error message" ] [ viewError err ]
+                    div [ class "ui error message" ] [ viewError language err ]
 
                 _ ->
                     div [] []

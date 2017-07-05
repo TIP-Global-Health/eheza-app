@@ -53,7 +53,7 @@ viewPagePatient language currentDate id user model =
 
         Failure error ->
             div []
-                [ viewError error
+                [ viewError language error
                 , div
                     [ class "ui button"
                     , onClick <| Subscribe id

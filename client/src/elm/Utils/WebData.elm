@@ -4,12 +4,13 @@ import Json.Decode exposing (Decoder)
 import Html exposing (..)
 import Http
 import HttpBuilder exposing (..)
+import Translate as Trans exposing (Language, translate)
 
 
 {-| Provide some `Html` to view an error message.
 -}
-viewError : Http.Error -> Html any
-viewError error =
+viewError : Language -> Http.Error -> Html any
+viewError language error =
     case error of
         Http.BadUrl message ->
             div [] [ text "URL is not valid." ]
