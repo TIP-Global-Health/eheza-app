@@ -28,8 +28,7 @@ projects[email][subdir] = "contrib"
 projects[email][version] = "1.3"
 
 projects[entity][subdir] = "contrib"
-projects[entity][version] = "1.6"
-projects[entity][patch][] = "https://www.drupal.org/files/issues/2086225-entity-access-check-node-create-3.patch"
+projects[entity][version] = "1.8"
 
 projects[entitycache][subdir] = "contrib"
 projects[entitycache][version] = 1.2
