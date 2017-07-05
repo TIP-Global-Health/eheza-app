@@ -126,11 +126,12 @@ viewSidebar language model =
                 , span
                     [ class "item"
                     ]
-                    [ text <| translate language <|
-                        if model.offline then
-                            Trans.NotConnected
-                        else
-                            Trans.Connected
+                    [ text <|
+                        translate language <|
+                            if model.offline then
+                                Trans.NotConnected
+                            else
+                                Trans.Connected
                     , i
                         [ classList
                             [ ( "icon wifi", True )

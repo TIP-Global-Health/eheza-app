@@ -163,11 +163,11 @@ translate lang trans =
 
                 WelcomeUser name ->
                     { english = "Welcome " ++ name }
-
     in
         case lang of
             English ->
                 .english translationSet
+
 
 languageFromString : String -> Result String Language
 languageFromString str =
