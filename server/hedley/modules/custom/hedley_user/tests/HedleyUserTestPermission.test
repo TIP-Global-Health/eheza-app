@@ -43,10 +43,32 @@ class HedleyUserTestPermission extends HedleyWebTestBase {
    */
   public function setUp() {
 
-    parent::setUp();
+    parent::setUp(['hedley_activity']);
+
     $this->nurse = $this->drupalCreateUser([
       'create mother content',
-      'manage unpublished measurement node',
+      'edit any mother content',
+      'edit own mother content',
+      'delete any mother content',
+      'delete own mother content',
+
+      'create height content',
+      'edit any height content',
+      'edit own height content',
+      'delete any height content',
+      'delete own height content',
+
+      'create weight content',
+      'edit any weight content',
+      'edit own weight content',
+      'delete any weight content',
+      'delete own weight content',
+
+      'create muac content',
+      'edit any muac content',
+      'edit own muac content',
+      'delete any muac content',
+      'delete own muac content',
     ]);
     $this->member = $this->drupalCreateuser(['access content']);
 
@@ -54,11 +76,10 @@ class HedleyUserTestPermission extends HedleyWebTestBase {
     $this->nodes['mother'] = $this->drupalCreateNode(['type' => 'mother']);
 
     foreach (['height', 'weight', 'muac'] as $type) {
-      $node = $this->drupalCreateNode(['type' => $type]);
-      $wrapper = entity_metadata_wrapper('node', $node);
-      $wrapper->field_activity_status->set('pending');
-      $wrapper->save();
-      $this->nodes['pending'][$type] = $node;
+      $this->nodes['pending'][$type] = $this->drupalCreateNode([
+        'type' => $type,
+        'status' => NODE_NOT_PUBLISHED,
+      ]);
     }
   }
 
