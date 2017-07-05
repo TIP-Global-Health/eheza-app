@@ -34,7 +34,7 @@ MYSQL_DB_NAME="drupal_elm_starter"
 
 
 # Pantheon deployment details
-PROFILE="ihangane"
+PROFILE="hedley"
 MAKE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PANTHEON_DIR="/var/html/www/ihangane-pantheon"
 PANTHEON_ALIAS="@ihangane.dev"
