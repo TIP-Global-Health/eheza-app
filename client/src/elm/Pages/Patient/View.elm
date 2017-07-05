@@ -45,7 +45,7 @@ viewChild language currentDate currentUser childId child motherWebData =
 
                         Loading ->
                             div []
-                                [ text <| "Mother: "
+                                [ text <| translate language Trans.Mother
                                 , i [ class "icon loading spinner" ] []
                                 ]
 
@@ -112,7 +112,7 @@ viewMother language currentDate currentUser motherId mother children =
                 div [] [ text <| translate language Trans.NoChildrenRegisteredInTheSystem ]
             else
                 div []
-                    [ text <| "Children: "
+                    [ text <| translate language Trans.Children ++ ": "
                     , ul [] childrenInfo
                     ]
 
