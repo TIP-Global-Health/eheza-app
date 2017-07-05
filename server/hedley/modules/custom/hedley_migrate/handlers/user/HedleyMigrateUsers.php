@@ -26,7 +26,7 @@ class HedleyMigrateUsers extends HedleyMigrateBase {
       ['pass', t('User password')],
       ['email', t('User email')],
       ['avatar', t('User avatar')],
-      ['role', t('User role')]
+      ['role', t('User role')],
     );
 
     $source_file = $this->getMigrateDirectory() . '/csv/user.csv';

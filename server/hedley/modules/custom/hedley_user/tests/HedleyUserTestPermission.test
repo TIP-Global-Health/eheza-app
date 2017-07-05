@@ -78,8 +78,6 @@ class HedleyUserTestPermission extends HedleyWebTestBase {
    */
   public function testNodeAccess() {
     // Make sure an anonymous user can't access the front page and a node page.
-    $this->drupalGet('<front>');
-    $this->assertResponse(403);
     $this->assertFalse(node_access('view', $this->nodes['mother'], user_load(0)));
 
     // Checking permission for an authenticated user.
