@@ -17,22 +17,23 @@ import Mother.Model exposing (Mother, MotherId)
 import Pages.Patient.Model exposing (Msg(..))
 import Patient.Model exposing (Patient, PatientId, PatientTypeFilter(..), PatientsDict)
 import RemoteData exposing (RemoteData(..), WebData)
+import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
 
 
-viewChild : Date -> User -> ChildId -> Child -> WebData Mother -> Html Msg
-viewChild currentDate currentUser childId child motherWebData =
+viewChild : Language -> Date -> User -> ChildId -> Child -> WebData Mother -> Html Msg
+viewChild language currentDate currentUser childId child motherWebData =
     let
         motherInfo =
             case child.motherId of
                 Nothing ->
-                    div [] [ text "Link to mother" ]
+                    div [] [ text <| translate language Trans.LinkToMother ]
 
                 Just motherId ->
                     case motherWebData of
                         Success mother ->
                             div []
-                                [ text <| "Mother: "
+                                [ text <| translate language Trans.Mother ++ ": "
                                 , a
                                     [ href "#"
                                     , onClick <| SetRedirectPage (App.PageType.Patient motherId)
@@ -44,7 +45,7 @@ viewChild currentDate currentUser childId child motherWebData =
 
                         Loading ->
                             div []
-                                [ text <| "Mother: "
+                                [ text <| translate language Trans.Mother ++ ": "
                                 , i [ class "icon loading spinner" ] []
                                 ]
 
@@ -72,13 +73,13 @@ viewChild currentDate currentUser childId child motherWebData =
                 [ class "ui divider" ]
                 []
             , div []
-                [ viewActivityCards currentDate currentUser patients Children
+                [ viewActivityCards language currentDate currentUser patients Children
                 ]
             ]
 
 
-viewMother : Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Html Msg
-viewMother currentDate currentUser motherId mother children =
+viewMother : Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Html Msg
+viewMother language currentDate currentUser motherId mother children =
     let
         childrenInfo =
             (List.map
@@ -108,10 +109,10 @@ viewMother currentDate currentUser motherId mother children =
 
         childrenList =
             if List.isEmpty mother.children then
-                div [] [ text "No children registered in the system" ]
+                div [] [ text <| translate language Trans.NoChildrenRegisteredInTheSystem ]
             else
                 div []
-                    [ text <| "Children: "
+                    [ text <| translate language Trans.Children ++ ": "
                     , ul [] childrenInfo
                     ]
 
@@ -136,7 +137,7 @@ viewMother currentDate currentUser motherId mother children =
                 [ class "ui divider" ]
                 []
             , div []
-                [ viewActivityCards currentDate currentUser patients Mothers
+                [ viewActivityCards language currentDate currentUser patients Mothers
                 ]
             ]
 
@@ -145,8 +146,8 @@ viewMother currentDate currentUser motherId mother children =
 -- @todo: Cleanup code duplication
 
 
-viewActivityCards : Date -> User -> PatientsDict -> PatientTypeFilter -> Html Msg
-viewActivityCards currentDate user patients patientTypeFilter =
+viewActivityCards : Language -> Date -> User -> PatientsDict -> PatientTypeFilter -> Html Msg
+viewActivityCards language currentDate user patients patientTypeFilter =
     let
         allActivityList =
             getActivityList currentDate patientTypeFilter patients
@@ -161,26 +162,26 @@ viewActivityCards currentDate user patients patientTypeFilter =
             if List.isEmpty pendingActivities then
                 []
             else
-                List.map viewActivityListItem pendingActivities
+                List.map (viewActivityListItem language) pendingActivities
 
         noPendingActivitiesView =
             if List.isEmpty noPendingActivities then
                 div [] []
             else
                 div []
-                    [ h2 [ class "ui header activities" ] [ text "Activities completed" ]
-                    , div [ class "ui cards activities completed" ] (List.map viewActivityListItem noPendingActivities)
+                    [ h2 [ class "ui header activities" ] [ text <| translate language Trans.ActivitiesCompleted ]
+                    , div [ class "ui cards activities completed" ] (List.map (viewActivityListItem language) noPendingActivities)
                     ]
     in
         div []
-            [ h2 [ class "ui header activities" ] [ text "Activities to complete" ]
+            [ h2 [ class "ui header activities" ] [ text <| translate language Trans.ActivitiesToComplete ]
             , div [ class "ui cards activities pending" ] pendingActivitiesView
             , noPendingActivitiesView
             ]
 
 
-viewActivityListItem : ActivityListItem -> Html a
-viewActivityListItem report =
+viewActivityListItem : Language -> ActivityListItem -> Html a
+viewActivityListItem language report =
     div [ class "ui card activities__item" ]
         [ a [ href "#" ] [ i [ class (report.activity.icon ++ " icon") ] [] ]
         , div [ class "content" ]

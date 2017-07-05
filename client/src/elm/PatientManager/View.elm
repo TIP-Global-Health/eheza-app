@@ -16,27 +16,28 @@ import Patient.Model exposing (PatientId, PatientsDict, PatientType(..), Patient
 import PatientManager.Model exposing (..)
 import PatientManager.Utils exposing (getChildren, getMother, getPatient, unwrapPatientsDict)
 import RemoteData exposing (RemoteData(..))
+import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
 import Utils.WebData exposing (viewError)
 
 
 {-| Show all Patients page.
 -}
-viewPatients : Date -> User -> Model -> Html Msg
-viewPatients currentDate user model =
+viewPatients : Language -> Date -> User -> Model -> Html Msg
+viewPatients language currentDate user model =
     let
         patients =
             unwrapPatientsDict model.patients
     in
         div []
-            [ Html.map MsgPagesPatients <| Pages.Patients.View.view currentDate user patients model.patientsPage
+            [ Html.map MsgPagesPatients <| Pages.Patients.View.view language currentDate user patients model.patientsPage
             ]
 
 
 {-| Show the Patient page.
 -}
-viewPagePatient : Date -> PatientId -> User -> Model -> Html Msg
-viewPagePatient currentDate id user model =
+viewPagePatient : Language -> Date -> PatientId -> User -> Model -> Html Msg
+viewPagePatient language currentDate id user model =
     case getPatient id model of
         NotAsked ->
             -- This shouldn't happen, but if it does, we provide
@@ -45,19 +46,19 @@ viewPagePatient currentDate id user model =
                 [ class "ui button"
                 , onClick <| Subscribe id
                 ]
-                [ text "Re-load Patient" ]
+                [ text <| translate language Trans.ReloadPatient ]
 
         Loading ->
             div [] []
 
         Failure error ->
             div []
-                [ viewError error
+                [ viewError language error
                 , div
                     [ class "ui button"
                     , onClick <| Subscribe id
                     ]
-                    [ text "Retry" ]
+                    [ text <| translate language Trans.Retry ]
                 ]
 
         Success patient ->
@@ -67,22 +68,22 @@ viewPagePatient currentDate id user model =
                         motherWebData =
                             getMother child.motherId model
                     in
-                        div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewChild currentDate user id child motherWebData ]
+                        div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewChild language currentDate user id child motherWebData ]
 
                 PatientMother mother ->
                     let
                         childrenWebData =
                             getChildren mother model
                     in
-                        div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewMother currentDate user id mother childrenWebData ]
+                        div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewMother language currentDate user id mother childrenWebData ]
 
 
-viewActivities : Date -> User -> Model -> Html Msg
-viewActivities currentDate user model =
+viewActivities : Language -> Date -> User -> Model -> Html Msg
+viewActivities language currentDate user model =
     let
         patients =
             unwrapPatientsDict model.patients
     in
         div []
-            [ Html.map MsgPagesActivities <| Pages.Activities.View.view currentDate user patients model.activitiesPage
+            [ Html.map MsgPagesActivities <| Pages.Activities.View.view language currentDate user patients model.activitiesPage
             ]
