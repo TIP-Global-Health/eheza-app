@@ -34,7 +34,7 @@ projects[entitycache][subdir] = "contrib"
 projects[entitycache][version] = 1.2
 
 projects[entityreference][subdir] = "contrib"
-projects[entityreference][version] = "1.2"
+projects[entityreference][version] = "1.4"
 
 projects[entity_validator][subdir] = "contrib"
 projects[entity_validator][version] = "1.2"
