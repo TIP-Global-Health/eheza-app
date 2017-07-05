@@ -101,12 +101,12 @@ rsync -avzr --delete-after "$MAKE_DIR"/www/sites/all "$PANTHEON_DIR"/sites/all
 cd "$PANTHEON_DIR"
 echo -e "${GREEN}Git commit new code.${NORMAL}\n"
 git add . --all
+git status
 
 echo -e "${YELLOW}Sleeping for 5 seconds, you can abort the process before push by hitting Ctrl-C.${NORMAL}\n"
-git status
 sleep 5
-git commit -am "Site update from $ORIGIN_BRANCH"
-git push
+#git commit -am "Site update from $ORIGIN_BRANCH"
+#git push
 
 cd "$MAKE_DIR"
 
