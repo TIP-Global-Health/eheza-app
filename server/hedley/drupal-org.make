@@ -67,7 +67,7 @@ projects[mimemail][version] = 1.0-beta3
 projects[mimemail][subdir] = "contrib"
 
 projects[module_filter][subdir] = "contrib"
-projects[module_filter][version] = 2.0
+projects[module_filter][version] = 2.1
 
 projects[og][subdir] = "contrib"
 projects[og][version] = 2.x
