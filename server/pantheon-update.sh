@@ -90,13 +90,8 @@ if [[ -n $(git status -s) ]]; then
 fi
 
 echo -e"${GREEN}Sync new code at $ORIGIN_BRANCH branch into the Pantheon folder ($PANTHEON_BRANCH branch).${NORMAL}"
-rsync -avzr --delete-after "$MAKE_DIR/$PROFILE" "$PANTHEON_DIR/profiles/$PROFILE"
-#rm -rf "$PANTHEON_DIR/profiles/$PROFILE"
-#cp -R "$MAKE_DIR/$PROFILE" "$PANTHEON_DIR/profiles/$PROFILE"
-
-rsync -avzr --delete-after "$MAKE_DIR"/www/sites/all "$PANTHEON_DIR"/sites/all
-#rm -rf "$PANTHEON_DIR"/sites/all
-#cp -R "$MAKE_DIR"/www/sites/all "$PANTHEON_DIR"/sites/all
+rsync -avzr --delete-after "$MAKE_DIR/$PROFILE/" "$PANTHEON_DIR/profiles/$PROFILE/"
+rsync -avzr --delete-after "$MAKE_DIR"/www/sites/all/ "$PANTHEON_DIR"/sites/all/
 
 cd "$PANTHEON_DIR"
 echo -e "${GREEN}Git commit new code.${NORMAL}\n"
@@ -105,8 +100,8 @@ git status
 
 echo -e "${YELLOW}Sleeping for 5 seconds, you can abort the process before push by hitting Ctrl-C.${NORMAL}\n"
 sleep 5
-#git commit -am "Site update from $ORIGIN_BRANCH"
-#git push
+git commit -am "Site update from $ORIGIN_BRANCH"
+git push
 
 cd "$MAKE_DIR"
 
