@@ -49,6 +49,7 @@ getActivityTypeList patientTypeFilter =
 {-| Get the pending and completed activities.
 
 @todo: Add also "future"?
+
 -}
 getActivityList : Date -> PatientTypeFilter -> PatientsDict -> List ActivityListItem
 getActivityList currentDate patientTypeFilter patients =
