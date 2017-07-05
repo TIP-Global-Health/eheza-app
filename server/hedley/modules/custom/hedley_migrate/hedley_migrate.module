@@ -16,8 +16,12 @@ function hedley_migrate_migrate_api() {
     'HedleyMigrateMother',
     'HedleyMigrateMuac',
     'HedleyMigrateWeight',
+
     // Users.
     'HedleyMigrateUsers',
+
+    // Taxonomy terms.
+    'HedleyMigrateNutritionHealthSigns',
   );
 
   $api['api'] = 2;
