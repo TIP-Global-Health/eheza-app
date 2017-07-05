@@ -2,11 +2,11 @@
 
 /**
  * @file
- * Contains \HedleyMigrateExamination.
+ * Contains \HedleyMigrateGroup.
  */
 
 /**
- * Class HedleyMigrateExamination.
+ * Class HedleyMigrateGroup.
  */
 class HedleyMigrateGroup extends HedleyMigrateBase {
 
