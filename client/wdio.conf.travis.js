@@ -76,7 +76,7 @@ exports.config = {
     baseUrl: 'http://server.local:3000',
     //
     // Keep the URL of Drupal.
-    drupalUrl: 'server.local',
+    drupalUrl: 'http://server.local',
     //
     // Default timeout for all waitFor* commands.
     waitforTimeout: 20000,
