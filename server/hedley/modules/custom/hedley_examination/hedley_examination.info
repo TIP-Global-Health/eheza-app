@@ -23,3 +23,6 @@ features[variable][] = menu_parent_examination
 features[variable][] = node_options_examination
 features[variable][] = node_preview_examination
 features[variable][] = node_submitted_examination
+
+; Simpletest
+files[] = tests/HedleyExaminationEndpoints.test
