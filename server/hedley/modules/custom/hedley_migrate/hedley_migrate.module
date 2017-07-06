@@ -58,6 +58,8 @@ function hedley_migrate_node_presave($node) {
     $node->uid = array_rand($result['user']);
   }
 
+  _hedley_migrate_preprocess_xss($node);
+
   switch ($node->type) {
     case 'weight':
       _hedley_migrate_preprocess_weight($node);
@@ -70,6 +72,40 @@ function hedley_migrate_node_presave($node) {
     case 'muac':
       _hedley_migrate_preprocess_muac($node);
       break;
+  }
+}
+
+/**
+ * Alters devel generated Sites to satisfy business logic.
+ *
+ * We should have at least one node from each bundle with an XSS title.
+ *
+ * @param object $node
+ *   Site node object.
+ */
+function _hedley_migrate_preprocess_xss($node) {
+  // This global var keeps xss indication for each entity type / bundle.
+  global $_hedley_devel_generate;
+
+  // Validate the current node type has at least one instance with XSS.
+  $xss_is_missing = empty($_hedley_devel_generate['node'][$node->type]);
+
+  $randomly_add_xss = rand() % 2 == 0;
+  if (!$xss_is_missing && $randomly_add_xss) {
+    return;
+  }
+
+  // Indicate the current bundle has an XSS instance.
+  $_hedley_devel_generate['node'][$node->type] = TRUE;
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  // Adjust node's title to include XSS.
+  $wrapper->title->set("<script>alert('XSS-node-{$node->type}-{$node->title}')</script>");
+
+  if ($wrapper->getBundle() == 'examination') {
+    // Adjust node's body to include XSS.
+    $wrapper->body->value->set("<script>alert('XSS-node-{$node->type}-body')</script>");
   }
 }
 
