@@ -204,13 +204,7 @@ viewSelectedActivity language activity =
 
 
 
--- @todo: add translation to field labels
 -- @todo: check min / max for weight input
-
-
-weightHelperText : String
-weightHelperText =
-    "Calibrate the scale before taking the first baby's weight.  Place baby in harness with no clothes on."
 
 
 viewWeightEntry : Language -> Html Msg
@@ -225,14 +219,14 @@ viewWeightEntry language =
             ]
             [ h1
                 []
-                [ text "Weight:"
+                [ text <| translate language Trans.ActivitiesWeightTitle
                 ]
             , span
                 []
-                [ text weightHelperText ]
+                [ text <| translate language Trans.ActivitiesWeightHelp ]
             , div
                 []
-                [ span [] [ text "Weight:" ]
+                [ span [] [ text <| translate language Trans.ActivitiesWeightLabel ]
                 , input
                     [ type_ "number"
                     , name "weight"

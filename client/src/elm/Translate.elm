@@ -21,6 +21,9 @@ type TranslationId
     | Activities
     | ActivitiesCompleted
     | ActivitiesToComplete
+    | ActivitiesWeightTitle
+    | ActivitiesWeightLabel
+    | ActivitiesWeightHelp
     | Children
     | Connected
     | Dashboard
@@ -70,6 +73,15 @@ translate lang trans =
 
                 ActivitiesToComplete ->
                     { english = "ActivitiesToComplete" }
+
+                ActivitiesWeightTitle ->
+                    { english = "Weight:" }
+
+                ActivitiesWeightLabel ->
+                    { english = "Weight:" }
+
+                ActivitiesWeightHelp ->
+                    { english = "Calibrate the scale before taking the first baby's weight.  Place baby in harness with no clothes on." }
 
                 Children ->
                     { english = "Children" }
