@@ -21,7 +21,6 @@ getActivityTypeList patientTypeFilter =
             [ Activity.Model.Child Weight
             , Activity.Model.Child Height
             , Activity.Model.Child Muac
-            , Activity.Model.Child ProgressReport
             , Activity.Model.Child ChildPicture
             ]
 
