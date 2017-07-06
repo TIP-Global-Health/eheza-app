@@ -11,7 +11,7 @@ import Child.Model exposing (Child, ChildId)
 import Date exposing (Date)
 import Dict
 import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
 import Mother.Model exposing (Mother, MotherId)
 import Pages.Patient.Model exposing (Msg(..))
@@ -56,7 +56,7 @@ viewChild language currentDate currentUser childId child motherWebData =
             -- @todo: Add mkChild
             Dict.insert childId ({ info = Patient.Model.PatientChild child }) Dict.empty
     in
-        div []
+        div [] <|
             [ div
                 [ class "ui secondary pointing fluid menu" ]
                 [ h1
@@ -76,6 +76,7 @@ viewChild language currentDate currentUser childId child motherWebData =
                 [ viewActivityCards language currentDate currentUser patients Children
                 ]
             ]
+                ++ viewSelectedActivity language "weight"
 
 
 viewMother : Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Html Msg
@@ -120,7 +121,7 @@ viewMother language currentDate currentUser motherId mother children =
             -- @todo: Add mkMother
             Dict.insert motherId ({ info = Patient.Model.PatientMother mother }) Dict.empty
     in
-        div []
+        div [] <|
             [ div
                 [ class "ui secondary pointing fluid menu" ]
                 [ h1
@@ -140,6 +141,7 @@ viewMother language currentDate currentUser motherId mother children =
                 [ viewActivityCards language currentDate currentUser patients Mothers
                 ]
             ]
+                ++ viewSelectedActivity language "weight"
 
 
 
@@ -188,3 +190,52 @@ viewActivityListItem language report =
             [ a [ class "header activities__item__title" ] [ text report.activity.name ]
             ]
         ]
+
+
+viewSelectedActivity : Language -> String -> List (Html Msg)
+viewSelectedActivity language activity =
+    case activity of
+        "weight" ->
+            viewWeightEntry language
+
+        _ ->
+            []
+
+
+
+-- @todo: add translation to field labels
+-- @todo: check min / max for weight input
+
+
+weightHelperText : String
+weightHelperText =
+    "Calibrate the scale before taking the first baby's weight.  Place baby in harness with no clothes on."
+
+
+viewWeightEntry : Language -> List (Html Msg)
+viewWeightEntry language =
+    [ div
+        [ class "ui divider" ]
+        []
+    , div [ class "ui card" ]
+        [ h1
+            []
+            [ text "Weight:"
+            ]
+        , span
+            []
+            [ text weightHelperText ]
+        , div
+            []
+            [ span [] [ text "Weight:" ]
+            , input
+                [ type_ "number"
+                , name "weight"
+                , Attr.min "1"
+                , Attr.max "200"
+                ]
+                []
+            , span [] [ text "kg" ]
+            ]
+        ]
+    ]
