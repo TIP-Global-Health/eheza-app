@@ -74,3 +74,6 @@ features[variable][] = node_submitted_muac
 features[variable][] = node_submitted_photo
 features[variable][] = node_submitted_weight
 features_exclude[dependencies][image] = image
+
+; Simpletest
+files[] = tests/HedleyActivityEndpoints.test
