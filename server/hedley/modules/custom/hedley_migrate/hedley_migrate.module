@@ -10,14 +10,6 @@
  */
 function hedley_migrate_migrate_api() {
   $migrations = array(
-    // Nodes.
-    'HedleyMigrateChild',
-    'HedleyMigrateHeight',
-    'HedleyMigrateMother',
-    'HedleyMigrateMuac',
-    'HedleyMigrateWeight',
-    'HedleyMigrateGroup',
-    'HedleyMigrateExamination',
     // Users.
     'HedleyMigrateUsers',
   );
