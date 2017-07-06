@@ -21,10 +21,9 @@ type TranslationId
     | Activities
     | ActivitiesCompleted
     | ActivitiesToComplete
-    | ActivitiesWeightTitle
-    | ActivitiesWeightLabel
     | ActivitiesWeightHelp
-    | KilogramShorthand
+    | ActivitiesWeightLabel
+    | ActivitiesWeightTitle
     | Children
     | Connected
     | Dashboard
@@ -35,6 +34,7 @@ type TranslationId
     | ErrorConfigurationError
     | ErrorNetworkError
     | ErrorTimeout
+    | KilogramShorthand
     | LinkToMother
     | Login
     | Logout
@@ -75,17 +75,14 @@ translate lang trans =
                 ActivitiesToComplete ->
                     { english = "ActivitiesToComplete" }
 
-                ActivitiesWeightTitle ->
-                    { english = "Weight:" }
+                ActivitiesWeightHelp ->
+                    { english = "Calibrate the scale before taking the first baby's weight.  Place baby in harness with no clothes on." }
 
                 ActivitiesWeightLabel ->
                     { english = "Weight:" }
 
-                ActivitiesWeightHelp ->
-                    { english = "Calibrate the scale before taking the first baby's weight.  Place baby in harness with no clothes on." }
-
-                KilogramShorthand ->
-                    { english = "kg" }
+                ActivitiesWeightTitle ->
+                    { english = "Weight:" }
 
                 Children ->
                     { english = "Children" }
@@ -116,6 +113,9 @@ translate lang trans =
 
                 ErrorTimeout ->
                     { english = "The network request timed out." }
+
+                KilogramShorthand ->
+                    { english = "kg" }
 
                 LinkToMother ->
                     { english = "Link to mother" }
