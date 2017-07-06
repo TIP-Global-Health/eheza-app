@@ -6,12 +6,12 @@
  */
 
 $plugin = array(
-  'label' => t('Examination'),
-  'resource' => 'examination',
+  'label' => t('Examinations'),
+  'resource' => 'examinations',
   'name' => 'examination',
   'entity_type' => 'node',
   'bundle' => 'examination',
   'description' => t('Exports the Examination bundle.'),
-  'class' => 'HedleyRestfulExamination',
+  'class' => 'HedleyRestfulExaminations',
   'authentication_types' => TRUE,
 );

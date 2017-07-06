@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Contains HedleyRestfulExamination.
+ * Contains \HedleyRestfulExaminations.
  */
 
 /**
- * Class HedleyRestfulExamination.
+ * Class HedleyRestfulExaminations.
  */
-class HedleyRestfulExamination extends HedleyRestfulEntityBaseNode {
+class HedleyRestfulExaminations extends HedleyRestfulEntityBaseNode {
 
   /**
    * {@inheritdoc}

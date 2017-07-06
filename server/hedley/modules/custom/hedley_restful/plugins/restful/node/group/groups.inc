@@ -6,12 +6,12 @@
  */
 
 $plugin = array(
-  'label' => t('Group'),
-  'resource' => 'group',
+  'label' => t('Groups'),
+  'resource' => 'groups',
   'name' => 'group',
   'entity_type' => 'node',
   'bundle' => 'group',
   'description' => t('Exports the Group bundle.'),
-  'class' => 'HedleyRestfulGroup',
+  'class' => 'HedleyRestfulGroups',
   'authentication_types' => TRUE,
 );
