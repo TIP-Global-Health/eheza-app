@@ -2,6 +2,7 @@ module Pages.Patient.View
     exposing
         ( viewChild
         , viewMother
+        , viewSelectedActivity
         )
 
 import Activity.Model exposing (ActivityListItem)
@@ -75,8 +76,8 @@ viewChild language currentDate currentUser childId child motherWebData =
             , div []
                 [ viewActivityCards language currentDate currentUser patients Children
                 ]
+            , viewSelectedActivity language "weight"
             ]
-                ++ viewSelectedActivity language "weight"
 
 
 viewMother : Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Html Msg
@@ -140,8 +141,8 @@ viewMother language currentDate currentUser motherId mother children =
             , div []
                 [ viewActivityCards language currentDate currentUser patients Mothers
                 ]
+            , viewSelectedActivity language "weight"
             ]
-                ++ viewSelectedActivity language "weight"
 
 
 
@@ -192,14 +193,14 @@ viewActivityListItem language report =
         ]
 
 
-viewSelectedActivity : Language -> String -> List (Html Msg)
+viewSelectedActivity : Language -> String -> Html Msg
 viewSelectedActivity language activity =
     case activity of
         "weight" ->
             viewWeightEntry language
 
         _ ->
-            []
+            div [] []
 
 
 
@@ -212,30 +213,34 @@ weightHelperText =
     "Calibrate the scale before taking the first baby's weight.  Place baby in harness with no clothes on."
 
 
-viewWeightEntry : Language -> List (Html Msg)
+viewWeightEntry : Language -> Html Msg
 viewWeightEntry language =
-    [ div
-        [ class "ui divider" ]
-        []
-    , div [ class "ui card" ]
-        [ h1
+    div []
+        [ div
+            [ class "ui divider" ]
             []
-            [ text "Weight:"
-            ]
-        , span
-            []
-            [ text weightHelperText ]
         , div
-            []
-            [ span [] [ text "Weight:" ]
-            , input
-                [ type_ "number"
-                , name "weight"
-                , Attr.min "1"
-                , Attr.max "200"
-                ]
+            [ class "ui card"
+            , id "weightEntryForm"
+            ]
+            [ h1
                 []
-            , span [] [ text "kg" ]
+                [ text "Weight:"
+                ]
+            , span
+                []
+                [ text weightHelperText ]
+            , div
+                []
+                [ span [] [ text "Weight:" ]
+                , input
+                    [ type_ "number"
+                    , name "weight"
+                    , Attr.min "1"
+                    , Attr.max "200"
+                    ]
+                    []
+                , span [] [ text "kg" ]
+                ]
             ]
         ]
-    ]
