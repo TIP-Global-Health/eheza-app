@@ -2,6 +2,7 @@ module Pages.Patient.View
     exposing
         ( viewChild
         , viewMother
+        , viewSelectedActivity
         )
 
 import Activity.Model exposing (ActivityListItem)
@@ -11,10 +12,10 @@ import Child.Model exposing (Child, ChildId)
 import Date exposing (Date)
 import Dict
 import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
 import Mother.Model exposing (Mother, MotherId)
-import Pages.Patient.Model exposing (Msg(..))
+import Pages.Patient.Model exposing (Msg(..), ActivityOptions)
 import Patient.Model exposing (Patient, PatientId, PatientTypeFilter(..), PatientsDict)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (translate, Language)
@@ -56,7 +57,7 @@ viewChild language currentDate currentUser childId child motherWebData =
             -- @todo: Add mkChild
             Dict.insert childId ({ info = Patient.Model.PatientChild child }) Dict.empty
     in
-        div []
+        div [] <|
             [ div
                 [ class "ui secondary pointing fluid menu" ]
                 [ h1
@@ -75,6 +76,7 @@ viewChild language currentDate currentUser childId child motherWebData =
             , div []
                 [ viewActivityCards language currentDate currentUser patients Children
                 ]
+            , viewSelectedActivity language (Just Pages.Patient.Model.Weight)
             ]
 
 
@@ -120,7 +122,7 @@ viewMother language currentDate currentUser motherId mother children =
             -- @todo: Add mkMother
             Dict.insert motherId ({ info = Patient.Model.PatientMother mother }) Dict.empty
     in
-        div []
+        div [] <|
             [ div
                 [ class "ui secondary pointing fluid menu" ]
                 [ h1
@@ -139,6 +141,7 @@ viewMother language currentDate currentUser motherId mother children =
             , div []
                 [ viewActivityCards language currentDate currentUser patients Mothers
                 ]
+            , viewSelectedActivity language (Just Pages.Patient.Model.Weight)
             ]
 
 
@@ -186,5 +189,52 @@ viewActivityListItem language report =
         [ a [ href "#" ] [ i [ class (report.activity.icon ++ " icon") ] [] ]
         , div [ class "content" ]
             [ a [ class "header activities__item__title" ] [ text report.activity.name ]
+            ]
+        ]
+
+
+viewSelectedActivity : Language -> Maybe ActivityOptions -> Html Msg
+viewSelectedActivity language activity =
+    case activity of
+        Just Pages.Patient.Model.Weight ->
+            viewWeightEntry language
+
+        Nothing ->
+            div [] []
+
+
+
+-- @todo: check min / max for weight input
+
+
+viewWeightEntry : Language -> Html Msg
+viewWeightEntry language =
+    div []
+        [ div
+            [ class "ui divider" ]
+            []
+        , div
+            [ class "ui card"
+            , id "weightEntryForm"
+            ]
+            [ h1
+                []
+                [ text <| translate language Trans.ActivitiesWeightTitle
+                ]
+            , span
+                []
+                [ text <| translate language Trans.ActivitiesWeightHelp ]
+            , div
+                []
+                [ span [] [ text <| translate language Trans.ActivitiesWeightLabel ]
+                , input
+                    [ type_ "number"
+                    , name "weight"
+                    , Attr.min "1"
+                    , Attr.max "200"
+                    ]
+                    []
+                , span [] [ text <| translate language Trans.KilogramShorthand ]
+                ]
             ]
         ]
