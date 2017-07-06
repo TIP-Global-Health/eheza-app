@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Contains HedleyRestfulExamination.
+ * Contains \HedleyRestfulExaminations.
  */
 
 /**
- * Class HedleyRestfulExamination.
+ * Class HedleyRestfulExaminations.
  */
-class HedleyRestfulExamination extends HedleyRestfulEntityBaseNode {
+class HedleyRestfulExaminations extends HedleyRestfulEntityBaseNode {
 
   /**
    * {@inheritdoc}
@@ -22,7 +22,7 @@ class HedleyRestfulExamination extends HedleyRestfulEntityBaseNode {
         // Bundle name.
         'group' => [
           // Resource name.
-          'name' => 'group',
+          'name' => 'groups',
         ],
       ],
     ];

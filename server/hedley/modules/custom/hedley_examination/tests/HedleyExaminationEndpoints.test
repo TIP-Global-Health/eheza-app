@@ -1,0 +1,87 @@
+<?php
+
+/**
+ * @file
+ * Contains \HedleyExaminationEndpoints.
+ */
+
+/**
+ * HedleyExaminationEndpoints tests.
+ */
+class HedleyExaminationEndpoints extends HedleyWebTestBase {
+
+  /**
+   * The group node.
+   *
+   * @var \stdClass
+   */
+  protected $group;
+
+  /**
+   * The examination node.
+   *
+   * @var \stdClass
+   */
+  protected $examination;
+
+  /**
+   * A user object.
+   *
+   * @var \stdClass
+   */
+  protected $user;
+
+  /**
+   * Info hook.
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'HedleyExaminationEndpoints tests',
+      'description' => 'Tests endpoints.',
+      'group' => 'Hedley',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp() {
+    parent::setUp();
+
+    $this->user = $this->drupalCreateUser(['bypass node access']);
+
+    $this->group = $this->drupalCreateNode(['type' => 'group']);
+    $this->examination = $this->drupalCreateNode([
+      'type' => 'examination',
+      'field_group' => [
+        LANGUAGE_NONE => [
+          0 => ['target_id' => $this->group->nid],
+        ],
+      ],
+    ]);
+  }
+
+  /**
+   * Testing the entry point of the group and examination.
+   */
+  public function testAccessControl() {
+
+    /** @var RestfulEntityBaseNode $handler */
+    $handler = restful_get_restful_handler('groups');
+    $handler->setAccount($this->user);
+
+    $group_result = $handler->get('');
+    $this->assertTrue($group_result[0]['label'], $this->group->title);
+    $this->assertTrue($group_result[0]['created'], date('c', $this->group->created));
+
+    /** @var RestfulEntityBaseNode $handler */
+    $handler = restful_get_restful_handler('examinations');
+    $handler->setAccount($this->user);
+
+    $examination_result = $handler->get();
+    $this->assertTrue($examination_result[0]['label'], $this->examination->title);
+    $this->assertTrue($examination_result[0]['created'], date('c', $this->examination->created));
+    $this->assertEqual($examination_result[0]['group'], $group_result[0]);
+  }
+
+}
