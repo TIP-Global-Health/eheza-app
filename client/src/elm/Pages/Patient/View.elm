@@ -193,13 +193,17 @@ viewActivityListItem language report =
         ]
 
 
-viewSelectedActivity : Language -> String -> Html Msg
+type ActivityOptions
+    = Weight
+
+
+viewSelectedActivity : Language -> Maybe ActivityOptions -> Html Msg
 viewSelectedActivity language activity =
     case activity of
-        "weight" ->
+        Just Weight ->
             viewWeightEntry language
 
-        _ ->
+        Nothing ->
             div [] []
 
 
@@ -234,7 +238,7 @@ viewWeightEntry language =
                     , Attr.max "200"
                     ]
                     []
-                , span [] [ text "kg" ]
+                , span [] [ text <| translate language Trans.KilogramShorthand ]
                 ]
             ]
         ]

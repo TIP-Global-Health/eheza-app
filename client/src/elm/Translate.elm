@@ -24,6 +24,7 @@ type TranslationId
     | ActivitiesWeightTitle
     | ActivitiesWeightLabel
     | ActivitiesWeightHelp
+    | KilogramShorthand
     | Children
     | Connected
     | Dashboard
@@ -82,6 +83,9 @@ translate lang trans =
 
                 ActivitiesWeightHelp ->
                     { english = "Calibrate the scale before taking the first baby's weight.  Place baby in harness with no clothes on." }
+
+                KilogramShorthand ->
+                    { english = "kg" }
 
                 Children ->
                     { english = "Children" }
