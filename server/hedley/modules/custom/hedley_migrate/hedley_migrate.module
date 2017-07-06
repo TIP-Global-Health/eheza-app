@@ -165,7 +165,6 @@ function _hedley_migrate_preprocess_xss($entity_type, $entity) {
 
     // We should not allow full html format for XSS attempt.
     if ($wrapper->body->format->value() == 'full_html') {
-      var_dump($label);
       $wrapper->body->format->set('filtered_html');
     }
   }
