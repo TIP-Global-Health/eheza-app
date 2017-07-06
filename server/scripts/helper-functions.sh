@@ -287,18 +287,18 @@ function generate_demo_content {
 
   # Generating all types of nodes.
   TYPES=$(drush sqlq "SELECT type FROM node_type")
-  for TYPE in $(echo $TYPES | tr ";" "\n")
+  for TYPE in $(echo "$TYPES" | tr ";" "\n")
   do
     echo -e "${LBLUE}Generating nodes of type: $TYPE ${RESTORE}"
-    drush generate-content 20 0 --types=$TYPE
+    drush generate-content 20 0 --types="$TYPE"
   done
 
   # Generating taxonomy terms for all defined vocabularies.
   VOCABS=$(drush sqlq "SELECT machine_name FROM taxonomy_vocabulary")
-  for VOCAB in $(echo $VOCABS | tr ";" "\n")
+  for VOCAB in $(echo "$VOCABS" | tr ";" "\n")
   do
     echo -e "${LBLUE}Generating terms of vocabulary: $VOCAB ${RESTORE}"
-    drush generate-terms $VOCAB
+    drush generate-terms "$VOCAB"
   done
 
   cd "$ROOT"
