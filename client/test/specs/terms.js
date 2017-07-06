@@ -1,18 +1,20 @@
 var assert = require('assert');
+var wdioConf = require('../../wdio.conf.js');
 
 describe('taxonomies', function() {
-    it('Testing the vocabulary created', function() {
-        browser.url('http://google.com');
 
-        // browser.waitForVisible(loginForm);
-        // browser.setValueSafe('[name="username"]', 'admin');
-        // browser.setValueSafe('[name="password"]', 'admin');
-        // browser.submitForm(loginForm);
-        // browser.waitForVisible('h1=Patients');
-        //
-        // // Logout session.
-        // browser.click('.masthead .right .ui.button');
-        // browser.waitForVisible('[name="username"]');
-    });
+  before(function() {
+    browser.drupalLogin('john');
+  });
+
+  it('Testing the vocabulary created', function() {
+
+    browser.url(wdioConf.config.drupalUrl + "/admin/structure/taxonomy/nutrition_health_signs");
+
+    browser.waitForVisible('#taxonomy');
+    if (browser.isExisting('#taxonomy a')) {
+      throw 'There are no terms';
+    }
+  });
 
 });

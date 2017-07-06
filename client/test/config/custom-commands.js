@@ -1,5 +1,8 @@
 'use strict';
 
+const assert = require('assert');
+const wdioConf = require('../../wdio.conf.js');
+
 module.exports = function (browser, capabilities, specs) {
 
   /**
@@ -69,6 +72,16 @@ module.exports = function (browser, capabilities, specs) {
         browser.elementIdClear(elementId);
       }
     }
+  });
+
+  browser.addCommand('drupalLogin', (user) => {
+    assert(user, "login command must be passed a username");
+    browser.url(wdioConf.config.drupalUrl + '/user/login');
+    browser.waitForVisible('#user-login');
+    browser.setValueSafe('#edit-name', user);
+    browser.setValueSafe('#edit-pass', user);
+    browser.submitForm('#user-login');
+    browser.waitForVisible('.page-user');
   });
 
   // Set the window size to avoid clipping things off.
