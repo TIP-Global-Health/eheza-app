@@ -61,7 +61,7 @@ function hedley_migrate_node_presave($node) {
   }
 
   // Adjust XSS.
-  _hedley_migrate_preprocess_xss('node', $node);
+  _hedley_migrate_preprocess_xss('node', $node->type, $node);
 
   switch ($node->type) {
     case 'weight':
@@ -89,7 +89,7 @@ function hedley_migrate_taxonomy_term_presave($term) {
   }
 
   // Adjust XSS.
-  _hedley_migrate_preprocess_xss('taxonomy_term', $term);
+  _hedley_migrate_preprocess_xss('taxonomy_term', $term->vocabulary_machine_name, $term);
 }
 
 /**
@@ -119,27 +119,20 @@ function _hedley_migrate_in_generate_content() {
  *
  * @param string $entity_type
  *   The entity type to alter.
+ * @param string $bundle
+ *   The bundle of the entity.
  * @param object $entity
  *   Site entity object.
  */
-function _hedley_migrate_preprocess_xss($entity_type, $entity) {
+function _hedley_migrate_preprocess_xss($entity_type, $bundle, $entity) {
   // This global var keeps xss indication for each entity type / bundle.
   global $_hedley_devel_generate;
 
-  switch ($entity_type) {
-    case 'node':
-      $bundle = $entity->type;
-      $label_property = 'title';
-      break;
-    case 'taxonomy_term':
-      $bundle = $entity->vocabulary_machine_name;
-      $label_property = 'name';
-      break;
-
-    default:
-      // Return for unknown entity type.
-      return;
+  if (!$entity_info = entity_get_info($entity_type)) {
+    return;
   }
+
+  $label_property = $entity_info['entity keys']['label'];
 
   // Validate the current node type has at least one instance with XSS.
   $xss_is_missing = empty($_hedley_devel_generate[$entity_type][$bundle]);
@@ -158,14 +151,24 @@ function _hedley_migrate_preprocess_xss($entity_type, $entity) {
   $label = $wrapper->label();
   $wrapper->{$label_property}->set("<script>alert('XSS-{$entity_type}-{$bundle}-{$label}')</script>");
 
-  // Special case for 'examination' node type.
-  if ($entity_type == 'node' && $wrapper->getBundle() == 'examination') {
-    // Adjust node's body to include XSS.
-    $wrapper->body->value->set("<script>alert('XSS-node-{$bundle}-body')</script>");
+  // Handle all text fields.
+  foreach (field_info_instances($entity_type, $bundle) as $field_name => $field) {
+    $field = field_info_field($field_name);
+    if ($field['module'] != 'text') {
+      continue;
+    }
 
-    // We should not allow full html format for XSS attempt.
-    if ($wrapper->body->format->value() == 'full_html') {
-      $wrapper->body->format->set('filtered_html');
+    // Handle each column.
+    foreach ($field['columns'] as $column => $column_info) {
+      if ($column == 'format') {
+        // We should not allow full html format for XSS attempt.
+        if ($wrapper->{$field_name}->format->value() == 'full_html') {
+          $wrapper->{$field_name}->format->set('filtered_html');
+        }
+      }
+      else {
+        $wrapper->{$field_name}->{$column}->set("<script>alert('XSS-{$entity_type}-{$bundle}-{$field_name}')</script>");
+      }
     }
   }
 }
