@@ -40,6 +40,7 @@ dependencies[] = views_bulk_operations
 
 ; Hedley
 dependencies[] = hedley_activity
+dependencies[] = hedley_examination
 dependencies[] = hedley_group
 dependencies[] = hedley_patient
 dependencies[] = hedley_pusher
