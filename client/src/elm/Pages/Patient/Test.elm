@@ -2,10 +2,6 @@ module Pages.Patient.Test exposing (all)
 
 import Translate exposing (..)
 import Pages.Patient.View exposing (..)
-
-
---
-
 import Test exposing (describe, test, Test)
 import Test.Html.Query as Query
 import Test.Html.Selector as Selector exposing (text, tag)
