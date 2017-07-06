@@ -11,4 +11,5 @@ type alias Model =
     { backendUrl : BackendUrl
     , name : String
     , pusherKey : PusherAppKey
+    , debug : Bool
     }
