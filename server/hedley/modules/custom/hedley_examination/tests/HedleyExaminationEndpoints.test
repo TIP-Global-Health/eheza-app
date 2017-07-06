@@ -67,14 +67,14 @@ class HedleyExaminationEndpoints extends HedleyWebTestBase {
   public function testAccessControl() {
 
     /** @var RestfulEntityBaseNode $handler */
-    $handler = restful_get_restful_handler( 'group');
+    $handler = restful_get_restful_handler('group');
     $handler->setAccount($this->user);
 
     $group_result = $handler->get('');
     $this->assertTrue($group_result[0]['label'], $this->group->title);
     $this->assertTrue($group_result[0]['created'], date('c', $this->group->created));
 
-    $handler = restful_get_restful_handler( 'examination');
+    $handler = restful_get_restful_handler('examination');
     $handler->setAccount($this->user);
 
     $examination_result = $handler->get();
