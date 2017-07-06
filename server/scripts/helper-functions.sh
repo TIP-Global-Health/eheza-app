@@ -278,6 +278,12 @@ function import_demo_content {
   echo "Generating MUACs."
   drush generate-content 40 0 --types=muac
 
+  echo "Generating Groups."
+  drush generate-content 5 0 --types=group
+
+  echo "Generating Examinations."
+  drush generate-content 40 0 --types=examination
+
   cd "$ROOT"
   echo
 }
