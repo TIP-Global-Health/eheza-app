@@ -22,7 +22,7 @@ class HedleyRestfulExaminations extends HedleyRestfulEntityBaseNode {
         // Bundle name.
         'group' => [
           // Resource name.
-          'name' => 'group',
+          'name' => 'groups',
         ],
       ],
     ];

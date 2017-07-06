@@ -74,6 +74,7 @@ class HedleyExaminationEndpoints extends HedleyWebTestBase {
     $this->assertTrue($group_result[0]['label'], $this->group->title);
     $this->assertTrue($group_result[0]['created'], date('c', $this->group->created));
 
+    /** @var RestfulEntityBaseNode $handler */
     $handler = restful_get_restful_handler('examinations');
     $handler->setAccount($this->user);
 

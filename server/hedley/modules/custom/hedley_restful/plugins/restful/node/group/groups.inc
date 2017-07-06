@@ -8,7 +8,7 @@
 $plugin = array(
   'label' => t('Groups'),
   'resource' => 'groups',
-  'name' => 'group',
+  'name' => 'groups',
   'entity_type' => 'node',
   'bundle' => 'group',
   'description' => t('Exports the Group bundle.'),

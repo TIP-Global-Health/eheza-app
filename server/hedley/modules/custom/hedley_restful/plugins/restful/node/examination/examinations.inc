@@ -8,7 +8,7 @@
 $plugin = array(
   'label' => t('Examinations'),
   'resource' => 'examinations',
-  'name' => 'examination',
+  'name' => 'examinations',
   'entity_type' => 'node',
   'bundle' => 'examination',
   'description' => t('Exports the Examination bundle.'),
