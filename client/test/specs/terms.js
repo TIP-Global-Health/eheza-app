@@ -11,8 +11,7 @@ describe('taxonomies', function() {
 
     browser.url(wdioConf.config.drupalUrl + "/admin/structure/taxonomy/nutrition_health_signs");
 
-    browser.waitForVisible('#taxonomy');
-    if (browser.isExisting('#taxonomy a')) {
+    if (browser.isExisting("//table[@id='taxonomy']//a[.='Add term']")) {
       throw 'There are no terms';
     }
   });
