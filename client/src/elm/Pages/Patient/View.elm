@@ -76,7 +76,7 @@ viewChild language currentDate currentUser childId child motherWebData =
             , div []
                 [ viewActivityCards language currentDate currentUser patients Children
                 ]
-            , viewSelectedActivity language "weight"
+            , viewSelectedActivity language (Just Weight)
             ]
 
 
@@ -141,7 +141,7 @@ viewMother language currentDate currentUser motherId mother children =
             , div []
                 [ viewActivityCards language currentDate currentUser patients Mothers
                 ]
-            , viewSelectedActivity language "weight"
+            , viewSelectedActivity language (Just Weight)
             ]
 
 
