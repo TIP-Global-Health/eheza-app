@@ -18,11 +18,11 @@ getActivityTypeList : PatientTypeFilter -> List ActivityType
 getActivityTypeList patientTypeFilter =
     let
         childrenActivities =
-            [ Activity.Model.Child ChildPicture
+            [ Activity.Model.Child Weight
             , Activity.Model.Child Height
             , Activity.Model.Child Muac
             , Activity.Model.Child ProgressReport
-            , Activity.Model.Child Weight
+            , Activity.Model.Child ChildPicture
             ]
 
         mothersActivities =
