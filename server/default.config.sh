@@ -33,6 +33,13 @@ MYSQL_HOSTNAME="127.0.0.1"
 MYSQL_DB_NAME="drupal_elm_starter"
 
 
+# Pantheon deployment details
+PROFILE="hedley"
+MAKE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PANTHEON_DIR="/var/html/www/ihangane-pantheon"
+PANTHEON_ALIAS="@ihangane.dev"
+PANTHEON_BRANCH="master"
+
 
 ##
 # External folders or files that need to be symlinked into the www folder
