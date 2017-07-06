@@ -112,14 +112,6 @@ class HedleyUserTestPermission extends HedleyWebTestBase {
       $this->assertFalse(node_access('delete', $node, $this->member));
     }
 
-    // Check access for nurses.
-    $this->assertTrue(node_access('create', 'mother', $this->nurse));
-    foreach ($this->nodes['pending'] as $node) {
-      $this->assertTrue(node_access('view', $node, $this->nurse));
-      $this->assertTrue(node_access('update', $node, $this->nurse));
-      $this->assertTrue(node_access('delete', $node, $this->nurse));
-    }
-
   }
 
 }
