@@ -15,7 +15,7 @@ import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
 import Mother.Model exposing (Mother, MotherId)
-import Pages.Patient.Model exposing (Msg(..))
+import Pages.Patient.Model exposing (Msg(..), ActivityOptions)
 import Patient.Model exposing (Patient, PatientId, PatientTypeFilter(..), PatientsDict)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (translate, Language)
@@ -76,7 +76,7 @@ viewChild language currentDate currentUser childId child motherWebData =
             , div []
                 [ viewActivityCards language currentDate currentUser patients Children
                 ]
-            , viewSelectedActivity language (Just Weight)
+            , viewSelectedActivity language (Just Pages.Patient.Model.Weight)
             ]
 
 
@@ -141,7 +141,7 @@ viewMother language currentDate currentUser motherId mother children =
             , div []
                 [ viewActivityCards language currentDate currentUser patients Mothers
                 ]
-            , viewSelectedActivity language (Just Weight)
+            , viewSelectedActivity language (Just Pages.Patient.Model.Weight)
             ]
 
 
@@ -193,14 +193,10 @@ viewActivityListItem language report =
         ]
 
 
-type ActivityOptions
-    = Weight
-
-
 viewSelectedActivity : Language -> Maybe ActivityOptions -> Html Msg
 viewSelectedActivity language activity =
     case activity of
-        Just Weight ->
+        Just Pages.Patient.Model.Weight ->
             viewWeightEntry language
 
         Nothing ->
