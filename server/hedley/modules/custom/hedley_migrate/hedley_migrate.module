@@ -162,6 +162,12 @@ function _hedley_migrate_preprocess_xss($entity_type, $entity) {
   if ($entity_type == 'node' && $wrapper->getBundle() == 'examination') {
     // Adjust node's body to include XSS.
     $wrapper->body->value->set("<script>alert('XSS-node-{$bundle}-body')</script>");
+
+    // We should not allow full html format for XSS attempt.
+    if ($wrapper->body->format->value() == 'full_html') {
+      var_dump($label);
+      $wrapper->body->format->set('filtered_html');
+    }
   }
 }
 
