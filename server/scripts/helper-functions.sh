@@ -284,6 +284,9 @@ function import_demo_content {
   echo "Generating Examinations."
   drush generate-content 40 0 --types=examination
 
+  echo "Generating Photos."
+  drush generate-content 40 0 --types=photo
+
   cd "$ROOT"
   echo
 }
