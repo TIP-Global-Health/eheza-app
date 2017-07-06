@@ -27,9 +27,7 @@ class HedleyMigrateMuac extends HedleyMigrateBase {
       'title',
       'field_child',
       'field_activity_status',
-      'field_middle_circumference',
-      'field_upper_circumference',
-      'field_arm_circumference',
+      'field_muac',
     ];
 
     $columns = [];
@@ -56,9 +54,7 @@ class HedleyMigrateMuac extends HedleyMigrateBase {
     $simple_fields = drupal_map_assoc([
       'title',
       'field_activity_status',
-      'field_middle_circumference',
-      'field_upper_circumference',
-      'field_arm_circumference',
+      'field_muac',
     ]);
 
     $this->addSimpleMappings($simple_fields);
