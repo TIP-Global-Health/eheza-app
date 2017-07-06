@@ -31,18 +31,20 @@ function drush_hedley_migrate_pre_generate_content() {
 }
 
 /**
+ * Grabs the Migrate Terms context.
+ */
+function drush_hedley_migrate_pre_generate_terms() {
+  $generate = &drupal_static('hedley_migrate_generate');
+  $generate = TRUE;
+}
+
+/**
  * Implements hook_node_presave().
  *
  * Alters Devel Generate-based content to match business logic constraints.
  */
 function hedley_migrate_node_presave($node) {
-  if (!drupal_is_cli()) {
-    return;
-  }
-
-  $generate = drupal_static('hedley_migrate_generate');
-  if (!$generate) {
-    // Not in a generate-content Drush command.
+  if (!_hedley_migrate_in_generate_content()) {
     return;
   }
 
@@ -58,7 +60,8 @@ function hedley_migrate_node_presave($node) {
     $node->uid = array_rand($result['user']);
   }
 
-  _hedley_migrate_preprocess_xss($node);
+  // Adjust XSS.
+  _hedley_migrate_preprocess_xss('node', $node);
 
   switch ($node->type) {
     case 'weight':
@@ -76,19 +79,70 @@ function hedley_migrate_node_presave($node) {
 }
 
 /**
+ * Implements hook_taxonomy_term_presave().
+ *
+ * Alters Devel Generate-based terms to match business logic constraints.
+ */
+function hedley_migrate_taxonomy_term_presave($term) {
+  if (!_hedley_migrate_in_generate_content()) {
+    return;
+  }
+
+  // Adjust XSS.
+  _hedley_migrate_preprocess_xss('taxonomy_term', $term);
+}
+
+/**
+ * Helper function to detect the current state for generated content via Drush.
+ *
+ * @return bool
+ *   Returns TRUE if current state is within generate-content Drush command.
+ */
+function _hedley_migrate_in_generate_content() {
+  if (!drupal_is_cli()) {
+    return FALSE;
+  }
+
+  $generate = drupal_static('hedley_migrate_generate');
+  if (!$generate) {
+    // Not in a generate-content Drush command.
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+/**
  * Alters devel generated Sites to satisfy business logic.
  *
- * We should have at least one node from each bundle with an XSS title.
+ * We should have at least one entity from each bundle with an XSS label.
  *
- * @param object $node
- *   Site node object.
+ * @param string $entity_type
+ *   The entity type to alter.
+ * @param object $entity
+ *   Site entity object.
  */
-function _hedley_migrate_preprocess_xss($node) {
+function _hedley_migrate_preprocess_xss($entity_type, $entity) {
   // This global var keeps xss indication for each entity type / bundle.
   global $_hedley_devel_generate;
 
+  switch ($entity_type) {
+    case 'node':
+      $bundle = $entity->type;
+      $label_property = 'title';
+      break;
+    case 'taxonomy_term':
+      $bundle = $entity->vocabulary_machine_name;
+      $label_property = 'name';
+      break;
+
+    default:
+      // Return for unknown entity type.
+      return;
+  }
+
   // Validate the current node type has at least one instance with XSS.
-  $xss_is_missing = empty($_hedley_devel_generate['node'][$node->type]);
+  $xss_is_missing = empty($_hedley_devel_generate[$entity_type][$bundle]);
 
   $randomly_add_xss = rand() % 2 == 0;
   if (!$xss_is_missing && $randomly_add_xss) {
@@ -96,16 +150,18 @@ function _hedley_migrate_preprocess_xss($node) {
   }
 
   // Indicate the current bundle has an XSS instance.
-  $_hedley_devel_generate['node'][$node->type] = TRUE;
+  $_hedley_devel_generate[$entity_type][$bundle] = TRUE;
 
-  $wrapper = entity_metadata_wrapper('node', $node);
+  $wrapper = entity_metadata_wrapper($entity_type, $entity);
 
   // Adjust node's title to include XSS.
-  $wrapper->title->set("<script>alert('XSS-node-{$node->type}-{$node->title}')</script>");
+  $label = $wrapper->label();
+  $wrapper->{$label_property}->set("<script>alert('XSS-{$entity_type}-{$bundle}-{$label}')</script>");
 
-  if ($wrapper->getBundle() == 'examination') {
+  // Special case for 'examination' node type.
+  if ($entity_type == 'node' && $wrapper->getBundle() == 'examination') {
     // Adjust node's body to include XSS.
-    $wrapper->body->value->set("<script>alert('XSS-node-{$node->type}-body')</script>");
+    $wrapper->body->value->set("<script>alert('XSS-node-{$bundle}-body')</script>");
   }
 }
 
