@@ -9,4 +9,3 @@ dependencies[] = migrate_extras
 ; Handlers
 files[] = handlers/HedleyMigrateBase.php
 files[] = handlers/user/HedleyMigrateUsers.php
-files[] = handlers/taxonomy_term/HedleyMigrateNutritionHealthSigns.php
