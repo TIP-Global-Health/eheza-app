@@ -1,0 +1,47 @@
+<?php
+
+/**
+ * @file
+ * Class HedleyPatientTaxonomy.
+ */
+
+/**
+ * Class HedleyPatientTaxonomy.
+ */
+class HedleyPatientTaxonomy extends HedleyWebTestBase {
+
+  /**
+   * The profile name.
+   *
+   * @var string
+   */
+  protected $profile = 'hedley';
+
+  /**
+   * Overrides DrupalWebTestCase::setUp().
+   */
+  public function setUp() {
+    parent::setUp(['hedley_patient']);
+  }
+
+  /**
+   * Get info.
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Testing the availability of the taxonomy vocabularies.',
+      'description' => 'What should be present after enabling this module.',
+      'group' => 'Hedley',
+    );
+  }
+
+  /**
+   * Checks the vocabularies that are enclosed in this feature module.
+   */
+  public function testNodeAccess() {
+    $vocabulary = taxonomy_vocabulary_machine_name_load('nutrition_health_signs');
+    $this->assertFalse(empty($vocabulary), 'The vocabulary is created');
+    $this->assertEqual($vocabulary->name, 'Nutrition/Health Signs', 'The human-readable name of the vocabulary is correct');
+  }
+
+}
