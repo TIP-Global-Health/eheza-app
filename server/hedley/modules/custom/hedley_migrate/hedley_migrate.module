@@ -126,7 +126,7 @@ function _hedley_migrate_in_generate_content() {
  */
 function _hedley_migrate_preprocess_xss($entity_type, $bundle, $entity) {
   // This global var keeps xss indication for each entity type / bundle.
-  global $_hedley_devel_generate;
+  $_hedley_devel_generate = &drupal_static(__FUNCTION__, []);
 
   if (!$entity_info = entity_get_info($entity_type)) {
     return;
