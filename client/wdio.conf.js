@@ -74,9 +74,6 @@ exports.config = {
     // with "/", then the base url gets prepended.
     baseUrl: 'http://localhost:3000',
     //
-    // Keep the URL of Drupal.
-    drupalUrl: 'http://localhost/ihangane/server/www',
-    //
     // Default timeout for all waitFor* commands.
     waitforTimeout: 10000,
     //
