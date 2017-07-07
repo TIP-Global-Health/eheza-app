@@ -301,6 +301,9 @@ function generate_demo_content {
     drush generate-terms "$VOCAB"
   done
 
+  echo "Generating Photos."
+  drush generate-content 40 0 --types=photo
+
   cd "$ROOT"
   echo
 }
