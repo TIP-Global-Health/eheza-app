@@ -1,5 +1,5 @@
-name,pass,email,avatar,role
-aya,aya,aya@example.com,aya.png,nurse
-theo,theo,theo@example.com,theo.png,
-fabrice,fabrice,fabrice@example.com,fabrice.png,
-emmy,emmy,emmy@example.com,emmy.png,
+name,pass,email,role
+aya,aya,aya@example.com,nurse
+theo,theo,theo@example.com,
+fabrice,fabrice,fabrice@example.com,
+emmy,emmy,emmy@example.com,
