@@ -5,3 +5,6 @@ dist
 bower_components
 LocalConfig.elm
 errorShots
+
+# Ignore the local config file.
+wdio.local.conf.js

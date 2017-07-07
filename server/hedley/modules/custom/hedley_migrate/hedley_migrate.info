@@ -8,12 +8,5 @@ dependencies[] = migrate_extras
 
 ; Handlers
 files[] = handlers/HedleyMigrateBase.php
-files[] = handlers/node/HedleyMigrateChild.php
-files[] = handlers/node/HedleyMigrateHeight.php
-files[] = handlers/node/HedleyMigrateMother.php
-files[] = handlers/node/HedleyMigrateMuac.php
-files[] = handlers/node/HedleyMigrateWeight.php
-files[] = handlers/node/HedleyMigrateGroup.php
-files[] = handlers/node/HedleyMigrateExamination.php
 files[] = handlers/user/HedleyMigrateUsers.php
 files[] = handlers/taxonomy_term/HedleyMigrateNutritionHealthSigns.php
