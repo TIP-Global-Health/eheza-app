@@ -307,7 +307,7 @@ function generate_demo_content {
     photo
     weight
   )
-  for TYPE in ${TYPES[@]}
+  for TYPE in "${TYPES[@]}"
   do
     echo -e "${LBLUE}Generating nodes of type: $TYPE ${RESTORE}"
     drush generate-content 20 0 --types="$TYPE"
