@@ -18,6 +18,13 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
   protected $photo;
 
   /**
+   * The nutrition node.
+   *
+   * @var \stdClass
+   */
+  protected $nutrition;
+
+  /**
    * A user object.
    *
    * @var \stdClass
@@ -52,6 +59,7 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
     $this->user = $this->drupalCreateUser(['bypass node access']);
 
     $this->photo = $this->drupalCreateNode(['type' => 'photo']);
+    $this->nutrition = $this->drupalCreateNode(['type' => 'nutrition']);
   }
 
   /**
@@ -73,6 +81,28 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
     $results = $handler->get('');
     $this->assertTrue($results[0]['label'], $this->photo->title);
     $this->assertTrue($results[0]['created'], date('c', $this->photo->created));
+
+  }
+
+  /**
+   * Testing the entry point of the photos.
+   */
+  public function testNutritionsEndpoint() {
+
+    /** @var RestfulEntityBaseNode $handler */
+    $handler = restful_get_restful_handler('nutritions');
+
+    // Make sure anonymous user doesn't get the content.
+    $handler->setAccount($this->anonymousUser);
+    $anonymous_results = $handler->get('');
+    $this->assertFalse($anonymous_results, 'Anonymous user doesn\'t have access to the content.');
+
+    // Test authorized user.
+    $handler->setAccount($this->user);
+
+    $results = $handler->get('');
+    $this->assertTrue($results[0]['label'], $this->nutrition->title);
+    $this->assertTrue($results[0]['created'], date('c', $this->nutrition->created));
 
   }
 
