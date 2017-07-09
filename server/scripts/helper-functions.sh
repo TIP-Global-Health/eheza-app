@@ -285,15 +285,8 @@ function generate_demo_content {
   echo -e "${LBLUE}Generating users.${RESTORE}"
   drush generate-users 50
 
-  # Generating all types of nodes.
-  TYPES=$(drush sqlq "SELECT type FROM node_type")
-  for TYPE in $(echo "$TYPES" | tr ";" "\n")
-  do
-    echo -e "${LBLUE}Generating nodes of type: $TYPE ${RESTORE}"
-    drush generate-content 20 0 --types="$TYPE"
-  done
-
   # Generating taxonomy terms for all defined vocabularies.
+  # Taxonomy terms has no dependencies, hence we can automate the list.
   VOCABS=$(drush sqlq "SELECT machine_name FROM taxonomy_vocabulary")
   for VOCAB in $(echo "$VOCABS" | tr ";" "\n")
   do
@@ -301,8 +294,24 @@ function generate_demo_content {
     drush generate-terms "$VOCAB"
   done
 
-  echo "Generating Photos."
-  drush generate-content 40 0 --types=photo
+  # Generating all types of nodes.
+  # Hardcoding the list because of the dependencies between them.
+  TYPES=(
+    group
+    mother
+    child
+    examination
+    height
+    muac
+    nutrition
+    photo
+    weight
+  )
+  for TYPE in ${TYPES[@]}
+  do
+    echo -e "${LBLUE}Generating nodes of type: $TYPE ${RESTORE}"
+    drush generate-content 20 0 --types="$TYPE"
+  done
 
   cd "$ROOT"
   echo
