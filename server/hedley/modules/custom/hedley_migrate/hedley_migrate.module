@@ -5,6 +5,8 @@
  * Populate Hedley content.
  */
 
+use Faker\Generator;
+
 /**
  * Implements hook_migrate_api().
  */
@@ -23,31 +25,9 @@ function hedley_migrate_migrate_api() {
 }
 
 /**
- * Grabs the Migrate Content context.
+ * Implements hook_hedley_faker_node_generate().
  */
-function drush_hedley_migrate_pre_generate_content() {
-  $generate = &drupal_static('hedley_migrate_generate');
-  $generate = TRUE;
-}
-
-/**
- * Grabs the Migrate Terms context.
- */
-function drush_hedley_migrate_pre_generate_terms() {
-  $generate = &drupal_static('hedley_migrate_generate');
-  $generate = TRUE;
-}
-
-/**
- * Implements hook_node_presave().
- *
- * Alters Devel Generate-based content to match business logic constraints.
- */
-function hedley_migrate_node_presave($node) {
-  if (!_hedley_migrate_in_generate_content()) {
-    return;
-  }
-
+function hedley_migrate_hedley_faker_node_generate($node, Generator $faker) {
   if (!$node->uid) {
     // User can't be anonymous, get a random user(not admin or anonymous).
     $query = new EntityFieldQuery();
@@ -60,10 +40,21 @@ function hedley_migrate_node_presave($node) {
     $node->uid = array_rand($result['user']);
   }
 
-  // Adjust XSS.
-  _hedley_migrate_preprocess_xss('node', $node->type, $node);
+  $node->title = $faker->sentence(6);
 
   switch ($node->type) {
+    case 'examination':
+      _hedley_migrate_preprocess_examination($node, $faker);
+      break;
+
+    case 'child':
+      _hedley_migrate_preprocess_child($node, $faker);
+      break;
+
+    case 'mother':
+      _hedley_migrate_preprocess_mother($node, $faker);
+      break;
+
     case 'weight':
       _hedley_migrate_preprocess_weight($node);
       break;
@@ -76,40 +67,19 @@ function hedley_migrate_node_presave($node) {
       _hedley_migrate_preprocess_muac($node);
       break;
   }
+
+  // Adjust XSS.
+  _hedley_migrate_preprocess_xss('node', $node->type, $node);
 }
 
 /**
- * Implements hook_taxonomy_term_presave().
- *
- * Alters Devel Generate-based terms to match business logic constraints.
+ * Implements hook_hedley_faker_taxonomy_term_generate().
  */
-function hedley_migrate_taxonomy_term_presave($term) {
-  if (!_hedley_migrate_in_generate_content()) {
-    return;
-  }
+function hedley_migrate_hedley_faker_taxonomy_term_generate($term, Generator $faker) {
+  $term->name = $faker->sentence(2);
 
   // Adjust XSS.
   _hedley_migrate_preprocess_xss('taxonomy_term', $term->vocabulary_machine_name, $term);
-}
-
-/**
- * Helper function to detect the current state for generated content via Drush.
- *
- * @return bool
- *   Returns TRUE if current state is within generate-content Drush command.
- */
-function _hedley_migrate_in_generate_content() {
-  if (!drupal_is_cli()) {
-    return FALSE;
-  }
-
-  $generate = drupal_static('hedley_migrate_generate');
-  if (!$generate) {
-    // Not in a generate-content Drush command.
-    return FALSE;
-  }
-
-  return TRUE;
 }
 
 /**
@@ -171,6 +141,45 @@ function _hedley_migrate_preprocess_xss($entity_type, $bundle, $entity) {
       }
     }
   }
+}
+
+/**
+ * Alters devel generated Sites to satisfy business logic.
+ *
+ * @param object $node
+ *   Site node object.
+ * @param \Faker\Generator $faker
+ *   The faker generator object.
+ */
+function _hedley_migrate_preprocess_examination($node, Generator $faker) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $wrapper->body->value->set($faker->realText(400));
+}
+
+/**
+ * Alters devel generated Sites to satisfy business logic.
+ *
+ * @param object $node
+ *   Site node object.
+ * @param \Faker\Generator $faker
+ *   The faker generator object.
+ */
+function _hedley_migrate_preprocess_child($node, Generator $faker) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $wrapper->title->set($faker->firstName);
+}
+
+/**
+ * Alters devel generated Sites to satisfy business logic.
+ *
+ * @param object $node
+ *   Site node object.
+ * @param \Faker\Generator $faker
+ *   The faker generator object.
+ */
+function _hedley_migrate_preprocess_mother($node, Generator $faker) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $wrapper->title->set($faker->firstNameFemale);
 }
 
 /**
