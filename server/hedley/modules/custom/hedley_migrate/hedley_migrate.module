@@ -5,6 +5,8 @@
  * Populate Hedley content.
  */
 
+use Faker\Generator;
+
 /**
  * Implements hook_migrate_api().
  */
@@ -25,7 +27,7 @@ function hedley_migrate_migrate_api() {
 /**
  * Implements hook_hedley_faker_node_generate().
  */
-function hedley_migrate_hedley_faker_node_generate($node, Faker\Generator $faker) {
+function hedley_migrate_hedley_faker_node_generate($node, Generator $faker) {
   if (!$node->uid) {
     // User can't be anonymous, get a random user(not admin or anonymous).
     $query = new EntityFieldQuery();
@@ -61,7 +63,7 @@ function hedley_migrate_hedley_faker_node_generate($node, Faker\Generator $faker
 /**
  * Implements hook_hedley_faker_taxonomy_term_generate().
  */
-function hedley_migrate_hedley_faker_taxonomy_term_generate($term, Faker\Generator $faker) {
+function hedley_migrate_hedley_faker_taxonomy_term_generate($term, Generator $faker) {
   $term->name = $faker->sentence(2);
 
   // Adjust XSS.
