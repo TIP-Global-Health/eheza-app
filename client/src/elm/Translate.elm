@@ -21,6 +21,8 @@ type TranslationId
     | Activities
     | ActivitiesCompleted
     | ActivitiesToComplete
+    | ActivitiesPhotoHelp
+    | ActivitiesPhotoTitle
     | ActivitiesWeightHelp
     | ActivitiesWeightLabel
     | ActivitiesWeightTitle
@@ -51,7 +53,9 @@ type TranslationId
     | Patients
     | ReportRemaining Int
     | ReloadPatient
+    | Retake
     | Retry
+    | Save
     | SearchByName
     | SignOut
     | Username
@@ -74,6 +78,12 @@ translate lang trans =
 
                 ActivitiesToComplete ->
                     { english = "ActivitiesToComplete" }
+
+                ActivitiesPhotoHelp ->
+                    { english = "Take each baby's picture at each health assesment. Then you and the mother will see the how the baby has grown!" }
+
+                ActivitiesPhotoTitle ->
+                    { english = "Photo:" }
 
                 ActivitiesWeightHelp ->
                     { english = "Calibrate the scale before taking the first baby's weight.  Place baby in harness with no clothes on." }
@@ -165,8 +175,14 @@ translate lang trans =
                 ReloadPatient ->
                     { english = "Re-load Patient" }
 
+                Retake ->
+                    { english = "Retake" }
+
                 Retry ->
                     { english = "Retry" }
+
+                Save ->
+                    { english = "Save" }
 
                 SearchByName ->
                     { english = "Search by Name" }

@@ -9,7 +9,8 @@ import Pusher.Model exposing (PusherEventData)
 
 
 type ActivityOptions
-    = Weight
+    = Photo
+    | Weight
 
 
 type Msg

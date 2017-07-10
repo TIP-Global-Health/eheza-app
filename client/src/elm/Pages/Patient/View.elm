@@ -20,6 +20,7 @@ import Patient.Model exposing (Patient, PatientId, PatientTypeFilter(..), Patien
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
+import Utils.Html exposing (divider)
 
 
 viewChild : Language -> Date -> User -> ChildId -> Child -> WebData Mother -> Html Msg
@@ -77,6 +78,7 @@ viewChild language currentDate currentUser childId child motherWebData =
                 [ viewActivityCards language currentDate currentUser patients Children
                 ]
             , viewSelectedActivity language (Just Pages.Patient.Model.Weight)
+            , viewSelectedActivity language (Just Pages.Patient.Model.Photo)
             ]
 
 
@@ -142,6 +144,7 @@ viewMother language currentDate currentUser motherId mother children =
                 [ viewActivityCards language currentDate currentUser patients Mothers
                 ]
             , viewSelectedActivity language (Just Pages.Patient.Model.Weight)
+            , viewSelectedActivity language (Just Pages.Patient.Model.Photo)
             ]
 
 
@@ -196,6 +199,9 @@ viewActivityListItem language report =
 viewSelectedActivity : Language -> Maybe ActivityOptions -> Html Msg
 viewSelectedActivity language activity =
     case activity of
+        Just Pages.Patient.Model.Photo ->
+            viewPhotoEntry language
+
         Just Pages.Patient.Model.Weight ->
             viewWeightEntry language
 
@@ -235,6 +241,36 @@ viewWeightEntry language =
                     ]
                     []
                 , span [] [ text <| translate language Trans.KilogramShorthand ]
+                ]
+            ]
+        ]
+
+
+viewPhotoEntry : Language -> Html Msg
+viewPhotoEntry language =
+    div []
+        [ divider
+        , div
+            [ class "ui card"
+            , id "photoEntryForm"
+            ]
+            [ h2
+                []
+                [ text <| translate language Trans.ActivitiesPhotoTitle
+                ]
+            , span
+                []
+                [ text <| translate language Trans.ActivitiesPhotoHelp ]
+            , div
+                []
+                [ input
+                    [ type_ "file"
+                    , name "photo"
+                    , accept "image/*"
+                    ]
+                    []
+                , button [ type_ "button" ] [ text <| translate language Trans.Retake ]
+                , button [ type_ "button" ] [ text <| translate language Trans.Save ]
                 ]
             ]
         ]
