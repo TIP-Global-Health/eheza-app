@@ -47,6 +47,14 @@ function hedley_migrate_hedley_faker_node_generate($node, Generator $faker) {
       _hedley_migrate_preprocess_examination($node, $faker);
       break;
 
+    case 'child':
+      _hedley_migrate_preprocess_child($node, $faker);
+      break;
+
+    case 'mother':
+      _hedley_migrate_preprocess_mother($node, $faker);
+      break;
+
     case 'weight':
       _hedley_migrate_preprocess_weight($node);
       break;
@@ -146,6 +154,32 @@ function _hedley_migrate_preprocess_xss($entity_type, $bundle, $entity) {
 function _hedley_migrate_preprocess_examination($node, Generator $faker) {
   $wrapper = entity_metadata_wrapper('node', $node);
   $wrapper->body->value->set($faker->realText(400));
+}
+
+/**
+ * Alters devel generated Sites to satisfy business logic.
+ *
+ * @param object $node
+ *   Site node object.
+ * @param Generator $faker
+ *   The faker generator object.
+ */
+function _hedley_migrate_preprocess_child($node, Generator $faker) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $wrapper->title->set($faker->firstName);
+}
+
+/**
+ * Alters devel generated Sites to satisfy business logic.
+ *
+ * @param object $node
+ *   Site node object.
+ * @param Generator $faker
+ *   The faker generator object.
+ */
+function _hedley_migrate_preprocess_mother($node, Generator $faker) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $wrapper->title->set($faker->firstNameFemale);
 }
 
 /**
