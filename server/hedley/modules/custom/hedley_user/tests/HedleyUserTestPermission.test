@@ -1,0 +1,117 @@
+<?php
+
+/**
+ * @file
+ * Class HedleyUserTestPermission.
+ */
+
+/**
+ * Class HedleyUserTestPermission.
+ */
+class HedleyUserTestPermission extends HedleyWebTestBase {
+
+  /**
+   * The profile name.
+   *
+   * @var string
+   */
+  protected $profile = 'hedley';
+
+  /**
+   * The nurse user account.
+   *
+   * @var \stdClass
+   */
+  protected $nurse;
+
+  /**
+   * A dummy user object.
+   *
+   * @var \stdClass
+   */
+  protected $member;
+
+  /**
+   * An array if objects.
+   *
+   * @var \stdClass[]
+   */
+  protected $nodes;
+
+  /**
+   * Overrides DrupalWebTestCase::setUp().
+   */
+  public function setUp() {
+
+    parent::setUp(['hedley_activity']);
+
+    $this->nurse = $this->drupalCreateUser([
+      'create mother content',
+      'edit any mother content',
+      'edit own mother content',
+      'delete any mother content',
+      'delete own mother content',
+
+      'create height content',
+      'edit any height content',
+      'edit own height content',
+      'delete any height content',
+      'delete own height content',
+
+      'create weight content',
+      'edit any weight content',
+      'edit own weight content',
+      'delete any weight content',
+      'delete own weight content',
+
+      'create muac content',
+      'edit any muac content',
+      'edit own muac content',
+      'delete any muac content',
+      'delete own muac content',
+    ]);
+    $this->member = $this->drupalCreateuser(['access content']);
+
+    // List of nodes.
+    $this->nodes['mother'] = $this->drupalCreateNode(['type' => 'mother']);
+
+    foreach (['height', 'weight', 'muac'] as $type) {
+      $this->nodes['pending'][$type] = $this->drupalCreateNode([
+        'type' => $type,
+        'status' => NODE_NOT_PUBLISHED,
+      ]);
+    }
+  }
+
+  /**
+   * Get info.
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Testing nodes access for users',
+      'description' => 'Verify the node access in a couple of modes.',
+      'group' => 'Hedley',
+    );
+  }
+
+  /**
+   * Trigger events and verify they'll exists at the end of the page request.
+   */
+  public function testNodeAccess() {
+    // Make sure an anonymous user can't access the front page and a node page.
+    $this->assertFalse(node_access('view', $this->nodes['mother'], user_load(0)));
+
+    // Checking permission for an authenticated user.
+    $this->assertTrue(node_access('view', $this->nodes['mother'], $this->member));
+    $this->assertFalse(node_access('create', 'mother', $this->member));
+    $this->assertFalse(node_access('update', $this->nodes['mother'], $this->member));
+
+    foreach ($this->nodes['pending'] as $node) {
+      $this->assertFalse(node_access('view', $node, $this->member));
+      $this->assertFalse(node_access('update', $node, $this->member));
+      $this->assertFalse(node_access('delete', $node, $this->member));
+    }
+
+  }
+
+}
