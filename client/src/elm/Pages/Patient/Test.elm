@@ -21,8 +21,22 @@ viewWeightSelectedVisibleText =
         ]
 
 
+viewPhotoSelectedVisibleText : Test
+viewPhotoSelectedVisibleText =
+    describe "Pages Patient View Tests" <|
+        [ test "Photo form should display when selected" <|
+            \() ->
+                viewSelectedActivity English (Just Pages.Patient.Model.Photo)
+                    |> Query.fromHtml
+                    |> Query.find [ Selector.id "photoEntryForm" ]
+                    |> Query.find [ tag "h2" ]
+                    |> Query.has [ text "Photo:" ]
+        ]
+
+
 all : Test
 all =
     describe "Pages Patient tests"
-        [ viewWeightSelectedVisibleText
+        [ viewPhotoSelectedVisibleText
+        , viewWeightSelectedVisibleText
         ]
