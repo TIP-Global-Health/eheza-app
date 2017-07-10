@@ -18,6 +18,8 @@
  *
  * @param object $faker
  *   An instantiated Faker\Generator object.
+ *
+ * @ingroup hedley_faker
  */
 function hook_hedley_faker_alter($faker) {
   $faker->addProvider(new ExampleProvider($faker));
@@ -32,10 +34,12 @@ function hook_hedley_faker_alter($faker) {
  *   The account object.
  * @param object $category
  *   The category for storing profile information in.
- * @param object $faker
+ * @param Faker\Generator $faker
  *   The faker generator object.
+ *
+ * @ingroup hedley_faker
  */
-function hook_hedley_faker_user_generate($edit, $account, $category, $faker) {
+function hook_hedley_faker_user_generate($edit, $account, $category, Faker\Generator $faker) {
 }
 
 /**
@@ -43,10 +47,12 @@ function hook_hedley_faker_user_generate($edit, $account, $category, $faker) {
  *
  * @param object $node
  *   The node object.
- * @param object $faker
+ * @param Faker\Generator $faker
  *   The faker generator object.
+ *
+ * @ingroup hedley_faker
  */
-function hook_hedley_faker_node_generate($node, $faker) {
+function hook_hedley_faker_node_generate($node, Faker\Generator $faker) {
 }
 
 /**
@@ -54,8 +60,10 @@ function hook_hedley_faker_node_generate($node, $faker) {
  *
  * @param object $term
  *   The taxonomy term object.
- * @param object $faker
+ * @param Faker\Generator $faker
  *   The faker generator object.
+ *
+ * @ingroup hedley_faker
  */
-function hook_hedley_faker_taxonomy_term_generate($term, $faker) {
+function hook_hedley_faker_taxonomy_term_generate($term, Faker\Generator $faker) {
 }
