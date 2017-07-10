@@ -148,7 +148,7 @@ function _hedley_migrate_preprocess_xss($entity_type, $bundle, $entity) {
  *
  * @param object $node
  *   Site node object.
- * @param Generator $faker
+ * @param \Faker\Generator $faker
  *   The faker generator object.
  */
 function _hedley_migrate_preprocess_examination($node, Generator $faker) {
@@ -161,7 +161,7 @@ function _hedley_migrate_preprocess_examination($node, Generator $faker) {
  *
  * @param object $node
  *   Site node object.
- * @param Generator $faker
+ * @param \Faker\Generator $faker
  *   The faker generator object.
  */
 function _hedley_migrate_preprocess_child($node, Generator $faker) {
@@ -174,7 +174,7 @@ function _hedley_migrate_preprocess_child($node, Generator $faker) {
  *
  * @param object $node
  *   Site node object.
- * @param Generator $faker
+ * @param \Faker\Generator $faker
  *   The faker generator object.
  */
 function _hedley_migrate_preprocess_mother($node, Generator $faker) {
