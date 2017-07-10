@@ -58,6 +58,13 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       ],
     ];
 
+    $public_fields['lastExamination'] = [
+      'property' => 'nid',
+      'process_callbacks' => [
+        [$this, 'lastExamination'],
+      ],
+    ];
+
     return $public_fields;
   }
 
@@ -80,7 +87,7 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
    * @return array
    *   Array with the children node IDs.
    */
-  protected function getChildren($nid) {
+  public static function getChildren($nid) {
     $query = new EntityFieldQuery();
     $result = $query
       ->entityCondition('entity_type', 'node')
@@ -92,6 +99,33 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       ->execute();
 
     return !empty($result['node']) ? array_keys($result['node']) : [];
+  }
+
+  /**
+   * Return the group of the mother.
+   *
+   * @param int $nid
+   *   The mother node ID.
+   *
+   * @return int
+   *   The group node ID.
+   */
+  public static function getGroup($nid) {
+    $mother_wrapper = entity_metadata_wrapper('node', $nid);
+    return $mother_wrapper->field_group->value();
+  }
+
+  /**
+   * Fetches the measurement values of the last completed assessment.
+   *
+   * @param int $nid
+   *   Node Id of a Mother or a Child.
+   *
+   * @return array
+   *   Associative array of the measurement data.
+   */
+  protected function lastExamination($nid) {
+    return [];
   }
 
 }
