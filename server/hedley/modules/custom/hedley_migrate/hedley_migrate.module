@@ -42,10 +42,11 @@ function hedley_migrate_hedley_faker_node_generate($node, Generator $faker) {
 
   $node->title = $faker->sentence(6);
 
-  // Adjust XSS.
-  _hedley_migrate_preprocess_xss('node', $node->type, $node);
-
   switch ($node->type) {
+    case 'examination':
+      _hedley_migrate_preprocess_examination($node, $faker);
+      break;
+
     case 'weight':
       _hedley_migrate_preprocess_weight($node);
       break;
@@ -58,6 +59,9 @@ function hedley_migrate_hedley_faker_node_generate($node, Generator $faker) {
       _hedley_migrate_preprocess_muac($node);
       break;
   }
+
+  // Adjust XSS.
+  _hedley_migrate_preprocess_xss('node', $node->type, $node);
 }
 
 /**
@@ -129,6 +133,19 @@ function _hedley_migrate_preprocess_xss($entity_type, $bundle, $entity) {
       }
     }
   }
+}
+
+/**
+ * Alters devel generated Sites to satisfy business logic.
+ *
+ * @param object $node
+ *   Site node object.
+ * @param Generator $faker
+ *   The faker generator object.
+ */
+function _hedley_migrate_preprocess_examination($node, Generator $faker) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $wrapper->body->value->set($faker->realText(400));
 }
 
 /**
