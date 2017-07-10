@@ -42,6 +42,9 @@ projects[entity_validator][version] = "1.2"
 projects[facetapi][subdir] = "contrib"
 projects[facetapi][version] = "1.5"
 
+projects[faker][subdir] = "contrib"
+projects[faker][version] = "1.x-dev"
+
 projects[features][subdir] = "contrib"
 projects[features][version] = "2.10"
 
@@ -95,6 +98,10 @@ projects[views][version] = "3.16"
 
 projects[views_bulk_operations][subdir] = "contrib"
 projects[views_bulk_operations][version] = "3.4"
+
+; Libraries
+libraries[faker][download][type] = get
+libraries[faker][download][url] = https://github.com/fzaninotto/Faker/archive/v1.6.0.tar.gz
 
 ; Development
 projects[devel][subdir] = "development"
