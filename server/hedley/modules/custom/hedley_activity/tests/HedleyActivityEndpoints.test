@@ -114,6 +114,9 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
     $child_wrapper->field_mother->set($mother->nid);
     $child_wrapper->save();
 
+    // Just to make sure that it won't be returned as the latest examination.
+    $examination_unused = $this->drupalCreateNode(['type' => 'examination']);
+
     $examination = $this->drupalCreateNode(['type' => 'examination']);
     $examination_wrapper = entity_metadata_wrapper('node', $examination);
     $examination_wrapper->field_group->set($group->nid);
@@ -129,12 +132,15 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
     // not belong to a Group or an Examination.
     $this->drupalCreateNode(['type' => 'height']);
 
+
+
     // Test with authorized user, anonymous would not have access to anything.
     $childrenHandler->setAccount($this->user);
     $activityHandler->setAccount($this->user);
 
     $results = $childrenHandler->get($child->nid);
     $this->assertEqual($results[0]['lastExamination'], $examination->nid, 'The last examination is available and matches to the newly created Examination.');
+    $this->assertNotEqual($results[0]['lastExamination'], $examination_unused->nid, 'The last examination does not match the Examination which is not referred.');
 
     // Retrieves activities for the given Child and the given Examination.
     $results = $activityHandler->get('', [
