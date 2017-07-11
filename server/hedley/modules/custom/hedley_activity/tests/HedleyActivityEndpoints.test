@@ -132,8 +132,6 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
     // not belong to a Group or an Examination.
     $this->drupalCreateNode(['type' => 'height']);
 
-
-
     // Test with authorized user, anonymous would not have access to anything.
     $childrenHandler->setAccount($this->user);
     $activityHandler->setAccount($this->user);
@@ -154,6 +152,28 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
     $this->assertEqual(count($results), 1, 'Exactly one result is returned.');
     // And it's the Weight, which is linked to the given Examination.
     $this->assertEqual($results[0]['type'], 'weight', 'The type is weight of the returned activity.');
+  }
+
+  /**
+   * Testing the entry point of the muacs.
+   */
+  public function testMuacsEndpoint() {
+    $muac = $this->drupalCreateNode(['type' => 'muac']);
+
+    /** @var RestfulEntityBaseNode $handler */
+    $handler = restful_get_restful_handler('muacs');
+
+    // Make sure anonymous user doesn't get the content.
+    $handler->setAccount($this->anonymousUser);
+    $anonymous_results = $handler->get('');
+    $this->assertFalse($anonymous_results, 'Anonymous user doesn\'t have access to the "muac" content.');
+
+    // Test authorized user.
+    $handler->setAccount($this->user);
+
+    $results = $handler->get('');
+    $this->assertEqual($results[0]['label'], $muac->title, 'Muac title is correct.');
+    $this->assertEqual($results[0]['created'], date('c', $muac->created), 'Muac "created date" is correct.');
   }
 
 }
