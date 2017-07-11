@@ -110,13 +110,13 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
    * @param int $nid
    *   The child node ID.
    *
-   * @return int
-   *   The Group node ID.
+   * @return int|null
+   *   The Group node ID or NULL if not found.
    */
   public static function getGroup($nid) {
     $mother_nid = self::getMother($nid);
     if (!$mother_nid) {
-      return 0;
+      return NULL;
     }
 
     $mother_wrapper = entity_metadata_wrapper('node', $mother_nid);
@@ -137,10 +137,10 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
 
     $query = new EntityFieldQuery();
     $result = $query
-      ->propertyOrderBy('created', 'DESC')
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', 'examination')
       ->fieldCondition('field_group', 'target_id', $group_nid)
+      ->propertyOrderBy('created', 'DESC')
       // There can be only a single examination.
       ->range(0, 1)
       ->execute();

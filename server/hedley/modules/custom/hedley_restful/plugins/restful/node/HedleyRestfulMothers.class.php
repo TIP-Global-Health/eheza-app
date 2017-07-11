@@ -129,10 +129,10 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
 
     $query = new EntityFieldQuery();
     $result = $query
-      ->propertyOrderBy('created', 'DESC')
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', 'examination')
       ->fieldCondition('field_group', 'target_id', $group_nid)
+      ->propertyOrderBy('created', 'DESC')
       // There can be only a single examination.
       ->range(0, 1)
       ->execute();
