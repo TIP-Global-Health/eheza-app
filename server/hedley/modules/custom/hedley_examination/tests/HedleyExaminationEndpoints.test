@@ -71,17 +71,17 @@ class HedleyExaminationEndpoints extends HedleyWebTestBase {
     $handler->setAccount($this->user);
 
     $group_result = $handler->get('');
-    $this->assertTrue($group_result[0]['label'], $this->group->title);
-    $this->assertTrue($group_result[0]['created'], date('c', $this->group->created));
+    $this->assertEqual($group_result[0]['label'], $this->group->title, 'Group title is correct.');
+    $this->assertEqual($group_result[0]['created'], date('c', $this->group->created), 'Group "created date" is correct.');
 
     /** @var RestfulEntityBaseNode $handler */
     $handler = restful_get_restful_handler('examinations');
     $handler->setAccount($this->user);
 
     $examination_result = $handler->get();
-    $this->assertTrue($examination_result[0]['label'], $this->examination->title);
-    $this->assertTrue($examination_result[0]['created'], date('c', $this->examination->created));
-    $this->assertEqual($examination_result[0]['group'], $group_result[0]);
+    $this->assertEqual($examination_result[0]['label'], $this->examination->title, 'Examination title is correct.');
+    $this->assertEqual($examination_result[0]['created'], date('c', $this->examination->created), 'Examination "created date" is correct.');
+    $this->assertEqual($examination_result[0]['group'], $group_result[0], "Examination's group is correct.");
   }
 
 }
