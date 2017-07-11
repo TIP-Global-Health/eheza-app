@@ -35,19 +35,39 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_text',
   );
 
-  // Exported field_base: 'field_arm_circumference'.
-  $field_bases['field_arm_circumference'] = array(
+  // Exported field_base: 'field_examination'.
+  $field_bases['field_examination'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_arm_circumference',
-    'indexes' => array(),
+    'field_name' => 'field_examination',
+    'indexes' => array(
+      'target_id' => array(
+        0 => 'target_id',
+      ),
+    ),
     'locked' => 0,
-    'module' => 'number',
-    'settings' => array(),
+    'module' => 'entityreference',
+    'settings' => array(
+      'handler' => 'base',
+      'handler_settings' => array(
+        'behaviors' => array(
+          'views-select-list' => array(
+            'status' => 0,
+          ),
+        ),
+        'sort' => array(
+          'type' => 'none',
+        ),
+        'target_bundles' => array(
+          'examination' => 'examination',
+        ),
+      ),
+      'target_type' => 'node',
+    ),
     'translatable' => 0,
-    'type' => 'number_integer',
+    'type' => 'entityreference',
   );
 
   // Exported field_base: 'field_examination'.
@@ -102,19 +122,56 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_float',
   );
 
-  // Exported field_base: 'field_middle_circumference'.
-  $field_bases['field_middle_circumference'] = array(
+  // Exported field_base: 'field_muac'.
+  $field_bases['field_muac'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_middle_circumference',
+    'field_name' => 'field_muac',
     'indexes' => array(),
     'locked' => 0,
     'module' => 'number',
-    'settings' => array(),
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
     'translatable' => 0,
-    'type' => 'number_integer',
+    'type' => 'number_float',
+  );
+
+  // Exported field_base: 'field_nutrition_signs'.
+  $field_bases['field_nutrition_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_nutrition_signs',
+    'indexes' => array(
+      'target_id' => array(
+        0 => 'target_id',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'entityreference',
+    'settings' => array(
+      'handler' => 'base',
+      'handler_settings' => array(
+        'behaviors' => array(
+          'views-select-list' => array(
+            'status' => 0,
+          ),
+        ),
+        'sort' => array(
+          'type' => 'none',
+        ),
+        'target_bundles' => array(
+          'nutrition_health_signs' => 'nutrition_health_signs',
+        ),
+      ),
+      'target_type' => 'taxonomy_term',
+    ),
+    'translatable' => 0,
+    'type' => 'entityreference',
   );
 
   // Exported field_base: 'field_photo'.
@@ -137,21 +194,6 @@ function hedley_activity_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'image',
-  );
-
-  // Exported field_base: 'field_upper_circumference'.
-  $field_bases['field_upper_circumference'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_upper_circumference',
-    'indexes' => array(),
-    'locked' => 0,
-    'module' => 'number',
-    'settings' => array(),
-    'translatable' => 0,
-    'type' => 'number_integer',
   );
 
   // Exported field_base: 'field_weight'.

@@ -218,7 +218,5 @@ function _hedley_migrate_preprocess_muac($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
 
   // Adjust children's height to realistic figures.
-  $wrapper->field_middle_circumference->set(rand(10, 40));
-  $wrapper->field_upper_circumference->set(rand(10, 40));
-  $wrapper->field_arm_circumference->set(rand(5, 10));
+  $wrapper->field_muac->set(rand(10, 40));
 }
