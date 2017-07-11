@@ -48,16 +48,16 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
   public function setUp() {
     parent::setUp();
 
+    // Common test users for the cases.
     $this->anonymousUser = user_load(0);
     $this->user = $this->drupalCreateUser(['bypass node access']);
-
-    $this->photo = $this->drupalCreateNode(['type' => 'photo']);
   }
 
   /**
    * Testing the entry point of the photos.
    */
   public function testPhotosEndpoint() {
+    $this->photo = $this->drupalCreateNode(['type' => 'photo']);
 
     /** @var RestfulEntityBaseNode $handler */
     $handler = restful_get_restful_handler('photos');

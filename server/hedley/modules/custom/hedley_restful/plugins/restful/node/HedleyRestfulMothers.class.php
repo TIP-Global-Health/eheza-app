@@ -138,8 +138,8 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       ->execute();
 
     if (empty($result['node'])) {
-      // In case we somehow don't have a mother, cannot link to a group.
-      return;
+      // No Examination for this Mother yet.
+      return NULL;
     }
 
     return key($result['node']);
