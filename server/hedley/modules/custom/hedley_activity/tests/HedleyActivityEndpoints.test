@@ -76,4 +76,27 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
 
   }
 
+  /**
+   * Testing the entry point of the muacs.
+   */
+  public function testMuacsEndpoint() {
+    $muac = $this->drupalCreateNode(['type' => 'muac']);
+
+    /** @var RestfulEntityBaseNode $handler */
+    $handler = restful_get_restful_handler('muacs');
+
+    // Make sure anonymous user doesn't get the content.
+    $handler->setAccount($this->anonymousUser);
+    $anonymous_results = $handler->get('');
+    $this->assertFalse($anonymous_results, 'Anonymous user doesn\'t have access to the "muac" content.');
+
+    // Test authorized user.
+    $handler->setAccount($this->user);
+
+    $results = $handler->get('');
+    $this->assertEqual($results[0]['label'], $muac->title, 'Muac title is correct.');
+    $this->assertEqual($results[0]['created'], date('c', $muac->created), 'Muac "created date" is correct.');
+
+  }
+
 }
