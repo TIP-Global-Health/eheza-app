@@ -129,8 +129,8 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
    * @param int $nid
    *   Node Id of a Mother or a Child.
    *
-   * @return array
-   *   Associative array of the measurement data.
+   * @return int|null
+   *   The Examination Node ID or NULL if not found.
    */
   protected function lastExamination($nid) {
     $group_nid = self::getGroup($nid);

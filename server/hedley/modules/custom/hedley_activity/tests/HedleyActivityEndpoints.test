@@ -76,4 +76,50 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
 
   }
 
+  /**
+   * Testing the lastExamination handling and filtering.
+   */
+  public function testLastExaminationFiltering() {
+    $activityHandler = restful_get_restful_handler('activities');
+    $childrenHandler = restful_get_restful_handler('children');
+
+    $group = $this->drupalCreateNode(['type' => 'group']);
+    $mother = $this->drupalCreateNode(['type' => 'mother']);
+    $mother_wrapper = entity_metadata_wrapper('node', $mother);
+    $mother_wrapper->field_group->set($group->nid);
+    $mother_wrapper->save();
+
+    $child = $this->drupalCreateNode(['type' => 'child']);
+    $child_wrapper = entity_metadata_wrapper('node', $child->nid);
+    $child_wrapper->field_mother->set($mother->nid);
+    $child_wrapper->save();
+
+    $examination = $this->drupalCreateNode(['type' => 'examinaton']);
+    $examination_wrapper = entity_metadata_wrapper('node', $mother);
+    $examination_wrapper->field_group->set($group->nid);
+    $examination_wrapper->save();
+
+    $weight = $this->drupalCreateNode(['type' => 'weight']);
+    $weight_wrapper = entity_metadata_wrapper('node', $weight);
+    $weight_wrapper->field_child->set($child->nid);
+    $weight_wrapper->field_examination->set($examination->nid);
+    $weight_wrapper->save();
+
+    // Just to make sure that it won't be returned as an activity.
+    $this->drupalCreateNode(['type' => 'height']);
+
+    // Test authorized user.
+    $childrenHandler->setAccount($this->user);
+
+    $results = $childrenHandler->get($child->nid);
+    $this->assertTrue($results[0]['lastExamination'], $examination->nid, 'The last examination is available and matches to the newly created Examination.');
+
+    $results = $activityHandler->get('', [
+      'filter[child]' => $child->nid,
+      'filter[examination]' => $results[0]['lastExamination'],
+    ]);
+    $this->assertEqual(count($results), 1, 'Exactly one result is returned');
+    $this->assertEqual($results[0]['type'], 'weight', 'The type is weight');
+  }
+
 }

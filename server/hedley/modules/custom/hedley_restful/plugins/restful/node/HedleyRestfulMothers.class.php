@@ -112,20 +112,37 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
    */
   public static function getGroup($nid) {
     $mother_wrapper = entity_metadata_wrapper('node', $nid);
-    return $mother_wrapper->field_group->value();
+    return $mother_wrapper->field_group->getIdentifier();
   }
 
   /**
-   * Fetches the measurement values of the last completed assessment.
+   * Fetches the Node Id the last assessment.
    *
    * @param int $nid
    *   Node Id of a Mother or a Child.
    *
-   * @return array
-   *   Associative array of the measurement data.
+   * @return int|null
+   *   The Examination Node ID or NULL if not found.
    */
   protected function lastExamination($nid) {
-    return [];
+    $group_nid = self::getGroup($nid);
+
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->propertyOrderBy('created', 'DESC')
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'examination')
+      ->fieldCondition('field_group', 'target_id', $group_nid)
+      // There can be only a single examination.
+      ->range(0, 1)
+      ->execute();
+
+    if (empty($result['node'])) {
+      // In case we somehow don't have a mother, cannot link to a group.
+      return;
+    }
+
+    return key($result['node']);
   }
 
 }
