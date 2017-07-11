@@ -58,6 +58,13 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       ],
     ];
 
+    $public_fields['lastExamination'] = [
+      'property' => 'nid',
+      'process_callbacks' => [
+        [$this, 'lastExamination'],
+      ],
+    ];
+
     return $public_fields;
   }
 
@@ -80,7 +87,7 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
    * @return array
    *   Array with the children node IDs.
    */
-  protected function getChildren($nid) {
+  public static function getChildren($nid) {
     $query = new EntityFieldQuery();
     $result = $query
       ->entityCondition('entity_type', 'node')
@@ -92,6 +99,50 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       ->execute();
 
     return !empty($result['node']) ? array_keys($result['node']) : [];
+  }
+
+  /**
+   * Return the group of the mother.
+   *
+   * @param int $nid
+   *   The mother node ID.
+   *
+   * @return int
+   *   The group node ID.
+   */
+  public static function getGroup($nid) {
+    $mother_wrapper = entity_metadata_wrapper('node', $nid);
+    return $mother_wrapper->field_group->getIdentifier();
+  }
+
+  /**
+   * Fetches the Node Id the last assessment.
+   *
+   * @param int $nid
+   *   Node Id of a Mother or a Child.
+   *
+   * @return int|null
+   *   The Examination Node ID or NULL if not found.
+   */
+  protected function lastExamination($nid) {
+    $group_nid = self::getGroup($nid);
+
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'examination')
+      ->fieldCondition('field_group', 'target_id', $group_nid)
+      ->propertyOrderBy('created', 'DESC')
+      // There can be only a single examination.
+      ->range(0, 1)
+      ->execute();
+
+    if (empty($result['node'])) {
+      // No Examination for this Mother yet.
+      return NULL;
+    }
+
+    return key($result['node']);
   }
 
 }

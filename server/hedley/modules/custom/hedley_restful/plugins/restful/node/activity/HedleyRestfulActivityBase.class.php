@@ -32,6 +32,18 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulEntityBaseNode {
       ],
     ];
 
+    $public_fields['examination'] = [
+      'property' => 'field_examination',
+      'resource' => [
+        // Bundle name.
+        'examination' => [
+          // Resource name.
+          'name' => 'examinations',
+          'full_view' => FALSE,
+        ],
+      ],
+    ];
+
     $public_fields['status'] = [
       'property' => 'field_activity_status',
     ];
