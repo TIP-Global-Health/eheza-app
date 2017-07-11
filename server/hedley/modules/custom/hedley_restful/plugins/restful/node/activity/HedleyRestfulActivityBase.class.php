@@ -44,7 +44,6 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulEntityBaseNode {
       ],
     ];
 
-
     $public_fields['status'] = [
       'property' => 'field_activity_status',
     ];
