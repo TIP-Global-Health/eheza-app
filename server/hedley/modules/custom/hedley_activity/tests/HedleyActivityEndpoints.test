@@ -94,8 +94,8 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
     $child_wrapper->field_mother->set($mother->nid);
     $child_wrapper->save();
 
-    $examination = $this->drupalCreateNode(['type' => 'examinaton']);
-    $examination_wrapper = entity_metadata_wrapper('node', $mother);
+    $examination = $this->drupalCreateNode(['type' => 'examination']);
+    $examination_wrapper = entity_metadata_wrapper('node', $examination);
     $examination_wrapper->field_group->set($group->nid);
     $examination_wrapper->save();
 
@@ -110,13 +110,16 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
 
     // Test authorized user.
     $childrenHandler->setAccount($this->user);
+    $activityHandler->setAccount($this->user);
 
     $results = $childrenHandler->get($child->nid);
-    $this->assertTrue($results[0]['lastExamination'], $examination->nid, 'The last examination is available and matches to the newly created Examination.');
+    $this->assertEqual($results[0]['lastExamination'], $examination->nid, 'The last examination is available and matches to the newly created Examination.');
 
     $results = $activityHandler->get('', [
-      'filter[child]' => $child->nid,
-      'filter[examination]' => $results[0]['lastExamination'],
+      'filter' => [
+        'child' => $child->nid,
+        'examination' => $results[0]['lastExamination'],
+      ],
     ]);
     $this->assertEqual(count($results), 1, 'Exactly one result is returned');
     $this->assertEqual($results[0]['type'], 'weight', 'The type is weight');
