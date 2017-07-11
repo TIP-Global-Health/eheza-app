@@ -146,29 +146,11 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
       ->execute();
 
     if (empty($result['node'])) {
-      // In case we somehow don't have a mother.
-      return 0;
+      // In case we somehow don't have a mother, cannot link to a group.
+      return;
     }
 
-    $last_examination_nid = key($result['node']);
-
-    $examination = [];
-
-    $query = new EntityFieldQuery();
-    $result = $query
-      ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', 'weight')
-      ->fieldCondition('field_child', 'target_id', $nid)
-      ->fieldCondition('field_examination', 'target_id', $last_examination_nid)
-      // There can be only a single examination.
-      ->range(0, 1)
-      ->execute();
-
-    $weight_wrapper = entity_metadata_wrapper('node', key($result['node']));
-
-    $examination['weight'] = $weight_wrapper->field_weight->value();
-
-    return $examination;
+    return key($result['node']);
   }
 
 }
