@@ -79,8 +79,8 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
     $handler->setAccount($this->user);
 
     $results = $handler->get('');
-    $this->assertEqual($results[0]['label'], $this->photo->title, 'Photo title is valid.');
-    $this->assertEqual($results[0]['created'], date('c', $this->photo->created), 'Photo "created date" is valid.');
+    $this->assertEqual($results[0]['label'], $this->photo->title, 'Photo title is correct.');
+    $this->assertEqual($results[0]['created'], date('c', $this->photo->created), 'Photo "created date" is correct.');
 
   }
 
@@ -101,8 +101,8 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
     $handler->setAccount($this->user);
 
     $results = $handler->get('');
-    $this->assertEqual($results[0]['label'], $this->nutrition->title, 'Nutrition title is valid.');
-    $this->assertEqual($results[0]['created'], date('c', $this->nutrition->created), 'Nutrition "created date" is valid.');
+    $this->assertEqual($results[0]['label'], $this->nutrition->title, 'Nutrition title is correct.');
+    $this->assertEqual($results[0]['created'], date('c', $this->nutrition->created), 'Nutrition "created date" is correct.');
 
   }
 
