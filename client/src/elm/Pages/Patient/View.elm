@@ -250,7 +250,7 @@ viewPhotoEntry : Language -> Html Msg
 viewPhotoEntry language =
     div []
         [ divider
-        , div
+        , Html.form
             [ class "ui card"
             , id "photoEntryForm"
             ]
@@ -269,7 +269,7 @@ viewPhotoEntry language =
                     , accept "image/*"
                     ]
                     []
-                , button [ type_ "button" ] [ text <| translate language Trans.Retake ]
+                , button [ type_ "reset" ] [ text <| translate language Trans.Retake ]
                 , button [ type_ "button" ] [ text <| translate language Trans.Save ]
                 ]
             ]
