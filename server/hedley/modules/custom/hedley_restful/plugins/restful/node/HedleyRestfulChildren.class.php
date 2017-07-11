@@ -100,22 +100,8 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
    *   The Mother node ID.
    */
   public static function getMother($nid) {
-    $query = new EntityFieldQuery();
-    $result = $query
-      ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', 'mother')
-      ->fieldCondition('field_children', 'target_id', [$nid], 'IN')
-      ->propertyCondition('status', NODE_PUBLISHED)
-      // There can be only a single mother.
-      ->range(0, 1)
-      ->execute();
-
-    if (empty($result['node'])) {
-      // In case we somehow don't have a mother.
-      return 0;
-    }
-
-    return key($result['node']);
+    $child_wrapper = entity_metadata_wrapper('node', $nid);
+    return $child_wrapper->field_mother->getIdentifier();
   }
 
   /**
@@ -134,8 +120,7 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
     }
 
     $mother_wrapper = entity_metadata_wrapper('node', $mother_nid);
-
-    return $mother_wrapper->field_group->value();
+    return $mother_wrapper->field_group->getIdentifier();
   }
 
   /**
@@ -152,10 +137,10 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
 
     $query = new EntityFieldQuery();
     $result = $query
+      ->propertyOrderBy('created', 'DESC')
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', 'examination')
       ->fieldCondition('field_group', 'target_id', $group_nid)
-      ->entityOrderBy('created', 'DESC')
       // There can be only a single examination.
       ->range(0, 1)
       ->execute();
@@ -173,7 +158,7 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
     $result = $query
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', 'weight')
-      ->fieldCondition('field_child', 'target_id', $group_nid)
+      ->fieldCondition('field_child', 'target_id', $nid)
       ->fieldCondition('field_examination', 'target_id', $last_examination_nid)
       // There can be only a single examination.
       ->range(0, 1)
