@@ -218,52 +218,6 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-muac-field_arm_circumference'.
-  $field_instances['node-muac-field_arm_circumference'] = array(
-    'bundle' => 'muac',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'number',
-        'settings' => array(
-          'decimal_separator' => '.',
-          'prefix_suffix' => TRUE,
-          'scale' => 0,
-          'thousand_separator' => '',
-        ),
-        'type' => 'number_integer',
-        'weight' => 4,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_arm_circumference',
-    'label' => 'Arm circumference',
-    'required' => 1,
-    'settings' => array(
-      'max' => '',
-      'min' => 0,
-      'prefix' => '',
-      'suffix' => 'cm',
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 0,
-      'module' => 'number',
-      'settings' => array(),
-      'type' => 'number',
-      'weight' => 6,
-    ),
-  );
-
   // Exported field_instance: 'node-muac-field_child'.
   $field_instances['node-muac-field_child'] = array(
     'bundle' => 'muac',
@@ -304,8 +258,8 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-muac-field_middle_circumference'.
-  $field_instances['node-muac-field_middle_circumference'] = array(
+  // Exported field_instance: 'node-muac-field_examination'.
+  $field_instances['node-muac-field_examination'] = array(
     'bundle' => 'muac',
     'default_value' => NULL,
     'deleted' => 0,
@@ -313,14 +267,12 @@ function hedley_activity_field_default_field_instances() {
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'number',
+        'module' => 'entityreference',
         'settings' => array(
-          'decimal_separator' => '.',
-          'prefix_suffix' => TRUE,
-          'scale' => 0,
-          'thousand_separator' => '',
+          'bypass_access' => FALSE,
+          'link' => FALSE,
         ),
-        'type' => 'number_integer',
+        'type' => 'entityreference_label',
         'weight' => 3,
       ),
       'teaser' => array(
@@ -331,27 +283,27 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_middle_circumference',
-    'label' => 'Middle circumference',
+    'field_name' => 'field_examination',
+    'label' => 'Examination',
     'required' => 1,
     'settings' => array(
-      'max' => '',
-      'min' => 0,
-      'prefix' => '',
-      'suffix' => 'cm',
       'user_register_form' => FALSE,
     ),
     'widget' => array(
-      'active' => 0,
-      'module' => 'number',
-      'settings' => array(),
-      'type' => 'number',
-      'weight' => 4,
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 5,
     ),
   );
 
-  // Exported field_instance: 'node-muac-field_upper_circumference'.
-  $field_instances['node-muac-field_upper_circumference'] = array(
+  // Exported field_instance: 'node-muac-field_muac'.
+  $field_instances['node-muac-field_muac'] = array(
     'bundle' => 'muac',
     'default_value' => NULL,
     'deleted' => 0,
@@ -363,11 +315,11 @@ function hedley_activity_field_default_field_instances() {
         'settings' => array(
           'decimal_separator' => '.',
           'prefix_suffix' => TRUE,
-          'scale' => 0,
+          'scale' => 2,
           'thousand_separator' => '',
         ),
-        'type' => 'number_integer',
-        'weight' => 5,
+        'type' => 'number_decimal',
+        'weight' => 4,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -377,14 +329,14 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_upper_circumference',
-    'label' => 'Upper circumference',
+    'field_name' => 'field_muac',
+    'label' => 'MUAC',
     'required' => 1,
     'settings' => array(
       'max' => '',
-      'min' => 0,
+      'min' => '',
       'prefix' => '',
-      'suffix' => 'cm',
+      'suffix' => '',
       'user_register_form' => FALSE,
     ),
     'widget' => array(
@@ -392,7 +344,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 5,
+      'weight' => 6,
     ),
   );
 
@@ -910,15 +862,13 @@ function hedley_activity_field_default_field_instances() {
 
   // Translatables
   // Included for use with string extractors like potx.
-  t('Arm circumference');
   t('Child');
   t('Examination');
   t('Height');
-  t('Middle circumference');
+  t('MUAC');
   t('Nutrition Signs');
   t('Photo');
   t('Status');
-  t('Upper circumference');
   t('Weight');
 
   return $field_instances;
