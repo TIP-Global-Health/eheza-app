@@ -11,13 +11,6 @@
 class HedleyActivityEndpoints extends HedleyWebTestBase {
 
   /**
-   * The photo node.
-   *
-   * @var \stdClass
-   */
-  protected $photo;
-
-  /**
    * A user object.
    *
    * @var \stdClass
@@ -50,14 +43,13 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
 
     $this->anonymousUser = user_load(0);
     $this->user = $this->drupalCreateUser(['bypass node access']);
-
-    $this->photo = $this->drupalCreateNode(['type' => 'photo']);
   }
 
   /**
    * Testing the entry point of the photos.
    */
   public function testPhotosEndpoint() {
+    $photo = $this->drupalCreateNode(['type' => 'photo']);
 
     /** @var RestfulEntityBaseNode $handler */
     $handler = restful_get_restful_handler('photos');
@@ -65,14 +57,37 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
     // Make sure anonymous user doesn't get the content.
     $handler->setAccount($this->anonymousUser);
     $anonymous_results = $handler->get('');
-    $this->assertFalse($anonymous_results, 'Anonymous user doesn\'t have access to the content.');
+    $this->assertFalse($anonymous_results, 'Anonymous user doesn\'t have access to the "photo" content.');
 
     // Test authorized user.
     $handler->setAccount($this->user);
 
     $results = $handler->get('');
-    $this->assertTrue($results[0]['label'], $this->photo->title);
-    $this->assertTrue($results[0]['created'], date('c', $this->photo->created));
+    $this->assertEqual($results[0]['label'], $photo->title, 'Photo title is correct.');
+    $this->assertEqual($results[0]['created'], date('c', $photo->created), 'Photo "created date" is correct.');
+
+  }
+
+  /**
+   * Testing the entry point of the photos.
+   */
+  public function testNutritionsEndpoint() {
+    $nutrition = $this->drupalCreateNode(['type' => 'nutrition']);
+
+    /** @var RestfulEntityBaseNode $handler */
+    $handler = restful_get_restful_handler('nutritions');
+
+    // Make sure anonymous user doesn't get the content.
+    $handler->setAccount($this->anonymousUser);
+    $anonymous_results = $handler->get('');
+    $this->assertFalse($anonymous_results, 'Anonymous user doesn\'t have access to the "nutrition" content.');
+
+    // Test authorized user.
+    $handler->setAccount($this->user);
+
+    $results = $handler->get('');
+    $this->assertEqual($results[0]['label'], $nutrition->title, 'Nutrition title is correct.');
+    $this->assertEqual($results[0]['created'], date('c', $nutrition->created), 'Nutrition "created date" is correct.');
 
   }
 
