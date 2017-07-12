@@ -1,4 +1,4 @@
-module Activity.Encoder exposing (encodeActivityType)
+module Activity.Encoder exposing (encodeActivityType, encodeChildNutritionSign)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), ChildNutritionSign(..), MotherActivityType(..))
 

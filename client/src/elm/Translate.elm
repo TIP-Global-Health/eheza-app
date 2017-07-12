@@ -21,8 +21,15 @@ type TranslationId
     | Activities
     | ActivitiesCompleted
     | ActivitiesToComplete
+    | ActivitiesNutritionSignsAbdominalDisortionLabel
+    | ActivitiesNutritionSignsApathyLabel
+    | ActivitiesNutritionSignsBrittleHairLabel
+    | ActivitiesNutritionSignsDrySkinLabel
+    | ActivitiesNutritionSignsEdemaLabel
     | ActivitiesNutritionSignsHelp
     | ActivitiesNutritionSignsLabel
+    | ActivitiesNutritionSignsNoneLabel
+    | ActivitiesNutritionSignsPoorAppetiteLabel
     | ActivitiesNutritionSignsTitle
     | ActivitiesWeightHelp
     | ActivitiesWeightLabel
@@ -55,6 +62,7 @@ type TranslationId
     | ReportRemaining Int
     | ReloadPatient
     | Retry
+    | Save
     | SearchByName
     | SignOut
     | Username
@@ -78,11 +86,32 @@ translate lang trans =
                 ActivitiesToComplete ->
                     { english = "ActivitiesToComplete" }
 
+                ActivitiesNutritionSignsAbdominalDisortionLabel ->
+                    { english = "Abdominal Disortion" }
+
+                ActivitiesNutritionSignsApathyLabel ->
+                    { english = "Apathy" }
+
+                ActivitiesNutritionSignsBrittleHairLabel ->
+                    { english = "Brittle Hair" }
+
+                ActivitiesNutritionSignsDrySkinLabel ->
+                    { english = "Dry Skin" }
+
+                ActivitiesNutritionSignsEdemaLabel ->
+                    { english = "Edema" }
+
                 ActivitiesNutritionSignsHelp ->
                     { english = "Explain to the mother how to check the malnutrition signs for their own child." }
 
                 ActivitiesNutritionSignsLabel ->
                     { english = "Select all signs that are present:" }
+
+                ActivitiesNutritionSignsNoneLabel ->
+                    { english = "None of these" }
+
+                ActivitiesNutritionSignsPoorAppetiteLabel ->
+                    { english = "Poor Appetite" }
 
                 ActivitiesNutritionSignsTitle ->
                     { english = "Nutrition:" }
@@ -179,6 +208,9 @@ translate lang trans =
 
                 Retry ->
                     { english = "Retry" }
+
+                Save ->
+                    { english = "Save" }
 
                 SearchByName ->
                     { english = "Search by Name" }

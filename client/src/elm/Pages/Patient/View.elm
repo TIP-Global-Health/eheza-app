@@ -5,7 +5,8 @@ module Pages.Patient.View
         , viewSelectedActivity
         )
 
-import Activity.Model exposing (ActivityListItem)
+import Activity.Model exposing (ActivityListItem, ChildNutritionSign(..))
+import Activity.Encoder exposing (encodeChildNutritionSign)
 import Activity.Utils exposing (getActivityList)
 import App.PageType
 import Child.Model exposing (Child, ChildId)
@@ -264,7 +265,74 @@ viewNutritionSignsEntry language =
                 [ text <| translate language Trans.ActivitiesNutritionSignsHelp ]
             , div
                 []
-                [ span [] [ text <| translate language Trans.ActivitiesNutritionSignsLabel ]
+                [ span []
+                    [ text <| translate language Trans.ActivitiesNutritionSignsLabel
+                    , viewNutritionSignsSelector language
+                    ]
                 ]
+            , button [ type_ "button" ] [ text <| translate language Trans.Save ]
+            ]
+        ]
+
+
+viewNutritionSignsSelector : Language -> Html Msg
+viewNutritionSignsSelector language =
+    ul [ class "checkboxes" ]
+        [ li []
+            [ input
+                [ type_ "checkbox"
+                , name <| encodeChildNutritionSign Edema
+                ]
+                []
+            , span []
+                [ text <| translate language Trans.ActivitiesNutritionSignsEdemaLabel ]
+            ]
+        , li []
+            [ input
+                [ type_ "checkbox"
+                , name <| encodeChildNutritionSign AbdominalDisortion
+                ]
+                []
+            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsAbdominalDisortionLabel ]
+            ]
+        , li []
+            [ input
+                [ type_ "checkbox"
+                , name <| encodeChildNutritionSign DrySkin
+                ]
+                []
+            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsDrySkinLabel ]
+            ]
+        , li []
+            [ input
+                [ type_ "checkbox"
+                , name <| encodeChildNutritionSign PoorAppetite
+                ]
+                []
+            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsPoorAppetiteLabel ]
+            ]
+        , li []
+            [ input
+                [ type_ "checkbox"
+                , name <| encodeChildNutritionSign Apathy
+                ]
+                []
+            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsApathyLabel ]
+            ]
+        , li []
+            [ input
+                [ type_ "checkbox"
+                , name <| encodeChildNutritionSign BrittleHair
+                ]
+                []
+            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsBrittleHairLabel ]
+            ]
+        , li []
+            [ input
+                [ type_ "checkbox"
+                , name <| encodeChildNutritionSign None
+                ]
+                []
+            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsNoneLabel ]
             ]
         ]
