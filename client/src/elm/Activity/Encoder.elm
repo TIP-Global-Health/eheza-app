@@ -25,6 +25,9 @@ encodeChildActivityType activityType =
         Muac ->
             "muac"
 
+        NutritionSigns ->
+            "nutrition_signs"
+
         ProgressReport ->
             "progress_report"
 
@@ -52,6 +55,3 @@ encodeMotherActivityType activityType =
 
         MotherPicture ->
             "picture"
-
-        NutritionSigns ->
-            "nutrition_signs"
