@@ -18,7 +18,7 @@ function waitForElement(selector, fn, model, tryCount) {
       // Element still doesn't exist, so wait some more.
       waitForElement(selector, fn, model, tryCount);
     }
-  }, 50);
+  }, 200);
 }
 
 var elmApp = Elm.Main.fullscreen({
@@ -80,7 +80,7 @@ elmApp.ports.activePage.subscribe(function(data) {
     return;
   }
 
-  waitForElement('.dropzone', attachDropzone, data, 15);
+  waitForElement('.dropzone', attachDropzone, data);
 });
 
 function attachDropzone(selector, data) {

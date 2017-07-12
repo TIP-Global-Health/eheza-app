@@ -12,7 +12,8 @@ import User.Model exposing (..)
 
 
 type Msg
-    = HandleOfflineEvent (Result String Bool)
+    = HandleDropzoneNewFile (Maybe Int)
+    | HandleOfflineEvent (Result String Bool)
     | Logout
     | MsgPatientManager PatientManager.Model.Msg
     | PageLogin Pages.Login.Model.Msg
@@ -26,6 +27,7 @@ type alias Model =
     , activePage : Page
     , config : RemoteData String Config.Model.Model
     , currentDate : Date
+    , dropzoneFile : Maybe Int
     , language : Language
     , offline : Bool
     , pageLogin : Pages.Login.Model.Model
@@ -46,6 +48,7 @@ emptyModel =
     , activePage = Login
     , config = NotAsked
     , currentDate = Date.fromTime 0
+    , dropzoneFile = Nothing
     , language = English
     , offline = False
     , pageLogin = Pages.Login.Model.emptyModel

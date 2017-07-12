@@ -87,6 +87,9 @@ update msg model =
                     ""
     in
         case msg of
+            HandleDropzoneNewFile fid ->
+                { model | dropzoneFile = fid } ! []
+
             HandleOfflineEvent (Ok offline) ->
                 { model | offline = offline } ! []
 
@@ -257,6 +260,7 @@ subscriptions model =
         [ Sub.map MsgPatientManager <| PatientManager.Update.subscriptions model.pagePatient model.activePage
         , Time.every minute Tick
         , offline (decodeValue bool >> HandleOfflineEvent)
+        , dropzoneUploadedFile HandleDropzoneNewFile
         ]
 
 
@@ -277,3 +281,7 @@ port offline : (Value -> msg) -> Sub msg
 {-| Send active page to JS.
 -}
 port activePage : (List String) -> Cmd msg
+
+--{-| Get a singal if a file has been uploaded via the Dropzone.
+---}
+port dropzoneUploadedFile : (Maybe Int -> msg) -> Sub msg
