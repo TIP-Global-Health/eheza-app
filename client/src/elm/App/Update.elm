@@ -178,12 +178,12 @@ update msg model =
 
             SetActivePage page ->
                 let
-                    activePage =
+                    activePage_ =
                         setActivePageAccess model.user page
 
                     ( modelUpdated, command ) =
                         -- For a few, we also delegate some initialization
-                        case activePage of
+                        case activePage_ of
                             Activities ->
                                 -- If we're showing a `Activities` page, make sure we `Subscribe`
                                 update (MsgPatientManager PatientManager.Model.FetchAll) model
@@ -209,8 +209,11 @@ update msg model =
                             _ ->
                                 ( model, Cmd.none )
                 in
-                    ( { modelUpdated | activePage = setActivePageAccess model.user activePage }
-                    , command
+                    ( { modelUpdated | activePage = setActivePageAccess model.user activePage_ }
+                    , Cmd.batch
+                      [ activePage [(toString activePage_), backendUrl]
+                      , command
+                      ]
                     )
 
             SetCurrentDate date ->
@@ -270,3 +273,7 @@ port pusherKey : ( String, String, List String ) -> Cmd msg
 {-| Get a singal if internet connection is lost.
 -}
 port offline : (Value -> msg) -> Sub msg
+
+{-| Send active page to JS.
+-}
+port activePage : (List String) -> Cmd msg

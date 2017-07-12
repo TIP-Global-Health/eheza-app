@@ -253,6 +253,7 @@ viewPhotoEntry language =
         , Html.form
             [ class "ui card"
             , id "photoEntryForm"
+            , action "javascript:void(0);"
             ]
             [ h2
                 []
@@ -263,12 +264,11 @@ viewPhotoEntry language =
                 [ text <| translate language Trans.ActivitiesPhotoHelp ]
             , div
                 []
-                [ input
-                    [ type_ "file"
-                    , name "photo"
-                    , accept "image/*"
-                    ]
-                    []
+                [ div
+                  []
+                  [ label [] [ text "Upload File" ]
+                  , div [ class "dropzone" ] []
+                  ]
                 , button [ type_ "reset" ] [ text <| translate language Trans.Retake ]
                 , button [ type_ "button" ] [ text <| translate language Trans.Save ]
                 ]
