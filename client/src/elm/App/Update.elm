@@ -214,9 +214,9 @@ update msg model =
                 in
                     ( { modelUpdated | activePage = setActivePageAccess model.user activePage_ }
                     , Cmd.batch
-                      [ activePage [(toString activePage_), backendUrl]
-                      , command
-                      ]
+                        [ activePage [ (toString activePage_), backendUrl ]
+                        , command
+                        ]
                     )
 
             SetCurrentDate date ->
@@ -278,10 +278,15 @@ port pusherKey : ( String, String, List String ) -> Cmd msg
 -}
 port offline : (Value -> msg) -> Sub msg
 
+
 {-| Send active page to JS.
 -}
-port activePage : (List String) -> Cmd msg
+port activePage : List String -> Cmd msg
+
+
 
 --{-| Get a singal if a file has been uploaded via the Dropzone.
 ---}
+
+
 port dropzoneUploadedFile : (Maybe Int -> msg) -> Sub msg

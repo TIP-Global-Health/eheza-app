@@ -265,10 +265,10 @@ viewPhotoEntry language =
             , div
                 []
                 [ div
-                  []
-                  [ label [] [ text "Upload File" ]
-                  , div [ class "dropzone" ] []
-                  ]
+                    []
+                    [ label [] [ text "Upload File" ]
+                    , div [ class "dropzone" ] []
+                    ]
                 , button [ type_ "reset" ] [ text <| translate language Trans.Retake ]
                 , button [ type_ "button" ] [ text <| translate language Trans.Save ]
                 ]
