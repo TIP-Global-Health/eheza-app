@@ -70,7 +70,7 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
   }
 
   /**
-   * Testing the entry point of the photos.
+   * Testing the entry point of the Nutrition Signs.
    */
   public function testNutritionsEndpoint() {
     $nutrition = $this->drupalCreateNode(['type' => 'nutrition']);
