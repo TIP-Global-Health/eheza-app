@@ -1,0 +1,316 @@
+@import "variables";
+
+
+// Base
+
+body {
+  background: #f2f2f2;
+  color: #808080;
+}
+
+a {
+  color: #16cafb;
+}
+
+.wrap {
+  border-top-color: #434a54;
+}
+
+
+// Segments
+
+.ui.head.segment {
+  background: #f2f2f2;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+}
+
+
+// Headers
+
+h1.ui.header {
+  color: #666;
+}
+
+h3.ui.header {
+  color: $color-primary-light;
+}
+
+
+// Buttons
+
+.ui.button {
+  border-color: $color-primary-light;
+  background: $color-primary-light;
+  color: #fff;
+
+  &.basic {
+    color: #16cafb !important;
+    background: transparent;
+  }
+
+  &.disabled {
+    border-color: #ccc;
+    color: #ccc !important;
+  }
+}
+
+
+// Menu
+
+.ui.text.menu {
+  .item {
+    color: #ccc;
+
+    &.active {
+      color: $color-primary-light;
+    }
+
+    &:after {
+      color: #ccc!important;
+    }
+  }
+}
+
+.ui.secondary.pointing.menu {
+  .item {
+    color: #666;
+
+    &.active {
+      border-color: $color-primary-light;
+      color: #232a33;
+    }
+  }
+}
+
+
+// Cards
+
+.ui.cards {
+  > .card {
+    > .image {
+      img {
+        box-shadow: 0 0 10px rgba(0,0,0,0.35);
+      }
+    }
+  }
+}
+
+
+// Progress
+
+.ui.progress {
+  background: #666;
+
+  .bar {
+    background: $color-primary-light;
+  }
+
+  > .label {
+    color: #808080;
+  }
+}
+
+
+// Items
+
+.ui.items {
+  >.item {
+    > .image {
+      > img {
+        box-shadow: 0 0 10px rgba(0,0,0,0.35);
+      }
+    }
+
+    .meta {
+      color: #232a33;
+    }
+  }
+}
+
+
+// Forms
+
+.ui.form {
+  color: #666;
+}
+
+.ui.input {
+  &.labeled {
+    > .label {
+      color: #666;
+    }
+  }
+}
+
+.ui.form input[type=text],
+.ui.form input[type=text]:focus {
+  background: #f2f2f2;
+  color: #666;
+}
+
+.ui.checkbox {
+  label,
+  label:hover {
+    color: #808080 !important;
+  }
+
+  input:checked~label:after {
+    background: #808080 url(#{$img-path}icon-checkbox.svg) no-repeat center;
+    background-size: 16px 12px;
+  }
+
+  label:before,
+  &:focus label:before {
+    border-color: #808080 !important;
+  }
+}
+
+
+// Modal
+
+.ui.modal {
+  box-shadow: 0 0 8px rgba(0,0,0,0.15);
+
+  >.header:not(.ui) {
+    color: #808080;
+  }
+}
+
+.ui.dimmer {
+  background-color: rgba(179,179,179,.3);
+}
+
+
+//
+
+.label-up {
+  color: #43e450;
+}
+
+.label-down {
+  color: #d4145a;
+}
+
+.icon-up {
+  background: url(#{$img-path}icon-up.svg);
+  background-size:32px 44px;
+}
+
+.icon-down {
+  background: url(#{$img-path}icon-down.svg);
+  background-size:32px 44px;
+}
+
+
+// Icons
+
+.icon-theme-light {
+  background: url(#{$img-path}icon-theme-light.svg);
+  background-size: 60px 32px;
+}
+
+.icon-more {
+  background: url(#{$img-path}icon-more.svg);
+  background-size: 32px 59px;
+}
+
+.icon-back {
+  background: url(#{$img-path}icon-back.svg);
+  background-size: 19px 34px;
+}
+
+.icon-section {
+  border-color: $color-primary-light;
+
+  .active & {
+    background-color: $color-primary-light;
+    box-shadow: 0 0 10px rgba(0,0,0,0.35);
+  }
+}
+
+.icon-weight {
+  .active &:after {
+    background-image: url(#{$img-path}icon-weight-light.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-weight.svg);
+    background-size: 56px 73px;
+  }
+}
+
+.icon-height {
+  .active &:after {
+    background-image: url(#{$img-path}icon-height-light.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-height.svg);
+    background-size: 54px 60px;
+  }
+}
+
+.icon-muac {
+  .active &:after {
+    background-image: url(#{$img-path}icon-muac-light.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-muac.svg);
+    background-size: 65px 60px;
+  }
+}
+
+.icon-nutrition {
+  .active &:after {
+    background-image: url(#{$img-path}icon-nutrition-light.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-nutrition.svg);
+    background-size: 66px 56px;
+  }
+}
+
+.icon-photo {
+  .active &:after {
+    background-image: url(#{$img-path}icon-photo-light.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-photo.svg);
+    background-size: 61px 44px;
+  }
+}
+
+.icon-family-planning {
+  .active &:after {
+    background-image: url(#{$img-path}icon-family-planning-light.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-family-planning.svg);
+    background-size: 71px 67px;
+  }
+}
+
+
+// Custom Add Photo Link
+
+.link-add {
+  background-image: url(#{$img-path}border-add.svg);
+  background-size: 152px 152px;
+}
+
+.icon-add {
+  background-image: url(#{$img-path}icon-add.svg);
+  background-size: 65px 69px;
+}
+
+
+// Custom Buton Icon
+
+.icon-ok {
+  background-image: url(#{$img-path}icon-ok.svg);
+  background-size: 33px 33px;
+}

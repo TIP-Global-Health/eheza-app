@@ -1,0 +1,339 @@
+@import "variables";
+
+
+// Base
+
+body {
+  background: #181d23;
+  color: #ccc;
+}
+
+a {
+  color: #16cafb;
+}
+
+.wrap {
+  border-top-color: #434a54;
+}
+
+
+// Segments
+
+.ui.segment {
+  background: #232a33;
+}
+
+.ui.head.segment {
+  background: #181d23;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+}
+
+
+// Headers
+
+h1.ui.header {
+  color: #3c4956;
+}
+
+h3.ui.header {
+  color: $color-primary-dark;
+}
+
+
+// Buttons
+
+.ui.button {
+  border-color: $color-primary-dark;
+  background: $color-primary-dark;
+  color: #fff;
+
+  &.basic {
+    color: #16cafb !important;
+    background: transparent;
+  }
+
+  &.disabled {
+    border-color: #3c4956;
+    color: #3c4956 !important;
+  }
+}
+
+
+// Menu
+
+.ui.text.menu {
+  .item {
+    color: #3c4956;
+
+    &.active {
+      color: $color-primary-dark;
+    }
+
+    &:after {
+      color: #3c4956 !important;
+    }
+  }
+}
+
+.ui.secondary.pointing.menu {
+  .item {
+    color: #3c4956;
+
+    &.active {
+      border-color: $color-primary-dark;
+      color: #fff;
+    }
+  }
+}
+
+
+// Cards
+
+.ui.cards {
+  > .card {
+    > .image {
+      img {
+        box-shadow: 0 0 10px rgba(0,0,0,0.35);
+      }
+    }
+  }
+}
+
+
+// Progress
+
+.ui.progress {
+  background: #666;
+
+  .bar {
+    background: $color-primary-dark;
+  }
+
+  > .label {
+    color: #ccc;
+  }
+}
+
+
+// Items
+
+.ui.items {
+  >.item {
+    > .image {
+      > img {
+        box-shadow: 0 0 10px rgba(0,0,0,0.35);
+      }
+    }
+
+    .meta {
+      color: #fff;
+    }
+
+    > .content {
+      > .header {
+        color: #fff;
+
+        &.disabled {
+          color: #3c4956;
+          opacity: 1;
+        }
+      }
+    }
+  }
+}
+
+
+// Forms
+
+.ui.form {
+  color: inherit;
+}
+
+.ui.input {
+  &.labeled {
+    > .label {
+      color: #ccc;
+    }
+  }
+}
+
+.ui.form input[type=text],
+.ui.form input[type=text]:focus {
+  background: #181d23;
+  color: #ccc;
+}
+
+.ui.checkbox {
+  label,
+  label:hover {
+    color: #ccc !important;
+  }
+
+  input:checked~label:after {
+    background: #808080 url(#{$img-path}icon-checkbox.svg) no-repeat center;
+    background-size: 16px 12px;
+  }
+
+  label:before,
+  &:focus label:before {
+    border-color: #808080 !important;
+    background: transparent !important;
+  }
+}
+
+
+// Modal
+
+.ui.modal {
+  box-shadow: 0 0 8px rgba(0,0,0,0.15);
+  background: #232a33;
+  color: #ccc;
+
+  > .header:not(.ui) {
+    color: #ccc;
+    background: #232a33;
+  }
+
+  > .content {
+    background: #232a33;
+  }
+}
+
+.ui.dimmer {
+  background-color: rgba(179,179,179,.3);
+}
+
+
+//
+
+.label-up {
+  color: #43e450;
+}
+
+.label-down {
+  color: #d4145a;
+}
+
+.icon-up {
+  background: url(#{$img-path}icon-up.svg);
+  background-size:32px 44px;
+}
+
+.icon-down {
+  background: url(#{$img-path}icon-down.svg);
+  background-size:32px 44px;
+}
+
+
+// Icons
+
+.icon-theme-light {
+  background: url(#{$img-path}icon-theme-dark.svg);
+  background-size: 60px 32px;
+}
+
+.icon-more {
+  background: url(#{$img-path}icon-more.svg);
+  background-size: 32px 59px;
+}
+
+.icon-back {
+  background: url(#{$img-path}icon-back-dark.svg);
+  background-size: 19px 34px;
+}
+
+.icon-section {
+  border-color: $color-primary-dark;
+
+  .active & {
+    background-color: $color-primary-dark;
+    box-shadow: 0 0 10px rgba(0,0,0,0.35);
+  }
+}
+
+.icon-weight {
+  .active &:after {
+    background-image: url(#{$img-path}icon-weight-dark.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-weight.svg);
+    background-size: 56px 73px;
+  }
+}
+
+.icon-height {
+  .active &:after {
+    background-image: url(#{$img-path}icon-height-dark.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-height.svg);
+    background-size: 54px 60px;
+  }
+}
+
+.icon-muac {
+  .active &:after {
+    background-image: url(#{$img-path}icon-muac-dark.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-muac.svg);
+    background-size: 65px 60px;
+  }
+}
+
+.icon-nutrition {
+  .active &:after {
+    background-image: url(#{$img-path}icon-nutrition-dark.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-nutrition.svg);
+    background-size: 66px 56px;
+  }
+}
+
+.icon-photo {
+  .active &:after {
+    background-image: url(#{$img-path}icon-photo-dark.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-photo.svg);
+    background-size: 61px 44px;
+  }
+}
+
+.icon-family-planning {
+  .active &:after {
+    background-image: url(#{$img-path}icon-family-planning-dark.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-family-planning.svg);
+    background-size: 71px 67px;
+  }
+}
+
+
+// Custom Add Photo Link
+
+.link-add {
+  background-image: url(#{$img-path}border-add.svg);
+  background-size: 152px 152px;
+}
+
+.icon-add {
+  background-image: url(#{$img-path}icon-add.svg);
+  background-size: 65px 69px;
+}
+
+
+// Custom Buton Icon
+
+.icon-ok {
+  background-image: url(#{$img-path}icon-ok.svg);
+  background-size: 33px 33px;
+}
