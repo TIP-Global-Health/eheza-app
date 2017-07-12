@@ -147,31 +147,26 @@ function hedley_activity_field_default_field_bases() {
     'entity_types' => array(),
     'field_name' => 'field_nutrition_signs',
     'indexes' => array(
-      'target_id' => array(
-        0 => 'target_id',
+      'value' => array(
+        0 => 'value',
       ),
     ),
     'locked' => 0,
-    'module' => 'entityreference',
+    'module' => 'list',
     'settings' => array(
-      'handler' => 'base',
-      'handler_settings' => array(
-        'behaviors' => array(
-          'views-select-list' => array(
-            'status' => 0,
-          ),
-        ),
-        'sort' => array(
-          'type' => 'none',
-        ),
-        'target_bundles' => array(
-          'nutrition_health_signs' => 'nutrition_health_signs',
-        ),
+      'allowed_values' => array(
+        'edema' => 'Edema',
+        'abdominal-disortion' => 'Abdominal Distortion',
+        'dry-skin' => 'Dry Skin',
+        'poor-appetite' => 'Poor appetite',
+        'apathy' => 'Apathy',
+        'brittle-hair' => 'Brittle hair',
+        'none' => 'None of these',
       ),
-      'target_type' => 'taxonomy_term',
+      'allowed_values_function' => '',
     ),
     'translatable' => 0,
-    'type' => 'entityreference',
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_photo'.
