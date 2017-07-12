@@ -1,6 +1,6 @@
 module Activity.Encoder exposing (encodeActivityType)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
+import Activity.Model exposing (ActivityType(..), ChildActivityType(..), ChildNutritionSign(..), MotherActivityType(..))
 
 
 encodeActivityType : ActivityType -> String
@@ -33,6 +33,31 @@ encodeChildActivityType activityType =
 
         Weight ->
             "weight"
+
+
+encodeChildNutritionSign : ChildNutritionSign -> String
+encodeChildNutritionSign nutritionSign =
+    case nutritionSign of
+        AbdominalDisortion ->
+            "abdominal-disortion"
+
+        Apathy ->
+            "apathy"
+
+        BrittleHair ->
+            "brittle-hair"
+
+        DrySkin ->
+            "dry-skin"
+
+        Edema ->
+            "edema"
+
+        None ->
+            "none"
+
+        PoorAppetite ->
+            "poor-appetite"
 
 
 encodeMotherActivityType : MotherActivityType -> String

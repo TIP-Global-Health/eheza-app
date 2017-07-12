@@ -26,6 +26,16 @@ type MotherActivityType
     | MotherPicture
 
 
+type ChildNutritionSign
+    = AbdominalDisortion
+    | Apathy
+    | BrittleHair
+    | DrySkin
+    | Edema
+    | None
+    | PoorAppetite
+
+
 type alias ChildActivityDates =
     { childPicture : Maybe Date
     , height : Maybe Date
