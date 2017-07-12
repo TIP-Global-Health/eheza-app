@@ -21,6 +21,9 @@ type TranslationId
     | Activities
     | ActivitiesCompleted
     | ActivitiesToComplete
+    | ActivitiesNutritionSignsHelp
+    | ActivitiesNutritionSignsLabel
+    | ActivitiesNutritionSignsTitle
     | ActivitiesWeightHelp
     | ActivitiesWeightLabel
     | ActivitiesWeightTitle
@@ -74,6 +77,15 @@ translate lang trans =
 
                 ActivitiesToComplete ->
                     { english = "ActivitiesToComplete" }
+
+                ActivitiesNutritionSignsHelp ->
+                    { english = "Explain to the mother how to check the malnutrition signs for their own child." }
+
+                ActivitiesNutritionSignsLabel ->
+                    { english = "Select all signs that are present:" }
+
+                ActivitiesNutritionSignsTitle ->
+                    { english = "Nutrition:" }
 
                 ActivitiesWeightHelp ->
                     { english = "Calibrate the scale before taking the first baby's weight.  Place baby in harness with no clothes on." }

@@ -197,7 +197,12 @@ viewSelectedActivity : Language -> Maybe ActivityOptions -> Html Msg
 viewSelectedActivity language activity =
     case activity of
         Just Pages.Patient.Model.Weight ->
-            viewWeightEntry language
+            div []
+                [ (viewWeightEntry language)
+                , (viewNutritionSignsEntry
+                    language
+                  )
+                ]
 
         Nothing ->
             div [] []
@@ -235,6 +240,31 @@ viewWeightEntry language =
                     ]
                     []
                 , span [] [ text <| translate language Trans.KilogramShorthand ]
+                ]
+            ]
+        ]
+
+
+viewNutritionSignsEntry : Language -> Html Msg
+viewNutritionSignsEntry language =
+    div []
+        [ div
+            [ class "ui divider" ]
+            []
+        , div
+            [ class "ui card"
+            , id "nutritionSignsEntryForm"
+            ]
+            [ h1
+                []
+                [ text <| translate language Trans.ActivitiesNutritionSignsTitle
+                ]
+            , span
+                []
+                [ text <| translate language Trans.ActivitiesNutritionSignsHelp ]
+            , div
+                []
+                [ span [] [ text <| translate language Trans.ActivitiesNutritionSignsLabel ]
                 ]
             ]
         ]
