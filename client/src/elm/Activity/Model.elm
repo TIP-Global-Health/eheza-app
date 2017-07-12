@@ -12,9 +12,9 @@ type ChildActivityType
     = ChildPicture
     | Height
     | Muac
+    | NutritionSigns
     | ProgressReport
     | Weight
-    | NutritionSigns
 
 
 type MotherActivityType
