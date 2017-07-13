@@ -88,7 +88,7 @@ update msg model =
     in
         case msg of
             HandleDropzoneNewFile fid ->
-                { model | dropzoneFile = fid } ! []
+                { model | dropzoneFile = FileId fid } ! []
 
             HandleOfflineEvent (Ok offline) ->
                 { model | offline = offline } ! []

@@ -1,4 +1,4 @@
-module App.Model exposing (emptyModel, Flags, Msg(..), Model)
+module App.Model exposing (emptyModel, Flags, Msg(..), Model, FileId)
 
 import App.PageType exposing (Page(..))
 import Config.Model
@@ -36,8 +36,8 @@ type alias Model =
     }
 
 
-type alias FileId =
-    Int
+type FileId =
+    FileId Int
 
 
 type alias Flags =
