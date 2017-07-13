@@ -1,6 +1,6 @@
 module Measurement.View
     exposing
-        ( view
+        ( viewChild
         )
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
@@ -10,14 +10,14 @@ import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Measurement.Model exposing (Model, Msg(..))
 import Measurement.Utils exposing (getInputConstraintsWeight)
-import Patient.Model exposing (Patient, PatientId)
+import Child.Model exposing (Child, ChildId)
 import Translate as Trans exposing (Language(..), translate)
 import User.Model exposing (..)
 import Utils.Html exposing (divider, emptyNode, showMaybe)
 
 
-view : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Maybe ActivityType -> Model -> Html Msg
-view backendUrl accessToken user ( patientId, patient ) selectedActivity model =
+viewChild : BackendUrl -> String -> User -> ( ChildId, Child ) -> Maybe ActivityType -> Model -> Html Msg
+viewChild backendUrl accessToken user ( childId, child ) selectedActivity model =
     showMaybe <|
         (Maybe.map
             (\activity ->
@@ -25,7 +25,7 @@ view backendUrl accessToken user ( patientId, patient ) selectedActivity model =
                     Child childActivity ->
                         case childActivity of
                             Weight ->
-                                viewWeight backendUrl accessToken user ( patientId, patient ) activity model
+                                viewWeight backendUrl accessToken user ( childId, child ) activity model
 
                             _ ->
                                 emptyNode
@@ -37,8 +37,8 @@ view backendUrl accessToken user ( patientId, patient ) selectedActivity model =
         )
 
 
-viewWeight : BackendUrl -> String -> User -> ( PatientId, Patient ) -> ActivityType -> Model -> Html Msg
-viewWeight backendUrl accessToken user ( patientId, patient ) selectedActivity model =
+viewWeight : BackendUrl -> String -> User -> ( ChildId, Child ) -> ActivityType -> Model -> Html Msg
+viewWeight backendUrl accessToken user ( childId, child ) selectedActivity model =
     let
         constraints =
             getInputConstraintsWeight

@@ -11,6 +11,7 @@ import PatientManager.Utils exposing (..)
 import Json.Decode exposing (decodeValue)
 import Json.Encode exposing (Value)
 import HttpBuilder exposing (get, withQueryParams)
+import Measurement.Model
 import Pages.Activities.Update
 import Pages.Patient.Update
 import Pages.Patients.Model
@@ -90,10 +91,21 @@ update currentDate backendUrl accessToken user msg model =
             case getPatient id model of
                 Success patient ->
                     let
-                        ( subModel, subCmd, redirectPage ) =
-                            Pages.Patient.Update.update backendUrl accessToken user subMsg patient
+                        selectedActivity =
+                            Maybe.map identity (Dict.get id model.selectedActivity)
+                                |> Maybe.withDefault Nothing
+
+                        measurements =
+                            Maybe.map identity (Dict.get id model.measurements)
+                                |> Maybe.withDefault Measurement.Model.emptyModel
+
+                        ( patientUpdated, measurementsUpdated, subCmd, redirectPage ) =
+                            Pages.Patient.Update.update backendUrl accessToken user subMsg ( id, patient ) measurements
                     in
-                        ( { model | patients = Dict.insert id (Success subModel) model.patients }
+                        ( { model
+                            | patients = Dict.insert id (Success patientUpdated) model.patients
+                            , measurements = Dict.insert id measurementsUpdated model.measurements
+                          }
                         , Cmd.map (MsgPagesPatient id) subCmd
                         , redirectPage
                         )

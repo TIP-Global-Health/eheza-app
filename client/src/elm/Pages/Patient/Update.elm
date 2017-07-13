@@ -15,7 +15,7 @@ type alias Measurements =
 
 
 update : BackendUrl -> String -> User -> Msg -> ( PatientId, Patient ) -> Measurements -> ( Patient, Measurements, Cmd Msg, Maybe Page )
-update backendUrl accessToken user msg patient measurements =
+update backendUrl accessToken user msg ( patientId, patient ) measurements =
     case msg of
         HandlePusherEventData event ->
             case event of
@@ -42,4 +42,4 @@ update backendUrl accessToken user msg patient measurements =
                 )
 
         SetRedirectPage page ->
-            ( patient, Cmd.none, Just page )
+            ( patient, measurements, Cmd.none, Just page )

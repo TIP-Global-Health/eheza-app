@@ -78,8 +78,24 @@ viewPagePatient language currentDate id user model =
                         let
                             motherWebData =
                                 getMother child.motherId model
+
+                            -- @todo: Wire
+                            backendUrl =
+                                "http://localhost:3000"
+
+                            accessToken =
+                                "dummy-access-token"
+
+                            -- @todo: Remove duplication
+                            selectedActivity =
+                                Maybe.map identity (Dict.get id model.selectedActivity)
+                                    |> Maybe.withDefault Nothing
+
+                            measurements =
+                                Maybe.map identity (Dict.get id model.measurements)
+                                    |> Maybe.withDefault Measurement.Model.emptyModel
                         in
-                            div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewChild language currentDate user id child motherWebData ]
+                            div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewChild backendUrl accessToken user language currentDate motherWebData ( id, child ) measurements selectedActivity ]
 
                     PatientMother mother ->
                         let
