@@ -46,6 +46,3 @@ features[variable][] = node_preview_child
 features[variable][] = node_preview_mother
 features[variable][] = node_submitted_child
 features[variable][] = node_submitted_mother
-
-; Tests
-files[] = tests/HedleyPatientTaxonomy.test
