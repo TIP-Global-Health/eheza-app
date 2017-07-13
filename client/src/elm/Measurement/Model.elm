@@ -43,6 +43,7 @@ type
 
 type alias Model =
     { status : WebData ()
+    , height : FloatInput
     , weight : FloatInput
     }
 
@@ -50,5 +51,6 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { status = NotAsked
+    , height = emptyFloatInput
     , weight = emptyFloatInput
     }
