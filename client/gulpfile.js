@@ -72,7 +72,7 @@ gulp.task("styles", ["theme-styles"], function () {
 // Compiles the theme SASS file and move it into the "assets/stylesheets" directory.
 gulp.task("theme-styles", function () {
   // Looks at the theme-light.scss file for what to include and creates a theme-light.css file.
-  return gulp.src("src/assets/scss/medical_theme/theme-light.scss")
+  return gulp.src("src/assets/scss/theme-light.scss")
     .pipe(plumber())
     .pipe($.sass())
     .on('error', function(err){
