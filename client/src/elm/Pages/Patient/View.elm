@@ -5,7 +5,7 @@ module Pages.Patient.View
         , viewSelectedActivity
         )
 
-import Activity.Model exposing (ActivityListItem, ActivityType)
+import Activity.Model exposing (ActivityListItem, ActivityType(..))
 import Activity.Utils exposing (getActivityList)
 import App.PageType
 import Child.Model exposing (Child, ChildId)
@@ -190,10 +190,16 @@ viewActivityCards language currentDate user patients patientTypeFilter =
             ]
 
 
-viewActivityListItem : Language -> ActivityListItem -> Html a
+viewActivityListItem : Language -> ActivityListItem -> Html Msg
 viewActivityListItem language report =
     div [ class "ui card activities__item" ]
-        [ a [ href "#" ] [ i [ class (report.activity.icon ++ " icon") ] [] ]
+        [ a
+            [ href "#"
+
+            -- @todo: Need to pass the ActivityType to this function.
+            , onClick <| SetSelectedActivity (Just <| Activity.Model.Child Activity.Model.Weight)
+            ]
+            [ i [ class (report.activity.icon ++ " icon") ] [] ]
         , div [ class "content" ]
             [ a [ class "header activities__item__title" ] [ text report.activity.name ]
             ]

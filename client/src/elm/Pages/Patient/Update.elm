@@ -39,3 +39,6 @@ update backendUrl accessToken user msg ( patientId, patient ) model =
 
         SetRedirectPage page ->
             ( patient, model, Cmd.none, Just page )
+
+        SetSelectedActivity maybectivityType ->
+            ( patient, { model | selectedActivity = maybectivityType }, Cmd.none, Nothing )

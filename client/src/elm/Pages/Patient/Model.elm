@@ -23,6 +23,7 @@ type Msg
     = HandlePusherEventData PusherEventData
     | MsgMeasurement Measurement.Model.Msg
     | SetRedirectPage Page
+    | SetSelectedActivity (Maybe ActivityType)
 
 
 type alias Model =
