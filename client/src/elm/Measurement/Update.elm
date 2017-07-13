@@ -1,4 +1,4 @@
-module Pages.Patient.Update exposing (update)
+module Measurement.Update exposing (update)
 
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
@@ -12,7 +12,7 @@ update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model 
 update backendUrl accessToken user ( patientId, patient ) msg model =
     case msg of
         HandleWeightSave (Ok ()) ->
-            { model | status = NotAsked } ! []
+            { model | status = Success () } ! []
 
         HandleWeightSave (Err err) ->
             let

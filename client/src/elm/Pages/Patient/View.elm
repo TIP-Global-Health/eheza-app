@@ -14,6 +14,7 @@ import Dict
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
+import Measurement.View
 import Mother.Model exposing (Mother, MotherId)
 import Pages.Patient.Model exposing (Msg(..), ActivityOptions)
 import Patient.Model exposing (Patient, PatientId, PatientTypeFilter(..), PatientsDict)
@@ -77,6 +78,7 @@ viewChild language currentDate currentUser childId child motherWebData =
                 [ viewActivityCards language currentDate currentUser patients Children
                 ]
             , viewSelectedActivity language (Just Pages.Patient.Model.Weight)
+            , Measurement.View.view
             ]
 
 

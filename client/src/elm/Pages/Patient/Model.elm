@@ -5,6 +5,7 @@ module Pages.Patient.Model
         )
 
 import App.PageType exposing (Page(..))
+import Measurement.Model
 import Pusher.Model exposing (PusherEventData)
 
 
@@ -14,4 +15,5 @@ type ActivityOptions
 
 type Msg
     = HandlePusherEventData PusherEventData
+    | MsgMeasurement Measurement.Model.Msg
     | SetRedirectPage Page
