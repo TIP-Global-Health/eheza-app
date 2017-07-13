@@ -181,12 +181,12 @@ update msg model =
 
             SetActivePage page ->
                 let
-                    activePage_ =
+                    activePageUpdated =
                         setActivePageAccess model.user page
 
                     ( modelUpdated, command ) =
                         -- For a few, we also delegate some initialization
-                        case activePage_ of
+                        case activePageUpdated of
                             Activities ->
                                 -- If we're showing a `Activities` page, make sure we `Subscribe`
                                 update (MsgPatientManager PatientManager.Model.FetchAll) model
@@ -212,9 +212,9 @@ update msg model =
                             _ ->
                                 ( model, Cmd.none )
                 in
-                    ( { modelUpdated | activePage = setActivePageAccess model.user activePage_ }
+                    ( { modelUpdated | activePage = setActivePageAccess model.user activePageUpdated }
                     , Cmd.batch
-                        [ activePage [ (toString activePage_), backendUrl ]
+                        [ activePage [ (toString activePageUpdated), backendUrl ]
                         , command
                         ]
                     )
