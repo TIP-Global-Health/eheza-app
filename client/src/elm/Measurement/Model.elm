@@ -2,7 +2,7 @@ module Measurement.Model exposing (..)
 
 import Activity.Model exposing (ChildActivityType)
 import Http
-import RemoteData exposing (WebData)
+import RemoteData exposing (RemoteData(..), WebData)
 
 
 type ExaminationId
@@ -21,13 +21,15 @@ type alias FloatInputConstraints =
 
 
 type alias FloatInput =
-    { value : Float, isDirty : Bool }
+    { value : Float
+    , isDirty : Bool
+    }
 
 
-type alias Model =
-    { selectedActivity : Maybe ChildActivityType
-    , status : WebData ()
-    , weight : FloatInput
+emptyFloatInput : FloatInput
+emptyFloatInput =
+    { value = 0
+    , isDirty = False
     }
 
 
@@ -37,3 +39,18 @@ type
     = HandleWeightSave (Result Http.Error ())
     | WeightSave
     | WeightUpdate Float
+
+
+type alias Model =
+    { selectedActivity : Maybe ChildActivityType
+    , status : WebData ()
+    , weight : FloatInput
+    }
+
+
+emptyModel : Model
+emptyModel =
+    { selectedActivity = Nothing
+    , status = NotAsked
+    , weight = emptyFloatInput
+    }
