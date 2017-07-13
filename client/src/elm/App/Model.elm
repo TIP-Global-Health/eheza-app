@@ -27,13 +27,17 @@ type alias Model =
     , activePage : Page
     , config : RemoteData String Config.Model.Model
     , currentDate : Date
-    , dropzoneFile : Maybe Int
+    , dropzoneFile : FileId
     , language : Language
     , offline : Bool
     , pageLogin : Pages.Login.Model.Model
     , pagePatient : PatientManager.Model.Model
     , user : WebData User
     }
+
+
+type alias FileId =
+    Maybe Int
 
 
 type alias Flags =
