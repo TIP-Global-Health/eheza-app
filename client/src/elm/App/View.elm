@@ -25,9 +25,9 @@ view model =
             div [ class "wrap" ]
                 [ viewSidebar model.language model
                 , viewHeader model.language model
-                    , div [ class "ui main container" ]
-                        [ viewMainContent model.language model
-                        ]
+                , div [ class "ui main container" ]
+                    [ viewMainContent model.language model
+                    ]
                 , div [ class "right item" ]
                     [ a
                         [ class "ui inverted button"
