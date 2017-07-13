@@ -285,8 +285,6 @@ port activePage : List String -> Cmd msg
 
 
 
---{-| Get a singal if a file has been uploaded via the Dropzone.
----}
-
-
+{-| Get a singal if a file has been uploaded via the Dropzone.
+-}
 port dropzoneUploadedFile : (Maybe Int -> msg) -> Sub msg
