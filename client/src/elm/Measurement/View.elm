@@ -16,6 +16,9 @@ import User.Model exposing (..)
 import Utils.Html exposing (divider, emptyNode, showMaybe)
 
 
+-- @todo: Change ActivityType to ChildActivityType ?
+
+
 viewChild : BackendUrl -> String -> User -> ( ChildId, Child ) -> Maybe ActivityType -> Model -> Html Msg
 viewChild backendUrl accessToken user ( childId, child ) selectedActivity model =
     showMaybe <|
@@ -25,7 +28,7 @@ viewChild backendUrl accessToken user ( childId, child ) selectedActivity model 
                     Child childActivity ->
                         case childActivity of
                             Weight ->
-                                viewWeight backendUrl accessToken user ( childId, child ) activity model
+                                viewWeight backendUrl accessToken user ( childId, child ) model
 
                             _ ->
                                 emptyNode
@@ -37,8 +40,8 @@ viewChild backendUrl accessToken user ( childId, child ) selectedActivity model 
         )
 
 
-viewWeight : BackendUrl -> String -> User -> ( ChildId, Child ) -> ActivityType -> Model -> Html Msg
-viewWeight backendUrl accessToken user ( childId, child ) selectedActivity model =
+viewWeight : BackendUrl -> String -> User -> ( ChildId, Child ) -> Model -> Html Msg
+viewWeight backendUrl accessToken user ( childId, child ) model =
     let
         constraints =
             getInputConstraintsWeight
