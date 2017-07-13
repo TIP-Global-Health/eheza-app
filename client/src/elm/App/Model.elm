@@ -27,7 +27,7 @@ type alias Model =
     , activePage : Page
     , config : RemoteData String Config.Model.Model
     , currentDate : Date
-    , dropzoneFile : FileId
+    , dropzoneFile : Maybe FileId
     , language : Language
     , offline : Bool
     , pageLogin : Pages.Login.Model.Model
@@ -37,7 +37,7 @@ type alias Model =
 
 
 type alias FileId =
-    Maybe Int
+    Int
 
 
 type alias Flags =
