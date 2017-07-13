@@ -4,7 +4,7 @@ import App.Model exposing (..)
 import App.PageType exposing (Page(..))
 import Config.View
 import Html exposing (..)
-import Html.Attributes exposing (class, classList, href, src, style, target)
+import Html.Attributes exposing (class, classList, href, id, src, style, target)
 import Html.Events exposing (onClick)
 import User.Model exposing (..)
 import Pages.Login.View exposing (..)
@@ -31,6 +31,7 @@ view model =
                 , div [ class "right item" ]
                     [ a
                         [ class "ui inverted button"
+                        , id "sign-out"
                         , onClick Logout
                         ]
                         [ text <| translate model.language Trans.SignOut ]
