@@ -37,54 +37,37 @@ viewHeader : Language -> Model -> Html Msg
 viewHeader language model =
     case model.user of
         Success user ->
-            div [ class "ui inverted masthead segment" ]
-                [ div [ class "ui container" ]
-                    [ div [ class "ui large inverted secondary pointing menu" ]
-                        [ a
-                            [ class "toc item"
-                            , href "#"
-                            ]
-                            [ i [ class "sidebar icon" ]
-                                []
-                            ]
-                        , a
-                            [ class " header item"
-                            , onClick <| SetActivePage MyAccount
-                            ]
-                            [ i
-                                [ class "user icon" ]
-                                []
-                            , text user.name
-                            ]
-                        , a
-                            [ class "item"
-                            , onClick <| SetActivePage Activities
-                            ]
-                            [ text <| translate language Trans.Activities ]
-                        , a
-                            [ class "item"
-                            , onClick <| SetActivePage <| Dashboard []
-                            ]
-                            [ text <| translate language Trans.Patients ]
-                        , div [ class "right item" ]
-                            [ a
-                                [ class "ui inverted button"
-                                , onClick Logout
-                                ]
-                                [ text <| translate language Trans.SignOut ]
-                            ]
-                        , span
-                            [ class "item"
-                            ]
-                            [ i
-                                [ classList
-                                    [ ( "icon wifi", True )
-                                    , ( "disabled", model.offline )
-                                    ]
-                                ]
-                                []
-                            ]
+            div [ class "ui head segment" ]
+                [ h1
+                    [ class "ui header" ]
+                    [ text "some header" ]
+                , a
+                    [ class "link-back"
+                    , href "#"
+                    ]
+                    [ span [ class "icon-back" ]
+                        []
+                    , span [] []
+                    ]
+                , a
+                    [ class "link-theme"
+                    , href "#"
+                    ]
+                    [ span [ class "icon-theme icon-theme-light" ]
+                        []
+                    , span [] []
+                    ]
+                , div [ class "ui fluid two item secondary pointing menu" ]
+                    [ a
+                        [ class "item"
+                        , onClick <| SetActivePage Activities
                         ]
+                        [ text <| translate language Trans.Activities ]
+                    , a
+                        [ class "item"
+                        , onClick <| SetActivePage <| Dashboard []
+                        ]
+                        [ text <| translate language Trans.Patients ]
                     ]
                 ]
 
