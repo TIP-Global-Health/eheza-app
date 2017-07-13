@@ -5,17 +5,13 @@ import Config.Model exposing (BackendUrl)
 import User.Model exposing (..)
 import Measurement.Model
 import Measurement.Update
-import Pages.Patient.Model exposing (Msg(..))
+import Pages.Patient.Model exposing (Model, Msg(..))
 import Pusher.Model exposing (PusherEventData(..))
 import Patient.Model exposing (Patient, PatientId)
 
 
-type alias Measurements =
-    Measurement.Model.Model
-
-
-update : BackendUrl -> String -> User -> Msg -> ( PatientId, Patient ) -> Measurements -> ( Patient, Measurements, Cmd Msg, Maybe Page )
-update backendUrl accessToken user msg ( patientId, patient ) measurements =
+update : BackendUrl -> String -> User -> Msg -> ( PatientId, Patient ) -> Model -> ( Patient, Model, Cmd Msg, Maybe Page )
+update backendUrl accessToken user msg ( patientId, patient ) model =
     case msg of
         HandlePusherEventData event ->
             case event of
@@ -25,7 +21,7 @@ update backendUrl accessToken user msg ( patientId, patient ) measurements =
                     -- we may have just pushed this change ourselves, so it's
                     -- already reflected here.
                     ( newPatient
-                    , measurements
+                    , model
                     , Cmd.none
                     , Nothing
                     )
@@ -33,13 +29,13 @@ update backendUrl accessToken user msg ( patientId, patient ) measurements =
         MsgMeasurement subMsg ->
             let
                 ( measurementsUpdated, cmds ) =
-                    Measurement.Update.update backendUrl accessToken user ( patientId, patient ) subMsg measurements
+                    Measurement.Update.update backendUrl accessToken user ( patientId, patient ) subMsg model.measurements
             in
                 ( patient
-                , measurementsUpdated
+                , { model | measurements = measurementsUpdated }
                 , Cmd.map MsgMeasurement cmds
                 , Nothing
                 )
 
         SetRedirectPage page ->
-            ( patient, measurements, Cmd.none, Just page )
+            ( patient, model, Cmd.none, Just page )

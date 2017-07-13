@@ -18,7 +18,7 @@ import Html.Events exposing (onClick)
 import Measurement.Model
 import Measurement.View
 import Mother.Model exposing (Mother, MotherId)
-import Pages.Patient.Model exposing (ActivityOptions, Msg(..))
+import Pages.Patient.Model exposing (ActivityOptions, Model, Msg(..))
 import Patient.Model exposing (Patient, PatientId, PatientTypeFilter(..), PatientsDict)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
@@ -29,8 +29,8 @@ type alias Measurements =
     Measurement.Model.Model
 
 
-viewChild : BackendUrl -> String -> User -> Language -> Date -> WebData Mother -> ( ChildId, Child ) -> Measurements -> Maybe ActivityType -> Html Msg
-viewChild backendUrl accessToken currentUser language currentDate motherWebData ( childId, child ) measurements selectedActivity =
+viewChild : BackendUrl -> String -> User -> Language -> Date -> WebData Mother -> ( ChildId, Child ) -> Model -> Html Msg
+viewChild backendUrl accessToken currentUser language currentDate motherWebData ( childId, child ) model =
     let
         motherInfo =
             case child.motherId of
@@ -83,7 +83,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
             , div []
                 [ viewActivityCards language currentDate currentUser patients Children
                 ]
-            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser ( childId, child ) selectedActivity measurements
+            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser ( childId, child ) model.selectedActivity model.measurements
             ]
 
 

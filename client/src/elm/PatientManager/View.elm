@@ -12,6 +12,7 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Measurement.Model
 import Pages.Activities.View
+import Pages.Patient.Model
 import Pages.Patient.View
 import Pages.Patients.View
 import Patient.Model exposing (PatientId, PatientType(..), PatientTypeFilter(..), PatientsDict)
@@ -65,13 +66,9 @@ viewPagePatient language currentDate id user model =
 
         Success patient ->
             let
-                selectedActivity =
-                    Maybe.map identity (Dict.get id model.selectedActivity)
-                        |> Maybe.withDefault Nothing
-
-                measurements =
-                    Maybe.map identity (Dict.get id model.measurements)
-                        |> Maybe.withDefault Measurement.Model.emptyModel
+                patientModel =
+                    Maybe.map identity (Dict.get id model.patientPage)
+                        |> Maybe.withDefault Pages.Patient.Model.emptyModel
             in
                 case patient.info of
                     PatientChild child ->
@@ -87,15 +84,11 @@ viewPagePatient language currentDate id user model =
                                 "dummy-access-token"
 
                             -- @todo: Remove duplication
-                            selectedActivity =
-                                Maybe.map identity (Dict.get id model.selectedActivity)
-                                    |> Maybe.withDefault Nothing
-
-                            measurements =
-                                Maybe.map identity (Dict.get id model.measurements)
-                                    |> Maybe.withDefault Measurement.Model.emptyModel
+                            patientModel =
+                                Maybe.map identity (Dict.get id model.patientPage)
+                                    |> Maybe.withDefault Pages.Patient.Model.emptyModel
                         in
-                            div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewChild backendUrl accessToken user language currentDate motherWebData ( id, child ) measurements selectedActivity ]
+                            div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewChild backendUrl accessToken user language currentDate motherWebData ( id, child ) patientModel ]
 
                     PatientMother mother ->
                         let
