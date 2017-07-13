@@ -252,12 +252,12 @@ viewMainContent language model =
                 viewContent
 
 
-{-| Get menu patients classes. This function gets the active page and checks if
+{-| Get menu items classes. This function gets the active page and checks if
 it is indeed the page used.
 -}
 classByPage : Page -> Page -> Attribute a
 classByPage page activePage =
     classList
-        [ ( "patient", True )
+        [ ( "item", True )
         , ( "active", page == activePage )
         ]
