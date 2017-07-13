@@ -30,6 +30,13 @@ view model =
                         [ viewMainContent model.language model
                         ]
                     ]
+                , div [ class "right item" ]
+                    [ a
+                        [ class "ui inverted button"
+                        , onClick Logout
+                        ]
+                        [ text <| translate model.language Trans.SignOut ]
+                    ]
                 ]
 
 
