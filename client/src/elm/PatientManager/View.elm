@@ -6,17 +6,19 @@ module PatientManager.View
         )
 
 import Date exposing (Date)
+import Dict
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
+import Measurement.Model
 import Pages.Activities.View
 import Pages.Patient.View
 import Pages.Patients.View
-import Patient.Model exposing (PatientId, PatientsDict, PatientType(..), PatientTypeFilter(..))
+import Patient.Model exposing (PatientId, PatientType(..), PatientTypeFilter(..), PatientsDict)
 import PatientManager.Model exposing (..)
 import PatientManager.Utils exposing (getChildren, getMother, getPatient, unwrapPatientsDict)
 import RemoteData exposing (RemoteData(..))
-import Translate as Trans exposing (translate, Language)
+import Translate as Trans exposing (Language, translate)
 import User.Model exposing (User)
 import Utils.WebData exposing (viewError)
 
@@ -62,20 +64,29 @@ viewPagePatient language currentDate id user model =
                 ]
 
         Success patient ->
-            case patient.info of
-                PatientChild child ->
-                    let
-                        motherWebData =
-                            getMother child.motherId model
-                    in
-                        div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewChild language currentDate user id child motherWebData ]
+            let
+                selectedActivity =
+                    Maybe.map identity (Dict.get id model.selectedActivity)
+                        |> Maybe.withDefault Nothing
 
-                PatientMother mother ->
-                    let
-                        childrenWebData =
-                            getChildren mother model
-                    in
-                        div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewMother language currentDate user id mother childrenWebData ]
+                measurements =
+                    Maybe.map identity (Dict.get id model.measurements)
+                        |> Maybe.withDefault Measurement.Model.emptyModel
+            in
+                case patient.info of
+                    PatientChild child ->
+                        let
+                            motherWebData =
+                                getMother child.motherId model
+                        in
+                            div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewChild language currentDate user id child motherWebData ]
+
+                    PatientMother mother ->
+                        let
+                            childrenWebData =
+                                getChildren mother model
+                        in
+                            div [] [ Html.map (MsgPagesPatient id) <| Pages.Patient.View.viewMother language currentDate user id mother childrenWebData ]
 
 
 viewActivities : Language -> Date -> User -> Model -> Html Msg

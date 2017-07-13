@@ -42,15 +42,13 @@ type
 
 
 type alias Model =
-    { selectedActivity : Maybe ChildActivityType
-    , status : WebData ()
+    { status : WebData ()
     , weight : FloatInput
     }
 
 
 emptyModel : Model
 emptyModel =
-    { selectedActivity = Nothing
-    , status = NotAsked
+    { status = NotAsked
     , weight = emptyFloatInput
     }

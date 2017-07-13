@@ -3,7 +3,7 @@ module Measurement.View
         ( view
         )
 
-import Activity.Model exposing (ChildActivityType(..))
+import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import Config.Model exposing (BackendUrl)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
@@ -16,24 +16,29 @@ import User.Model exposing (..)
 import Utils.Html exposing (divider, emptyNode, showMaybe)
 
 
-view : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Model -> Html Msg
-view backendUrl accessToken user ( patientId, patient ) model =
+view : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Maybe ActivityType -> Model -> Html Msg
+view backendUrl accessToken user ( patientId, patient ) selectedActivity model =
     showMaybe <|
         (Maybe.map
-            (\selectedActivity ->
-                case selectedActivity of
-                    Weight ->
-                        viewWeight backendUrl accessToken user ( patientId, patient ) model
+            (\activity ->
+                case activity of
+                    Child childActivity ->
+                        case childActivity of
+                            Weight ->
+                                viewWeight backendUrl accessToken user ( patientId, patient ) activity model
+
+                            _ ->
+                                emptyNode
 
                     _ ->
                         emptyNode
             )
-            model.selectedActivity
+            selectedActivity
         )
 
 
-viewWeight : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Model -> Html Msg
-viewWeight backendUrl accessToken user ( patientId, patient ) model =
+viewWeight : BackendUrl -> String -> User -> ( PatientId, Patient ) -> ActivityType -> Model -> Html Msg
+viewWeight backendUrl accessToken user ( patientId, patient ) selectedActivity model =
     let
         constraints =
             getInputConstraintsWeight
