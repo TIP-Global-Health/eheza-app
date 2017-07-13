@@ -154,7 +154,7 @@ gulp.task('bower', function () {
 
 
 // Optimizes all the CSS, HTML and concats the JS etc
-gulp.task("minify", ["styles"], function () {
+gulp.task("minify", ["styles", "copy:images"], function () {
   var assets = $.useref.assets({searchPath: "serve"});
 
   return gulp.src("serve/**/*.*")
