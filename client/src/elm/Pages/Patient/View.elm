@@ -198,10 +198,10 @@ viewSelectedActivity : Language -> Maybe ActivityOptions -> Html Msg
 viewSelectedActivity language activity =
     case activity of
         Just Pages.Patient.Model.NutritionSigns ->
-            div [] [ viewNutritionSignsEntry language ]
+            viewNutritionSignsEntry language
 
         Just Pages.Patient.Model.Weight ->
-            div [] [ viewWeightEntry language ]
+            viewWeightEntry language
 
         Nothing ->
             div [] []
