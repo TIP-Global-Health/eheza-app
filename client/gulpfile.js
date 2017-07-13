@@ -42,7 +42,7 @@ gulp.task("clean:prod", function(cb) {
 
 
 // Compiles the SASS files and moves them into the "assets/stylesheets" directory
-gulp.task("styles", function () {
+gulp.task("styles", ["theme-styles"], function () {
   // Looks at the style.scss file for what to include and creates a style.css file
   return gulp.src("src/assets/scss/style.scss")
     .pipe(plumber())
@@ -65,6 +65,34 @@ gulp.task("styles", function () {
     .pipe(gulp.dest("serve/assets/stylesheets/"))
     // Outputs the size of the CSS file
     .pipe($.size({title: "styles"}))
+    // Injects the CSS changes to your browser since Jekyll doesn"t rebuild the CSS
+    .pipe(reload({stream: true}));
+});
+
+// Compiles the theme SASS file and move it into the "assets/stylesheets" directory.
+gulp.task("theme-styles", function () {
+  // Looks at the theme-light.scss file for what to include and creates a theme-light.css file.
+  return gulp.src("src/assets/scss/theme-light.scss")
+    .pipe(plumber())
+    .pipe($.sass())
+    .on('error', function(err){
+      browserSync.notify("SASS error");
+
+      console.error(err.message);
+
+      // Save the error to index.html, with a simple HTML wrapper
+      // so browserSync can inject itself in.
+      fs.writeFileSync('serve/index.html', "<!DOCTYPE HTML><html><body><pre>" + err.message + "</pre></body></html>");
+
+      // No need to continue processing.
+      this.emit('end');
+    })
+    // AutoPrefix your CSS so it works between browsers
+    .pipe($.autoprefixer("last 1 version", { cascade: true }))
+    // Directory your CSS file goes to
+    .pipe(gulp.dest("serve/assets/stylesheets/"))
+    // Outputs the size of the CSS file
+    .pipe($.size({title: "theme-styles"}))
     // Injects the CSS changes to your browser since Jekyll doesn"t rebuild the CSS
     .pipe(reload({stream: true}));
 });

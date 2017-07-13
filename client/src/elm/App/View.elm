@@ -22,7 +22,7 @@ view model =
             Config.View.view model.language
 
         _ ->
-            div []
+            div [ class "wrap" ]
                 [ viewSidebar model.language model
                 , div [ class "pusher" ]
                     [ viewHeader model.language model
