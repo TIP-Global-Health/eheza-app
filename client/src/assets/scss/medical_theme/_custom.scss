@@ -31,6 +31,19 @@ body {
         flex: 1;
       }
     }
+    &.report {
+      padding-bottom: 50px;
+    }
+  }
+}
+
+.ui.report.grid {
+  height: 100%;
+  flex: 1;
+
+  > div {
+    align-self: flex-end;
+    position: relative;
   }
 }
 
@@ -55,6 +68,11 @@ body {
     padding: 40px 0 0 0;
     z-index: 100;
     position: relative;
+    min-height: 175px;
+  }
+
+  &.tasks {
+    min-height: 278px;
   }
 }
 
@@ -434,4 +452,34 @@ h3.ui.header {
   height: 33px;
   display: block;
   margin: -2px auto;
+}
+
+
+// Progress Report
+
+.report-head,
+.report-info {
+  transform: rotate(-90deg);
+  transform-origin: left bottom;
+  white-space: nowrap;
+  position: absolute;
+}
+
+.report-head {
+  bottom: 15px;
+  left: 50%;
+  margin-left: 15px;
+  font-weight: normal;
+
+  .ui.header {
+    margin: 0;
+  }
+}
+
+.report-info {
+  transform-origin: left bottom;
+  bottom: 100%;
+  left: 145px; // ??
+  margin-bottom: 20px;
+  font-weight: normal;
 }

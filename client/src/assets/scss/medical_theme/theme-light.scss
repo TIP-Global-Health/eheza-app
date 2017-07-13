@@ -102,13 +102,26 @@ h3.ui.header {
   background: #666;
 
   .bar {
-    background: $color-primary-light;
+    background: $color-primary-dark;
   }
 
   > .label {
     color: #808080;
   }
+
+  &.success {
+    .bar {
+      background: $color-primary-light !important;
+    }
+
+    > .label {
+      color: #808080;
+    }
+  }
 }
+
+
+
 
 
 // Items
@@ -313,4 +326,19 @@ h3.ui.header {
 .icon-ok {
   background-image: url(#{$img-path}icon-ok.svg);
   background-size: 33px 33px;
+}
+
+
+// Progress Report
+
+.report-head {
+  color: #808080;
+
+  .ui.header {
+    color: inherit;
+  }
+}
+
+.red.text {
+  color: #f741c8;
 }
