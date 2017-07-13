@@ -58,17 +58,19 @@ viewChild language currentDate currentUser childId child motherWebData =
             Dict.insert childId ({ info = Patient.Model.PatientChild child }) Dict.empty
     in
         div [] <|
-            [ div
-                [ class "ui secondary pointing fluid menu" ]
-                [ h1
-                    [ class "ui header" ]
-                    [ text child.name ]
-                ]
-            , div [ class "ui grid" ]
-                [ div [ class "six wide column" ]
-                    [ img [ class "ui medium rounded image", src child.image ] []
+            [ div [ class "ui segment" ]
+                [ div
+                    [ class "ui secondary pointing fluid menu" ]
+                    [ h1
+                        [ class "ui header" ]
+                        [ text child.name ]
                     ]
-                , div [ class "content six wide column" ] [ motherInfo ]
+                , div [ class "ui grid" ]
+                    [ div [ class "six wide column" ]
+                        [ img [ class "ui medium rounded image", src child.image ] []
+                        ]
+                    , div [ class "content six wide column" ] [ motherInfo ]
+                    ]
                 ]
             , div
                 [ class "ui divider" ]
