@@ -25,10 +25,6 @@ import Translate as Trans exposing (Language, translate)
 import User.Model exposing (User)
 
 
-type alias Measurements =
-    Measurement.Model.Model
-
-
 viewChild : BackendUrl -> String -> User -> Language -> Date -> WebData Mother -> ( ChildId, Child ) -> Model -> Html Msg
 viewChild backendUrl accessToken currentUser language currentDate motherWebData ( childId, child ) model =
     let
@@ -84,6 +80,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                 [ viewActivityCards language currentDate currentUser patients Children
                 ]
             , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser ( childId, child ) model.selectedActivity model.measurements
+            , pre [] [ text <| toString model ]
             ]
 
 
@@ -192,18 +189,24 @@ viewActivityCards language currentDate user patients patientTypeFilter =
 
 viewActivityListItem : Language -> ActivityListItem -> Html Msg
 viewActivityListItem language report =
-    div [ class "ui card activities__item" ]
-        [ a
-            [ href "#"
-
+    let
+        clickHandler =
             -- @todo: Need to pass the ActivityType to this function.
-            , onClick <| SetSelectedActivity (Just <| Activity.Model.Child Activity.Model.Weight)
+            onClick <| SetSelectedActivity (Just <| Activity.Model.Child Activity.Model.Weight)
+    in
+        div [ class "ui card activities__item" ]
+            [ a
+                [ clickHandler
+                ]
+                [ i [ class (report.activity.icon ++ " icon") ] [] ]
+            , div [ class "content" ]
+                [ a
+                    [ class "header activities__item__title"
+                    , clickHandler
+                    ]
+                    [ text report.activity.name ]
+                ]
             ]
-            [ i [ class (report.activity.icon ++ " icon") ] [] ]
-        , div [ class "content" ]
-            [ a [ class "header activities__item__title" ] [ text report.activity.name ]
-            ]
-        ]
 
 
 viewSelectedActivity : Language -> Maybe ActivityOptions -> Html Msg
