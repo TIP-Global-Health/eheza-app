@@ -119,8 +119,8 @@ gulp.task("fonts", function () {
 });
 
 // Copy index.html and CNAME files to the "serve" directory
-  return gulp.src(["src/index.html", "src/CNAME", "src/js/**/*", "src/assets/images/**/*"])
 gulp.task("copy:dev", ["copy:bower", "copy:images"], function () {
+  return gulp.src(["src/index.html", "src/CNAME", "src/js/**/*"])
     .pipe(gulp.dest("serve"))
     .pipe($.size({ title: "index.html & CNAME" }))
 });
