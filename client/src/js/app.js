@@ -68,7 +68,6 @@ Offline.on('up', function() {
 });
 
 // Dropzone
-// @todo: Move to own file.
 
 var dropZone = undefined;
 
