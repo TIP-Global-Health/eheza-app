@@ -3,12 +3,13 @@ module PatientManager.Model exposing (..)
 import Activity.Model exposing (ActivityType)
 import Dict exposing (Dict)
 import Http
+import Measurement.Model
 import Pages.Activities.Model
 import Pages.Patient.Model
 import Pages.Patients.Model
+import Patient.Model exposing (Patient, PatientId, PatientsDict)
 import Pusher.Model exposing (PusherEvent)
 import RemoteData exposing (RemoteData(..), WebData)
-import Patient.Model exposing (Patient, PatientId, PatientsDict)
 
 
 {-| We track any Patients we are currently subscribed to.
@@ -26,6 +27,7 @@ just stay within the `WebData` container.
 -}
 type alias Model =
     { activitiesPage : Pages.Activities.Model.Model
+    , measurements : Dict PatientId Measurement.Model.Model
     , patients : Dict PatientId (WebData Patient)
     , patientsPage : Pages.Patients.Model.Model
     }
@@ -56,6 +58,7 @@ type Msg
 emptyModel : Model
 emptyModel =
     { activitiesPage = Pages.Activities.Model.emptyModel
+    , measurements = Dict.empty
     , patients = Dict.empty
     , patientsPage = Pages.Patients.Model.emptyModel
     }
