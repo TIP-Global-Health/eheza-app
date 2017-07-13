@@ -190,8 +190,7 @@ viewActivityListItem : Language -> ActivityListItem -> Html Msg
 viewActivityListItem language report =
     let
         clickHandler =
-            -- @todo: Need to pass the ActivityType to this function.
-            onClick <| SetSelectedActivity (Just <| Activity.Model.Child Activity.Model.Weight)
+            onClick <| SetSelectedActivity (Just <| report.activity.activityType)
     in
         div [ class "ui card activities__item" ]
             [ a
