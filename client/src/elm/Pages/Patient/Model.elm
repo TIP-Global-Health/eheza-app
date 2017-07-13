@@ -9,7 +9,8 @@ import Pusher.Model exposing (PusherEventData)
 
 
 type ActivityOptions
-    = Weight
+    = NutritionSigns
+    | Weight
 
 
 type Msg

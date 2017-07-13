@@ -21,8 +21,22 @@ viewWeightSelectedVisibleText =
         ]
 
 
+viewNutritionSignsSelectedVisibleText : Test
+viewNutritionSignsSelectedVisibleText =
+    describe "Pages Patient View Tests" <|
+        [ test "Nutrition signs form should display when selected" <|
+            \() ->
+                viewSelectedActivity English (Just Pages.Patient.Model.NutritionSigns)
+                    |> Query.fromHtml
+                    |> Query.find [ Selector.id "nutritionSignsEntryForm" ]
+                    |> Query.find [ tag "h1" ]
+                    |> Query.has [ text "Nutrition:" ]
+        ]
+
+
 all : Test
 all =
     describe "Pages Patient tests"
-        [ viewWeightSelectedVisibleText
+        [ viewNutritionSignsSelectedVisibleText
+        , viewWeightSelectedVisibleText
         ]
