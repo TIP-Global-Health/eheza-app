@@ -87,8 +87,12 @@ update msg model =
                     ""
     in
         case msg of
-            HandleDropzoneNewFile fid ->
-                { model | dropzoneFile = FileId fid } ! []
+            HandleDropzoneNewFile maybeFileId ->
+                let
+                    dropzoneFile =
+                        Maybe.map FileId maybeFileId
+                in
+                    { model | dropzoneFile = dropzoneFile } ! []
 
             HandleOfflineEvent (Ok offline) ->
                 { model | offline = offline } ! []
@@ -282,7 +286,6 @@ port offline : (Value -> msg) -> Sub msg
 {-| Send active page to JS.
 -}
 port activePage : List String -> Cmd msg
-
 
 
 {-| Get a singal if a file has been uploaded via the Dropzone.
