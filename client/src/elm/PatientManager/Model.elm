@@ -28,6 +28,7 @@ just stay within the `WebData` container.
 type alias Model =
     { activitiesPage : Pages.Activities.Model.Model
     , measurements : Dict PatientId Measurement.Model.Model
+    , selectedActivity : Dict PatientId (Maybe ActivityType)
     , patients : Dict PatientId (WebData Patient)
     , patientsPage : Pages.Patients.Model.Model
     }
@@ -59,6 +60,7 @@ emptyModel : Model
 emptyModel =
     { activitiesPage = Pages.Activities.Model.emptyModel
     , measurements = Dict.empty
+    , selectedActivity = Dict.empty
     , patients = Dict.empty
     , patientsPage = Pages.Patients.Model.emptyModel
     }
