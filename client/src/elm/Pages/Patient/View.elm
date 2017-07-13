@@ -80,7 +80,6 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                 [ viewActivityCards language currentDate currentUser patients Children
                 ]
             , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser ( childId, child ) model.selectedActivity model.measurements
-            , pre [] [ text <| toString model ]
             ]
 
 
