@@ -1,29 +1,36 @@
 module Measurement.View
     exposing
-        ( viewPatientTypeFilter
+        ( view
         )
 
+import Activity.Model exposing (ChildActivityType(..))
+import Config.Model exposing (BackendUrl)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
-import Patient.Model exposing (PatientTypeFilter(..))
-import Translate as Trans exposing (translate, Language)
+import Measurement.Model exposing (Model, Msg(..))
+import Patient.Model exposing (Patient, PatientId)
+import Translate as Trans exposing (Language, translate)
+import Utils.Html exposing (emptyNode, showMaybe)
+import User.Model exposing (..)
 
 
-viewPatientTypeFilter : Language -> (String -> msg) -> PatientTypeFilter -> Html msg
-viewPatientTypeFilter language msg patientTypeFilter =
-    div []
-        [ select
-            [ class "ui dropdown"
-            , value <| toString patientTypeFilter
-            , onInput msg
-            ]
-            (List.map
-                (\filterType ->
-                    option
-                        [ value <| toString filterType ]
-                        [ text <| toString filterType ]
-                )
-                [ All, Children, Mothers ]
+view : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Model -> Html Msg
+view backendUrl accessToken user ( patientId, patient ) model =
+    showMaybe <|
+        (Maybe.map
+            (\selectedActivity ->
+                case selectedActivity of
+                    Weight ->
+                        viewWeight backendUrl accessToken user ( patientId, patient ) model
+
+                    _ ->
+                        emptyNode
             )
-        ]
+            model.selectedActivity
+        )
+
+
+viewWeight : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Model -> Html Msg
+viewWeight backendUrl accessToken user ( patientId, patient ) model =
+    div [] [ text "Weight Form" ]
