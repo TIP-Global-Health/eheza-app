@@ -5,7 +5,7 @@ import Measurement.Model exposing (FloatInputConstraints)
 
 getInputConstraintsWeight : FloatInputConstraints
 getInputConstraintsWeight =
-    { default = 1
-    , min = 0.5
-    , max = 60
+    { defaultVal = 1
+    , minVal = 0.5
+    , maxVal = 60
     }

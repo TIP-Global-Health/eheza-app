@@ -204,7 +204,7 @@ viewSelectedActivity language activity =
 
 
 
--- @todo: check min / max for weight input
+-- @todo: Remove
 
 
 viewWeightEntry : Language -> Html Msg

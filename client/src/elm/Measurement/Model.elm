@@ -14,9 +14,9 @@ type WeightId
 
 
 type alias FloatInputConstraints =
-    { default : Float
-    , min : Float
-    , max : Float
+    { defaultVal : Float
+    , minVal : Float
+    , maxVal : Float
     }
 
 
