@@ -46,7 +46,7 @@ viewHeader language model =
             div [ class "ui head segment" ]
                 [ h1
                     [ class "ui header" ]
-                    [ text "some header" ]
+                    [ text "July 2017 Health Assessment" ]
                 , a
                     [ class "link-back"
                     , href "#"
