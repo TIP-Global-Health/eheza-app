@@ -10,21 +10,28 @@ import Test.Html.Selector as Selector exposing (tag, text)
 import Translate exposing (..)
 
 
-viewHeightFormTest : Test
-viewHeightFormTest =
-    describe "Pages Patient View Tests" <|
-        [ test "Weight form should display when selected" <|
+viewChildFormsTest : Test
+viewChildFormsTest =
+    describe "A nurse visits the assesment of a Child" <|
+        [ test "Then a weight form should be displayed when selected" <|
             \() ->
                 viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) (Just <| Child Height) emptyModel
                     |> Query.fromHtml
                     |> Query.find [ Selector.class "height" ]
                     |> Query.find [ tag "h1" ]
                     |> Query.has [ text "Height:" ]
+        , test "Then a MUAC form should be displayed when selected" <|
+            \() ->
+                viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) (Just <| Child Muac) emptyModel
+                    |> Query.fromHtml
+                    |> Query.find [ Selector.class "muac" ]
+                    |> Query.find [ tag "h1" ]
+                    |> Query.has [ text "Mid Upper Arm Circumference (MUAC):" ]
         ]
 
 
 all : Test
 all =
-    describe "Measurement forms tests"
-        [ viewHeightFormTest
+    describe "Measurement of children: form tests"
+        [ viewChildFormsTest
         ]
