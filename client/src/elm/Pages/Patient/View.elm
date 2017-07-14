@@ -105,9 +105,7 @@ viewMother language currentDate currentUser motherId mother children =
                                     [ href "#"
                                     , onClick <| SetRedirectPage (App.PageType.Patient childId)
                                     ]
-                                    [ img [ src child.image, class "ui avatar image" ] []
-                                    , text child.name
-                                    ]
+                                    [ text child.name ]
                                 ]
 
                         Loading ->
@@ -135,25 +133,39 @@ viewMother language currentDate currentUser motherId mother children =
             Dict.insert motherId ({ info = Patient.Model.PatientMother mother }) Dict.empty
     in
         div [] <|
-            [ div
-                [ class "ui secondary pointing fluid menu" ]
-                [ h1
-                    [ class "ui header" ]
-                    [ text mother.name ]
-                ]
-            , div [ class "ui grid" ]
-                [ div [ class "six wide column" ]
-                    [ img [ class "ui medium rounded image", src mother.image ] []
+            [ div [ class "ui segment" ]
+                [ div [ class "ui items" ]
+                    [ div [ class "item" ]
+                        [ div [ class "ui image" ]
+                            [ img [ src mother.image ]
+                                []
+                            ]
+                        , div [ class "middle aligned content" ]
+                            [ h2 [ class "ui header" ]
+                                [ text "Mother: ", text mother.name ]
+                            , h2 [ class "ui disabled header" ]
+                                [ childrenList ]
+                            , div [ class "meta" ]
+                                [ p []
+                                    [ text "Group Date"
+                                    , br []
+                                        []
+                                    , text "Joined in June 2017"
+                                    , br []
+                                        []
+                                    , text "Other relevant info                "
+                                    ]
+                                ]
+                            ]
+                        ]
                     ]
-                , div [ class "six wide column" ] [ childrenList ]
                 ]
-            , div
-                [ class "ui divider" ]
-                []
-            , div []
-                [ viewActivityCards language currentDate currentUser patients Mothers
+            , div [ class "ui segment" ]
+                [ div []
+                    [ viewActivityCards language currentDate currentUser patients Children
+                    ]
+                , viewSelectedActivity language (Just Pages.Patient.Model.Weight)
                 ]
-            , viewSelectedActivity language (Just Pages.Patient.Model.Weight)
             ]
 
 
