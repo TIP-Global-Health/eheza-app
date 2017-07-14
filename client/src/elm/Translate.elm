@@ -24,6 +24,7 @@ type TranslationId
     | ActivitiesWeightHelp
     | ActivitiesWeightLabel
     | ActivitiesWeightTitle
+    | Baby
     | Children
     | Connected
     | Dashboard
@@ -83,6 +84,9 @@ translate lang trans =
 
                 ActivitiesWeightTitle ->
                     { english = "Weight:" }
+
+                Baby ->
+                    { english = "Baby" }
 
                 Children ->
                     { english = "Children" }

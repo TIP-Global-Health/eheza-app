@@ -67,16 +67,13 @@ viewChild language currentDate currentUser childId child motherWebData =
                             [ h2 [ class "ui disabled header" ]
                                 [ motherInfo ]
                             , h2 [ class "ui header" ]
-                                [ text "Baby: ", text child.name ]
+                                [ text <| translate language Trans.Baby ++ ": " , text child.name ]
                             , div [ class "meta" ]
                                 [ p []
                                     [ text "Group Date"
                                     , br []
                                         []
                                     , text "Joined in June 2017"
-                                    , br []
-                                        []
-                                    , text "Other relevant info                "
                                     ]
                                 ]
                             ]
@@ -142,7 +139,7 @@ viewMother language currentDate currentUser motherId mother children =
                             ]
                         , div [ class "middle aligned content" ]
                             [ h2 [ class "ui header" ]
-                                [ text "Mother: ", text mother.name ]
+                                [ text <| translate language Trans.Mother ++ ": ", text mother.name ]
                             , h2 [ class "ui disabled header" ]
                                 [ childrenList ]
                             , div [ class "meta" ]
@@ -151,9 +148,6 @@ viewMother language currentDate currentUser motherId mother children =
                                     , br []
                                         []
                                     , text "Joined in June 2017"
-                                    , br []
-                                        []
-                                    , text "Other relevant info                "
                                     ]
                                 ]
                             ]
