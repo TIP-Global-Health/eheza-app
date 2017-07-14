@@ -61,7 +61,7 @@ viewChild language currentDate currentUser childId child motherWebData =
                             [ h2 [ class "ui disabled header" ]
                                 [ motherInfo ]
                             , h2 [ class "ui header" ]
-                                [ text <| translate language Trans.Baby ++ ": " , text child.name ]
+                                [ text <| translate language Trans.Baby ++ ": ", text child.name ]
                             , div [ class "meta" ]
                                 [ p []
                                     [ text "Group Date"
