@@ -5,12 +5,13 @@ import Json.Decode.Pipeline exposing (custom, decode, optional, required, requir
 import Pusher.Model exposing (..)
 import Patient.Decoder exposing (decodePatient)
 import Patient.Model exposing (Patient)
+import Utils.Json exposing (decodeInt)
 
 
 decodePusherEvent : Decoder PusherEvent
 decodePusherEvent =
     decode PusherEvent
-        |> requiredAt [ "data", "id" ] int
+        |> requiredAt [ "data", "id" ] decodeInt
         |> custom decodePusherEventData
 
 
