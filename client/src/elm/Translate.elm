@@ -55,6 +55,7 @@ type TranslationId
     | Retry
     | SearchByName
     | SignOut
+    | TitleHealthAssessment
     | Username
     | WelcomeUser String
 
@@ -177,6 +178,9 @@ translate lang trans =
 
                 SignOut ->
                     { english = "Sign Out" }
+
+                TitleHealthAssessment ->
+                    { english = "2017 July Health Assessment" }
 
                 Username ->
                     { english = "Username" }
