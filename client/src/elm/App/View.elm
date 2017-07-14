@@ -65,15 +65,15 @@ viewHeader language model =
                     ]
                 , div [ class "ui fluid two item secondary pointing menu" ]
                     [ a
-                        [ classByPage Activities model.activePage
-                        , onClick <| SetActivePage Activities
-                        ]
-                        [ text <| translate language Trans.Activities ]
-                    , a
                         [ classByPage (Dashboard []) model.activePage
                         , onClick <| SetActivePage <| Dashboard []
                         ]
                         [ text <| translate language Trans.Patients ]
+                    , a
+                        [ classByPage Activities model.activePage
+                        , onClick <| SetActivePage Activities
+                        ]
+                        [ text <| translate language Trans.Activities ]
                     ]
                 ]
 
