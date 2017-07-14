@@ -39,9 +39,7 @@ viewChild language currentDate currentUser childId child motherWebData =
                                     [ href "#"
                                     , onClick <| SetRedirectPage (App.PageType.Patient motherId)
                                     ]
-                                    [ img [ src mother.image, class "ui avatar image" ] []
-                                    , text mother.name
-                                    ]
+                                    [ text mother.name ]
                                 ]
 
                         Loading ->
@@ -59,26 +57,38 @@ viewChild language currentDate currentUser childId child motherWebData =
     in
         div [] <|
             [ div [ class "ui segment" ]
-                [ div
-                    [ class "ui secondary pointing fluid menu" ]
-                    [ h1
-                        [ class "ui header" ]
-                        [ text child.name ]
-                    ]
-                , div [ class "ui grid" ]
-                    [ div [ class "six wide column" ]
-                        [ img [ class "ui medium rounded image", src child.image ] []
+                [ div [ class "ui items" ]
+                    [ div [ class "item" ]
+                        [ div [ class "ui image" ]
+                            [ img [ src child.image ]
+                                []
+                            ]
+                        , div [ class "middle aligned content" ]
+                            [ h2 [ class "ui disabled header" ]
+                                [ motherInfo ]
+                            , h2 [ class "ui header" ]
+                                [ text child.name ]
+                            , div [ class "meta" ]
+                                [ p []
+                                    [ text "Group Date"
+                                    , br []
+                                        []
+                                    , text "Joined in June 2017"
+                                    , br []
+                                        []
+                                    , text "Other relevant info                "
+                                    ]
+                                ]
+                            ]
                         ]
-                    , div [ class "content six wide column" ] [ motherInfo ]
                     ]
                 ]
-            , div
-                [ class "ui divider" ]
-                []
-            , div []
-                [ viewActivityCards language currentDate currentUser patients Children
+            , div [ class "ui segment" ]
+                [ div []
+                    [ viewActivityCards language currentDate currentUser patients Children
+                    ]
+                , viewSelectedActivity language (Just Pages.Patient.Model.Weight)
                 ]
-            , viewSelectedActivity language (Just Pages.Patient.Model.Weight)
             ]
 
 
@@ -198,7 +208,7 @@ viewActivityListItem language report =
 viewSelectedActivity : Language -> Maybe ActivityOptions -> Html Msg
 viewSelectedActivity language activity =
     case activity of
-        Just Pages.Patient.Model.Weight ->
+        Just (Pages.Patient.Model.Weight) ->
             viewWeightEntry language
 
         Nothing ->
