@@ -24,6 +24,7 @@ decodeTest =
       "id" : "100",
       "label" : "new-patient",
       "mother": "7",
+      "lastExamination": "8",
       "date_picture": null,
       "date_height" : null,
       "date_muac" : null,
