@@ -28,12 +28,12 @@ viewChild language currentDate currentUser childId child motherWebData =
         motherInfo =
             case child.motherId of
                 Nothing ->
-                    div [] [ text <| translate language Trans.LinkToMother ]
+                    span [] [ text <| translate language Trans.LinkToMother ]
 
                 Just motherId ->
                     case motherWebData of
                         Success mother ->
-                            div []
+                            span []
                                 [ text <| translate language Trans.Mother ++ ": "
                                 , a
                                     [ href "#"
@@ -43,13 +43,13 @@ viewChild language currentDate currentUser childId child motherWebData =
                                 ]
 
                         Loading ->
-                            div []
+                            span []
                                 [ text <| translate language Trans.Mother ++ ": "
                                 , i [ class "icon loading spinner" ] []
                                 ]
 
                         _ ->
-                            div [] []
+                            span [] []
 
         patients =
             -- @todo: Add mkChild
@@ -67,7 +67,7 @@ viewChild language currentDate currentUser childId child motherWebData =
                             [ h2 [ class "ui disabled header" ]
                                 [ motherInfo ]
                             , h2 [ class "ui header" ]
-                                [ text child.name ]
+                                [ text "Baby: ", text child.name ]
                             , div [ class "meta" ]
                                 [ p []
                                     [ text "Group Date"
