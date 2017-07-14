@@ -5,26 +5,29 @@ module Pages.Patient.View
         , viewSelectedActivity
         )
 
-import Activity.Model exposing (ActivityListItem, ChildNutritionSign(..))
 import Activity.Encoder exposing (encodeChildNutritionSign)
+import Activity.Model exposing (ActivityListItem, ActivityType(..), ChildNutritionSign(..))
 import Activity.Utils exposing (getActivityList)
 import App.PageType
 import Child.Model exposing (Child, ChildId)
+import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
+import Measurement.Model
+import Measurement.View
 import Mother.Model exposing (Mother, MotherId)
-import Pages.Patient.Model exposing (Msg(..), ActivityOptions)
+import Pages.Patient.Model exposing (ActivityOptions, Model, Msg(..))
 import Patient.Model exposing (Patient, PatientId, PatientTypeFilter(..), PatientsDict)
 import RemoteData exposing (RemoteData(..), WebData)
-import Translate as Trans exposing (translate, Language)
+import Translate as Trans exposing (Language, translate)
 import User.Model exposing (User)
 
 
-viewChild : Language -> Date -> User -> ChildId -> Child -> WebData Mother -> Html Msg
-viewChild language currentDate currentUser childId child motherWebData =
+viewChild : BackendUrl -> String -> User -> Language -> Date -> WebData Mother -> ( ChildId, Child ) -> Model -> Html Msg
+viewChild backendUrl accessToken currentUser language currentDate motherWebData ( childId, child ) model =
     let
         motherInfo =
             case child.motherId of
@@ -77,7 +80,7 @@ viewChild language currentDate currentUser childId child motherWebData =
             , div []
                 [ viewActivityCards language currentDate currentUser patients Children
                 ]
-            , viewSelectedActivity language (Just Pages.Patient.Model.Weight)
+            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser ( childId, child ) model.selectedActivity model.measurements
             ]
 
 
@@ -184,14 +187,25 @@ viewActivityCards language currentDate user patients patientTypeFilter =
             ]
 
 
-viewActivityListItem : Language -> ActivityListItem -> Html a
+viewActivityListItem : Language -> ActivityListItem -> Html Msg
 viewActivityListItem language report =
-    div [ class "ui card activities__item" ]
-        [ a [ href "#" ] [ i [ class (report.activity.icon ++ " icon") ] [] ]
-        , div [ class "content" ]
-            [ a [ class "header activities__item__title" ] [ text report.activity.name ]
+    let
+        clickHandler =
+            onClick <| SetSelectedActivity (Just <| report.activity.activityType)
+    in
+        div [ class "ui card activities__item" ]
+            [ a
+                [ clickHandler
+                ]
+                [ i [ class (report.activity.icon ++ " icon") ] [] ]
+            , div [ class "content" ]
+                [ a
+                    [ class "header activities__item__title"
+                    , clickHandler
+                    ]
+                    [ text report.activity.name ]
+                ]
             ]
-        ]
 
 
 viewSelectedActivity : Language -> Maybe ActivityOptions -> Html Msg
@@ -208,7 +222,7 @@ viewSelectedActivity language activity =
 
 
 
--- @todo: check min / max for weight input
+-- @todo: Remove
 
 
 viewWeightEntry : Language -> Html Msg

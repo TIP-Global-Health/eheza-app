@@ -3,13 +3,15 @@ module Pages.Patient.Update exposing (update)
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import User.Model exposing (..)
-import Pages.Patient.Model exposing (Msg(..))
+import Measurement.Model
+import Measurement.Update
+import Pages.Patient.Model exposing (Model, Msg(..))
 import Pusher.Model exposing (PusherEventData(..))
-import Patient.Model exposing (Patient)
+import Patient.Model exposing (Patient, PatientId)
 
 
-update : BackendUrl -> String -> User -> Msg -> Patient -> ( Patient, Cmd Msg, Maybe Page )
-update backendUrl accessToken user msg patient =
+update : BackendUrl -> String -> User -> Msg -> ( PatientId, Patient ) -> Model -> ( Patient, Model, Cmd Msg, Maybe Page )
+update backendUrl accessToken user msg ( patientId, patient ) model =
     case msg of
         HandlePusherEventData event ->
             case event of
@@ -19,9 +21,24 @@ update backendUrl accessToken user msg patient =
                     -- we may have just pushed this change ourselves, so it's
                     -- already reflected here.
                     ( newPatient
+                    , model
                     , Cmd.none
                     , Nothing
                     )
 
+        MsgMeasurement subMsg ->
+            let
+                ( measurementsUpdated, cmds ) =
+                    Measurement.Update.update backendUrl accessToken user ( patientId, patient ) subMsg model.measurements
+            in
+                ( patient
+                , { model | measurements = measurementsUpdated }
+                , Cmd.map MsgMeasurement cmds
+                , Nothing
+                )
+
         SetRedirectPage page ->
-            ( patient, Cmd.none, Just page )
+            ( patient, model, Cmd.none, Just page )
+
+        SetSelectedActivity maybectivityType ->
+            ( patient, { model | selectedActivity = maybectivityType }, Cmd.none, Nothing )
