@@ -34,7 +34,7 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       'process_callbacks' => [
         [$this, 'imageProcess'],
       ],
-      'image_styles' => ['large', 'thumbnail'],
+      'image_styles' => ['large', 'patient-photo'],
     ];
 
     foreach (array_keys(field_info_instances($this->getEntityType(), $this->getBundle())) as $field_name) {
