@@ -203,7 +203,7 @@ viewActivityListItem language report =
 viewSelectedActivity : Language -> Maybe ActivityOptions -> Html Msg
 viewSelectedActivity language activity =
     case activity of
-        Just (Pages.Patient.Model.Weight) ->
+        Just Pages.Patient.Model.Weight ->
             viewWeightEntry language
 
         Nothing ->
