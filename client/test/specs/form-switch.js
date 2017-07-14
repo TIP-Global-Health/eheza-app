@@ -6,6 +6,9 @@ describe('assesment pages', function() {
         const secondUsedTab = 'Height';
 
         browser.login('aya');
+        // We generate 20 of every content-types, and we generated Children
+        // in the third step, that's how we picked Child 55.
+        // @see server/scripts/helper-functions.sh
         browser.url('/#patient/55');
         browser.waitForVisible('.header.activities');
 
