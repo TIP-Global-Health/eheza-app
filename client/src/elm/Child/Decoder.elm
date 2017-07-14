@@ -1,8 +1,6 @@
 module Child.Decoder
     exposing
         ( decodeChild
-        , decodeWeight
-        , decodeWeightList
         )
 
 import Activity.Decoder exposing (decodeChildActivityDates)
@@ -20,25 +18,3 @@ decodeChild =
         |> required "mother" (nullable decodeInt)
         |> required "lastExamination" (nullable decodeInt)
         |> custom decodeChildActivityDates
-
-
-decodeWeight : Decoder Weight
-decodeWeight =
-    decode Weight
-        |> required "weight"
-            (string
-                |> andThen
-                    (\val ->
-                        case String.toFloat val of
-                            Ok value ->
-                                succeed value
-
-                            Err message ->
-                                fail message
-                    )
-            )
-
-
-decodeWeightList : Decoder (List Weight)
-decodeWeightList =
-    list decodeWeight

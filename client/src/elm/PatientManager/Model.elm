@@ -1,14 +1,26 @@
 module PatientManager.Model exposing (..)
 
 import Activity.Model exposing (ActivityType)
+import Child.Model exposing (ChildId)
 import Dict exposing (Dict)
 import Http
+import Measurement.Model
 import Pages.Activities.Model
 import Pages.Patient.Model
 import Pages.Patients.Model
 import Patient.Model exposing (Patient, PatientId, PatientsDict)
 import Pusher.Model exposing (PusherEvent)
 import RemoteData exposing (RemoteData(..), WebData)
+
+
+type alias PostWeightData =
+    { child : ChildId
+    , weight : Float
+    }
+
+
+type alias PostWeightResponse =
+    {}
 
 
 {-| We track any Patients we are currently subscribed to.
@@ -45,11 +57,13 @@ type Msg
     = Subscribe PatientId
     | Unsubscribe PatientId
     | FetchAll
+    | MsgMeasurement Measurement.Model.Msg
     | MsgPagesActivities Pages.Activities.Model.Msg
     | MsgPagesPatient PatientId Pages.Patient.Model.Msg
     | MsgPagesPatients Pages.Patients.Model.Msg
     | HandleFetchedPatient PatientId (Result Http.Error Patient)
     | HandleFetchedPatients (Result Http.Error PatientsDict)
+    | HandlePostWeight ChildId (Result Http.Error PostWeightResponse)
     | HandlePusherEvent (Result String PusherEvent)
     | SetActivityTypeFilters (List ActivityType)
 

@@ -10,6 +10,9 @@ import User.Model exposing (..)
 update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model -> ( Model, Cmd Msg )
 update backendUrl accessToken user ( patientId, patient ) msg model =
     case msg of
+        HandlePostWeight childId _ ->
+            model ! []
+
         HandleWeightSave (Ok ()) ->
             { model | status = Success () } ! []
 
@@ -40,7 +43,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
             in
                 { model | muac = updatedMuac } ! []
 
-        WeightSave ->
+        WeightSave _ _ ->
             model ! []
 
         WeightUpdate val ->

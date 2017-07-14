@@ -16,10 +16,6 @@ type alias MotherId =
     Int
 
 
-type alias WeightId =
-    Int
-
-
 type alias Child =
     { name : String
     , image : String
@@ -27,12 +23,3 @@ type alias Child =
     , lastExamination : Maybe ExaminationId
     , activityDates : ChildActivityDates
     }
-
-
-type alias Weight =
-    { weight : Float
-    }
-
-
-type alias EveryDictListWeights =
-    EveryDictList WeightId Weight
