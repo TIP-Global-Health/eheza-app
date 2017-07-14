@@ -34,13 +34,7 @@ viewChild language currentDate currentUser childId child motherWebData =
                     case motherWebData of
                         Success mother ->
                             span []
-                                [ text <| translate language Trans.Mother ++ ": "
-                                , a
-                                    [ href "#"
-                                    , onClick <| SetRedirectPage (App.PageType.Patient motherId)
-                                    ]
-                                    [ text mother.name ]
-                                ]
+                                [ text <| translate language Trans.Mother ++ ": ", text mother.name ]
 
                         Loading ->
                             span []
@@ -98,12 +92,7 @@ viewMother language currentDate currentUser motherId mother children =
                     case childWebData of
                         Success ( childId, child ) ->
                             li []
-                                [ a
-                                    [ href "#"
-                                    , onClick <| SetRedirectPage (App.PageType.Patient childId)
-                                    ]
-                                    [ text child.name ]
-                                ]
+                                [ text child.name ]
 
                         Loading ->
                             li []
