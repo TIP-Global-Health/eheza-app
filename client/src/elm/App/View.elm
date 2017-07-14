@@ -4,7 +4,7 @@ import App.Model exposing (..)
 import App.PageType exposing (Page(..))
 import Config.View
 import Html exposing (..)
-import Html.Attributes exposing (class, classList, href, src, style, target)
+import Html.Attributes exposing (class, classList, href, id, src, style, target)
 import Html.Events exposing (onClick)
 import User.Model exposing (..)
 import Pages.Login.View exposing (..)
@@ -24,11 +24,17 @@ view model =
         _ ->
             div [ class "wrap" ]
                 [ viewSidebar model.language model
-                , div [ class "pusher" ]
-                    [ viewHeader model.language model
-                    , div [ class "ui main container" ]
-                        [ viewMainContent model.language model
+                , viewHeader model.language model
+                , div [ class "ui main container" ]
+                    [ viewMainContent model.language model
+                    ]
+                , div [ class "right item" ]
+                    [ a
+                        [ class "ui inverted button"
+                        , id "sign-out"
+                        , onClick Logout
                         ]
+                        [ text <| translate model.language Trans.SignOut ]
                     ]
                 ]
 
@@ -37,54 +43,37 @@ viewHeader : Language -> Model -> Html Msg
 viewHeader language model =
     case model.user of
         Success user ->
-            div [ class "ui inverted masthead segment" ]
-                [ div [ class "ui container" ]
-                    [ div [ class "ui large inverted secondary pointing menu" ]
-                        [ a
-                            [ class "toc item"
-                            , href "#"
-                            ]
-                            [ i [ class "sidebar icon" ]
-                                []
-                            ]
-                        , a
-                            [ class " header item"
-                            , onClick <| SetActivePage MyAccount
-                            ]
-                            [ i
-                                [ class "user icon" ]
-                                []
-                            , text user.name
-                            ]
-                        , a
-                            [ class "item"
-                            , onClick <| SetActivePage Activities
-                            ]
-                            [ text <| translate language Trans.Activities ]
-                        , a
-                            [ class "item"
-                            , onClick <| SetActivePage <| Dashboard []
-                            ]
-                            [ text <| translate language Trans.Patients ]
-                        , div [ class "right item" ]
-                            [ a
-                                [ class "ui inverted button"
-                                , onClick Logout
-                                ]
-                                [ text <| translate language Trans.SignOut ]
-                            ]
-                        , span
-                            [ class "item"
-                            ]
-                            [ i
-                                [ classList
-                                    [ ( "icon wifi", True )
-                                    , ( "disabled", model.offline )
-                                    ]
-                                ]
-                                []
-                            ]
+            div [ class "ui head segment" ]
+                [ h1
+                    [ class "ui header" ]
+                    [ text <| translate language Trans.TitleHealthAssessment ]
+                , a
+                    [ class "link-back"
+                    , href "#"
+                    ]
+                    [ span [ class "icon-back" ]
+                        []
+                    , span [] []
+                    ]
+                , a
+                    [ class "link-theme"
+                    , href "#"
+                    ]
+                    [ span [ class "icon-theme icon-theme-light" ]
+                        []
+                    , span [] []
+                    ]
+                , div [ class "ui fluid two item secondary pointing menu" ]
+                    [ a
+                        [ classByPage (Dashboard []) model.activePage
+                        , onClick <| SetActivePage <| Dashboard []
                         ]
+                        [ text <| translate language Trans.Patients ]
+                    , a
+                        [ classByPage Activities model.activePage
+                        , onClick <| SetActivePage Activities
+                        ]
+                        [ text <| translate language Trans.Activities ]
                     ]
                 ]
 
@@ -264,12 +253,12 @@ viewMainContent language model =
                 viewContent
 
 
-{-| Get menu patients classes. This function gets the active page and checks if
+{-| Get menu items classes. This function gets the active page and checks if
 it is indeed the page used.
 -}
 classByPage : Page -> Page -> Attribute a
 classByPage page activePage =
     classList
-        [ ( "patient", True )
+        [ ( "item", True )
         , ( "active", page == activePage )
         ]
