@@ -1,7 +1,7 @@
 module Measurement.Test exposing (all)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
-import Fixtures exposing (exampleChild, exampleUser)
+import Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChild, exampleUser)
 import Measurement.Model exposing (..)
 import Measurement.View exposing (..)
 import Test exposing (Test, describe, test)
@@ -15,7 +15,7 @@ viewHeightFormTest =
     describe "Pages Patient View Tests" <|
         [ test "Weight form should display when selected" <|
             \() ->
-                viewChild "" "" exampleUser English ( 5, exampleChild ) (Just <| Child Height) emptyModel
+                viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) (Just <| Child Height) emptyModel
                     |> Query.fromHtml
                     |> Query.find [ Selector.class "height" ]
                     |> Query.find [ tag "h1" ]
