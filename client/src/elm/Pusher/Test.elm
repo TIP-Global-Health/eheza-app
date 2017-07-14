@@ -35,14 +35,15 @@ decodeTest =
             """
 
                     expectedResult =
-                        { patientId = "100"
+                        { patientId = 100
                         , data =
                             PatientUpdate
                                 { info =
                                     PatientChild
                                         { name = "new-patient"
                                         , image = "http://placehold.it/350x150"
-                                        , motherId = Just "7"
+                                        , lastExamination = Just 8
+                                        , motherId = Just 7
                                         , activityDates = emptyChildActivityDates
                                         }
                                 }

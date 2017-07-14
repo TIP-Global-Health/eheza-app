@@ -15,8 +15,8 @@ import User.Model exposing (..)
 import Utils.Html exposing (divider, emptyNode, showMaybe)
 
 
-viewChild : BackendUrl -> String -> User -> ( ChildId, Child ) -> Maybe ActivityType -> Model -> Html Msg
-viewChild backendUrl accessToken user ( childId, child ) selectedActivity model =
+viewChild : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Maybe ActivityType -> Model -> Html Msg
+viewChild backendUrl accessToken user language ( childId, child ) selectedActivity model =
     showMaybe <|
         (Maybe.map
             (\activity ->
@@ -24,7 +24,7 @@ viewChild backendUrl accessToken user ( childId, child ) selectedActivity model 
                     Child childActivity ->
                         case childActivity of
                             Weight ->
-                                viewWeight backendUrl accessToken user ( childId, child ) model
+                                viewWeight backendUrl accessToken user language ( childId, child ) model
 
                             _ ->
                                 emptyNode
@@ -36,14 +36,11 @@ viewChild backendUrl accessToken user ( childId, child ) selectedActivity model 
         )
 
 
-viewWeight : BackendUrl -> String -> User -> ( ChildId, Child ) -> Model -> Html Msg
-viewWeight backendUrl accessToken user ( childId, child ) model =
+viewWeight : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
+viewWeight backendUrl accessToken user language ( childId, child ) model =
     let
         constraints =
             getInputConstraintsWeight
-
-        language =
-            English
     in
         div []
             [ divider

@@ -77,7 +77,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
             , div []
                 [ viewActivityCards language currentDate currentUser patients Children
                 ]
-            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser ( childId, child ) model.selectedActivity model.measurements
+            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) model.selectedActivity model.measurements
             ]
 
 
