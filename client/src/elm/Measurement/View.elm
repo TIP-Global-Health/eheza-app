@@ -8,7 +8,7 @@ import Config.Model exposing (BackendUrl)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
-import Measurement.Model exposing (Model, Msg(..), getInputConstraintsWeight, getInputConstraintsHeight)
+import Measurement.Model exposing (Model, Msg(..), getInputConstraintsHeight, getInputConstraintsWeight)
 import Child.Model exposing (Child, ChildId)
 import Translate as Trans exposing (Language(..), translate)
 import User.Model exposing (..)
@@ -48,7 +48,7 @@ viewHeight backendUrl accessToken user language ( childId, child ) model =
         div []
             [ divider
             , div
-                [ class "ui card"
+                [ class "ui card height"
                 ]
                 [ h1
                     []
