@@ -20,10 +20,14 @@ type TranslationId
     = AccessDenied
     | Activities
     | ActivitiesCompleted
+    | ActivitiesHeightHelp
+    | ActivitiesHeightLabel
+    | ActivitiesHeightTitle
     | ActivitiesToComplete
     | ActivitiesWeightHelp
     | ActivitiesWeightLabel
     | ActivitiesWeightTitle
+    | CentimeterShorthand
     | Children
     | Connected
     | Dashboard
@@ -52,6 +56,7 @@ type TranslationId
     | ReportRemaining Int
     | ReloadPatient
     | Retry
+    | Save
     | SearchByName
     | SignOut
     | Username
@@ -72,17 +77,29 @@ translate lang trans =
                 ActivitiesCompleted ->
                     { english = "ActivitiesCompleted" }
 
-                ActivitiesToComplete ->
-                    { english = "ActivitiesToComplete" }
+                ActivitiesHeightHelp ->
+                    { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight." }
+
+                ActivitiesHeightLabel ->
+                    { english = "Height:" }
+
+                ActivitiesHeightTitle ->
+                    { english = "Height:" }
 
                 ActivitiesWeightHelp ->
                     { english = "Calibrate the scale before taking the first baby's weight.  Place baby in harness with no clothes on." }
+
+                ActivitiesToComplete ->
+                    { english = "ActivitiesToComplete" }
 
                 ActivitiesWeightLabel ->
                     { english = "Weight:" }
 
                 ActivitiesWeightTitle ->
                     { english = "Weight:" }
+
+                CentimeterShorthand ->
+                    { english = "cm" }
 
                 Children ->
                     { english = "Children" }
@@ -167,6 +184,9 @@ translate lang trans =
 
                 Retry ->
                     { english = "Retry" }
+
+                Save ->
+                    { english = "Save" }
 
                 SearchByName ->
                     { english = "Search by Name" }

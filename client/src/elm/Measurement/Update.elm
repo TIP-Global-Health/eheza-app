@@ -20,6 +20,16 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
             in
                 { model | status = Failure err } ! []
 
+        HeightUpdate val ->
+            let
+                height =
+                    model.height
+
+                updatedHeight =
+                    { height | value = val }
+            in
+                { model | height = updatedHeight } ! []
+
         WeightSave ->
             model ! []
 

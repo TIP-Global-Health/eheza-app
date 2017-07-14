@@ -8,7 +8,7 @@ import Config.Model exposing (BackendUrl)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
-import Measurement.Model exposing (Model, Msg(..), getInputConstraintsWeight)
+import Measurement.Model exposing (Model, Msg(..), getInputConstraintsWeight, getInputConstraintsHeight)
 import Child.Model exposing (Child, ChildId)
 import Translate as Trans exposing (Language(..), translate)
 import User.Model exposing (..)
@@ -23,6 +23,9 @@ viewChild backendUrl accessToken user language ( childId, child ) selectedActivi
                 case activity of
                     Child childActivity ->
                         case childActivity of
+                            Height ->
+                                viewHeight backendUrl accessToken user language ( childId, child ) model
+
                             Weight ->
                                 viewWeight backendUrl accessToken user language ( childId, child ) model
 
@@ -34,6 +37,43 @@ viewChild backendUrl accessToken user language ( childId, child ) selectedActivi
             )
             selectedActivity
         )
+
+
+viewHeight : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
+viewHeight backendUrl accessToken user language ( childId, child ) model =
+    let
+        constraints =
+            getInputConstraintsHeight
+    in
+        div []
+            [ divider
+            , div
+                [ class "ui card"
+                ]
+                [ h1
+                    []
+                    [ text <| translate language Trans.ActivitiesHeightTitle
+                    ]
+                , span
+                    []
+                    [ text <| translate language Trans.ActivitiesHeightHelp ]
+                , div
+                    []
+                    [ span [] [ text <| translate language Trans.ActivitiesHeightLabel ]
+                    , input
+                        [ type_ "number"
+                        , name "height"
+                        , Attr.min <| toString constraints.minVal
+                        , Attr.max <| toString constraints.maxVal
+                        , value <| toString model.weight.value
+                        , onInput <| (\v -> HeightUpdate <| Result.withDefault 0.0 <| String.toFloat v)
+                        ]
+                        []
+                    , span [] [ text <| translate language Trans.CentimeterShorthand ]
+                    ]
+                , button [ type_ "button" ] [ text <| translate language Trans.Save ]
+                ]
+            ]
 
 
 viewWeight : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg

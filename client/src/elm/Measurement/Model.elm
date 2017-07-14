@@ -36,6 +36,7 @@ type
     Msg
     -- @todo: Change () to WeightId ?
     = HandleWeightSave (Result Http.Error ())
+    | HeightUpdate Float
     | WeightSave
     | WeightUpdate Float
 
@@ -51,7 +52,7 @@ getInputConstraintsHeight : FloatInputConstraints
 getInputConstraintsHeight =
     { defaultValue = 1
     , minVal = 0.5
-    , maxVal = 60
+    , maxVal = 100
     }
 
 
