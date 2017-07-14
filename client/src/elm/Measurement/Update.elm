@@ -30,6 +30,16 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
             in
                 { model | height = updatedHeight } ! []
 
+        MuacUpdate val ->
+            let
+                muac =
+                    model.muac
+
+                updatedMuac =
+                    { muac | value = val }
+            in
+                { model | muac = updatedMuac } ! []
+
         WeightSave ->
             model ! []
 

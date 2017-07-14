@@ -37,6 +37,7 @@ type
     -- @todo: Change () to WeightId ?
     = HandleWeightSave (Result Http.Error ())
     | HeightUpdate Float
+    | MuacUpdate Float
     | WeightSave
     | WeightUpdate Float
 
@@ -44,6 +45,7 @@ type
 type alias Model =
     { status : WebData ()
     , height : FloatInput
+    , muac : FloatInput
     , weight : FloatInput
     }
 
@@ -53,6 +55,14 @@ getInputConstraintsHeight =
     { defaultValue = 1
     , minVal = 0.5
     , maxVal = 100
+    }
+
+
+getInputConstraintsMuac : FloatInputConstraints
+getInputConstraintsMuac =
+    { defaultValue = 1
+    , minVal = 0.5
+    , maxVal = 40
     }
 
 
@@ -68,5 +78,6 @@ emptyModel : Model
 emptyModel =
     { status = NotAsked
     , height = emptyFloatInput getInputConstraintsHeight
+    , muac = emptyFloatInput getInputConstraintsHeight
     , weight = emptyFloatInput getInputConstraintsWeight
     }
