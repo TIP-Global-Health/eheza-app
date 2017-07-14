@@ -41,7 +41,7 @@ decodeTest =
                                 { info =
                                     PatientChild
                                         { name = "new-patient"
-                                        , image = "http://placehold.it/350x150"
+                                        , image = "http://placehold.it/200x200"
                                         , motherId = Just "7"
                                         , activityDates = emptyChildActivityDates
                                         }
