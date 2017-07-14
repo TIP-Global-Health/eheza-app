@@ -3,7 +3,8 @@ module Measurement.View
         ( viewChild
         )
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
+import Activity.Encoder exposing (encodeChildNutritionSign)
+import Activity.Model exposing (ActivityType(..), ChildActivityType(..), ChildNutritionSign(..))
 import Config.Model exposing (BackendUrl)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
@@ -18,9 +19,8 @@ import Utils.Html exposing (divider, emptyNode, showMaybe)
 
 -- @todo: Change ActivityType to ChildActivityType ?
 
-
-viewChild : BackendUrl -> String -> User -> ( ChildId, Child ) -> Maybe ActivityType -> Model -> Html Msg
-viewChild backendUrl accessToken user ( childId, child ) selectedActivity model =
+viewChild : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Maybe ActivityType -> Model -> Html Msg
+viewChild backendUrl accessToken user language ( childId, child ) selectedActivity model =
     showMaybe <|
         (Maybe.map
             (\activity ->
@@ -28,7 +28,10 @@ viewChild backendUrl accessToken user ( childId, child ) selectedActivity model 
                     Child childActivity ->
                         case childActivity of
                             Weight ->
-                                viewWeight backendUrl accessToken user ( childId, child ) model
+                                viewWeight backendUrl accessToken user language ( childId, child ) model
+
+                            NutritionSigns ->
+                               viewNutritionSigns backendUrl accessToken user  language (childId, child) model
 
                             _ ->
                                 emptyNode
@@ -40,8 +43,8 @@ viewChild backendUrl accessToken user ( childId, child ) selectedActivity model 
         )
 
 
-viewWeight : BackendUrl -> String -> User -> ( ChildId, Child ) -> Model -> Html Msg
-viewWeight backendUrl accessToken user ( childId, child ) model =
+viewWeight : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
+viewWeight backendUrl accessToken user language ( childId, child ) model =
     let
         constraints =
             getInputConstraintsWeight
@@ -75,3 +78,93 @@ viewWeight backendUrl accessToken user ( childId, child ) model =
                     ]
                 ]
             ]
+viewNutritionSigns: BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
+viewNutritionSigns backendUrl accessToken user language ( childId, child ) model =
+    div []
+        [ div
+            [ class "ui divider" ]
+            []
+        , div
+            [ class "ui card"
+            , id "nutritionSignsEntryForm"
+            ]
+            [ h1
+                []
+                [ text <| translate language Trans.ActivitiesNutritionSignsTitle
+                ]
+            , span
+                []
+                [ text <| translate language Trans.ActivitiesNutritionSignsHelp ]
+            , div
+                []
+                [ span []
+                    [ text <| translate language Trans.ActivitiesNutritionSignsLabel
+                    , viewNutritionSignsSelector language
+                    ]
+                ]
+            , button [ type_ "button" ] [ text <| translate language Trans.Save ]
+            ]
+        ]
+
+
+viewNutritionSignsSelector : Language -> Html Msg
+viewNutritionSignsSelector language =
+    ul [ class "checkboxes" ]
+        [ li []
+            [ input
+                [ type_ "checkbox"
+                , name <| encodeChildNutritionSign Edema
+                ]
+                []
+            , span []
+                [ text <| translate language Trans.ActivitiesNutritionSignsEdemaLabel ]
+            ]
+        , li []
+            [ input
+                [ type_ "checkbox"
+                , name <| encodeChildNutritionSign AbdominalDisortion
+                ]
+                []
+            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsAbdominalDisortionLabel ]
+            ]
+        , li []
+            [ input
+                [ type_ "checkbox"
+                , name <| encodeChildNutritionSign DrySkin
+                ]
+                []
+            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsDrySkinLabel ]
+            ]
+        , li []
+            [ input
+                [ type_ "checkbox"
+                , name <| encodeChildNutritionSign PoorAppetite
+                ]
+                []
+            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsPoorAppetiteLabel ]
+            ]
+        , li []
+            [ input
+                [ type_ "checkbox"
+                , name <| encodeChildNutritionSign Apathy
+                ]
+                []
+            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsApathyLabel ]
+            ]
+        , li []
+            [ input
+                [ type_ "checkbox"
+                , name <| encodeChildNutritionSign BrittleHair
+                ]
+                []
+            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsBrittleHairLabel ]
+            ]
+        , li []
+            [ input
+                [ type_ "checkbox"
+                , name <| encodeChildNutritionSign None
+                ]
+                []
+            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsNoneLabel ]
+            ]
+        ]

@@ -2,11 +2,9 @@ module Pages.Patient.View
     exposing
         ( viewChild
         , viewMother
-        , viewSelectedActivity
         )
 
-import Activity.Encoder exposing (encodeChildNutritionSign)
-import Activity.Model exposing (ActivityListItem, ActivityType(..), ChildNutritionSign(..))
+import Activity.Model exposing (ActivityListItem, ActivityType(..))
 import Activity.Utils exposing (getActivityList)
 import App.PageType
 import Child.Model exposing (Child, ChildId)
@@ -16,10 +14,9 @@ import Dict
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
-import Measurement.Model
 import Measurement.View
 import Mother.Model exposing (Mother, MotherId)
-import Pages.Patient.Model exposing (ActivityOptions, Model, Msg(..))
+import Pages.Patient.Model exposing (Model, Msg(..))
 import Patient.Model exposing (Patient, PatientId, PatientTypeFilter(..), PatientsDict)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
@@ -80,7 +77,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
             , div []
                 [ viewActivityCards language currentDate currentUser patients Children
                 ]
-            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser ( childId, child ) model.selectedActivity model.measurements
+            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) model.selectedActivity model.measurements
             ]
 
 
@@ -145,7 +142,6 @@ viewMother language currentDate currentUser motherId mother children =
             , div []
                 [ viewActivityCards language currentDate currentUser patients Mothers
                 ]
-            , viewSelectedActivity language (Just Pages.Patient.Model.Weight)
             ]
 
 
@@ -206,145 +202,3 @@ viewActivityListItem language report =
                     [ text report.activity.name ]
                 ]
             ]
-
-
-viewSelectedActivity : Language -> Maybe ActivityOptions -> Html Msg
-viewSelectedActivity language activity =
-    case activity of
-        Just Pages.Patient.Model.NutritionSigns ->
-            viewNutritionSignsEntry language
-
-        Just Pages.Patient.Model.Weight ->
-            viewWeightEntry language
-
-        Nothing ->
-            div [] []
-
-
-
--- @todo: Remove
-
-
-viewWeightEntry : Language -> Html Msg
-viewWeightEntry language =
-    div []
-        [ div
-            [ class "ui divider" ]
-            []
-        , div
-            [ class "ui card"
-            , id "weightEntryForm"
-            ]
-            [ h1
-                []
-                [ text <| translate language Trans.ActivitiesWeightTitle
-                ]
-            , span
-                []
-                [ text <| translate language Trans.ActivitiesWeightHelp ]
-            , div
-                []
-                [ span [] [ text <| translate language Trans.ActivitiesWeightLabel ]
-                , input
-                    [ type_ "number"
-                    , name "weight"
-                    , Attr.min "1"
-                    , Attr.max "200"
-                    ]
-                    []
-                , span [] [ text <| translate language Trans.KilogramShorthand ]
-                ]
-            ]
-        ]
-
-
-viewNutritionSignsEntry : Language -> Html Msg
-viewNutritionSignsEntry language =
-    div []
-        [ div
-            [ class "ui divider" ]
-            []
-        , div
-            [ class "ui card"
-            , id "nutritionSignsEntryForm"
-            ]
-            [ h1
-                []
-                [ text <| translate language Trans.ActivitiesNutritionSignsTitle
-                ]
-            , span
-                []
-                [ text <| translate language Trans.ActivitiesNutritionSignsHelp ]
-            , div
-                []
-                [ span []
-                    [ text <| translate language Trans.ActivitiesNutritionSignsLabel
-                    , viewNutritionSignsSelector language
-                    ]
-                ]
-            , button [ type_ "button" ] [ text <| translate language Trans.Save ]
-            ]
-        ]
-
-
-viewNutritionSignsSelector : Language -> Html Msg
-viewNutritionSignsSelector language =
-    ul [ class "checkboxes" ]
-        [ li []
-            [ input
-                [ type_ "checkbox"
-                , name <| encodeChildNutritionSign Edema
-                ]
-                []
-            , span []
-                [ text <| translate language Trans.ActivitiesNutritionSignsEdemaLabel ]
-            ]
-        , li []
-            [ input
-                [ type_ "checkbox"
-                , name <| encodeChildNutritionSign AbdominalDisortion
-                ]
-                []
-            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsAbdominalDisortionLabel ]
-            ]
-        , li []
-            [ input
-                [ type_ "checkbox"
-                , name <| encodeChildNutritionSign DrySkin
-                ]
-                []
-            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsDrySkinLabel ]
-            ]
-        , li []
-            [ input
-                [ type_ "checkbox"
-                , name <| encodeChildNutritionSign PoorAppetite
-                ]
-                []
-            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsPoorAppetiteLabel ]
-            ]
-        , li []
-            [ input
-                [ type_ "checkbox"
-                , name <| encodeChildNutritionSign Apathy
-                ]
-                []
-            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsApathyLabel ]
-            ]
-        , li []
-            [ input
-                [ type_ "checkbox"
-                , name <| encodeChildNutritionSign BrittleHair
-                ]
-                []
-            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsBrittleHairLabel ]
-            ]
-        , li []
-            [ input
-                [ type_ "checkbox"
-                , name <| encodeChildNutritionSign None
-                ]
-                []
-            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsNoneLabel ]
-            ]
-        ]
