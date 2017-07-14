@@ -23,6 +23,9 @@ type TranslationId
     | ActivitiesHeightHelp
     | ActivitiesHeightLabel
     | ActivitiesHeightTitle
+    | ActivitiesMuacHelp
+    | ActivitiesMuacLabel
+    | ActivitiesMuacTitle
     | ActivitiesToComplete
     | ActivitiesWeightHelp
     | ActivitiesWeightLabel
@@ -85,6 +88,15 @@ translate lang trans =
 
                 ActivitiesHeightTitle ->
                     { english = "Height:" }
+
+                ActivitiesMuacHelp ->
+                    { english = "Make sure to measure at the center of the baby’s upper arm." }
+
+                ActivitiesMuacLabel ->
+                    { english = "MUAC:" }
+
+                ActivitiesMuacTitle ->
+                    { english = "Mid Upper Arm Circumference (MUAC):" }
 
                 ActivitiesWeightHelp ->
                     { english = "Calibrate the scale before taking the first baby's weight.  Place baby in harness with no clothes on." }
