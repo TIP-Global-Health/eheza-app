@@ -9,6 +9,7 @@ import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Measurement.Model exposing (Model, Msg(..), getInputConstraintsWeight)
+import Measurement.Utils exposing (isDirty)
 import Child.Model exposing (Child, ChildId)
 import Translate as Trans exposing (Language(..), translate)
 import User.Model exposing (..)
@@ -36,6 +37,37 @@ viewChild backendUrl accessToken user language ( childId, child ) selectedActivi
         )
 
 
+
+-- todo: Refactor this into Measurement module compliance after data loading is restored
+-- priorWeight : Language -> Child -> Float -> Html Msg
+-- priorWeight language child weight =
+--     Maybe.map
+--         (\value ->
+--             let
+--                 change =
+--                     if value.weight < weight then
+--                         Trans.MeasurementGained <| weight - value.weight
+--                     else if value.weight > weight then
+--                         Trans.MeasurementLost <| value.weight - weight
+--                     else
+--                         Trans.MeasurementNoChange
+--             in
+--                 div
+--                     []
+--                     [ span
+--                         []
+--                         [ text <| translate language (Trans.PriorWeight value.weight)
+--                         ]
+--                     , span
+--                         []
+--                         [ text <| translate language change
+--                         ]
+--                     ]
+--         )
+--         child.weight
+--         |> showMaybe
+
+
 viewWeight : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
 viewWeight backendUrl accessToken user language ( childId, child ) model =
     let
@@ -60,13 +92,24 @@ viewWeight backendUrl accessToken user language ( childId, child ) model =
                     , input
                         [ type_ "number"
                         , name "weight"
+                        , step "0.5"
                         , Attr.min <| toString constraints.minVal
                         , Attr.max <| toString constraints.maxVal
                         , value <| toString model.weight.value
-                        , onInput <| (\v -> WeightUpdate <| Result.withDefault 0.0 <| String.toFloat v)
+                        , onInput
+                            (\v ->
+                                String.toFloat v
+                                    |> Result.withDefault constraints.defaultValue
+                                    |> clamp constraints.minVal constraints.maxVal
+                                    |> WeightUpdate
+                            )
                         ]
                         []
                     , span [] [ text <| translate language Trans.KilogramShorthand ]
                     ]
+                , if isDirty constraints model.weight then
+                    div [] [ text <| "*" ++ (translate language Trans.Save) ]
+                  else
+                    div [] [ text <| translate language Trans.Save ]
                 ]
             ]

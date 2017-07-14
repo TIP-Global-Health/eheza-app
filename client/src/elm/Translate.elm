@@ -38,6 +38,9 @@ type TranslationId
     | LinkToMother
     | Login
     | Logout
+    | MeasurementNoChange
+    | MeasurementGained Float
+    | MeasurementLost Float
     | Mother
     | Mothers
     | MyAccount
@@ -49,9 +52,11 @@ type TranslationId
     | PageNotFoundMsg
     | Password
     | Patients
+    | PriorWeight Float
     | ReportRemaining Int
     | ReloadPatient
     | Retry
+    | Save
     | SearchByName
     | SignOut
     | Username
@@ -126,6 +131,15 @@ translate lang trans =
                 Logout ->
                     { english = "Logout" }
 
+                MeasurementNoChange ->
+                    { english = "No Change" }
+
+                MeasurementGained amount ->
+                    { english = "Gained " ++ (toString amount) }
+
+                MeasurementLost amount ->
+                    { english = "Lost " ++ (toString amount) }
+
                 Mother ->
                     { english = "Mother" }
 
@@ -159,6 +173,9 @@ translate lang trans =
                 Patients ->
                     { english = "Patients" }
 
+                PriorWeight value ->
+                    { english = "Previous weight: " ++ (toString value) ++ " kg" }
+
                 ReportRemaining remaining ->
                     { english = toString remaining ++ " remaning" }
 
@@ -167,6 +184,9 @@ translate lang trans =
 
                 Retry ->
                     { english = "Retry" }
+
+                Save ->
+                    { english = "Save" }
 
                 SearchByName ->
                     { english = "Search by Name" }
