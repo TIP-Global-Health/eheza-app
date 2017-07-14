@@ -9,7 +9,7 @@ import Json.Decode exposing (Decoder, andThen, dict, fail, field, int, list, map
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required)
 import Mother.Decoder exposing (decodeMother)
 import Patient.Model exposing (..)
-import Utils.Json exposing (decodeListAsDict)
+import Utils.Json exposing (decodeListAsIntDict)
 
 
 decodePatient : Decoder Patient
@@ -37,4 +37,4 @@ decodePatientType =
 
 decodePatientsDict : Decoder PatientsDict
 decodePatientsDict =
-    decodeListAsDict decodePatient
+    decodeListAsIntDict decodePatient

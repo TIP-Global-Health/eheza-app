@@ -10,7 +10,6 @@ import Dict
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
-import Measurement.Model
 import Pages.Activities.View
 import Pages.Patient.Model
 import Pages.Patient.View

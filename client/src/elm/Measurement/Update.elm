@@ -1,6 +1,5 @@
 module Measurement.Update exposing (update)
 
-import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Measurement.Model exposing (Model, Msg(..))
 import Patient.Model exposing (Patient, PatientId)
@@ -25,4 +24,11 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
             model ! []
 
         WeightUpdate val ->
-            model ! []
+            let
+                weight =
+                    model.weight
+
+                updatedWeight =
+                    { weight | value = val }
+            in
+                { model | weight = updatedWeight } ! []

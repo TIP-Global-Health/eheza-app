@@ -1,11 +1,13 @@
 module Measurement.Utils exposing (..)
 
-import Measurement.Model exposing (FloatInputConstraints)
+import Measurement.Model exposing (FloatInput, FloatInputConstraints)
 
 
-getInputConstraintsWeight : FloatInputConstraints
-getInputConstraintsWeight =
-    { defaultVal = 1
-    , minVal = 0.5
-    , maxVal = 60
-    }
+isDirty : FloatInputConstraints -> FloatInput -> Bool
+isDirty constraints state =
+    case state.initialValue of
+        Nothing ->
+            not (constraints.defaultValue == state.value)
+
+        Just initial ->
+            not (initial == state.value)

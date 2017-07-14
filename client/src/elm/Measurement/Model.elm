@@ -1,6 +1,5 @@
 module Measurement.Model exposing (..)
 
-import Activity.Model exposing (ChildActivityType)
 import Http
 import RemoteData exposing (RemoteData(..), WebData)
 
@@ -14,22 +13,22 @@ type WeightId
 
 
 type alias FloatInputConstraints =
-    { defaultVal : Float
+    { defaultValue : Float
     , minVal : Float
     , maxVal : Float
     }
 
 
 type alias FloatInput =
-    { value : Float
-    , isDirty : Bool
+    { initialValue : Maybe Float
+    , value : Float
     }
 
 
-emptyFloatInput : FloatInput
-emptyFloatInput =
-    { value = 0
-    , isDirty = False
+emptyFloatInput : FloatInputConstraints -> FloatInput
+emptyFloatInput constraints =
+    { initialValue = Nothing
+    , value = constraints.defaultValue
     }
 
 
@@ -48,9 +47,25 @@ type alias Model =
     }
 
 
+getInputConstraintsHeight : FloatInputConstraints
+getInputConstraintsHeight =
+    { defaultValue = 1
+    , minVal = 0.5
+    , maxVal = 60
+    }
+
+
+getInputConstraintsWeight : FloatInputConstraints
+getInputConstraintsWeight =
+    { defaultValue = 1
+    , minVal = 0.5
+    , maxVal = 60
+    }
+
+
 emptyModel : Model
 emptyModel =
     { status = NotAsked
-    , height = emptyFloatInput
-    , weight = emptyFloatInput
+    , height = emptyFloatInput getInputConstraintsHeight
+    , weight = emptyFloatInput getInputConstraintsWeight
     }

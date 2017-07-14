@@ -13,7 +13,7 @@ import Mother.Model exposing (Mother)
 
 
 type alias PatientId =
-    String
+    Int
 
 
 type PatientType

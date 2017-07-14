@@ -2,7 +2,6 @@ module Pages.Patient.View
     exposing
         ( viewChild
         , viewMother
-        , viewSelectedActivity
         )
 
 import Activity.Model exposing (ActivityListItem, ActivityType(..))
@@ -15,10 +14,9 @@ import Dict
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
-import Measurement.Model
 import Measurement.View
 import Mother.Model exposing (Mother, MotherId)
-import Pages.Patient.Model exposing (ActivityOptions, Model, Msg(..))
+import Pages.Patient.Model exposing (Model, Msg(..))
 import Patient.Model exposing (Patient, PatientId, PatientTypeFilter(..), PatientsDict)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
@@ -144,7 +142,6 @@ viewMother language currentDate currentUser motherId mother children =
             , div []
                 [ viewActivityCards language currentDate currentUser patients Mothers
                 ]
-            , viewSelectedActivity language (Just Pages.Patient.Model.Weight)
             ]
 
 
@@ -205,50 +202,3 @@ viewActivityListItem language report =
                     [ text report.activity.name ]
                 ]
             ]
-
-
-viewSelectedActivity : Language -> Maybe ActivityOptions -> Html Msg
-viewSelectedActivity language activity =
-    case activity of
-        Just Pages.Patient.Model.Weight ->
-            viewWeightEntry language
-
-        Nothing ->
-            div [] []
-
-
-
--- @todo: Remove
-
-
-viewWeightEntry : Language -> Html Msg
-viewWeightEntry language =
-    div []
-        [ div
-            [ class "ui divider" ]
-            []
-        , div
-            [ class "ui card"
-            , id "weightEntryForm"
-            ]
-            [ h1
-                []
-                [ text <| translate language Trans.ActivitiesWeightTitle
-                ]
-            , span
-                []
-                [ text <| translate language Trans.ActivitiesWeightHelp ]
-            , div
-                []
-                [ span [] [ text <| translate language Trans.ActivitiesWeightLabel ]
-                , input
-                    [ type_ "number"
-                    , name "weight"
-                    , Attr.min "1"
-                    , Attr.max "200"
-                    ]
-                    []
-                , span [] [ text <| translate language Trans.KilogramShorthand ]
-                ]
-            ]
-        ]

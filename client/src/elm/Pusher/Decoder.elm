@@ -1,6 +1,6 @@
 module Pusher.Decoder exposing (decodePusherEvent)
 
-import Json.Decode as Json exposing (Decoder, andThen, at, fail, field, map, map2, string)
+import Json.Decode as Json exposing (Decoder, andThen, at, fail, field, int, map, map2, string)
 import Json.Decode.Pipeline exposing (custom, decode, optional, required, requiredAt)
 import Pusher.Model exposing (..)
 import Patient.Decoder exposing (decodePatient)
@@ -10,7 +10,7 @@ import Patient.Model exposing (Patient)
 decodePusherEvent : Decoder PusherEvent
 decodePusherEvent =
     decode PusherEvent
-        |> requiredAt [ "data", "id" ] string
+        |> requiredAt [ "data", "id" ] int
         |> custom decodePusherEventData
 
 

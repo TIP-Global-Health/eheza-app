@@ -8,15 +8,11 @@ import Config.Model exposing (BackendUrl)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
-import Measurement.Model exposing (Model, Msg(..))
-import Measurement.Utils exposing (getInputConstraintsWeight)
+import Measurement.Model exposing (Model, Msg(..), getInputConstraintsWeight)
 import Child.Model exposing (Child, ChildId)
 import Translate as Trans exposing (Language(..), translate)
 import User.Model exposing (..)
 import Utils.Html exposing (divider, emptyNode, showMaybe)
-
-
--- @todo: Change ActivityType to ChildActivityType ?
 
 
 viewChild : BackendUrl -> String -> User -> ( ChildId, Child ) -> Maybe ActivityType -> Model -> Html Msg
@@ -69,6 +65,8 @@ viewWeight backendUrl accessToken user ( childId, child ) model =
                         , name "weight"
                         , Attr.min <| toString constraints.minVal
                         , Attr.max <| toString constraints.maxVal
+                        , value <| toString model.weight.value
+                        , onInput <| (\v -> WeightUpdate <| Result.withDefault 0.0 <| String.toFloat v)
                         ]
                         []
                     , span [] [ text <| translate language Trans.KilogramShorthand ]

@@ -4,24 +4,26 @@ import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict exposing (Dict)
-import Patient.Model exposing (Patient, PatientId, PatientType(..))
-import PatientManager.Decoder exposing (decodePatientFromResponse, decodePatientsFromResponse)
-import PatientManager.Model exposing (..)
-import PatientManager.Utils exposing (..)
 import Json.Decode exposing (decodeValue)
 import Json.Encode exposing (Value)
 import HttpBuilder exposing (get, withQueryParams)
-import Measurement.Model
 import Pages.Activities.Update
 import Pages.Patient.Model
 import Pages.Patient.Update
 import Pages.Patients.Model
 import Pages.Patients.Update
+import Patient.Model exposing (Patient, PatientId, PatientType(..))
+import PatientManager.Decoder exposing (decodePatientFromResponse, decodePatientsFromResponse)
+import PatientManager.Model exposing (..)
+import PatientManager.Utils exposing (..)
 import Pusher.Decoder exposing (decodePusherEvent)
 import Pusher.Model exposing (PusherEventData(..))
 import RemoteData exposing (RemoteData(..))
 import User.Model exposing (User)
 import Utils.WebData exposing (sendWithHandler)
+
+
+-- import Measurement.Model
 
 
 {-| If we're on the `Dashboard` page, what should we show in the part of the URL
@@ -229,7 +231,7 @@ fetchPatientFromBackend backendUrl accessToken patientId model =
         command =
             -- @todo: We need to know which activity type it is, in order to
             -- call to correct RESTful resource.
-            HttpBuilder.get (backendUrl ++ "/api/patients/" ++ patientId)
+            HttpBuilder.get (backendUrl ++ "/api/patients/" ++ (toString patientId))
                 |> withQueryParams [ ( "access_token", accessToken ) ]
                 |> sendWithHandler decodePatientFromResponse (HandleFetchedPatient patientId)
     in
