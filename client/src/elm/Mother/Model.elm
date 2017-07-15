@@ -4,11 +4,11 @@ import Activity.Model exposing (MotherActivityDates)
 
 
 type alias ChildId =
-    String
+    Int
 
 
 type alias MotherId =
-    String
+    Int
 
 
 type alias Mother =

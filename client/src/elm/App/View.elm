@@ -2,17 +2,19 @@ module App.View exposing (..)
 
 import App.Model exposing (..)
 import App.PageType exposing (Page(..))
+import Config.Model exposing (BackendUrl)
 import Config.View
 import Html exposing (..)
 import Html.Attributes exposing (class, classList, href, id, src, style, target)
 import Html.Events exposing (onClick)
-import User.Model exposing (..)
 import Pages.Login.View exposing (..)
 import Pages.MyAccount.View exposing (..)
 import Pages.PageNotFound.View exposing (..)
 import PatientManager.View exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
-import Translate as Trans exposing (translate, Language)
+import Translate as Trans exposing (Language, translate)
+import User.Model exposing (..)
+import Utils.Html exposing (emptyNode)
 
 
 view : Model -> Html Msg
@@ -21,12 +23,12 @@ view model =
         Failure err ->
             Config.View.view model.language
 
-        _ ->
+        Success config ->
             div [ class "wrap" ]
                 [ viewSidebar model.language model
                 , viewHeader model.language model
                 , div [ class "ui main container" ]
-                    [ viewMainContent model.language model
+                    [ viewMainContent config.backendUrl model
                     ]
                 , div [ class "right item" ]
                     [ a
@@ -37,6 +39,9 @@ view model =
                         [ text <| translate model.language Trans.SignOut ]
                     ]
                 ]
+
+        _ ->
+            emptyNode
 
 
 viewHeader : Language -> Model -> Html Msg
@@ -213,9 +218,12 @@ viewAvatar language user =
             div [] []
 
 
-viewMainContent : Language -> Model -> Html Msg
-viewMainContent language model =
+viewMainContent : BackendUrl -> Model -> Html Msg
+viewMainContent backendUrl model =
     let
+        language =
+            model.language
+
         viewContent =
             case model.activePage of
                 AccessDenied ->
@@ -254,7 +262,7 @@ viewMainContent language model =
                     case model.user of
                         Success user ->
                             Html.map MsgPatientManager <|
-                                PatientManager.View.viewPagePatient model.language model.currentDate id user model.pagePatient
+                                PatientManager.View.viewPagePatient backendUrl model.accessToken user model.language model.currentDate id model.pagePatient
 
                         _ ->
                             div [] [ i [ class "notched circle loading icon" ] [] ]

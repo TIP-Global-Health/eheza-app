@@ -24,6 +24,7 @@ decodeTest =
       "id" : "100",
       "label" : "new-patient",
       "mother": "7",
+      "lastExamination": "8",
       "date_picture": null,
       "date_height" : null,
       "date_muac" : null,
@@ -35,14 +36,15 @@ decodeTest =
             """
 
                     expectedResult =
-                        { patientId = "100"
+                        { patientId = 100
                         , data =
                             PatientUpdate
                                 { info =
                                     PatientChild
                                         { name = "new-patient"
                                         , image = "http://placehold.it/200x200"
-                                        , motherId = Just "7"
+                                        , lastExamination = Just 8
+                                        , motherId = Just 7
                                         , activityDates = emptyChildActivityDates
                                         }
                                 }

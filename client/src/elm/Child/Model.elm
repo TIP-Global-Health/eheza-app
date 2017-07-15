@@ -1,19 +1,25 @@
 module Child.Model exposing (..)
 
 import Activity.Model exposing (ChildActivityDates)
+import EveryDictList exposing (EveryDictList)
 
 
 type alias ChildId =
-    String
+    Int
+
+
+type alias ExaminationId =
+    Int
 
 
 type alias MotherId =
-    String
+    Int
 
 
 type alias Child =
     { name : String
     , image : String
     , motherId : Maybe MotherId
+    , lastExamination : Maybe ExaminationId
     , activityDates : ChildActivityDates
     }

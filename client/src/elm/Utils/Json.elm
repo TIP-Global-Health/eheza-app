@@ -8,6 +8,8 @@ module Utils.Json
         , decodeIntAsString
         , decodeListAsDict
         , decodeListAsDictByProperty
+        , decodeListAsIntDict
+        , decodeListAsIntDictByProperty
         , decodeNullAsEmptyArray
         )
 
@@ -96,8 +98,24 @@ decodeListAsDict decoder =
     decodeListAsDictByProperty "id" decodeInt decoder toString
 
 
+decodeListAsIntDict : Decoder a -> Decoder (Dict Int a)
+decodeListAsIntDict decoder =
+    decodeListAsIntDictByProperty "id" decodeInt decoder identity
+
+
 decodeListAsDictByProperty : String -> Decoder a -> Decoder v -> (a -> comparable) -> Decoder (Dict String v)
 decodeListAsDictByProperty property keyDecoder valDecoder stringFunc =
+    list (map2 (,) (field property keyDecoder) valDecoder)
+        |> andThen
+            (\valList ->
+                List.map (\( id, value ) -> ( stringFunc id, value )) valList
+                    |> Dict.fromList
+                    |> succeed
+            )
+
+
+decodeListAsIntDictByProperty : String -> Decoder a -> Decoder v -> (a -> comparable) -> Decoder (Dict Int v)
+decodeListAsIntDictByProperty property keyDecoder valDecoder stringFunc =
     list (map2 (,) (field property keyDecoder) valDecoder)
         |> andThen
             (\valList ->
