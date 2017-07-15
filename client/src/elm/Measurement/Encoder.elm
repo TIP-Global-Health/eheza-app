@@ -1,7 +1,7 @@
-module PatientManager.Encoder exposing (..)
+module Measurement.Encoder exposing (..)
 
 import Json.Encode as Encoder exposing (Value, float, int)
-import PatientManager.Model exposing (PostWeightData)
+import Measurement.Model exposing (PostWeightData)
 
 
 encodeWeight : PostWeightData -> Value

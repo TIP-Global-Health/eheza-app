@@ -117,37 +117,6 @@ viewMuac backendUrl accessToken user language ( childId, child ) model =
             ]
 
 
-
--- todo: Refactor this into Measurement module compliance after data loading is restored
--- priorWeight : Language -> Child -> Float -> Html Msg
--- priorWeight language child weight =
---     Maybe.map
---         (\value ->
---             let
---                 change =
---                     if value.weight < weight then
---                         Trans.MeasurementGained <| weight - value.weight
---                     else if value.weight > weight then
---                         Trans.MeasurementLost <| value.weight - weight
---                     else
---                         Trans.MeasurementNoChange
---             in
---                 div
---                     []
---                     [ span
---                         []
---                         [ text <| translate language (Trans.PriorWeight value.weight)
---                         ]
---                     , span
---                         []
---                         [ text <| translate language change
---                         ]
---                     ]
---         )
---         child.weight
---         |> showMaybe
-
-
 viewWeight : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
 viewWeight backendUrl accessToken user language ( childId, child ) model =
     let

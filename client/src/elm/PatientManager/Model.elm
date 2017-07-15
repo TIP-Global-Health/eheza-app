@@ -13,16 +13,6 @@ import Pusher.Model exposing (PusherEvent)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
-type alias PostWeightData =
-    { child : ChildId
-    , weight : Float
-    }
-
-
-type alias PostWeightResponse =
-    {}
-
-
 {-| We track any Patients we are currently subscribed to.
 
 In theory, we'll only typically have one at a time. However, the logic of
@@ -63,7 +53,6 @@ type Msg
     | MsgPagesPatients Pages.Patients.Model.Msg
     | HandleFetchedPatient PatientId (Result Http.Error Patient)
     | HandleFetchedPatients (Result Http.Error PatientsDict)
-    | HandlePostWeight ChildId (Result Http.Error PostWeightResponse)
     | HandlePusherEvent (Result String PusherEvent)
     | SetActivityTypeFilters (List ActivityType)
 

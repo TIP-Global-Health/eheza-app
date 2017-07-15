@@ -82,7 +82,6 @@ viewPagePatient language currentDate id user model =
                             accessToken =
                                 "dummy-access-token"
 
-                            -- @todo: Remove duplication
                             patientModel =
                                 Maybe.map identity (Dict.get id model.patientPage)
                                     |> Maybe.withDefault Pages.Patient.Model.emptyModel

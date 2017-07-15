@@ -11,7 +11,8 @@ import Measurement.Decoder
     exposing
         ( decodeWeightFromResponse
         )
-import Measurement.Model
+import Measurement.Encoder exposing (encodeWeight)
+import Measurement.Model exposing (PostWeightData)
 import Pages.Activities.Update
 import Pages.Patient.Model
 import Pages.Patient.Update
@@ -23,7 +24,6 @@ import PatientManager.Decoder
         ( decodePatientFromResponse
         , decodePatientsFromResponse
         )
-import PatientManager.Encoder exposing (encodeWeight)
 import PatientManager.Model exposing (..)
 import PatientManager.Utils exposing (..)
 import Pusher.Decoder exposing (decodePusherEvent)
@@ -31,9 +31,6 @@ import Pusher.Model exposing (PusherEventData(..))
 import RemoteData exposing (RemoteData(..))
 import User.Model exposing (User)
 import Utils.WebData exposing (sendWithHandler)
-
-
--- import Measurement.Model
 
 
 {-| If we're on the `Dashboard` page, what should we show in the part of the URL
@@ -231,20 +228,6 @@ update currentDate backendUrl accessToken user msg model =
             , Cmd.none
             , Nothing
             )
-
-        HandlePostWeight childId (Ok _) ->
-            let
-                patientModel =
-                    model.patientPage
-            in
-                ( model, Cmd.none, Nothing )
-
-        HandlePostWeight childId (Err message) ->
-            let
-                _ =
-                    Debug.log "PatientManager Update - Post Weight Err" message
-            in
-                ( model, Cmd.none, Nothing )
 
         HandlePusherEvent result ->
             case result of
