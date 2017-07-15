@@ -125,7 +125,7 @@ viewWeight backendUrl accessToken user language ( childId, child ) model =
         div []
             [ divider
             , div
-                [ class "ui card"
+                [ class "ui segment"
                 ]
                 [ h1
                     []
@@ -155,6 +155,6 @@ viewWeight backendUrl accessToken user language ( childId, child ) model =
                         []
                     , span [] [ text <| translate language Trans.KilogramShorthand ]
                     ]
-                , div [] [ text <| translate language Trans.Save ]
+                , div [ class "ui button primary" ] [ text <| translate language Trans.Save ]
                 ]
             ]
