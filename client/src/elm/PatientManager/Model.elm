@@ -6,9 +6,9 @@ import Http
 import Pages.Activities.Model
 import Pages.Patient.Model
 import Pages.Patients.Model
+import Patient.Model exposing (Patient, PatientId, PatientsDict)
 import Pusher.Model exposing (PusherEvent)
 import RemoteData exposing (RemoteData(..), WebData)
-import Patient.Model exposing (Patient, PatientId, PatientsDict)
 
 
 {-| We track any Patients we are currently subscribed to.
@@ -28,6 +28,7 @@ type alias Model =
     { activitiesPage : Pages.Activities.Model.Model
     , patients : Dict PatientId (WebData Patient)
     , patientsPage : Pages.Patients.Model.Model
+    , patientPage : Dict PatientId Pages.Patient.Model.Model
     }
 
 
@@ -58,4 +59,5 @@ emptyModel =
     { activitiesPage = Pages.Activities.Model.emptyModel
     , patients = Dict.empty
     , patientsPage = Pages.Patients.Model.emptyModel
+    , patientPage = Dict.empty
     }

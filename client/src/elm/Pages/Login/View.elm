@@ -56,7 +56,7 @@ viewMain language user model =
             [ Html.form
                 [ onSubmit TryLogin
                 , action "javascript:void(0);"
-                , class "ui large form narrow-form"
+                , class "ui large form narrow-form login-form"
                 ]
                 [ div [ class "field" ]
                     [ input

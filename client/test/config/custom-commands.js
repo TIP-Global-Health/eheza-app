@@ -1,6 +1,23 @@
 'use strict';
+const assert = require('assert');
 
 module.exports = function (browser, capabilities, specs) {
+
+  browser.addCommand('login', (user) => {
+    assert(user, "login command must be passed a username")
+    browser.url('/#login');
+    browser.waitForVisible('.login-form');
+    browser.setValueSafe('[name="username"]', user);
+    browser.setValueSafe('[name="password"]', user);
+    browser.submitForm('.login-form');
+    browser.waitForVisible('a=Sign Out');
+  });
+
+  browser.addCommand('logout', () => {
+    browser.url('/#');
+    browser.findAndClick('a=Sign Out')
+    browser.waitForVisible('.login-form');
+  });
 
   /**
    * Recursive function to ensure the correct text.
@@ -69,6 +86,42 @@ module.exports = function (browser, capabilities, specs) {
         browser.elementIdClear(elementId);
       }
     }
+  });
+
+  /**
+   * Find and click.
+   *
+   * @param {String} selector The css selector of the element to click.
+   */
+  browser.addCommand('findAndClick', (selector) => {
+    assert(selector, 'Selector must be provided to findAndClick function');
+
+    let visibleElements = null
+
+    browser.waitUntil(() => {
+      // Find all elements that match selector
+      const elements = browser.elements(selector);
+
+      // If cannot find elements
+      if (!elements.value) {
+        return false;
+      }
+
+      // Remove non-visible elements.
+      visibleElements = elements.value.filter(elem => {
+        // Scroll to the element to make sure it's in view
+        browser.moveTo(elem.value.ELEMENT);
+
+        const visible = browser.elementIdDisplayed(elem.value.ELEMENT);
+        return visible.value;
+      })
+
+      return visibleElements.length > 0
+    });
+
+    // Only want to click one element.
+    const element = visibleElements[0]
+    browser.elementIdClick(element.value.ELEMENT);
   });
 
   // Set the window size to avoid clipping things off.

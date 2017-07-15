@@ -6,7 +6,7 @@ import Activity.Model exposing (ActivityType)
 {-| Prevent circular dependency.
 -}
 type alias PatientId =
-    String
+    Int
 
 
 type Page
