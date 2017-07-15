@@ -1,8 +1,7 @@
 module Measurement.Update exposing (update)
 
-import Child.Model exposing (ChildId)
 import Config.Model exposing (BackendUrl)
-import HttpBuilder exposing (get, withJsonBody, send, withQueryParams)
+import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
 import Measurement.Encoder exposing (encodeWeight)
 import Measurement.Model exposing (Model, Msg(..))
 import Patient.Model exposing (Patient, PatientId)
@@ -44,7 +43,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
                 { model | muac = updatedMuac } ! []
 
         WeightSave ->
-            model ! []
+            postWeight backendUrl accessToken patientId model
 
         WeightUpdate val ->
             let
@@ -59,7 +58,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
 
 {-| Send new weight of a child to the backend.
 -}
-postWeight : BackendUrl -> String -> ChildId -> Model -> ( Model, Cmd Msg )
+postWeight : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg )
 postWeight backendUrl accessToken childId model =
     let
         command =
@@ -68,6 +67,6 @@ postWeight backendUrl accessToken childId model =
                 |> withJsonBody (encodeWeight childId model.weight.value)
                 |> send HandleWeightSave
     in
-        ( model
+        ( { model | status = Loading }
         , command
         )

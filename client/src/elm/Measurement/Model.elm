@@ -5,10 +5,6 @@ import Http
 import RemoteData exposing (RemoteData(..), WebData)
 
 
-type ExaminationId
-    = ExaminationId Int
-
-
 type WeightId
     = WeightId Int
 

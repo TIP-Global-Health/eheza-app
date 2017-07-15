@@ -4,12 +4,13 @@ module Measurement.View
         )
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
+import Child.Model exposing (Child, ChildId)
 import Config.Model exposing (BackendUrl)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Measurement.Model exposing (Model, Msg(..), getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
-import Child.Model exposing (Child, ChildId)
+import RemoteData exposing (RemoteData(..))
 import Translate as Trans exposing (Language(..), translate)
 import User.Model exposing (..)
 import Utils.Html exposing (divider, emptyNode, showMaybe)
@@ -121,6 +122,9 @@ viewWeight backendUrl accessToken user language ( childId, child ) model =
     let
         constraints =
             getInputConstraintsWeight
+
+        isLoading =
+            model.status == Loading
     in
         div []
             [ divider
@@ -155,6 +159,14 @@ viewWeight backendUrl accessToken user language ( childId, child ) model =
                         []
                     , span [] [ text <| translate language Trans.KilogramShorthand ]
                     ]
-                , div [ class "ui button primary" ] [ text <| translate language Trans.Save ]
+                , div
+                    [ classList
+                        [ ( "ui button primary", True )
+                        , ( "disabled", isLoading )
+                        ]
+                    , onClick WeightSave
+                    ]
+                    [ text <| translate language Trans.Save
+                    ]
                 ]
             ]
