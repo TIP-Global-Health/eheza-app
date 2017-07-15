@@ -130,7 +130,7 @@ viewWeight backendUrl accessToken user language ( childId, child ) model =
         div []
             [ divider
             , div
-                [ class "ui segment"
+                [ class "ui segment weight"
                 ]
                 [ h1
                     []
@@ -213,7 +213,7 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
             [ class "ui divider" ]
             []
         , div
-            [ class "ui card"
+            [ class "ui card nutrition"
             , id "nutritionSignsEntryForm"
             ]
             [ h1
