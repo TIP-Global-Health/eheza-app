@@ -197,5 +197,5 @@ saveButon language msg model =
                 )
                 [ text <| translate language Trans.Save
                 ]
-            , showIf isFailure <| div [] [ text "Save error" ]
+            , showIf isFailure <| div [] [ text <| translate language Trans.SaveError ]
             ]

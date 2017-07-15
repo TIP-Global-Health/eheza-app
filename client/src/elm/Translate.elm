@@ -64,6 +64,7 @@ type TranslationId
     | ReloadPatient
     | Retry
     | Save
+    | SaveError
     | SearchByName
     | SignOut
     | Username
@@ -215,6 +216,9 @@ translate lang trans =
 
                 Save ->
                     { english = "Save" }
+
+                SaveError ->
+                    { english = "Save error" }
 
                 SearchByName ->
                     { english = "Search by Name" }
