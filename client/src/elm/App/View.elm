@@ -24,29 +24,21 @@ view model =
             Config.View.view model.language
 
         Success config ->
-            case model.user of
-                Success user ->
-                    div [ class "wrap" ]
-                        [ viewSidebar model.language model
-                        , viewHeader model.language model
-                        , div [ class "ui main container" ]
-                            [ viewMainContent config.backendUrl user model
-                            ]
-                        , div [ class "right item" ]
-                            [ a
-                                [ class "ui inverted button"
-                                , id "sign-out"
-                                , onClick Logout
-                                ]
-                                [ text <| translate model.language Trans.SignOut ]
-                            ]
+            div [ class "wrap" ]
+                [ viewSidebar model.language model
+                , viewHeader model.language model
+                , div [ class "ui main container" ]
+                    [ viewMainContent config.backendUrl model
+                    ]
+                , div [ class "right item" ]
+                    [ a
+                        [ class "ui inverted button"
+                        , id "sign-out"
+                        , onClick Logout
                         ]
-
-                Failure _ ->
-                    div [] [ text "Cannot show data without user" ]
-
-                _ ->
-                    div [] [ i [ class "icon spinner" ] [] ]
+                        [ text <| translate model.language Trans.SignOut ]
+                    ]
+                ]
 
         _ ->
             emptyNode
@@ -205,8 +197,8 @@ viewAvatar language user =
             div [] []
 
 
-viewMainContent : BackendUrl -> User -> Model -> Html Msg
-viewMainContent backendUrl user model =
+viewMainContent : BackendUrl -> Model -> Html Msg
+viewMainContent backendUrl model =
     let
         language =
             model.language
