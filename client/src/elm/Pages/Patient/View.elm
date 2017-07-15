@@ -65,10 +65,10 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                                 [ text <| translate language Trans.Baby ++ ": ", text child.name ]
                             , div [ class "meta" ]
                                 [ p []
-                                    [ text "Group Date"
+                                    [ text <| translate language Trans.PlaceholderTextGroupDate
                                     , br []
                                         []
-                                    , text "Joined in June 2017"
+                                    , text <| translate language Trans.PlaceholderTextJoined
                                     ]
                                 ]
                             ]
@@ -134,10 +134,10 @@ viewMother language currentDate currentUser motherId mother children =
                                 [ childrenList ]
                             , div [ class "meta" ]
                                 [ p []
-                                    [ text "Group Date"
+                                    [ text <| translate language Trans.PlaceholderTextGroupDate
                                     , br []
                                         []
-                                    , text "Joined in June 2017"
+                                    , text <| translate language Trans.PlaceholderTextJoined
                                     ]
                                 ]
                             ]
