@@ -22,7 +22,7 @@ viewHeader : Language -> Model -> Html Msg
 viewHeader language model =
     Html.header []
         [ a [ id "logo", href "/" ]
-            [ img [ src "logo.png", alt "Logo" ] []
+            [ img [ src "assets/images/logo.png", alt "Logo" ] []
             ]
         ]
 
