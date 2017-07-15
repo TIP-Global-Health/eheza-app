@@ -1,7 +1,7 @@
 var assert = require('assert');
 
-describe('assesment pages', function() {
-    it('should allow a user to switch between forms', function() {
+describe('assesment pages', () => {
+    it('should allow a user to switch between forms', () => {
         const firstUsedTab = 'Weight';
         const secondUsedTab = 'Height';
 
