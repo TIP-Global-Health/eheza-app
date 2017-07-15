@@ -5,6 +5,7 @@ module PatientManager.View
         , viewPatients
         )
 
+import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict
 import Html exposing (..)
@@ -38,8 +39,8 @@ viewPatients language currentDate user model =
 
 {-| Show the Patient page.
 -}
-viewPagePatient : Language -> Date -> PatientId -> User -> Model -> Html Msg
-viewPagePatient language currentDate id user model =
+viewPagePatient : BackendUrl -> String -> User -> Language -> Date -> PatientId -> Model -> Html Msg
+viewPagePatient backendUrl accessToken user language currentDate id model =
     case getPatient id model of
         NotAsked ->
             -- This shouldn't happen, but if it does, we provide
@@ -75,14 +76,6 @@ viewPagePatient language currentDate id user model =
                             motherWebData =
                                 getMother child.motherId model
 
-                            -- @todo: Wire
-                            backendUrl =
-                                "http://localhost:3000"
-
-                            accessToken =
-                                "dummy-access-token"
-
-                            -- @todo: Remove duplication
                             patientModel =
                                 Maybe.map identity (Dict.get id model.patientPage)
                                     |> Maybe.withDefault Pages.Patient.Model.emptyModel

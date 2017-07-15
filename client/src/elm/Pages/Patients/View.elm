@@ -131,7 +131,7 @@ viewActivityTypeFilterWrapper language patientTypeFilter activityTypeFilter =
 config : Table.Config ( PatientId, Patient ) Msg
 config =
     Table.customConfig
-        { toId = \( patientId, _ ) -> patientId
+        { toId = (\( patientId, _ ) -> toString patientId)
         , toMsg = SetTableState
         , columns =
             [ Table.veryCustomColumn

@@ -3,7 +3,6 @@ module PatientManager.Model exposing (..)
 import Activity.Model exposing (ActivityType)
 import Dict exposing (Dict)
 import Http
-import Measurement.Model
 import Pages.Activities.Model
 import Pages.Patient.Model
 import Pages.Patients.Model

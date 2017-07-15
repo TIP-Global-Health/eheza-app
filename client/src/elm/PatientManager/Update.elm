@@ -4,19 +4,22 @@ import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict exposing (Dict)
-import Patient.Model exposing (Patient, PatientId, PatientType(..))
-import PatientManager.Decoder exposing (decodePatientFromResponse, decodePatientsFromResponse)
-import PatientManager.Model exposing (..)
-import PatientManager.Utils exposing (..)
 import Json.Decode exposing (decodeValue)
 import Json.Encode exposing (Value)
-import HttpBuilder exposing (get, withQueryParams)
-import Measurement.Model
+import HttpBuilder exposing (get, withJsonBody, withQueryParams)
 import Pages.Activities.Update
 import Pages.Patient.Model
 import Pages.Patient.Update
 import Pages.Patients.Model
 import Pages.Patients.Update
+import Patient.Model exposing (Patient, PatientId, PatientType(..))
+import PatientManager.Decoder
+    exposing
+        ( decodePatientFromResponse
+        , decodePatientsFromResponse
+        )
+import PatientManager.Model exposing (..)
+import PatientManager.Utils exposing (..)
 import Pusher.Decoder exposing (decodePusherEvent)
 import Pusher.Model exposing (PusherEventData(..))
 import RemoteData exposing (RemoteData(..))
@@ -89,34 +92,38 @@ update currentDate backendUrl accessToken user msg model =
                 )
 
         MsgPagesPatient id subMsg ->
-            case getPatient id model of
-                Success patient ->
-                    let
-                        patientModel =
-                            Maybe.map identity (Dict.get id model.patientPage)
-                                |> Maybe.withDefault Pages.Patient.Model.emptyModel
+            let
+                patientEntry =
+                    getPatient id model
+            in
+                case patientEntry of
+                    Success patient ->
+                        let
+                            patientModel =
+                                Maybe.map identity (Dict.get id model.patientPage)
+                                    |> Maybe.withDefault Pages.Patient.Model.emptyModel
 
-                        ( patientUpdated, subModel, subCmd, redirectPage ) =
-                            Pages.Patient.Update.update backendUrl accessToken user subMsg ( id, patient ) patientModel
-                    in
-                        ( { model
-                            | patients = Dict.insert id (Success patientUpdated) model.patients
-                            , patientPage = Dict.insert id subModel model.patientPage
-                          }
-                        , Cmd.map (MsgPagesPatient id) subCmd
-                        , redirectPage
-                        )
+                            ( patientUpdated, subModel, subCmd, redirectPage ) =
+                                Pages.Patient.Update.update backendUrl accessToken user subMsg ( id, patient ) patientModel
+                        in
+                            ( { model
+                                | patients = Dict.insert id (Success patientUpdated) model.patients
+                                , patientPage = Dict.insert id subModel model.patientPage
+                              }
+                            , Cmd.map (MsgPagesPatient id) subCmd
+                            , redirectPage
+                            )
 
-                _ ->
-                    -- We've received a message for a Patient which we either
-                    -- aren't subscribed to, or dont' have initial data for yet.
-                    -- This normally wouldn't happen, though we may needd to think
-                    -- about synchronization between obtaining our initial data and
-                    -- possible "pusher" messages. (Could pusher messages sometimes
-                    -- arrive before the initial data, and if so, should we ignore
-                    -- them or queue them up? We may need server timestamps on the initial
-                    -- data and the pusher messages to know.)
-                    ( model, Cmd.none, Nothing )
+                    _ ->
+                        -- We've received a message for a Patient which we either
+                        -- aren't subscribed to, or dont' have initial data for yet.
+                        -- This normally wouldn't happen, though we may needd to think
+                        -- about synchronization between obtaining our initial data and
+                        -- possible "pusher" messages. (Could pusher messages sometimes
+                        -- arrive before the initial data, and if so, should we ignore
+                        -- them or queue them up? We may need server timestamps on the initial
+                        -- data and the pusher messages to know.)
+                        ( model, Cmd.none, Nothing )
 
         MsgPagesPatients subMsg ->
             let
@@ -229,7 +236,7 @@ fetchPatientFromBackend backendUrl accessToken patientId model =
         command =
             -- @todo: We need to know which activity type it is, in order to
             -- call to correct RESTful resource.
-            HttpBuilder.get (backendUrl ++ "/api/patients/" ++ patientId)
+            HttpBuilder.get (backendUrl ++ "/api/patients/" ++ (toString patientId))
                 |> withQueryParams [ ( "access_token", accessToken ) ]
                 |> sendWithHandler decodePatientFromResponse (HandleFetchedPatient patientId)
     in

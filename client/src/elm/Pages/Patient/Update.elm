@@ -3,7 +3,6 @@ module Pages.Patient.Update exposing (update)
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import User.Model exposing (..)
-import Measurement.Model
 import Measurement.Update
 import Pages.Patient.Model exposing (Model, Msg(..))
 import Pusher.Model exposing (PusherEventData(..))

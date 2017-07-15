@@ -27,7 +27,7 @@ delta2url previous current =
             Just <| UrlChange NewEntry "#404"
 
         Patient id ->
-            Just <| UrlChange NewEntry ("#patient/" ++ id)
+            Just <| UrlChange NewEntry ("#patient/" ++ (toString id))
 
         Dashboard _ ->
             let
@@ -59,7 +59,7 @@ parseUrl =
     oneOf
         [ map (SetActivePage <| Dashboard []) (s "")
         , map (SetActivePage Activities) (s "activities")
-        , map (\id -> SetActivePage <| Patient (toString id)) (s "patient" </> int)
+        , map (\id -> SetActivePage <| Patient id) (s "patient" </> int)
         , map (SetActivePage Login) (s "login")
         , map (SetActivePage MyAccount) (s "my-account")
         ]

@@ -15,5 +15,5 @@ decodeMother =
     decode Mother
         |> required "label" string
         |> optionalAt [ "avatar", "styles", "large" ] string "http://placehold.it/350x150"
-        |> required "children" (oneOf [ list decodeIntAsString, decodeNullAsEmptyArray ])
+        |> required "children" (oneOf [ list int, decodeNullAsEmptyArray ])
         |> custom decodeMotherActivityDates
