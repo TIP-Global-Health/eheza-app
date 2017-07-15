@@ -1,12 +1,7 @@
 module Measurement.Model exposing (..)
 
-import Child.Model exposing (ChildId, ExaminationId)
 import Http
 import RemoteData exposing (RemoteData(..), WebData)
-
-
-type WeightId
-    = WeightId Int
 
 
 type alias FloatInputConstraints =
@@ -42,18 +37,6 @@ type alias Model =
     , height : FloatInput
     , muac : FloatInput
     , weight : FloatInput
-    }
-
-
-type alias Measurements =
-    { height : Float
-    , muac : Float
-    , weight : Float
-    }
-
-
-type alias PostWeightResponse =
-    { weight : Float
     }
 
 
