@@ -9,14 +9,14 @@ import User.Model exposing (User)
 -}
 exampleAccessToken : String
 exampleAccessToken =
-    "pR3ZFF_NmC$ji5NF8TP32dASM*m0TVGEOL2bLfU_"
+    "some-access-token"
 
 
 {-| } An example backend URL.
 -}
 exampleBackendUrl : String
 exampleBackendUrl =
-    "https://example.com/api"
+    "https://example.com"
 
 
 {-| } An example user.
@@ -24,8 +24,8 @@ exampleBackendUrl =
 exampleUser : User
 exampleUser =
     { id = 35
-    , name = "moo"
-    , avatarUrl = "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
+    , name = "aya"
+    , avatarUrl = "http://example.com/avatar.jpg"
     }
 
 

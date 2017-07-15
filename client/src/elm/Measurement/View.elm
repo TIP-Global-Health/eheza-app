@@ -9,7 +9,6 @@ import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Measurement.Model exposing (Model, Msg(..), getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
-import Measurement.Utils exposing (isDirty)
 import Child.Model exposing (Child, ChildId)
 import Translate as Trans exposing (Language(..), translate)
 import User.Model exposing (..)
@@ -156,9 +155,6 @@ viewWeight backendUrl accessToken user language ( childId, child ) model =
                         []
                     , span [] [ text <| translate language Trans.KilogramShorthand ]
                     ]
-                , if isDirty constraints model.weight then
-                    div [] [ text <| "*" ++ (translate language Trans.Save) ]
-                  else
-                    div [] [ text <| translate language Trans.Save ]
+                , div [] [ text <| translate language Trans.Save ]
                 ]
             ]

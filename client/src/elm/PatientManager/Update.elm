@@ -7,12 +7,6 @@ import Dict exposing (Dict)
 import Json.Decode exposing (decodeValue)
 import Json.Encode exposing (Value)
 import HttpBuilder exposing (get, withJsonBody, withQueryParams)
-import Measurement.Decoder
-    exposing
-        ( decodeWeightFromResponse
-        )
-import Measurement.Encoder exposing (encodeWeight)
-import Measurement.Model exposing (PostWeightData)
 import Pages.Activities.Update
 import Pages.Patient.Model
 import Pages.Patient.Update
@@ -86,30 +80,6 @@ update currentDate backendUrl accessToken user msg model =
                     fetchAllPatientsFromBackend backendUrl accessToken model
             in
                 ( val, cmds, Nothing )
-
-        MsgMeasurement subMsg ->
-            case subMsg of
-                Measurement.Model.WeightSave childId weight ->
-                    let
-                        _ =
-                            Debug.log "Save Weight Intercepted" subMsg
-
-                        ( val, cmds ) =
-                            postWeight
-                                backendUrl
-                                accessToken
-                                { child = childId
-                                , weight = weight
-                                }
-                                model
-                    in
-                        ( val
-                        , cmds
-                        , Nothing
-                        )
-
-                _ ->
-                    ( model, Cmd.none, Nothing )
 
         MsgPagesActivities subMsg ->
             let
@@ -282,20 +252,6 @@ fetchAllPatientsFromBackend backendUrl accessToken model =
             HttpBuilder.get (backendUrl ++ "/api/patients")
                 |> withQueryParams [ ( "access_token", accessToken ) ]
                 |> sendWithHandler decodePatientsFromResponse HandleFetchedPatients
-    in
-        ( model
-        , command
-        )
-
-
-postWeight : BackendUrl -> String -> PostWeightData -> Model -> ( Model, Cmd Msg )
-postWeight backendUrl accessToken data model =
-    let
-        command =
-            HttpBuilder.post (backendUrl ++ "/api/weights")
-                |> withQueryParams [ ( "access_token", accessToken ) ]
-                |> withJsonBody (encodeWeight data)
-                |> sendWithHandler decodeWeightFromResponse (\response -> MsgMeasurement <| (Measurement.Model.HandlePostWeight data.child response))
     in
         ( model
         , command

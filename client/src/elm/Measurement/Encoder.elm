@@ -1,12 +1,12 @@
 module Measurement.Encoder exposing (..)
 
+import Child.Model exposing (ChildId)
 import Json.Encode as Encoder exposing (Value, float, int)
-import Measurement.Model exposing (PostWeightData)
 
 
-encodeWeight : PostWeightData -> Value
-encodeWeight weightData =
+encodeWeight : ChildId -> Float -> Value
+encodeWeight childId weight =
     Encoder.object <|
-        [ ( "child", Encoder.int weightData.child )
-        , ( "weight", Encoder.float weightData.weight )
+        [ ( "child", Encoder.int childId )
+        , ( "weight", Encoder.float weight )
         ]

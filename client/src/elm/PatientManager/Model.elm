@@ -47,7 +47,6 @@ type Msg
     = Subscribe PatientId
     | Unsubscribe PatientId
     | FetchAll
-    | MsgMeasurement Measurement.Model.Msg
     | MsgPagesActivities Pages.Activities.Model.Msg
     | MsgPagesPatient PatientId Pages.Patient.Model.Msg
     | MsgPagesPatients Pages.Patients.Model.Msg

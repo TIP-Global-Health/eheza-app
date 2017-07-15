@@ -1,7 +1,6 @@
 module Measurement.Model exposing (..)
 
 import Child.Model exposing (ChildId, ExaminationId)
-import EveryDictList exposing (EveryDictList)
 import Http
 import RemoteData exposing (RemoteData(..), WebData)
 
@@ -35,12 +34,10 @@ emptyFloatInput constraints =
 
 
 type Msg
-    = HandlePostWeight ChildId (Result Http.Error PostWeightResponse)
-      -- @todo: Change () to WeightId ?
-    | HandleWeightSave (Result Http.Error ())
+    = HandleWeightSave (Result Http.Error ())
     | HeightUpdate Float
     | MuacUpdate Float
-    | WeightSave ChildId Float
+    | WeightSave
     | WeightUpdate Float
 
 
@@ -59,19 +56,9 @@ type alias Measurements =
     }
 
 
-type alias PostWeightData =
-    { child : ChildId
-    , weight : Float
-    }
-
-
 type alias PostWeightResponse =
     { weight : Float
     }
-
-
-type alias MeasurementsDict =
-    EveryDictList ExaminationId Measurements
 
 
 getInputConstraintsHeight : FloatInputConstraints
