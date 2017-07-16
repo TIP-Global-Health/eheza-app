@@ -10,3 +10,11 @@ encodeWeight childId weight =
         [ ( "child", Encoder.int childId )
         , ( "weight", Encoder.float weight )
         ]
+
+
+encodePhoto : ChildId -> Float -> Value
+encodePhoto childId weight =
+    Encoder.object <|
+        [ ( "child", Encoder.int childId )
+        , ( "photo", Encoder.float weight )
+        ]

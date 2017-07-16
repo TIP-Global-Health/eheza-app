@@ -25,9 +25,11 @@ emptyFloatInput constraints =
 
 
 type Msg
-    = HandleWeightSave (Result Http.Error ())
+    = HandlePhotoSave (Result Http.Error ())
+    | HandleWeightSave (Result Http.Error ())
     | HeightUpdate Float
     | MuacUpdate Float
+    | PhotoSave
     | WeightSave
     | WeightUpdate Float
 
@@ -36,6 +38,7 @@ type alias Model =
     { status : WebData ()
     , height : FloatInput
     , muac : FloatInput
+    , photo : FloatInput
     , weight : FloatInput
     }
 
@@ -69,5 +72,6 @@ emptyModel =
     { status = NotAsked
     , height = emptyFloatInput getInputConstraintsHeight
     , muac = emptyFloatInput getInputConstraintsHeight
+    , photo = emptyFloatInput getInputConstraintsWeight
     , weight = emptyFloatInput getInputConstraintsWeight
     }

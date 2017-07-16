@@ -30,6 +30,9 @@ viewChild backendUrl accessToken user language ( childId, child ) selectedActivi
                             Muac ->
                                 viewMuac backendUrl accessToken user language ( childId, child ) model
 
+                            ChildPicture ->
+                                viewPhoto backendUrl accessToken user language ( childId, child ) model
+
                             Weight ->
                                 viewWeight backendUrl accessToken user language ( childId, child ) model
 
@@ -159,6 +162,31 @@ viewWeight backendUrl accessToken user language ( childId, child ) model =
                 , saveButton language WeightSave model
                 ]
             ]
+
+
+viewPhoto : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
+viewPhoto backendUrl accessToken user language ( childId, child ) model =
+    div []
+        [ divider
+        , div
+            [ class "ui segment"
+            ]
+            [ h1
+                []
+                [ text <| translate language Trans.ActivitiesPhotoTitle
+                ]
+            , span
+                []
+                [ text <| translate language Trans.ActivitiesPhotoHelp ]
+            , div
+                [ class "dropzone" ]
+                []
+            , saveButton language PhotoSave model
+            , div
+                [ class "ui button" ]
+                [ text <| translate language Trans.Retake ]
+            ]
+        ]
 
 
 {-| Helper function to create a Save button.
