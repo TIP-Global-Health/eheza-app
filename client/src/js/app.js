@@ -67,15 +67,18 @@ Offline.on('up', function() {
     elmApp.ports.offline.send (false);
 });
 
-// Dropzone
-
+// Dropzone.
 var dropZone = undefined;
 
 elmApp.ports.dropzoneConfig.subscribe(function(config) {
-  console.log('dropzone IN', config);
   // Validate the dropzone should be active.
   if (!config.active) {
+
     // Reset dropzone variable, in case we switch between pages.
+    if (dropZone) {
+      dropZone.destroy();
+    }
+
     dropZone = undefined;
     return;
   }
@@ -86,6 +89,10 @@ elmApp.ports.dropzoneConfig.subscribe(function(config) {
 function attachDropzone(selector, config) {
   // Validate the dropzone should be active.
   if (!config.active) {
+    if (dropZone) {
+      dropZone.destroy();
+    }
+
     return false;
   }
 
