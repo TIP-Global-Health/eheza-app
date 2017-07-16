@@ -123,41 +123,57 @@ viewWeight backendUrl accessToken user language ( childId, child ) model =
         constraints =
             getInputConstraintsWeight
     in
-        div []
-            [ divider
-            , div
-                [ class "ui segment"
+        div [ class "ui full segment" ]
+            [ div
+                [ class "content"
                 ]
-                [ h1
-                    []
+                [ h3
+                    [ class "ui header" ]
                     [ text <| translate language Trans.ActivitiesWeightTitle
                     ]
-                , span
+                , p
                     []
                     [ text <| translate language Trans.ActivitiesWeightHelp ]
                 , div
-                    []
-                    [ span [] [ text <| translate language Trans.ActivitiesWeightLabel ]
-                    , input
-                        [ type_ "number"
-                        , name "weight"
-                        , step "0.5"
-                        , Attr.min <| toString constraints.minVal
-                        , Attr.max <| toString constraints.maxVal
-                        , value <| toString model.weight.value
-                        , onInput
-                            (\v ->
-                                String.toFloat v
-                                    |> Result.withDefault constraints.defaultValue
-                                    |> clamp constraints.minVal constraints.maxVal
-                                    |> WeightUpdate
-                            )
+                    [ class "ui form" ]
+                    [ div
+                      [ class "ui grid" ]
+                      [ div
+                        [ class "ten wide column" ]
+                        [ div
+                          [ class "ui right labeled input" ]
+                          [ div
+                            [ class "ui basic label" ]
+                            [ text <| translate language Trans.ActivitiesWeightLabel ]
+                          , input
+                              [ type_ "number"
+                              , name "weight"
+                              , step "0.5"
+                              , Attr.min <| toString constraints.minVal
+                              , Attr.max <| toString constraints.maxVal
+                              , value <| toString model.weight.value
+                              , onInput
+                                  (\v ->
+                                      String.toFloat v
+                                          |> Result.withDefault constraints.defaultValue
+                                          |> clamp constraints.minVal constraints.maxVal
+                                          |> WeightUpdate
+                                  )
+                              ]
+                              []
+                          , div
+                            [ class"ui basic label" ]
+                            [ text <| translate language Trans.KilogramShorthand ]
+                          ]
                         ]
-                        []
-                    , span [] [ text <| translate language Trans.KilogramShorthand ]
+                      ]
+                    , p [] [ text "Previous weight: <kg> KG" ]
                     ]
-                , saveButon language WeightSave model
                 ]
+              , div
+                  [ class "actions" ]
+                  [ saveButon language WeightSave model
+                  ]
             ]
 
 
