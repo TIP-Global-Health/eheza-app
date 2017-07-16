@@ -167,7 +167,7 @@ viewWeight backendUrl accessToken user language ( childId, child ) model =
                           ]
                         ]
                       ]
-                    , p [] [ text "Previous weight: <kg> KG" ]
+                    , p [] [ text <| translate language (Trans.PriorWeight 0.0) ]
                     ]
                 ]
               , div
