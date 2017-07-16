@@ -2,7 +2,7 @@ module Measurement.Update exposing (update)
 
 import Config.Model exposing (BackendUrl)
 import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
-import Measurement.Encoder exposing (encodeWeight)
+import Measurement.Encoder exposing (encodeHeight, encodeWeight)
 import Measurement.Model exposing (Model, Msg(..))
 import Patient.Model exposing (Patient, PatientId)
 import RemoteData exposing (RemoteData(..))
@@ -12,6 +12,16 @@ import User.Model exposing (..)
 update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model -> ( Model, Cmd Msg )
 update backendUrl accessToken user ( patientId, patient ) msg model =
     case msg of
+        HandleHeightSave (Ok ()) ->
+            { model | status = Success () } ! []
+
+        HandleHeightSave (Err err) ->
+            let
+                _ =
+                    Debug.log "HandleHeightSave (Err)" False
+            in
+                { model | status = Failure err } ! []
+
         HandleWeightSave (Ok ()) ->
             { model | status = Success () } ! []
 
@@ -21,6 +31,9 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
                     Debug.log "HandleWeightSave (Err)" False
             in
                 { model | status = Failure err } ! []
+
+        HeightSave ->
+            postHeight backendUrl accessToken patientId model
 
         HeightUpdate val ->
             let
@@ -54,6 +67,22 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
                     { weight | value = val }
             in
                 { model | weight = updatedWeight } ! []
+
+
+{-| Send new height of a child to the backend.
+-}
+postHeight : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg )
+postHeight backendUrl accessToken childId model =
+    let
+        command =
+            HttpBuilder.post (backendUrl ++ "/api/heights")
+                |> withQueryParams [ ( "access_token", accessToken ) ]
+                |> withJsonBody (encodeHeight childId model.height.value)
+                |> send HandleHeightSave
+    in
+        ( { model | status = Loading }
+        , command
+        )
 
 
 {-| Send new weight of a child to the backend.

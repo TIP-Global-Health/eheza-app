@@ -25,7 +25,9 @@ emptyFloatInput constraints =
 
 
 type Msg
-    = HandleWeightSave (Result Http.Error ())
+    = HandleHeightSave (Result Http.Error ())
+    | HandleWeightSave (Result Http.Error ())
+    | HeightSave
     | HeightUpdate Float
     | MuacUpdate Float
     | WeightSave
