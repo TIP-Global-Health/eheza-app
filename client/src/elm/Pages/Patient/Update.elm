@@ -49,6 +49,8 @@ update backendUrl accessToken user msg ( patientId, patient ) model =
             )
 
 
+{-| Activate the dropzone on a specific activity type.
+-}
 setDropzone : String -> Maybe ActivityType -> Cmd Msg
 setDropzone backendUrl activity =
     let
