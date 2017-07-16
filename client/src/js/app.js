@@ -71,25 +71,21 @@ Offline.on('up', function() {
 
 var dropZone = undefined;
 
-elmApp.ports.activePage.subscribe(function(data) {
-  // Validate the active page.
-  // We send the active page as the first element, and because it's being sent
-  // with the ID of the patient we only check the beginning of the string.
-  if (data[0].indexOf('Patient') !== 0) {
+elmApp.ports.dropzoneConfig.subscribe(function(config) {
+  console.log('dropzone IN', config);
+  // Validate the dropzone should be active.
+  if (!config.active) {
     // Reset dropzone variable, in case we switch between pages.
-    ck = undefined;
     dropZone = undefined;
     return;
   }
 
-  waitForElement('.dropzone', attachDropzone, data);
+  waitForElement('.dropzone', attachDropzone, config);
 });
 
-function attachDropzone(selector, data) {
-  // Validate the active page.
-  // We send the active page as the first element, and because it's being sent
-  // with the ID of the patient we only check the beginning of the string.
-  if (data[0].indexOf('Patient') !== 0) {
+function attachDropzone(selector, config) {
+  // Validate the dropzone should be active.
+  if (!config.active) {
     return false;
   }
 
@@ -102,7 +98,7 @@ function attachDropzone(selector, data) {
   if (!!dropZone) {
 
     // Check if we need to remove files.
-    if (data[2] == "Done") {
+    if (config.status == "Done") {
       // Remove all files, even the ones being currently uploaded.
       dropZone.removeAllFiles(true);
     }
@@ -118,8 +114,7 @@ function attachDropzone(selector, data) {
   }
 
   // Set the backend url with the access token.
-  // We send the backend url as the second element.
-  var url = data[1] + '/api/file-upload?access_token=' + accessToken;
+  var url = config.backendUrl + '/api/file-upload?access_token=' + accessToken;
 
   dropZone = new Dropzone(selector, { url: url});
 

@@ -1,4 +1,4 @@
-module App.Model exposing (emptyModel, FileId(..), Flags, Msg(..), Model)
+module App.Model exposing (DropzoneConfig, emptyModel, FileId(..), Flags, Msg(..), Model)
 
 import App.PageType exposing (Page(..))
 import Config.Model
@@ -58,4 +58,10 @@ emptyModel =
     , pageLogin = Pages.Login.Model.emptyModel
     , pagePatient = PatientManager.Model.emptyModel
     , user = NotAsked
+    }
+
+
+type alias DropzoneConfig =
+    { active : Bool
+    , backendUrl : String
     }

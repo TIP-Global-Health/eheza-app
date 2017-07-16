@@ -1,5 +1,7 @@
-module Pages.Patient.Update exposing (update)
+port module Pages.Patient.Update exposing (update)
 
+import Activity.Model exposing (ActivityType(Child), ChildActivityType(ChildPicture))
+import App.Model exposing (DropzoneConfig)
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import User.Model exposing (..)
@@ -40,4 +42,32 @@ update backendUrl accessToken user msg ( patientId, patient ) model =
             ( patient, model, Cmd.none, Just page )
 
         SetSelectedActivity maybectivityType ->
-            ( patient, { model | selectedActivity = maybectivityType }, Cmd.none, Nothing )
+            ( patient
+            , { model | selectedActivity = maybectivityType }
+            , setDropzone backendUrl maybectivityType
+            , Nothing
+            )
+
+
+setDropzone : String -> Maybe ActivityType -> Cmd Msg
+setDropzone backendUrl activity =
+    let
+        dropzone =
+            case activity of
+                Just (Child ChildPicture) ->
+                    True
+
+                _ ->
+                    False
+
+        config =
+            { backendUrl = backendUrl
+            , active = dropzone
+            }
+    in
+        dropzoneConfig config
+
+
+{-| Send dropzone config to JS.
+-}
+port dropzoneConfig : DropzoneConfig -> Cmd msg
