@@ -54,7 +54,7 @@ update backendUrl accessToken user msg ( patientId, patient ) model =
 setDropzone : String -> Maybe ActivityType -> Cmd Msg
 setDropzone backendUrl activity =
     let
-        dropzone =
+        isActive =
             case activity of
                 Just (Child ChildPicture) ->
                     True
@@ -64,7 +64,7 @@ setDropzone backendUrl activity =
 
         config =
             { backendUrl = backendUrl
-            , active = dropzone
+            , active = isActive
             }
     in
         dropzoneConfig config
