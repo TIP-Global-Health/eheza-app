@@ -2,7 +2,7 @@ module Measurement.Update exposing (update)
 
 import Config.Model exposing (BackendUrl)
 import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
-import Measurement.Encoder exposing (encodeHeight, encodeWeight)
+import Measurement.Encoder exposing (encodeHeight, encodeMuac, encodeWeight)
 import Measurement.Model exposing (Model, Msg(..))
 import Patient.Model exposing (Patient, PatientId)
 import RemoteData exposing (RemoteData(..))
@@ -19,6 +19,16 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
             let
                 _ =
                     Debug.log "HandleHeightSave (Err)" False
+            in
+                { model | status = Failure err } ! []
+
+        HandleMuacSave (Ok ()) ->
+            { model | status = Success () } ! []
+
+        HandleMuacSave (Err err) ->
+            let
+                _ =
+                    Debug.log "HandleMuacSave (Err)" False
             in
                 { model | status = Failure err } ! []
 
@@ -44,6 +54,9 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
                     { height | value = val }
             in
                 { model | height = updatedHeight } ! []
+
+        MuacSave ->
+            postMuac backendUrl accessToken patientId model
 
         MuacUpdate val ->
             let
@@ -79,6 +92,22 @@ postHeight backendUrl accessToken childId model =
                 |> withQueryParams [ ( "access_token", accessToken ) ]
                 |> withJsonBody (encodeHeight childId model.height.value)
                 |> send HandleHeightSave
+    in
+        ( { model | status = Loading }
+        , command
+        )
+
+
+{-| Send new muac of a child to the backend.
+-}
+postMuac : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg )
+postMuac backendUrl accessToken childId model =
+    let
+        command =
+            HttpBuilder.post (backendUrl ++ "/api/muacs")
+                |> withQueryParams [ ( "access_token", accessToken ) ]
+                |> withJsonBody (encodeMuac childId model.muac.value)
+                |> send HandleMuacSave
     in
         ( { model | status = Loading }
         , command
