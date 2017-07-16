@@ -119,8 +119,8 @@ gulp.task("fonts", function () {
 });
 
 // Copy index.html and CNAME files to the "serve" directory
-gulp.task("copy:dev", ["copy:bower"], function () {
-  return gulp.src(["src/index.html", "src/CNAME", "src/js/**/*", "src/assets/images/**/*"])
+gulp.task("copy:dev", ["copy:bower", "copy:images"], function () {
+  return gulp.src(["src/index.html", "src/CNAME", "src/js/**/*"])
     .pipe(gulp.dest("serve"))
     .pipe($.size({ title: "index.html & CNAME" }))
 });
@@ -134,7 +134,7 @@ gulp.task("copy:bower", function () {
 
 // Copy images.
 gulp.task("copy:images", function () {
-  return gulp.src([])
+  return gulp.src(["src/assets/images/**/*"])
     .pipe(gulp.dest("serve/assets/images"))
     .pipe($.size({ title: "Assets images" }))
 });
@@ -154,7 +154,7 @@ gulp.task('bower', function () {
 
 
 // Optimizes all the CSS, HTML and concats the JS etc
-gulp.task("minify", ["styles"], function () {
+gulp.task("minify", ["styles", "copy:images"], function () {
   var assets = $.useref.assets({searchPath: "serve"});
 
   return gulp.src("serve/**/*.*")

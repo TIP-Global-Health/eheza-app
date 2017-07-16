@@ -22,7 +22,7 @@ viewHeader : Language -> Model -> Html Msg
 viewHeader language model =
     Html.header []
         [ a [ id "logo", href "/" ]
-            [ img [ src "logo.png", alt "Logo" ] []
+            [ img [ src "assets/images/logo.png", alt "Logo" ] []
             ]
         ]
 
@@ -56,7 +56,7 @@ viewMain language user model =
             [ Html.form
                 [ onSubmit TryLogin
                 , action "javascript:void(0);"
-                , class "ui large form narrow-form"
+                , class "ui large form narrow-form login-form"
                 ]
                 [ div [ class "field" ]
                     [ input

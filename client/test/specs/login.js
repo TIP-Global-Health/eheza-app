@@ -12,7 +12,7 @@ describe('login page', function() {
         browser.waitForVisible('h1=Patients');
 
         // Logout session.
-        browser.click('.masthead .right .ui.button');
+        browser.click('#sign-out');
         browser.waitForVisible('[name="username"]');
     });
 
