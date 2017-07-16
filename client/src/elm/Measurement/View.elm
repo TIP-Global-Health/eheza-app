@@ -137,43 +137,43 @@ viewWeight backendUrl accessToken user language ( childId, child ) model =
                 , div
                     [ class "ui form" ]
                     [ div
-                      [ class "ui grid" ]
-                      [ div
-                        [ class "ten wide column" ]
+                        [ class "ui grid" ]
                         [ div
-                          [ class "ui right labeled input" ]
-                          [ div
-                            [ class "ui basic label" ]
-                            [ text <| translate language Trans.ActivitiesWeightLabel ]
-                          , input
-                              [ type_ "number"
-                              , name "weight"
-                              , step "0.5"
-                              , Attr.min <| toString constraints.minVal
-                              , Attr.max <| toString constraints.maxVal
-                              , value <| toString model.weight.value
-                              , onInput
-                                  (\v ->
-                                      String.toFloat v
-                                          |> Result.withDefault constraints.defaultValue
-                                          |> clamp constraints.minVal constraints.maxVal
-                                          |> WeightUpdate
-                                  )
-                              ]
-                              []
-                          , div
-                            [ class"ui basic label" ]
-                            [ text <| translate language Trans.KilogramShorthand ]
-                          ]
+                            [ class "ten wide column" ]
+                            [ div
+                                [ class "ui right labeled input" ]
+                                [ div
+                                    [ class "ui basic label" ]
+                                    [ text <| translate language Trans.ActivitiesWeightLabel ]
+                                , input
+                                    [ type_ "number"
+                                    , name "weight"
+                                    , step "0.5"
+                                    , Attr.min <| toString constraints.minVal
+                                    , Attr.max <| toString constraints.maxVal
+                                    , value <| toString model.weight.value
+                                    , onInput
+                                        (\v ->
+                                            String.toFloat v
+                                                |> Result.withDefault constraints.defaultValue
+                                                |> clamp constraints.minVal constraints.maxVal
+                                                |> WeightUpdate
+                                        )
+                                    ]
+                                    []
+                                , div
+                                    [ class "ui basic label" ]
+                                    [ text <| translate language Trans.KilogramShorthand ]
+                                ]
+                            ]
                         ]
-                      ]
                     , p [] [ text <| translate language (Trans.PriorWeight 0.0) ]
                     ]
                 ]
-              , div
-                  [ class "actions" ]
-                  [ saveButon language WeightSave model
-                  ]
+            , div
+                [ class "actions" ]
+                [ saveButon language WeightSave model
+                ]
             ]
 
 
@@ -204,9 +204,9 @@ saveButon language msg model =
         div []
             [ div
                 ([ classList
-                    [ ( "ui button primary", True )
+                    [ ( "ui fluid button", True )
                     , ( "loading", isLoading )
-                    , ( "positive", isSuccess )
+                    , ( "basic", not isSuccess )
                     , ( "negative", isFailure )
                     ]
                  ]
