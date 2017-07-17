@@ -180,12 +180,12 @@ viewActivityCards language currentDate user patients patientTypeFilter =
             else
                 div []
                     [ h2 [ class "ui header activities" ] [ text <| translate language Trans.ActivitiesCompleted ]
-                    , div [ class "ui cards activities completed" ] (List.map (viewActivityListItem language) noPendingActivities)
+                    , div [ class "ui five column grid completed" ] (List.map (viewActivityListItem language) noPendingActivities)
                     ]
     in
         div []
             [ h2 [ class "ui header activities" ] [ text <| translate language Trans.ActivitiesToComplete ]
-            , div [ class "ui cards activities pending" ] pendingActivitiesView
+            , div [ class "ui five column grid pending" ] pendingActivitiesView
             , noPendingActivitiesView
             ]
 
@@ -196,17 +196,12 @@ viewActivityListItem language report =
         clickHandler =
             onClick <| SetSelectedActivity (Just <| report.activity.activityType)
     in
-        div [ class "ui card activities__item" ]
+        div [ class "column" ]
             [ a
                 [ clickHandler
                 , class "link-section"
                 ]
-                [ span [ class ("icon-section icon" ++ report.activity.icon) ] [] ]
-            , div [ class "content" ]
-                [ a
-                    [ class "header activities__item__title"
-                    , clickHandler
-                    ]
-                    [ text report.activity.name ]
+                [ span [ class ("icon-section icon-" ++ report.activity.icon) ] []
+                , text report.activity.name
                 ]
             ]
