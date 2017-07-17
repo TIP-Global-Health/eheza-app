@@ -75,6 +75,13 @@ viewHeader language model =
             div [] []
 
 
+{-| Provides context-sensitive top navigation tabs.
+There are two distinct contexts:
+
+  - on the patient page
+  - everywhere else
+
+-}
 viewTabSwitcher : Language -> Model -> Html Msg
 viewTabSwitcher language model =
     let
