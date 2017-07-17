@@ -27,6 +27,20 @@ viewChildFormsTest =
                     |> Query.find [ Selector.class "muac" ]
                     |> Query.find [ tag "h1" ]
                     |> Query.has [ text "Mid Upper Arm Circumference (MUAC):" ]
+        , test "Then a Nutrition form should be displayed when selected" <|
+            \() ->
+                viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) (Just <| Child NutritionSigns) emptyModel
+                    |> Query.fromHtml
+                    |> Query.find [ Selector.class "nutrition" ]
+                    |> Query.find [ tag "h1" ]
+                    |> Query.has [ text "Nutrition:" ]
+        , test "Then a Weight form should be displayed when selected" <|
+            \() ->
+                viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) (Just <| Child Weight) emptyModel
+                    |> Query.fromHtml
+                    |> Query.find [ Selector.class "weight" ]
+                    |> Query.find [ tag "h1" ]
+                    |> Query.has [ text "Weight:" ]
         ]
 
 

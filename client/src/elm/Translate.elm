@@ -27,6 +27,16 @@ type TranslationId
     | ActivitiesMuacLabel
     | ActivitiesMuacTitle
     | ActivitiesToComplete
+    | ActivitiesNutritionSignsAbdominalDisortionLabel
+    | ActivitiesNutritionSignsApathyLabel
+    | ActivitiesNutritionSignsBrittleHairLabel
+    | ActivitiesNutritionSignsDrySkinLabel
+    | ActivitiesNutritionSignsEdemaLabel
+    | ActivitiesNutritionSignsHelp
+    | ActivitiesNutritionSignsLabel
+    | ActivitiesNutritionSignsNoneLabel
+    | ActivitiesNutritionSignsPoorAppetiteLabel
+    | ActivitiesNutritionSignsTitle
     | ActivitiesWeightHelp
     | ActivitiesWeightLabel
     | ActivitiesWeightTitle
@@ -106,6 +116,36 @@ translate lang trans =
 
                 ActivitiesMuacTitle ->
                     { english = "Mid Upper Arm Circumference (MUAC):" }
+
+                ActivitiesNutritionSignsAbdominalDisortionLabel ->
+                    { english = "Abdominal Disortion" }
+
+                ActivitiesNutritionSignsApathyLabel ->
+                    { english = "Apathy" }
+
+                ActivitiesNutritionSignsBrittleHairLabel ->
+                    { english = "Brittle Hair" }
+
+                ActivitiesNutritionSignsDrySkinLabel ->
+                    { english = "Dry Skin" }
+
+                ActivitiesNutritionSignsEdemaLabel ->
+                    { english = "Edema" }
+
+                ActivitiesNutritionSignsHelp ->
+                    { english = "Explain to the mother how to check the malnutrition signs for their own child." }
+
+                ActivitiesNutritionSignsLabel ->
+                    { english = "Select all signs that are present:" }
+
+                ActivitiesNutritionSignsNoneLabel ->
+                    { english = "None of these" }
+
+                ActivitiesNutritionSignsPoorAppetiteLabel ->
+                    { english = "Poor Appetite" }
+
+                ActivitiesNutritionSignsTitle ->
+                    { english = "Nutrition:" }
 
                 ActivitiesWeightHelp ->
                     { english = "Calibrate the scale before taking the first baby's weight.  Place baby in harness with no clothes on." }
