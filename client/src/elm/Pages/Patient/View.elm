@@ -183,8 +183,10 @@ viewActivityCards language currentDate user patients patientTypeFilter =
                     , div [ class "ui five column grid completed" ] (List.map (viewActivityListItem language) noPendingActivities)
                     ]
     in
-        div []
-            [ h2 [ class "ui header activities" ] [ text <| translate language Trans.ActivitiesToComplete ]
+        div [ class "ui tasks segment" ]
+            [ div [ class "ui text menu" ]
+                [ a [ class "item active" ] [ text <| translate language <| Trans.ActivitiesToComplete <| List.length (pendingActivities) ]
+                ]
             , div [ class "ui five column grid pending" ] pendingActivitiesView
             , noPendingActivitiesView
             ]

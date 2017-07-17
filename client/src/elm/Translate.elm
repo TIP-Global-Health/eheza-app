@@ -26,7 +26,7 @@ type TranslationId
     | ActivitiesMuacHelp
     | ActivitiesMuacLabel
     | ActivitiesMuacTitle
-    | ActivitiesToComplete
+    | ActivitiesToComplete Int
     | ActivitiesNutritionSignsAbdominalDisortionLabel
     | ActivitiesNutritionSignsApathyLabel
     | ActivitiesNutritionSignsBrittleHairLabel
@@ -150,8 +150,8 @@ translate lang trans =
                 ActivitiesWeightHelp ->
                     { english = "Calibrate the scale before taking the first baby's weight.  Place baby in harness with no clothes on." }
 
-                ActivitiesToComplete ->
-                    { english = "ActivitiesToComplete" }
+                ActivitiesToComplete count ->
+                    { english = "To Do (" ++ toString count ++ ")" }
 
                 ActivitiesWeightLabel ->
                     { english = "Weight:" }
