@@ -199,8 +199,9 @@ viewActivityListItem language report =
         div [ class "ui card activities__item" ]
             [ a
                 [ clickHandler
+                , class "link-section"
                 ]
-                [ i [ class (report.activity.icon ++ " icon") ] [] ]
+                [ span [ class ("icon-section icon" ++ report.activity.icon) ] [] ]
             , div [ class "content" ]
                 [ a
                     [ class "header activities__item__title"

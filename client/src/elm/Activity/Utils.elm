@@ -81,7 +81,7 @@ getActivityIdentity activityType =
                             ActivityIdentity "MUAC" "treatment"
 
                         NutritionSigns ->
-                            ActivityIdentity "Nutrition signs" "heartbeat"
+                            ActivityIdentity "Nutrition signs" "nutrition"
 
                         ProgressReport ->
                             ActivityIdentity "Progress reports" "bar chart"
