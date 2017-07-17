@@ -29,53 +29,56 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
         motherInfo =
             case child.motherId of
                 Nothing ->
-                    div [] [ text <| translate language Trans.LinkToMother ]
+                    span [] [ text <| translate language Trans.LinkToMother ]
 
                 Just motherId ->
                     case motherWebData of
                         Success mother ->
-                            div []
-                                [ text <| translate language Trans.Mother ++ ": "
-                                , a
-                                    [ href "#"
-                                    , onClick <| SetRedirectPage (App.PageType.Patient motherId)
-                                    ]
-                                    [ img [ src mother.image, class "ui avatar image" ] []
-                                    , text mother.name
-                                    ]
-                                ]
+                            span []
+                                [ text <| translate language Trans.Mother ++ ": ", text mother.name ]
 
                         Loading ->
-                            div []
+                            span []
                                 [ text <| translate language Trans.Mother ++ ": "
                                 , i [ class "icon loading spinner" ] []
                                 ]
 
                         _ ->
-                            div [] []
+                            span [] []
 
         patients =
             -- @todo: Add mkChild
             Dict.insert childId ({ info = Patient.Model.PatientChild child }) Dict.empty
     in
         div [] <|
-            [ div
-                [ class "ui secondary pointing fluid menu" ]
-                [ h1
-                    [ class "ui header" ]
-                    [ text child.name ]
-                ]
-            , div [ class "ui grid" ]
-                [ div [ class "six wide column" ]
-                    [ img [ class "ui medium rounded image", src child.image ] []
+            [ div [ class "ui segment" ]
+                [ div [ class "ui items" ]
+                    [ div [ class "item" ]
+                        [ div [ class "ui image" ]
+                            [ img [ src child.image ]
+                                []
+                            ]
+                        , div [ class "middle aligned content" ]
+                            [ h2 [ class "ui disabled header mother" ]
+                                [ motherInfo ]
+                            , h2 [ class "ui header child" ]
+                                [ text <| translate language Trans.Baby ++ ": ", text child.name ]
+                            , div [ class "meta" ]
+                                [ p []
+                                    [ text <| translate language Trans.PlaceholderTextGroupDate
+                                    , br []
+                                        []
+                                    , text <| translate language Trans.PlaceholderTextJoined
+                                    ]
+                                ]
+                            ]
+                        ]
                     ]
-                , div [ class "content six wide column" ] [ motherInfo ]
                 ]
-            , div
-                [ class "ui divider" ]
-                []
-            , div []
-                [ viewActivityCards language currentDate currentUser patients Children
+            , div [ class "ui segment" ]
+                [ div []
+                    [ viewActivityCards language currentDate currentUser patients Children
+                    ]
                 ]
             , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) model.selectedActivity model.measurements
             ]
@@ -90,14 +93,7 @@ viewMother language currentDate currentUser motherId mother children =
                     case childWebData of
                         Success ( childId, child ) ->
                             li []
-                                [ a
-                                    [ href "#"
-                                    , onClick <| SetRedirectPage (App.PageType.Patient childId)
-                                    ]
-                                    [ img [ src child.image, class "ui avatar image" ] []
-                                    , text child.name
-                                    ]
-                                ]
+                                [ text child.name ]
 
                         Loading ->
                             li []
@@ -124,23 +120,34 @@ viewMother language currentDate currentUser motherId mother children =
             Dict.insert motherId ({ info = Patient.Model.PatientMother mother }) Dict.empty
     in
         div [] <|
-            [ div
-                [ class "ui secondary pointing fluid menu" ]
-                [ h1
-                    [ class "ui header" ]
-                    [ text mother.name ]
-                ]
-            , div [ class "ui grid" ]
-                [ div [ class "six wide column" ]
-                    [ img [ class "ui medium rounded image", src mother.image ] []
+            [ div [ class "ui segment" ]
+                [ div [ class "ui items" ]
+                    [ div [ class "item" ]
+                        [ div [ class "ui image" ]
+                            [ img [ src mother.image ]
+                                []
+                            ]
+                        , div [ class "middle aligned content" ]
+                            [ h2 [ class "ui header mother" ]
+                                [ text <| translate language Trans.Mother ++ ": ", text mother.name ]
+                            , h2 [ class "ui disabled header child" ]
+                                [ childrenList ]
+                            , div [ class "meta" ]
+                                [ p []
+                                    [ text <| translate language Trans.PlaceholderTextGroupDate
+                                    , br []
+                                        []
+                                    , text <| translate language Trans.PlaceholderTextJoined
+                                    ]
+                                ]
+                            ]
+                        ]
                     ]
-                , div [ class "six wide column" ] [ childrenList ]
                 ]
-            , div
-                [ class "ui divider" ]
-                []
-            , div []
-                [ viewActivityCards language currentDate currentUser patients Mothers
+            , div [ class "ui segment" ]
+                [ div []
+                    [ viewActivityCards language currentDate currentUser patients Children
+                    ]
                 ]
             ]
 

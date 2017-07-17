@@ -42,6 +42,9 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
             in
                 { model | muac = updatedMuac } ! []
 
+        NutritionSignsSave ->
+            model ! []
+
         WeightSave ->
             postWeight backendUrl accessToken patientId model
 

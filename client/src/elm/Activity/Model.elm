@@ -12,6 +12,7 @@ type ChildActivityType
     = ChildPicture
     | Height
     | Muac
+    | NutritionSigns
     | ProgressReport
     | Weight
 
@@ -23,13 +24,23 @@ type MotherActivityType
     | FamilyPlanning
     | Hiv
     | MotherPicture
-    | NutritionSigns
+
+
+type ChildNutritionSign
+    = AbdominalDisortion
+    | Apathy
+    | BrittleHair
+    | DrySkin
+    | Edema
+    | None
+    | PoorAppetite
 
 
 type alias ChildActivityDates =
     { childPicture : Maybe Date
     , height : Maybe Date
     , muac : Maybe Date
+    , nutritionSigns : Maybe Date
     , progressReport : Maybe Date
     , weight : Maybe Date
     }
@@ -42,7 +53,6 @@ type alias MotherActivityDates =
     , familyPlanning : Maybe Date
     , hiv : Maybe Date
     , motherPicture : Maybe Date
-    , nutritionSigns : Maybe Date
     }
 
 
@@ -64,6 +74,7 @@ emptyChildActivityDates =
     { childPicture = Nothing
     , height = Nothing
     , muac = Nothing
+    , nutritionSigns = Nothing
     , progressReport = Nothing
     , weight = Nothing
     }
@@ -77,5 +88,4 @@ emptyMotherActivityDates =
     , familyPlanning = Nothing
     , hiv = Nothing
     , motherPicture = Nothing
-    , nutritionSigns = Nothing
     }

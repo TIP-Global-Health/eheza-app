@@ -68,7 +68,37 @@ viewHeader language model =
                         []
                     , span [] []
                     ]
-                , div [ class "ui fluid two item secondary pointing menu" ]
+                , viewTabSwitcher language model
+                ]
+
+        _ ->
+            div [] []
+
+
+{-| Provides context-sensitive top navigation tabs.
+There are two distinct contexts:
+
+  - on the patient page
+  - everywhere else
+
+-}
+viewTabSwitcher : Language -> Model -> Html Msg
+viewTabSwitcher language model =
+    let
+        links =
+            case model.activePage of
+                Patient _ ->
+                    [ a
+                        [ classByPage (Dashboard []) model.activePage
+                        ]
+                        [ text <| translate language Trans.Mother ]
+                    , a
+                        [ classByPage (Activities) model.activePage
+                        ]
+                        [ text <| translate language Trans.Baby ]
+                    ]
+
+                _ ->
                     [ a
                         [ classByPage (Dashboard []) model.activePage
                         , onClick <| SetActivePage <| Dashboard []
@@ -80,10 +110,8 @@ viewHeader language model =
                         ]
                         [ text <| translate language Trans.Activities ]
                     ]
-                ]
-
-        _ ->
-            div [] []
+    in
+        div [ class "ui fluid two item secondary pointing menu" ] links
 
 
 viewSidebar : Language -> Model -> Html Msg
