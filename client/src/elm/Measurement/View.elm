@@ -240,28 +240,33 @@ viewNutritionSignsSelector : Language -> Html Msg
 viewNutritionSignsSelector language =
     let
         nutrionSignsAndTranslationIdsFirst =
-            [ ( Edema, Trans.ActivitiesNutritionSignsEdemaLabel, "edema" )
-            , ( AbdominalDisortion, Trans.ActivitiesNutritionSignsAbdominalDisortionLabel, "abdominal-distrortion" )
-            , ( DrySkin, Trans.ActivitiesNutritionSignsDrySkinLabel, "dry-skin" )
-            , ( PoorAppetite, Trans.ActivitiesNutritionSignsPoorAppetiteLabel, "poor-appetites" )
-            ]
+            [  Edema , AbdominalDisortion, DrySkin, PoorAppetite ]
 
         nutrionSignsAndTranslationIdsSecond =
-            [ ( Apathy, Trans.ActivitiesNutritionSignsApathyLabel, "apathy" )
-            , ( BrittleHair, Trans.ActivitiesNutritionSignsBrittleHairLabel, "brittle-hair" )
-            , ( None, Trans.ActivitiesNutritionSignsNoneLabel, "none-of-these" )
-            ]
+            [  Apathy, BrittleHair, None ]
+
     in
-    div [ class "ui grid" ]
-        [ div [ class "eight wide column" ]
-            (List.map (\( nutritionSign, translateId, label ) -> viewNutritionSignsSelectorItem language nutritionSign translateId label) nutrionSignsAndTranslationIdsFirst)
-        , div [ class "eight wide column" ]
-            (List.map (\( nutritionSign, translateId, label ) -> viewNutritionSignsSelectorItem language nutritionSign translateId label) nutrionSignsAndTranslationIdsSecond)
-        ]
+        div [ class "ui grid" ]
+            [ div [ class "eight wide column" ]
+                (List.map (\ nutritionSign -> viewNutritionSignsSelectorItem language nutritionSign) nutrionSignsAndTranslationIdsFirst)
+            , div [ class "eight wide column" ]
+                (List.map (\ nutritionSign -> viewNutritionSignsSelectorItem language nutritionSign) nutrionSignsAndTranslationIdsSecond)
+            ]
 
+viewNutritionSignsSelectorItem : Language -> ChildNutritionSign -> Html Msg
+viewNutritionSignsSelectorItem language sign =
+  let
+    (body, labelTag) =
+      case sign of
+        Edema -> (Trans.ActivitiesNutritionSignsEdemaLabel, "edema")
+        AbdominalDisortion -> (Trans.ActivitiesNutritionSignsAbdominalDisortionLabel, "abdominal-distrortion")
+        DrySkin -> (Trans.ActivitiesNutritionSignsDrySkinLabel, "dry-skin")
+        PoorAppetite -> (Trans.ActivitiesNutritionSignsPoorAppetiteLabel, "poor-appetites")
+        Apathy -> (Trans.ActivitiesNutritionSignsApathyLabel, "apathy")
+        BrittleHair -> (Trans.ActivitiesNutritionSignsBrittleHairLabel, "brittle-hair")
+        None -> (Trans.ActivitiesNutritionSignsNoneLabel, "none-of-these" )
 
-viewNutritionSignsSelectorItem : Language -> ChildNutritionSign -> TranslationId -> String -> Html Msg
-viewNutritionSignsSelectorItem language sign translationId labelTag =
+  in
     div [ class "ui checkbox" ]
         [ input
             [ type_ "checkbox"
@@ -270,5 +275,5 @@ viewNutritionSignsSelectorItem language sign translationId labelTag =
             ]
             []
         , label [ for labelTag ]
-            [ text <| translate language translationId ]
+            [ text <| translate language body ]
         ]
