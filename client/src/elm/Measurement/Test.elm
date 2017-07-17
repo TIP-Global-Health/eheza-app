@@ -31,8 +31,8 @@ viewChildFormsTest =
             \() ->
                 viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) (Just <| Child NutritionSigns) emptyModel
                     |> Query.fromHtml
-                    |> Query.find [ Selector.class "ui full segment nutrition" ]
-                    |> Query.find [ tag "h1" ]
+                    |> Query.find [ Selector.classes [ "ui", "full", "segment", "nutrition" ] ]
+                    |> Query.find [ tag "h3" ]
                     |> Query.has [ text "Nutrition:" ]
         , test "Then a Weight form should be displayed when selected" <|
             \() ->
