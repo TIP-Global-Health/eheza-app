@@ -20,7 +20,7 @@ import Utils.Html exposing (divider, emptyNode, showIf, showMaybe)
 viewChild : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Maybe ActivityType -> Model -> Html Msg
 viewChild backendUrl accessToken user language ( childId, child ) selectedActivity model =
     showMaybe <|
-        (Maybe.map
+        Maybe.map
             (\activity ->
                 case activity of
                     Child childActivity ->
@@ -44,7 +44,6 @@ viewChild backendUrl accessToken user language ( childId, child ) selectedActivi
                         emptyNode
             )
             selectedActivity
-        )
 
 
 viewHeight : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
@@ -53,35 +52,35 @@ viewHeight backendUrl accessToken user language ( childId, child ) model =
         constraints =
             getInputConstraintsHeight
     in
-        div []
-            [ divider
-            , div
-                [ class "ui card height"
-                ]
-                [ h1
-                    []
-                    [ text <| translate language Trans.ActivitiesHeightTitle
-                    ]
-                , span
-                    []
-                    [ text <| translate language Trans.ActivitiesHeightHelp ]
-                , div
-                    []
-                    [ span [] [ text <| translate language Trans.ActivitiesHeightLabel ]
-                    , input
-                        [ type_ "number"
-                        , name "height"
-                        , Attr.min <| toString constraints.minVal
-                        , Attr.max <| toString constraints.maxVal
-                        , value <| toString model.weight.value
-                        , onInput <| (\v -> HeightUpdate <| Result.withDefault 0.0 <| String.toFloat v)
-                        ]
-                        []
-                    , span [] [ text <| translate language Trans.CentimeterShorthand ]
-                    ]
-                , button [ type_ "button" ] [ text <| translate language Trans.Save ]
-                ]
+    div []
+        [ divider
+        , div
+            [ class "ui card height"
             ]
+            [ h1
+                []
+                [ text <| translate language Trans.ActivitiesHeightTitle
+                ]
+            , span
+                []
+                [ text <| translate language Trans.ActivitiesHeightHelp ]
+            , div
+                []
+                [ span [] [ text <| translate language Trans.ActivitiesHeightLabel ]
+                , input
+                    [ type_ "number"
+                    , name "height"
+                    , Attr.min <| toString constraints.minVal
+                    , Attr.max <| toString constraints.maxVal
+                    , value <| toString model.weight.value
+                    , onInput <| \v -> HeightUpdate <| Result.withDefault 0.0 <| String.toFloat v
+                    ]
+                    []
+                , span [] [ text <| translate language Trans.CentimeterShorthand ]
+                ]
+            , button [ type_ "button" ] [ text <| translate language Trans.Save ]
+            ]
+        ]
 
 
 viewMuac : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
@@ -90,35 +89,35 @@ viewMuac backendUrl accessToken user language ( childId, child ) model =
         constraints =
             getInputConstraintsMuac
     in
-        div []
-            [ divider
-            , div
-                [ class "ui card muac"
-                ]
-                [ h1
-                    []
-                    [ text <| translate language Trans.ActivitiesMuacTitle
-                    ]
-                , span
-                    []
-                    [ text <| translate language Trans.ActivitiesMuacHelp ]
-                , div
-                    []
-                    [ span [] [ text <| translate language Trans.ActivitiesMuacLabel ]
-                    , input
-                        [ type_ "number"
-                        , name "muac"
-                        , Attr.min <| toString constraints.minVal
-                        , Attr.max <| toString constraints.maxVal
-                        , value <| toString model.muac.value
-                        , onInput <| (\v -> MuacUpdate <| Result.withDefault 0.0 <| String.toFloat v)
-                        ]
-                        []
-                    , span [] [ text <| translate language Trans.CentimeterShorthand ]
-                    ]
-                , button [ type_ "button" ] [ text <| translate language Trans.Save ]
-                ]
+    div []
+        [ divider
+        , div
+            [ class "ui card muac"
             ]
+            [ h1
+                []
+                [ text <| translate language Trans.ActivitiesMuacTitle
+                ]
+            , span
+                []
+                [ text <| translate language Trans.ActivitiesMuacHelp ]
+            , div
+                []
+                [ span [] [ text <| translate language Trans.ActivitiesMuacLabel ]
+                , input
+                    [ type_ "number"
+                    , name "muac"
+                    , Attr.min <| toString constraints.minVal
+                    , Attr.max <| toString constraints.maxVal
+                    , value <| toString model.muac.value
+                    , onInput <| \v -> MuacUpdate <| Result.withDefault 0.0 <| String.toFloat v
+                    ]
+                    []
+                , span [] [ text <| translate language Trans.CentimeterShorthand ]
+                ]
+            , button [ type_ "button" ] [ text <| translate language Trans.Save ]
+            ]
+        ]
 
 
 viewWeight : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
@@ -127,42 +126,42 @@ viewWeight backendUrl accessToken user language ( childId, child ) model =
         constraints =
             getInputConstraintsWeight
     in
-        div []
-            [ divider
-            , div
-                [ class "ui segment weight"
-                ]
-                [ h1
-                    []
-                    [ text <| translate language Trans.ActivitiesWeightTitle
-                    ]
-                , span
-                    []
-                    [ text <| translate language Trans.ActivitiesWeightHelp ]
-                , div
-                    []
-                    [ span [] [ text <| translate language Trans.ActivitiesWeightLabel ]
-                    , input
-                        [ type_ "number"
-                        , name "weight"
-                        , step "0.5"
-                        , Attr.min <| toString constraints.minVal
-                        , Attr.max <| toString constraints.maxVal
-                        , value <| toString model.weight.value
-                        , onInput
-                            (\v ->
-                                String.toFloat v
-                                    |> Result.withDefault constraints.defaultValue
-                                    |> clamp constraints.minVal constraints.maxVal
-                                    |> WeightUpdate
-                            )
-                        ]
-                        []
-                    , span [] [ text <| translate language Trans.KilogramShorthand ]
-                    ]
-                , saveButon language WeightSave model
-                ]
+    div []
+        [ divider
+        , div
+            [ class "ui segment weight"
             ]
+            [ h1
+                []
+                [ text <| translate language Trans.ActivitiesWeightTitle
+                ]
+            , span
+                []
+                [ text <| translate language Trans.ActivitiesWeightHelp ]
+            , div
+                []
+                [ span [] [ text <| translate language Trans.ActivitiesWeightLabel ]
+                , input
+                    [ type_ "number"
+                    , name "weight"
+                    , step "0.5"
+                    , Attr.min <| toString constraints.minVal
+                    , Attr.max <| toString constraints.maxVal
+                    , value <| toString model.weight.value
+                    , onInput
+                        (\v ->
+                            String.toFloat v
+                                |> Result.withDefault constraints.defaultValue
+                                |> clamp constraints.minVal constraints.maxVal
+                                |> WeightUpdate
+                        )
+                    ]
+                    []
+                , span [] [ text <| translate language Trans.KilogramShorthand ]
+                ]
+            , saveButon language WeightSave model
+            ]
+        ]
 
 
 {-| Helper function to create a Save button.
@@ -189,21 +188,21 @@ saveButon language msg model =
             else
                 [ onClick msg ]
     in
-        div []
-            [ div
-                ([ classList
-                    [ ( "ui button primary", True )
-                    , ( "loading", isLoading )
-                    , ( "positive", isSuccess )
-                    , ( "negative", isFailure )
-                    ]
-                 ]
-                    ++ saveAttr
-                )
-                [ text <| translate language Trans.Save
+    div []
+        [ div
+            ([ classList
+                [ ( "ui button primary", True )
+                , ( "loading", isLoading )
+                , ( "positive", isSuccess )
+                , ( "negative", isFailure )
                 ]
-            , showIf isFailure <| div [] [ text <| translate language Trans.SaveError ]
+             ]
+                ++ saveAttr
+            )
+            [ text <| translate language Trans.Save
             ]
+        , showIf isFailure <| div [] [ text <| translate language Trans.SaveError ]
+        ]
 
 
 viewNutritionSigns : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
@@ -228,13 +227,14 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
                 [ p []
                     [ text <| translate language Trans.ActivitiesNutritionSignsLabel
                     ]
-                    , viewNutritionSignsSelector language
+                , viewNutritionSignsSelector language
                 ]
-            , div [ class "actions" ] [
-                button [ type_ "button", class "ui fluid basic button disabled" ] [ text <| translate language Trans.Save ]
-              ]
+            , div [ class "actions" ]
+                [ button [ type_ "button", class "ui fluid basic button disabled" ] [ text <| translate language Trans.Save ]
+                ]
             ]
         ]
+
 
 viewNutritionSignsSelector : Language -> Html Msg
 viewNutritionSignsSelector language =
@@ -252,22 +252,20 @@ viewNutritionSignsSelector language =
             , ( None, Trans.ActivitiesNutritionSignsNoneLabel, "none-of-these" )
             ]
     in
-        div [ class "ui grid" ]
-        [
-          div [ class "eight wide column" ]
+    div [ class "ui grid" ]
+        [ div [ class "eight wide column" ]
             (List.map (\( nutritionSign, translateId, label ) -> viewNutritionSignsSelectorItem language nutritionSign translateId label) nutrionSignsAndTranslationIdsFirst)
-
-          ,div [ class "eight wide column" ]
+        , div [ class "eight wide column" ]
             (List.map (\( nutritionSign, translateId, label ) -> viewNutritionSignsSelectorItem language nutritionSign translateId label) nutrionSignsAndTranslationIdsSecond)
         ]
 
 
 viewNutritionSignsSelectorItem : Language -> ChildNutritionSign -> TranslationId -> String -> Html Msg
 viewNutritionSignsSelectorItem language sign translationId labelTag =
-    div [class "ui checkbox"]
-        [
-         input
-            [ type_ "checkbox", id labelTag
+    div [ class "ui checkbox" ]
+        [ input
+            [ type_ "checkbox"
+            , id labelTag
             , name <| encodeChildNutritionSign sign
             ]
             []
