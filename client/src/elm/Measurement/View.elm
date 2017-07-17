@@ -236,86 +236,41 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
             ]
         ]
 
-
 viewNutritionSignsSelector : Language -> Html Msg
 viewNutritionSignsSelector language =
-    div [ class "ui grid" ]
-    [
-      div [ class "eight wide column" ]
-      [
-        div [class "ui checkbox"]
+    let
+        nutrionSignsAndTranslationIdsFirst =
+            [ ( Edema, Trans.ActivitiesNutritionSignsEdemaLabel, "edema" )
+            , ( AbdominalDisortion, Trans.ActivitiesNutritionSignsAbdominalDisortionLabel, "abdominal-distrortion" )
+            , ( DrySkin, Trans.ActivitiesNutritionSignsDrySkinLabel, "dry-skin" )
+            , ( PoorAppetite, Trans.ActivitiesNutritionSignsPoorAppetiteLabel, "poor-appetites" )
+            ]
+
+        nutrionSignsAndTranslationIdsSecond =
+            [ ( Apathy, Trans.ActivitiesNutritionSignsApathyLabel, "apathy" )
+            , ( BrittleHair, Trans.ActivitiesNutritionSignsBrittleHairLabel, "brittle-hair" )
+            , ( None, Trans.ActivitiesNutritionSignsNoneLabel, "none-of-these" )
+            ]
+    in
+        div [ class "ui grid" ]
+        [
+          div [ class "eight wide column" ]
+            (List.map (\( nutritionSign, translateId, label ) -> viewNutritionSignsSelectorItem language nutritionSign translateId label) nutrionSignsAndTranslationIdsFirst)
+
+          ,div [ class "eight wide column" ]
+            (List.map (\( nutritionSign, translateId, label ) -> viewNutritionSignsSelectorItem language nutritionSign translateId label) nutrionSignsAndTranslationIdsSecond)
+        ]
+
+
+viewNutritionSignsSelectorItem : Language -> ChildNutritionSign -> TranslationId -> String -> Html Msg
+viewNutritionSignsSelectorItem language sign translationId labelTag =
+    div [class "ui checkbox"]
         [
          input
-            [ type_ "checkbox", id "edema"
-            , name <| encodeChildNutritionSign Edema
+            [ type_ "checkbox", id labelTag
+            , name <| encodeChildNutritionSign sign
             ]
             []
-        , label [ for "edema" ]
-            [ text <| translate language Trans.ActivitiesNutritionSignsEdemaLabel ]
+        , label [ for labelTag ]
+            [ text <| translate language translationId ]
         ]
-        ,div [class "ui checkbox"]
-        [
-           input
-              [ type_ "checkbox", id "abdominal-distrortion"
-              , name <| encodeChildNutritionSign AbdominalDisortion
-              ]
-              []
-          , label [ for "abdominal-distrortion" ]
-              [ text <| translate language Trans.ActivitiesNutritionSignsAbdominalDisortionLabel ]
-        ]
-        ,div [class "ui checkbox"]
-        [
-           input
-              [ type_ "checkbox", id "dry-skin"
-              , name <| encodeChildNutritionSign DrySkin
-              ]
-              []
-          , label [ for "dry-skin" ]
-              [ text <| translate language Trans.ActivitiesNutritionSignsDrySkinLabel ]
-        ]
-        ,div [class "ui checkbox"]
-        [
-           input
-              [ type_ "checkbox", id "poor-appetites"
-              , name <| encodeChildNutritionSign PoorAppetite
-              ]
-              []
-          , label [ for "poor-appetites" ]
-              [ text <| translate language Trans.ActivitiesNutritionSignsPoorAppetiteLabel ]
-        ]
-      ]
-
-      ,div [ class "eight wide column" ]
-      [
-        div [class "ui checkbox"]
-        [
-           input
-              [ type_ "checkbox", id "apathy"
-              , name <| encodeChildNutritionSign Apathy
-              ]
-              []
-          , label [ for "apathy" ]
-              [ text <| translate language Trans.ActivitiesNutritionSignsApathyLabel ]
-        ]
-        ,div [class "ui checkbox"]
-        [
-           input
-              [ type_ "checkbox", id "brittle-hair"
-              , name <| encodeChildNutritionSign BrittleHair
-              ]
-              []
-          , label [ for "brittle-hair" ]
-              [ text <| translate language Trans.ActivitiesNutritionSignsBrittleHairLabel ]
-        ]
-        ,div [class "ui checkbox"]
-        [
-           input
-              [ type_ "checkbox", id "none-of-these"
-              , name <| encodeChildNutritionSign None
-              ]
-              []
-          , label [ for "none-of-these" ]
-              [ text <| translate language Trans.ActivitiesNutritionSignsNoneLabel ]
-        ]
-      ]
-    ]
