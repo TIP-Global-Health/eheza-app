@@ -163,7 +163,7 @@ viewWeight backendUrl accessToken user language ( childId, child ) model =
                         []
                     , span [] [ text <| translate language Trans.KilogramShorthand ]
                     ]
-                , saveButton language WeightSave model
+                , saveButton language WeightSave model ""
                 ]
             ]
 
@@ -173,22 +173,29 @@ viewPhoto backendUrl accessToken user language ( childId, child ) model =
     div []
         [ divider
         , div
-            [ class "ui segment"
+            [ class "ui full segment"
             ]
-            [ h1
-                []
+            [ h3
+                [ class "ui header" ]
                 [ text <| translate language Trans.ActivitiesPhotoTitle
                 ]
-            , span
+            , p
                 []
                 [ text <| translate language Trans.ActivitiesPhotoHelp ]
             , div
                 [ class "dropzone" ]
                 []
-            , saveButton language PhotoSave model
-            , div
-                [ class "ui button" ]
-                [ text <| translate language Trans.Retake ]
+            , div [ class "actions" ]
+                [ div [ class "ui two column grid" ]
+                    [ div
+                        [ class "column" ]
+                        [ button
+                            [ class "ui fluid basic button" ]
+                            [ text <| translate language Trans.Retake ]
+                        ]
+                    , saveButton language PhotoSave model "column"
+                    ]
+                ]
             ]
         ]
 
@@ -199,8 +206,8 @@ Button will also take care of preventing double submission,
 and showing success and error indications.
 
 -}
-saveButton : Language -> Msg -> Model -> Html Msg
-saveButton language msg model =
+saveButton : Language -> Msg -> Model -> String -> Html Msg
+saveButton language msg model divClass =
     let
         isLoading =
             model.status == Loading
@@ -217,10 +224,10 @@ saveButton language msg model =
             else
                 [ onClick msg ]
     in
-        div []
-            [ div
+        div [ class divClass ]
+            [ button
                 ([ classList
-                    [ ( "ui button primary", True )
+                    [ ( "ui fluid basic button", True )
                     , ( "loading", isLoading )
                     , ( "positive", isSuccess )
                     , ( "negative", isFailure )
@@ -257,7 +264,7 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
                     , viewNutritionSignsSelector language
                     ]
                 ]
-            , saveButton language NutritionSignsSave model
+            , saveButton language NutritionSignsSave model ""
             ]
         ]
 
