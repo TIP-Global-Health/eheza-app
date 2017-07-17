@@ -27,11 +27,22 @@ type TranslationId
     | ActivitiesMuacLabel
     | ActivitiesMuacTitle
     | ActivitiesToComplete
+    | ActivitiesNutritionSignsAbdominalDisortionLabel
+    | ActivitiesNutritionSignsApathyLabel
+    | ActivitiesNutritionSignsBrittleHairLabel
+    | ActivitiesNutritionSignsDrySkinLabel
+    | ActivitiesNutritionSignsEdemaLabel
+    | ActivitiesNutritionSignsHelp
+    | ActivitiesNutritionSignsLabel
+    | ActivitiesNutritionSignsNoneLabel
+    | ActivitiesNutritionSignsPoorAppetiteLabel
+    | ActivitiesNutritionSignsTitle
     | ActivitiesPhotoHelp
     | ActivitiesPhotoTitle
     | ActivitiesWeightHelp
     | ActivitiesWeightLabel
     | ActivitiesWeightTitle
+    | Baby
     | CentimeterShorthand
     | Children
     | Connected
@@ -61,6 +72,8 @@ type TranslationId
     | PageNotFoundMsg
     | Password
     | Patients
+    | PlaceholderTextGroupDate
+    | PlaceholderTextJoined
     | PriorWeight Float
     | ReportRemaining Int
     | ReloadPatient
@@ -107,6 +120,36 @@ translate lang trans =
                 ActivitiesMuacTitle ->
                     { english = "Mid Upper Arm Circumference (MUAC):" }
 
+                ActivitiesNutritionSignsAbdominalDisortionLabel ->
+                    { english = "Abdominal Disortion" }
+
+                ActivitiesNutritionSignsApathyLabel ->
+                    { english = "Apathy" }
+
+                ActivitiesNutritionSignsBrittleHairLabel ->
+                    { english = "Brittle Hair" }
+
+                ActivitiesNutritionSignsDrySkinLabel ->
+                    { english = "Dry Skin" }
+
+                ActivitiesNutritionSignsEdemaLabel ->
+                    { english = "Edema" }
+
+                ActivitiesNutritionSignsHelp ->
+                    { english = "Explain to the mother how to check the malnutrition signs for their own child." }
+
+                ActivitiesNutritionSignsLabel ->
+                    { english = "Select all signs that are present:" }
+
+                ActivitiesNutritionSignsNoneLabel ->
+                    { english = "None of these" }
+
+                ActivitiesNutritionSignsPoorAppetiteLabel ->
+                    { english = "Poor Appetite" }
+
+                ActivitiesNutritionSignsTitle ->
+                    { english = "Nutrition:" }
+
                 ActivitiesPhotoHelp ->
                     { english = "Take each baby's picture at each health assesment. Then you and the mother will see the how the baby has grown!" }
 
@@ -124,6 +167,9 @@ translate lang trans =
 
                 ActivitiesWeightTitle ->
                     { english = "Weight:" }
+
+                Baby ->
+                    { english = "Baby" }
 
                 CentimeterShorthand ->
                     { english = "cm" }
@@ -211,6 +257,12 @@ translate lang trans =
 
                 Patients ->
                     { english = "Patients" }
+
+                PlaceholderTextGroupDate ->
+                    { english = "Group Date" }
+
+                PlaceholderTextJoined ->
+                    { english = "Joined in June 2017" }
 
                 PriorWeight value ->
                     { english = "Previous weight: " ++ (toString value) ++ " kg" }

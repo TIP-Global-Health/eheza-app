@@ -3,7 +3,8 @@ module Measurement.View
         ( viewChild
         )
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
+import Activity.Encoder exposing (encodeChildNutritionSign)
+import Activity.Model exposing (ActivityType(..), ChildActivityType(..), ChildNutritionSign(..))
 import Child.Model exposing (Child, ChildId)
 import Config.Model exposing (BackendUrl)
 import Html exposing (..)
@@ -11,7 +12,7 @@ import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Measurement.Model exposing (Model, Msg(..), getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
-import Translate as Trans exposing (Language(..), translate)
+import Translate as Trans exposing (Language(..), TranslationId, translate)
 import User.Model exposing (..)
 import Utils.Html exposing (divider, emptyNode, showIf, showMaybe)
 
@@ -35,6 +36,9 @@ viewChild backendUrl accessToken user language ( childId, child ) selectedActivi
 
                             Weight ->
                                 viewWeight backendUrl accessToken user language ( childId, child ) model
+
+                            NutritionSigns ->
+                                viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
 
                             _ ->
                                 emptyNode
@@ -129,7 +133,7 @@ viewWeight backendUrl accessToken user language ( childId, child ) model =
         div []
             [ divider
             , div
-                [ class "ui segment"
+                [ class "ui segment weight"
                 ]
                 [ h1
                     []
@@ -228,3 +232,60 @@ saveButton language msg model =
                 ]
             , showIf isFailure <| div [] [ text <| translate language Trans.SaveError ]
             ]
+
+
+viewNutritionSigns : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
+viewNutritionSigns backendUrl accessToken user language ( childId, child ) model =
+    div []
+        [ div
+            [ class "ui divider" ]
+            []
+        , div
+            [ class "ui card nutrition"
+            ]
+            [ h1
+                []
+                [ text <| translate language Trans.ActivitiesNutritionSignsTitle
+                ]
+            , span
+                []
+                [ text <| translate language Trans.ActivitiesNutritionSignsHelp ]
+            , div
+                []
+                [ span []
+                    [ text <| translate language Trans.ActivitiesNutritionSignsLabel
+                    , viewNutritionSignsSelector language
+                    ]
+                ]
+            , saveButton language NutritionSignsSave model
+            ]
+        ]
+
+
+viewNutritionSignsSelector : Language -> Html Msg
+viewNutritionSignsSelector language =
+    let
+        nutrionSignsAndTranslationIds =
+            [ ( Edema, Trans.ActivitiesNutritionSignsEdemaLabel )
+            , ( AbdominalDisortion, Trans.ActivitiesNutritionSignsAbdominalDisortionLabel )
+            , ( DrySkin, Trans.ActivitiesNutritionSignsDrySkinLabel )
+            , ( PoorAppetite, Trans.ActivitiesNutritionSignsPoorAppetiteLabel )
+            , ( Apathy, Trans.ActivitiesNutritionSignsApathyLabel )
+            , ( BrittleHair, Trans.ActivitiesNutritionSignsBrittleHairLabel )
+            , ( None, Trans.ActivitiesNutritionSignsNoneLabel )
+            ]
+    in
+        ul [ class "checkboxes" ]
+            (List.map (\( nutritionSign, translateId ) -> viewNutritionSignsSelectorItem language nutritionSign translateId) nutrionSignsAndTranslationIds)
+
+
+viewNutritionSignsSelectorItem : Language -> ChildNutritionSign -> TranslationId -> Html Msg
+viewNutritionSignsSelectorItem language sign translationId =
+    li []
+        [ input
+            [ type_ "checkbox"
+            , name <| encodeChildNutritionSign sign
+            ]
+            []
+        , span [] [ text <| translate language translationId ]
+        ]

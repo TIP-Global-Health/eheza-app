@@ -16,6 +16,7 @@ decodeChildActivityDates =
         |> required "date_picture" (nullable decodeDate)
         |> required "date_height" (nullable decodeDate)
         |> required "date_muac" (nullable decodeDate)
+        |> optional "date_nutrition_signs" (nullable decodeDate) Nothing
         |> optional "date_progress_report" (nullable decodeDate) Nothing
         |> required "date_weight" (nullable decodeDate)
 
@@ -29,4 +30,3 @@ decodeMotherActivityDates =
         |> optional "date_family_planning" (nullable decodeDate) Nothing
         |> optional "date_hiv" (nullable decodeDate) Nothing
         |> optional "date_picture" (nullable decodeDate) Nothing
-        |> optional "date_nutrition_signs" (nullable decodeDate) Nothing

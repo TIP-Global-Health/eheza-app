@@ -21,6 +21,7 @@ getActivityTypeList patientTypeFilter =
             [ Activity.Model.Child Weight
             , Activity.Model.Child Height
             , Activity.Model.Child Muac
+            , Activity.Model.Child NutritionSigns
             , Activity.Model.Child ChildPicture
             ]
 
@@ -31,7 +32,6 @@ getActivityTypeList patientTypeFilter =
             , Activity.Model.Mother FamilyPlanning
             , Activity.Model.Mother Hiv
             , Activity.Model.Mother MotherPicture
-            , Activity.Model.Mother NutritionSigns
             ]
     in
         case patientTypeFilter of
@@ -80,6 +80,9 @@ getActivityIdentity activityType =
                         Muac ->
                             ActivityIdentity "MUAC" "treatment"
 
+                        NutritionSigns ->
+                            ActivityIdentity "Nutrition signs" "heartbeat"
+
                         ProgressReport ->
                             ActivityIdentity "Progress reports" "bar chart"
 
@@ -102,9 +105,6 @@ getActivityIdentity activityType =
 
                         MotherPicture ->
                             ActivityIdentity "Take pictures (Mother)" "photo"
-
-                        NutritionSigns ->
-                            ActivityIdentity "Nutrition signs" "heartbeat"
     in
         identityVal activityType
 
@@ -158,6 +158,9 @@ hasPendingChildActivity currentDate childActivityType child =
                 Muac ->
                     .muac
 
+                NutritionSigns ->
+                    .nutritionSigns
+
                 ProgressReport ->
                     .progressReport
     in
@@ -191,9 +194,6 @@ hasPendingMotherActivity currentDate motherActivityType mother =
 
                 MotherPicture ->
                     .motherPicture
-
-                NutritionSigns ->
-                    .nutritionSigns
     in
         Maybe.map
             (\date ->
