@@ -37,6 +37,8 @@ type TranslationId
     | ActivitiesNutritionSignsNoneLabel
     | ActivitiesNutritionSignsPoorAppetiteLabel
     | ActivitiesNutritionSignsTitle
+    | ActivitiesPhotoHelp
+    | ActivitiesPhotoTitle
     | ActivitiesWeightHelp
     | ActivitiesWeightLabel
     | ActivitiesWeightTitle
@@ -75,6 +77,7 @@ type TranslationId
     | PriorWeight Float
     | ReportRemaining Int
     | ReloadPatient
+    | Retake
     | Retry
     | Save
     | SaveError
@@ -146,6 +149,12 @@ translate lang trans =
 
                 ActivitiesNutritionSignsTitle ->
                     { english = "Nutrition:" }
+
+                ActivitiesPhotoHelp ->
+                    { english = "Take each baby's picture at each health assesment. Then you and the mother will see the how the baby has grown!" }
+
+                ActivitiesPhotoTitle ->
+                    { english = "Photo:" }
 
                 ActivitiesWeightHelp ->
                     { english = "Calibrate the scale before taking the first baby's weight.  Place baby in harness with no clothes on." }
@@ -263,6 +272,9 @@ translate lang trans =
 
                 ReloadPatient ->
                     { english = "Re-load Patient" }
+
+                Retake ->
+                    { english = "Retake" }
 
                 Retry ->
                     { english = "Retry" }

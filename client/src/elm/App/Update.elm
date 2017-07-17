@@ -87,6 +87,13 @@ update msg model =
                     ""
     in
         case msg of
+            HandleDropzoneNewFile maybeFileId ->
+                let
+                    dropzoneFile =
+                        Maybe.map FileId maybeFileId
+                in
+                    { model | dropzoneFile = dropzoneFile } ! []
+
             HandleOfflineEvent (Ok offline) ->
                 { model | offline = offline } ! []
 
@@ -178,12 +185,12 @@ update msg model =
 
             SetActivePage page ->
                 let
-                    activePage =
+                    activePageUpdated =
                         setActivePageAccess model.user page
 
                     ( modelUpdated, command ) =
                         -- For a few, we also delegate some initialization
-                        case activePage of
+                        case activePageUpdated of
                             Activities ->
                                 -- If we're showing a `Activities` page, make sure we `Subscribe`
                                 update (MsgPatientManager PatientManager.Model.FetchAll) model
@@ -209,8 +216,11 @@ update msg model =
                             _ ->
                                 ( model, Cmd.none )
                 in
-                    ( { modelUpdated | activePage = setActivePageAccess model.user activePage }
-                    , command
+                    ( { modelUpdated | activePage = setActivePageAccess model.user activePageUpdated }
+                    , Cmd.batch
+                        [ activePage [ (toString activePageUpdated), backendUrl ]
+                        , command
+                        ]
                     )
 
             SetCurrentDate date ->
@@ -254,6 +264,7 @@ subscriptions model =
         [ Sub.map MsgPatientManager <| PatientManager.Update.subscriptions model.pagePatient model.activePage
         , Time.every minute Tick
         , offline (decodeValue bool >> HandleOfflineEvent)
+        , dropzoneUploadedFile HandleDropzoneNewFile
         ]
 
 
@@ -270,3 +281,13 @@ port pusherKey : ( String, String, List String ) -> Cmd msg
 {-| Get a singal if internet connection is lost.
 -}
 port offline : (Value -> msg) -> Sub msg
+
+
+{-| Send active page to JS.
+-}
+port activePage : List String -> Cmd msg
+
+
+{-| Get a singal if a file has been uploaded via the Dropzone.
+-}
+port dropzoneUploadedFile : (Maybe Int -> msg) -> Sub msg
