@@ -28,6 +28,7 @@ type Msg
     = HandleWeightSave (Result Http.Error ())
     | HeightUpdate Float
     | MuacUpdate Float
+    | NutritionSignsSave
     | WeightSave
     | WeightUpdate Float
 

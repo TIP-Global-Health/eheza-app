@@ -230,7 +230,7 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
                     , viewNutritionSignsSelector language
                     ]
                 ]
-            , button [ type_ "button" ] [ text <| translate language Trans.Save ]
+            , saveButon language NutritionSignsSave model
             ]
         ]
 
