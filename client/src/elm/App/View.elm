@@ -74,6 +74,7 @@ viewHeaderThemeSwitcher : Model -> Html Msg
 viewHeaderThemeSwitcher model =
     a
         [ class "link-theme"
+        , id "theme-switcher"
         , href "javascript:void(0);"
         , onClick (ThemeSwitch model.theme)
         ]
