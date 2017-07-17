@@ -152,7 +152,6 @@ viewWeight backendUrl accessToken user language ( childId, child ) model =
                                 , input
                                     [ type_ "number"
                                     , name "weight"
-                                    , step "0.5"
                                     , Attr.min <| toString constraints.minVal
                                     , Attr.max <| toString constraints.maxVal
                                     , value <| toString model.weight.value
