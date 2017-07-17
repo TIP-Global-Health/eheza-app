@@ -191,7 +191,7 @@ saveButon language msg model =
         div []
             [ div
                 ([ classList
-                    [ ( "ui button primary", True )
+                    [ ( "ui fluid basic button", True )
                     , ( "loading", isLoading )
                     , ( "positive", isSuccess )
                     , ( "negative", isFailure )
@@ -230,7 +230,7 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
                 , viewNutritionSignsSelector language
                 ]
             , div [ class "actions" ]
-                [ button [ type_ "button", class "ui fluid basic button disabled" ] [ text <| translate language Trans.Save ]
+                [ saveButon language NutritionSignsSave model
                 ]
             ]
         ]
