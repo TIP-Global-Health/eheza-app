@@ -240,33 +240,45 @@ viewNutritionSignsSelector : Language -> Html Msg
 viewNutritionSignsSelector language =
     let
         nutrionSignsAndTranslationIdsFirst =
-            [  Edema , AbdominalDisortion, DrySkin, PoorAppetite ]
+            [ Edema, AbdominalDisortion, DrySkin, PoorAppetite ]
 
         nutrionSignsAndTranslationIdsSecond =
-            [  Apathy, BrittleHair, None ]
-
+            [ Apathy, BrittleHair, None ]
     in
-        div [ class "ui grid" ]
-            [ div [ class "eight wide column" ]
-                (List.map (\ nutritionSign -> viewNutritionSignsSelectorItem language nutritionSign) nutrionSignsAndTranslationIdsFirst)
-            , div [ class "eight wide column" ]
-                (List.map (\ nutritionSign -> viewNutritionSignsSelectorItem language nutritionSign) nutrionSignsAndTranslationIdsSecond)
-            ]
+    div [ class "ui grid" ]
+        [ div [ class "eight wide column" ]
+            (List.map (\nutritionSign -> viewNutritionSignsSelectorItem language nutritionSign) nutrionSignsAndTranslationIdsFirst)
+        , div [ class "eight wide column" ]
+            (List.map (\nutritionSign -> viewNutritionSignsSelectorItem language nutritionSign) nutrionSignsAndTranslationIdsSecond)
+        ]
+
 
 viewNutritionSignsSelectorItem : Language -> ChildNutritionSign -> Html Msg
 viewNutritionSignsSelectorItem language sign =
-  let
-    (body, labelTag) =
-      case sign of
-        Edema -> (Trans.ActivitiesNutritionSignsEdemaLabel, "edema")
-        AbdominalDisortion -> (Trans.ActivitiesNutritionSignsAbdominalDisortionLabel, "abdominal-distrortion")
-        DrySkin -> (Trans.ActivitiesNutritionSignsDrySkinLabel, "dry-skin")
-        PoorAppetite -> (Trans.ActivitiesNutritionSignsPoorAppetiteLabel, "poor-appetites")
-        Apathy -> (Trans.ActivitiesNutritionSignsApathyLabel, "apathy")
-        BrittleHair -> (Trans.ActivitiesNutritionSignsBrittleHairLabel, "brittle-hair")
-        None -> (Trans.ActivitiesNutritionSignsNoneLabel, "none-of-these" )
+    let
+        ( body, labelTag ) =
+            case sign of
+                Edema ->
+                    ( Trans.ActivitiesNutritionSignsEdemaLabel, "edema" )
 
-  in
+                AbdominalDisortion ->
+                    ( Trans.ActivitiesNutritionSignsAbdominalDisortionLabel, "abdominal-distrortion" )
+
+                DrySkin ->
+                    ( Trans.ActivitiesNutritionSignsDrySkinLabel, "dry-skin" )
+
+                PoorAppetite ->
+                    ( Trans.ActivitiesNutritionSignsPoorAppetiteLabel, "poor-appetites" )
+
+                Apathy ->
+                    ( Trans.ActivitiesNutritionSignsApathyLabel, "apathy" )
+
+                BrittleHair ->
+                    ( Trans.ActivitiesNutritionSignsBrittleHairLabel, "brittle-hair" )
+
+                None ->
+                    ( Trans.ActivitiesNutritionSignsNoneLabel, "none-of-these" )
+    in
     div [ class "ui checkbox" ]
         [ input
             [ type_ "checkbox"
