@@ -216,6 +216,25 @@ update msg model =
             SetCurrentDate date ->
                 { model | currentDate = date } ! []
 
+            ThemeSwitch currentTheme ->
+                let
+                    newTheme =
+                        case currentTheme of
+                            Dark ->
+                                Light
+
+                            Light ->
+                                Dark
+
+                    config =
+                        { from = String.toLower <| toString <| currentTheme
+                        , to = String.toLower <| toString <| newTheme
+                        }
+                in
+                    ( { model | theme = newTheme }
+                    , themeSwitcher config
+                    )
+
             Tick _ ->
                 model ! [ Task.perform SetCurrentDate Date.now ]
 
@@ -270,3 +289,8 @@ port pusherKey : ( String, String, List String ) -> Cmd msg
 {-| Get a singal if internet connection is lost.
 -}
 port offline : (Value -> msg) -> Sub msg
+
+
+{-| Send the new theme configurations to JS.
+-}
+port themeSwitcher : ThemeConfig -> Cmd msg

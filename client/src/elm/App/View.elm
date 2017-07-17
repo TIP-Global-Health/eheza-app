@@ -60,19 +60,28 @@ viewHeader language model =
                         []
                     , span [] []
                     ]
-                , a
-                    [ class "link-theme"
-                    , href "#"
-                    ]
-                    [ span [ class "icon-theme icon-theme-light" ]
-                        []
-                    , span [] []
-                    ]
+                , viewHeaderThemeSwitcher model
                 , viewTabSwitcher language model
                 ]
 
         _ ->
             div [] []
+
+
+{-| The theme switcher link.
+-}
+viewHeaderThemeSwitcher : Model -> Html Msg
+viewHeaderThemeSwitcher model =
+    a
+        [ class "link-theme"
+        , href "javascript:void(0);"
+        , onClick (ThemeSwitch model.theme)
+        ]
+        [ span
+            [ class "icon-theme icon-theme-light" ]
+            []
+        , span [] []
+        ]
 
 
 {-| Provides context-sensitive top navigation tabs.

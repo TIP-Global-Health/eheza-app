@@ -43,3 +43,13 @@ Offline.on('down', function() {
 Offline.on('up', function() {
     elmApp.ports.offline.send (false);
 });
+
+/**
+ * Switch the theme CSS file.
+ */
+elmApp.ports.themeSwitcher.subscribe(function(config) {
+  var cssElement = document.getElementById('css-theme-stylesheet');
+  // Manipulating the 'href' attribute in order to switch between the CSS
+  // files.
+  cssElement.href = cssElement.href.replace(config.from, config.to);
+});
