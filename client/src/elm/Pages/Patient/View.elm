@@ -69,7 +69,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                 [ div [ class "six wide column" ]
                     [ img [ class "ui medium rounded image", src child.image ] []
                     ]
-                , div [ class "content six wide column" ] [ motherInfo ]
+                , div [ class "content six wide column", id "mother-info" ] [ motherInfo ]
                 ]
             , div
                 [ class "ui divider" ]
