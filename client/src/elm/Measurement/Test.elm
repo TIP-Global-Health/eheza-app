@@ -38,8 +38,7 @@ viewChildFormsTest =
             \() ->
                 viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) (Just <| Child Weight) emptyModel
                     |> Query.fromHtml
-                    |> Query.find [ Selector.class "weight" ]
-                    |> Query.find [ tag "h1" ]
+                    |> Query.find [ tag "h3" ]
                     |> Query.has [ text "Weight:" ]
         ]
 
