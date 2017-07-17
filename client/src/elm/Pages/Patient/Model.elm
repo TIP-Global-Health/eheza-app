@@ -2,6 +2,7 @@ module Pages.Patient.Model
     exposing
         ( Msg(..)
         , Model
+        , Tab(..)
         , emptyModel
         )
 
@@ -18,9 +19,15 @@ type Msg
     | SetSelectedActivity (Maybe ActivityType)
 
 
+type Tab
+    = Completed
+    | Pending
+
+
 type alias Model =
     { measurements : Measurement.Model.Model
     , selectedActivity : Maybe ActivityType
+    , selectedTab : Tab
     }
 
 
@@ -28,4 +35,5 @@ emptyModel : Model
 emptyModel =
     { measurements = Measurement.Model.emptyModel
     , selectedActivity = Nothing
+    , selectedTab = Pending
     }

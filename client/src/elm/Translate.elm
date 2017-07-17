@@ -19,7 +19,7 @@ type alias TranslationSet =
 type TranslationId
     = AccessDenied
     | Activities
-    | ActivitiesCompleted
+    | ActivitiesCompleted Int
     | ActivitiesHeightHelp
     | ActivitiesHeightLabel
     | ActivitiesHeightTitle
@@ -99,8 +99,8 @@ translate lang trans =
                 Activities ->
                     { english = "Activities" }
 
-                ActivitiesCompleted ->
-                    { english = "ActivitiesCompleted" }
+                ActivitiesCompleted count ->
+                    { english = "Completed (" ++ toString count ++ ")" }
 
                 ActivitiesHeightHelp ->
                     { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight." }
