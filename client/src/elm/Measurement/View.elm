@@ -230,7 +230,9 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
                     ]
                     , viewNutritionSignsSelector language
                 ]
-            , button [ type_ "button" ] [ text <| translate language Trans.Save ]
+            , div [ class "actions" ] [
+                button [ type_ "button", class "ui fluid basic button disabled" ] [ text <| translate language Trans.Save ]
+              ]
             ]
         ]
 
@@ -243,69 +245,77 @@ viewNutritionSignsSelector language =
       [
         div [class "ui checkbox"]
         [
+         input
+            [ type_ "checkbox", id "edema"
+            , name <| encodeChildNutritionSign Edema
+            ]
+            []
+        , label [ for "edema" ]
+            [ text <| translate language Trans.ActivitiesNutritionSignsEdemaLabel ]
+        ]
+        ,div [class "ui checkbox"]
+        [
            input
-              [ type_ "checkbox", id "edema"
-              , name <| encodeChildNutritionSign Edema
+              [ type_ "checkbox", id "abdominal-distrortion"
+              , name <| encodeChildNutritionSign AbdominalDisortion
               ]
               []
-          , label [ for "edema" ]
-              [ text <| translate language Trans.ActivitiesNutritionSignsEdemaLabel ]
-
+          , label [ for "abdominal-distrortion" ]
+              [ text <| translate language Trans.ActivitiesNutritionSignsAbdominalDisortionLabel ]
         ]
-      ],
+        ,div [class "ui checkbox"]
+        [
+           input
+              [ type_ "checkbox", id "dry-skin"
+              , name <| encodeChildNutritionSign DrySkin
+              ]
+              []
+          , label [ for "dry-skin" ]
+              [ text <| translate language Trans.ActivitiesNutritionSignsDrySkinLabel ]
+        ]
+        ,div [class "ui checkbox"]
+        [
+           input
+              [ type_ "checkbox", id "poor-appetites"
+              , name <| encodeChildNutritionSign PoorAppetite
+              ]
+              []
+          , label [ for "poor-appetites" ]
+              [ text <| translate language Trans.ActivitiesNutritionSignsPoorAppetiteLabel ]
+        ]
+      ]
 
-      div [ class "eight wide column" ]
-      []
+      ,div [ class "eight wide column" ]
+      [
+        div [class "ui checkbox"]
+        [
+           input
+              [ type_ "checkbox", id "apathy"
+              , name <| encodeChildNutritionSign Apathy
+              ]
+              []
+          , label [ for "apathy" ]
+              [ text <| translate language Trans.ActivitiesNutritionSignsApathyLabel ]
+        ]
+        ,div [class "ui checkbox"]
+        [
+           input
+              [ type_ "checkbox", id "brittle-hair"
+              , name <| encodeChildNutritionSign BrittleHair
+              ]
+              []
+          , label [ for "brittle-hair" ]
+              [ text <| translate language Trans.ActivitiesNutritionSignsBrittleHairLabel ]
+        ]
+        ,div [class "ui checkbox"]
+        [
+           input
+              [ type_ "checkbox", id "none-of-these"
+              , name <| encodeChildNutritionSign None
+              ]
+              []
+          , label [ for "none-of-these" ]
+              [ text <| translate language Trans.ActivitiesNutritionSignsNoneLabel ]
+        ]
+      ]
     ]
---    ul [ class "checkboxes" ]
---        [ li []
---
---        , li []
---            [ input
---                [ type_ "checkbox"
---                , name <| encodeChildNutritionSign AbdominalDisortion
---                ]
---                []
---            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsAbdominalDisortionLabel ]
---            ]
---        , li []
---            [ input
---                [ type_ "checkbox"
---                , name <| encodeChildNutritionSign DrySkin
---                ]
---                []
---            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsDrySkinLabel ]
---            ]
---        , li []
---            [ input
---                [ type_ "checkbox"
---                , name <| encodeChildNutritionSign PoorAppetite
---                ]
---                []
---            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsPoorAppetiteLabel ]
---            ]
---        , li []
---            [ input
---                [ type_ "checkbox"
---                , name <| encodeChildNutritionSign Apathy
---                ]
---                []
---            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsApathyLabel ]
---            ]
---        , li []
---            [ input
---                [ type_ "checkbox"
---                , name <| encodeChildNutritionSign BrittleHair
---                ]
---                []
---            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsBrittleHairLabel ]
---            ]
---        , li []
---            [ input
---                [ type_ "checkbox"
---                , name <| encodeChildNutritionSign None
---                ]
---                []
---            , span [] [ text <| translate language Trans.ActivitiesNutritionSignsNoneLabel ]
---            ]
---        ]
