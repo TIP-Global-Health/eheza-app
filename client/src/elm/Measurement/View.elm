@@ -214,7 +214,6 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
             []
         , div
             [ class "ui card nutrition"
-            , id "nutritionSignsEntryForm"
             ]
             [ h1
                 []
