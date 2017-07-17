@@ -25,17 +25,20 @@ viewChild backendUrl accessToken user language ( childId, child ) selectedActivi
                 case activity of
                     Child childActivity ->
                         case childActivity of
+                            ChildPicture ->
+                                viewPhoto backendUrl accessToken user language ( childId, child ) model
+
                             Height ->
                                 viewHeight backendUrl accessToken user language ( childId, child ) model
 
                             Muac ->
                                 viewMuac backendUrl accessToken user language ( childId, child ) model
 
-                            Weight ->
-                                viewWeight backendUrl accessToken user language ( childId, child ) model
-
                             NutritionSigns ->
                                 viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
+
+                            Weight ->
+                                viewWeight backendUrl accessToken user language ( childId, child ) model
 
                             _ ->
                                 emptyNode
@@ -175,19 +178,44 @@ viewWeight backendUrl accessToken user language ( childId, child ) model =
                 ]
             , div
                 [ class "actions" ]
-                [ saveButon language WeightSave model
+                [ saveButton language WeightSave model
                 ]
             ]
 
 
+viewPhoto : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
+viewPhoto backendUrl accessToken user language ( childId, child ) model =
+    div []
+        [ divider
+        , div
+            [ class "ui segment"
+            ]
+            [ h1
+                []
+                [ text <| translate language Trans.ActivitiesPhotoTitle
+                ]
+            , span
+                []
+                [ text <| translate language Trans.ActivitiesPhotoHelp ]
+            , div
+                [ class "dropzone" ]
+                []
+            , saveButton language PhotoSave model
+            , div
+                [ class "ui button" ]
+                [ text <| translate language Trans.Retake ]
+            ]
+        ]
+
+
 {-| Helper function to create a Save button.
 
-Button will also take care of preventing double submisson,
+Button will also take care of preventing double submission,
 and showing success and error indications.
 
 -}
-saveButon : Language -> Msg -> Model -> Html Msg
-saveButon language msg model =
+saveButton : Language -> Msg -> Model -> Html Msg
+saveButton language msg model =
     let
         isLoading =
             model.status == Loading
@@ -244,7 +272,7 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
                     , viewNutritionSignsSelector language
                     ]
                 ]
-            , saveButon language NutritionSignsSave model
+            , saveButton language NutritionSignsSave model
             ]
         ]
 

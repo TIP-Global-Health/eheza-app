@@ -74,6 +74,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                             ]
                         ]
                     ]
+                , div [ class "content six wide column", id "mother-info" ] [ motherInfo ]
                 ]
             , div [ class "ui segment" ]
                 [ div []
