@@ -30,6 +30,7 @@ type TranslationId
     | ActivitiesWeightHelp
     | ActivitiesWeightLabel
     | ActivitiesWeightTitle
+    | Baby
     | CentimeterShorthand
     | Children
     | Connected
@@ -59,6 +60,8 @@ type TranslationId
     | PageNotFoundMsg
     | Password
     | Patients
+    | PlaceholderTextGroupDate
+    | PlaceholderTextJoined
     | PriorWeight Float
     | ReportRemaining Int
     | ReloadPatient
@@ -115,6 +118,9 @@ translate lang trans =
 
                 ActivitiesWeightTitle ->
                     { english = "Weight:" }
+
+                Baby ->
+                    { english = "Baby" }
 
                 CentimeterShorthand ->
                     { english = "cm" }
@@ -202,6 +208,12 @@ translate lang trans =
 
                 Patients ->
                     { english = "Patients" }
+
+                PlaceholderTextGroupDate ->
+                    { english = "Group Date" }
+
+                PlaceholderTextJoined ->
+                    { english = "Joined in June 2017" }
 
                 PriorWeight value ->
                     { english = "Previous weight: " ++ (toString value) ++ " kg" }
