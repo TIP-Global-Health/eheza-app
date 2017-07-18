@@ -31,7 +31,6 @@ The unit tests are written in Elm via [Elm Test](https://github.com/elm-communit
 npm test
 ```
 
-
 ## WebdriverIO tests
 
 1. Run `gulp`

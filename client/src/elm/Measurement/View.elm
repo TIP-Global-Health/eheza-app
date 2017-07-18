@@ -50,10 +50,10 @@ viewChild backendUrl accessToken user language ( childId, child ) selectedActivi
 
 
 viewFloatForm : BackendUrl -> String -> User -> Language -> FloatMeasurements -> ( ChildId, Child ) -> Model -> Html Msg
-viewFloatForm backendUrl accessToken user language floatMeasurements ( childId, child ) model =
+viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, child ) model =
     let
-        ( constraints, headerText, helpText, labelText, measurementValue, measurementType, updateMsg, saveMsg, blockClass ) =
-            case floatMeasurements of
+        ( constraints, headerText, helpText, labelText, measurementValue, measurementType, updateMsg, saveMsg, blockName ) =
+            case floatMeasurement of
                 HeightFloat ->
                     ( getInputConstraintsHeight
                     , Trans.ActivitiesHeightTitle
@@ -95,7 +95,7 @@ viewFloatForm backendUrl accessToken user language floatMeasurements ( childId, 
             , div
                 [ classList
                     [ ( "ui full segment ", True )
-                    , ( blockClass, True )
+                    , ( blockName, True )
                     ]
                 ]
                 [ h3
@@ -113,7 +113,7 @@ viewFloatForm backendUrl accessToken user language floatMeasurements ( childId, 
                                 [ div [ class "ui basic label" ] [ text <| translate language labelText ]
                                 , input
                                     [ type_ "number"
-                                    , name "height"
+                                    , name blockName
                                     , Attr.min <| toString constraints.minVal
                                     , Attr.max <| toString constraints.maxVal
                                     , value <| toString measurementValue
