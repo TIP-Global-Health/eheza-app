@@ -61,6 +61,9 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
         WeightSave ->
             postWeight backendUrl accessToken patientId model
 
+        HeightSave ->
+            model ! []
+
         WeightUpdate val ->
             let
                 weight =

@@ -79,7 +79,7 @@ viewHeight backendUrl accessToken user language ( childId, child ) model =
                                     , name "height"
                                     , Attr.min <| toString constraints.minVal
                                     , Attr.max <| toString constraints.maxVal
-                                    , value <| toString model.weight.value
+                                    , value <| toString model.height.value
                                     , onInput <| (\v -> HeightUpdate <| Result.withDefault 0.0 <| String.toFloat v)
                                     ]
                                     []
@@ -88,7 +88,7 @@ viewHeight backendUrl accessToken user language ( childId, child ) model =
                             ]
                         ]
                     ]
-                , button [ type_ "button" ] [ text <| translate language Trans.Save ]
+                , saveButton language HeightSave model
                 ]
             ]
 
