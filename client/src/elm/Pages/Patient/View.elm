@@ -187,26 +187,31 @@ viewActivityCards language currentDate user patients patientTypeFilter selectedT
             else
                 noPendingActivitiesView
 
+        tabClass tabType =
+            [ ( "item", True )
+            , ( "active", selectedTab == tabType )
+            ]
+
+        tabItem tabType activitiesList =
+            let
+                tabTitle =
+                    case tabType of
+                        Pending ->
+                            Trans.ActivitiesToComplete
+
+                        Completed ->
+                            Trans.ActivitiesCompleted
+            in
+                a
+                    [ classList <| tabClass tabType
+                    , onClick <| SetSelectedTab tabType
+                    ]
+                    [ text <| translate language <| tabTitle <| List.length activitiesList ]
+
         tabs =
             div [ class "ui text menu" ]
-                [ a
-                    [ classList
-                        [ ( "item", True )
-                        , ( "active", selectedTab == Pending )
-                        ]
-                    , onClick <| SetSelectedTab Pending
-                    ]
-                    [ text <| translate language <| Trans.ActivitiesToComplete <| List.length (pendingActivities)
-                    ]
-                , a
-                    [ classList
-                        [ ( "item", True )
-                        , ( "active", selectedTab == Completed )
-                        ]
-                    , onClick <| SetSelectedTab Completed
-                    ]
-                    [ text <| translate language <| Trans.ActivitiesCompleted <| List.length (noPendingActivities)
-                    ]
+                [ tabItem Pending pendingActivities
+                , tabItem Completed noPendingActivities
                 ]
     in
         div [ class "ui tasks segment" ]
