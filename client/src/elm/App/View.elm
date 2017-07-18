@@ -30,14 +30,6 @@ view model =
                 , div [ class "ui main container" ]
                     [ viewMainContent config.backendUrl model
                     ]
-                , div [ class "right item" ]
-                    [ a
-                        [ class "ui inverted button"
-                        , id "sign-out"
-                        , onClick Logout
-                        ]
-                        [ text <| translate model.language Trans.SignOut ]
-                    ]
                 ]
 
         _ ->
@@ -149,11 +141,6 @@ viewSidebar language model =
                     , onClick <| SetActivePage <| Dashboard []
                     ]
                     [ text <| translate language Trans.Patients ]
-                , a
-                    [ class "item"
-                    , onClick Logout
-                    ]
-                    [ text <| translate language Trans.SignOut ]
                 , span
                     [ class "item"
                     ]

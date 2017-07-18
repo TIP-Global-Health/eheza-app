@@ -82,7 +82,6 @@ type TranslationId
     | Save
     | SaveError
     | SearchByName
-    | SignOut
     | TitleHealthAssessment
     | Username
     | WelcomeUser String
@@ -287,9 +286,6 @@ translate lang trans =
 
                 SearchByName ->
                     { english = "Search by Name" }
-
-                SignOut ->
-                    { english = "Sign Out" }
 
                 TitleHealthAssessment ->
                     { english = "2017 July Health Assessment" }
