@@ -275,16 +275,28 @@ viewNutritionSignsSelector language =
     in
         div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
-                (List.map (\nutritionSign -> viewNutritionSignsSelectorItem language nutritionSign) nutrionSignsAndTranslationIdsFirst)
+                (List.map
+                    (viewNutritionSignsSelectorItem language)
+                    nutrionSignsAndTranslationIdsFirst
+                )
             , div [ class "eight wide column" ]
-                (List.map (\nutritionSign -> viewNutritionSignsSelectorItem language nutritionSign) nutrionSignsAndTranslationIdsSecond)
+                (List.map
+                    (viewNutritionSignsSelectorItem language)
+                    nutrionSignsAndTranslationIdsSecond
+                )
             ]
 
 
+{-| Helper function to return a tuples of checkbox label and attributes value.
+
+For each nutrition sign the function will return a the translaed label of the
+checkbox and a value for the id and for attributes.
+
+-}
 viewNutritionSignsSelectorItem : Language -> ChildNutritionSign -> Html Msg
 viewNutritionSignsSelectorItem language sign =
     let
-        ( body, labelTag ) =
+        ( body, attributeValue ) =
             case sign of
                 Edema ->
                     ( Trans.ActivitiesNutritionSignsEdemaLabel, "edema" )
@@ -310,10 +322,10 @@ viewNutritionSignsSelectorItem language sign =
         div [ class "ui checkbox" ]
             [ input
                 [ type_ "checkbox"
-                , id labelTag
+                , id attributeValue
                 , name <| encodeChildNutritionSign sign
                 ]
                 []
-            , label [ for labelTag ]
+            , label [ for attributeValue ]
                 [ text <| translate language body ]
             ]
