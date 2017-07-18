@@ -233,13 +233,14 @@ saveButton language msg model =
                 [ onClick msg ]
     in
         div []
-            [ div
+            [ button
                 ([ classList
                     [ ( "ui fluid button", True )
                     , ( "loading", isLoading )
                     , ( "basic", not isSuccess )
                     , ( "negative", isFailure )
                     ]
+                  , id "save-form"
                  ]
                     ++ saveAttr
                 )
