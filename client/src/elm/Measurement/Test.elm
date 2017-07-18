@@ -18,14 +18,14 @@ viewChildFormsTest =
                 viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) (Just <| Child Height) emptyModel
                     |> Query.fromHtml
                     |> Query.find [ Selector.class "height" ]
-                    |> Query.find [ tag "h1" ]
+                    |> Query.find [ tag "h3" ]
                     |> Query.has [ text "Height:" ]
         , test "Then a MUAC form should be displayed when selected" <|
             \() ->
                 viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) (Just <| Child Muac) emptyModel
                     |> Query.fromHtml
                     |> Query.find [ Selector.class "muac" ]
-                    |> Query.find [ tag "h1" ]
+                    |> Query.find [ tag "h3" ]
                     |> Query.has [ text "Mid Upper Arm Circumference (MUAC):" ]
         , test "Then a Nutrition form should be displayed when selected" <|
             \() ->
