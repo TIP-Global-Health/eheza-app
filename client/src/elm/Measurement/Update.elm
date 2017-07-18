@@ -1,5 +1,7 @@
 module Measurement.Update exposing (update)
 
+import Activity.Model exposing (ActivityType(Child), ChildActivityType(Weight))
+import Activity.Model exposing (ActivityType)
 import Config.Model exposing (BackendUrl)
 import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
 import Measurement.Encoder exposing (encodePhoto, encodeWeight)
@@ -9,28 +11,40 @@ import RemoteData exposing (RemoteData(..))
 import User.Model exposing (..)
 
 
-update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model -> ( Model, Cmd Msg )
-update backendUrl accessToken user ( patientId, patient ) msg model =
+update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model -> Maybe ActivityType -> ( Maybe ActivityType, Model, Cmd Msg )
+update backendUrl accessToken user ( patientId, patient ) msg model currentActivity =
     case msg of
         HandlePhotoSave (Ok ()) ->
-            { model | status = Success () } ! []
+            ( Just <| Child <| Weight
+            , { model | status = Success () }
+            , Cmd.none
+            )
 
         HandlePhotoSave (Err err) ->
             let
                 _ =
                     Debug.log "HandlePhotoSave (Err)" False
             in
-                { model | status = Failure err } ! []
+                ( currentActivity
+                , { model | status = Failure err }
+                , Cmd.none
+                )
 
         HandleWeightSave (Ok ()) ->
-            { model | status = Success () } ! []
+            ( Just <| Child <| Height
+            , { model | status = Success () }
+            , Cmd.none
+            )
 
         HandleWeightSave (Err err) ->
             let
                 _ =
                     Debug.log "HandleWeightSave (Err)" False
             in
-                { model | status = Failure err } ! []
+                ( currentActivity
+                , { model | status = Failure err }
+                , Cmd.none
+                )
 
         HeightUpdate val ->
             let
@@ -40,7 +54,10 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
                 updatedHeight =
                     { height | value = val }
             in
-                { model | height = updatedHeight } ! []
+                ( currentActivity
+                , { model | height = updatedHeight }
+                , Cmd.none
+                )
 
         MuacUpdate val ->
             let
@@ -50,16 +67,22 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
                 updatedMuac =
                     { muac | value = val }
             in
-                { model | muac = updatedMuac } ! []
+                ( currentActivity
+                , { model | muac = updatedMuac }
+                , Cmd.none
+                )
 
         NutritionSignsSave ->
-            model ! []
+            ( currentActivity
+            , model
+            , Cmd.none
+            )
 
         PhotoSave ->
-            postPhoto backendUrl accessToken patientId model
+            postPhoto backendUrl accessToken patientId model currentActivity
 
         WeightSave ->
-            postWeight backendUrl accessToken patientId model
+            postWeight backendUrl accessToken patientId model currentActivity
 
         WeightUpdate val ->
             let
@@ -69,13 +92,16 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
                 updatedWeight =
                     { weight | value = val }
             in
-                { model | weight = updatedWeight } ! []
+                ( currentActivity
+                , { model | weight = updatedWeight }
+                , Cmd.none
+                )
 
 
 {-| Send new weight of a child to the backend.
 -}
-postWeight : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg )
-postWeight backendUrl accessToken childId model =
+postWeight : BackendUrl -> String -> PatientId -> Model -> Maybe ActivityType -> ( Maybe ActivityType, Model, Cmd Msg )
+postWeight backendUrl accessToken childId model currentActivity =
     let
         command =
             HttpBuilder.post (backendUrl ++ "/api/weights")
@@ -83,15 +109,16 @@ postWeight backendUrl accessToken childId model =
                 |> withJsonBody (encodeWeight childId model.weight.value)
                 |> send HandleWeightSave
     in
-        ( { model | status = Loading }
+        ( currentActivity
+        , { model | status = Loading }
         , command
         )
 
 
 {-| Send new weight of a child to the backend.
 -}
-postPhoto : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg )
-postPhoto backendUrl accessToken childId model =
+postPhoto : BackendUrl -> String -> PatientId -> Model -> Maybe ActivityType -> ( Maybe ActivityType, Model, Cmd Msg )
+postPhoto backendUrl accessToken childId model currentActivity =
     let
         command =
             HttpBuilder.post (backendUrl ++ "/api/photos")
@@ -99,6 +126,7 @@ postPhoto backendUrl accessToken childId model =
                 |> withJsonBody (encodePhoto childId model.photo.value)
                 |> send HandlePhotoSave
     in
-        ( { model | status = Loading }
+        ( currentActivity
+        , { model | status = Loading }
         , command
         )

@@ -29,11 +29,11 @@ update backendUrl accessToken user msg ( patientId, patient ) model =
 
         MsgMeasurement subMsg ->
             let
-                ( measurementsUpdated, cmds ) =
-                    Measurement.Update.update backendUrl accessToken user ( patientId, patient ) subMsg model.measurements
+                ( nextActivity, measurementsUpdated, cmds ) =
+                    Measurement.Update.update backendUrl accessToken user ( patientId, patient ) subMsg model.measurements model.selectedActivity
             in
                 ( patient
-                , { model | measurements = measurementsUpdated }
+                , { model | measurements = measurementsUpdated, selectedActivity = nextActivity }
                 , Cmd.map MsgMeasurement cmds
                 , Nothing
                 )
