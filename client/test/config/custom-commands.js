@@ -11,13 +11,11 @@ module.exports = function (browser, capabilities, specs) {
     browser.setValueSafe('[name="username"]', user);
     browser.setValueSafe('[name="password"]', user);
     browser.submitForm('.login-form');
-    browser.waitForVisible('a=Sign Out');
+    browser.waitForVisible('.link-back');
   });
 
   browser.addCommand('logout', () => {
     browser.url('/#');
-    browser.findAndClick('a=Sign Out')
-    browser.waitForVisible('.login-form');
   });
 
   /**
