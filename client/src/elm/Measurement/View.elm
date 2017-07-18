@@ -59,28 +59,34 @@ viewHeight backendUrl accessToken user language ( childId, child ) model =
         div []
             [ divider
             , div
-                [ class "ui card height"
+                [ class "ui full segment height"
                 ]
-                [ h1
-                    []
+                [ h3
+                    [ class "ui header" ]
                     [ text <| translate language Trans.ActivitiesHeightTitle
                     ]
-                , span
+                , p
                     []
                     [ text <| translate language Trans.ActivitiesHeightHelp ]
                 , div
-                    []
-                    [ span [] [ text <| translate language Trans.ActivitiesHeightLabel ]
-                    , input
-                        [ type_ "number"
-                        , name "height"
-                        , Attr.min <| toString constraints.minVal
-                        , Attr.max <| toString constraints.maxVal
-                        , value <| toString model.weight.value
-                        , onInput <| (\v -> HeightUpdate <| Result.withDefault 0.0 <| String.toFloat v)
+                    [ class "ui form" ]
+                    [ div [ class "ui grid" ]
+                        [ div [ class "ten wide column" ]
+                            [ div [ class "ui right labeled input" ]
+                                [ div [ class "ui basic label" ] [ text <| translate language Trans.ActivitiesHeightLabel ]
+                                , input
+                                    [ type_ "number"
+                                    , name "height"
+                                    , Attr.min <| toString constraints.minVal
+                                    , Attr.max <| toString constraints.maxVal
+                                    , value <| toString model.weight.value
+                                    , onInput <| (\v -> HeightUpdate <| Result.withDefault 0.0 <| String.toFloat v)
+                                    ]
+                                    []
+                                , div [ class "ui basic label" ] [ text <| translate language Trans.CentimeterShorthand ]
+                                ]
+                            ]
                         ]
-                        []
-                    , span [] [ text <| translate language Trans.CentimeterShorthand ]
                     ]
                 , button [ type_ "button" ] [ text <| translate language Trans.Save ]
                 ]
