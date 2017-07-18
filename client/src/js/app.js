@@ -142,3 +142,13 @@ function attachDropzone(selector, config) {
     elmApp.ports.dropzoneUploadedFile.send(id);
   });
 }
+
+/**
+ * Switch the theme CSS file.
+ */
+elmApp.ports.themeSwitcher.subscribe(function(config) {
+  var cssElement = document.getElementById('css-theme-stylesheet');
+  // Manipulating the 'href' attribute in order to switch between the CSS
+  // files.
+  cssElement.href = cssElement.href.replace(config.from, config.to);
+});
