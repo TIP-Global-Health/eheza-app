@@ -103,7 +103,7 @@ update currentDate backendUrl accessToken user msg model =
                                 Maybe.map identity (Dict.get id model.patientPage)
                                     |> Maybe.withDefault Pages.Patient.Model.emptyModel
 
-                            ( patientUpdated, subModel, subCmd, redirectPage ) =
+                            ( patientUpdated, subModel, subCmd, redirectPage, maybeActivityTypeCompleted ) =
                                 Pages.Patient.Update.update backendUrl accessToken user subMsg ( id, patient ) patientModel
                         in
                             ( { model
