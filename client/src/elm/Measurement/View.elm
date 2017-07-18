@@ -284,9 +284,8 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
                 , viewNutritionSignsSelector language
                 ]
             , div [ class "actions" ]
-                [ saveButton language NutritionSignsSave model
+                [ saveButton language NutritionSignsSave model Nothing
                 ]
-            , saveButton language NutritionSignsSave model Nothing
             ]
         ]
 
