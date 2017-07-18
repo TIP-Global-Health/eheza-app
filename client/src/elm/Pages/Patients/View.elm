@@ -147,5 +147,5 @@ config =
                 , sorter = Table.increasingOrDecreasingBy <| Tuple.second >> getPatientName
                 }
             ]
-        , customizations = { defaultCustomizations | tableAttrs = [ class "ui celled table" ] }
+        , customizations = { defaultCustomizations | tableAttrs = [ class "ui celled table", id "patients-table" ] }
         }
