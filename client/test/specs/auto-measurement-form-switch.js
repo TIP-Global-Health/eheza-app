@@ -15,8 +15,7 @@ describe('Auto transform between measurement forms.', () => {
         // Follow the Weight form.
         browser.element('a=Weight').click();
         browser.element('#save-form').click();
-        browser.waitForVisible('#save-form.success');
-        // browser.waitForVisible('span=Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight.');
+        browser.waitForVisible('span=Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight.');
     });
 
 });
