@@ -22,7 +22,7 @@ describe('Auto transform between measurement forms.', () => {
     it('Saving the Photo form should lead to the Weight form.', () => {
         browser.element('#save-form').click();
         // The help text of the Weight form.
-        browser.waitForVisible('span=Calibrate the scale before taking the first baby\'s weight. Place baby in harness with no clothes on.');
+        browser.waitForVisible("p=Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on.");
     });
 
     it('Saving the Weight form should lead to the Height form.', () => {
