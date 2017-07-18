@@ -27,13 +27,13 @@ emptyFloatInput constraints =
 type Msg
     = HandlePhotoSave (Result Http.Error ())
     | HandleWeightSave (Result Http.Error ())
+    | HeightSave
     | HeightUpdate Float
     | MuacUpdate Float
     | NutritionSignsSave
     | PhotoSave
     | WeightSave
     | WeightUpdate Float
-    | HeightSave
 
 
 type alias Model =
