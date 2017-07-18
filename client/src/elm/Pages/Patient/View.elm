@@ -16,7 +16,7 @@ import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
 import Measurement.View
 import Mother.Model exposing (Mother, MotherId)
-import Pages.Patient.Model exposing (Model, Msg(..))
+import Pages.Patient.Model exposing (Model, Msg(..), Tab(..))
 import Patient.Model exposing (Patient, PatientId, PatientTypeFilter(..), PatientsDict)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
@@ -78,15 +78,15 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                 ]
             , div [ class "ui segment" ]
                 [ div []
-                    [ viewActivityCards language currentDate currentUser patients Children
+                    [ viewActivityCards language currentDate currentUser patients Children model.selectedTab
                     ]
                 ]
             , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) model.selectedActivity model.measurements
             ]
 
 
-viewMother : Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Html Msg
-viewMother language currentDate currentUser motherId mother children =
+viewMother : Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Model -> Html Msg
+viewMother language currentDate currentUser motherId mother children model =
     let
         childrenInfo =
             (List.map
@@ -147,7 +147,7 @@ viewMother language currentDate currentUser motherId mother children =
                 ]
             , div [ class "ui segment" ]
                 [ div []
-                    [ viewActivityCards language currentDate currentUser patients Children
+                    [ viewActivityCards language currentDate currentUser patients Children model.selectedTab
                     ]
                 ]
             ]
@@ -157,8 +157,8 @@ viewMother language currentDate currentUser motherId mother children =
 -- @todo: Cleanup code duplication
 
 
-viewActivityCards : Language -> Date -> User -> PatientsDict -> PatientTypeFilter -> Html Msg
-viewActivityCards language currentDate user patients patientTypeFilter =
+viewActivityCards : Language -> Date -> User -> PatientsDict -> PatientTypeFilter -> Tab -> Html Msg
+viewActivityCards language currentDate user patients patientTypeFilter selectedTab =
     let
         allActivityList =
             getActivityList currentDate patientTypeFilter patients
@@ -177,17 +177,46 @@ viewActivityCards language currentDate user patients patientTypeFilter =
 
         noPendingActivitiesView =
             if List.isEmpty noPendingActivities then
-                div [] []
+                []
             else
-                div []
-                    [ h2 [ class "ui header activities" ] [ text <| translate language Trans.ActivitiesCompleted ]
-                    , div [ class "ui cards activities completed" ] (List.map (viewActivityListItem language) noPendingActivities)
+                List.map (viewActivityListItem language) noPendingActivities
+
+        activeView =
+            if selectedTab == Pending then
+                pendingActivitiesView
+            else
+                noPendingActivitiesView
+
+        tabClass tabType =
+            [ ( "item", True )
+            , ( "active", selectedTab == tabType )
+            ]
+
+        tabItem tabType activitiesList =
+            let
+                tabTitle =
+                    case tabType of
+                        Pending ->
+                            Trans.ActivitiesToComplete
+
+                        Completed ->
+                            Trans.ActivitiesCompleted
+            in
+                a
+                    [ classList <| tabClass tabType
+                    , onClick <| SetSelectedTab tabType
                     ]
+                    [ text <| translate language <| tabTitle <| List.length activitiesList ]
+
+        tabs =
+            div [ class "ui text menu" ]
+                [ tabItem Pending pendingActivities
+                , tabItem Completed noPendingActivities
+                ]
     in
-        div []
-            [ h2 [ class "ui header activities" ] [ text <| translate language Trans.ActivitiesToComplete ]
-            , div [ class "ui cards activities pending" ] pendingActivitiesView
-            , noPendingActivitiesView
+        div [ class "ui tasks segment" ]
+            [ tabs
+            , div [ class "ui five column grid pending" ] activeView
             ]
 
 
@@ -197,16 +226,12 @@ viewActivityListItem language report =
         clickHandler =
             onClick <| SetSelectedActivity (Just <| report.activity.activityType)
     in
-        div [ class "ui card activities__item" ]
+        div [ class "column" ]
             [ a
                 [ clickHandler
+                , class "link-section"
                 ]
-                [ i [ class (report.activity.icon ++ " icon") ] [] ]
-            , div [ class "content" ]
-                [ a
-                    [ class "header activities__item__title"
-                    , clickHandler
-                    ]
-                    [ text report.activity.name ]
+                [ span [ class ("icon-section icon-" ++ report.activity.icon) ] []
+                , text report.activity.name
                 ]
             ]

@@ -9,12 +9,12 @@ describe('Image Upload workflow', () => {
     browser.login('aya');
     browser.waitForVisible('#patients-table');
 
-    // Following the first patient page.
-    browser.element('#patients-table tbody tr td a').click();
+    // Proceeding to the patient where activities are pending.
+    browser.url('/#patient/41');
     browser.waitUntil(() => browser.isVisible('#mother-info'));
 
     // Follow the photo form.
-    browser.element('a=Take pictures (Child)').click();
+    browser.element('a=Photo').click();
 
     // Add and then check the image.
     browser.addTestImage('Testfile1');

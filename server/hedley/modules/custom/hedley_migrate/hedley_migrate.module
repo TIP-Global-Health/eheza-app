@@ -167,6 +167,28 @@ function _hedley_migrate_preprocess_examination($node, Generator $faker) {
 function _hedley_migrate_preprocess_child($node, Generator $faker) {
   $wrapper = entity_metadata_wrapper('node', $node);
   $wrapper->title->set($faker->firstName);
+
+  $_hedley_devel_generate = &drupal_static(__FUNCTION__, FALSE);
+
+  if ($_hedley_devel_generate) {
+    return;
+  }
+  $_hedley_devel_generate = TRUE;
+
+  // For the firsh Child, setting dates in the past, making sure that the
+  // activity is pending.
+  $date_fields = [
+    'weight',
+    'height',
+    'muac',
+    'picture',
+
+  ];
+  $dt = new DateTime('30 days ago');
+  foreach ($date_fields as $field) {
+    $wrapper->{'field_date_' . $field}->set($dt->getTimestamp());
+  }
+
 }
 
 /**
