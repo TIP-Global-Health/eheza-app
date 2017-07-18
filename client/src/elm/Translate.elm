@@ -19,14 +19,14 @@ type alias TranslationSet =
 type TranslationId
     = AccessDenied
     | Activities
-    | ActivitiesCompleted
+    | ActivitiesCompleted Int
     | ActivitiesHeightHelp
     | ActivitiesHeightLabel
     | ActivitiesHeightTitle
     | ActivitiesMuacHelp
     | ActivitiesMuacLabel
     | ActivitiesMuacTitle
-    | ActivitiesToComplete
+    | ActivitiesToComplete Int
     | ActivitiesNutritionSignsAbdominalDisortionLabel
     | ActivitiesNutritionSignsApathyLabel
     | ActivitiesNutritionSignsBrittleHairLabel
@@ -99,8 +99,8 @@ translate lang trans =
                 Activities ->
                     { english = "Activities" }
 
-                ActivitiesCompleted ->
-                    { english = "ActivitiesCompleted" }
+                ActivitiesCompleted count ->
+                    { english = "Completed (" ++ toString count ++ ")" }
 
                 ActivitiesHeightHelp ->
                     { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight." }
@@ -159,8 +159,8 @@ translate lang trans =
                 ActivitiesWeightHelp ->
                     { english = "Calibrate the scale before taking the first baby's weight.  Place baby in harness with no clothes on." }
 
-                ActivitiesToComplete ->
-                    { english = "ActivitiesToComplete" }
+                ActivitiesToComplete count ->
+                    { english = "To Do (" ++ toString count ++ ")" }
 
                 ActivitiesWeightLabel ->
                     { english = "Weight:" }
