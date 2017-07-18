@@ -238,11 +238,10 @@ saveButton language msg model maybeDivClass =
             else
                 [ onClick msg ]
 
-        classes =
-            Maybe.map (\divClass -> [ ( divClass, True ) ]) maybeDivClass
-                |> Maybe.withDefault []
+        attrs =
+            Maybe.map (\divClass -> [ class divClass ]) maybeDivClass
     in
-        div [ classList classes ]
+        div (Maybe.withDefault [] attrs)
             [ button
                 ([ classList
                     [ ( "ui fluid basic button", True )
