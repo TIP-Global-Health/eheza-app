@@ -25,20 +25,20 @@ viewChild backendUrl accessToken user language ( childId, child ) selectedActivi
                 case activity of
                     Child childActivity ->
                         case childActivity of
+                            ChildPicture ->
+                                viewPhoto backendUrl accessToken user language ( childId, child ) model
+
                             Height ->
                                 viewHeight backendUrl accessToken user language ( childId, child ) model
 
                             Muac ->
                                 viewMuac backendUrl accessToken user language ( childId, child ) model
 
-                            ChildPicture ->
-                                viewPhoto backendUrl accessToken user language ( childId, child ) model
+                            NutritionSigns ->
+                                viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
 
                             Weight ->
                                 viewWeight backendUrl accessToken user language ( childId, child ) model
-
-                            NutritionSigns ->
-                                viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
 
                             _ ->
                                 emptyNode

@@ -30,7 +30,6 @@ module.exports = function (browser, capabilities, specs) {
       browser.waitForVisible('.dz-clickable');
 
       // Based on http://blog.fermium.io/how-to-send-files-to-a-dropzone-js-element-in-selenium/
-      // @todo: Move to browser command.
       browser.execute(
         "var myZone, blob, base64Image; myZone = Dropzone.forElement('div.dropzone');" +
         "base64Image = '" +
