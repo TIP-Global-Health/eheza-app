@@ -30,6 +30,7 @@ type Msg
     | HeightSave
     | HeightUpdate Float
     | MuacUpdate Float
+    | MuacSave
     | NutritionSignsSave
     | PhotoSave
     | WeightSave
@@ -43,6 +44,12 @@ type alias Model =
     , photo : FloatInput
     , weight : FloatInput
     }
+
+
+type FloatMeasurements
+    = HeightFloat
+    | MuacFloat
+    | WeightFloat
 
 
 getInputConstraintsHeight : FloatInputConstraints

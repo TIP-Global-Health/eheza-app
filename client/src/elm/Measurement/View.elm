@@ -10,7 +10,7 @@ import Config.Model exposing (BackendUrl)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
-import Measurement.Model exposing (Model, Msg(..), getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
+import Measurement.Model exposing (FloatMeasurements(..), Model, Msg(..), getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import User.Model exposing (..)
@@ -29,16 +29,16 @@ viewChild backendUrl accessToken user language ( childId, child ) selectedActivi
                                 viewPhoto backendUrl accessToken user language ( childId, child ) model
 
                             Height ->
-                                viewHeight backendUrl accessToken user language ( childId, child ) model
+                                viewFloatForm backendUrl accessToken user language HeightFloat ( childId, child ) model
 
                             Muac ->
-                                viewMuac backendUrl accessToken user language ( childId, child ) model
+                                viewFloatForm backendUrl accessToken user language MuacFloat ( childId, child ) model
 
                             NutritionSigns ->
                                 viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
 
                             Weight ->
-                                viewWeight backendUrl accessToken user language ( childId, child ) model
+                                viewFloatForm backendUrl accessToken user language WeightFloat ( childId, child ) model
 
                             _ ->
                                 emptyNode
@@ -50,11 +50,43 @@ viewChild backendUrl accessToken user language ( childId, child ) selectedActivi
         )
 
 
-viewHeight : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
-viewHeight backendUrl accessToken user language ( childId, child ) model =
+viewFloatForm : BackendUrl -> String -> User -> Language -> FloatMeasurements -> ( ChildId, Child ) -> Model -> Html Msg
+viewFloatForm backendUrl accessToken user language floatMeasurements ( childId, child ) model =
     let
-        constraints =
-            getInputConstraintsHeight
+        ( constraints, headerText, helpText, labelText, measurementValue, measurementType, updateMsg, saveMsg ) =
+            case floatMeasurements of
+                HeightFloat ->
+                    ( getInputConstraintsHeight
+                    , Trans.ActivitiesHeightTitle
+                    , Trans.ActivitiesHeightHelp
+                    , Trans.ActivitiesHeightLabel
+                    , model.height.value
+                    , Trans.CentimeterShorthand
+                    , HeightUpdate
+                    , HeightSave
+                    )
+
+                MuacFloat ->
+                    ( getInputConstraintsMuac
+                    , Trans.ActivitiesMuacTitle
+                    , Trans.ActivitiesMuacHelp
+                    , Trans.ActivitiesMuacLabel
+                    , model.muac.value
+                    , Trans.CentimeterShorthand
+                    , MuacUpdate
+                    , MuacSave
+                    )
+
+                WeightFloat ->
+                    ( getInputConstraintsWeight
+                    , Trans.ActivitiesWeightTitle
+                    , Trans.ActivitiesWeightHelp
+                    , Trans.ActivitiesWeightLabel
+                    , model.weight.value
+                    , Trans.KilogramShorthand
+                    , WeightUpdate
+                    , WeightSave
+                    )
     in
         div []
             [ divider
@@ -63,128 +95,32 @@ viewHeight backendUrl accessToken user language ( childId, child ) model =
                 ]
                 [ h3
                     [ class "ui header" ]
-                    [ text <| translate language Trans.ActivitiesHeightTitle
+                    [ text <| translate language headerText
                     ]
                 , p
                     []
-                    [ text <| translate language Trans.ActivitiesHeightHelp ]
+                    [ text <| translate language helpText ]
                 , div
                     [ class "ui form" ]
                     [ div [ class "ui grid" ]
                         [ div [ class "ten wide column" ]
                             [ div [ class "ui right labeled input" ]
-                                [ div [ class "ui basic label" ] [ text <| translate language Trans.ActivitiesHeightLabel ]
+                                [ div [ class "ui basic label" ] [ text <| translate language labelText ]
                                 , input
                                     [ type_ "number"
                                     , name "height"
                                     , Attr.min <| toString constraints.minVal
                                     , Attr.max <| toString constraints.maxVal
-                                    , value <| toString model.height.value
-                                    , onInput <| (\v -> HeightUpdate <| Result.withDefault 0.0 <| String.toFloat v)
+                                    , value <| toString measurementValue
+                                    , onInput <| (\v -> updateMsg <| Result.withDefault 0.0 <| String.toFloat v)
                                     ]
                                     []
-                                , div [ class "ui basic label" ] [ text <| translate language Trans.CentimeterShorthand ]
+                                , div [ class "ui basic label" ] [ text <| translate language measurementType ]
                                 ]
                             ]
                         ]
                     ]
-                , saveButton language HeightSave model
-                ]
-            ]
-
-
-viewMuac : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
-viewMuac backendUrl accessToken user language ( childId, child ) model =
-    let
-        constraints =
-            getInputConstraintsMuac
-    in
-        div []
-            [ divider
-            , div
-                [ class "ui card muac"
-                ]
-                [ h1
-                    []
-                    [ text <| translate language Trans.ActivitiesMuacTitle
-                    ]
-                , span
-                    []
-                    [ text <| translate language Trans.ActivitiesMuacHelp ]
-                , div
-                    []
-                    [ span [] [ text <| translate language Trans.ActivitiesMuacLabel ]
-                    , input
-                        [ type_ "number"
-                        , name "muac"
-                        , Attr.min <| toString constraints.minVal
-                        , Attr.max <| toString constraints.maxVal
-                        , value <| toString model.muac.value
-                        , onInput <| (\v -> MuacUpdate <| Result.withDefault 0.0 <| String.toFloat v)
-                        ]
-                        []
-                    , span [] [ text <| translate language Trans.CentimeterShorthand ]
-                    ]
-                , button [ type_ "button" ] [ text <| translate language Trans.Save ]
-                ]
-            ]
-
-
-viewWeight : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
-viewWeight backendUrl accessToken user language ( childId, child ) model =
-    let
-        constraints =
-            getInputConstraintsWeight
-    in
-        div [ class "ui full segment" ]
-            [ div
-                [ class "content"
-                ]
-                [ h3
-                    [ class "ui header" ]
-                    [ text <| translate language Trans.ActivitiesWeightTitle
-                    ]
-                , p
-                    []
-                    [ text <| translate language Trans.ActivitiesWeightHelp ]
-                , div
-                    [ class "ui form" ]
-                    [ div
-                        [ class "ui grid" ]
-                        [ div
-                            [ class "ten wide column" ]
-                            [ div
-                                [ class "ui right labeled input" ]
-                                [ div
-                                    [ class "ui basic label" ]
-                                    [ text <| translate language Trans.ActivitiesWeightLabel ]
-                                , input
-                                    [ type_ "number"
-                                    , name "weight"
-                                    , Attr.min <| toString constraints.minVal
-                                    , Attr.max <| toString constraints.maxVal
-                                    , value <| toString model.weight.value
-                                    , onInput
-                                        (\v ->
-                                            String.toFloat v
-                                                |> Result.withDefault constraints.defaultValue
-                                                |> clamp constraints.minVal constraints.maxVal
-                                                |> WeightUpdate
-                                        )
-                                    ]
-                                    []
-                                , div
-                                    [ class "ui basic label" ]
-                                    [ text <| translate language Trans.KilogramShorthand ]
-                                ]
-                            ]
-                        ]
-                    , p [] [ text <| translate language (Trans.PriorWeight 0.0) ]
-                    ]
-                ]
-            , div
-                [ class "actions" ]
-                [ saveButton language WeightSave model
+                , saveButton language saveMsg model
                 ]
             ]
 
