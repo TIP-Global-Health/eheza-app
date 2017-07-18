@@ -13,7 +13,7 @@ import Translate exposing (..)
 viewChildFormsTest : Test
 viewChildFormsTest =
     describe "A nurse visits the assesment of a Child" <|
-        [ test "Then a weight form should be displayed when selected" <|
+        [ test "Then a height form should be displayed when selected" <|
             \() ->
                 viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) (Just <| Child Height) emptyModel
                     |> Query.fromHtml
@@ -38,8 +38,7 @@ viewChildFormsTest =
             \() ->
                 viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) (Just <| Child Weight) emptyModel
                     |> Query.fromHtml
-                    |> Query.find [ Selector.class "weight" ]
-                    |> Query.find [ tag "h1" ]
+                    |> Query.find [ tag "h3" ]
                     |> Query.has [ text "Weight:" ]
         ]
 
