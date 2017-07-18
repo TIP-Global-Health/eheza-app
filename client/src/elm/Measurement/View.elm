@@ -20,7 +20,7 @@ import Utils.Html exposing (divider, emptyNode, showIf, showMaybe)
 viewChild : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Maybe ActivityType -> Model -> Html Msg
 viewChild backendUrl accessToken user language ( childId, child ) selectedActivity model =
     showMaybe <|
-        (Maybe.map
+        Maybe.map
             (\activity ->
                 case activity of
                     Child childActivity ->
@@ -47,7 +47,6 @@ viewChild backendUrl accessToken user language ( childId, child ) selectedActivi
                         emptyNode
             )
             selectedActivity
-        )
 
 
 viewFloatForm : BackendUrl -> String -> User -> Language -> FloatMeasurements -> ( ChildId, Child ) -> Model -> Html Msg
@@ -177,7 +176,7 @@ saveButton language msg model =
         div []
             [ div
                 ([ classList
-                    [ ( "ui fluid button", True )
+                    [ ( "ui fluid basic button", True )
                     , ( "loading", isLoading )
                     , ( "basic", not isSuccess )
                     , ( "negative", isFailure )
@@ -198,23 +197,26 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
             [ class "ui divider" ]
             []
         , div
-            [ class "ui card nutrition"
+            [ class "ui full segment nutrition"
+            , id "nutritionSignsEntryForm"
             ]
-            [ h1
-                []
+            [ h3
+                [ class "ui header" ]
                 [ text <| translate language Trans.ActivitiesNutritionSignsTitle
                 ]
-            , span
+            , p
                 []
                 [ text <| translate language Trans.ActivitiesNutritionSignsHelp ]
             , div
-                []
-                [ span []
+                [ class "ui form" ]
+                [ p []
                     [ text <| translate language Trans.ActivitiesNutritionSignsLabel
-                    , viewNutritionSignsSelector language
                     ]
+                , viewNutritionSignsSelector language
                 ]
-            , saveButton language NutritionSignsSave model
+            , div [ class "actions" ]
+                [ saveButton language NutritionSignsSave model
+                ]
             ]
         ]
 
@@ -222,27 +224,65 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
 viewNutritionSignsSelector : Language -> Html Msg
 viewNutritionSignsSelector language =
     let
-        nutrionSignsAndTranslationIds =
-            [ ( Edema, Trans.ActivitiesNutritionSignsEdemaLabel )
-            , ( AbdominalDisortion, Trans.ActivitiesNutritionSignsAbdominalDisortionLabel )
-            , ( DrySkin, Trans.ActivitiesNutritionSignsDrySkinLabel )
-            , ( PoorAppetite, Trans.ActivitiesNutritionSignsPoorAppetiteLabel )
-            , ( Apathy, Trans.ActivitiesNutritionSignsApathyLabel )
-            , ( BrittleHair, Trans.ActivitiesNutritionSignsBrittleHairLabel )
-            , ( None, Trans.ActivitiesNutritionSignsNoneLabel )
-            ]
+        nutrionSignsAndTranslationIdsFirst =
+            [ Edema, AbdominalDisortion, DrySkin, PoorAppetite ]
+
+        nutrionSignsAndTranslationIdsSecond =
+            [ Apathy, BrittleHair, None ]
     in
-        ul [ class "checkboxes" ]
-            (List.map (\( nutritionSign, translateId ) -> viewNutritionSignsSelectorItem language nutritionSign translateId) nutrionSignsAndTranslationIds)
-
-
-viewNutritionSignsSelectorItem : Language -> ChildNutritionSign -> TranslationId -> Html Msg
-viewNutritionSignsSelectorItem language sign translationId =
-    li []
-        [ input
-            [ type_ "checkbox"
-            , name <| encodeChildNutritionSign sign
+        div [ class "ui grid" ]
+            [ div [ class "eight wide column" ]
+                (List.map
+                    (viewNutritionSignsSelectorItem language)
+                    nutrionSignsAndTranslationIdsFirst
+                )
+            , div [ class "eight wide column" ]
+                (List.map
+                    (viewNutritionSignsSelectorItem language)
+                    nutrionSignsAndTranslationIdsSecond
+                )
             ]
-            []
-        , span [] [ text <| translate language translationId ]
-        ]
+
+
+{-| Helper function to return a tuples of checkbox label and attributes value.
+
+For each nutrition sign the function will return a the translaed label of the
+checkbox and a value for the id and for attributes.
+
+-}
+viewNutritionSignsSelectorItem : Language -> ChildNutritionSign -> Html Msg
+viewNutritionSignsSelectorItem language sign =
+    let
+        ( body, attributeValue ) =
+            case sign of
+                Edema ->
+                    ( Trans.ActivitiesNutritionSignsEdemaLabel, "edema" )
+
+                AbdominalDisortion ->
+                    ( Trans.ActivitiesNutritionSignsAbdominalDisortionLabel, "abdominal-distrortion" )
+
+                DrySkin ->
+                    ( Trans.ActivitiesNutritionSignsDrySkinLabel, "dry-skin" )
+
+                PoorAppetite ->
+                    ( Trans.ActivitiesNutritionSignsPoorAppetiteLabel, "poor-appetites" )
+
+                Apathy ->
+                    ( Trans.ActivitiesNutritionSignsApathyLabel, "apathy" )
+
+                BrittleHair ->
+                    ( Trans.ActivitiesNutritionSignsBrittleHairLabel, "brittle-hair" )
+
+                None ->
+                    ( Trans.ActivitiesNutritionSignsNoneLabel, "none-of-these" )
+    in
+        div [ class "ui checkbox" ]
+            [ input
+                [ type_ "checkbox"
+                , id attributeValue
+                , name <| encodeChildNutritionSign sign
+                ]
+                []
+            , label [ for attributeValue ]
+                [ text <| translate language body ]
+            ]
