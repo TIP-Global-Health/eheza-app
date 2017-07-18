@@ -48,6 +48,13 @@ update backendUrl accessToken user msg ( patientId, patient ) model =
             , Nothing
             )
 
+        SetSelectedTab tab ->
+            ( patient
+            , { model | selectedTab = tab }
+            , Cmd.none
+            , Nothing
+            )
+
 
 {-| Activate the dropzone on a specific activity type.
 -}
