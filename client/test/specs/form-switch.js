@@ -21,7 +21,7 @@ describe('assesment pages', () => {
 
         // Switching to Height.
         browser.click('a=' + secondUsedTab);
-        browser.waitForVisible('span=' + firstUsedTab + ':', 500, true);
-        browser.waitForVisible('span=' + secondUsedTab + ':');
+        browser.waitForVisible('div=' + firstUsedTab + ':', 500, true);
+        browser.waitForVisible('div=' + secondUsedTab + ':');
     });
 });
