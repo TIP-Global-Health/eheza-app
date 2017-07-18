@@ -73,7 +73,10 @@ update backendUrl accessToken user ( patientId, patient ) msg model currentActiv
                 )
 
         MuacSave ->
-            model ! []
+            ( model
+            , Cmd.none
+            , currentActivity
+            )
 
         NutritionSignsSave ->
             ( model
@@ -88,7 +91,10 @@ update backendUrl accessToken user ( patientId, patient ) msg model currentActiv
             postWeight backendUrl accessToken patientId model currentActivity
 
         HeightSave ->
-            model ! []
+            ( model
+            , Cmd.none
+            , currentActivity
+            )
 
         WeightUpdate val ->
             let

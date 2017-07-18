@@ -121,7 +121,10 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                             ]
                         ]
                     ]
-                , saveButton language saveMsg model
+                , div
+                    [ class "actions" ]
+                    [ saveButton language saveMsg model Nothing
+                    ]
                 ]
             ]
 
@@ -131,22 +134,29 @@ viewPhoto backendUrl accessToken user language ( childId, child ) model =
     div []
         [ divider
         , div
-            [ class "ui segment"
+            [ class "ui full segment"
             ]
-            [ h1
-                []
+            [ h3
+                [ class "ui header" ]
                 [ text <| translate language Trans.ActivitiesPhotoTitle
                 ]
-            , span
+            , p
                 []
                 [ text <| translate language Trans.ActivitiesPhotoHelp ]
             , div
                 [ class "dropzone" ]
                 []
-            , saveButton language PhotoSave model
-            , div
-                [ class "ui button" ]
-                [ text <| translate language Trans.Retake ]
+            , div [ class "actions" ]
+                [ div [ class "ui two column grid" ]
+                    [ div
+                        [ class "column" ]
+                        [ button
+                            [ class "ui fluid basic button" ]
+                            [ text <| translate language Trans.Retake ]
+                        ]
+                    , saveButton language PhotoSave model (Just "column")
+                    ]
+                ]
             ]
         ]
 
@@ -157,8 +167,8 @@ Button will also take care of preventing double submission,
 and showing success and error indications.
 
 -}
-saveButton : Language -> Msg -> Model -> Html Msg
-saveButton language msg model =
+saveButton : Language -> Msg -> Model -> Maybe String -> Html Msg
+saveButton language msg model maybeDivClass =
     let
         isLoading =
             model.status == Loading
@@ -174,8 +184,11 @@ saveButton language msg model =
                 []
             else
                 [ onClick msg ]
+
+        attrs =
+            Maybe.map (\divClass -> [ class divClass ]) maybeDivClass
     in
-        div []
+        div (Maybe.withDefault [] attrs)
             [ button
                 ([ classList
                     [ ( "ui fluid basic button", True )
@@ -218,7 +231,7 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
                 , viewNutritionSignsSelector language
                 ]
             , div [ class "actions" ]
-                [ saveButton language NutritionSignsSave model
+                [ saveButton language NutritionSignsSave model Nothing
                 ]
             ]
         ]
