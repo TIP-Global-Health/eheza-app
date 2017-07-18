@@ -52,52 +52,48 @@ viewChild backendUrl accessToken user language ( childId, child ) selectedActivi
 viewFloatForm : BackendUrl -> String -> User -> Language -> FloatMeasurements -> ( ChildId, Child ) -> Model -> Html Msg
 viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, child ) model =
     let
-        ( constraints, headerText, helpText, labelText, measurementValue, measurementType, updateMsg, saveMsg, blockName ) =
+        ( blockName, headerText, helpText, labelText, constraints, measurementValue, measurementType, updateMsg, saveMsg ) =
             case floatMeasurement of
                 HeightFloat ->
-                    ( getInputConstraintsHeight
+                    ( "height"
                     , Trans.ActivitiesHeightTitle
                     , Trans.ActivitiesHeightHelp
                     , Trans.ActivitiesHeightLabel
+                    , getInputConstraintsHeight
                     , model.height.value
                     , Trans.CentimeterShorthand
                     , HeightUpdate
                     , HeightSave
-                    , "height"
                     )
 
                 MuacFloat ->
-                    ( getInputConstraintsMuac
+                    ( "muac"
                     , Trans.ActivitiesMuacTitle
                     , Trans.ActivitiesMuacHelp
                     , Trans.ActivitiesMuacLabel
+                    , getInputConstraintsMuac
                     , model.muac.value
                     , Trans.CentimeterShorthand
                     , MuacUpdate
                     , MuacSave
-                    , "muac"
                     )
 
                 WeightFloat ->
-                    ( getInputConstraintsWeight
+                    ( "weight"
                     , Trans.ActivitiesWeightTitle
                     , Trans.ActivitiesWeightHelp
                     , Trans.ActivitiesWeightLabel
+                    , getInputConstraintsWeight
                     , model.weight.value
                     , Trans.KilogramShorthand
                     , WeightUpdate
                     , WeightSave
-                    , "weight"
                     )
     in
         div []
             [ divider
             , div
-                [ classList
-                    [ ( "ui full segment ", True )
-                    , ( blockName, True )
-                    ]
-                ]
+                [ class <| "ui full segment " ++ blockName ]
                 [ h3
                     [ class "ui header" ]
                     [ text <| translate language headerText
