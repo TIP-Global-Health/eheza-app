@@ -52,7 +52,7 @@ viewChild backendUrl accessToken user language ( childId, child ) selectedActivi
 viewFloatForm : BackendUrl -> String -> User -> Language -> FloatMeasurements -> ( ChildId, Child ) -> Model -> Html Msg
 viewFloatForm backendUrl accessToken user language floatMeasurements ( childId, child ) model =
     let
-        ( constraints, headerText, helpText, labelText, measurementValue, measurementType, updateMsg, saveMsg ) =
+        ( constraints, headerText, helpText, labelText, measurementValue, measurementType, updateMsg, saveMsg, blockClass ) =
             case floatMeasurements of
                 HeightFloat ->
                     ( getInputConstraintsHeight
@@ -63,6 +63,7 @@ viewFloatForm backendUrl accessToken user language floatMeasurements ( childId, 
                     , Trans.CentimeterShorthand
                     , HeightUpdate
                     , HeightSave
+                    , "height"
                     )
 
                 MuacFloat ->
@@ -74,6 +75,7 @@ viewFloatForm backendUrl accessToken user language floatMeasurements ( childId, 
                     , Trans.CentimeterShorthand
                     , MuacUpdate
                     , MuacSave
+                    , "muac"
                     )
 
                 WeightFloat ->
@@ -85,12 +87,16 @@ viewFloatForm backendUrl accessToken user language floatMeasurements ( childId, 
                     , Trans.KilogramShorthand
                     , WeightUpdate
                     , WeightSave
+                    , "weight"
                     )
     in
         div []
             [ divider
             , div
-                [ class "ui full segment height"
+                [ classList
+                    [ ( "ui full segment ", True )
+                    , ( blockClass, True )
+                    ]
                 ]
                 [ h3
                     [ class "ui header" ]
