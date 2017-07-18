@@ -1,4 +1,4 @@
-module App.Model exposing (DropzoneConfig, emptyModel, FileId(..), Flags, Msg(..), Model)
+module App.Model exposing (DropzoneConfig, emptyModel, FileId(..), Flags, Msg(..), Model, Theme(..), ThemeConfig)
 
 import App.PageType exposing (Page(..))
 import Config.Model
@@ -19,6 +19,7 @@ type Msg
     | PageLogin Pages.Login.Model.Msg
     | SetActivePage Page
     | SetCurrentDate Date
+    | ThemeSwitch Theme
     | Tick Time
 
 
@@ -32,6 +33,7 @@ type alias Model =
     , offline : Bool
     , pageLogin : Pages.Login.Model.Model
     , pagePatient : PatientManager.Model.Model
+    , theme : Theme
     , user : WebData User
     }
 
@@ -46,6 +48,17 @@ type alias Flags =
     }
 
 
+type Theme
+    = Dark
+    | Light
+
+
+type alias ThemeConfig =
+    { from : String
+    , to : String
+    }
+
+
 emptyModel : Model
 emptyModel =
     { accessToken = ""
@@ -57,6 +70,7 @@ emptyModel =
     , offline = False
     , pageLogin = Pages.Login.Model.emptyModel
     , pagePatient = PatientManager.Model.emptyModel
+    , theme = Light
     , user = NotAsked
     }
 
