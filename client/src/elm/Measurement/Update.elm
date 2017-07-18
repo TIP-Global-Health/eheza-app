@@ -1,6 +1,6 @@
 module Measurement.Update exposing (update)
 
-import Activity.Model exposing (ActivityType(Child), ChildActivityType(Weight))
+import Activity.Model exposing (ActivityType(Child), ChildActivityType(Height, Weight))
 import Activity.Model exposing (ActivityType)
 import Config.Model exposing (BackendUrl)
 import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
