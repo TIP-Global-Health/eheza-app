@@ -17,7 +17,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model currentActiv
         HandlePhotoSave (Ok ()) ->
             ( { model | status = Success () }
             , Cmd.none
-            , Just <| Child <| Weight
+            , Just <| Child Weight
             )
 
         HandlePhotoSave (Err err) ->
@@ -33,7 +33,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model currentActiv
         HandleWeightSave (Ok ()) ->
             ( { model | status = Success () }
             , Cmd.none
-            , Just <| Child <| Height
+            , Just <| Child Height
             )
 
         HandleWeightSave (Err err) ->
