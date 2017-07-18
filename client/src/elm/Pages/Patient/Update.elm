@@ -27,7 +27,7 @@ update backendUrl accessToken user msg ( patientId, patient ) model =
 
         MsgMeasurement subMsg ->
             let
-                ( measurementsUpdated, cmds ) =
+                ( measurementsUpdated, cmds, maybeActivityTypeCompleted ) =
                     Measurement.Update.update backendUrl accessToken user ( patientId, patient ) subMsg model.measurements
             in
                 ( patient
