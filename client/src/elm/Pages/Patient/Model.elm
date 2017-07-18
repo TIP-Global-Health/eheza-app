@@ -17,6 +17,7 @@ type Msg
     | MsgMeasurement Measurement.Model.Msg
     | SetRedirectPage Page
     | SetSelectedActivity (Maybe ActivityType)
+    | SetSelectedTab Tab
 
 
 type Tab
