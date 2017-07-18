@@ -33,6 +33,7 @@ type Msg
     | PhotoSave
     | WeightSave
     | WeightUpdate Float
+    | HeightSave
 
 
 type alias Model =
