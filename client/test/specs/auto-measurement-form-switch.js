@@ -6,8 +6,8 @@ describe('Auto transform between measurement forms.', () => {
         browser.login('aya');
         browser.waitForVisible('#patients-table');
 
-        // Following the first patient page.
-        browser.element('#patients-table tbody tr td a').click();
+        // Following the first patient (child) page.
+        browser.element('#patients-table tbody tr td a.child').click();
         browser.waitUntil(() => browser.isVisible('#mother-info'));
     });
 

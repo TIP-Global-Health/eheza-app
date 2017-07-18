@@ -11,7 +11,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Pages.Patients.Model exposing (Model, Msg(..))
 import Patient.Model exposing (Patient, PatientId, PatientType(..), PatientTypeFilter(..), PatientsDict)
-import Patient.Utils exposing (getPatientAvatarThumb, getPatientName)
+import Patient.Utils exposing (getPatientAvatarThumb, getPatientName, getPatientType)
 import Patient.View exposing (viewPatientTypeFilter)
 import Table exposing (..)
 import Translate as Trans exposing (translate, Language)
@@ -139,7 +139,11 @@ config =
                 , viewData =
                     \( patientId, patient ) ->
                         Table.HtmlDetails []
-                            [ a [ href "#", onClick <| SetRedirectPage <| App.PageType.Patient patientId ]
+                            [ a
+                                [ href "#"
+                                , onClick <| SetRedirectPage <| App.PageType.Patient patientId
+                                , class (getPatientType patient)
+                                ]
                                 [ img [ src <| getPatientAvatarThumb patient, class "ui avatar image" ] []
                                 , text <| getPatientName patient
                                 ]
