@@ -14,8 +14,8 @@ describe('assesment pages', () => {
 
         // Switching to Weight.
         browser.click('a=' + firstUsedTab);
-        browser.waitForVisible('span=' + firstUsedTab + ':');
-        browser.waitForVisible('span=' + secondUsedTab + ':', 500, true);
+        browser.waitForVisible('div=' + firstUsedTab + ':');
+        browser.waitForVisible('div=' + secondUsedTab + ':', 500, true);
 
         // Switching to Height.
         browser.click('a=' + secondUsedTab);
