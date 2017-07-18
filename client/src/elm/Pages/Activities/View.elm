@@ -33,20 +33,20 @@ view language currentDate user patients model =
             else
                 List.map (viewActivity language) pendingActivities
 
-        noPendingActivitiesView =
+        completedActivitiesView =
             if List.isEmpty noPendingActivities then
                 div [] []
             else
                 div []
-                    [ h2 [ class "ui header activities" ] [ text <| translate language Trans.ActivitiesCompleted ]
+                    [ h2 [ class "ui header activities" ] [ text <| translate language <| Trans.ActivitiesCompleted <| List.length noPendingActivities ]
                     , div [ class "ui cards activities completed" ] (List.map (viewActivity language) noPendingActivities)
                     ]
     in
         div []
             [ viewPatientTypeFilter language SetPatientTypeFilter model.patientTypeFilter
-            , h2 [ class "ui header activities" ] [ text <| translate language Trans.ActivitiesToComplete ]
+            , h2 [ class "ui header activities" ] [ text <| translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities ]
             , div [ class "ui cards activities pending" ] pendingActivitiesView
-            , noPendingActivitiesView
+            , completedActivitiesView
             ]
 
 

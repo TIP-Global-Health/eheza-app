@@ -69,19 +69,19 @@ getActivityIdentity activityType =
                 Child childActivityType ->
                     case childActivityType of
                         ChildPicture ->
-                            ActivityIdentity "Take pictures (Child)" "photo"
+                            ActivityIdentity "Photo" "photo"
 
                         Height ->
-                            ActivityIdentity "Height" "line chart"
+                            ActivityIdentity "Height" "height"
 
                         Weight ->
-                            ActivityIdentity "Weight" "law"
+                            ActivityIdentity "Weight" "weight"
 
                         Muac ->
-                            ActivityIdentity "MUAC" "treatment"
+                            ActivityIdentity "MUAC" "muac"
 
                         NutritionSigns ->
-                            ActivityIdentity "Nutrition signs" "heartbeat"
+                            ActivityIdentity "Nutrition signs" "nutrition"
 
                         ProgressReport ->
                             ActivityIdentity "Progress reports" "bar chart"
