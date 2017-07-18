@@ -163,7 +163,7 @@ viewWeight backendUrl accessToken user language ( childId, child ) model =
                         []
                     , span [] [ text <| translate language Trans.KilogramShorthand ]
                     ]
-                , saveButton language WeightSave model ""
+                , saveButton language WeightSave model Nothing
                 ]
             ]
 
@@ -193,7 +193,7 @@ viewPhoto backendUrl accessToken user language ( childId, child ) model =
                             [ class "ui fluid basic button" ]
                             [ text <| translate language Trans.Retake ]
                         ]
-                    , saveButton language PhotoSave model "column"
+                    , saveButton language PhotoSave model (Just "column")
                     ]
                 ]
             ]
@@ -206,8 +206,8 @@ Button will also take care of preventing double submission,
 and showing success and error indications.
 
 -}
-saveButton : Language -> Msg -> Model -> String -> Html Msg
-saveButton language msg model divClass =
+saveButton : Language -> Msg -> Model -> Maybe String -> Html Msg
+saveButton language msg model maybeDivClass =
     let
         isLoading =
             model.status == Loading
@@ -223,8 +223,12 @@ saveButton language msg model divClass =
                 []
             else
                 [ onClick msg ]
+
+        classes =
+            Maybe.map (\divClass -> [ ( divClass, True ) ]) maybeDivClass
+                |> Maybe.withDefault []
     in
-        div [ class divClass ]
+        div [ classList classes ]
             [ button
                 ([ classList
                     [ ( "ui fluid basic button", True )
@@ -264,7 +268,7 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
                     , viewNutritionSignsSelector language
                     ]
                 ]
-            , saveButton language NutritionSignsSave model ""
+            , saveButton language NutritionSignsSave model Nothing
             ]
         ]
 
