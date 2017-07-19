@@ -73,15 +73,22 @@ viewHeight backendUrl accessToken user language ( childId, child ) model =
                     , input
                         [ type_ "number"
                         , name "height"
+                        , step "0.5"
                         , Attr.min <| toString constraints.minVal
                         , Attr.max <| toString constraints.maxVal
-                        , value <| toString model.weight.value
-                        , onInput <| \v -> HeightUpdate <| Result.withDefault 0.0 <| String.toFloat v
+                        , value <| toString model.height.value
+                        , onInput
+                            (\v ->
+                                String.toFloat v
+                                    |> Result.withDefault constraints.defaultValue
+                                    |> clamp constraints.minVal constraints.maxVal
+                                    |> HeightUpdate
+                            )
                         ]
                         []
                     , span [] [ text <| translate language Trans.CentimeterShorthand ]
                     ]
-                , button [ type_ "button" ] [ text <| translate language Trans.Save ]
+                , saveButton language WeightSave model
                 ]
             ]
 
@@ -110,15 +117,22 @@ viewMuac backendUrl accessToken user language ( childId, child ) model =
                     , input
                         [ type_ "number"
                         , name "muac"
+                        , step "0.5"
                         , Attr.min <| toString constraints.minVal
                         , Attr.max <| toString constraints.maxVal
                         , value <| toString model.muac.value
-                        , onInput <| \v -> MuacUpdate <| Result.withDefault 0.0 <| String.toFloat v
+                        , onInput
+                            (\v ->
+                                String.toFloat v
+                                    |> Result.withDefault constraints.defaultValue
+                                    |> clamp constraints.minVal constraints.maxVal
+                                    |> MuacUpdate
+                            )
                         ]
                         []
                     , span [] [ text <| translate language Trans.CentimeterShorthand ]
                     ]
-                , button [ type_ "button" ] [ text <| translate language Trans.Save ]
+                , saveButton language WeightSave model
                 ]
             ]
 
