@@ -51,7 +51,6 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
                         maybeActivityTypeCompleted
                     else
                         model.selectedActivity
-
             in
                 ( patientUpdated
                 , { model | measurements = measurementsUpdated, selectedActivity = selectedActivity }
