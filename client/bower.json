@@ -12,7 +12,7 @@
   ],
   "dependencies": {
     "copy-button": "sudodoki/copy-button#2.0.0",
-    "dropzone": "4.3.0",
+    "dropzone": "5.1.1",
     "offline": "0.7.18"
   }
 }
