@@ -25,8 +25,8 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
 
         HandlePhotoSave (Ok ()) ->
             ( { model | status = Success () }
-            , Nothing
             , dropzoneDestroy True
+            , Just <| Child Weight
             )
 
         HandlePhotoSave (Err err) ->
