@@ -8,7 +8,7 @@ describe('Auto transform between measurement forms.', () => {
 
         // Following the first patient (child) page.
         browser.element('#patients-table tbody tr td a.child').click();
-        browser.waitUntil(() => browser.isVisible('#mother-info'));
+        browser.waitForVisible('#mother-info');
 
         // In case the Photo is already completed we should switch to the
         // Completed tab.
