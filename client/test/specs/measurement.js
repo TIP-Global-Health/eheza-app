@@ -8,13 +8,13 @@ describe('measurement module', function() {
 
     // see note in form-switch for patient selection
     browser.url('/#patient/41');
-    browser.waitForVisible('.header.activities');
+    browser.waitForVisible('.ui.tasks.segment');
 
     // select tab
     browser.click('a=' + tab);
-    browser.waitForVisible('span=' + tab + ':');
+    browser.waitForVisible('h3=' + tab + ':');
 
     // click save button
-    browser.click('span=' + tab + ':button=Save');
+    browser.click('div.weight button');
   })
 })
