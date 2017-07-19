@@ -85,7 +85,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
         MuacSave ->
             ( model
             , Cmd.none
-            , Nothing
+            , Just <| Child NutritionSigns
             )
 
         NutritionSignsSave ->
@@ -103,7 +103,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
         HeightSave ->
             ( model
             , Cmd.none
-            , Nothing
+            , Just <| Child Muac
             )
 
         WeightUpdate val ->
