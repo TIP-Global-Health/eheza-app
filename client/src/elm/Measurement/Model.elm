@@ -25,7 +25,8 @@ emptyFloatInput constraints =
 
 
 type Msg
-    = HandlePhotoSave (Result Http.Error ())
+    = HandleDropzoneUploadedFile Int
+    | HandlePhotoSave (Result Http.Error ())
     | HandleWeightSave (Result Http.Error ())
     | HeightSave
     | HeightUpdate Float
@@ -81,6 +82,6 @@ emptyModel =
     { status = NotAsked
     , height = emptyFloatInput getInputConstraintsHeight
     , muac = emptyFloatInput getInputConstraintsHeight
-    , photo = 1
+    , photo = 0
     , weight = emptyFloatInput getInputConstraintsWeight
     }

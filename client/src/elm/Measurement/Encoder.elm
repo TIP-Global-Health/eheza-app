@@ -17,10 +17,14 @@ encodeMuac childId value =
 
 encodePhoto : ChildId -> Int -> Value
 encodePhoto childId value =
-    Encoder.object <|
-        [ ( "child", Encoder.int childId )
-        , ( "photo", Encoder.int value )
-        ]
+    let
+        _ =
+            Debug.log "encodePhoto" value
+    in
+        Encoder.object <|
+            [ ( "child", Encoder.int childId )
+            , ( "photo", Encoder.int value )
+            ]
 
 
 encodeWeight : ChildId -> Float -> Value

@@ -77,6 +77,11 @@ setDropzone backendUrl activity =
         dropzoneConfig config
 
 
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.map MsgMeasurement <| Measurement.Update.subscriptions model.measurements
+
+
 {-| Send dropzone config to JS.
 -}
 port dropzoneConfig : DropzoneConfig -> Cmd msg

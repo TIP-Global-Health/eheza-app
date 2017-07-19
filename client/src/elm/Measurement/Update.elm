@@ -1,4 +1,4 @@
-module Measurement.Update exposing (update)
+port module Measurement.Update exposing (update, subscriptions)
 
 import Config.Model exposing (BackendUrl)
 import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
@@ -12,6 +12,9 @@ import User.Model exposing (..)
 update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model -> ( Model, Cmd Msg )
 update backendUrl accessToken user ( patientId, patient ) msg model =
     case msg of
+        HandleDropzoneUploadedFile fileId ->
+            { model | photo = fileId } ! []
+
         HandlePhotoSave (Ok ()) ->
             { model | status = Success () } ! []
 
@@ -108,3 +111,13 @@ postPhoto backendUrl accessToken childId model =
         ( { model | status = Loading }
         , command
         )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    dropzoneUploadedFile HandleDropzoneUploadedFile
+
+
+{-| Get a singal if a file has been uploaded via the Dropzone.
+-}
+port dropzoneUploadedFile : (Int -> msg) -> Sub msg

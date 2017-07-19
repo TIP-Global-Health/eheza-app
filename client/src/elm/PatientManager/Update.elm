@@ -260,4 +260,14 @@ fetchAllPatientsFromBackend backendUrl accessToken model =
 
 subscriptions : Model -> Page -> Sub Msg
 subscriptions model activePage =
-    pusherPatientMessages (decodeValue decodePusherEvent >> HandlePusherEvent)
+    let
+        pageSubs =
+            case activePage of
+                Patient _ ->
+                    []
+
+                _ ->
+                    []
+    in
+        Sub.batch
+            ([ pusherPatientMessages (decodeValue decodePusherEvent >> HandlePusherEvent) ] ++ pageSubs)
