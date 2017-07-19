@@ -1,4 +1,4 @@
-port module Pages.Patient.Update exposing (update)
+port module Pages.Patient.Update exposing (update, subscriptions)
 
 import Activity.Model exposing (ActivityType(Child), ChildActivityType(ChildPicture))
 import App.Model exposing (DropzoneConfig)

@@ -263,8 +263,13 @@ subscriptions model activePage =
     let
         pageSubs =
             case activePage of
-                Patient _ ->
-                    []
+                Patient patientId ->
+                    case Dict.get patientId model.patientPage of
+                        Just patientPage ->
+                            [ Sub.map (MsgPagesPatient patientId) (Pages.Patient.Update.subscriptions patientPage) ]
+
+                        Nothing ->
+                            []
 
                 _ ->
                     []
