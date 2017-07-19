@@ -11,6 +11,10 @@ import RemoteData exposing (RemoteData(..))
 import User.Model exposing (..)
 
 
+{-| The 'Maybe ActivityType' returned value is for the auto forms transform
+logic. It returns the next activity the user should fill in after saving the
+current form.
+-}
 update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model -> Maybe ActivityType -> ( Model, Cmd Msg, Maybe ActivityType )
 update backendUrl accessToken user ( patientId, patient ) msg model currentActivity =
     case msg of
