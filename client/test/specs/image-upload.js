@@ -11,7 +11,7 @@ describe('Image Upload workflow', () => {
 
     // Proceeding to the patient where activities are pending.
     browser.url('/#patient/41');
-    browser.waitUntil(() => browser.isVisible('#mother-info'));
+    browser.waitUntil(() => browser.isVisible('.ui.header.mother'));
 
     // Follow the photo form.
     browser.element('a=Photo').click();

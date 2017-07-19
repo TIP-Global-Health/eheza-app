@@ -34,12 +34,11 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                     case motherWebData of
                         Success mother ->
                             span []
-                                [ text <| translate language Trans.Mother ++ ": ", text mother.name ]
+                                [ text <| translate language <| Trans.MotherName mother.name ]
 
                         Loading ->
                             span []
-                                [ text <| translate language Trans.Mother ++ ": "
-                                , i [ class "icon loading spinner" ] []
+                                [ i [ class "icon loading spinner" ] []
                                 ]
 
                         _ ->
@@ -58,10 +57,14 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                                 []
                             ]
                         , div [ class "middle aligned content" ]
-                            [ h2 [ class "ui disabled header mother" ]
-                                [ motherInfo ]
-                            , h2 [ class "ui header child" ]
-                                [ text <| translate language Trans.Baby ++ ": ", text child.name ]
+                            [ div []
+                                [ h2 [ class "ui disabled header mother" ]
+                                    [ motherInfo ]
+                                ]
+                            , div []
+                                [ h2 [ class "ui header child" ]
+                                    [ text <| translate language <| Trans.BabyName child.name ]
+                                ]
                             , div [ class "meta" ]
                                 [ p []
                                     [ text <| translate language Trans.PlaceholderTextGroupDate
@@ -73,7 +76,6 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                             ]
                         ]
                     ]
-                , div [ class "content six wide column", id "mother-info" ] [ motherInfo ]
                 ]
             , div [ class "ui segment" ]
                 [ div []
@@ -129,7 +131,7 @@ viewMother language currentDate currentUser motherId mother children model =
                             ]
                         , div [ class "middle aligned content" ]
                             [ h2 [ class "ui header mother" ]
-                                [ text <| translate language Trans.Mother ++ ": ", text mother.name ]
+                                [ text <| translate language <| Trans.MotherName mother.name ]
                             , h2 [ class "ui disabled header child" ]
                                 [ childrenList ]
                             , div [ class "meta" ]
