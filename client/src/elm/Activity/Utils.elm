@@ -166,7 +166,9 @@ hasPendingChildActivity currentDate childActivityType child =
     in
         Maybe.map
             (\date ->
-                Date.toTime date <= Date.toTime currentDate
+                Date.toTime
+                    date
+                    <= Date.toTime currentDate
             )
             (child.activityDates |> property)
             |> Maybe.withDefault False
