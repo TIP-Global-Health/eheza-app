@@ -1,8 +1,8 @@
 var assert = require('assert');
 
 describe('measurement module', function() {
-  it('should save height to server', function() {
-    const heightTab = 'Height';
+  it('should save weight to server', function() {
+    const tab = 'Weight';
 
     browser.login('aya');
 
@@ -10,11 +10,11 @@ describe('measurement module', function() {
     browser.url('/#patient/41');
     browser.waitForVisible('.header.activities');
 
-    // select height tab
-    browser.click('a=' + heightTab);
-    browser.waitForVisible('span=' + heightTab + ':');
+    // select tab
+    browser.click('a=' + tab);
+    browser.waitForVisible('span=' + tab + ':');
 
     // click save button
-    browser.click('span=' + heightTab + ':button=Save');
+    browser.click('span=' + tab + ':button=Save');
   })
 })
