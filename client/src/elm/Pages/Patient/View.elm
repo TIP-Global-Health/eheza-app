@@ -6,7 +6,6 @@ module Pages.Patient.View
 
 import Activity.Model exposing (ActivityListItem, ActivityType(..))
 import Activity.Utils exposing (getActivityList)
-import App.PageType
 import Child.Model exposing (Child, ChildId)
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
