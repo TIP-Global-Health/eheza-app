@@ -15,8 +15,8 @@ import User.Model exposing (..)
 logic. It returns the next activity the user should fill in after saving the
 current form.
 -}
-update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model -> Maybe ActivityType -> ( Model, Cmd Msg, Maybe ActivityType )
-update backendUrl accessToken user ( patientId, patient ) msg model currentActivity =
+update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
+update backendUrl accessToken user ( patientId, patient ) msg model =
     case msg of
         HandlePhotoSave (Ok ()) ->
             ( { model | status = Success () }
@@ -31,7 +31,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model currentActiv
             in
                 ( { model | status = Failure err }
                 , Cmd.none
-                , currentActivity
+                , Nothing
                 )
 
         HandleWeightSave (Ok ()) ->
@@ -47,7 +47,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model currentActiv
             in
                 ( { model | status = Failure err }
                 , Cmd.none
-                , currentActivity
+                , Nothing
                 )
 
         HeightUpdate val ->
@@ -60,7 +60,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model currentActiv
             in
                 ( { model | height = updatedHeight }
                 , Cmd.none
-                , currentActivity
+                , Nothing
                 )
 
         MuacUpdate val ->
@@ -73,31 +73,31 @@ update backendUrl accessToken user ( patientId, patient ) msg model currentActiv
             in
                 ( { model | muac = updatedMuac }
                 , Cmd.none
-                , currentActivity
+                , Nothing
                 )
 
         MuacSave ->
             ( model
             , Cmd.none
-            , currentActivity
+            , Nothing
             )
 
         NutritionSignsSave ->
             ( model
             , Cmd.none
-            , currentActivity
+            , Nothing
             )
 
         PhotoSave ->
-            postPhoto backendUrl accessToken patientId model currentActivity
+            postPhoto backendUrl accessToken patientId model
 
         WeightSave ->
-            postWeight backendUrl accessToken patientId model currentActivity
+            postWeight backendUrl accessToken patientId model
 
         HeightSave ->
             ( model
             , Cmd.none
-            , currentActivity
+            , Nothing
             )
 
         WeightUpdate val ->
@@ -110,14 +110,14 @@ update backendUrl accessToken user ( patientId, patient ) msg model currentActiv
             in
                 ( { model | weight = updatedWeight }
                 , Cmd.none
-                , currentActivity
+                , Nothing
                 )
 
 
 {-| Send new weight of a child to the backend.
 -}
-postWeight : BackendUrl -> String -> PatientId -> Model -> Maybe ActivityType -> ( Model, Cmd Msg, Maybe ActivityType )
-postWeight backendUrl accessToken childId model currentActivity =
+postWeight : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
+postWeight backendUrl accessToken childId model =
     let
         command =
             HttpBuilder.post (backendUrl ++ "/api/weights")
@@ -127,14 +127,14 @@ postWeight backendUrl accessToken childId model currentActivity =
     in
         ( { model | status = Loading }
         , command
-        , currentActivity
+        , Nothing
         )
 
 
 {-| Send new weight of a child to the backend.
 -}
-postPhoto : BackendUrl -> String -> PatientId -> Model -> Maybe ActivityType -> ( Model, Cmd Msg, Maybe ActivityType )
-postPhoto backendUrl accessToken childId model currentActivity =
+postPhoto : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
+postPhoto backendUrl accessToken childId model =
     let
         command =
             HttpBuilder.post (backendUrl ++ "/api/photos")
@@ -144,5 +144,5 @@ postPhoto backendUrl accessToken childId model currentActivity =
     in
         ( { model | status = Loading }
         , command
-        , currentActivity
+        , Nothing
         )

@@ -4,6 +4,7 @@ import Activity.Model exposing (ActivityType(Child), ChildActivityType(ChildPict
 import App.Model exposing (DropzoneConfig)
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
+import Maybe.Extra exposing (isJust)
 import User.Model exposing (..)
 import Measurement.Update
 import Pages.Patient.Model exposing (Model, Msg(..))
@@ -30,10 +31,16 @@ update backendUrl accessToken user msg ( patientId, patient ) model =
         MsgMeasurement subMsg ->
             let
                 ( measurementsUpdated, cmds, maybeNextActivity ) =
-                    Measurement.Update.update backendUrl accessToken user ( patientId, patient ) subMsg model.measurements model.selectedActivity
+                    Measurement.Update.update backendUrl accessToken user ( patientId, patient ) subMsg model.measurements
+
+                selectedActivity =
+                    if isJust maybeNextActivity then
+                        maybeNextActivity
+                    else
+                        model.selectedActivity
             in
                 ( patient
-                , { model | measurements = measurementsUpdated, selectedActivity = maybeNextActivity }
+                , { model | measurements = measurementsUpdated, selectedActivity = selectedActivity }
                 , Cmd.map MsgMeasurement cmds
                 , Nothing
                 )
