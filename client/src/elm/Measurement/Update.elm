@@ -1,4 +1,4 @@
-module Measurement.Update exposing (update)
+port module Measurement.Update exposing (update, subscriptions)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import Config.Model exposing (BackendUrl)
@@ -17,8 +17,11 @@ import User.Model exposing (..)
 update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
 update backendUrl accessToken user ( patientId, patient ) msg model =
     case msg of
+        HandleDropzoneUploadedFile fileId ->
+            ( { model | photo = fileId }, Cmd.none, Nothing )
+
         HandlePhotoSave (Ok ()) ->
-            ( { model | status = Success () }, Cmd.none, Just (Child ChildPicture) )
+            ( { model | status = Success () }, Cmd.none, Nothing )
 
         HandlePhotoSave (Err err) ->
             let
@@ -88,17 +91,11 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
 postData : BackendUrl -> String -> Model -> String -> value -> (value -> Value) -> (Result Http.Error () -> Msg) -> ( Model, Cmd Msg, Maybe ActivityType )
 postData backendUrl accessToken model path value encoder handler =
     let
-        builder : HttpBuilder.RequestBuilder () -> Cmd Msg
-        builder =
-            send handler
-
-        commandDef =
+        command =
             HttpBuilder.post (backendUrl ++ "/api/" ++ path)
                 |> withQueryParams [ ( "access_token", accessToken ) ]
                 |> withJsonBody (encoder value)
-
-        command =
-            builder commandDef
+                |> send handler
     in
         ( { model | status = Loading }
         , command
@@ -110,7 +107,7 @@ postData backendUrl accessToken model path value encoder handler =
 -}
 postPhoto : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
 postPhoto backendUrl accessToken childId model =
-    postData backendUrl accessToken model "photos" model.photo.value (encodePhoto childId) HandlePhotoSave
+    postData backendUrl accessToken model "photos" model.photo (encodePhoto childId) HandlePhotoSave
 
 
 {-| Send new weight of a child to the backend.
@@ -118,3 +115,13 @@ postPhoto backendUrl accessToken childId model =
 postWeight : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
 postWeight backendUrl accessToken childId model =
     postData backendUrl accessToken model "weights" model.weight.value (encodeWeight childId) HandleWeightSave
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    dropzoneUploadedFile HandleDropzoneUploadedFile
+
+
+{-| Get a singal if a file has been uploaded via the Dropzone.
+-}
+port dropzoneUploadedFile : (Int -> msg) -> Sub msg

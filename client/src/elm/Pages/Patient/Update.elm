@@ -1,4 +1,4 @@
-port module Pages.Patient.Update exposing (update)
+port module Pages.Patient.Update exposing (update, subscriptions)
 
 import Activity.Model exposing (ActivityType(Child), ChildActivityType(ChildPicture))
 import App.Model exposing (DropzoneConfig)
@@ -88,6 +88,11 @@ setDropzone backendUrl activity =
             }
     in
         dropzoneConfig config
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.map MsgMeasurement <| Measurement.Update.subscriptions model.measurements
 
 
 {-| Send dropzone config to JS.
