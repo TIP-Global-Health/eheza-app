@@ -45,7 +45,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
                 updatedHeight =
                     { height | value = val }
             in
-                ( { model | height = updatedHeight }, Cmd.none, Just (Child Height) )
+                ( { model | height = updatedHeight }, Cmd.none, Nothing )
 
         MuacUpdate val ->
             let
@@ -55,7 +55,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
                 updatedMuac =
                     { muac | value = val }
             in
-                ( { model | muac = updatedMuac }, Cmd.none, Just (Child Muac) )
+                ( { model | muac = updatedMuac }, Cmd.none, Nothing )
 
         MuacSave ->
             ( model, Cmd.none, Just (Child Muac) )
@@ -80,7 +80,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
                 updatedWeight =
                     { weight | value = val }
             in
-                ( { model | weight = updatedWeight }, Cmd.none, Just (Child Weight) )
+                ( { model | weight = updatedWeight }, Cmd.none, Nothing )
 
 
 {-| Enables posting of arbitrary values to the provided back end so long as the encoder matches the desired type
