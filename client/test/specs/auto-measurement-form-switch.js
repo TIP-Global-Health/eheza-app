@@ -3,8 +3,7 @@ var assert = require('assert');
 describe('Auto transform between measurement forms.', () => {
 
     before(() => {
-        browser.login('aya');
-        browser.waitForVisible('#patients-table');
+        browser.loginAndViewPatientsPage('aya');
 
         // Following the first patient (child) page.
         browser.element('#patients-table tbody tr td a.child').click();
