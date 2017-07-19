@@ -12,6 +12,8 @@ import RemoteData exposing (RemoteData(..))
 import User.Model exposing (..)
 
 
+{-| This update section expects an additional activity type to be bubbled up, when appropriate, for completed activities to trigger completion mechanism in parent module
+-}
 update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
 update backendUrl accessToken user ( patientId, patient ) msg model =
     case msg of

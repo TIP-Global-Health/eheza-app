@@ -5,6 +5,9 @@ import Date exposing (Date)
 import Patient.Model exposing (Patient, PatientId, PatientType(..), PatientsDict)
 
 
+{-| Model update helper which applies the provided date to the specified activity type field in the
+provided patient while ensuring proper Mother / Child and activity mapping type safety
+-}
 updateActivityDate : Date -> ActivityType -> Patient -> Patient
 updateActivityDate date activityType patient =
     case ( activityType, patient.info ) of
@@ -62,5 +65,6 @@ updateActivityDate date activityType patient =
             in
                 { info = PatientMother { mother | activityDates = updatedActivityDates } }
 
+        -- This should never be reached as it would imply a Child activity being applied to a Mother or vica versa
         ( _, _ ) ->
             patient
