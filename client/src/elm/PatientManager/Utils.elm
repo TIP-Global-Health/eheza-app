@@ -9,7 +9,6 @@ module PatientManager.Utils
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Child.Model exposing (Child, ChildId)
-import Date exposing (Date)
 import Dict exposing (Dict)
 import Mother.Model exposing (Mother, MotherId)
 import Patient.Model exposing (Patient, PatientId, PatientType(..), PatientsDict)
