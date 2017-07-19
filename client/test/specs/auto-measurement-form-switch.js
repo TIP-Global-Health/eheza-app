@@ -28,7 +28,7 @@ describe('Auto transform between measurement forms.', () => {
     it('Saving the Weight form should lead to the Height form.', () => {
         browser.element('#save-form').click();
         // The help text of the Height form.
-        browser.waitForVisible('span=Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight.');
+        browser.waitForVisible("p=Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight.");
     });
 
 });
