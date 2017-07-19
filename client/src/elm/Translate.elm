@@ -43,6 +43,7 @@ type TranslationId
     | ActivitiesWeightLabel
     | ActivitiesWeightTitle
     | Baby
+    | BabyName String
     | CentimeterShorthand
     | Children
     | Connected
@@ -62,6 +63,7 @@ type TranslationId
     | MeasurementGained Float
     | MeasurementLost Float
     | Mother
+    | MotherName String
     | Mothers
     | MyAccount
     | NoActiveIncidents
@@ -170,6 +172,9 @@ translate lang trans =
                 Baby ->
                     { english = "Baby" }
 
+                BabyName name ->
+                    { english = "Baby:" ++ name }
+
                 CentimeterShorthand ->
                     { english = "cm" }
 
@@ -226,6 +231,9 @@ translate lang trans =
 
                 Mother ->
                     { english = "Mother" }
+
+                MotherName name ->
+                    { english = "Mother:" ++ name }
 
                 Mothers ->
                     { english = "Mothers" }
