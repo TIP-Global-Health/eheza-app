@@ -2,9 +2,7 @@ module Measurement.Update exposing (update)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import Config.Model exposing (BackendUrl)
-import Http
 import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
-import Json.Encode exposing (Value)
 import Measurement.Encoder exposing (encodePhoto, encodeWeight)
 import Measurement.Model exposing (Model, Msg(..))
 import Patient.Model exposing (Patient, PatientId)
@@ -83,22 +81,16 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
                 ( { model | weight = updatedWeight }, Cmd.none, Nothing )
 
 
-{-| Enables posting of arbitrary values to the provided back end so long as the encoder matches the desired type
+{-| Send new weight of a child to the backend.
 -}
-postData : BackendUrl -> String -> Model -> String -> value -> (value -> Value) -> (Result Http.Error () -> Msg) -> ( Model, Cmd Msg, Maybe ActivityType )
-postData backendUrl accessToken model path value encoder handler =
+postWeight : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
+postWeight backendUrl accessToken childId model =
     let
-        builder : HttpBuilder.RequestBuilder () -> Cmd Msg
-        builder =
-            send handler
-
-        commandDef =
-            HttpBuilder.post (backendUrl ++ "/api/" ++ path)
-                |> withQueryParams [ ( "access_token", accessToken ) ]
-                |> withJsonBody (encoder value)
-
         command =
-            builder commandDef
+            HttpBuilder.post (backendUrl ++ "/api/weights")
+                |> withQueryParams [ ( "access_token", accessToken ) ]
+                |> withJsonBody (encodeWeight childId model.weight.value)
+                |> send HandleWeightSave
     in
         ( { model | status = Loading }
         , command
@@ -106,15 +98,18 @@ postData backendUrl accessToken model path value encoder handler =
         )
 
 
-{-| Send new photo of a child to the backend.
+{-| Send new weight of a child to the backend.
 -}
 postPhoto : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
 postPhoto backendUrl accessToken childId model =
-    postData backendUrl accessToken model "photos" model.photo.value (encodePhoto childId) HandlePhotoSave
-
-
-{-| Send new weight of a child to the backend.
--}
-postWeight : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
-postWeight backendUrl accessToken childId model =
-    postData backendUrl accessToken model "weights" model.weight.value (encodeWeight childId) HandleWeightSave
+    let
+        command =
+            HttpBuilder.post (backendUrl ++ "/api/photos")
+                |> withQueryParams [ ( "access_token", accessToken ) ]
+                |> withJsonBody (encodePhoto childId model.photo.value)
+                |> send HandlePhotoSave
+    in
+        ( { model | status = Loading }
+        , command
+        , Nothing
+        )
