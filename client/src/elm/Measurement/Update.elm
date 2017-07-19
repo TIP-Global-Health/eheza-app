@@ -16,7 +16,7 @@ import User.Model exposing (..)
 -}
 update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
 update backendUrl accessToken user ( patientId, patient ) msg model =
-    case Debug.log "Measurement Update" msg of
+    case msg of
         HandlePhotoSave (Ok ()) ->
             ( { model | status = Success () }, Cmd.none, Just (Child ChildPicture) )
 

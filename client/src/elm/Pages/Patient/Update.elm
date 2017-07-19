@@ -38,7 +38,7 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
                     (Date.toTime currentDate) + 10000 |> Date.fromTime
 
                 patientUpdated =
-                    case Debug.log "Activity Type" maybeActivityTypeCompleted of
+                    case maybeActivityTypeCompleted of
                         Nothing ->
                             patient
 
