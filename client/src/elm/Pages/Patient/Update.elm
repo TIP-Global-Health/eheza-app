@@ -34,13 +34,16 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
                 ( measurementsUpdated, cmds, maybeActivityTypeCompleted ) =
                     Measurement.Update.update backendUrl accessToken user ( patientId, patient ) subMsg model.measurements
 
+                newDate =
+                    (Date.toTime currentDate) + 10000 |> Date.fromTime
+
                 patientUpdated =
-                    case maybeActivityTypeCompleted of
+                    case Debug.log "Activity Type" maybeActivityTypeCompleted of
                         Nothing ->
                             patient
 
                         Just activtyTypeCompleted ->
-                            updateActivityDate currentDate activtyTypeCompleted patient
+                            updateActivityDate newDate activtyTypeCompleted patient
             in
                 ( patientUpdated
                 , { model | measurements = measurementsUpdated }

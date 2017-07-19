@@ -16,7 +16,7 @@ import User.Model exposing (..)
 -}
 update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
 update backendUrl accessToken user ( patientId, patient ) msg model =
-    case msg of
+    case Debug.log "Measurement Update" msg of
         HandlePhotoSave (Ok ()) ->
             ( { model | status = Success () }, Cmd.none, Just (Child ChildPicture) )
 
@@ -45,7 +45,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
                 updatedHeight =
                     { height | value = val }
             in
-                ( { model | height = updatedHeight }, Cmd.none, Nothing )
+                ( { model | height = updatedHeight }, Cmd.none, Just (Child Height) )
 
         MuacUpdate val ->
             let
@@ -55,10 +55,10 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
                 updatedMuac =
                     { muac | value = val }
             in
-                ( { model | muac = updatedMuac }, Cmd.none, Nothing )
+                ( { model | muac = updatedMuac }, Cmd.none, Just (Child Muac) )
 
         MuacSave ->
-            ( model, Cmd.none, Nothing )
+            ( model, Cmd.none, Just (Child Muac) )
 
         NutritionSignsSave ->
             ( model, Cmd.none, Nothing )
@@ -70,7 +70,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
             postWeight backendUrl accessToken patientId model
 
         HeightSave ->
-            ( model, Cmd.none, Nothing )
+            ( model, Cmd.none, Just (Child Height) )
 
         WeightUpdate val ->
             let
@@ -80,7 +80,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
                 updatedWeight =
                     { weight | value = val }
             in
-                ( { model | weight = updatedWeight }, Cmd.none, Nothing )
+                ( { model | weight = updatedWeight }, Cmd.none, Just (Child Weight) )
 
 
 {-| Enables posting of arbitrary values to the provided back end so long as the encoder matches the desired type
