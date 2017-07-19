@@ -94,10 +94,10 @@ setDropzone backendUrl activity =
             , active = isActive
             }
     in
-      Cmd.batch
-        [ dropzoneDestroy (not isActive)
-        , dropzoneConfig config
-        ]
+        Cmd.batch
+            [ dropzoneDestroy (not isActive)
+            , dropzoneConfig config
+            ]
 
 
 subscriptions : Model -> Sub Msg
