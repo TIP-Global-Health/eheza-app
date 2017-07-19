@@ -25,7 +25,8 @@ emptyFloatInput constraints =
 
 
 type Msg
-    = HandlePhotoSave (Result Http.Error ())
+    = HandleDropzoneUploadedFile Int
+    | HandlePhotoSave (Result Http.Error ())
     | HandleWeightSave (Result Http.Error ())
     | HeightSave
     | HeightUpdate Float
@@ -41,7 +42,7 @@ type alias Model =
     { status : WebData ()
     , height : FloatInput
     , muac : FloatInput
-    , photo : FloatInput
+    , photo : Int
     , weight : FloatInput
     }
 
@@ -81,6 +82,6 @@ emptyModel =
     { status = NotAsked
     , height = emptyFloatInput getInputConstraintsHeight
     , muac = emptyFloatInput getInputConstraintsHeight
-    , photo = emptyFloatInput getInputConstraintsWeight
+    , photo = 0
     , weight = emptyFloatInput getInputConstraintsWeight
     }
