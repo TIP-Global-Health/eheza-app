@@ -35,12 +35,11 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                     case motherWebData of
                         Success mother ->
                             span []
-                                [ text <| translate language Trans.Mother ++ ": ", text mother.name ]
+                                [ text <| translate language <| Trans.MotherName mother.name ]
 
                         Loading ->
                             span []
-                                [ text <| translate language Trans.Mother ++ ": "
-                                , i [ class "icon loading spinner" ] []
+                                [ i [ class "icon loading spinner" ] []
                                 ]
 
                         _ ->
@@ -65,7 +64,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                                 ]
                             , div []
                                 [ h2 [ class "ui header child" ]
-                                    [ text <| translate language Trans.Baby ++ ": ", text child.name ]
+                                    [ text <| translate language <| Trans.BabyName child.name ]
                                 ]
                             , div [ class "meta" ]
                                 [ p []
@@ -133,7 +132,7 @@ viewMother language currentDate currentUser motherId mother children model =
                             ]
                         , div [ class "middle aligned content" ]
                             [ h2 [ class "ui header mother" ]
-                                [ text <| translate language Trans.Mother ++ ": ", text mother.name ]
+                                [ text <| translate language <| Trans.MotherName mother.name ]
                             , h2 [ class "ui disabled header child" ]
                                 [ childrenList ]
                             , div [ class "meta" ]
