@@ -26,7 +26,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
         HandlePhotoSave (Ok ()) ->
             ( { model | status = Success () }
             , Cmd.none
-            , Just <| Child Weight
+            , Nothing
             )
 
         HandlePhotoSave (Err err) ->
