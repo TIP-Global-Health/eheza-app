@@ -7,7 +7,7 @@ describe('measurement module', function() {
     browser.login('aya');
 
     // see note in form-switch for patient selection
-    browser.url('/#patient/55');
+    browser.url('/#patient/41');
     browser.waitForVisible('.header.activities');
 
     // select height tab
