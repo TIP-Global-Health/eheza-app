@@ -1,7 +1,6 @@
 port module Measurement.Update exposing (update, subscriptions)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
-import Activity.Model exposing (ActivityType)
 import Config.Model exposing (BackendUrl)
 import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
 import Measurement.Encoder exposing (encodePhoto, encodeWeight)
