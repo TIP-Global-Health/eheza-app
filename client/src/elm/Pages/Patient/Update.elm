@@ -6,7 +6,7 @@ import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Maybe.Extra exposing (isJust)
-import Measurement.Update
+import Measurement.Update exposing (dropzoneDestroy)
 import Pages.Patient.Model exposing (Model, Msg(..))
 import Pages.Patient.Utils exposing (updateActivityDate)
 import Pusher.Model exposing (PusherEventData(..))
@@ -94,7 +94,10 @@ setDropzone backendUrl activity =
             , active = isActive
             }
     in
-        dropzoneConfig config
+      Cmd.batch
+        [ dropzoneDestroy (not isActive)
+        , dropzoneConfig config
+        ]
 
 
 subscriptions : Model -> Sub Msg

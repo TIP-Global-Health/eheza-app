@@ -1,4 +1,4 @@
-port module Measurement.Update exposing (update, subscriptions)
+port module Measurement.Update exposing (dropzoneDestroy, update, subscriptions)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import Config.Model exposing (BackendUrl)
@@ -25,8 +25,8 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
 
         HandlePhotoSave (Ok ()) ->
             ( { model | status = Success () }
-            , Cmd.none
             , Nothing
+            , dropzoneDestroy True
             )
 
         HandlePhotoSave (Err err) ->
@@ -158,3 +158,8 @@ subscriptions model =
 {-| Get a singal if a file has been uploaded via the Dropzone.
 -}
 port dropzoneUploadedFile : (Int -> msg) -> Sub msg
+
+
+{-| Invoke the dropzone.destroy().
+-}
+port dropzoneDestroy : Bool -> Cmd msg
