@@ -77,12 +77,6 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
 
 {-| Enables posting of arbitrary values to the provided back end so long as the encoder matches the desired type
 -}
-
-
-
--- postData : BackendUrl -> String -> Model -> String -> value -> (value -> Value) -> (Result Http.Error result -> Msg) -> ( Model, Cmd Msg, Maybe ActivityType )
-
-
 postData : BackendUrl -> String -> Model -> String -> value -> (value -> Value) -> (Result Http.Error () -> Msg) -> ( Model, Cmd Msg, Maybe ActivityType )
 postData backendUrl accessToken model path value encoder handler =
     let
