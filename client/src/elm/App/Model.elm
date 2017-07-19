@@ -12,8 +12,7 @@ import User.Model exposing (..)
 
 
 type Msg
-    = HandleDropzoneNewFile (Maybe Int)
-    | HandleOfflineEvent (Result String Bool)
+    = HandleOfflineEvent (Result String Bool)
     | Logout
     | MsgPatientManager PatientManager.Model.Msg
     | PageLogin Pages.Login.Model.Msg

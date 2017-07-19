@@ -1,4 +1,4 @@
-module Measurement.Update exposing (update)
+port module Measurement.Update exposing (update, subscriptions)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import Activity.Model exposing (ActivityType)
@@ -18,6 +18,9 @@ current form.
 update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
 update backendUrl accessToken user ( patientId, patient ) msg model =
     case msg of
+        HandleDropzoneUploadedFile fileId ->
+            { model | photo = fileId } ! []
+
         HandlePhotoSave (Ok ()) ->
             ( { model | status = Success () }
             , Cmd.none
@@ -131,7 +134,7 @@ postWeight backendUrl accessToken childId model =
         )
 
 
-{-| Send new weight of a child to the backend.
+{-| Send new photo of a child to the backend.
 -}
 postPhoto : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
 postPhoto backendUrl accessToken childId model =
@@ -139,10 +142,20 @@ postPhoto backendUrl accessToken childId model =
         command =
             HttpBuilder.post (backendUrl ++ "/api/photos")
                 |> withQueryParams [ ( "access_token", accessToken ) ]
-                |> withJsonBody (encodePhoto childId model.photo.value)
+                |> withJsonBody (encodePhoto childId model.photo)
                 |> send HandlePhotoSave
     in
         ( { model | status = Loading }
         , command
         , Nothing
         )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    dropzoneUploadedFile HandleDropzoneUploadedFile
+
+
+{-| Get a singal if a file has been uploaded via the Dropzone.
+-}
+port dropzoneUploadedFile : (Int -> msg) -> Sub msg
