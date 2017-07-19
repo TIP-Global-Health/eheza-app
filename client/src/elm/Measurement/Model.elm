@@ -41,7 +41,7 @@ type alias Model =
     { status : WebData ()
     , height : FloatInput
     , muac : FloatInput
-    , photo : FloatInput
+    , photo : Int
     , weight : FloatInput
     }
 
@@ -81,6 +81,6 @@ emptyModel =
     { status = NotAsked
     , height = emptyFloatInput getInputConstraintsHeight
     , muac = emptyFloatInput getInputConstraintsHeight
-    , photo = emptyFloatInput getInputConstraintsWeight
+    , photo = 1
     , weight = emptyFloatInput getInputConstraintsWeight
     }

@@ -94,7 +94,7 @@ postWeight backendUrl accessToken childId model =
         )
 
 
-{-| Send new weight of a child to the backend.
+{-| Send new photo of a child to the backend.
 -}
 postPhoto : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg )
 postPhoto backendUrl accessToken childId model =
@@ -102,7 +102,7 @@ postPhoto backendUrl accessToken childId model =
         command =
             HttpBuilder.post (backendUrl ++ "/api/photos")
                 |> withQueryParams [ ( "access_token", accessToken ) ]
-                |> withJsonBody (encodePhoto childId model.photo.value)
+                |> withJsonBody (encodePhoto childId model.photo)
                 |> send HandlePhotoSave
     in
         ( { model | status = Loading }
