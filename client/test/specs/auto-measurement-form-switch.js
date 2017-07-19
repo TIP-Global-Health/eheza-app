@@ -9,13 +9,20 @@ describe('Auto transform between measurement forms.', () => {
         browser.element('#patients-table tbody tr td a.child').click();
         browser.waitForVisible('#mother-info');
 
-        // In case the Weight is already completed we should switch to the
+        // In case the Photo is already completed we should switch to the
         // Completed tab.
-        if (!browser.isVisible('a=Weight') && browser.isVisible('#pending-tab.active')) {
+        if (!browser.isVisible('a=Photo') && browser.isVisible('#pending-tab.active')) {
             browser.element('#completed-tab').click();
         }
         // Initially follow the Photo form.
-        browser.element('a=Weight').click();
+        browser.element('a=Photo').click();
+    });
+
+    it('Saving the Photo form should lead to the Weight form.', () => {
+        browser.addTestImage('Testfile1');
+        browser.element('#save-form').click();
+        // The help text of the Weight form.
+        browser.waitForVisible("p=Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on.");
     });
 
     it('Saving the Weight form should lead to the Height form.', () => {
