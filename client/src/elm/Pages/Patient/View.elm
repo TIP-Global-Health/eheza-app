@@ -59,7 +59,10 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                             ]
                         , div [ class "middle aligned content" ]
                             [ div []
-                                [ h2 [ class "ui disabled header mother" ]
+                                [ h2
+                                    [ class "ui disabled header mother"
+                                    , id "mother-info"
+                                    ]
                                     [ motherInfo ]
                                 ]
                             , div []
