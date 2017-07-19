@@ -4,15 +4,17 @@ import Activity.Model exposing (ActivityType(Child), ChildActivityType(ChildPict
 import App.Model exposing (DropzoneConfig)
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
-import User.Model exposing (..)
+import Date exposing (Date)
 import Measurement.Update
 import Pages.Patient.Model exposing (Model, Msg(..))
+import Pages.Patient.Utils exposing (updateActivityDate)
 import Pusher.Model exposing (PusherEventData(..))
 import Patient.Model exposing (Patient, PatientId)
+import User.Model exposing (..)
 
 
-update : BackendUrl -> String -> User -> Msg -> ( PatientId, Patient ) -> Model -> ( Patient, Model, Cmd Msg, Maybe Page )
-update backendUrl accessToken user msg ( patientId, patient ) model =
+update : Date -> BackendUrl -> String -> User -> Msg -> ( PatientId, Patient ) -> Model -> ( Patient, Model, Cmd Msg, Maybe Page )
+update currentDate backendUrl accessToken user msg ( patientId, patient ) model =
     case msg of
         HandlePusherEventData event ->
             case event of
@@ -31,8 +33,16 @@ update backendUrl accessToken user msg ( patientId, patient ) model =
             let
                 ( measurementsUpdated, cmds, maybeActivityTypeCompleted ) =
                     Measurement.Update.update backendUrl accessToken user ( patientId, patient ) subMsg model.measurements
+
+                patientUpdated =
+                    case maybeActivityTypeCompleted of
+                        Nothing ->
+                            patient
+
+                        Just activtyTypeCompleted ->
+                            updateActivityDate currentDate activtyTypeCompleted patient
             in
-                ( patient
+                ( patientUpdated
                 , { model | measurements = measurementsUpdated }
                 , Cmd.map MsgMeasurement cmds
                 , Nothing

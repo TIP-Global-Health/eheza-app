@@ -104,7 +104,7 @@ update currentDate backendUrl accessToken user msg model =
                                     |> Maybe.withDefault Pages.Patient.Model.emptyModel
 
                             ( patientUpdated, subModel, subCmd, redirectPage ) =
-                                Pages.Patient.Update.update backendUrl accessToken user subMsg ( id, patient ) patientModel
+                                Pages.Patient.Update.update currentDate backendUrl accessToken user subMsg ( id, patient ) patientModel
                         in
                             ( { model
                                 | patients = Dict.insert id (Success patientUpdated) model.patients
