@@ -19,7 +19,10 @@ update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model 
 update backendUrl accessToken user ( patientId, patient ) msg model =
     case msg of
         HandleDropzoneUploadedFile fileId ->
-            { model | photo = fileId } ! []
+            ( { model | photo = fileId }
+            , Cmd.none
+            , Nothing
+            )
 
         HandlePhotoSave (Ok ()) ->
             ( { model | status = Success () }
