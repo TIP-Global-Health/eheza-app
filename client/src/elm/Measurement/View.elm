@@ -162,7 +162,7 @@ viewPhoto backendUrl accessToken user language ( childId, child ) model =
                             [ class "ui fluid basic button" ]
                             [ text <| translate language Trans.Retake ]
                         ]
-                    , saveButton language PhotoSave model True (Just "column")
+                    , saveButton language PhotoSave model (model.photo > 0) (Just "column")
                     ]
                 ]
             ]
