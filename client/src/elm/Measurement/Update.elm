@@ -18,27 +18,42 @@ update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model 
 update backendUrl accessToken user ( patientId, patient ) msg model =
     case msg of
         HandleDropzoneUploadedFile fileId ->
-            ( { model | photo = fileId }, Cmd.none, Nothing )
+            ( { model | photo = fileId }
+            , Cmd.none
+            , Nothing
+            )
 
         HandlePhotoSave (Ok ()) ->
-            ( { model | status = Success () }, Cmd.none, Nothing )
+            ( { model | status = Success () }
+            , Cmd.none
+            , Just <| Child Weight
+            )
 
         HandlePhotoSave (Err err) ->
             let
                 _ =
                     Debug.log "HandlePhotoSave (Err)" False
             in
-                ( { model | status = Failure err }, Cmd.none, Nothing )
+                ( { model | status = Failure err }
+                , Cmd.none
+                , Nothing
+                )
 
         HandleWeightSave (Ok ()) ->
-            ( { model | status = Success () }, Cmd.none, Just (Child Weight) )
+            ( { model | status = Success () }
+            , Cmd.none
+            , Just <| Child Height
+            )
 
         HandleWeightSave (Err err) ->
             let
                 _ =
                     Debug.log "HandleWeightSave (Err)" False
             in
-                ( { model | status = Failure err }, Cmd.none, Nothing )
+                ( { model | status = Failure err }
+                , Cmd.none
+                , Nothing
+                )
 
         HeightUpdate val ->
             let
@@ -48,7 +63,10 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
                 updatedHeight =
                     { height | value = val }
             in
-                ( { model | height = updatedHeight }, Cmd.none, Nothing )
+                ( { model | height = updatedHeight }
+                , Cmd.none
+                , Nothing
+                )
 
         MuacUpdate val ->
             let
@@ -58,13 +76,22 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
                 updatedMuac =
                     { muac | value = val }
             in
-                ( { model | muac = updatedMuac }, Cmd.none, Nothing )
+                ( { model | muac = updatedMuac }
+                , Cmd.none
+                , Nothing
+                )
 
         MuacSave ->
-            ( model, Cmd.none, Just (Child Muac) )
+            ( model
+            , Cmd.none
+            , Just <| Child NutritionSigns
+            )
 
         NutritionSignsSave ->
-            ( model, Cmd.none, Nothing )
+            ( model
+            , Cmd.none
+            , Nothing
+            )
 
         PhotoSave ->
             postPhoto backendUrl accessToken patientId model
@@ -76,7 +103,10 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
             postWeight backendUrl accessToken patientId model
 
         HeightSave ->
-            ( model, Cmd.none, Just (Child Height) )
+            ( model
+            , Cmd.none
+            , Just <| Child Muac
+            )
 
         WeightUpdate val ->
             let
@@ -86,7 +116,10 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
                 updatedWeight =
                     { weight | value = val }
             in
-                ( { model | weight = updatedWeight }, Cmd.none, Nothing )
+                ( { model | weight = updatedWeight }
+                , Cmd.none
+                , Nothing
+                )
 
 
 {-| Enables posting of arbitrary values to the provided back end so long as the encoder matches the desired type

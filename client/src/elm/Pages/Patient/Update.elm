@@ -5,6 +5,7 @@ import App.Model exposing (DropzoneConfig)
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
+import Maybe.Extra exposing (isJust)
 import Measurement.Update
 import Pages.Patient.Model exposing (Model, Msg(..))
 import Pages.Patient.Utils exposing (updateActivityDate)
@@ -44,10 +45,25 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
 
                         Just activtyTypeCompleted ->
                             updateActivityDate newDate activtyTypeCompleted patient
+
+                modelWithMeasurements =
+                    { model | measurements = measurementsUpdated }
+
+                selectedActivity =
+                    if isJust maybeActivityTypeCompleted then
+                        maybeActivityTypeCompleted
+                    else
+                        model.selectedActivity
+
+                ( _, modelWithSelectedAtivity, selectedActivityCmds, maybePage ) =
+                    update currentDate backendUrl accessToken user (SetSelectedActivity selectedActivity) ( patientId, patient ) modelWithMeasurements
             in
                 ( patientUpdated
-                , { model | measurements = measurementsUpdated }
-                , Cmd.map MsgMeasurement cmds
+                , modelWithSelectedAtivity
+                , Cmd.batch
+                    [ Cmd.map MsgMeasurement cmds
+                    , selectedActivityCmds
+                    ]
                 , Nothing
                 )
 

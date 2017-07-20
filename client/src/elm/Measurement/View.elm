@@ -198,6 +198,7 @@ saveButton language msg model maybeDivClass =
                     , ( "basic", not isSuccess )
                     , ( "negative", isFailure )
                     ]
+                 , id "save-form"
                  ]
                     ++ saveAttr
                 )
