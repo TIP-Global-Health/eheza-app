@@ -25,7 +25,6 @@ class HedleyMigrateUsers extends HedleyMigrateBase {
       ['name', t('Username')],
       ['pass', t('User password')],
       ['email', t('User email')],
-      ['avatar', t('User avatar')],
       ['role', t('User role')],
     );
 
@@ -38,16 +37,6 @@ class HedleyMigrateUsers extends HedleyMigrateBase {
     $this->addFieldMapping('name', 'name');
     $this->addFieldMapping('mail', 'email');
     $this->addFieldMapping('pass', 'pass');
-
-    // Map the file name to the title.
-    $this->addFieldMapping('field_avatar', 'name')
-      ->callbacks([$this, 'avatarProcess']);
-
-    $this->addFieldMapping('field_avatar:file_replace')
-      ->defaultValue(FILE_EXISTS_REPLACE);
-
-    $this->addFieldMapping('field_avatar:source_dir')
-      ->defaultValue($this->getMigrateDirectory() . '/images/');
 
     $this->addFieldMapping(('status'))
       ->defaultValue(1);
