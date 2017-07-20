@@ -85,8 +85,7 @@ echo -e"${GREEN}Sync new code at $ORIGIN_BRANCH branch into the Pantheon folder 
 rsync -avzr --delete-after "$MAKE_DIR/$PROFILE/" "$PANTHEON_DIR/profiles/$PROFILE/"
 rsync -avzr --delete-after "$MAKE_DIR"/www/sites/all/ "$PANTHEON_DIR"/sites/all/
 
-tput reset
-echo -e"${GREEN}Re-building the app and copy to {$PANTHEON_DIR}/app.${NORMAL}"
+echo -e "${GREEN}Re-building the app and copy to {$PANTHEON_DIR}/app.${NORMAL}"
 cd $MAKE_DIR/../client
 elm-package install -y
 bower install
