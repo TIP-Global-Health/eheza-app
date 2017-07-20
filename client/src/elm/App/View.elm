@@ -59,7 +59,6 @@ viewHeaderBackButton : Model -> Html Msg
 viewHeaderBackButton model =
     a
         [ class "link-back"
-        , href "javascript:void(0);"
         , id "back-button"
         , onClick <| GoBack
         ]
