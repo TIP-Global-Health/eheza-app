@@ -91,6 +91,13 @@ echo -e"${GREEN}Sync new code at $ORIGIN_BRANCH branch into the Pantheon folder 
 rsync -avzr --delete-after "$MAKE_DIR/$PROFILE/" "$PANTHEON_DIR/profiles/$PROFILE/"
 rsync -avzr --delete-after "$MAKE_DIR"/www/sites/all/ "$PANTHEON_DIR"/sites/all/
 
+echo -e"${GREEN}Re-building the app and copy to {$PANTHEON_DIR}/app.${NORMAL}"
+cd $MAKE_DIR/client
+elm-package install -y
+bower install
+gulp publish
+rsync -avzr --delete-after "$MAKE_DIR/client" "$PANTHEON_DIR"/app
+
 #cd "$PANTHEON_DIR"
 #echo -e "${GREEN}Git commit new code.${NORMAL}\n"
 #git add . --all
