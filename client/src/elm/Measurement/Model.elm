@@ -5,23 +5,18 @@ import RemoteData exposing (RemoteData(..), WebData)
 
 
 type alias FloatInputConstraints =
-    { defaultValue : Float
-    , minVal : Float
+    { minVal : Float
     , maxVal : Float
     }
 
 
 type alias FloatInput =
-    { initialValue : Maybe Float
-    , value : Float
-    }
+    Maybe Float
 
 
-emptyFloatInput : FloatInputConstraints -> FloatInput
-emptyFloatInput constraints =
-    { initialValue = Nothing
-    , value = constraints.defaultValue
-    }
+emptyFloatInput : FloatInput
+emptyFloatInput =
+    Nothing
 
 
 type Msg
@@ -55,24 +50,21 @@ type FloatMeasurements
 
 getInputConstraintsHeight : FloatInputConstraints
 getInputConstraintsHeight =
-    { defaultValue = 1
-    , minVal = 0.5
+    { minVal = 0.5
     , maxVal = 100
     }
 
 
 getInputConstraintsMuac : FloatInputConstraints
 getInputConstraintsMuac =
-    { defaultValue = 1
-    , minVal = 0.5
+    { minVal = 0.5
     , maxVal = 40
     }
 
 
 getInputConstraintsWeight : FloatInputConstraints
 getInputConstraintsWeight =
-    { defaultValue = 1
-    , minVal = 0.5
+    { minVal = 0.5
     , maxVal = 60
     }
 
@@ -80,8 +72,8 @@ getInputConstraintsWeight =
 emptyModel : Model
 emptyModel =
     { status = NotAsked
-    , height = emptyFloatInput getInputConstraintsHeight
-    , muac = emptyFloatInput getInputConstraintsHeight
+    , height = Nothing
+    , muac = Nothing
     , photo = 0
-    , weight = emptyFloatInput getInputConstraintsWeight
+    , weight = Nothing
     }

@@ -41,24 +41,10 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
                 ( { model | status = Failure err }, Cmd.none, Nothing )
 
         HeightUpdate val ->
-            let
-                height =
-                    model.height
-
-                updatedHeight =
-                    { height | value = val }
-            in
-                ( { model | height = updatedHeight }, Cmd.none, Nothing )
+            ( { model | height = Just val }, Cmd.none, Nothing )
 
         MuacUpdate val ->
-            let
-                muac =
-                    model.muac
-
-                updatedMuac =
-                    { muac | value = val }
-            in
-                ( { model | muac = updatedMuac }, Cmd.none, Nothing )
+            ( { model | muac = Just val }, Cmd.none, Nothing )
 
         MuacSave ->
             ( model, Cmd.none, Just (Child Muac) )
@@ -76,14 +62,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
             ( model, Cmd.none, Just (Child Height) )
 
         WeightUpdate val ->
-            let
-                weight =
-                    model.weight
-
-                updatedWeight =
-                    { weight | value = val }
-            in
-                ( { model | weight = updatedWeight }, Cmd.none, Nothing )
+            ( { model | weight = Just val }, Cmd.none, Nothing )
 
 
 {-| Enables posting of arbitrary values to the provided back end so long as the encoder matches the desired type
@@ -114,7 +93,22 @@ postPhoto backendUrl accessToken childId model =
 -}
 postWeight : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
 postWeight backendUrl accessToken childId model =
-    postData backendUrl accessToken model "weights" model.weight.value (encodeWeight childId) HandleWeightSave
+    case model.weight of
+        Nothing ->
+            ( model
+            , Cmd.none
+            , Nothing
+            )
+
+        Just weight ->
+            postData
+                backendUrl
+                accessToken
+                model
+                "weights"
+                weight
+                (encodeWeight childId)
+                HandleWeightSave
 
 
 subscriptions : Model -> Sub Msg
