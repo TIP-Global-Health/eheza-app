@@ -253,6 +253,9 @@ update msg model =
 setBackButtonTarget : Page -> Page
 setBackButtonTarget page =
     case page of
+        AccessDenied ->
+            page
+
         Activities ->
             Dashboard []
 
@@ -262,7 +265,13 @@ setBackButtonTarget page =
         Patient patientId ->
             Dashboard []
 
-        _ ->
+        Login ->
+            page
+
+        MyAccount ->
+            page
+
+        PageNotFound ->
             page
 
 
