@@ -18,27 +18,42 @@ update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model 
 update backendUrl accessToken user ( patientId, patient ) msg model =
     case msg of
         HandleDropzoneUploadedFile fileId ->
-            ( { model | photo = fileId }, Cmd.none, Nothing )
+            ( { model | photo = fileId }
+            , Cmd.none
+            , Nothing
+            )
 
         HandlePhotoSave (Ok ()) ->
-            ( { model | status = Success () }, Cmd.none, Nothing )
+            ( { model | status = Success () }
+            , Cmd.none
+            , Just <| Child Weight
+            )
 
         HandlePhotoSave (Err err) ->
             let
                 _ =
                     Debug.log "HandlePhotoSave (Err)" False
             in
-                ( { model | status = Failure err }, Cmd.none, Nothing )
+                ( { model | status = Failure err }
+                , Cmd.none
+                , Nothing
+                )
 
         HandleWeightSave (Ok ()) ->
-            ( { model | status = Success () }, Cmd.none, Just (Child Weight) )
+            ( { model | status = Success () }
+            , Cmd.none
+            , Just <| Child Height
+            )
 
         HandleWeightSave (Err err) ->
             let
                 _ =
                     Debug.log "HandleWeightSave (Err)" False
             in
-                ( { model | status = Failure err }, Cmd.none, Nothing )
+                ( { model | status = Failure err }
+                , Cmd.none
+                , Nothing
+                )
 
         HeightUpdate val ->
             ( { model | height = Just val }, Cmd.none, Nothing )
@@ -47,10 +62,16 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
             ( { model | muac = Just val }, Cmd.none, Nothing )
 
         MuacSave ->
-            ( model, Cmd.none, Just (Child Muac) )
+            ( model
+            , Cmd.none
+            , Just <| Child NutritionSigns
+            )
 
         NutritionSignsSave ->
-            ( model, Cmd.none, Nothing )
+            ( model
+            , Cmd.none
+            , Nothing
+            )
 
         PhotoSave ->
             postPhoto backendUrl accessToken patientId model
@@ -59,7 +80,10 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
             postWeight backendUrl accessToken patientId model
 
         HeightSave ->
-            ( model, Cmd.none, Just (Child Height) )
+            ( model
+            , Cmd.none
+            , Just <| Child Muac
+            )
 
         WeightUpdate val ->
             ( { model | weight = Just val }, Cmd.none, Nothing )

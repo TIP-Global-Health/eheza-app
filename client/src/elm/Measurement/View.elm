@@ -205,6 +205,7 @@ saveButton language msg model hasInput maybeDivClass =
                     , ( "negative", isFailure )
                     , ( "disabled", not hasInput )
                     ]
+                 , id "save-form"
                  ]
                     ++ saveAttr
                 )
