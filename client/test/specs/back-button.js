@@ -1,6 +1,6 @@
 var assert = require('assert');
 
-describe('Clicking the Back Button.', () => {
+describe('Clicking the Back Button', () => {
 
     before(() => {
         browser.loginAndViewPatientsPage('aya');
