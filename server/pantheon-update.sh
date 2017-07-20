@@ -81,7 +81,7 @@ if [[ -n $(git status -s) ]]; then
   exit 1
 fi
 
-echo -e"${GREEN}Sync new code at $ORIGIN_BRANCH branch into the Pantheon folder ($PANTHEON_BRANCH branch).${NORMAL}"
+echo -e "${GREEN}Sync new code at $ORIGIN_BRANCH branch into the Pantheon folder ($PANTHEON_BRANCH branch).${NORMAL}"
 rsync -avzr --delete-after "$MAKE_DIR/$PROFILE/" "$PANTHEON_DIR/profiles/$PROFILE/"
 rsync -avzr --delete-after "$MAKE_DIR"/www/sites/all/ "$PANTHEON_DIR"/sites/all/
 
