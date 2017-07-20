@@ -16,6 +16,7 @@ type Msg
     | Logout
     | MsgPatientManager PatientManager.Model.Msg
     | PageLogin Pages.Login.Model.Msg
+    | RedirectByActivePage
     | SetActivePage Page
     | SetCurrentDate Date
     | ThemeSwitch Theme
