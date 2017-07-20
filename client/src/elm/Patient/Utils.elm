@@ -2,6 +2,7 @@ module Patient.Utils
     exposing
         ( getPatientAvatarThumb
         , getPatientName
+        , getPatientTypeAsString
         )
 
 import Patient.Model exposing (Patient, PatientType(..))
@@ -25,3 +26,13 @@ getPatientName patient =
 
         PatientMother mother ->
             .name mother
+
+
+getPatientTypeAsString : Patient -> String
+getPatientTypeAsString patient =
+    case patient.info of
+        PatientChild child ->
+            "child"
+
+        PatientMother mother ->
+            "mother"

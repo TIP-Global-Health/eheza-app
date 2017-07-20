@@ -19,6 +19,14 @@ module.exports = function (browser, capabilities, specs) {
   });
 
   /**
+   * After a user login, the displayed page should contain the patients table.
+   */
+  browser.addCommand('loginAndViewPatientsPage', (user) => {
+    browser.login(user);
+    browser.waitForVisible('#patients-table');
+  });
+
+  /**
    * Add an image to the dropzone.
    *
    * @param {filename} filename The name for the added file.
