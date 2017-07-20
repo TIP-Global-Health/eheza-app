@@ -98,19 +98,19 @@ bower install
 gulp publish
 rsync -avzr --delete-after "$MAKE_DIR/../client" "$PANTHEON_DIR"/app
 
-#cd "$PANTHEON_DIR"
-#echo -e "${GREEN}Git commit new code.${NORMAL}\n"
-#git add . --all
-#git status
-#
-#echo -e "${YELLOW}Sleeping for 5 seconds, you can abort the process before push by hitting Ctrl-C.${NORMAL}\n"
-#sleep 5
-#git commit -am "Site update from $ORIGIN_BRANCH"
-#git push
-#
-#cd "$MAKE_DIR"
-#
-#if [ $AUTO_LOGIN ]; then
-#  echo -e "${GREEN}Open site in browser.${NORMAL}\n"
-#  drush "$PANTHEON_ALIAS" uli
-#fi
+cd "$PANTHEON_DIR"
+echo -e "${GREEN}Git commit new code.${NORMAL}\n"
+git add . --all
+git status
+
+echo -e "${YELLOW}Sleeping for 5 seconds, you can abort the process before push by hitting Ctrl-C.${NORMAL}\n"
+sleep 5
+git commit -am "Site update from $ORIGIN_BRANCH"
+git push
+
+cd "$MAKE_DIR"
+
+if [ $AUTO_LOGIN ]; then
+  echo -e "${GREEN}Open site in browser.${NORMAL}\n"
+  drush "$PANTHEON_ALIAS" uli
+fi
