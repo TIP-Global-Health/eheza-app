@@ -65,12 +65,6 @@ if ! hash drush 2>/dev/null; then
   exit 1
 fi
 
-if ! hash terminus 2>/dev/null; then
-  echo -e "${RED}Terminus executable is not available ${RESTORE}"
-  echo "https://pantheon.io/docs/terminus/"
-  exit 1
-fi
-
 echo -e "${GREEN}Resets Pantheon folder to $PANTHEON_BRANCH at Git.${NORMAL}\n"
 
 cd "$PANTHEON_DIR"
