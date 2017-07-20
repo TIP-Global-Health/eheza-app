@@ -142,7 +142,7 @@ viewPhoto backendUrl accessToken user language ( childId, child ) model =
     div []
         [ divider
         , div
-            [ class "ui full segment"
+            [ class "ui full segment photo"
             ]
             [ h3
                 [ class "ui header" ]
