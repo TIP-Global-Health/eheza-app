@@ -30,7 +30,7 @@ module.exports = function (browser, capabilities, specs) {
    * Click the back button.
    */
   browser.addCommand('goBack', () => {
-    browser.click('#back-button');
+    browser.click('.link-back');
   });
 
   /**
