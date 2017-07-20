@@ -56,7 +56,7 @@ function hedley_patient_field_default_field_instances() {
         'progress_indicator' => 'throbber',
       ),
       'type' => 'image_image',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -111,7 +111,7 @@ function hedley_patient_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 3,
     ),
   );
 
@@ -166,12 +166,12 @@ function hedley_patient_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 0,
+      'weight' => 4,
     ),
   );
 
-  // Exported field_instance: 'node-child-field_date_nutrition_signs_'.
-  $field_instances['node-child-field_date_nutrition_signs_'] = array(
+  // Exported field_instance: 'node-child-field_date_nutrition_signs'.
+  $field_instances['node-child-field_date_nutrition_signs'] = array(
     'bundle' => 'child',
     'deleted' => 0,
     'description' => '',
@@ -198,7 +198,7 @@ function hedley_patient_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_date_nutrition_signs_',
+    'field_name' => 'field_date_nutrition_signs',
     'label' => 'Date nutrition signs ',
     'required' => 0,
     'settings' => array(
@@ -221,7 +221,7 @@ function hedley_patient_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 4,
+      'weight' => 6,
     ),
   );
 
@@ -276,7 +276,7 @@ function hedley_patient_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 2,
+      'weight' => 5,
     ),
   );
 
@@ -331,7 +331,7 @@ function hedley_patient_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -2,
+      'weight' => 2,
     ),
   );
 
@@ -371,7 +371,7 @@ function hedley_patient_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 3,
+      'weight' => 7,
     ),
   );
 
