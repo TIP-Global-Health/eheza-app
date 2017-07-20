@@ -92,11 +92,11 @@ rsync -avzr --delete-after "$MAKE_DIR/$PROFILE/" "$PANTHEON_DIR/profiles/$PROFIL
 rsync -avzr --delete-after "$MAKE_DIR"/www/sites/all/ "$PANTHEON_DIR"/sites/all/
 
 echo -e"${GREEN}Re-building the app and copy to {$PANTHEON_DIR}/app.${NORMAL}"
-cd $MAKE_DIR/client
+cd $MAKE_DIR/../client
 elm-package install -y
 bower install
 gulp publish
-rsync -avzr --delete-after "$MAKE_DIR/client" "$PANTHEON_DIR"/app
+rsync -avzr --delete-after "$MAKE_DIR/../client" "$PANTHEON_DIR"/app
 
 #cd "$PANTHEON_DIR"
 #echo -e "${GREEN}Git commit new code.${NORMAL}\n"
