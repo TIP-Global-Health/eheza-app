@@ -259,9 +259,6 @@ getBackButtonTarget activePage =
         Dashboard activity ->
             Activities
 
-        Patient patientId ->
-            Dashboard []
-
         Login ->
             activePage
 
@@ -270,6 +267,9 @@ getBackButtonTarget activePage =
 
         PageNotFound ->
             activePage
+
+        Patient patientId ->
+            Dashboard []
 
 
 {-| Determine is a page can be accessed by a user (anonymous or authenticated),
