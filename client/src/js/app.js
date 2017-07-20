@@ -123,7 +123,8 @@ function attachDropzone(selector, config) {
     var url = config.backendUrl + '/api/file-upload?access_token=' + accessToken;
 
     dropZone = new Dropzone(selector, {
-        url: url
+        url: url,
+        maxFiles: 1
     });
 
     dropZone.on('complete', function(file) {
