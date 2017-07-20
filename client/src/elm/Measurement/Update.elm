@@ -93,14 +93,8 @@ postPhoto backendUrl accessToken childId model =
 -}
 postWeight : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
 postWeight backendUrl accessToken childId model =
-    case model.weight of
-        Nothing ->
-            ( model
-            , Cmd.none
-            , Nothing
-            )
-
-        Just weight ->
+    Maybe.map
+        (\weight ->
             postData
                 backendUrl
                 accessToken
@@ -109,6 +103,9 @@ postWeight backendUrl accessToken childId model =
                 weight
                 (encodeWeight childId)
                 HandleWeightSave
+        )
+        model.weight
+        |> Maybe.withDefault ( model, Cmd.none, Nothing )
 
 
 subscriptions : Model -> Sub Msg

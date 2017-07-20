@@ -10,6 +10,7 @@ import Config.Model exposing (BackendUrl)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
+import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (FloatMeasurements(..), Model, Msg(..), getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
 import Translate as Trans exposing (Language(..), TranslationId, translate)
@@ -91,12 +92,8 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     )
 
         defaultAttr =
-            case measurementValue of
-                Nothing ->
-                    []
-
-                Just val ->
-                    [ value <| toString val ]
+            Maybe.map (\val -> [ value <| toString val ]) measurementValue
+                |> Maybe.withDefault []
 
         inputAttrs =
             [ type_ "number"
@@ -134,7 +131,7 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     ]
                 , div
                     [ class "actions" ]
-                    [ saveButton language saveMsg model (not (measurementValue == Nothing)) Nothing
+                    [ saveButton language saveMsg model (isJust measurementValue) Nothing
                     ]
                 ]
             ]

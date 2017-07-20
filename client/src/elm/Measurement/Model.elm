@@ -14,11 +14,6 @@ type alias FloatInput =
     Maybe Float
 
 
-emptyFloatInput : FloatInput
-emptyFloatInput =
-    Nothing
-
-
 type Msg
     = HandleDropzoneUploadedFile Int
     | HandlePhotoSave (Result Http.Error ())
