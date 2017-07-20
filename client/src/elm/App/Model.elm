@@ -12,11 +12,11 @@ import User.Model exposing (..)
 
 
 type Msg
-    = GoBack
-    | HandleOfflineEvent (Result String Bool)
+    = HandleOfflineEvent (Result String Bool)
     | Logout
     | MsgPatientManager PatientManager.Model.Msg
     | PageLogin Pages.Login.Model.Msg
+    | RedirectByActivePage
     | SetActivePage Page
     | SetCurrentDate Date
     | ThemeSwitch Theme

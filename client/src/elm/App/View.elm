@@ -59,7 +59,7 @@ viewHeaderBackButton : Model -> Html Msg
 viewHeaderBackButton model =
     a
         [ class "link-back"
-        , onClick <| GoBack
+        , onClick <| RedirectByActivePage
         ]
         [ span
             [ class "icon-back" ]

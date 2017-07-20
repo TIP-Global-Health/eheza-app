@@ -87,9 +87,6 @@ update msg model =
                     ""
     in
         case msg of
-            GoBack ->
-                update (SetActivePage <| getBackButtonTarget model.activePage) model
-
             HandleOfflineEvent (Ok offline) ->
                 { model | offline = offline } ! []
 
@@ -178,6 +175,9 @@ update msg model =
                         , setActivePageCmds
                         ]
                     )
+
+            RedirectByActivePage ->
+                update (SetActivePage <| getBackButtonTarget model.activePage) model
 
             SetActivePage page ->
                 let
