@@ -1,7 +1,7 @@
 var assert = require('assert');
 
 describe('measurement module', function() {
-  it('should save the weight via the Save button', function() {
+  it('should save the weight via the Save button', () => {
     const tab = 'Weight';
 
     browser.login('aya');
