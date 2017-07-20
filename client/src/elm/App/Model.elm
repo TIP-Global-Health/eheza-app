@@ -13,6 +13,7 @@ import User.Model exposing (..)
 
 type Msg
     = HandleOfflineEvent (Result String Bool)
+    | GoBack
     | Logout
     | MsgPatientManager PatientManager.Model.Msg
     | PageLogin Pages.Login.Model.Msg
@@ -25,6 +26,7 @@ type Msg
 type alias Model =
     { accessToken : String
     , activePage : Page
+    , backButtonTarget : Page
     , config : RemoteData String Config.Model.Model
     , currentDate : Date
     , dropzoneFile : Maybe FileId
@@ -62,6 +64,7 @@ emptyModel : Model
 emptyModel =
     { accessToken = ""
     , activePage = Login
+    , backButtonTarget = Login
     , config = NotAsked
     , currentDate = Date.fromTime 0
     , dropzoneFile = Nothing

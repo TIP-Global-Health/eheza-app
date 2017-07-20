@@ -93,6 +93,9 @@ update msg model =
             HandleOfflineEvent (Err err) ->
                 model ! []
 
+            GoBack ->
+                update (SetActivePage model.backButtonTarget) model
+
             Logout ->
                 ( { emptyModel
                     | accessToken = ""
@@ -181,6 +184,9 @@ update msg model =
                     activePageUpdated =
                         setActivePageAccess model.user page
 
+                    backButtonTarget =
+                        setBackButtonTarget activePageUpdated
+
                     ( modelUpdated, command ) =
                         -- For a few, we also delegate some initialization
                         case activePageUpdated of
@@ -209,7 +215,7 @@ update msg model =
                             _ ->
                                 ( model, Cmd.none )
                 in
-                    ( { modelUpdated | activePage = setActivePageAccess model.user activePageUpdated }
+                    ( { modelUpdated | activePage = setActivePageAccess model.user activePageUpdated, backButtonTarget = backButtonTarget }
                     , Cmd.batch
                         [ activePage [ (toString activePageUpdated), backendUrl ]
                         , command
@@ -240,6 +246,24 @@ update msg model =
 
             Tick _ ->
                 model ! [ Task.perform SetCurrentDate Date.now ]
+
+
+{-| Determine the target page of the back button based on the given page.
+-}
+setBackButtonTarget : Page -> Page
+setBackButtonTarget page =
+    case page of
+        Activities ->
+            Dashboard []
+
+        Dashboard activity ->
+            Activities
+
+        Patient patientId ->
+            Dashboard []
+
+        _ ->
+            page
 
 
 {-| Determine is a page can be accessed by a user (anonymous or authenticated),
