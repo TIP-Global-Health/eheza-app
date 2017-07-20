@@ -88,7 +88,7 @@ update msg model =
     in
         case msg of
             GoBack ->
-                update (SetActivePage model.backButtonTarget) model
+                update (SetActivePage <| getBackButtonTarget model.activePage) model
 
             HandleOfflineEvent (Ok offline) ->
                 { model | offline = offline } ! []
@@ -184,9 +184,6 @@ update msg model =
                     activePageUpdated =
                         setActivePageAccess model.user page
 
-                    backButtonTarget =
-                        setBackButtonTarget activePageUpdated
-
                     ( modelUpdated, command ) =
                         -- For a few, we also delegate some initialization
                         case activePageUpdated of
@@ -215,7 +212,7 @@ update msg model =
                             _ ->
                                 ( model, Cmd.none )
                 in
-                    ( { modelUpdated | activePage = setActivePageAccess model.user activePageUpdated, backButtonTarget = backButtonTarget }
+                    ( { modelUpdated | activePage = setActivePageAccess model.user activePageUpdated }
                     , Cmd.batch
                         [ activePage [ (toString activePageUpdated), backendUrl ]
                         , command
@@ -248,13 +245,13 @@ update msg model =
                 model ! [ Task.perform SetCurrentDate Date.now ]
 
 
-{-| Determine the target page of the back button based on the given page.
+{-| Determine the target page of the back button based on the active page.
 -}
-setBackButtonTarget : Page -> Page
-setBackButtonTarget page =
-    case page of
+getBackButtonTarget : Page -> Page
+getBackButtonTarget activePage =
+    case activePage of
         AccessDenied ->
-            page
+            activePage
 
         Activities ->
             Dashboard []
@@ -266,13 +263,13 @@ setBackButtonTarget page =
             Dashboard []
 
         Login ->
-            page
+            activePage
 
         MyAccount ->
-            page
+            activePage
 
         PageNotFound ->
-            page
+            activePage
 
 
 {-| Determine is a page can be accessed by a user (anonymous or authenticated),
