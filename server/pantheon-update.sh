@@ -96,7 +96,7 @@ cd $MAKE_DIR/../client
 elm-package install -y
 bower install
 gulp publish
-rsync -avzr --delete-after "$MAKE_DIR/../client" "$PANTHEON_DIR"/app
+cp -R $MAKE_DIR/../client/dist/ $PANTHEON_DIR/app
 
 cd "$PANTHEON_DIR"
 echo -e "${GREEN}Git commit new code.${NORMAL}\n"
