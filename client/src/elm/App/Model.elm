@@ -12,8 +12,8 @@ import User.Model exposing (..)
 
 
 type Msg
-    = HandleOfflineEvent (Result String Bool)
-    | GoBack
+    = GoBack
+    | HandleOfflineEvent (Result String Bool)
     | Logout
     | MsgPatientManager PatientManager.Model.Msg
     | PageLogin Pages.Login.Model.Msg

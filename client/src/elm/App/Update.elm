@@ -87,14 +87,14 @@ update msg model =
                     ""
     in
         case msg of
+            GoBack ->
+                update (SetActivePage model.backButtonTarget) model
+
             HandleOfflineEvent (Ok offline) ->
                 { model | offline = offline } ! []
 
             HandleOfflineEvent (Err err) ->
                 model ! []
-
-            GoBack ->
-                update (SetActivePage model.backButtonTarget) model
 
             Logout ->
                 ( { emptyModel
