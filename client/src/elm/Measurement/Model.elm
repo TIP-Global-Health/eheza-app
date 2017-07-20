@@ -34,6 +34,7 @@ type Msg
     | MuacSave
     | NutritionSignsSave
     | PhotoSave
+    | ResetDropZone
     | WeightSave
     | WeightUpdate Float
 

@@ -151,7 +151,9 @@ viewPhoto backendUrl accessToken user language ( childId, child ) model =
                     [ div
                         [ class "column" ]
                         [ button
-                            [ class "ui fluid basic button" ]
+                            [ class "ui fluid basic button"
+                            , onClick ResetDropZone
+                            ]
                             [ text <| translate language Trans.Retake ]
                         ]
                     , saveButton language PhotoSave model (Just "column")
