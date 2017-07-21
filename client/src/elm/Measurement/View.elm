@@ -139,34 +139,42 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
 
 viewPhoto : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
 viewPhoto backendUrl accessToken user language ( childId, child ) model =
-    div []
-        [ divider
-        , div
-            [ class "ui full segment photo"
-            ]
-            [ h3
-                [ class "ui header" ]
-                [ text <| translate language Trans.ActivitiesPhotoTitle
-                ]
-            , p
-                []
-                [ text <| translate language Trans.ActivitiesPhotoHelp ]
+    let
+        hasPhoto =
+            (model.photo > 0)
+    in
+        div []
+            [ divider
             , div
-                [ class "dropzone" ]
-                []
-            , div [ class "actions" ]
-                [ div [ class "ui two column grid" ]
-                    [ div
-                        [ class "column" ]
-                        [ button
-                            [ class "ui fluid basic button" ]
-                            [ text <| translate language Trans.Retake ]
+                [ class "ui full segment photo"
+                ]
+                [ h3
+                    [ class "ui header" ]
+                    [ text <| translate language Trans.ActivitiesPhotoTitle
+                    ]
+                , p
+                    []
+                    [ text <| translate language Trans.ActivitiesPhotoHelp ]
+                , div
+                    [ class "dropzone" ]
+                    []
+                , div [ class "actions" ]
+                    [ div [ class "ui two column grid" ]
+                        [ div
+                            [ class "column" ]
+                            [ button
+                                [ classList
+                                    [ ( "ui fluid basic button", True )
+                                    , ( "disabled", not hasPhoto )
+                                    ]
+                                ]
+                                [ text <| translate language Trans.Retake ]
+                            ]
+                        , saveButton language PhotoSave model hasPhoto (Just "column")
                         ]
-                    , saveButton language PhotoSave model (model.photo > 0) (Just "column")
                     ]
                 ]
             ]
-        ]
 
 
 {-| Helper function to create a Save button.
