@@ -90,6 +90,8 @@ cd $MAKE_DIR/../client
 elm-package install -y
 bower install
 gulp publish
+rm -rf $PANTHEON_DIR/app
+mkdir $PANTHEON_DIR/app
 cp -R $MAKE_DIR/../client/serve $PANTHEON_DIR/app
 
 cd "$PANTHEON_DIR"
