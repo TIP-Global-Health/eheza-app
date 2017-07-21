@@ -1,4 +1,6 @@
 var assert = require('assert');
+var Chance = require('chance');
+var chance = new Chance();
 
 describe('The measurement forms', () => {
 
@@ -21,6 +23,7 @@ describe('The measurement forms', () => {
     });
 
     it('should lead to the Height form upon saving the Weight form', () => {
+        browser.setValue('.weight .form input', chance.floating({min: 2, max: 10}));
         browser.element('#save-form').click();
         // The help text of the Height form.
         browser.waitForVisible("p=Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight.");
@@ -28,6 +31,7 @@ describe('The measurement forms', () => {
     });
 
     it('should lead to the MUAC form upon saving the Height form', () => {
+        browser.setValue('.height .form input', chance.floating({min: 30, max: 100}));
         browser.element('#save-form').click();
         // The help text of the MUAC form.
         browser.waitForVisible("p=Make sure to measure at the center of the baby’s upper arm.");
@@ -35,13 +39,14 @@ describe('The measurement forms', () => {
     });
 
     it('should lead to the Nutrition Signs form upon saving the MUAC form', () => {
+        browser.setValue('.muac .form input', chance.floating({min: 5, max: 30}));
         browser.element('#save-form').click();
         // The help text of the Nutrition Signs form.
         browser.waitForVisible("p=Explain to the mother how to check the malnutrition signs for their own child.");
         assert.equal(browser.elements('.pending a').value.length, 1, 'There is only one pending activity');
     });
 
-    it('Saving the Nutrition Signs should result in zero pending activities', () => {
+    it('should have zero pending activities after saving the Nutrition Signs', () => {
         browser.element('#save-form').click();
         browser.waitForVisible("a=Completed (5)");
 

@@ -10,6 +10,7 @@ import Config.Model exposing (BackendUrl)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
+import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (FloatMeasurements(..), Model, Msg(..), getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
 import Translate as Trans exposing (Language(..), TranslationId, translate)
@@ -60,7 +61,7 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     , Trans.ActivitiesHeightHelp
                     , Trans.ActivitiesHeightLabel
                     , getInputConstraintsHeight
-                    , model.height.value
+                    , model.height
                     , Trans.CentimeterShorthand
                     , HeightUpdate
                     , HeightSave
@@ -72,7 +73,7 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     , Trans.ActivitiesMuacHelp
                     , Trans.ActivitiesMuacLabel
                     , getInputConstraintsMuac
-                    , model.muac.value
+                    , model.muac
                     , Trans.CentimeterShorthand
                     , MuacUpdate
                     , MuacSave
@@ -84,11 +85,24 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     , Trans.ActivitiesWeightHelp
                     , Trans.ActivitiesWeightLabel
                     , getInputConstraintsWeight
-                    , model.weight.value
+                    , model.weight
                     , Trans.KilogramShorthand
                     , WeightUpdate
                     , WeightSave
                     )
+
+        defaultAttr =
+            Maybe.map (\val -> [ value <| toString val ]) measurementValue
+                |> Maybe.withDefault []
+
+        inputAttrs =
+            [ type_ "number"
+            , name blockName
+            , Attr.min <| toString constraints.minVal
+            , Attr.max <| toString constraints.maxVal
+            , onInput <| (\v -> updateMsg <| Result.withDefault 0.0 <| String.toFloat v)
+            ]
+                ++ defaultAttr
     in
         div []
             [ divider
@@ -108,13 +122,7 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                             [ div [ class "ui right labeled input" ]
                                 [ div [ class "ui basic label" ] [ text <| translate language labelText ]
                                 , input
-                                    [ type_ "number"
-                                    , name blockName
-                                    , Attr.min <| toString constraints.minVal
-                                    , Attr.max <| toString constraints.maxVal
-                                    , value <| toString measurementValue
-                                    , onInput <| (\v -> updateMsg <| Result.withDefault 0.0 <| String.toFloat v)
-                                    ]
+                                    inputAttrs
                                     []
                                 , div [ class "ui basic label" ] [ text <| translate language measurementType ]
                                 ]
@@ -123,7 +131,7 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     ]
                 , div
                     [ class "actions" ]
-                    [ saveButton language saveMsg model Nothing
+                    [ saveButton language saveMsg model (isJust measurementValue) Nothing
                     ]
                 ]
             ]
@@ -131,34 +139,42 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
 
 viewPhoto : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
 viewPhoto backendUrl accessToken user language ( childId, child ) model =
-    div []
-        [ divider
-        , div
-            [ class "ui full segment"
-            ]
-            [ h3
-                [ class "ui header" ]
-                [ text <| translate language Trans.ActivitiesPhotoTitle
-                ]
-            , p
-                []
-                [ text <| translate language Trans.ActivitiesPhotoHelp ]
+    let
+        hasPhoto =
+            (model.photo > 0)
+    in
+        div []
+            [ divider
             , div
-                [ class "dropzone" ]
-                []
-            , div [ class "actions" ]
-                [ div [ class "ui two column grid" ]
-                    [ div
-                        [ class "column" ]
-                        [ button
-                            [ class "ui fluid basic button" ]
-                            [ text <| translate language Trans.Retake ]
+                [ class "ui full segment photo"
+                ]
+                [ h3
+                    [ class "ui header" ]
+                    [ text <| translate language Trans.ActivitiesPhotoTitle
+                    ]
+                , p
+                    []
+                    [ text <| translate language Trans.ActivitiesPhotoHelp ]
+                , div
+                    [ class "dropzone" ]
+                    []
+                , div [ class "actions" ]
+                    [ div [ class "ui two column grid" ]
+                        [ div
+                            [ class "column" ]
+                            [ button
+                                [ classList
+                                    [ ( "ui fluid basic button retake", True )
+                                    , ( "disabled", not hasPhoto )
+                                    ]
+                                ]
+                                [ text <| translate language Trans.Retake ]
+                            ]
+                        , saveButton language PhotoSave model hasPhoto (Just "column")
                         ]
-                    , saveButton language PhotoSave model (Just "column")
                     ]
                 ]
             ]
-        ]
 
 
 {-| Helper function to create a Save button.
@@ -167,8 +183,8 @@ Button will also take care of preventing double submission,
 and showing success and error indications.
 
 -}
-saveButton : Language -> Msg -> Model -> Maybe String -> Html Msg
-saveButton language msg model maybeDivClass =
+saveButton : Language -> Msg -> Model -> Bool -> Maybe String -> Html Msg
+saveButton language msg model hasInput maybeDivClass =
     let
         isLoading =
             model.status == Loading
@@ -180,7 +196,7 @@ saveButton language msg model maybeDivClass =
             RemoteData.isFailure model.status
 
         saveAttr =
-            if isLoading then
+            if isLoading || not hasInput then
                 []
             else
                 [ onClick msg ]
@@ -195,6 +211,7 @@ saveButton language msg model maybeDivClass =
                     , ( "loading", isLoading )
                     , ( "basic", not isSuccess )
                     , ( "negative", isFailure )
+                    , ( "disabled", not hasInput )
                     ]
                  , id "save-form"
                  ]
@@ -231,7 +248,7 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
                 , viewNutritionSignsSelector language
                 ]
             , div [ class "actions" ]
-                [ saveButton language NutritionSignsSave model Nothing
+                [ saveButton language NutritionSignsSave model True Nothing
                 ]
             ]
         ]
