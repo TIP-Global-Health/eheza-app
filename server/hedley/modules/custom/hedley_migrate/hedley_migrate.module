@@ -180,7 +180,7 @@ function _hedley_migrate_preprocess_child($node, Generator $faker) {
   $date_fields = [
     'height',
     'muac',
-    'nutrition',
+    'nutrition_signs',
     'picture',
     'weight',
 
