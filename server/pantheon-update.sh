@@ -92,7 +92,7 @@ bower install
 gulp publish
 rm -rf $PANTHEON_DIR/app
 mkdir $PANTHEON_DIR/app
-cp -R $MAKE_DIR/../client/serve/ $PANTHEON_DIR/app
+cp -Ra serve/. $PANTHEON_DIR/app/
 
 cd "$PANTHEON_DIR"
 echo -e "${GREEN}Git commit new code.${NORMAL}\n"
