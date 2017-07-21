@@ -13,7 +13,7 @@ type Page
     = AccessDenied
     | Activities
     | Dashboard (List ActivityType)
-    | Patient PatientId
     | Login
     | MyAccount
     | PageNotFound
+    | Patient PatientId

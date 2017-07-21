@@ -44,20 +44,27 @@ viewHeader language model =
                 [ h1
                     [ class "ui header" ]
                     [ text <| translate language Trans.TitleHealthAssessment ]
-                , a
-                    [ class "link-back"
-                    , href "#"
-                    ]
-                    [ span [ class "icon-back" ]
-                        []
-                    , span [] []
-                    ]
+                , viewHeaderBackButton model
                 , viewHeaderThemeSwitcher model
                 , viewTabSwitcher language model
                 ]
 
         _ ->
             div [] []
+
+
+{-| The back button link.
+-}
+viewHeaderBackButton : Model -> Html Msg
+viewHeaderBackButton model =
+    a
+        [ class "link-back"
+        , onClick <| RedirectByActivePage
+        ]
+        [ span
+            [ class "icon-back" ]
+            []
+        ]
 
 
 {-| The theme switcher link.
