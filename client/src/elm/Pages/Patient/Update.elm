@@ -43,7 +43,7 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
                         Nothing ->
                             patient
 
-                        Just activtyTypeCompleted ->
+                        Just ( activtyTypeCompleted, activityToRedirect ) ->
                             updateActivityDate newDate activtyTypeCompleted patient
 
                 modelWithMeasurements =
@@ -51,7 +51,12 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
 
                 selectedActivity =
                     if isJust maybeActivityTypeCompleted then
-                        maybeActivityTypeCompleted
+                        case maybeActivityTypeCompleted of
+                            Just activities ->
+                                Just <| Tuple.second activities
+
+                            Nothing ->
+                                Nothing
                     else
                         model.selectedActivity
 

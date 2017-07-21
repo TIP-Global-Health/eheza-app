@@ -14,7 +14,7 @@ import User.Model exposing (..)
 
 {-| This update section expects an additional activity type to be bubbled up, when appropriate, for completed activities to trigger completion mechanism in parent module
 -}
-update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
+update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model -> ( Model, Cmd Msg, Maybe ( ActivityType, ActivityType ) )
 update backendUrl accessToken user ( patientId, patient ) msg model =
     case msg of
         HandleDropzoneUploadedFile fileId ->
@@ -26,7 +26,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
         HandlePhotoSave (Ok ()) ->
             ( { model | status = Success () }
             , Cmd.none
-            , Just <| Child Weight
+            , Just <| ( Child ChildPicture, Child Weight )
             )
 
         HandlePhotoSave (Err err) ->
@@ -42,7 +42,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
         HandleWeightSave (Ok ()) ->
             ( { model | status = Success () }
             , Cmd.none
-            , Just <| Child Height
+            , Just <| ( Child Weight, Child Height )
             )
 
         HandleWeightSave (Err err) ->
@@ -84,7 +84,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
         MuacSave ->
             ( model
             , Cmd.none
-            , Just <| Child NutritionSigns
+            , Just <| ( Child Muac, Child NutritionSigns )
             )
 
         NutritionSignsSave ->
@@ -102,7 +102,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
         HeightSave ->
             ( model
             , Cmd.none
-            , Just <| Child Muac
+            , Just <| ( Child Height, Child Muac )
             )
 
         WeightUpdate val ->
@@ -121,7 +121,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
 
 {-| Enables posting of arbitrary values to the provided back end so long as the encoder matches the desired type
 -}
-postData : BackendUrl -> String -> Model -> String -> value -> (value -> Value) -> (Result Http.Error () -> Msg) -> ( Model, Cmd Msg, Maybe ActivityType )
+postData : BackendUrl -> String -> Model -> String -> value -> (value -> Value) -> (Result Http.Error () -> Msg) -> ( Model, Cmd Msg, Maybe ( ActivityType, ActivityType ) )
 postData backendUrl accessToken model path value encoder handler =
     let
         command =
@@ -138,14 +138,14 @@ postData backendUrl accessToken model path value encoder handler =
 
 {-| Send new photo of a child to the backend.
 -}
-postPhoto : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
+postPhoto : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe ( ActivityType, ActivityType ) )
 postPhoto backendUrl accessToken childId model =
     postData backendUrl accessToken model "photos" model.photo (encodePhoto childId) HandlePhotoSave
 
 
 {-| Send new weight of a child to the backend.
 -}
-postWeight : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
+postWeight : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe ( ActivityType, ActivityType ) )
 postWeight backendUrl accessToken childId model =
     postData backendUrl accessToken model "weights" model.weight.value (encodeWeight childId) HandleWeightSave
 
