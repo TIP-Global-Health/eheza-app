@@ -14,7 +14,7 @@ decodeChild : Decoder Child
 decodeChild =
     decode Child
         |> required "label" string
-        |> optionalAt [ "avatar", "styles", "patient-photo" ] string "http://placehold.it/200x200"
+        |> optionalAt [ "avatar", "styles", "patient-photo" ] string "https://placehold.it/200x200"
         |> required "mother" (nullable decodeInt)
         |> required "lastExamination" (nullable decodeInt)
         |> custom decodeChildActivityDates
