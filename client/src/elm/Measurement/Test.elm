@@ -6,7 +6,7 @@ import Measurement.Model exposing (..)
 import Measurement.View exposing (..)
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
-import Test.Html.Selector as Selector exposing (tag, text)
+import Test.Html.Selector as Selector exposing (classes, id, tag, text)
 import Translate exposing (..)
 
 
@@ -40,6 +40,18 @@ viewChildFormsTest =
                     |> Query.fromHtml
                     |> Query.find [ tag "h3" ]
                     |> Query.has [ text "Weight:" ]
+        , test "Then a Photo form with disabled Save button should be displayed when selected" <|
+            \() ->
+                viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) (Just <| Child ChildPicture) emptyModel
+                    |> Query.fromHtml
+                    |> Query.find [ id "save-form" ]
+                    |> Query.has [ classes [ "disabled" ] ]
+        , test "Then a Photo form with enabled Save button should be displayed when selected and there is one photo" <|
+            \() ->
+                viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) (Just <| Child ChildPicture) { emptyModel | photo = 1 }
+                    |> Query.fromHtml
+                    |> Query.find [ id "save-form" ]
+                    |> Query.hasNot [ classes [ "disabled" ] ]
         ]
 
 
