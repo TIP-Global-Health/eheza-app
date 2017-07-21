@@ -18,8 +18,8 @@ describe('The Photo form', () => {
 
   it('should not allow to Save without an image', () => {
     // The Save button is enabled.
-    const classesBefore = browser.getAttribute('.photo #save-form', 'class');
-    assert.equal(classesBefore.indexOf('disabled'), -1, 'The Save button is disabled');
+    const classesBefore = browser.getAttribute('#save-form', 'class');
+    assert.notEqual(classesBefore.indexOf('disabled'), -1, 'The Save button is disabled');
 
   });
 
@@ -27,10 +27,6 @@ describe('The Photo form', () => {
     // Add and then check the image.
     browser.addTestImage('Testfile1');
     browser.checkImageBasename('.dropzone .dz-complete > div.dz-image:nth-child(1) img', 'Testfile1');
-
-    // The Save button is enabled.
-    const classesAfter = browser.getAttribute('.photo #save-form', 'class');
-    assert.notEqual(classesAfter.indexOf('disabled'), -1, 'The Save button is not disabled anymore');
   });
 
 });
