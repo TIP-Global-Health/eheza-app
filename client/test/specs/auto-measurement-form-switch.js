@@ -1,4 +1,6 @@
 var assert = require('assert');
+var Chance = require('chance');
+var chance = new Chance();
 
 describe('Auto transform between measurement forms.', () => {
 
@@ -26,18 +28,21 @@ describe('Auto transform between measurement forms.', () => {
     });
 
     it('Saving the Weight form should lead to the Height form.', () => {
+        browser.setValue('.weight .form input', chance.floating({min: 2, max: 10}));
         browser.element('#save-form').click();
         // The help text of the Height form.
         browser.waitForVisible("p=Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight.");
     });
 
     it('Saving the Height form should lead to the MUAC form.', () => {
+        browser.setValue('.height .form input', chance.floating({min: 30, max: 100}));
         browser.element('#save-form').click();
         // The help text of the MUAC form.
         browser.waitForVisible("p=Make sure to measure at the center of the baby’s upper arm.");
     });
 
     it('Saving the MUAC form should lead to the Nutrition Signs form.', () => {
+        browser.setValue('.muac .form input', chance.floating({min: 5, max: 30}));
         browser.element('#save-form').click();
         // The help text of the Nutrition Signs form.
         browser.waitForVisible("p=Explain to the mother how to check the malnutrition signs for their own child.");
