@@ -164,7 +164,7 @@ viewPhoto backendUrl accessToken user language ( childId, child ) model =
                             [ class "column" ]
                             [ button
                                 [ classList
-                                    [ ( "ui fluid basic button", True )
+                                    [ ( "ui fluid basic button retake", True )
                                     , ( "disabled", not hasPhoto )
                                     ]
                                 ]
