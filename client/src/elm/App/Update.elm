@@ -176,6 +176,9 @@ update msg model =
                         ]
                     )
 
+            RedirectByActivePage ->
+                update (SetActivePage <| getBackButtonTarget model.activePage) model
+
             SetActivePage page ->
                 let
                     activePageUpdated =
@@ -240,6 +243,33 @@ update msg model =
 
             Tick _ ->
                 model ! [ Task.perform SetCurrentDate Date.now ]
+
+
+{-| Determine the target page of the back button based on the active page.
+-}
+getBackButtonTarget : Page -> Page
+getBackButtonTarget activePage =
+    case activePage of
+        AccessDenied ->
+            activePage
+
+        Activities ->
+            Dashboard []
+
+        Dashboard activity ->
+            Activities
+
+        Login ->
+            activePage
+
+        MyAccount ->
+            activePage
+
+        PageNotFound ->
+            activePage
+
+        Patient patientId ->
+            Dashboard []
 
 
 {-| Determine is a page can be accessed by a user (anonymous or authenticated),
