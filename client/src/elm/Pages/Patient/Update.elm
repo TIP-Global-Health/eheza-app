@@ -51,12 +51,8 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
 
                 selectedActivity =
                     if isJust maybeActivityTypeCompleted then
-                        case maybeActivityTypeCompleted of
-                            Just activities ->
-                                Just <| Tuple.second activities
-
-                            Nothing ->
-                                Nothing
+                        Maybe.map (\activities -> Just <| Tuple.second activities) maybeActivityTypeCompleted
+                            |> Maybe.withDefault Nothing
                     else
                         model.selectedActivity
 
