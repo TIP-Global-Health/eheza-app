@@ -48,7 +48,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
             -- @todo: Add mkChild
             Dict.insert childId ({ info = Patient.Model.PatientChild child }) Dict.empty
     in
-        div [] <|
+        div [ id "child-page" ] <|
             [ div [ class "ui segment" ]
                 [ div [ class "ui items" ]
                     [ div [ class "item" ]
@@ -124,7 +124,7 @@ viewMother language currentDate currentUser motherId mother children model =
             -- @todo: Add mkMother
             Dict.insert motherId ({ info = Patient.Model.PatientMother mother }) Dict.empty
     in
-        div [] <|
+        div [ id "mother-page" ] <|
             [ div [ class "ui segment" ]
                 [ div [ class "ui items" ]
                     [ div [ class "item" ]
