@@ -5,9 +5,7 @@ describe('The measurement forms', () => {
     before(() => {
         browser.loginAndViewPatientsPage('aya');
 
-        // Following the first patient (child) page.
-        browser.element('#patients-table tbody tr td a.child').click();
-        browser.waitForVisible('#mother-info');
+        browser.visitTodoChild();
 
         // Initially follow the Photo form.
         browser.element('a=Photo').click();
@@ -45,6 +43,7 @@ describe('The measurement forms', () => {
 
     it('Saving the Nutrition Signs should result in zero pending activities', () => {
         browser.element('#save-form').click();
+        browser.waitForVisible("a=Completed (5)");
 
         // Check if all activities disappeared.
         assert.equal(browser.elements('.pending a').value.length, 0, 'There is no pending activity');

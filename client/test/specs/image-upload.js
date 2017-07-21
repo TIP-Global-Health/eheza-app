@@ -9,9 +9,7 @@ describe('Image Upload workflow', () => {
     browser.login('aya');
     browser.waitForVisible('#patients-table');
 
-    // Proceeding to the patient where activities are pending.
-    browser.url('/#patient/41');
-    browser.waitUntil(() => browser.isVisible('.ui.header.mother'));
+    browser.visitTodoChild();
 
     // Follow the photo form.
     browser.element('a=Photo').click();

@@ -6,13 +6,7 @@ describe('assesment pages', () => {
         const secondUsedTab = 'Height';
 
         browser.login('aya');
-        // We generate 20 of every content-types, and we generated Children
-        // in the third step, that's how we picked Child 41.
-        // The first Child is also special, it has most of the dates
-        // in the past.
-        // @see server/scripts/helper-functions.sh
-        browser.url('/#patient/41');
-        browser.waitForVisible('.ui.tasks.segment');
+        browser.visitTodoChild();
 
         // Switching to Weight.
         browser.click('a=' + firstUsedTab);

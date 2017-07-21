@@ -90,7 +90,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
         NutritionSignsSave ->
             ( model
             , Cmd.none
-            , Nothing
+            , Just <| ( Child NutritionSigns, Child ChildPicture )
             )
 
         PhotoSave ->

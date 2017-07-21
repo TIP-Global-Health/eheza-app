@@ -94,6 +94,19 @@ module.exports = function (browser, capabilities, specs) {
   });
 
   /**
+   * Visits a Child with all activities pending.
+   */
+  browser.addCommand('visitTodoChild', () => {
+    // We generate 20 of every content-types, and we generated Children
+    // in the third step, that's how we picked Child 41.
+    // The first Child is also special, it has most of the dates
+    // in the past.
+    // @see server/scripts/helper-functions.sh
+    browser.url('/#patient/41');
+    browser.waitForVisible('.ui.tasks.segment');
+  });
+
+  /**
    * Recursive function to ensure the correct text.
    *
    * This command is created in order to compensate the setValue() bug.
