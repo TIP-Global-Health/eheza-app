@@ -70,7 +70,7 @@ echo -e "${GREEN}Resets Pantheon folder to $PANTHEON_BRANCH at Git.${NORMAL}\n"
 cd "$PANTHEON_DIR"
 git fetch
 git clean -f
-git reset --hard origin/master
+git reset --hard origin/"$PANTHEON_BRANCH"
 git checkout -B "$PANTHEON_BRANCH"
 
 cd "$MAKE_DIR"
