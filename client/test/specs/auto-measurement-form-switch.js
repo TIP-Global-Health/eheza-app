@@ -1,6 +1,6 @@
-let assert = require('assert');
-let Chance = require('chance');
-let chance = new Chance();
+var assert = require('assert');
+var Chance = require('chance');
+var chance = new Chance();
 
 describe('Auto transform between measurement forms.', () => {
 
