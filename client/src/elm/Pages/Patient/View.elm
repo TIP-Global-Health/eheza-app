@@ -58,7 +58,10 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                             ]
                         , div [ class "middle aligned content" ]
                             [ div []
-                                [ h2 [ class "ui disabled header mother" ]
+                                [ h2
+                                    [ class "ui disabled header mother"
+                                    , id "mother-info"
+                                    ]
                                     [ motherInfo ]
                                 ]
                             , div []
@@ -195,6 +198,9 @@ viewActivityCards language currentDate user patients patientTypeFilter selectedT
 
         tabItem tabType activitiesList =
             let
+                tabId =
+                    (String.toLower <| (toString tabType)) ++ "-tab"
+
                 tabTitle =
                     case tabType of
                         Pending ->
@@ -205,6 +211,7 @@ viewActivityCards language currentDate user patients patientTypeFilter selectedT
             in
                 a
                     [ classList <| tabClass tabType
+                    , id tabId
                     , onClick <| SetSelectedTab tabType
                     ]
                     [ text <| translate language <| tabTitle <| List.length activitiesList ]

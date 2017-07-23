@@ -81,8 +81,7 @@ elmApp.ports.dropzoneReset.subscribe(function() {
 })
 
 function attachDropzone(selector, config) {
-
-    // Validate the dropzone should be active.
+    // Validate dropzone should be active.
     if (!config.active) {
         if (!!dropZone) {
             dropZone.destroy();
@@ -92,13 +91,14 @@ function attachDropzone(selector, config) {
 
         // DropZone.destory() doesn't clean it's HTML. So in order not to
         // confuse the Virtual dom we do it ourself.
-        var element = document.querySelector('.dz-default');
-        if (!!element) {
-            element.parentNode.removeChild(element);
-        }
+        var classNames = ['.dz-default', '.dz-preview'];
+        classNames.forEach(function(className) {
+            var element = document.querySelector(className);
+            if (!!element) {
+                element.parentNode.removeChild(element);
+            }
+        });
 
-
-        return true;
     }
 
     var element = document.querySelector(selector);
