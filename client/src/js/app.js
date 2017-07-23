@@ -75,7 +75,6 @@ elmApp.ports.dropzoneConfig.subscribe(function(config) {
 });
 
 elmApp.ports.dropzoneReset.subscribe(function() {
-  console.log('dropzone reset requested');
   if (typeof dropZone != 'undefined') {
       dropZone.removeAllFiles(true);
   }
