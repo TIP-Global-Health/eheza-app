@@ -173,7 +173,7 @@ translate lang trans =
                     { english = "Baby" }
 
                 BabyName name ->
-                    { english = "Baby:" ++ name }
+                    { english = "Baby: " ++ name }
 
                 CentimeterShorthand ->
                     { english = "cm" }
@@ -233,7 +233,7 @@ translate lang trans =
                     { english = "Mother" }
 
                 MotherName name ->
-                    { english = "Mother:" ++ name }
+                    { english = "Mother: " ++ name }
 
                 Mothers ->
                     { english = "Mothers" }
