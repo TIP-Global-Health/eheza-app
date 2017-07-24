@@ -62,6 +62,7 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
                     Maybe.map
                         (\selectedExamination ->
                             let
+                                -- @todo: Use `getExaminationFromhild`
                                 examination =
                                     EveryDictList.get
                                         selectedExamination

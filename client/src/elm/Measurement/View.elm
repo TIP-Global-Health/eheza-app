@@ -11,15 +11,18 @@ import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Maybe.Extra exposing (isJust)
-import Measurement.Model exposing (FloatMeasurements(..), Model, Msg(..), getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
+import Measurement.Model exposing (ChildMeasurements, FloatMeasurements(..), Model, Msg(..), getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import User.Model exposing (..)
 import Utils.Html exposing (divider, emptyNode, showIf, showMaybe)
 
 
-viewChild : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Maybe ActivityType -> Model -> Html Msg
-viewChild backendUrl accessToken user language ( childId, child ) selectedActivity model =
+-- @todo: We can stop passing the `child` and just pass the selected examination
+
+
+viewChild : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> ChildMeasurements -> Maybe ActivityType -> Model -> Html Msg
+viewChild backendUrl accessToken user language ( childId, child ) examination selectedActivity model =
     showMaybe <|
         Maybe.map
             (\activity ->

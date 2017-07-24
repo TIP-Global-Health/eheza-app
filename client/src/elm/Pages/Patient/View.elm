@@ -10,9 +10,11 @@ import Child.Model exposing (Child, ChildId)
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict
+import EveryDictList
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
+import Measurement.Model exposing (ChildMeasurements, emptyChildMeasurements)
 import Measurement.View
 import Mother.Model exposing (Mother, MotherId)
 import Pages.Patient.Model exposing (Model, Msg(..), Tab(..))
@@ -85,8 +87,25 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                     [ viewActivityCards language currentDate currentUser patients Children model.selectedTab
                     ]
                 ]
-            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) model.selectedActivity model.measurements
+            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) (getExaminationFromhild child) model.selectedActivity model.measurements
             ]
+
+
+
+-- @todo: Move to Examination.Utils
+
+
+getExaminationFromhild : Child -> ChildMeasurements
+getExaminationFromhild child =
+    Maybe.map
+        (\selectedExamination ->
+            EveryDictList.get
+                selectedExamination
+                child.examinations
+                |> Maybe.withDefault emptyChildMeasurements
+        )
+        child.selectedExamination
+        |> Maybe.withDefault emptyChildMeasurements
 
 
 viewMother : Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Model -> Html Msg
