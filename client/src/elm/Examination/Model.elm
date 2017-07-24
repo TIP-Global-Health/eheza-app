@@ -46,6 +46,11 @@ update value =
     map (always value)
 
 
+webDataUpdate : WebData () -> EditableWebData a -> EditableWebData a
+webDataUpdate newWebData (EditableWebData editable webData) =
+    EditableWebData editable newWebData
+
+
 value : EditableWebData a -> Editable a
 value (EditableWebData x _) =
     x
