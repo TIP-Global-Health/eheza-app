@@ -23,24 +23,28 @@ type alias FloatInput =
 
 
 
--- @todo: Use in the model?
+-- @todo: Use ChildMeasurements in the model?
 
 
 type alias ChildMeasurements =
-    { height : Float
-    , muac : Float
-    , photo : Int
-    , weight : Float
+    { height : Maybe Float
+    , muac : Maybe Float
+    , photo : Maybe Int
+    , weight : Maybe Float
+    }
+
+
+emptyChildMeasurements : ChildMeasurements
+emptyChildMeasurements =
+    { height = Nothing
+    , muac = Nothing
+    , photo = Nothing
+    , weight = Nothing
     }
 
 
 type alias MotherMeasurements =
     {}
-
-
-type MeasurementsType
-    = Child ChildMeasurements
-    | Mother MotherMeasurements
 
 
 type Msg

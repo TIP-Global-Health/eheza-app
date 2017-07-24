@@ -1,7 +1,7 @@
 module Examination.Model exposing (..)
 
 import EveryDictList exposing (EveryDictList)
-import Measurement.Model exposing (MeasurementsType)
+import Measurement.Model exposing (ChildMeasurements, MotherMeasurements)
 import RemoteData exposing (WebData)
 
 
@@ -14,5 +14,9 @@ type ExaminationStorage
     | Existing ExaminationId
 
 
-type alias EveryDictListExaminations =
-    EveryDictList ExaminationStorage (WebData MeasurementsType)
+type alias EveryDictListExaminationsChild =
+    EveryDictList ExaminationStorage (WebData ChildMeasurements)
+
+
+type alias EveryDictListExaminationsMother =
+    EveryDictList ExaminationStorage (WebData MotherMeasurements)
