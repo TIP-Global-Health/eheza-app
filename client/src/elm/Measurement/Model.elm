@@ -1,7 +1,12 @@
 module Measurement.Model exposing (..)
 
+import Activity.Model exposing (ActivityType)
 import Http
 import RemoteData exposing (RemoteData(..), WebData)
+
+
+type alias CompletedAndRedriectToActivityTuple =
+    ( ActivityType, ActivityType )
 
 
 type alias FloatInputConstraints =
