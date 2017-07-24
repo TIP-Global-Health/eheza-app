@@ -1,6 +1,7 @@
 module Pusher.Test exposing (all)
 
 import Activity.Model exposing (emptyChildActivityDates)
+import EveryDictList
 import Expect
 import Json.Decode exposing (decodeString)
 import Patient.Model exposing (PatientType(..))
@@ -24,7 +25,6 @@ decodeTest =
       "id" : "100",
       "label" : "new-patient",
       "mother": "7",
-      "lastExamination": "8",
       "date_picture": null,
       "date_height" : null,
       "date_muac" : null,
@@ -43,8 +43,9 @@ decodeTest =
                                     PatientChild
                                         { name = "new-patient"
                                         , image = "https://placehold.it/200x200"
-                                        , lastExamination = Just 8
                                         , motherId = Just 7
+                                        , examinations = EveryDictList.empty
+                                        , selectedExamination = Nothing
                                         , activityDates = emptyChildActivityDates
                                         }
                                 }
