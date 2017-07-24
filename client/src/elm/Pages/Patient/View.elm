@@ -10,7 +10,6 @@ import Child.Model exposing (Child, ChildId)
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict
-import EveryDictList
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
@@ -87,7 +86,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                     [ viewActivityCards language currentDate currentUser patients Children model.selectedTab
                     ]
                 ]
-            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) (getCurrentAndPreviousExaminationFromChild child) model.selectedActivity model.measurements
+            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) (getPreviousExaminationFromChild child) model.selectedActivity model.measurements
             ]
 
 
@@ -95,27 +94,14 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
 -- @todo: Move to Examination.Utils
 
 
-getCurrentAndPreviousExaminationFromChild : Child -> ( ChildMeasurements, Maybe ChildMeasurements )
-getCurrentAndPreviousExaminationFromChild child =
-    let
-        previousExamination =
-            { height = Just 50.0
-            , muac = Just 13.0
-            , photo = Nothing
-            , weight = Just 4.0
-            }
-    in
-        Maybe.map
-            (\selectedExamination ->
-                case (EveryDictList.get selectedExamination child.examinations) of
-                    Just currentExamination ->
-                        ( currentExamination, Just previousExamination )
-
-                    Nothing ->
-                        ( emptyChildMeasurements, Just previousExamination )
-            )
-            child.selectedExamination
-            |> Maybe.withDefault ( emptyChildMeasurements, Just previousExamination )
+getPreviousExaminationFromChild : Child -> Maybe ChildMeasurements
+getPreviousExaminationFromChild child =
+    Just
+        { height = Just 50.0
+        , muac = Just 13.0
+        , photo = Nothing
+        , weight = Just 4.0
+        }
 
 
 viewMother : Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Model -> Html Msg
