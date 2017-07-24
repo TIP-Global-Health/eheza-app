@@ -5,7 +5,8 @@ import Http
 import RemoteData exposing (RemoteData(..), WebData)
 
 
-{-| Describes what happens upon form Save, what's completed, where to redirect.
+{-| Indicate which Activity was completed, and to which Activity to redirect to.
+This can be used as a return value in an `update` function upon form save.
 -}
 type alias CompletedAndRedirectToActivityTuple =
     ( ActivityType, ActivityType )
