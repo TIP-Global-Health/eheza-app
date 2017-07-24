@@ -11,12 +11,12 @@ type ExaminationId
 
 type ExaminationStorage
     = New (WebData ExaminationId)
-    | Existing ExaminationId
+    | Existing (WebData ExaminationId)
 
 
 type alias EveryDictListExaminationsChild =
-    EveryDictList ExaminationStorage (WebData ChildMeasurements)
+    EveryDictList ExaminationStorage ChildMeasurements
 
 
 type alias EveryDictListExaminationsMother =
-    EveryDictList ExaminationStorage (WebData MotherMeasurements)
+    EveryDictList ExaminationStorage MotherMeasurements

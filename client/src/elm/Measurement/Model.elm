@@ -27,10 +27,10 @@ type alias FloatInput =
 
 
 type alias ChildMeasurements =
-    { height : Maybe Float
-    , muac : Maybe Float
+    { height : FloatInput
+    , muac : FloatInput
     , photo : Maybe Int
-    , weight : Maybe Float
+    , weight : FloatInput
     }
 
 
@@ -65,6 +65,8 @@ type alias Model =
     { status : WebData ()
     , height : FloatInput
     , muac : FloatInput
+
+    -- @todo: Make `Maybe Int`
     , photo : Int
     , weight : FloatInput
     }

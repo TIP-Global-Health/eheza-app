@@ -3,6 +3,7 @@ port module Pages.Patient.Update exposing (update, subscriptions)
 import Activity.Model exposing (ActivityType(Child), ChildActivityType(..))
 import App.Model exposing (DropzoneConfig)
 import App.PageType exposing (Page(..))
+import Child.Model exposing (Child)
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import EveryDictList
@@ -11,8 +12,9 @@ import Measurement.Model as Measurement exposing (Msg(..), emptyChildMeasurement
 import Measurement.Update
 import Pages.Patient.Model exposing (Model, Msg(..))
 import Pages.Patient.Utils exposing (updateActivityDate)
-import Patient.Model exposing (Patient, PatientType(..), PatientId)
+import Patient.Model exposing (Patient, PatientId, PatientType(..))
 import Pusher.Model exposing (PusherEventData(..))
+import RemoteData exposing (RemoteData(..))
 import User.Model exposing (..)
 
 
@@ -44,8 +46,7 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
                             case subMsg of
                                 Measurement.HandlePhotoSave (Ok ()) ->
                                     -- @todo: Make less verbose. updateExaminationChild Should returnt he `Patient`.
-                                    -- { patient | info = Child <| updateExaminationChild child ChildPicture measurementsUpdated }
-                                    patient
+                                    { patient | info = PatientChild <| updateExaminationChild child ChildPicture measurementsUpdated }
 
                                 Measurement.HandleWeightSave (Ok ()) ->
                                     -- { patient | info = Child <| updateExaminationChild child Weight measurementsUpdated }
@@ -58,6 +59,7 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
                             patient
 
                 -- @todo: Move to utils.
+                updateExaminationChild : Child -> ChildActivityType -> Measurement.Model -> Child
                 updateExaminationChild child childActivityType measurement =
                     Maybe.map
                         (\selectedExamination ->
@@ -71,10 +73,10 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
                                 examinationUpdated =
                                     case childActivityType of
                                         ChildPicture ->
-                                            { examination | photo = Just <| measurement.photo }
+                                            { examination | photo = Just measurement.photo }
 
                                         Weight ->
-                                            { examination | weight = Just <| measurement.weight }
+                                            { examination | weight = measurement.weight }
 
                                         _ ->
                                             examination
