@@ -6,8 +6,9 @@ import App.PageType exposing (Page(..))
 import Child.Model exposing (Child)
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
+import Editable
 import EveryDictList
-import Examination.Model exposing (EditableRecord(..), createEditableRecord, emptyExaminationChild, getOriginalRecord, updateRecord)
+import Examination.Model exposing (EditableWebData(..), create, emptyExaminationChild)
 import Maybe.Extra exposing (isJust)
 import Measurement.Model as Measurement exposing (Msg(..))
 import Measurement.Update
@@ -67,24 +68,29 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
                                     EveryDictList.get
                                         selectedExamination
                                         child.examinations
-                                        |> Maybe.withDefault (createEditableRecord emptyExaminationChild)
+                                        |> Maybe.withDefault (create emptyExaminationChild)
 
                                 examinationUpdated =
-                                    let
-                                        originalExamination =
-                                            getOriginalRecord examination
-                                    in
-                                        case childActivityType of
-                                            ChildPicture ->
-                                                { originalExamination | photo = Just measurement.photo }
-                                                    |> updateRecord examination
+                                    case childActivityType of
+                                        ChildPicture ->
+                                            let
+                                                val =
+                                                    Examination.Model.value examination
 
-                                            Weight ->
-                                                { originalExamination | weight = measurement.weight }
-                                                    |> updateRecord examination
+                                                valOriginal =
+                                                    val |> Editable.value
 
-                                            _ ->
-                                                examination
+                                                valChanged =
+                                                    val
+                                                        |> Editable.edit
+                                                        |> Editable.update { valOriginal | photo = Just measurement.photo }
+                                            in
+                                                Examination.Model.map
+                                                    Editable.cancel
+                                                    examination
+
+                                        _ ->
+                                            examination
 
                                 examinationsUpdated =
                                     EveryDictList.insert selectedExamination examinationUpdated child.examinations
