@@ -2,7 +2,7 @@ var assert = require('assert');
 var Chance = require('chance');
 var chance = new Chance();
 
-describe('Testing the active class appearance', () => {
+describe('Make sure that active tab will acquire the correct class when clicked', () => {
 
   before(() => {
     browser.loginAndViewPatientsPage('aya');
@@ -18,22 +18,22 @@ describe('Testing the active class appearance', () => {
     browser.click("a=Weight");
 
     if (!browser.isExisting('//div[contains(@class, "column active")]//a[.="Weight"]')) {
-      throw "The active class should appear on the weight element but it did not.";
+      throw "The active class should appear on the weight element.";
     }
 
     if (browser.isExisting('//div[contains(@class, "column active")]//a[.="Height"]')) {
-      throw "The active class should not appear on the height element but it did.";
+      throw "The active class should not appear on the height element.";
     }
 
     browser.click("a=Height");
     browser.waitForVisible('//div[contains(@class, "column active")]//a[.="Height"]');
 
     if (browser.isExisting('//div[contains(@class, "column active")]//a[.="Weight"]')) {
-      throw "The active class should not appear on the weight element but it did.";
+      throw "The active class should not appear on the weight element.";
     }
 
     if (!browser.isExisting('//div[contains(@class, "column active")]//a[.="Height"]')) {
-      throw "The active class should not appear on the height element but it did.";
+      throw "The active class should not appear on the height element.";
     }
   });
 
