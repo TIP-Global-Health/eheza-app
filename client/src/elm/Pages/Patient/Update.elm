@@ -14,7 +14,6 @@ import Pages.Patient.Model exposing (Model, Msg(..))
 import Pages.Patient.Utils exposing (updateActivityDate)
 import Patient.Model exposing (Patient, PatientId, PatientType(..))
 import Pusher.Model exposing (PusherEventData(..))
-import RemoteData exposing (RemoteData(..))
 import User.Model exposing (..)
 
 
@@ -49,8 +48,7 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
                                     { patient | info = PatientChild <| updateExaminationChild child ChildPicture measurementsUpdated }
 
                                 Measurement.HandleWeightSave (Ok ()) ->
-                                    -- { patient | info = Child <| updateExaminationChild child Weight measurementsUpdated }
-                                    patient
+                                    { patient | info = PatientChild <| updateExaminationChild child Weight measurementsUpdated }
 
                                 _ ->
                                     patient
