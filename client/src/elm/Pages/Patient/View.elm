@@ -99,10 +99,10 @@ getCurrentAndPreviousExaminationFromChild : Child -> ( ChildMeasurements, Maybe 
 getCurrentAndPreviousExaminationFromChild child =
     let
         previousExamination =
-            { height = Just 10.0
-            , muac = Just 20.0
+            { height = Just 50.0
+            , muac = Just 13.0
             , photo = Nothing
-            , weight = Nothing
+            , weight = Just 4.0
             }
     in
         Maybe.map
