@@ -36,7 +36,7 @@ type RecordState record
 getOriginalRecord : RecordState record -> record
 getOriginalRecord recordState =
     case recordState of
-        OriginalState originalRecord webData ->
+        OriginalState originalRecord _ ->
             originalRecord
 
         UpdatedState originalRecord _ _ ->
