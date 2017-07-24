@@ -51,7 +51,7 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
 
                 selectedActivity =
                     if isJust maybeActivityTypeCompleted then
-                        Maybe.map (\activities -> Just <| Tuple.second activities) maybeActivityTypeCompleted
+                        Maybe.map (\( _, redirectToActivity ) -> Just redirectToActivity) maybeActivityTypeCompleted
                             |> Maybe.withDefault Nothing
                     else
                         model.selectedActivity
