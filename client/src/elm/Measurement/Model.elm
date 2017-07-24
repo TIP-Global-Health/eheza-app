@@ -22,11 +22,7 @@ type alias FloatInput =
     Maybe Float
 
 
-
--- @todo: Use ChildMeasurements in the model?
-
-
-type alias ChildMeasurements =
+type alias ExaminationChild =
     { height : FloatInput
     , muac : FloatInput
     , photo : Maybe Int
@@ -34,7 +30,7 @@ type alias ChildMeasurements =
     }
 
 
-emptyChildMeasurements : ChildMeasurements
+emptyChildMeasurements : ExaminationChild
 emptyChildMeasurements =
     { height = Nothing
     , muac = Nothing
