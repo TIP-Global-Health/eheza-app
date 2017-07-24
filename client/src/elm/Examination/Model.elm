@@ -1,15 +1,10 @@
 module Examination.Model exposing (..)
 
 import EveryDictList exposing (EveryDictList)
-import RemoteData exposing (WebData)
+import RemoteData exposing (RemoteData(NotAsked), WebData)
 
 
-type ExaminationId
-    = Examination Int
-
-
-type alias ExaminationStorage =
-    RecordStorage ExaminationId
+-- @todo: move to EditableRecord manager package?
 
 
 {-| @todo: Move to a more general place
@@ -24,35 +19,79 @@ type RecordStorage recordId
 
 
 type EditableRecord record
-    = OriginalState record (WebData ())
+    = OriginalState record
       -- The first record is the original record.
       -- The second record is the "dirty" record, the one that is
       -- being currently upated.
     | UpdatedState record record (WebData ())
 
 
-{-| Get the original record out of a RecordState.
+{-| Get the original record out of a EditableRecord.
 -}
 getOriginalRecord : EditableRecord record -> record
-getOriginalRecord recordState =
-    case recordState of
-        OriginalState originalRecord _ ->
+getOriginalRecord editableRecord =
+    case editableRecord of
+        OriginalState originalRecord ->
             originalRecord
 
         UpdatedState originalRecord _ _ ->
             originalRecord
 
 
-{-| Update a RecordState.
+{-| Create a new `EditableRecord` from a plain record.
+-}
+createEditableRecord : record -> EditableRecord record
+createEditableRecord record =
+    OriginalState record
+
+
+{-| Update an `EditableRecord`.
 -}
 updateRecord : EditableRecord record -> record -> EditableRecord record
-updateRecord recordState newRecord =
-    case recordState of
-        OriginalState _ webData ->
-            OriginalState newRecord webData
+updateRecord editableRecord newRecord =
+    case editableRecord of
+        OriginalState _ ->
+            OriginalState newRecord
 
         UpdatedState originalRecord _ webData ->
             UpdatedState originalRecord newRecord webData
+
+
+revertDirtyRecord : EditableRecord record -> EditableRecord record
+revertDirtyRecord editableRecord =
+    case editableRecord of
+        OriginalState _ ->
+            editableRecord
+
+        UpdatedState originalRecord _ webData ->
+            UpdatedState originalRecord originalRecord NotAsked
+
+
+isDirtyWith : EditableRecord record -> (record -> record -> Bool) -> Bool
+isDirtyWith editableRecord compareFunc =
+    case editableRecord of
+        OriginalState _ ->
+            False
+
+        UpdatedState originalRecord updatedRecord _ ->
+            compareFunc originalRecord originalRecord
+
+
+isDirty : EditableRecord record -> Bool
+isDirty editableRecord =
+    isDirtyWith editableRecord (==)
+
+
+
+-------
+
+
+type ExaminationId
+    = Examination Int
+
+
+type alias ExaminationStorage =
+    RecordStorage ExaminationId
 
 
 type alias FloatInput =

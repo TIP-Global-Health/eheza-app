@@ -7,7 +7,7 @@ import Child.Model exposing (Child)
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import EveryDictList
-import Examination.Model exposing (RecordState(..), emptyExaminationChild, getOriginalRecord, updateRecord)
+import Examination.Model exposing (EditableRecord(..), createEditableRecord, emptyExaminationChild, getOriginalRecord, updateRecord)
 import Maybe.Extra exposing (isJust)
 import Measurement.Model as Measurement exposing (Msg(..))
 import Measurement.Update
@@ -15,7 +15,6 @@ import Pages.Patient.Model exposing (Model, Msg(..))
 import Pages.Patient.Utils exposing (updateActivityDate)
 import Patient.Model exposing (Patient, PatientId, PatientType(..))
 import Pusher.Model exposing (PusherEventData(..))
-import RemoteData exposing (RemoteData(..))
 import User.Model exposing (..)
 
 
@@ -68,7 +67,7 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
                                     EveryDictList.get
                                         selectedExamination
                                         child.examinations
-                                        |> Maybe.withDefault (OriginalState emptyExaminationChild NotAsked)
+                                        |> Maybe.withDefault (createEditableRecord emptyExaminationChild)
 
                                 examinationUpdated =
                                     let
