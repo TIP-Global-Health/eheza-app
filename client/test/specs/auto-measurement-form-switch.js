@@ -1,4 +1,5 @@
 'use strict';
+
 var assert = require('assert');
 var Chance = require('chance');
 var chance = new Chance();
@@ -16,7 +17,7 @@ describe('The measurement forms', () => {
     });
 
     it('should present the activities in the right order', () => {
-        const activities = ['Photo', 'Weight', 'Height', 'MUAC', 'Nutrition signs'];
+        let activities = ['Photo', 'Weight', 'Height', 'MUAC', 'Nutrition signs'];
         let position = 1;
         for (activity of activities) {
             assert.equal(browser.getText('.grid.pending div:nth-child(' + position++ + ') a'), activity);
