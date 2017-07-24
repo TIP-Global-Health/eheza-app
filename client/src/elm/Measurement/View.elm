@@ -141,6 +141,9 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
             ]
 
 
+{-| Show a diff of values, if they were gain or lost.
+|
+-}
 viewFloatDiff : FloatMeasurements -> Maybe ChildMeasurements -> Model -> Html Msg
 viewFloatDiff floatMeasurement maybePreviousExamination model =
     let
@@ -177,7 +180,10 @@ viewFloatDiff floatMeasurement maybePreviousExamination model =
                     diff =
                         toString <| currentValue - previousValue
                 in
-                    if currentValue > previousValue then
+                    if currentValue == previousValue then
+                        -- No change in the values.
+                        emptyNode
+                    else if currentValue > previousValue then
                         div [] [ text <| "Gain: " ++ diff ]
                     else
                         div [] [ text <| "Lose: " ++ diff ]
