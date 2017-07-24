@@ -87,7 +87,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                     [ viewActivityCards language currentDate currentUser patients Children model.selectedTab
                     ]
                 ]
-            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) (getExaminationFromhild child) model.selectedActivity model.measurements
+            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) (getCurrentAndPreviousExaminationFromChild child) model.selectedActivity model.measurements
             ]
 
 
@@ -95,17 +95,27 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
 -- @todo: Move to Examination.Utils
 
 
-getExaminationFromhild : Child -> ChildMeasurements
-getExaminationFromhild child =
-    Maybe.map
-        (\selectedExamination ->
-            EveryDictList.get
-                selectedExamination
-                child.examinations
-                |> Maybe.withDefault emptyChildMeasurements
-        )
-        child.selectedExamination
-        |> Maybe.withDefault emptyChildMeasurements
+getCurrentAndPreviousExaminationFromChild : Child -> ( ChildMeasurements, Maybe ChildMeasurements )
+getCurrentAndPreviousExaminationFromChild child =
+    let
+        previousExamination =
+            { height = Just 10.0
+            , muac = Just 20.0
+            , photo = Nothing
+            , weight = Nothing
+            }
+    in
+        Maybe.map
+            (\selectedExamination ->
+                case (EveryDictList.get selectedExamination child.examinations) of
+                    Just currentExamination ->
+                        ( currentExamination, Just previousExamination )
+
+                    Nothing ->
+                        ( emptyChildMeasurements, Just previousExamination )
+            )
+            child.selectedExamination
+            |> Maybe.withDefault ( emptyChildMeasurements, Just previousExamination )
 
 
 viewMother : Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Model -> Html Msg
