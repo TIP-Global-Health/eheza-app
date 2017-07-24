@@ -5,7 +5,9 @@ import Http
 import RemoteData exposing (RemoteData(..), WebData)
 
 
-type alias CompletedAndRedriectToActivityTuple =
+{-| Describes what happens upon form Save, what's completed, where to redirect.
+-}
+type alias CompletedAndRedirectToActivityTuple =
     ( ActivityType, ActivityType )
 
 

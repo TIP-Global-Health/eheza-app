@@ -6,15 +6,15 @@ import Http
 import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
 import Json.Encode exposing (Value)
 import Measurement.Encoder exposing (encodePhoto, encodeWeight)
-import Measurement.Model exposing (CompletedAndRedriectToActivityTuple, Model, Msg(..))
+import Measurement.Model exposing (CompletedAndRedirectToActivityTuple, Model, Msg(..))
 import Patient.Model exposing (Patient, PatientId)
 import RemoteData exposing (RemoteData(..))
 import User.Model exposing (..)
 
 
-{-| This update section expects an additional activity type to be bubbled up, when appropriate, for completed activities to trigger completion mechanism in parent module
+{-| Optionally, we bubble up two activity types in a tuple, which form to complete and which form is the next one.
 -}
-update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedriectToActivityTuple )
+update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
 update backendUrl accessToken user ( patientId, patient ) msg model =
     case msg of
         HandleDropzoneUploadedFile fileId ->
@@ -91,7 +91,7 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
 
 {-| Enables posting of arbitrary values to the provided back end so long as the encoder matches the desired type
 -}
-postData : BackendUrl -> String -> Model -> String -> value -> (value -> Value) -> (Result Http.Error () -> Msg) -> ( Model, Cmd Msg, Maybe CompletedAndRedriectToActivityTuple )
+postData : BackendUrl -> String -> Model -> String -> value -> (value -> Value) -> (Result Http.Error () -> Msg) -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
 postData backendUrl accessToken model path value encoder handler =
     let
         command =
@@ -108,14 +108,14 @@ postData backendUrl accessToken model path value encoder handler =
 
 {-| Send new photo of a child to the backend.
 -}
-postPhoto : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedriectToActivityTuple )
+postPhoto : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
 postPhoto backendUrl accessToken childId model =
     postData backendUrl accessToken model "photos" model.photo (encodePhoto childId) HandlePhotoSave
 
 
 {-| Send new weight of a child to the backend.
 -}
-postWeight : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedriectToActivityTuple )
+postWeight : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
 postWeight backendUrl accessToken childId model =
     Maybe.map
         (\weight ->
