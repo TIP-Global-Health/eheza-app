@@ -14,8 +14,8 @@ type alias ExaminationStorage =
 
 {-| @todo: Move to a more general place
 
-@todo: `NewRecord` should be able to hold only `OriginalState` --
-how can we enforce it?
+`NewRecord` should be able to hold only `OriginalState`, and we cannot enfore
+it on the type level, so it will be our resposnsibilty to make sure it does.
 
 -}
 type RecordStorage recordId
