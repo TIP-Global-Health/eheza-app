@@ -5,10 +5,7 @@ describe('measurement module', function() {
     const tab = 'Weight';
 
     browser.login('aya');
-
-    // See note in form-switch for patient selection.
-    browser.url('/#patient/41');
-    browser.waitForVisible('.ui.tasks.segment');
+    browser.visitChildWithTodoTasks();
 
     // Select tab.
     browser.click('a=' + tab);
