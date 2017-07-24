@@ -23,7 +23,7 @@ type RecordStorage recordId
     | ExistingRecord recordId
 
 
-type RecordState record
+type EditableRecord record
     = OriginalState record (WebData ())
       -- The first record is the original record.
       -- The second record is the "dirty" record, the one that is
@@ -33,7 +33,7 @@ type RecordState record
 
 {-| Get the original record out of a RecordState.
 -}
-getOriginalRecord : RecordState record -> record
+getOriginalRecord : EditableRecord record -> record
 getOriginalRecord recordState =
     case recordState of
         OriginalState originalRecord _ ->
@@ -45,7 +45,7 @@ getOriginalRecord recordState =
 
 {-| Update a RecordState.
 -}
-updateRecord : RecordState record -> record -> RecordState record
+updateRecord : EditableRecord record -> record -> EditableRecord record
 updateRecord recordState newRecord =
     case recordState of
         OriginalState _ webData ->
@@ -92,8 +92,8 @@ emptyExaminationMother =
 
 
 type alias EveryDictListExaminationsChild =
-    EveryDictList ExaminationStorage (RecordState ExaminationChild)
+    EveryDictList ExaminationStorage (EditableRecord ExaminationChild)
 
 
 type alias EveryDictListExaminationsMother =
-    EveryDictList ExaminationStorage (RecordState ExaminationMother)
+    EveryDictList ExaminationStorage (EditableRecord ExaminationMother)
