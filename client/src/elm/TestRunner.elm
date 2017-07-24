@@ -10,7 +10,6 @@ import Test.Runner.Node exposing (TestProgram, run)
 import App.Test exposing (all)
 import Measurement.Test exposing (all)
 import Pusher.Test exposing (all)
-import Pages.Patient.Test exposing (all)
 
 
 allTests : Test
@@ -19,7 +18,6 @@ allTests =
         [ App.Test.all
         , Measurement.Test.all
         , Pusher.Test.all
-        [ Pages.Patient.Test.all
         ]
 
 
