@@ -6,9 +6,7 @@ describe('The Photo form', () => {
     browser.login('aya');
     browser.waitForVisible('#patients-table');
 
-    // Proceeding to the patient where activities are pending.
-    browser.url('/#patient/41');
-    browser.waitUntil(() => browser.isVisible('.ui.header.mother'));
+    browser.visitChildWithTodoTasks();
 
     // Follow the photo form.
     browser.element('a=Photo').click();
