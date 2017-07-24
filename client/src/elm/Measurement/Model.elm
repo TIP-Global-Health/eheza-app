@@ -1,7 +1,15 @@
 module Measurement.Model exposing (..)
 
+import Activity.Model exposing (ActivityType)
 import Http
 import RemoteData exposing (RemoteData(..), WebData)
+
+
+{-| Indicate which Activity was completed, and to which Activity to redirect to.
+This can be used as a return value in an `update` function upon form save.
+-}
+type alias CompletedAndRedirectToActivityTuple =
+    ( ActivityType, ActivityType )
 
 
 type alias FloatInputConstraints =

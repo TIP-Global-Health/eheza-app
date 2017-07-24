@@ -43,7 +43,7 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
                         Nothing ->
                             patient
 
-                        Just activtyTypeCompleted ->
+                        Just ( activtyTypeCompleted, activityToRedirect ) ->
                             updateActivityDate newDate activtyTypeCompleted patient
 
                 modelWithMeasurements =
@@ -51,7 +51,8 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
 
                 selectedActivity =
                     if isJust maybeActivityTypeCompleted then
-                        maybeActivityTypeCompleted
+                        Maybe.map (\( _, redirectToActivity ) -> Just redirectToActivity) maybeActivityTypeCompleted
+                            |> Maybe.withDefault Nothing
                     else
                         model.selectedActivity
 
