@@ -22,6 +22,27 @@ type alias FloatInput =
     Maybe Float
 
 
+
+-- @todo: Use in the model?
+
+
+type alias ChildMeasurements =
+    { height : Float
+    , muac : Float
+    , photo : Int
+    , weight : Float
+    }
+
+
+type alias MotherMeasurements =
+    {}
+
+
+type MeasurementsType
+    = Child ChildMeasurements
+    | Mother MotherMeasurements
+
+
 type Msg
     = HandleDropzoneUploadedFile Int
     | HandlePhotoSave (Result Http.Error ())
