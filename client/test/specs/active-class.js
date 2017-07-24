@@ -1,7 +1,3 @@
-var assert = require('assert');
-var Chance = require('chance');
-var chance = new Chance();
-
 describe('Testing the active class appearance', () => {
 
   before(() => {
