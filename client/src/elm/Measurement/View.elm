@@ -11,7 +11,7 @@ import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Maybe.Extra exposing (isJust)
-import Measurement.Model exposing (ChildMeasurements, FloatInput, FloatMeasurements(..), Model, Msg(..), getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
+import Measurement.Model exposing (ExaminationChild, FloatInput, FloatMeasurements(..), Model, Msg(..), getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import User.Model exposing (..)
@@ -21,7 +21,7 @@ import Utils.Html exposing (divider, emptyNode, showIf, showMaybe)
 -- @todo: We can stop passing the `child` and just pass the selected examination
 
 
-viewChild : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Maybe ChildMeasurements -> Maybe ActivityType -> Model -> Html Msg
+viewChild : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Maybe ExaminationChild -> Maybe ActivityType -> Model -> Html Msg
 viewChild backendUrl accessToken user language ( childId, child ) maybePreviousExamination selectedActivity model =
     showMaybe <|
         Maybe.map
@@ -53,7 +53,7 @@ viewChild backendUrl accessToken user language ( childId, child ) maybePreviousE
             selectedActivity
 
 
-viewFloatForm : BackendUrl -> String -> User -> Language -> FloatMeasurements -> ( ChildId, Child ) -> Maybe ChildMeasurements -> Model -> Html Msg
+viewFloatForm : BackendUrl -> String -> User -> Language -> FloatMeasurements -> ( ChildId, Child ) -> Maybe ExaminationChild -> Model -> Html Msg
 viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, child ) maybePreviousExamination model =
     let
         ( blockName, headerText, helpText, labelText, constraints, measurementValue, measurementType, updateMsg, saveMsg ) =
@@ -144,7 +144,7 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
 {-| Show a diff of values, if they were gain or lost.
 |
 -}
-viewFloatDiff : FloatMeasurements -> Maybe ChildMeasurements -> Model -> Html Msg
+viewFloatDiff : FloatMeasurements -> Maybe ExaminationChild -> Model -> Html Msg
 viewFloatDiff floatMeasurement maybePreviousExamination model =
     let
         maybePreviousValue =

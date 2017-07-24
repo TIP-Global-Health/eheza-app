@@ -13,7 +13,7 @@ import Dict
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
-import Measurement.Model exposing (ChildMeasurements, emptyChildMeasurements)
+import Measurement.Model exposing (ExaminationChild, emptyExaminationChild)
 import Measurement.View
 import Mother.Model exposing (Mother, MotherId)
 import Pages.Patient.Model exposing (Model, Msg(..), Tab(..))
@@ -94,7 +94,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
 -- @todo: Move to Examination.Utils
 
 
-getPreviousExaminationFromChild : Child -> Maybe ChildMeasurements
+getPreviousExaminationFromChild : Child -> Maybe ExaminationChild
 getPreviousExaminationFromChild child =
     Just
         { height = Just 50.0

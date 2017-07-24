@@ -30,8 +30,8 @@ type alias ExaminationChild =
     }
 
 
-emptyChildMeasurements : ExaminationChild
-emptyChildMeasurements =
+emptyExaminationChild : ExaminationChild
+emptyExaminationChild =
     { height = Nothing
     , muac = Nothing
     , photo = Nothing

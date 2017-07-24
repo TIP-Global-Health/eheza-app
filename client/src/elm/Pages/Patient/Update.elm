@@ -8,7 +8,7 @@ import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import EveryDictList
 import Maybe.Extra exposing (isJust)
-import Measurement.Model as Measurement exposing (Msg(..), emptyChildMeasurements)
+import Measurement.Model as Measurement exposing (Msg(..), emptyExaminationChild)
 import Measurement.Update
 import Pages.Patient.Model exposing (Model, Msg(..))
 import Pages.Patient.Utils exposing (updateActivityDate)
@@ -67,7 +67,7 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
                                     EveryDictList.get
                                         selectedExamination
                                         child.examinations
-                                        |> Maybe.withDefault emptyChildMeasurements
+                                        |> Maybe.withDefault emptyExaminationChild
 
                                 examinationUpdated =
                                     case childActivityType of
