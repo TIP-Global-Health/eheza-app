@@ -1,7 +1,6 @@
 module Child.Model exposing (..)
 
 import Activity.Model exposing (ChildActivityDates)
-import EveryDictList exposing (EveryDictList)
 import Examination.Model exposing (EveryDictListExaminationsChild, ExaminationStorage)
 
 

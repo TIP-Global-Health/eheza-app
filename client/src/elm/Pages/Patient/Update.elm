@@ -7,13 +7,15 @@ import Child.Model exposing (Child)
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import EveryDictList
+import Examination.Model exposing (RecordState(..), emptyExaminationChild, getOriginalRecord, updateRecord)
 import Maybe.Extra exposing (isJust)
-import Measurement.Model as Measurement exposing (Msg(..), emptyExaminationChild)
+import Measurement.Model as Measurement exposing (Msg(..))
 import Measurement.Update
 import Pages.Patient.Model exposing (Model, Msg(..))
 import Pages.Patient.Utils exposing (updateActivityDate)
 import Patient.Model exposing (Patient, PatientId, PatientType(..))
 import Pusher.Model exposing (PusherEventData(..))
+import RemoteData exposing (RemoteData(..))
 import User.Model exposing (..)
 
 
@@ -62,23 +64,28 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
                     Maybe.map
                         (\selectedExamination ->
                             let
-                                -- @todo: Use `getExaminationFromhild`
                                 examination =
                                     EveryDictList.get
                                         selectedExamination
                                         child.examinations
-                                        |> Maybe.withDefault emptyExaminationChild
+                                        |> Maybe.withDefault (OriginalState emptyExaminationChild NotAsked)
 
                                 examinationUpdated =
-                                    case childActivityType of
-                                        ChildPicture ->
-                                            { examination | photo = Just measurement.photo }
+                                    let
+                                        originalExamination =
+                                            getOriginalRecord examination
+                                    in
+                                        case childActivityType of
+                                            ChildPicture ->
+                                                { originalExamination | photo = Just measurement.photo }
+                                                    |> updateRecord examination
 
-                                        Weight ->
-                                            { examination | weight = measurement.weight }
+                                            Weight ->
+                                                { originalExamination | weight = measurement.weight }
+                                                    |> updateRecord examination
 
-                                        _ ->
-                                            examination
+                                            _ ->
+                                                examination
 
                                 examinationsUpdated =
                                     EveryDictList.insert selectedExamination examinationUpdated child.examinations

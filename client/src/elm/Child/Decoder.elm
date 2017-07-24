@@ -6,10 +6,9 @@ module Child.Decoder
 import Activity.Decoder exposing (decodeChildActivityDates)
 import Child.Model exposing (..)
 import EveryDictList
-import Examination.Model exposing (ExaminationStorage(New))
+import Examination.Model exposing (RecordStorage(NewRecord))
 import Json.Decode exposing (Decoder, andThen, dict, fail, field, int, list, map, map2, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required)
-import RemoteData exposing (RemoteData(NotAsked))
 import Utils.Json exposing (decodeInt)
 
 
@@ -23,5 +22,5 @@ decodeChild =
         |> hardcoded EveryDictList.empty
         -- We assume measurementes are for a new examination. In the future they
         -- could be updates of existing ones.
-        |> hardcoded (Just <| New NotAsked)
+        |> hardcoded (Just NewRecord)
         |> custom decodeChildActivityDates

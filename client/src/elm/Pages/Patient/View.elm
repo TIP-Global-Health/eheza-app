@@ -10,10 +10,10 @@ import Child.Model exposing (Child, ChildId)
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict
+import Examination.Model exposing (ExaminationChild)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
-import Measurement.Model exposing (ExaminationChild, emptyExaminationChild)
 import Measurement.View
 import Mother.Model exposing (Mother, MotherId)
 import Pages.Patient.Model exposing (Model, Msg(..), Tab(..))

@@ -22,27 +22,6 @@ type alias FloatInput =
     Maybe Float
 
 
-type alias ExaminationChild =
-    { height : FloatInput
-    , muac : FloatInput
-    , photo : Maybe Int
-    , weight : FloatInput
-    }
-
-
-emptyExaminationChild : ExaminationChild
-emptyExaminationChild =
-    { height = Nothing
-    , muac = Nothing
-    , photo = Nothing
-    , weight = Nothing
-    }
-
-
-type alias MotherMeasurements =
-    {}
-
-
 type Msg
     = HandleDropzoneUploadedFile Int
     | HandlePhotoSave (Result Http.Error ())
