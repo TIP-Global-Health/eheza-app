@@ -33,6 +33,19 @@ map f (EditableWebData editable webData) =
     EditableWebData (Editable.map f editable) webData
 
 
+{-| Updates an `Editable` and doesn't change a `ReadOnly`.
+
+    Editable.ReadOnly "old"
+        |> Editable.update "new"  --> ReadOnly "old"
+    Editable.Editable "old" "old"
+        |> Editable.update "new"  --> Editable "old" "new"
+
+-}
+update : a -> EditableWebData a -> EditableWebData a
+update value =
+    map (always value)
+
+
 value : EditableWebData a -> Editable a
 value (EditableWebData x _) =
     x

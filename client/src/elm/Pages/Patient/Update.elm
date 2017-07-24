@@ -84,9 +84,11 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
                                                     val
                                                         |> Editable.edit
                                                         |> Editable.update { valOriginal | photo = Just measurement.photo }
+                                                        |> Editable.save
+                                                        |> Editable.value
                                             in
-                                                Examination.Model.map
-                                                    Editable.cancel
+                                                Examination.Model.update
+                                                    valChanged
                                                     examination
 
                                         _ ->
