@@ -7,7 +7,7 @@ describe('The measurement forms', () => {
     before(() => {
         browser.loginAndViewPatientsPage('aya');
 
-        browser.visitTodoChild();
+        browser.visitChildWithTodoTasks();
 
         // Initially follow the Photo form.
         browser.element('a=Photo').click();

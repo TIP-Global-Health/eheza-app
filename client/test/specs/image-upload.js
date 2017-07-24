@@ -6,7 +6,7 @@ describe('The Photo form', () => {
     browser.login('aya');
     browser.waitForVisible('#patients-table');
 
-    browser.visitTodoChild();
+    browser.visitChildWithTodoTasks();
 
     // Follow the photo form.
     browser.element('a=Photo').click();

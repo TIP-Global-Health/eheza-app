@@ -5,7 +5,7 @@ describe('measurement module', function() {
     const tab = 'Weight';
 
     browser.login('aya');
-    browser.visitTodoChild();
+    browser.visitChildWithTodoTasks();
 
     // Select tab.
     browser.click('a=' + tab);

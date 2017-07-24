@@ -6,7 +6,7 @@ describe('assesment pages', () => {
         const secondUsedTab = 'Height';
 
         browser.login('aya');
-        browser.visitTodoChild();
+        browser.visitChildWithTodoTasks();
 
         // Switching to Weight.
         browser.click('a=' + firstUsedTab);
