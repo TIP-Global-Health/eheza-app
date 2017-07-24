@@ -44,10 +44,12 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
                             case subMsg of
                                 Measurement.HandlePhotoSave (Ok ()) ->
                                     -- @todo: Make less verbose. updateExaminationChild Should returnt he `Patient`.
-                                    { patient | info = Child <| updateExaminationChild child ChildPicture measurementsUpdated }
+                                    -- { patient | info = Child <| updateExaminationChild child ChildPicture measurementsUpdated }
+                                    patient
 
                                 Measurement.HandleWeightSave (Ok ()) ->
-                                    { patient | info = Child <| updateExaminationChild child Weight measurementsUpdated }
+                                    -- { patient | info = Child <| updateExaminationChild child Weight measurementsUpdated }
+                                    patient
 
                                 _ ->
                                     patient
@@ -91,10 +93,10 @@ update currentDate backendUrl accessToken user msg ( patientId, patient ) model 
                 patientUpdated =
                     case maybeActivityTypeCompleted of
                         Nothing ->
-                            patient
+                            patientUpdatedExaminations
 
                         Just ( activtyTypeCompleted, activityToRedirect ) ->
-                            updateActivityDate newDate activtyTypeCompleted patient
+                            updateActivityDate newDate activtyTypeCompleted patientUpdatedExaminations
 
                 modelWithMeasurements =
                     { model | measurements = measurementsUpdated }
