@@ -43,7 +43,7 @@ class HedleyRestfulPhotos extends HedleyRestfulActivityBase {
       'process_callbacks' => [
         [$this, 'imageProcess'],
       ],
-      'image_styles' => ['thumb'],
+      'image_styles' => ['thumbnail'],
     ];
 
     return $public_fields;

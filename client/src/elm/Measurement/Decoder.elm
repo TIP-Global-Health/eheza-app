@@ -14,9 +14,7 @@ import Utils.Json exposing (decodeFloat, decodeInt)
 decodePhoto : Decoder Photo
 decodePhoto =
     decode Photo
-        -- @todo: Should be ["photo", "styles", "thumb"] but the image style
-        -- doesn't work.
-        |> requiredAt [ "photo", "self" ] string
+        |> requiredAt ["photo", "styles", "thumbnail"] string
 
 
 decodePhotoTuple : Decoder ( PhotoId, Photo )
