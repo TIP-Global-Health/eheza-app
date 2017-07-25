@@ -48,7 +48,7 @@ viewChildFormsTest =
                     |> Query.has [ classes [ "disabled" ] ]
         , test "Then a Photo form with enabled Save button should be displayed when selected and there is one photo" <|
             \() ->
-                viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) (Just <| Child ChildPicture) { emptyModel | photo = 1 }
+                viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) (Just <| Child ChildPicture) { emptyModel | photo = ( Just 1, Nothing ) }
                     |> Query.fromHtml
                     |> Query.find [ id "save-form" ]
                     |> Query.hasNot [ classes [ "disabled" ] ]
@@ -60,7 +60,7 @@ viewChildFormsTest =
                     |> Query.has [ classes [ "disabled" ] ]
         , test "Then a Photo form with enabled Retake button should be displayed when selected and there is one photo" <|
             \() ->
-                viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) (Just <| Child ChildPicture) { emptyModel | photo = 1 }
+                viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) (Just <| Child ChildPicture) { emptyModel | photo = ( Just 1, Nothing ) }
                     |> Query.fromHtml
                     |> Query.find [ class "retake" ]
                     |> Query.hasNot [ classes [ "disabled" ] ]
