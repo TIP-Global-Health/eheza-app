@@ -129,7 +129,8 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                                 ]
                             ]
                         ]
-                    , viewFloatDiff floatMeasurement maybePreviousExamination model
+                    , viewPreviousMeasurement language floatMeasurement maybePreviousExamination
+                    , viewFloatDiff language floatMeasurement maybePreviousExamination model
                     ]
                 , div
                     [ class "actions" ]
@@ -139,11 +140,38 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
             ]
 
 
-{-| Show a diff of values, if they were gain or lost.
+viewPreviousMeasurement : Language -> FloatMeasurements -> Maybe ExaminationChild -> Html Msg
+viewPreviousMeasurement language floatMeasurement maybePreviousExamination =
+    case maybePreviousExamination of
+        Nothing ->
+            emptyNode
+
+        Just previousExamination ->
+            let
+                maybePreviousValue =
+                    case floatMeasurement of
+                        HeightFloat ->
+                            previousExamination.height
+
+                        MuacFloat ->
+                            previousExamination.muac
+
+                        WeightFloat ->
+                            previousExamination.weight
+            in
+                Maybe.map
+                    (\previousValue ->
+                        div [] [ text <| translate language <| Trans.PreviousFloatMeasurement previousValue ]
+                    )
+                    maybePreviousValue
+                    |> Maybe.withDefault emptyNode
+
+
+{-| Show a diff of values, if they were gained or lost.
 |
 -}
-viewFloatDiff : FloatMeasurements -> Maybe ExaminationChild -> Model -> Html Msg
-viewFloatDiff floatMeasurement maybePreviousExamination model =
+viewFloatDiff : Language -> FloatMeasurements -> Maybe ExaminationChild -> Model -> Html Msg
+viewFloatDiff language floatMeasurement maybePreviousExamination model =
     let
         maybePreviousValue =
             case maybePreviousExamination of
