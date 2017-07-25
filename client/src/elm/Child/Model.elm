@@ -1,7 +1,7 @@
 module Child.Model exposing (..)
 
 import Activity.Model exposing (ChildActivityDates)
-import Examination.Model exposing (EveryDictListExaminationsChild, ExaminationStorage)
+import Examination.Model exposing (EveryDictListExaminationsChild, ExaminationId)
 
 
 type alias ChildId =
@@ -21,6 +21,6 @@ type alias Child =
     , image : String
     , motherId : Maybe MotherId
     , examinations : EveryDictListExaminationsChild
-    , selectedExamination : Maybe ExaminationStorage
+    , selectedExamination : Maybe ExaminationId
     , activityDates : ChildActivityDates
     }
