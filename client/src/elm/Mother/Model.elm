@@ -2,6 +2,7 @@ module Mother.Model exposing (..)
 
 import Activity.Model exposing (MotherActivityDates)
 import Examination.Model exposing (EveryDictListExaminationsMother, ExaminationId)
+import RemoteData exposing (WebData)
 
 
 type alias ChildId =
@@ -16,7 +17,7 @@ type alias Mother =
     { name : String
     , image : String
     , children : List ChildId
-    , examinations : EveryDictListExaminationsMother
+    , examinations : WebData EveryDictListExaminationsMother
     , selectedExamination : Maybe ExaminationId
     , activityDates : MotherActivityDates
     }
