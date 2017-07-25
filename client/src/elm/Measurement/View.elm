@@ -170,7 +170,6 @@ viewPreviousMeasurement language floatMeasurement maybePreviousExamination =
 
 
 {-| Show a diff of values, if they were gained or lost.
-|
 -}
 viewFloatDiff : Language -> FloatMeasurements -> Maybe ExaminationChild -> TranslationId -> Model -> Html Msg
 viewFloatDiff language floatMeasurement maybePreviousExamination measurementType model =
