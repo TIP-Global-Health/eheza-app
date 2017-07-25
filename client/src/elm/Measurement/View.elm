@@ -211,22 +211,24 @@ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType
                         -- No change in the values.
                         emptyNode
                     else if currentValue > previousValue then
-                        p [ class "label-up label-with-icon" ]
-                            [ span [ class "icon-up" ] []
-                            , text <| translate language Trans.Gained
-                            , br [] []
-                            , text <| diff ++ " " ++ translate language measurementType
-                            ]
+                        viewFloatDiffMessage language diff "label-up" "icon-up" Trans.Gained measurementType
                     else
-                        p [ class "label-down label-with-icon" ]
-                            [ span [ class "icon-down" ] []
-                            , text <| translate language Trans.Lost
-                            , br [] []
-                            , text <| diff ++ " " ++ translate language measurementType
-                            ]
+                        viewFloatDiffMessage language diff "label-down" "icon-down" Trans.Lost measurementType
 
             _ ->
                 emptyNode
+
+
+viewFloatDiffMessage : Language -> String -> String -> String -> TranslationId -> TranslationId -> Html Msg
+viewFloatDiffMessage language diff classP classSpan message measurementType =
+    p
+        [ classList [ ( classP, True ), ( "label-with-icon", True ) ]
+        ]
+        [ span [ class classSpan ] []
+        , text <| translate language message
+        , br [] []
+        , text <| diff ++ " " ++ translate language measurementType
+        ]
 
 
 viewPhoto : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
