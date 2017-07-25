@@ -5,11 +5,13 @@ import Config.Model exposing (BackendUrl)
 import Http
 import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
 import Json.Encode exposing (Value)
+import Measurement.Decoder exposing (decodePhotoFromResponse)
 import Measurement.Encoder exposing (encodePhoto, encodeWeight)
 import Measurement.Model exposing (CompletedAndRedirectToActivityTuple, Model, Msg(..))
 import Patient.Model exposing (Patient, PatientId)
 import RemoteData exposing (RemoteData(..))
 import User.Model exposing (..)
+import Utils.WebData exposing (sendWithHandler)
 
 
 {-| Optionally, we bubble up two activity types in a tuple, which form to complete and which form is the next one.
@@ -23,8 +25,11 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
             , Nothing
             )
 
-        HandlePhotoSave (Ok ()) ->
-            ( { model | status = Success () }
+        HandlePhotoSave (Ok ( photoId, photo )) ->
+            ( { model
+                | status = Success ()
+                , photo = ( Tuple.first model.photo, Just ( photoId, photo ) )
+              }
             , Cmd.none
             , Just <| ( Child ChildPicture, Child Weight )
             )
@@ -117,7 +122,17 @@ postPhoto backendUrl accessToken childId model =
             ( model, Cmd.none, Nothing )
 
         ( Just fileId, _ ) ->
-            postData backendUrl accessToken model "photos" fileId (encodePhoto childId) HandlePhotoSave
+            let
+                command =
+                    HttpBuilder.post (backendUrl ++ "/api/photos")
+                        |> withQueryParams [ ( "access_token", accessToken ) ]
+                        |> withJsonBody (encodePhoto childId fileId)
+                        |> sendWithHandler decodePhotoFromResponse HandlePhotoSave
+            in
+                ( { model | status = Loading }
+                , command
+                , Nothing
+                )
 
 
 {-| Send new weight of a child to the backend.

@@ -36,7 +36,7 @@ type alias Photo =
 
 type Msg
     = HandleDropzoneUploadedFile Int
-    | HandlePhotoSave (Result Http.Error ())
+    | HandlePhotoSave (Result Http.Error ( PhotoId, Photo ))
     | HandleWeightSave (Result Http.Error ())
     | HeightSave
     | HeightUpdate Float
