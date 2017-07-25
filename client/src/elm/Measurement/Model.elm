@@ -24,6 +24,10 @@ type alias FloatInput =
     Maybe Float
 
 
+type alias EveryDictChildNutritionSign =
+    EveryDict ChildNutritionSign ()
+
+
 type Msg
     = HandleDropzoneUploadedFile Int
     | HandlePhotoSave (Result Http.Error ())
@@ -46,7 +50,7 @@ type alias Model =
 
     -- We use EveryDict instead of Set, as we want the key to be a typed value
     -- and not have to cast it to string.
-    , nutritionSigns : EveryDict ChildNutritionSign ()
+    , nutritionSigns : EveryDictChildNutritionSign
     , photo : Int
     , weight : FloatInput
     }
