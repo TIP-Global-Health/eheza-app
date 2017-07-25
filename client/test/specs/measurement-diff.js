@@ -1,30 +1,31 @@
+'use strict';
+
 var assert = require('assert');
 
 describe('when updating a measurement form', function() {
-
   /**
    * Adjust the input of the current form.
    *
    * @param value
    *   The new value to set.
    */
-  var adjustFormValue = function (value) {
+  const adjustFormValue = () => (value) {
     browser.setValue('input[type="number"]', value);
-  };
+  }
 
   /**
    * Waiting for the up arrow to be shown.
    */
-  var waitForGainedIndication = function () {
+  const waitForGainedIndication = () => {
     browser.waitForVisible('.label-up .icon-up');
-  };
+  }
 
   /**
    * Waiting for the down arrow to be shown.
    */
-  var waitForLostIndication = function () {
+  const waitForLostIndication = () => {
     browser.waitForVisible('.label-down .icon-down');
-  };
+  }
 
   /**
    * Get the indication message of the 'gained' value.
@@ -32,9 +33,9 @@ describe('when updating a measurement form', function() {
    * @returns {String|String[]}
    *   The indication message.
    */
-  var getDiffFromGainedIndication = function () {
+  const getDiffFromGainedIndication = () => {
     return browser.getText('.label-up');
-  };
+  }
 
   /**
    * Get the indication message of the 'lost' value.
@@ -42,9 +43,9 @@ describe('when updating a measurement form', function() {
    * @returns {String|String[]}
    *   The indication message.
    */
-  var getDiffFromLostIndication = function () {
+  const getDiffFromLostIndication = () => {
     return browser.getText('.label-down');
-  };
+  }
 
   before(() => {
     browser.loginAndViewPatientsPage('aya');
