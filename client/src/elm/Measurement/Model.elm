@@ -79,7 +79,7 @@ emptyModel =
     { status = NotAsked
     , height = Nothing
     , muac = Nothing
-    , nutritionSigns = Activity.Model.ChildNutritionSign
+    , nutritionSigns = Set.empty
     , photo = 0
     , weight = Nothing
     }
