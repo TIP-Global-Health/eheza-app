@@ -1,7 +1,8 @@
 module Measurement.Model exposing (..)
 
-import Activity.Model exposing (ActivityType)
+import Activity.Model exposing (ActivityType, ChildNutritionSign)
 import Http
+import Set
 import RemoteData exposing (RemoteData(..), WebData)
 
 
@@ -40,6 +41,7 @@ type alias Model =
     { status : WebData ()
     , height : FloatInput
     , muac : FloatInput
+    , nutritionSigns : Set.Set Activity.Model.ChildNutritionSign
     , photo : Int
     , weight : FloatInput
     }
@@ -77,6 +79,7 @@ emptyModel =
     { status = NotAsked
     , height = Nothing
     , muac = Nothing
+    , nutritionSigns = Activity.Model.ChildNutritionSign
     , photo = 0
     , weight = Nothing
     }
