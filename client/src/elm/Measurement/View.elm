@@ -11,7 +11,7 @@ import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Maybe.Extra exposing (isJust)
-import Measurement.Model exposing (FloatMeasurements(..), Model, Msg(..), getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
+import Measurement.Model exposing (FloatMeasurements(..), Model, Msg(..), FileId, Photo, PhotoId, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import User.Model exposing (..)
@@ -137,6 +137,20 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
             ]
 
 
+{-| Show a photo thumbnail, if it exists.
+-}
+viewPhotoThumb : ( Maybe FileId, Maybe ( PhotoId, Photo ) ) -> Html Msg
+viewPhotoThumb maybePhoto =
+    showMaybe <|
+        Maybe.map
+            (\( _, photo ) ->
+                div []
+                    [ img [ src photo.url, class "ui small image" ] []
+                    ]
+            )
+            (Tuple.second maybePhoto)
+
+
 viewPhoto : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
 viewPhoto backendUrl accessToken user language ( childId, child ) model =
     let
@@ -155,6 +169,7 @@ viewPhoto backendUrl accessToken user language ( childId, child ) model =
                 , p
                     []
                     [ text <| translate language Trans.ActivitiesPhotoHelp ]
+                , viewPhotoThumb model.photo
                 , div
                     [ class "dropzone" ]
                     []
