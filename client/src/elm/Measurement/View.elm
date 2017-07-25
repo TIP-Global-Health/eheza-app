@@ -206,29 +206,33 @@ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType
                 let
                     diff =
                         toString <| abs (currentValue - previousValue)
+
+                    viewMessage isGain =
+                        let
+                            ( classSuffix, translationId ) =
+                                if isGain then
+                                    ( "up", Trans.Gained )
+                                else
+                                    ( "down", Trans.Lost )
+                        in
+                            p
+                                [ class <| "label-with-icon label-" ++ classSuffix ]
+                                [ span [ class <| "icon-" ++ classSuffix ] []
+                                , text <| translate language translationId
+                                , br [] []
+                                , text <| diff ++ " " ++ translate language measurementType
+                                ]
                 in
                     if currentValue == previousValue then
                         -- No change in the values.
                         emptyNode
                     else if currentValue > previousValue then
-                        viewFloatDiffMessage language diff "label-up" "icon-up" Trans.Gained measurementType
+                        viewMessage True
                     else
-                        viewFloatDiffMessage language diff "label-down" "icon-down" Trans.Lost measurementType
+                        viewMessage False
 
             _ ->
                 emptyNode
-
-
-viewFloatDiffMessage : Language -> String -> String -> String -> TranslationId -> TranslationId -> Html Msg
-viewFloatDiffMessage language diff classP classSpan message measurementType =
-    p
-        [ classList [ ( classP, True ), ( "label-with-icon", True ) ]
-        ]
-        [ span [ class classSpan ] []
-        , text <| translate language message
-        , br [] []
-        , text <| diff ++ " " ++ translate language measurementType
-        ]
 
 
 viewPhoto : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
