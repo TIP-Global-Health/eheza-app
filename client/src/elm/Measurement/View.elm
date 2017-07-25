@@ -7,12 +7,13 @@ import Activity.Encoder exposing (encodeChildNutritionSign)
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), ChildNutritionSign(..))
 import Child.Model exposing (Child, ChildId)
 import Config.Model exposing (BackendUrl)
+import EveryDict
 import Examination.Model exposing (ExaminationChild)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Maybe.Extra exposing (isJust)
-import Measurement.Model exposing (FloatInput, FloatMeasurements(..), Model, Msg(..), getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
+import Measurement.Model exposing (EveryDictChildNutritionSign, FloatInput, FloatMeasurements(..), Model, Msg(..), getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import User.Model exposing (..)
@@ -343,7 +344,7 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
                 [ p []
                     [ text <| translate language Trans.ActivitiesNutritionSignsLabel
                     ]
-                , viewNutritionSignsSelector language
+                , viewNutritionSignsSelector language model.nutritionSigns
                 ]
             , div [ class "actions" ]
                 [ saveButton language NutritionSignsSave model True Nothing
@@ -352,8 +353,8 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
         ]
 
 
-viewNutritionSignsSelector : Language -> Html Msg
-viewNutritionSignsSelector language =
+viewNutritionSignsSelector : Language -> EveryDictChildNutritionSign -> Html Msg
+viewNutritionSignsSelector language nutritionSigns =
     let
         nutrionSignsAndTranslationIdsFirst =
             [ Edema, AbdominalDisortion, DrySkin, PoorAppetite ]
@@ -364,12 +365,12 @@ viewNutritionSignsSelector language =
         div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
                 (List.map
-                    (viewNutritionSignsSelectorItem language)
+                    (viewNutritionSignsSelectorItem language nutritionSigns)
                     nutrionSignsAndTranslationIdsFirst
                 )
             , div [ class "eight wide column" ]
                 (List.map
-                    (viewNutritionSignsSelectorItem language)
+                    (viewNutritionSignsSelectorItem language nutritionSigns)
                     nutrionSignsAndTranslationIdsSecond
                 )
             ]
@@ -381,8 +382,8 @@ For each nutrition sign the function will return a the translaed label of the
 checkbox and a value for the id and for attributes.
 
 -}
-viewNutritionSignsSelectorItem : Language -> ChildNutritionSign -> Html Msg
-viewNutritionSignsSelectorItem language sign =
+viewNutritionSignsSelectorItem : Language -> EveryDictChildNutritionSign -> ChildNutritionSign -> Html Msg
+viewNutritionSignsSelectorItem language nutritionSigns sign =
     let
         ( body, attributeValue ) =
             case sign of
@@ -412,6 +413,8 @@ viewNutritionSignsSelectorItem language sign =
                 [ type_ "checkbox"
                 , id attributeValue
                 , name <| encodeChildNutritionSign sign
+                , onClick <| NutritionSignsToggle sign
+                , checked <| EveryDict.member sign nutritionSigns
                 ]
                 []
             , label [ for attributeValue ]
