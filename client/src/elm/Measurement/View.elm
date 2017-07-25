@@ -19,9 +19,6 @@ import User.Model exposing (..)
 import Utils.Html exposing (divider, emptyNode, showIf, showMaybe)
 
 
--- @todo: We can stop passing the `child` and just pass the selected examination
-
-
 viewChild : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Maybe ExaminationChild -> Maybe ActivityType -> Model -> Html Msg
 viewChild backendUrl accessToken user language ( childId, child ) maybePreviousExamination selectedActivity model =
     showMaybe <|

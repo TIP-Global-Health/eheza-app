@@ -11,6 +11,7 @@ import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict
 import Examination.Model exposing (ExaminationChild)
+import Examination.Utils exposing (getLastExaminationFromChild)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
@@ -86,22 +87,8 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                     [ viewActivityCards language currentDate currentUser patients Children model.selectedTab
                     ]
                 ]
-            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) (getPreviousExaminationFromChild child) model.selectedActivity model.measurements
+            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
             ]
-
-
-
--- @todo: Move to Examination.Utils
-
-
-getPreviousExaminationFromChild : Child -> Maybe ExaminationChild
-getPreviousExaminationFromChild child =
-    Just
-        { height = Just 50.0
-        , muac = Just 13.0
-        , photo = Nothing
-        , weight = Just 4.0
-        }
 
 
 viewMother : Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Model -> Html Msg

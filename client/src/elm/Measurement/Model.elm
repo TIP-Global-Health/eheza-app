@@ -40,8 +40,6 @@ type alias Model =
     { status : WebData ()
     , height : FloatInput
     , muac : FloatInput
-
-    -- @todo: Make `Maybe Int`
     , photo : Int
     , weight : FloatInput
     }

@@ -12,11 +12,7 @@ type alias FloatInput =
     Maybe Float
 
 
-{-| @todo: Add `date` field to mark the date the examination
-was completed
-
-Maybe change name to `CompletedExaminationChild`?
-
+{-| Record holding a completed examination of a Child.
 -}
 type alias ExaminationChild =
     { height : FloatInput
@@ -35,6 +31,8 @@ emptyExaminationChild =
     }
 
 
+{-| Record holding a completed examination of a Mother.
+-}
 type alias ExaminationMother =
     {}
 
