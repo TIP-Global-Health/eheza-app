@@ -1,6 +1,6 @@
 var assert = require('assert');
 
-describe('measurement module', function() {
+describe('when updating a measurement form', function() {
 
   /**
    * Adjust the input of the current form.
