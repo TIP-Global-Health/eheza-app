@@ -55,10 +55,12 @@ type TranslationId
     | ErrorConfigurationError
     | ErrorNetworkError
     | ErrorTimeout
+    | Gained
     | KilogramShorthand
     | LinkToMother
     | Login
     | Logout
+    | Lost
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
@@ -211,6 +213,9 @@ translate lang trans =
                 KilogramShorthand ->
                     { english = "kg" }
 
+                Gained ->
+                    { english = "Gained" }
+
                 LinkToMother ->
                     { english = "Link to mother" }
 
@@ -219,6 +224,9 @@ translate lang trans =
 
                 Logout ->
                     { english = "Logout" }
+
+                Lost ->
+                    { english = "Lost" }
 
                 MeasurementNoChange ->
                     { english = "No Change" }

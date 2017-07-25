@@ -213,14 +213,14 @@ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType
                     else if currentValue > previousValue then
                         p [ class "label-up label-with-icon" ]
                             [ span [ class "icon-up" ] []
-                            , text <| "Gained"
+                            , text <| translate language Trans.Gained
                             , br [] []
                             , text <| diff ++ " " ++ translate language measurementType
                             ]
                     else
                         p [ class "label-down label-with-icon" ]
                             [ span [ class "icon-down" ] []
-                            , text <| "Lost"
+                            , text <| translate language Trans.Lost
                             , br [] []
                             , text <| diff ++ " " ++ translate language measurementType
                             ]
