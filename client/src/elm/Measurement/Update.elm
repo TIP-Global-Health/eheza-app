@@ -1,7 +1,9 @@
 port module Measurement.Update exposing (update, subscriptions)
 
+import Activity.Encoder exposing (encodeChildNutritionSign)
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import Config.Model exposing (BackendUrl)
+import EveryDict exposing (EveryDict)
 import Http
 import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
 import Json.Encode exposing (Value)
@@ -9,6 +11,7 @@ import Measurement.Encoder exposing (encodePhoto, encodeWeight)
 import Measurement.Model exposing (CompletedAndRedirectToActivityTuple, Model, Msg(..))
 import Patient.Model exposing (Patient, PatientId)
 import RemoteData exposing (RemoteData(..))
+import Set
 import User.Model exposing (..)
 
 
@@ -72,6 +75,19 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
             , Cmd.none
             , Just <| ( Child NutritionSigns, Child ChildPicture )
             )
+
+        NutritionSignsToggle nutritionSign ->
+            let
+                nutritionSignsUpdated =
+                    if EveryDict.member nutritionSign model.nutritionSigns then
+                        EveryDict.remove nutritionSign model.nutritionSigns
+                    else
+                        EveryDict.insert nutritionSign () model.nutritionSigns
+            in
+                ( { model | nutritionSigns = nutritionSignsUpdated }
+                , Cmd.none
+                , Nothing
+                )
 
         PhotoSave ->
             postPhoto backendUrl accessToken patientId model

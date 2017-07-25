@@ -1,9 +1,10 @@
 module Measurement.Model exposing (..)
 
 import Activity.Model exposing (ActivityType, ChildNutritionSign)
+import EveryDict exposing (EveryDict)
 import Http
-import Set
 import RemoteData exposing (RemoteData(..), WebData)
+import Set exposing (Set)
 
 
 {-| Indicate which Activity was completed, and to which Activity to redirect to.
@@ -31,6 +32,7 @@ type Msg
     | HeightUpdate Float
     | MuacUpdate Float
     | MuacSave
+    | NutritionSignsToggle ChildNutritionSign
     | NutritionSignsSave
     | PhotoSave
     | WeightSave
@@ -41,7 +43,10 @@ type alias Model =
     { status : WebData ()
     , height : FloatInput
     , muac : FloatInput
-    , nutritionSigns : Set.Set Activity.Model.ChildNutritionSign
+
+    -- We use EveryDict instead of Set, as we want the key to be a typed value
+    -- and not have to cast it to string.
+    , nutritionSigns : EveryDict ChildNutritionSign ()
     , photo : Int
     , weight : FloatInput
     }
@@ -79,7 +84,7 @@ emptyModel =
     { status = NotAsked
     , height = Nothing
     , muac = Nothing
-    , nutritionSigns = Set.empty
+    , nutritionSigns = EveryDict.empty
     , photo = 0
     , weight = Nothing
     }
