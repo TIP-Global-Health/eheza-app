@@ -140,8 +140,8 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
 viewPhoto : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
 viewPhoto backendUrl accessToken user language ( childId, child ) model =
     let
-        hasPhoto =
-            (model.photo > 0)
+        hasFileId =
+            isJust <| Tuple.first model.photo
     in
         div []
             [ divider
@@ -165,12 +165,12 @@ viewPhoto backendUrl accessToken user language ( childId, child ) model =
                             [ button
                                 [ classList
                                     [ ( "ui fluid basic button retake", True )
-                                    , ( "disabled", not hasPhoto )
+                                    , ( "disabled", not hasFileId )
                                     ]
                                 ]
                                 [ text <| translate language Trans.Retake ]
                             ]
-                        , saveButton language PhotoSave model hasPhoto (Just "column")
+                        , saveButton language PhotoSave model hasFileId (Just "column")
                         ]
                     ]
                 ]

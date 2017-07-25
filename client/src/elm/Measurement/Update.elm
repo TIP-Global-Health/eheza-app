@@ -18,7 +18,7 @@ update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model 
 update backendUrl accessToken user ( patientId, patient ) msg model =
     case msg of
         HandleDropzoneUploadedFile fileId ->
-            ( { model | photo = fileId }
+            ( { model | photo = ( Just fileId, Nothing ) }
             , Cmd.none
             , Nothing
             )
@@ -110,7 +110,14 @@ postData backendUrl accessToken model path value encoder handler =
 -}
 postPhoto : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
 postPhoto backendUrl accessToken childId model =
-    postData backendUrl accessToken model "photos" model.photo (encodePhoto childId) HandlePhotoSave
+    case model.photo of
+        ( Nothing, _ ) ->
+            -- This shouldn't happen, but in case we don't have a file ID, we won't issue
+            -- a POST request.
+            ( model, Cmd.none, Nothing )
+
+        ( Just fileId, _ ) ->
+            postData backendUrl accessToken model "photos" fileId (encodePhoto childId) HandlePhotoSave
 
 
 {-| Send new weight of a child to the backend.

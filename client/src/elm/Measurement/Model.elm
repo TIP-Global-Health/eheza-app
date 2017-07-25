@@ -22,6 +22,18 @@ type alias FloatInput =
     Maybe Float
 
 
+type alias FileId =
+    Int
+
+
+type alias PhotoId =
+    Int
+
+
+type alias Photo =
+    { url : String }
+
+
 type Msg
     = HandleDropzoneUploadedFile Int
     | HandlePhotoSave (Result Http.Error ())
@@ -40,7 +52,7 @@ type alias Model =
     { status : WebData ()
     , height : FloatInput
     , muac : FloatInput
-    , photo : Int
+    , photo : ( Maybe FileId, Maybe ( PhotoId, Photo ) )
     , weight : FloatInput
     }
 
@@ -77,6 +89,6 @@ emptyModel =
     { status = NotAsked
     , height = Nothing
     , muac = Nothing
-    , photo = 0
+    , photo = ( Nothing, Nothing )
     , weight = Nothing
     }
