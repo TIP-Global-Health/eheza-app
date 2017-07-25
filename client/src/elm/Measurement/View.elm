@@ -128,9 +128,10 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                                 , div [ class "ui basic label" ] [ text <| translate language measurementType ]
                                 ]
                             ]
+                        , div [ class "six wide column" ]
+                            [ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType model ]
                         ]
                     , viewPreviousMeasurement language floatMeasurement maybePreviousExamination
-                    , viewFloatDiff language floatMeasurement maybePreviousExamination model
                     ]
                 , div
                     [ class "actions" ]
@@ -170,8 +171,8 @@ viewPreviousMeasurement language floatMeasurement maybePreviousExamination =
 {-| Show a diff of values, if they were gained or lost.
 |
 -}
-viewFloatDiff : Language -> FloatMeasurements -> Maybe ExaminationChild -> Model -> Html Msg
-viewFloatDiff language floatMeasurement maybePreviousExamination model =
+viewFloatDiff : Language -> FloatMeasurements -> Maybe ExaminationChild -> TranslationId -> Model -> Html Msg
+viewFloatDiff language floatMeasurement maybePreviousExamination measurementType model =
     let
         maybePreviousValue =
             case maybePreviousExamination of
@@ -204,15 +205,25 @@ viewFloatDiff language floatMeasurement maybePreviousExamination model =
             ( Just previousValue, Just currentValue ) ->
                 let
                     diff =
-                        toString <| currentValue - previousValue
+                        toString <| abs (currentValue - previousValue)
                 in
                     if currentValue == previousValue then
                         -- No change in the values.
                         emptyNode
                     else if currentValue > previousValue then
-                        div [] [ text <| "Gain: " ++ diff ]
+                        p [ class "label-up label-with-icon" ]
+                            [ span [ class "icon-up" ] []
+                            , text <| "Gained"
+                            , br [] []
+                            , text <| diff ++ " " ++ translate language measurementType
+                            ]
                     else
-                        div [] [ text <| "Lose: " ++ diff ]
+                        p [ class "label-down label-with-icon" ]
+                            [ span [ class "icon-down" ] []
+                            , text <| "Lost"
+                            , br [] []
+                            , text <| diff ++ " " ++ translate language measurementType
+                            ]
 
             _ ->
                 emptyNode
