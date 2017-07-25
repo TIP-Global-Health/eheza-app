@@ -4,7 +4,6 @@ import Activity.Model exposing (ActivityType, ChildNutritionSign)
 import EveryDict exposing (EveryDict)
 import Http
 import RemoteData exposing (RemoteData(..), WebData)
-import Set exposing (Set)
 
 
 {-| Indicate which Activity was completed, and to which Activity to redirect to.

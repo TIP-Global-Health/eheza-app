@@ -1,6 +1,5 @@
 port module Measurement.Update exposing (update, subscriptions)
 
-import Activity.Encoder exposing (encodeChildNutritionSign)
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import Config.Model exposing (BackendUrl)
 import EveryDict exposing (EveryDict)
@@ -11,7 +10,6 @@ import Measurement.Encoder exposing (encodePhoto, encodeWeight)
 import Measurement.Model exposing (CompletedAndRedirectToActivityTuple, Model, Msg(..))
 import Patient.Model exposing (Patient, PatientId)
 import RemoteData exposing (RemoteData(..))
-import Set
 import User.Model exposing (..)
 
 
