@@ -2,6 +2,50 @@ var assert = require('assert');
 
 describe('measurement module', function() {
 
+  /**
+   * Adjust the input of the current form.
+   *
+   * @param value
+   *   The new value to set.
+   */
+  var adjustFormValue = function (value) {
+    browser.setValue('input[type="number"]', value);
+  };
+
+  /**
+   * Waiting for the up arrow to be shown.
+   */
+  var waitForGainedIndication = function () {
+    browser.waitForVisible('.label-up .icon-up');
+  };
+
+  /**
+   * Waiting for the down arrow to be shown.
+   */
+  var waitForLostIndication = function () {
+    browser.waitForVisible('.label-down .icon-down');
+  };
+
+  /**
+   * Get the indication message of the 'gained' value.
+   *
+   * @returns {String|String[]}
+   *   The indication message.
+   */
+  var getDiffFromGainedIndication = function () {
+    return browser.getText('.label-up');
+  };
+
+  /**
+   * Get the indication message of the 'lost' value.
+   *
+   * @returns {String|String[]}
+   *   The indication message.
+   */
+  var getDiffFromLostIndication = function () {
+    return browser.getText('.label-down');
+  };
+
   before(() => {
     browser.loginAndViewPatientsPage('aya');
     browser.visitChildWithTodoTasks();
@@ -14,16 +58,16 @@ describe('measurement module', function() {
     browser.click('a=' + tab);
     browser.waitForVisible('h3=' + tab + ':');
 
-    browser.setValue('input[type="number"]', 50);
-    browser.waitForVisible('.label-up .icon-up');
-    const result = browser.getText('.label-up');
+    adjustFormValue(50);
+    waitForGainedIndication();
+    const result = getDiffFromGainedIndication();
     assert.equal(result, 'Gained\n46 kg', 'Indication for the gained weight is incorrect.');
   })
 
   it('should display an indication when weight is lost', () => {
-    browser.setValue('input[type="number"]', 1);
-    browser.waitForVisible('.label-down .icon-down');
-    const result = browser.getText('.label-down');
+    adjustFormValue(1);
+    waitForLostIndication();
+    const result = getDiffFromLostIndication();
     assert.equal(result, 'Lost\n3 kg', 'Indication for the lost weight is incorrect.');
   })
 
@@ -34,16 +78,16 @@ describe('measurement module', function() {
     browser.click('a=' + tab);
     browser.waitForVisible('h3=' + tab + ':');
 
-    browser.setValue('input[type="number"]', 100);
-    browser.waitForVisible('.label-up .icon-up');
-    const result = browser.getText('.label-up');
+    adjustFormValue(100);
+    waitForGainedIndication();
+    const result = getDiffFromGainedIndication();
     assert.equal(result, 'Gained\n50 cm', 'Indication for the gained height is incorrect.');
   })
 
   it('should display an indication when height is lost', () => {
-    browser.setValue('input[type="number"]', 10);
-    browser.waitForVisible('.label-down .icon-down');
-    const result = browser.getText('.label-down');
+    adjustFormValue(10);
+    waitForLostIndication();
+    const result = getDiffFromLostIndication();
     assert.equal(result, 'Lost\n40 cm', 'Indication for the lost height is incorrect.');
   })
 
@@ -54,16 +98,16 @@ describe('measurement module', function() {
     browser.click('a=' + tab);
     browser.waitForVisible('h3=Mid Upper Arm Circumference (MUAC):');
 
-    browser.setValue('input[type="number"]', 50);
-    browser.waitForVisible('.label-up .icon-up');
-    const result = browser.getText('.label-up');
+    adjustFormValue(50);
+    waitForGainedIndication();
+    const result = getDiffFromGainedIndication();
     assert.equal(result, 'Gained\n37 cm', 'Indication for the gained MUAC is incorrect.');
   })
 
   it('should display an indication when MUAC is lost', () => {
-    browser.setValue('input[type="number"]', 5);
-    browser.waitForVisible('.label-down .icon-down');
-    const result = browser.getText('.label-down');
+    adjustFormValue(5);
+    waitForLostIndication();
+    const result = getDiffFromLostIndication();
     assert.equal(result, 'Lost\n8 cm', 'Indication for the lost MUAC is incorrect.');
   })
 
