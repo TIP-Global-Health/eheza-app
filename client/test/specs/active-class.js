@@ -1,8 +1,4 @@
-var assert = require('assert');
-var Chance = require('chance');
-var chance = new Chance();
-
-describe('Make sure that active tab will acquire the correct class when clicked', () => {
+describe('Testing the active class appearance', () => {
 
   before(() => {
     browser.loginAndViewPatientsPage('aya');
