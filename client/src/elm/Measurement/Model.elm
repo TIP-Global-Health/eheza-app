@@ -58,6 +58,7 @@ type alias Model =
     { status : WebData ()
     , height : FloatInput
     , muac : FloatInput
+
     -- We use EveryDict instead of Set, as we want the key to be a typed value
     -- and not have to cast it to string.
     , nutritionSigns : EveryDictChildNutritionSign

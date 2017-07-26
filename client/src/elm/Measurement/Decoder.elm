@@ -14,7 +14,7 @@ import Utils.Json exposing (decodeFloat, decodeInt)
 decodePhoto : Decoder Photo
 decodePhoto =
     decode Photo
-        |> requiredAt ["photo", "styles", "thumbnail"] string
+        |> requiredAt [ "photo", "styles", "thumbnail" ] string
 
 
 decodePhotoTuple : Decoder ( PhotoId, Photo )
