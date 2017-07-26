@@ -223,16 +223,15 @@ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType
 
                     viewMessage isGain =
                         let
-                            ( classSuffix, translationId ) =
+                            classSuffix =
                                 if isGain then
-                                    ( "up", Trans.Gained )
+                                    "up"
                                 else
-                                    ( "down", Trans.Lost )
+                                    "down"
                         in
                             p
                                 [ class <| "label-with-icon label-" ++ classSuffix ]
                                 [ span [ class <| "icon-" ++ classSuffix ] []
-                                , text <| translate language translationId
                                 , br [] []
                                 , text <| diff ++ " " ++ translate language measurementType
                                 ]
