@@ -43,8 +43,10 @@ update currentDate backendUrl accessToken user language msg ( patientId, patient
                     Measurement.Update.update backendUrl accessToken user ( patientId, patient ) subMsg model.measurements
 
                 newDate =
-                    (Date.toTime currentDate) + 10000 |> Date.fromTime
+                    (Date.toTime currentDate) + (24 * 60 * 60 * 1000) |> Date.fromTime
 
+                -- Hard-wiring the period of one day, while we consider
+                -- the Activity completed.
                 patientUpdated =
                     case maybeActivityTypeCompleted of
                         Nothing ->
