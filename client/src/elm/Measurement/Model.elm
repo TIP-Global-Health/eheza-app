@@ -1,6 +1,7 @@
 module Measurement.Model exposing (..)
 
-import Activity.Model exposing (ActivityType)
+import Activity.Model exposing (ActivityType, ChildNutritionSign)
+import EveryDict exposing (EveryDict)
 import Http
 import RemoteData exposing (RemoteData(..), WebData)
 
@@ -22,6 +23,10 @@ type alias FloatInput =
     Maybe Float
 
 
+type alias EveryDictChildNutritionSign =
+    EveryDict ChildNutritionSign ()
+
+
 type Msg
     = HandleDropzoneUploadedFile Int
     | HandlePhotoSave (Result Http.Error ())
@@ -30,6 +35,7 @@ type Msg
     | HeightUpdate Float
     | MuacUpdate Float
     | MuacSave
+    | NutritionSignsToggle ChildNutritionSign
     | NutritionSignsSave
     | PhotoSave
     | WeightSave
@@ -40,6 +46,10 @@ type alias Model =
     { status : WebData ()
     , height : FloatInput
     , muac : FloatInput
+
+    -- We use EveryDict instead of Set, as we want the key to be a typed value
+    -- and not have to cast it to string.
+    , nutritionSigns : EveryDictChildNutritionSign
     , photo : Int
     , weight : FloatInput
     }
@@ -77,6 +87,7 @@ emptyModel =
     { status = NotAsked
     , height = Nothing
     , muac = Nothing
+    , nutritionSigns = EveryDict.empty
     , photo = 0
     , weight = Nothing
     }
