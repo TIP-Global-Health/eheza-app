@@ -232,7 +232,6 @@ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType
                             p
                                 [ class <| "label-with-icon label-" ++ classSuffix ]
                                 [ span [ class <| "icon-" ++ classSuffix ] []
-                                , br [] []
                                 , text <| diff ++ " " ++ translate language measurementType
                                 ]
                 in
