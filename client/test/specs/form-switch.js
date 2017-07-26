@@ -2,14 +2,13 @@ var assert = require('assert');
 
 describe('assesment pages', () => {
 
-   before(() => {
+    before(() => {
         browser.loginAndViewPatientsPage('aya');
     });
 
-   beforeEach(() => {
-       browser.visitChildWithTodoTasks();
+    beforeEach(() => {
+        browser.visitChildWithTodoTasks();
     });
-
 
     it('should allow a user to switch between forms', () => {
         const firstUsedTab = 'Weight';
