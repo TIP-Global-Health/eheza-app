@@ -32,6 +32,7 @@
         "rluiten/elm-date-extra": "8.1.2 <= v < 9.0.0",
         "rtfeldman/node-test-runner": "3.0.0 <= v < 4.0.0",
         "sporto/erl": "11.0.0 <= v < 12.0.0",
+        "stoeffel/editable": "1.1.0 <= v < 2.0.0",
         "terezka/elm-plot": "3.0.1 <= v < 4.0.0",
         "truqu/elm-base64": "1.0.5 <= v < 2.0.0"
     },

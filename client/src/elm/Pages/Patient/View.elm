@@ -10,6 +10,8 @@ import Child.Model exposing (Child, ChildId)
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict
+import Examination.Model exposing (ExaminationChild)
+import Examination.Utils exposing (getLastExaminationFromChild)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
@@ -82,10 +84,10 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                 ]
             , div [ class "ui segment" ]
                 [ div []
-                    [ viewActivityCards language currentDate currentUser patients Children model.selectedTab
+                    [ viewActivityCards language currentDate currentUser patients Children model.selectedTab model.selectedActivity
                     ]
                 ]
-            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) model.selectedActivity model.measurements
+            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
             ]
 
 
@@ -151,7 +153,7 @@ viewMother language currentDate currentUser motherId mother children model =
                 ]
             , div [ class "ui segment" ]
                 [ div []
-                    [ viewActivityCards language currentDate currentUser patients Children model.selectedTab
+                    [ viewActivityCards language currentDate currentUser patients Children model.selectedTab model.selectedActivity
                     ]
                 ]
             ]
@@ -161,8 +163,8 @@ viewMother language currentDate currentUser motherId mother children model =
 -- @todo: Cleanup code duplication
 
 
-viewActivityCards : Language -> Date -> User -> PatientsDict -> PatientTypeFilter -> Tab -> Html Msg
-viewActivityCards language currentDate user patients patientTypeFilter selectedTab =
+viewActivityCards : Language -> Date -> User -> PatientsDict -> PatientTypeFilter -> Tab -> Maybe ActivityType -> Html Msg
+viewActivityCards language currentDate user patients patientTypeFilter selectedTab selectedActivity =
     let
         allActivityList =
             getActivityList currentDate patientTypeFilter patients
@@ -177,13 +179,13 @@ viewActivityCards language currentDate user patients patientTypeFilter selectedT
             if List.isEmpty pendingActivities then
                 []
             else
-                List.map (viewActivityListItem language) pendingActivities
+                List.map (viewActivityListItem language selectedActivity) pendingActivities
 
         noPendingActivitiesView =
             if List.isEmpty noPendingActivities then
                 []
             else
-                List.map (viewActivityListItem language) noPendingActivities
+                List.map (viewActivityListItem language selectedActivity) noPendingActivities
 
         activeView =
             if selectedTab == Pending then
@@ -228,13 +230,13 @@ viewActivityCards language currentDate user patients patientTypeFilter selectedT
             ]
 
 
-viewActivityListItem : Language -> ActivityListItem -> Html Msg
-viewActivityListItem language report =
+viewActivityListItem : Language -> Maybe ActivityType -> ActivityListItem -> Html Msg
+viewActivityListItem language selectedActivity report =
     let
         clickHandler =
             onClick <| SetSelectedActivity (Just <| report.activity.activityType)
     in
-        div [ class "column" ]
+        div [ classList [ ( "column", True ), ( "active", selectedActivity == (Just <| report.activity.activityType) ) ] ]
             [ a
                 [ clickHandler
                 , class "link-section"
