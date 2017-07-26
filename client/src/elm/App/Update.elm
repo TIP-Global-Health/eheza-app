@@ -107,7 +107,7 @@ update msg model =
                     Success user ->
                         let
                             ( val, cmds, redirectPage ) =
-                                PatientManager.Update.update model.currentDate backendUrl model.accessToken user subMsg model.pagePatient
+                                PatientManager.Update.update model.currentDate backendUrl model.accessToken user model.language subMsg model.pagePatient
 
                             modelUpdated =
                                 { model | pagePatient = val }

@@ -14,6 +14,12 @@ describe('The Photo form', () => {
 
   after(() => browser.logout());
 
+  it('should display the default message of the dropzone', () => {
+    browser.waitForVisible('.dz-message');
+    const dzDefaultMessage = browser.getText('.dz-message span');
+    assert.equal(dzDefaultMessage, 'Touch here to take a photo, or drop a photo file here.', 'The default message of the dropzone is incorrect.');
+  });
+
   it('should not allow to Save without an image', () => {
     // The Save button is enabled.
     const classesBefore = browser.getAttribute('#save-form', 'class');
