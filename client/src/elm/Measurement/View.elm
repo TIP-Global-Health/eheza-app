@@ -8,19 +8,20 @@ import Activity.Model exposing (ActivityType(..), ChildActivityType(..), ChildNu
 import Child.Model exposing (Child, ChildId)
 import Config.Model exposing (BackendUrl)
 import EveryDict
+import Examination.Model exposing (ExaminationChild)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Maybe.Extra exposing (isJust)
-import Measurement.Model exposing (EveryDictChildNutritionSign, FloatMeasurements(..), Model, Msg(..), getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
+import Measurement.Model exposing (EveryDictChildNutritionSign, FloatInput, FloatMeasurements(..), Model, Msg(..), getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import User.Model exposing (..)
 import Utils.Html exposing (divider, emptyNode, showIf, showMaybe)
 
 
-viewChild : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Maybe ActivityType -> Model -> Html Msg
-viewChild backendUrl accessToken user language ( childId, child ) selectedActivity model =
+viewChild : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Maybe ExaminationChild -> Maybe ActivityType -> Model -> Html Msg
+viewChild backendUrl accessToken user language ( childId, child ) maybePreviousExamination selectedActivity model =
     showMaybe <|
         Maybe.map
             (\activity ->
@@ -31,16 +32,16 @@ viewChild backendUrl accessToken user language ( childId, child ) selectedActivi
                                 viewPhoto backendUrl accessToken user language ( childId, child ) model
 
                             Height ->
-                                viewFloatForm backendUrl accessToken user language HeightFloat ( childId, child ) model
+                                viewFloatForm backendUrl accessToken user language HeightFloat ( childId, child ) maybePreviousExamination model
 
                             Muac ->
-                                viewFloatForm backendUrl accessToken user language MuacFloat ( childId, child ) model
+                                viewFloatForm backendUrl accessToken user language MuacFloat ( childId, child ) maybePreviousExamination model
 
                             NutritionSigns ->
                                 viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
 
                             Weight ->
-                                viewFloatForm backendUrl accessToken user language WeightFloat ( childId, child ) model
+                                viewFloatForm backendUrl accessToken user language WeightFloat ( childId, child ) maybePreviousExamination model
 
                             _ ->
                                 emptyNode
@@ -51,8 +52,8 @@ viewChild backendUrl accessToken user language ( childId, child ) selectedActivi
             selectedActivity
 
 
-viewFloatForm : BackendUrl -> String -> User -> Language -> FloatMeasurements -> ( ChildId, Child ) -> Model -> Html Msg
-viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, child ) model =
+viewFloatForm : BackendUrl -> String -> User -> Language -> FloatMeasurements -> ( ChildId, Child ) -> Maybe ExaminationChild -> Model -> Html Msg
+viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, child ) maybePreviousExamination model =
     let
         ( blockName, headerText, helpText, labelText, constraints, measurementValue, measurementType, updateMsg, saveMsg ) =
             case floatMeasurement of
@@ -128,7 +129,10 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                                 , div [ class "ui basic label" ] [ text <| translate language measurementType ]
                                 ]
                             ]
+                        , div [ class "six wide column" ]
+                            [ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType model ]
                         ]
+                    , viewPreviousMeasurement language floatMeasurement maybePreviousExamination
                     ]
                 , div
                     [ class "actions" ]
@@ -136,6 +140,99 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     ]
                 ]
             ]
+
+
+viewPreviousMeasurement : Language -> FloatMeasurements -> Maybe ExaminationChild -> Html Msg
+viewPreviousMeasurement language floatMeasurement maybePreviousExamination =
+    case maybePreviousExamination of
+        Nothing ->
+            emptyNode
+
+        Just previousExamination ->
+            let
+                maybePreviousValue =
+                    case floatMeasurement of
+                        HeightFloat ->
+                            previousExamination.height
+
+                        MuacFloat ->
+                            previousExamination.muac
+
+                        WeightFloat ->
+                            previousExamination.weight
+            in
+                Maybe.map
+                    (\previousValue ->
+                        div [] [ text <| translate language <| Trans.PreviousFloatMeasurement previousValue ]
+                    )
+                    maybePreviousValue
+                    |> Maybe.withDefault emptyNode
+
+
+{-| Show a diff of values, if they were gained or lost.
+-}
+viewFloatDiff : Language -> FloatMeasurements -> Maybe ExaminationChild -> TranslationId -> Model -> Html Msg
+viewFloatDiff language floatMeasurement maybePreviousExamination measurementType model =
+    let
+        maybePreviousValue =
+            case maybePreviousExamination of
+                Just previousExamination ->
+                    case floatMeasurement of
+                        HeightFloat ->
+                            previousExamination.height
+
+                        MuacFloat ->
+                            previousExamination.muac
+
+                        WeightFloat ->
+                            previousExamination.weight
+
+                Nothing ->
+                    Nothing
+
+        maybeCurrentValue =
+            case floatMeasurement of
+                HeightFloat ->
+                    model.height
+
+                MuacFloat ->
+                    model.muac
+
+                WeightFloat ->
+                    model.weight
+    in
+        case ( maybePreviousValue, maybeCurrentValue ) of
+            ( Just previousValue, Just currentValue ) ->
+                let
+                    diff =
+                        toString <| abs (currentValue - previousValue)
+
+                    viewMessage isGain =
+                        let
+                            ( classSuffix, translationId ) =
+                                if isGain then
+                                    ( "up", Trans.Gained )
+                                else
+                                    ( "down", Trans.Lost )
+                        in
+                            p
+                                [ class <| "label-with-icon label-" ++ classSuffix ]
+                                [ span [ class <| "icon-" ++ classSuffix ] []
+                                , text <| translate language translationId
+                                , br [] []
+                                , text <| diff ++ " " ++ translate language measurementType
+                                ]
+                in
+                    if currentValue == previousValue then
+                        -- No change in the values.
+                        emptyNode
+                    else if currentValue > previousValue then
+                        viewMessage True
+                    else
+                        viewMessage False
+
+            _ ->
+                emptyNode
 
 
 viewPhoto : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
