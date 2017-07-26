@@ -1,18 +1,18 @@
 var assert = require('assert');
 
 describe('assesment pages', () => {
+
+    before(() => {
+        browser.loginAndViewPatientsPage('aya');
+    });
+
+    beforeEach(() => {
+        browser.visitChildWithTodoTasks();
+    });
+
     it('should allow a user to switch between forms', () => {
         const firstUsedTab = 'Weight';
         const secondUsedTab = 'Height';
-
-        browser.login('aya');
-        // We generate 20 of every content-types, and we generated Children
-        // in the third step, that's how we picked Child 41.
-        // The first Child is also special, it has most of the dates
-        // in the past.
-        // @see server/scripts/helper-functions.sh
-        browser.url('/#patient/41');
-        browser.waitForVisible('.ui.tasks.segment');
 
         // Switching to Weight.
         browser.click('a=' + firstUsedTab);
@@ -23,5 +23,35 @@ describe('assesment pages', () => {
         browser.click('a=' + secondUsedTab);
         browser.waitForVisible('div=' + firstUsedTab + ':', 500, true);
         browser.waitForVisible('div=' + secondUsedTab + ':');
+    });
+
+    it('should preserve Nutrition Signs  data while the user is switching between forms', () => {
+        const firstUsedTab = 'Nutrition signs';
+        const secondUsedTab = 'Photo';
+
+        // Switching to Nutrition Signs, fill data.
+        browser.click('a=' + firstUsedTab);
+        browser.waitForVisible('div=' + secondUsedTab + ':', 500, true);
+        assert(!browser.isSelected('#apathy'), 'Apathy is not selected');
+        assert(!browser.isSelected('#brittle-hair'), 'Brittle Hair is not selected');
+        assert(!browser.isSelected('#edema'), 'Edema is not selected');
+
+        browser.click('#apathy');
+        browser.click('#brittle-hair');
+
+        // Click save button.
+        browser.click('div.nutrition button');
+
+        // Switching to Photo.
+        browser.click('a=' + secondUsedTab);
+        browser.waitForVisible('div=' + firstUsedTab + ':', 500, true);
+        browser.waitForVisible('h3=' + secondUsedTab + ':');
+
+        // Switching back to Nutrition Signs, check existence of the previous selection.
+        browser.click('#completed-tab');
+        browser.click('a=' + firstUsedTab);
+        assert(browser.isSelected('#apathy'), 'Apathy is still selected');
+        assert(browser.isSelected('#brittle-hair'), 'Brittle Hair is still selected');
+        assert(!browser.isSelected('#edema'), 'Edema is not selected');
     });
 });

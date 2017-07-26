@@ -65,18 +65,12 @@ if ! hash drush 2>/dev/null; then
   exit 1
 fi
 
-if ! hash terminus 2>/dev/null; then
-  echo -e "${RED}Terminus executable is not available ${RESTORE}"
-  echo "https://pantheon.io/docs/terminus/"
-  exit 1
-fi
-
 echo -e "${GREEN}Resets Pantheon folder to $PANTHEON_BRANCH at Git.${NORMAL}\n"
 
 cd "$PANTHEON_DIR"
 git fetch
 git clean -f
-git reset --hard origin/master
+git reset --hard origin/"$PANTHEON_BRANCH"
 git checkout -B "$PANTHEON_BRANCH"
 
 cd "$MAKE_DIR"
@@ -87,9 +81,18 @@ if [[ -n $(git status -s) ]]; then
   exit 1
 fi
 
-echo -e"${GREEN}Sync new code at $ORIGIN_BRANCH branch into the Pantheon folder ($PANTHEON_BRANCH branch).${NORMAL}"
+echo -e "${GREEN}Sync new code at $ORIGIN_BRANCH branch into the Pantheon folder ($PANTHEON_BRANCH branch).${NORMAL}"
 rsync -avzr --delete-after "$MAKE_DIR/$PROFILE/" "$PANTHEON_DIR/profiles/$PROFILE/"
 rsync -avzr --delete-after "$MAKE_DIR"/www/sites/all/ "$PANTHEON_DIR"/sites/all/
+
+echo -e "${GREEN}Re-building the app and copy to {$PANTHEON_DIR}/app.${NORMAL}"
+cd $MAKE_DIR/../client
+elm-package install -y
+bower install
+gulp publish
+rm -rf $PANTHEON_DIR/app
+mkdir $PANTHEON_DIR/app
+cp -Ra serve/. $PANTHEON_DIR/app/
 
 cd "$PANTHEON_DIR"
 echo -e "${GREEN}Git commit new code.${NORMAL}\n"

@@ -48,6 +48,7 @@ type TranslationId
     | Children
     | Connected
     | Dashboard
+    | DropzoneDefaultMessage
     | ErrorBadUrl
     | ErrorBadPayload
     | ErrorBadStatus
@@ -55,10 +56,12 @@ type TranslationId
     | ErrorConfigurationError
     | ErrorNetworkError
     | ErrorTimeout
+    | Gained
     | KilogramShorthand
     | LinkToMother
     | Login
     | Logout
+    | Lost
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
@@ -76,7 +79,7 @@ type TranslationId
     | Patients
     | PlaceholderTextGroupDate
     | PlaceholderTextJoined
-    | PriorWeight Float
+    | PreviousFloatMeasurement Float
     | ReportRemaining Int
     | ReloadPatient
     | Retake
@@ -173,7 +176,7 @@ translate lang trans =
                     { english = "Baby" }
 
                 BabyName name ->
-                    { english = "Baby:" ++ name }
+                    { english = "Baby: " ++ name }
 
                 CentimeterShorthand ->
                     { english = "cm" }
@@ -186,6 +189,9 @@ translate lang trans =
 
                 Dashboard ->
                     { english = "Dashboard" }
+
+                DropzoneDefaultMessage ->
+                    { english = "Touch here to take a photo, or drop a photo file here." }
 
                 ErrorBadUrl ->
                     { english = "URL is not valid." }
@@ -211,6 +217,9 @@ translate lang trans =
                 KilogramShorthand ->
                     { english = "kg" }
 
+                Gained ->
+                    { english = "Gained" }
+
                 LinkToMother ->
                     { english = "Link to mother" }
 
@@ -219,6 +228,9 @@ translate lang trans =
 
                 Logout ->
                     { english = "Logout" }
+
+                Lost ->
+                    { english = "Lost" }
 
                 MeasurementNoChange ->
                     { english = "No Change" }
@@ -233,7 +245,7 @@ translate lang trans =
                     { english = "Mother" }
 
                 MotherName name ->
-                    { english = "Mother:" ++ name }
+                    { english = "Mother: " ++ name }
 
                 Mothers ->
                     { english = "Mothers" }
@@ -271,8 +283,8 @@ translate lang trans =
                 PlaceholderTextJoined ->
                     { english = "Joined in June 2017" }
 
-                PriorWeight value ->
-                    { english = "Previous weight: " ++ (toString value) ++ " kg" }
+                PreviousFloatMeasurement value ->
+                    { english = "Previous measurement: " ++ (toString value) }
 
                 ReportRemaining remaining ->
                     { english = toString remaining ++ " remaning" }

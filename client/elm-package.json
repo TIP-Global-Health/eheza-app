@@ -8,7 +8,9 @@
     ],
     "exposed-modules": [],
     "dependencies": {
+        "Gizra/elm-dictlist": "2.0.0 <= v < 3.0.0",
         "NoRedInk/elm-decode-pipeline": "3.0.0 <= v < 4.0.0",
+        "eeue56/elm-all-dict": "2.0.1 <= v < 3.0.0",
         "eeue56/elm-html-test": "1.0.0 <= v < 2.0.0",
         "elm-community/elm-test": "3.1.0 <= v < 4.0.0",
         "elm-community/json-extra": "2.0.0 <= v < 3.0.0",
@@ -22,7 +24,6 @@
         "evancz/elm-sortable-table": "1.0.1 <= v < 2.0.0",
         "evancz/url-parser": "2.0.1 <= v < 3.0.0",
         "fapian/elm-html-aria": "1.2.2 <= v < 2.0.0",
-        "Gizra/elm-dictlist": "2.0.0 <= v < 3.0.0",
         "krisajenkins/remotedata": "4.0.1 <= v < 5.0.0",
         "lukewestby/elm-http-builder": "4.0.0 <= v < 5.0.0",
         "mgold/elm-date-format": "1.1.7 <= v < 2.0.0",
@@ -31,6 +32,7 @@
         "rluiten/elm-date-extra": "8.1.2 <= v < 9.0.0",
         "rtfeldman/node-test-runner": "3.0.0 <= v < 4.0.0",
         "sporto/erl": "11.0.0 <= v < 12.0.0",
+        "stoeffel/editable": "1.1.0 <= v < 2.0.0",
         "terezka/elm-plot": "3.0.1 <= v < 4.0.0",
         "truqu/elm-base64": "1.0.5 <= v < 2.0.0"
     },

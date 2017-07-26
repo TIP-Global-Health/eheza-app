@@ -27,6 +27,28 @@ module.exports = function (browser, capabilities, specs) {
   });
 
   /**
+   * Click the back button.
+   */
+  browser.addCommand('goBack', () => {
+    browser.click('.link-back');
+  });
+
+  /**
+   * Validate the current page.
+   */
+  browser.addCommand('validateCurrentPageIs', (page) => {
+    // A structure to keep a page and a selector that should be visible in it.
+    const map = {
+      activities: 'h2.header.activities',
+      child: '#child-page',
+      mother: '#mother-page',
+      patients: '#patients-table'
+    };
+
+    browser.waitForVisible(map[page]);
+  });
+
+  /**
    * Add an image to the dropzone.
    *
    * @param {filename} filename The name for the added file.
@@ -69,6 +91,19 @@ module.exports = function (browser, capabilities, specs) {
     // This browser command wont work with filenames using underscores
     const filenameWithoutUnderscores = imgFilename.replace(/_./g, '');
     assert.equal(filename, filenameWithoutUnderscores);
+  });
+
+  /**
+   * Visits a Child with all activities pending.
+   */
+  browser.addCommand('visitChildWithTodoTasks', () => {
+    // We generate 20 of every content-types, and we generated Children
+    // in the third step, that's how we picked Child 41.
+    // The first Child is also special, it has all the dates
+    // in the past for activities.
+    // @see server/scripts/helper-functions.sh
+    browser.url('/#patient/41');
+    browser.waitForVisible('.ui.tasks.segment');
   });
 
   /**

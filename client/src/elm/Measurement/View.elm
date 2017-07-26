@@ -7,18 +7,21 @@ import Activity.Encoder exposing (encodeChildNutritionSign)
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), ChildNutritionSign(..))
 import Child.Model exposing (Child, ChildId)
 import Config.Model exposing (BackendUrl)
+import EveryDict
+import Examination.Model exposing (ExaminationChild)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
-import Measurement.Model exposing (FloatMeasurements(..), Model, Msg(..), getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
+import Maybe.Extra exposing (isJust)
+import Measurement.Model exposing (EveryDictChildNutritionSign, FileId, FloatInput, FloatMeasurements(..), Model, Msg(..), Photo, PhotoId, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import User.Model exposing (..)
 import Utils.Html exposing (divider, emptyNode, showIf, showMaybe)
 
 
-viewChild : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Maybe ActivityType -> Model -> Html Msg
-viewChild backendUrl accessToken user language ( childId, child ) selectedActivity model =
+viewChild : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Maybe ExaminationChild -> Maybe ActivityType -> Model -> Html Msg
+viewChild backendUrl accessToken user language ( childId, child ) maybePreviousExamination selectedActivity model =
     showMaybe <|
         Maybe.map
             (\activity ->
@@ -29,16 +32,16 @@ viewChild backendUrl accessToken user language ( childId, child ) selectedActivi
                                 viewPhoto backendUrl accessToken user language ( childId, child ) model
 
                             Height ->
-                                viewFloatForm backendUrl accessToken user language HeightFloat ( childId, child ) model
+                                viewFloatForm backendUrl accessToken user language HeightFloat ( childId, child ) maybePreviousExamination model
 
                             Muac ->
-                                viewFloatForm backendUrl accessToken user language MuacFloat ( childId, child ) model
+                                viewFloatForm backendUrl accessToken user language MuacFloat ( childId, child ) maybePreviousExamination model
 
                             NutritionSigns ->
                                 viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
 
                             Weight ->
-                                viewFloatForm backendUrl accessToken user language WeightFloat ( childId, child ) model
+                                viewFloatForm backendUrl accessToken user language WeightFloat ( childId, child ) maybePreviousExamination model
 
                             _ ->
                                 emptyNode
@@ -49,8 +52,8 @@ viewChild backendUrl accessToken user language ( childId, child ) selectedActivi
             selectedActivity
 
 
-viewFloatForm : BackendUrl -> String -> User -> Language -> FloatMeasurements -> ( ChildId, Child ) -> Model -> Html Msg
-viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, child ) model =
+viewFloatForm : BackendUrl -> String -> User -> Language -> FloatMeasurements -> ( ChildId, Child ) -> Maybe ExaminationChild -> Model -> Html Msg
+viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, child ) maybePreviousExamination model =
     let
         ( blockName, headerText, helpText, labelText, constraints, measurementValue, measurementType, updateMsg, saveMsg ) =
             case floatMeasurement of
@@ -60,7 +63,7 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     , Trans.ActivitiesHeightHelp
                     , Trans.ActivitiesHeightLabel
                     , getInputConstraintsHeight
-                    , model.height.value
+                    , model.height
                     , Trans.CentimeterShorthand
                     , HeightUpdate
                     , HeightSave
@@ -72,7 +75,7 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     , Trans.ActivitiesMuacHelp
                     , Trans.ActivitiesMuacLabel
                     , getInputConstraintsMuac
-                    , model.muac.value
+                    , model.muac
                     , Trans.CentimeterShorthand
                     , MuacUpdate
                     , MuacSave
@@ -84,11 +87,24 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     , Trans.ActivitiesWeightHelp
                     , Trans.ActivitiesWeightLabel
                     , getInputConstraintsWeight
-                    , model.weight.value
+                    , model.weight
                     , Trans.KilogramShorthand
                     , WeightUpdate
                     , WeightSave
                     )
+
+        defaultAttr =
+            Maybe.map (\val -> [ value <| toString val ]) measurementValue
+                |> Maybe.withDefault []
+
+        inputAttrs =
+            [ type_ "number"
+            , name blockName
+            , Attr.min <| toString constraints.minVal
+            , Attr.max <| toString constraints.maxVal
+            , onInput <| (\v -> updateMsg <| Result.withDefault 0.0 <| String.toFloat v)
+            ]
+                ++ defaultAttr
     in
         div []
             [ divider
@@ -108,59 +124,171 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                             [ div [ class "ui right labeled input" ]
                                 [ div [ class "ui basic label" ] [ text <| translate language labelText ]
                                 , input
-                                    [ type_ "number"
-                                    , name blockName
-                                    , Attr.min <| toString constraints.minVal
-                                    , Attr.max <| toString constraints.maxVal
-                                    , value <| toString measurementValue
-                                    , onInput <| (\v -> updateMsg <| Result.withDefault 0.0 <| String.toFloat v)
-                                    ]
+                                    inputAttrs
                                     []
                                 , div [ class "ui basic label" ] [ text <| translate language measurementType ]
                                 ]
                             ]
+                        , div [ class "six wide column" ]
+                            [ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType model ]
                         ]
+                    , viewPreviousMeasurement language floatMeasurement maybePreviousExamination
                     ]
                 , div
                     [ class "actions" ]
-                    [ saveButton language saveMsg model Nothing
+                    [ saveButton language saveMsg model (isJust measurementValue) Nothing
                     ]
                 ]
             ]
+
+
+{-| Show a photo thumbnail, if it exists.
+-}
+viewPhotoThumb : ( Maybe FileId, Maybe ( PhotoId, Photo ) ) -> Html Msg
+viewPhotoThumb maybePhoto =
+    showMaybe <|
+        Maybe.map
+            (\( _, photo ) ->
+                div []
+                    [ img [ src photo.url, class "ui small image" ] []
+                    ]
+            )
+            (Tuple.second maybePhoto)
+
+
+viewPreviousMeasurement : Language -> FloatMeasurements -> Maybe ExaminationChild -> Html Msg
+viewPreviousMeasurement language floatMeasurement maybePreviousExamination =
+    case maybePreviousExamination of
+        Nothing ->
+            emptyNode
+
+        Just previousExamination ->
+            let
+                maybePreviousValue =
+                    case floatMeasurement of
+                        HeightFloat ->
+                            previousExamination.height
+
+                        MuacFloat ->
+                            previousExamination.muac
+
+                        WeightFloat ->
+                            previousExamination.weight
+            in
+                Maybe.map
+                    (\previousValue ->
+                        div [] [ text <| translate language <| Trans.PreviousFloatMeasurement previousValue ]
+                    )
+                    maybePreviousValue
+                    |> Maybe.withDefault emptyNode
+
+
+{-| Show a diff of values, if they were gained or lost.
+-}
+viewFloatDiff : Language -> FloatMeasurements -> Maybe ExaminationChild -> TranslationId -> Model -> Html Msg
+viewFloatDiff language floatMeasurement maybePreviousExamination measurementType model =
+    let
+        maybePreviousValue =
+            case maybePreviousExamination of
+                Just previousExamination ->
+                    case floatMeasurement of
+                        HeightFloat ->
+                            previousExamination.height
+
+                        MuacFloat ->
+                            previousExamination.muac
+
+                        WeightFloat ->
+                            previousExamination.weight
+
+                Nothing ->
+                    Nothing
+
+        maybeCurrentValue =
+            case floatMeasurement of
+                HeightFloat ->
+                    model.height
+
+                MuacFloat ->
+                    model.muac
+
+                WeightFloat ->
+                    model.weight
+    in
+        case ( maybePreviousValue, maybeCurrentValue ) of
+            ( Just previousValue, Just currentValue ) ->
+                let
+                    diff =
+                        toString <| abs (currentValue - previousValue)
+
+                    viewMessage isGain =
+                        let
+                            ( classSuffix, translationId ) =
+                                if isGain then
+                                    ( "up", Trans.Gained )
+                                else
+                                    ( "down", Trans.Lost )
+                        in
+                            p
+                                [ class <| "label-with-icon label-" ++ classSuffix ]
+                                [ span [ class <| "icon-" ++ classSuffix ] []
+                                , text <| translate language translationId
+                                , br [] []
+                                , text <| diff ++ " " ++ translate language measurementType
+                                ]
+                in
+                    if currentValue == previousValue then
+                        -- No change in the values.
+                        emptyNode
+                    else if currentValue > previousValue then
+                        viewMessage True
+                    else
+                        viewMessage False
+
+            _ ->
+                emptyNode
 
 
 viewPhoto : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
 viewPhoto backendUrl accessToken user language ( childId, child ) model =
-    div []
-        [ divider
-        , div
-            [ class "ui full segment"
-            ]
-            [ h3
-                [ class "ui header" ]
-                [ text <| translate language Trans.ActivitiesPhotoTitle
-                ]
-            , p
-                []
-                [ text <| translate language Trans.ActivitiesPhotoHelp ]
+    let
+        hasFileId =
+            isJust <| Tuple.first model.photo
+    in
+        div []
+            [ divider
             , div
-                [ class "dropzone" ]
-                []
-            , div [ class "actions" ]
-                [ div [ class "ui two column grid" ]
-                    [ div
-                        [ class "column" ]
-                        [ button
-                            [ class "ui fluid basic button"
-                            , onClick ResetDropZone
+                [ class "ui full segment photo"
+                ]
+                [ h3
+                    [ class "ui header" ]
+                    [ text <| translate language Trans.ActivitiesPhotoTitle
+                    ]
+                , p
+                    []
+                    [ text <| translate language Trans.ActivitiesPhotoHelp ]
+                , viewPhotoThumb model.photo
+                , div
+                    [ class "dropzone" ]
+                    []
+                , div [ class "actions" ]
+                    [ div [ class "ui two column grid" ]
+                        [ div
+                            [ class "column" ]
+                            [ button
+                                [ classList
+                                    [ ( "ui fluid basic button retake", True )
+                                    , ( "disabled", not hasFileId )
+                                    ]
+                                , onClick ResetDropZone
+                                ]
+                                [ text <| translate language Trans.Retake ]
                             ]
-                            [ text <| translate language Trans.Retake ]
+                        , saveButton language PhotoSave model hasFileId (Just "column")
                         ]
-                    , saveButton language PhotoSave model (Just "column")
                     ]
                 ]
             ]
-        ]
 
 
 {-| Helper function to create a Save button.
@@ -169,8 +297,8 @@ Button will also take care of preventing double submission,
 and showing success and error indications.
 
 -}
-saveButton : Language -> Msg -> Model -> Maybe String -> Html Msg
-saveButton language msg model maybeDivClass =
+saveButton : Language -> Msg -> Model -> Bool -> Maybe String -> Html Msg
+saveButton language msg model hasInput maybeDivClass =
     let
         isLoading =
             model.status == Loading
@@ -182,7 +310,7 @@ saveButton language msg model maybeDivClass =
             RemoteData.isFailure model.status
 
         saveAttr =
-            if isLoading then
+            if isLoading || not hasInput then
                 []
             else
                 [ onClick msg ]
@@ -197,6 +325,7 @@ saveButton language msg model maybeDivClass =
                     , ( "loading", isLoading )
                     , ( "basic", not isSuccess )
                     , ( "negative", isFailure )
+                    , ( "disabled", not hasInput )
                     ]
                  , id "save-form"
                  ]
@@ -230,17 +359,17 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
                 [ p []
                     [ text <| translate language Trans.ActivitiesNutritionSignsLabel
                     ]
-                , viewNutritionSignsSelector language
+                , viewNutritionSignsSelector language model.nutritionSigns
                 ]
             , div [ class "actions" ]
-                [ saveButton language NutritionSignsSave model Nothing
+                [ saveButton language NutritionSignsSave model True Nothing
                 ]
             ]
         ]
 
 
-viewNutritionSignsSelector : Language -> Html Msg
-viewNutritionSignsSelector language =
+viewNutritionSignsSelector : Language -> EveryDictChildNutritionSign -> Html Msg
+viewNutritionSignsSelector language nutritionSigns =
     let
         nutrionSignsAndTranslationIdsFirst =
             [ Edema, AbdominalDisortion, DrySkin, PoorAppetite ]
@@ -251,12 +380,12 @@ viewNutritionSignsSelector language =
         div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
                 (List.map
-                    (viewNutritionSignsSelectorItem language)
+                    (viewNutritionSignsSelectorItem language nutritionSigns)
                     nutrionSignsAndTranslationIdsFirst
                 )
             , div [ class "eight wide column" ]
                 (List.map
-                    (viewNutritionSignsSelectorItem language)
+                    (viewNutritionSignsSelectorItem language nutritionSigns)
                     nutrionSignsAndTranslationIdsSecond
                 )
             ]
@@ -268,8 +397,8 @@ For each nutrition sign the function will return a the translaed label of the
 checkbox and a value for the id and for attributes.
 
 -}
-viewNutritionSignsSelectorItem : Language -> ChildNutritionSign -> Html Msg
-viewNutritionSignsSelectorItem language sign =
+viewNutritionSignsSelectorItem : Language -> EveryDictChildNutritionSign -> ChildNutritionSign -> Html Msg
+viewNutritionSignsSelectorItem language nutritionSigns sign =
     let
         ( body, attributeValue ) =
             case sign of
@@ -299,6 +428,8 @@ viewNutritionSignsSelectorItem language sign =
                 [ type_ "checkbox"
                 , id attributeValue
                 , name <| encodeChildNutritionSign sign
+                , onClick <| NutritionSignsToggle sign
+                , checked <| EveryDict.member sign nutritionSigns
                 ]
                 []
             , label [ for attributeValue ]

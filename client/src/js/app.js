@@ -129,6 +129,7 @@ function attachDropzone(selector, config) {
     var url = config.backendUrl + '/api/file-upload?access_token=' + accessToken;
 
     dropZone = new Dropzone(selector, {
+        dictDefaultMessage: config.defaultMessage,
         url: url
     });
 
