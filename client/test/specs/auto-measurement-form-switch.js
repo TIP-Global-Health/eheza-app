@@ -1,3 +1,5 @@
+'use strict';
+
 var assert = require('assert');
 var Chance = require('chance');
 var chance = new Chance();
@@ -14,12 +16,23 @@ describe('The measurement forms', () => {
         assert.equal(browser.elements('.pending a').value.length, 5, 'There are five pending activities');
     });
 
+    it('should present the activities in the right order', () => {
+        // The expected order of the Activities.
+        let activities = ['Photo', 'Weight', 'Height', 'MUAC', 'Nutrition signs'];
+        let position = 1;
+        for (let activity of activities) {
+            // Checks the order of the Activities at the To Do activity selector, one by one.
+            assert.equal(browser.getText('.grid.pending div:nth-child(' + position + ') a'), activity);
+            position++;
+        }
+    });
+
     it('should lead to the Weight form upon saving the Photo form', () => {
         browser.addTestImage('Testfile1');
         browser.element('#save-form').click();
         // The help text of the Weight form.
         browser.waitForVisible("p=Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on.");
-      assert.equal(browser.elements('.pending a').value.length, 4, 'There are four pending activities');
+        assert.equal(browser.elements('.pending a').value.length, 4, 'There are four pending activities');
     });
 
     it('should lead to the Height form upon saving the Weight form', () => {
