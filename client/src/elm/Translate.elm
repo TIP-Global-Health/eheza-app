@@ -48,6 +48,7 @@ type TranslationId
     | Children
     | Connected
     | Dashboard
+    | DropzoneDefaultMessage
     | ErrorBadUrl
     | ErrorBadPayload
     | ErrorBadStatus
@@ -188,6 +189,9 @@ translate lang trans =
 
                 Dashboard ->
                     { english = "Dashboard" }
+
+                DropzoneDefaultMessage ->
+                    { english = "Touch here to take a photo, or drop a photo file here." }
 
                 ErrorBadUrl ->
                     { english = "URL is not valid." }

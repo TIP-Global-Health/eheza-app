@@ -23,6 +23,7 @@ import PatientManager.Utils exposing (..)
 import Pusher.Decoder exposing (decodePusherEvent)
 import Pusher.Model exposing (PusherEventData(..))
 import RemoteData exposing (RemoteData(..))
+import Translate as Trans exposing (Language, translate)
 import User.Model exposing (User)
 import Utils.WebData exposing (sendWithHandler)
 
@@ -35,8 +36,8 @@ dashboardUrlFragment model =
     Pages.Patients.Update.urlFragment model.patientsPage
 
 
-update : Date -> BackendUrl -> String -> User -> Msg -> Model -> ( Model, Cmd Msg, Maybe Page )
-update currentDate backendUrl accessToken user msg model =
+update : Date -> BackendUrl -> String -> User -> Language -> Msg -> Model -> ( Model, Cmd Msg, Maybe Page )
+update currentDate backendUrl accessToken user language msg model =
     case msg of
         Subscribe id ->
             -- Note that we're waiting to get the response from the server
@@ -104,7 +105,7 @@ update currentDate backendUrl accessToken user msg model =
                                     |> Maybe.withDefault Pages.Patient.Model.emptyModel
 
                             ( patientUpdated, subModel, subCmd, redirectPage ) =
-                                Pages.Patient.Update.update currentDate backendUrl accessToken user subMsg ( id, patient ) patientModel
+                                Pages.Patient.Update.update currentDate backendUrl accessToken user language subMsg ( id, patient ) patientModel
                         in
                             ( { model
                                 | patients = Dict.insert id (Success patientUpdated) model.patients
@@ -161,7 +162,7 @@ update currentDate backendUrl accessToken user msg model =
                         -- Lazy load the Mother if they are already connected.
                         Maybe.map
                             (\motherId ->
-                                update currentDate backendUrl accessToken user (Subscribe motherId) updatedModel
+                                update currentDate backendUrl accessToken user language (Subscribe motherId) updatedModel
                             )
                             child.motherId
                             |> Maybe.withDefault ( updatedModel, Cmd.none, Nothing )
@@ -181,7 +182,7 @@ update currentDate backendUrl accessToken user msg model =
                                                 Tuple.second accum
 
                                             ( newModel, newCmds, _ ) =
-                                                update currentDate backendUrl accessToken user (Subscribe childId) model
+                                                update currentDate backendUrl accessToken user language (Subscribe childId) model
                                         in
                                             ( newModel, [ newCmds ] ++ cmds )
                                     )
@@ -220,7 +221,7 @@ update currentDate backendUrl accessToken user msg model =
                         ( model, Cmd.none, Nothing )
 
         SetActivityTypeFilters activityTypeFilters ->
-            update currentDate backendUrl accessToken user (MsgPagesPatients <| Pages.Patients.Model.SetActivityTypeFilters activityTypeFilters) model
+            update currentDate backendUrl accessToken user language (MsgPagesPatients <| Pages.Patients.Model.SetActivityTypeFilters activityTypeFilters) model
 
 
 {-| A single port for all messages coming in from pusher for a `Patient` ... they
