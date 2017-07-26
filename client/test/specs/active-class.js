@@ -1,4 +1,5 @@
 'use strict';
+
 var assert = require('assert');
 
 describe('Testing the active class appearance', () => {
@@ -10,9 +11,8 @@ describe('Testing the active class appearance', () => {
   });
 
   it('Switching between sections', () => {
-    if (browser.isExisting('.column.active')) {
-      throw "The class active should not appear on the screen.";
-    }
+
+    assert.ok(!browser.isExisting('.column.active'), "The class active should not appear on the screen.");
 
     browser.click("a=Weight");
     browser.waitForVisible('//div[contains(@class, "column active")]//a[.="Weight"]');
