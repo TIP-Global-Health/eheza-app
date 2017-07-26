@@ -34,6 +34,9 @@ describe('The Photo form', () => {
     browser.addTestImage('Testfile2');
     // Validate the error by the class name.
     browser.checkImageBasename('.dropzone .dz-error > div.dz-image > img', 'Testfile2');
+
+    const actualErrorMessage = browser.getText('.dropzone .dz-error:nth-child(1) .dz-error-message span');
+    assert.equal(actualErrorMessage, 'You can not upload any more files.');
   });
 
 });
