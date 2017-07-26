@@ -2,7 +2,7 @@
 
 var assert = require('assert');
 
-describe('Testing the active class appearance', () => {
+describe('The Activity switcher icons at the Patient page', () => {
 
   before(() => {
     browser.loginAndViewPatientsPage('aya');
@@ -10,7 +10,7 @@ describe('Testing the active class appearance', () => {
     browser.visitChildWithTodoTasks();
   });
 
-  it('Switching between sections', () => {
+  it('should have active class upon selection', () => {
 
     assert.ok(!browser.isExisting('.column.active'), "The class active should not appear on the screen.");
 
