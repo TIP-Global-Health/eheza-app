@@ -78,4 +78,5 @@ emptyModel =
 type alias DropzoneConfig =
     { active : Bool
     , backendUrl : String
+    , defaultMessage : String
     }

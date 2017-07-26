@@ -48,6 +48,7 @@ type TranslationId
     | Children
     | Connected
     | Dashboard
+    | DropzoneDefaultMessage
     | ErrorBadUrl
     | ErrorBadPayload
     | ErrorBadStatus
@@ -173,7 +174,7 @@ translate lang trans =
                     { english = "Baby" }
 
                 BabyName name ->
-                    { english = "Baby:" ++ name }
+                    { english = "Baby: " ++ name }
 
                 CentimeterShorthand ->
                     { english = "cm" }
@@ -186,6 +187,9 @@ translate lang trans =
 
                 Dashboard ->
                     { english = "Dashboard" }
+
+                DropzoneDefaultMessage ->
+                    { english = "Touch here to take a photo, or drop a photo file here." }
 
                 ErrorBadUrl ->
                     { english = "URL is not valid." }
@@ -233,7 +237,7 @@ translate lang trans =
                     { english = "Mother" }
 
                 MotherName name ->
-                    { english = "Mother:" ++ name }
+                    { english = "Mother: " ++ name }
 
                 Mothers ->
                     { english = "Mothers" }

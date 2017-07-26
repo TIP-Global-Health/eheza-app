@@ -6,15 +6,19 @@ describe('The Photo form', () => {
     browser.login('aya');
     browser.waitForVisible('#patients-table');
 
-    // Proceeding to the patient where activities are pending.
-    browser.url('/#patient/41');
-    browser.waitUntil(() => browser.isVisible('.ui.header.mother'));
+    browser.visitChildWithTodoTasks();
 
     // Follow the photo form.
     browser.element('a=Photo').click();
   });
 
   after(() => browser.logout());
+
+  it('should display the default message of the dropzone', () => {
+    browser.waitForVisible('.dz-message');
+    const dzDefaultMessage = browser.getText('.dz-message span');
+    assert.equal(dzDefaultMessage, 'Touch here to take a photo, or drop a photo file here.', 'The default message of the dropzone is incorrect.');
+  });
 
   it('should not allow to Save without an image', () => {
     // The Save button is enabled.
