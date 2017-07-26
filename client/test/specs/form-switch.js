@@ -39,12 +39,16 @@ describe('assesment pages', () => {
         browser.click('#apathy');
         browser.click('#brittle-hair');
 
+        // Click save button.
+        browser.click('div.nutrition button');
+
         // Switching to Photo.
         browser.click('a=' + secondUsedTab);
         browser.waitForVisible('div=' + firstUsedTab + ':', 500, true);
         browser.waitForVisible('h3=' + secondUsedTab + ':');
 
         // Switching back to Nutrition Signs, check existence of the previous selection.
+        browser.click('#completed-tab');
         browser.click('a=' + firstUsedTab);
         assert(browser.isSelected('#apathy'), 'Apathy is still selected');
         assert(browser.isSelected('#brittle-hair'), 'Brittle Hair is still selected');
