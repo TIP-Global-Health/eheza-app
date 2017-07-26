@@ -17,10 +17,13 @@ describe('The measurement forms', () => {
     });
 
     it('should present the activities in the right order', () => {
+        // The expected order of the Activities.
         let activities = ['Photo', 'Weight', 'Height', 'MUAC', 'Nutrition signs'];
         let position = 1;
         for (let activity of activities) {
-            assert.equal(browser.getText('.grid.pending div:nth-child(' + position++ + ') a'), activity);
+            // Checks the order of the Activities at the To Do activity selector, one by one.
+            assert.equal(browser.getText('.grid.pending div:nth-child(' + position + ') a'), activity);
+            position++;
         }
     });
 
