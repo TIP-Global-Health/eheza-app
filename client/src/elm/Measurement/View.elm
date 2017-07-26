@@ -13,7 +13,7 @@ import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Maybe.Extra exposing (isJust)
-import Measurement.Model exposing (EveryDictChildNutritionSign, FloatInput, FloatMeasurements(..), Model, Msg(..), getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
+import Measurement.Model exposing (EveryDictChildNutritionSign, FileId, FloatInput, FloatMeasurements(..), Model, Msg(..), Photo, PhotoId, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import User.Model exposing (..)
@@ -142,6 +142,20 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
             ]
 
 
+{-| Show a photo thumbnail, if it exists.
+-}
+viewPhotoThumb : ( Maybe FileId, Maybe ( PhotoId, Photo ) ) -> Html Msg
+viewPhotoThumb maybePhoto =
+    showMaybe <|
+        Maybe.map
+            (\( _, photo ) ->
+                div []
+                    [ img [ src photo.url, class "ui small image" ] []
+                    ]
+            )
+            (Tuple.second maybePhoto)
+
+
 viewPreviousMeasurement : Language -> FloatMeasurements -> Maybe ExaminationChild -> Html Msg
 viewPreviousMeasurement language floatMeasurement maybePreviousExamination =
     case maybePreviousExamination of
@@ -238,8 +252,8 @@ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType
 viewPhoto : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
 viewPhoto backendUrl accessToken user language ( childId, child ) model =
     let
-        hasPhoto =
-            (model.photo > 0)
+        hasFileId =
+            isJust <| Tuple.first model.photo
     in
         div []
             [ divider
@@ -253,6 +267,7 @@ viewPhoto backendUrl accessToken user language ( childId, child ) model =
                 , p
                     []
                     [ text <| translate language Trans.ActivitiesPhotoHelp ]
+                , viewPhotoThumb model.photo
                 , div
                     [ class "dropzone" ]
                     []
@@ -263,12 +278,12 @@ viewPhoto backendUrl accessToken user language ( childId, child ) model =
                             [ button
                                 [ classList
                                     [ ( "ui fluid basic button retake", True )
-                                    , ( "disabled", not hasPhoto )
+                                    , ( "disabled", not hasFileId )
                                     ]
                                 ]
                                 [ text <| translate language Trans.Retake ]
                             ]
-                        , saveButton language PhotoSave model hasPhoto (Just "column")
+                        , saveButton language PhotoSave model hasFileId (Just "column")
                         ]
                     ]
                 ]
