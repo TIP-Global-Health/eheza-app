@@ -56,10 +56,12 @@ type TranslationId
     | ErrorConfigurationError
     | ErrorNetworkError
     | ErrorTimeout
+    | Gained
     | KilogramShorthand
     | LinkToMother
     | Login
     | Logout
+    | Lost
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
@@ -77,7 +79,7 @@ type TranslationId
     | Patients
     | PlaceholderTextGroupDate
     | PlaceholderTextJoined
-    | PriorWeight Float
+    | PreviousFloatMeasurement Float
     | ReportRemaining Int
     | ReloadPatient
     | Retake
@@ -215,6 +217,9 @@ translate lang trans =
                 KilogramShorthand ->
                     { english = "kg" }
 
+                Gained ->
+                    { english = "Gained" }
+
                 LinkToMother ->
                     { english = "Link to mother" }
 
@@ -223,6 +228,9 @@ translate lang trans =
 
                 Logout ->
                     { english = "Logout" }
+
+                Lost ->
+                    { english = "Lost" }
 
                 MeasurementNoChange ->
                     { english = "No Change" }
@@ -275,8 +283,8 @@ translate lang trans =
                 PlaceholderTextJoined ->
                     { english = "Joined in June 2017" }
 
-                PriorWeight value ->
-                    { english = "Previous weight: " ++ (toString value) ++ " kg" }
+                PreviousFloatMeasurement value ->
+                    { english = "Previous measurement: " ++ (toString value) }
 
                 ReportRemaining remaining ->
                     { english = toString remaining ++ " remaning" }

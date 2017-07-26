@@ -10,6 +10,8 @@ import Child.Model exposing (Child, ChildId)
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict
+import Examination.Model exposing (ExaminationChild)
+import Examination.Utils exposing (getLastExaminationFromChild)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
@@ -85,7 +87,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                     [ viewActivityCards language currentDate currentUser patients Children model.selectedTab model.selectedActivity
                     ]
                 ]
-            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) model.selectedActivity model.measurements
+            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
             ]
 
 

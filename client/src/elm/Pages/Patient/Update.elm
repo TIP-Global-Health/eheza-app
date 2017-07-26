@@ -1,21 +1,27 @@
 port module Pages.Patient.Update exposing (update, subscriptions)
 
-import Activity.Model exposing (ActivityType(Child), ChildActivityType(ChildPicture))
+import Activity.Model exposing (ActivityType(Child), ChildActivityType(..))
 import App.Model exposing (DropzoneConfig)
 import App.PageType exposing (Page(..))
+import Child.Model exposing (Child)
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
+import Editable
+import EveryDictList
+import Examination.Model exposing (emptyExaminationChild)
 import Maybe.Extra exposing (isJust)
+import Measurement.Model as Measurement exposing (Msg(..))
 import Measurement.Update
 import Pages.Patient.Model exposing (Model, Msg(..))
 import Pages.Patient.Utils exposing (updateActivityDate)
+import Patient.Model exposing (Patient, PatientId, PatientType(..))
 import Pusher.Model exposing (PusherEventData(..))
-import Patient.Model exposing (Patient, PatientId)
 import Translate as Trans exposing (Language, translate)
 import User.Model exposing (..)
+import Utils.EditableWebData as EditableWebData
 
 
-update : Date -> BackendUrl -> String -> User -> Language -> Msg -> ( PatientId, Patient ) -> Model -> ( Patient, Model, Cmd Msg, Maybe Page )
+update : Date -> BackendUrl -> String -> User -> Language -> Pages.Patient.Model.Msg -> ( PatientId, Patient ) -> Model -> ( Patient, Model, Cmd Pages.Patient.Model.Msg, Maybe Page )
 update currentDate backendUrl accessToken user language msg ( patientId, patient ) model =
     case msg of
         HandlePusherEventData event ->
@@ -89,7 +95,7 @@ update currentDate backendUrl accessToken user language msg ( patientId, patient
 
 {-| Activate the dropzone on a specific activity type.
 -}
-setDropzone : String -> Language -> Maybe ActivityType -> Cmd Msg
+setDropzone : String -> Language -> Maybe ActivityType -> Cmd Pages.Patient.Model.Msg
 setDropzone backendUrl language activity =
     let
         isActive =
@@ -109,7 +115,7 @@ setDropzone backendUrl language activity =
         dropzoneConfig config
 
 
-subscriptions : Model -> Sub Msg
+subscriptions : Model -> Sub Pages.Patient.Model.Msg
 subscriptions model =
     Sub.map MsgMeasurement <| Measurement.Update.subscriptions model.measurements
 

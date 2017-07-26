@@ -6,6 +6,7 @@ import Json.Decode exposing (decodeString)
 import Patient.Model exposing (PatientType(..))
 import Pusher.Decoder exposing (..)
 import Pusher.Model exposing (..)
+import RemoteData exposing (RemoteData(NotAsked))
 import Test exposing (Test, describe, test)
 
 
@@ -24,7 +25,6 @@ decodeTest =
       "id" : "100",
       "label" : "new-patient",
       "mother": "7",
-      "lastExamination": "8",
       "date_picture": null,
       "date_height" : null,
       "date_muac" : null,
@@ -43,8 +43,9 @@ decodeTest =
                                     PatientChild
                                         { name = "new-patient"
                                         , image = "https://placehold.it/200x200"
-                                        , lastExamination = Just 8
                                         , motherId = Just 7
+                                        , examinations = NotAsked
+                                        , selectedExamination = Nothing
                                         , activityDates = emptyChildActivityDates
                                         }
                                 }
