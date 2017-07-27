@@ -254,6 +254,12 @@ viewPhoto backendUrl accessToken user language ( childId, child ) model =
     let
         hasFileId =
             isJust <| Tuple.first model.photo
+
+        handleClick =
+            if hasFileId then
+                [ onClick ResetDropZone ]
+            else
+                []
     in
         div []
             [ divider
@@ -276,12 +282,13 @@ viewPhoto backendUrl accessToken user language ( childId, child ) model =
                         [ div
                             [ class "column" ]
                             [ button
-                                [ classList
+                                ([ classList
                                     [ ( "ui fluid basic button retake", True )
                                     , ( "disabled", not hasFileId )
                                     ]
-                                , onClick ResetDropZone
-                                ]
+                                 ]
+                                    ++ handleClick
+                                )
                                 [ text <| translate language Trans.Retake ]
                             ]
                         , saveButton language PhotoSave model hasFileId (Just "column")
