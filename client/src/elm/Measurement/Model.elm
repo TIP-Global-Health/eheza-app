@@ -50,6 +50,7 @@ type Msg
     | NutritionSignsToggle ChildNutritionSign
     | NutritionSignsSave
     | PhotoSave
+    | ResetDropZone
     | WeightSave
     | WeightUpdate Float
 

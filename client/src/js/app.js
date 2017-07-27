@@ -74,6 +74,12 @@ elmApp.ports.dropzoneConfig.subscribe(function(config) {
     waitForElement('.dropzone', attachDropzone, config);
 });
 
+elmApp.ports.dropzoneReset.subscribe(function() {
+  if (typeof dropZone != 'undefined') {
+      dropZone.removeAllFiles(true);
+  }
+})
+
 function attachDropzone(selector, config) {
     // Validate dropzone should be active.
     if (!config.active) {

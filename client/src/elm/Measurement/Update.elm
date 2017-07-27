@@ -95,6 +95,9 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
         PhotoSave ->
             postPhoto backendUrl accessToken patientId model
 
+        ResetDropZone ->
+            ( model, dropzoneReset (), Nothing )
+
         WeightSave ->
             postWeight backendUrl accessToken patientId model
 
@@ -176,3 +179,8 @@ subscriptions model =
 {-| Get a singal if a file has been uploaded via the Dropzone.
 -}
 port dropzoneUploadedFile : (Int -> msg) -> Sub msg
+
+
+{-| Cause the drop zone widget to clear it's image
+-}
+port dropzoneReset : () -> Cmd msg
