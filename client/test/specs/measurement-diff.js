@@ -61,14 +61,14 @@ describe('when updating a measurement form', function() {
     adjustFormValue(50);
     waitForGainedIndication();
     const result = getDiffFromGainedIndication();
-    assert.equal(result, 'Gained\n46 kg', 'Indication for the gained weight is incorrect.');
+    assert.equal(result, '46 kg', 'Indication for the gained weight is incorrect.');
   })
 
   it('should display an indication when weight is lost', () => {
     adjustFormValue(1);
     waitForLostIndication();
     const result = getDiffFromLostIndication();
-    assert.equal(result, 'Lost\n3 kg', 'Indication for the lost weight is incorrect.');
+    assert.equal(result, '3 kg', 'Indication for the lost weight is incorrect.');
   })
 
   it('should display an indication when height is gained', () => {
@@ -81,14 +81,14 @@ describe('when updating a measurement form', function() {
     adjustFormValue(100);
     waitForGainedIndication();
     const result = getDiffFromGainedIndication();
-    assert.equal(result, 'Gained\n50 cm', 'Indication for the gained height is incorrect.');
+    assert.equal(result, '50 cm', 'Indication for the gained height is incorrect.');
   })
 
   it('should display an indication when height is lost', () => {
     adjustFormValue(10);
     waitForLostIndication();
     const result = getDiffFromLostIndication();
-    assert.equal(result, 'Lost\n40 cm', 'Indication for the lost height is incorrect.');
+    assert.equal(result, '40 cm', 'Indication for the lost height is incorrect.');
   })
 
   it('should display an indication when MUAC is gained', () => {
@@ -101,14 +101,14 @@ describe('when updating a measurement form', function() {
     adjustFormValue(50);
     waitForGainedIndication();
     const result = getDiffFromGainedIndication();
-    assert.equal(result, 'Gained\n37 cm', 'Indication for the gained MUAC is incorrect.');
+    assert.equal(result, '37 cm', 'Indication for the gained MUAC is incorrect.');
   })
 
   it('should display an indication when MUAC is lost', () => {
     adjustFormValue(5);
     waitForLostIndication();
     const result = getDiffFromLostIndication();
-    assert.equal(result, 'Lost\n8 cm', 'Indication for the lost MUAC is incorrect.');
+    assert.equal(result, '8 cm', 'Indication for the lost MUAC is incorrect.');
   })
 
   after(() => browser.logout());
