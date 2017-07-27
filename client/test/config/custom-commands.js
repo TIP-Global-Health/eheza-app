@@ -54,9 +54,6 @@ module.exports = function (browser, capabilities, specs) {
    * @param {filename} filename The name for the added file.
    */
   browser.addCommand('addTestImage', (filename) => {
-      // Make sure the dropzone is integrated.
-      browser.waitForVisible('.dz-clickable');
-
       // Based on http://blog.fermium.io/how-to-send-files-to-a-dropzone-js-element-in-selenium/
       browser.execute(
         "var myZone, blob, base64Image; myZone = Dropzone.forElement('div.dropzone');" +
@@ -71,7 +68,7 @@ module.exports = function (browser, capabilities, specs) {
         "myZone.addFile(blob);"
       );
 
-      browser.waitForVisible('.dz-preview.dz-processing.dz-image-preview.dz-success.dz-complete');
+      browser.waitForVisible('.dz-preview.dz-image-preview.dz-complete');
   });
 
   /**

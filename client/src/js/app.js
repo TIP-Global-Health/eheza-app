@@ -130,6 +130,7 @@ function attachDropzone(selector, config) {
 
     dropZone = new Dropzone(selector, {
         dictDefaultMessage: config.defaultMessage,
+        maxFiles: 1,
         url: url
     });
 

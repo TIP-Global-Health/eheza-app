@@ -3,11 +3,8 @@ const assert = require('assert');
 
 describe('The Photo form', () => {
   before(() => {
-    browser.login('aya');
-    browser.waitForVisible('#patients-table');
-
+    browser.loginAndViewPatientsPage('aya');
     browser.visitChildWithTodoTasks();
-
     // Follow the photo form.
     browser.element('a=Photo').click();
   });
@@ -36,6 +33,12 @@ describe('The Photo form', () => {
     // Add and then check the image.
     browser.addTestImage('Testfile1');
     browser.checkImageBasename('.dropzone .dz-complete > div.dz-image:nth-child(1) img', 'Testfile1');
+  });
+
+  it('should not allow to upload more than one image to the dropzone', () => {
+    browser.addTestImage('Testfile2');
+    // Validate the error by the class name.
+    browser.checkImageBasename('.dropzone .dz-error > div.dz-image > img', 'Testfile2');
   });
 
 });
