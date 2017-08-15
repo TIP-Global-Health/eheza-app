@@ -99,7 +99,7 @@ module.exports = function (browser, capabilities, specs) {
     // The first Child is also special, it has all the dates
     // in the past for activities.
     // @see server/scripts/helper-functions.sh
-    browser.url('/#patient/41');
+    browser.url('/#participant/41');
     browser.waitForVisible('.ui.tasks.segment');
   });
 

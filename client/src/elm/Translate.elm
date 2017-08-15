@@ -252,7 +252,7 @@ translate lang trans =
                     { english = "No children registered in the system" }
 
                 NoPatientsFound ->
-                    { english = "No patients found" }
+                    { english = "No participants found" }
 
                 NotConnected ->
                     { english = "Not Connected" }
@@ -267,7 +267,7 @@ translate lang trans =
                     { english = "Password" }
 
                 Patients ->
-                    { english = "Patients" }
+                    { english = "Participants" }
 
                 PlaceholderTextGroupDate ->
                     { english = "Group Date" }
@@ -282,7 +282,7 @@ translate lang trans =
                     { english = toString remaining ++ " remaning" }
 
                 ReloadPatient ->
-                    { english = "Re-load Patient" }
+                    { english = "Re-load Participant" }
 
                 Retake ->
                     { english = "Retake" }
