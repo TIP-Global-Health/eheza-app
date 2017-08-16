@@ -44,7 +44,8 @@ type alias Photo =
 
 
 type Msg
-    = FamilyPlanningSignsToggle FamilyPlanningSign
+    = FamilyPlanningSignsSave
+    | FamilyPlanningSignsToggle FamilyPlanningSign
     | HandleDropzoneUploadedFile Int
     | HandlePhotoSave (Result Http.Error ( PhotoId, Photo ))
     | HandleWeightSave (Result Http.Error ())

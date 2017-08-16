@@ -20,6 +20,12 @@ import Utils.WebData exposing (sendWithHandler)
 update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
 update backendUrl accessToken user ( patientId, patient ) msg model =
     case msg of
+        FamilyPlanningSignsSave ->
+            ( model
+            , Cmd.none
+            , Nothing
+            )
+
         FamilyPlanningSignsToggle sign ->
             let
                 signsUpdated =
