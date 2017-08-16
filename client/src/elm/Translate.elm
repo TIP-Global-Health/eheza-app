@@ -20,6 +20,15 @@ type TranslationId
     = AccessDenied
     | Activities
     | ActivitiesCompleted Int
+    | ActivitiesFamilyPlanningSignsCondomsLabel
+    | ActivitiesFamilyPlanningSignsHelp
+    | ActivitiesFamilyPlanningSignsIUDLabel
+    | ActivitiesFamilyPlanningSignsInjectionLabel
+    | ActivitiesFamilyPlanningSignsLabel
+    | ActivitiesFamilyPlanningSignsNecklaceLabel
+    | ActivitiesFamilyPlanningSignsNoneLabel
+    | ActivitiesFamilyPlanningSignsTitle
+    | ActivitiesFamilyPlanningSignsPillLabel
     | ActivitiesHeightHelp
     | ActivitiesHeightLabel
     | ActivitiesHeightTitle
@@ -103,6 +112,33 @@ translate lang trans =
 
                 ActivitiesCompleted count ->
                     { english = "Completed (" ++ toString count ++ ")" }
+
+                ActivitiesFamilyPlanningSignsCondomsLabel ->
+                    { english = "Condoms" }
+
+                ActivitiesFamilyPlanningSignsHelp ->
+                    { english = "Every mother should be asked about her family planing method(s) each month. If a mother needs family planning, refer her to a clinic." }
+
+                ActivitiesFamilyPlanningSignsIUDLabel ->
+                    { english = "IUD" }
+
+                ActivitiesFamilyPlanningSignsInjectionLabel ->
+                    { english = "Injection" }
+
+                ActivitiesFamilyPlanningSignsLabel ->
+                    { english = "Which, if any, of the following methods do you use?" }
+
+                ActivitiesFamilyPlanningSignsNecklaceLabel ->
+                    { english = "Necklace" }
+
+                ActivitiesFamilyPlanningSignsNoneLabel ->
+                    { english = "None of these" }
+
+                ActivitiesFamilyPlanningSignsTitle ->
+                    { english = "FamilyPlanning:" }
+
+                ActivitiesFamilyPlanningSignsPillLabel ->
+                    { english = "Pill" }
 
                 ActivitiesHeightHelp ->
                     { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight." }

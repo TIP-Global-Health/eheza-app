@@ -26,6 +26,15 @@ type MotherActivityType
     | MotherPicture
 
 
+type FamilyPlanningSign
+    = Condoms
+    | IUD
+    | Injection
+    | Necklace
+    | NoFamilyPlanningSign
+    | Pill
+
+
 type ChildNutritionSign
     = AbdominalDisortion
     | Apathy
