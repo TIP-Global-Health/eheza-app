@@ -153,7 +153,7 @@ viewMother language currentDate currentUser motherId mother children model =
                 ]
             , div [ class "ui segment" ]
                 [ div []
-                    [ viewActivityCards language currentDate currentUser patients Children model.selectedTab model.selectedActivity
+                    [ viewActivityCards language currentDate currentUser patients Mothers model.selectedTab model.selectedActivity
                     ]
                 ]
             ]
