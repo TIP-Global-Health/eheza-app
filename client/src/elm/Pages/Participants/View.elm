@@ -1,4 +1,4 @@
-module Pages.Patients.View exposing (view)
+module Pages.Participants.View exposing (view)
 
 import Activity.Model exposing (ActivityType)
 import Activity.Utils exposing (getPendingNumberPerActivity)
@@ -9,44 +9,44 @@ import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
-import Pages.Patients.Model exposing (Model, Msg(..))
-import Patient.Model exposing (Patient, PatientId, PatientType(..), PatientTypeFilter(..), PatientsDict)
-import Patient.Utils exposing (getPatientAvatarThumb, getPatientName, getPatientTypeAsString)
-import Patient.View exposing (viewPatientTypeFilter)
+import Pages.Participants.Model exposing (Model, Msg(..))
+import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
+import Participant.Utils exposing (getParticipantAvatarThumb, getParticipantName, getParticipantTypeAsString)
+import Participant.View exposing (viewParticipantTypeFilter)
 import Table exposing (..)
 import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
 
 
-view : Language -> Date -> User -> PatientsDict -> Model -> Html Msg
-view language currentDate currentUser patients model =
+view : Language -> Date -> User -> ParticipantsDict -> Model -> Html Msg
+view language currentDate currentUser participants model =
     let
         lowerQuery =
             String.toLower model.query
 
-        acceptablePatients =
+        acceptableParticipants =
             Dict.filter
-                (\patientId patient ->
+                (\participantId participant ->
                     let
                         validName =
-                            String.contains lowerQuery (String.toLower <| getPatientName patient)
+                            String.contains lowerQuery (String.toLower <| getParticipantName participant)
 
                         validType =
-                            case model.patientTypeFilter of
+                            case model.participantTypeFilter of
                                 All ->
                                     True
 
                                 Children ->
-                                    case patient.info of
-                                        PatientChild _ ->
+                                    case participant.info of
+                                        ParticipantChild _ ->
                                             True
 
                                         _ ->
                                             False
 
                                 Mothers ->
-                                    case patient.info of
-                                        PatientMother _ ->
+                                    case participant.info of
+                                        ParticipantMother _ ->
                                             True
 
                                         _ ->
@@ -61,44 +61,44 @@ view language currentDate currentUser patients model =
                                     then
                                         True
                                     else
-                                        getPendingNumberPerActivity currentDate activityType (Dict.insert patientId patient Dict.empty) > 0
+                                        getPendingNumberPerActivity currentDate activityType (Dict.insert participantId participant Dict.empty) > 0
                                 )
                                 False
                                 model.activityTypeFilter
                     in
                         validName && validType && validActivityTypeFilter
                 )
-                patients
+                participants
                 |> Dict.toList
 
         searchResult =
-            if List.isEmpty acceptablePatients then
-                if Dict.isEmpty patients then
-                    -- No patients are present, so it means we are fethcing
+            if List.isEmpty acceptableParticipants then
+                if Dict.isEmpty participants then
+                    -- No participants are present, so it means we are fethcing
                     -- them.
                     div [] []
                 else
-                    div [ class "ui segment" ] [ text <| translate language Trans.NoPatientsFound ]
+                    div [ class "ui segment" ] [ text <| translate language Trans.NoParticipantsFound ]
             else
-                Table.view config model.tableState acceptablePatients
+                Table.view config model.tableState acceptableParticipants
     in
         div []
-            [ h1 [] [ text <| translate language Trans.Patients ]
+            [ h1 [] [ text <| translate language Trans.Participants ]
             , div [ class "ui input" ]
                 [ input
                     [ placeholder <| translate language Trans.SearchByName
                     , onInput SetQuery
                     ]
                     []
-                , viewPatientTypeFilter language SetPatientTypeFilter model.patientTypeFilter
+                , viewParticipantTypeFilter language SetParticipantTypeFilter model.participantTypeFilter
                 ]
-            , viewActivityTypeFilterWrapper language model.patientTypeFilter model.activityTypeFilter
+            , viewActivityTypeFilterWrapper language model.participantTypeFilter model.activityTypeFilter
             , searchResult
             ]
 
 
-viewActivityTypeFilterWrapper : Language -> PatientTypeFilter -> List ActivityType -> Html Msg
-viewActivityTypeFilterWrapper language patientTypeFilter activityTypeFilter =
+viewActivityTypeFilterWrapper : Language -> ParticipantTypeFilter -> List ActivityType -> Html Msg
+viewActivityTypeFilterWrapper language participantTypeFilter activityTypeFilter =
     let
         childTypeFilters =
             [ div [ class "six wide column" ]
@@ -117,7 +117,7 @@ viewActivityTypeFilterWrapper language patientTypeFilter activityTypeFilter =
         wrapperClasses =
             class "ui grid activity-type-filter"
     in
-        case patientTypeFilter of
+        case participantTypeFilter of
             All ->
                 div [ wrapperClasses ] (childTypeFilters ++ motherTypeFilters)
 
@@ -128,28 +128,28 @@ viewActivityTypeFilterWrapper language patientTypeFilter activityTypeFilter =
                 div [ wrapperClasses ] motherTypeFilters
 
 
-config : Table.Config ( PatientId, Patient ) Msg
+config : Table.Config ( ParticipantId, Participant ) Msg
 config =
     Table.customConfig
-        { toId = (\( patientId, _ ) -> toString patientId)
+        { toId = (\( participantId, _ ) -> toString participantId)
         , toMsg = SetTableState
         , columns =
             [ Table.veryCustomColumn
                 { name = "Name"
                 , viewData =
-                    \( patientId, patient ) ->
+                    \( participantId, participant ) ->
                         Table.HtmlDetails []
                             [ a
                                 [ href "#"
-                                , onClick <| SetRedirectPage <| App.PageType.Patient patientId
-                                , class (getPatientTypeAsString patient)
+                                , onClick <| SetRedirectPage <| App.PageType.Participant participantId
+                                , class (getParticipantTypeAsString participant)
                                 ]
-                                [ img [ src <| getPatientAvatarThumb patient, class "ui avatar image" ] []
-                                , text <| getPatientName patient
+                                [ img [ src <| getParticipantAvatarThumb participant, class "ui avatar image" ] []
+                                , text <| getParticipantName participant
                                 ]
                             ]
-                , sorter = Table.increasingOrDecreasingBy <| Tuple.second >> getPatientName
+                , sorter = Table.increasingOrDecreasingBy <| Tuple.second >> getParticipantName
                 }
             ]
-        , customizations = { defaultCustomizations | tableAttrs = [ class "ui celled table", id "patients-table" ] }
+        , customizations = { defaultCustomizations | tableAttrs = [ class "ui celled table", id "participants-table" ] }
         }

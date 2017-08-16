@@ -1,17 +1,17 @@
-module Pages.Patient.Utils exposing (..)
+module Pages.Participant.Utils exposing (..)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Date exposing (Date)
-import Patient.Model exposing (Patient, PatientId, PatientType(..), PatientsDict)
+import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantsDict)
 
 
 {-| Model update helper which applies the provided date to the specified activity type field in the
-provided patient while ensuring proper Mother / Child and activity mapping type safety
+provided participant while ensuring proper Mother / Child and activity mapping type safety
 -}
-updateActivityDate : Date -> ActivityType -> Patient -> Patient
-updateActivityDate date activityType patient =
-    case ( activityType, patient.info ) of
-        ( Child childActivityType, PatientChild child ) ->
+updateActivityDate : Date -> ActivityType -> Participant -> Participant
+updateActivityDate date activityType participant =
+    case ( activityType, participant.info ) of
+        ( Child childActivityType, ParticipantChild child ) ->
             let
                 activityDates =
                     child.activityDates
@@ -36,9 +36,9 @@ updateActivityDate date activityType patient =
                         Weight ->
                             { activityDates | weight = Just date }
             in
-                { info = PatientChild { child | activityDates = updatedActivityDates } }
+                { info = ParticipantChild { child | activityDates = updatedActivityDates } }
 
-        ( Mother motherActivityType, PatientMother mother ) ->
+        ( Mother motherActivityType, ParticipantMother mother ) ->
             let
                 activityDates =
                     mother.activityDates
@@ -63,8 +63,8 @@ updateActivityDate date activityType patient =
                         MotherPicture ->
                             { activityDates | motherPicture = Just date }
             in
-                { info = PatientMother { mother | activityDates = updatedActivityDates } }
+                { info = ParticipantMother { mother | activityDates = updatedActivityDates } }
 
         -- This should never be reached as it would imply a Child activity being applied to a Mother or vica versa
         ( _, _ ) ->
-            patient
+            participant

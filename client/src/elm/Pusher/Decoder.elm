@@ -3,8 +3,8 @@ module Pusher.Decoder exposing (decodePusherEvent)
 import Json.Decode as Json exposing (Decoder, andThen, at, fail, field, int, map, map2, string)
 import Json.Decode.Pipeline exposing (custom, decode, optional, required, requiredAt)
 import Pusher.Model exposing (..)
-import Patient.Decoder exposing (decodePatient)
-import Patient.Model exposing (Patient)
+import Participant.Decoder exposing (decodeParticipant)
+import Participant.Model exposing (Participant)
 import Utils.Json exposing (decodeInt)
 
 
@@ -22,13 +22,13 @@ decodePusherEventData =
             (\type_ ->
                 case type_ of
                     "patient__update" ->
-                        map PatientUpdate decodePatientUpdateData
+                        map ParticipantUpdate decodeParticipantUpdateData
 
                     _ ->
                         fail (type_ ++ " is not a recognized 'type' for PusherEventData.")
             )
 
 
-decodePatientUpdateData : Decoder Patient
-decodePatientUpdateData =
-    field "data" decodePatient
+decodeParticipantUpdateData : Decoder Participant
+decodeParticipantUpdateData =
+    field "data" decodeParticipant

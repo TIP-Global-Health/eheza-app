@@ -7,7 +7,7 @@ var chance = new Chance();
 describe('The measurement forms', () => {
 
     before(() => {
-        browser.loginAndViewPatientsPage('aya');
+        browser.loginAndViewParticipantsPage('aya');
 
         browser.visitChildWithTodoTasks();
 

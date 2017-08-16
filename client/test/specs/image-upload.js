@@ -3,7 +3,7 @@ const assert = require('assert');
 
 describe('The Photo form', () => {
   before(() => {
-    browser.loginAndViewPatientsPage('aya');
+    browser.loginAndViewParticipantsPage('aya');
     browser.visitChildWithTodoTasks();
     // Follow the photo form.
     browser.element('a=Photo').click();

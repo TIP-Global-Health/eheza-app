@@ -69,17 +69,17 @@ type TranslationId
     | MyAccount
     | NoActiveIncidents
     | NoChildrenRegisteredInTheSystem
-    | NoPatientsFound
+    | NoParticipantsFound
     | NotConnected
     | Page404
     | PageNotFoundMsg
     | Password
-    | Patients
+    | Participants
     | PlaceholderTextGroupDate
     | PlaceholderTextJoined
     | PreviousFloatMeasurement Float
     | ReportRemaining Int
-    | ReloadPatient
+    | ReloadParticipant
     | Retake
     | Retry
     | Save
@@ -251,7 +251,7 @@ translate lang trans =
                 NoChildrenRegisteredInTheSystem ->
                     { english = "No children registered in the system" }
 
-                NoPatientsFound ->
+                NoParticipantsFound ->
                     { english = "No participants found" }
 
                 NotConnected ->
@@ -266,7 +266,7 @@ translate lang trans =
                 Password ->
                     { english = "Password" }
 
-                Patients ->
+                Participants ->
                     { english = "Participants" }
 
                 PlaceholderTextGroupDate ->
@@ -281,7 +281,7 @@ translate lang trans =
                 ReportRemaining remaining ->
                     { english = toString remaining ++ " remaning" }
 
-                ReloadPatient ->
+                ReloadParticipant ->
                     { english = "Re-load Participant" }
 
                 Retake ->

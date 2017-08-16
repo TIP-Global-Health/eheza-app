@@ -1,21 +1,21 @@
-module Patient.View
+module Participant.View
     exposing
-        ( viewPatientTypeFilter
+        ( viewParticipantTypeFilter
         )
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
-import Patient.Model exposing (PatientTypeFilter(..))
+import Participant.Model exposing (ParticipantTypeFilter(..))
 import Translate as Trans exposing (translate, Language)
 
 
-viewPatientTypeFilter : Language -> (String -> msg) -> PatientTypeFilter -> Html msg
-viewPatientTypeFilter language msg patientTypeFilter =
+viewParticipantTypeFilter : Language -> (String -> msg) -> ParticipantTypeFilter -> Html msg
+viewParticipantTypeFilter language msg participantTypeFilter =
     div []
         [ select
             [ class "ui dropdown"
-            , value <| toString patientTypeFilter
+            , value <| toString participantTypeFilter
             , onInput msg
             ]
             (List.map

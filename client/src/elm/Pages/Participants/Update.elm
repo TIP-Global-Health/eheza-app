@@ -1,10 +1,10 @@
-module Pages.Patients.Update exposing (update, urlFragment)
+module Pages.Participants.Update exposing (update, urlFragment)
 
 import Activity.Encoder exposing (encodeActivityType)
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
-import Pages.Patients.Model exposing (Model, Msg(..))
-import Patient.Model exposing (PatientTypeFilter(..), PatientsDict)
+import Pages.Participants.Model exposing (Model, Msg(..))
+import Participant.Model exposing (ParticipantTypeFilter(..), ParticipantsDict)
 import User.Model exposing (..)
 
 
@@ -23,8 +23,8 @@ urlFragment model =
            )
 
 
-update : BackendUrl -> String -> User -> Msg -> PatientsDict -> Model -> ( Model, Cmd Msg, Maybe Page )
-update backendUrl accessToken user msg patients model =
+update : BackendUrl -> String -> User -> Msg -> ParticipantsDict -> Model -> ( Model, Cmd Msg, Maybe Page )
+update backendUrl accessToken user msg participants model =
     case msg of
         SetActivityTypeFilter activityType isChecked ->
             let
@@ -45,19 +45,19 @@ update backendUrl accessToken user msg patients model =
             , Nothing
             )
 
-        SetPatientTypeFilter patientTypeFilterString ->
+        SetParticipantTypeFilter participantTypeFilterString ->
             let
-                patientTypeFilter =
-                    if patientTypeFilterString == "All" then
+                participantTypeFilter =
+                    if participantTypeFilterString == "All" then
                         All
-                    else if patientTypeFilterString == "Children" then
+                    else if participantTypeFilterString == "Children" then
                         Children
-                    else if patientTypeFilterString == "Mothers" then
+                    else if participantTypeFilterString == "Mothers" then
                         Mothers
                     else
-                        model.patientTypeFilter
+                        model.participantTypeFilter
             in
-                ( { model | patientTypeFilter = patientTypeFilter }
+                ( { model | participantTypeFilter = participantTypeFilter }
                 , Cmd.none
                 , Nothing
                 )

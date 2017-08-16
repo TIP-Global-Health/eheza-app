@@ -3,25 +3,25 @@ module Pages.Dashboard.View exposing (view)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Patient.Model exposing (Patient, PatientId)
+import Participant.Model exposing (Participant, ParticipantId)
 import Translated as Trans exposing (translate, Language)
 import User.Model exposing (User)
 
 
-view : Language -> User -> PatientsDict -> Html Msg
-view language currentUser patients =
+view : Language -> User -> ParticipantsDict -> Html Msg
+view language currentUser participants =
     div []
         [ h1 [ class "ui header" ] [ text <| translate language Trans.Dashboard ]
         , div [ class "ui divider" ] []
-        , viewActiveIncidents language patients
+        , viewActiveIncidents language participants
         ]
 
 
-viewActiveIncidents : Language -> PatientsDict -> Html Msg
-viewActiveIncidents language patients =
+viewActiveIncidents : Language -> ParticipantsDict -> Html Msg
+viewActiveIncidents language participants =
     let
         orderedIncidentes =
-            getOrderedIncidents patients
+            getOrderedIncidents participants
     in
         -- @todo: Filter out
         if (List.isEmpty orderedIncidentes) then
@@ -32,8 +32,8 @@ viewActiveIncidents language patients =
         else
             div [ class "ui cards" ]
                 (List.map
-                    (\{ patientId, patient, incidentId, incident } ->
-                        Html.map (MsgIncident patientId incidentId) (Incident.View.view language ( patientId, patient ) ( incidentId, incident ) IncidentViewFull)
+                    (\{ participantId, participant, incidentId, incident } ->
+                        Html.map (MsgIncident participantId incidentId) (Incident.View.view language ( participantId, participant ) ( incidentId, incident ) IncidentViewFull)
                     )
                     orderedIncidentes
                 )

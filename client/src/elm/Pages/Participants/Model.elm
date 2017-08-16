@@ -1,15 +1,15 @@
-module Pages.Patients.Model exposing (..)
+module Pages.Participants.Model exposing (..)
 
 import Activity.Model exposing (ActivityType)
 import Activity.Utils exposing (getActivityTypeList)
 import App.PageType exposing (Page(..))
-import Patient.Model exposing (PatientTypeFilter(..))
+import Participant.Model exposing (ParticipantTypeFilter(..))
 import Table
 
 
 type alias Model =
     { activityTypeFilter : List ActivityType
-    , patientTypeFilter : PatientTypeFilter
+    , participantTypeFilter : ParticipantTypeFilter
     , query : String
     , tableState : Table.State
     }
@@ -18,7 +18,7 @@ type alias Model =
 type Msg
     = SetActivityTypeFilter ActivityType Bool
     | SetActivityTypeFilters (List ActivityType)
-    | SetPatientTypeFilter String
+    | SetParticipantTypeFilter String
     | SetRedirectPage Page
     | SetTableState Table.State
     | SetQuery String
@@ -27,7 +27,7 @@ type Msg
 emptyModel : Model
 emptyModel =
     { activityTypeFilter = getActivityTypeList All
-    , patientTypeFilter = All
+    , participantTypeFilter = All
     , query = ""
     , tableState = Table.initialSort "Name"
     }
