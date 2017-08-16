@@ -98,7 +98,7 @@ getActivityIdentity activityType =
                             ActivityIdentity "Education" "student"
 
                         FamilyPlanning ->
-                            ActivityIdentity "Family planning" "users"
+                            ActivityIdentity "Family planning" "family-planning"
 
                         Hiv ->
                             ActivityIdentity "HIV" "doctor"
