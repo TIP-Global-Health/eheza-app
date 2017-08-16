@@ -77,6 +77,10 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
       ];
     }
 
+    $public_fields['sex'] = [
+      'property' => 'field_sex',
+    ];
+
     return $public_fields;
   }
 
