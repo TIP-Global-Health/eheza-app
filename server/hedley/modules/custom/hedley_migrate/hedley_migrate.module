@@ -183,8 +183,9 @@ function _hedley_migrate_preprocess_child($node, Generator $faker) {
     'nutrition_signs',
     'picture',
     'weight',
-
+    'birth',
   ];
+
   $dt = new DateTime('30 days ago');
   foreach ($date_fields as $field) {
     $wrapper->{'field_date_' . $field}->set($dt->getTimestamp());
