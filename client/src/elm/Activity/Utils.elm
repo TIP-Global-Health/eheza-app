@@ -196,10 +196,14 @@ hasPendingMotherActivity currentDate motherActivityType mother =
 
                 MotherPicture ->
                     .motherPicture
+
+        activityDate =
+            mother.activityDates |> property
     in
-        Maybe.map
-            (\date ->
+        case activityDate of
+            Just date ->
                 Date.toTime date <= Date.toTime currentDate
-            )
-            (mother.activityDates |> property)
-            |> Maybe.withDefault False
+
+            -- If there's no date, treat as if pending.
+            Nothing ->
+                True
