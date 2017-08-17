@@ -1,18 +1,18 @@
 module Pages.Activities.Model exposing (..)
 
 import App.PageType exposing (Page(..))
-import Patient.Model exposing (PatientTypeFilter(..))
+import Participant.Model exposing (ParticipantTypeFilter(..))
 
 
 type alias Model =
-    { patientTypeFilter : PatientTypeFilter }
+    { participantTypeFilter : ParticipantTypeFilter }
 
 
 type Msg
-    = SetPatientTypeFilter String
+    = SetParticipantTypeFilter String
     | SetRedirectPage Page
 
 
 emptyModel : Model
 emptyModel =
-    { patientTypeFilter = All }
+    { participantTypeFilter = All }

@@ -1,4 +1,4 @@
-module Pages.Patient.Model
+module Pages.Participant.Model
     exposing
         ( Msg(..)
         , Model

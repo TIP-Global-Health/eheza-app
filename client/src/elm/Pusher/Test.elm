@@ -3,7 +3,7 @@ module Pusher.Test exposing (all)
 import Activity.Model exposing (emptyChildActivityDates)
 import Expect
 import Json.Decode exposing (decodeString)
-import Patient.Model exposing (PatientType(..))
+import Participant.Model exposing (ParticipantType(..))
 import Pusher.Decoder exposing (..)
 import Pusher.Model exposing (..)
 import RemoteData exposing (RemoteData(NotAsked))
@@ -36,11 +36,11 @@ decodeTest =
             """
 
                     expectedResult =
-                        { patientId = 100
+                        { participantId = 100
                         , data =
-                            PatientUpdate
+                            ParticipantUpdate
                                 { info =
-                                    PatientChild
+                                    ParticipantChild
                                         { name = "new-patient"
                                         , image = "https://placehold.it/200x200"
                                         , motherId = Just 7

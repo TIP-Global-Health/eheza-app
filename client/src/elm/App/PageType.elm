@@ -5,7 +5,7 @@ import Activity.Model exposing (ActivityType)
 
 {-| Prevent circular dependency.
 -}
-type alias PatientId =
+type alias ParticipantId =
     Int
 
 
@@ -16,4 +16,4 @@ type Page
     | Login
     | MyAccount
     | PageNotFound
-    | Patient PatientId
+    | Participant ParticipantId

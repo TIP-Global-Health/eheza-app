@@ -2,10 +2,10 @@
 
 var assert = require('assert');
 
-describe('The Activity switcher icons at the Patient page', () => {
+describe('The Activity switcher icons at the Participant page', () => {
 
   before(() => {
-    browser.loginAndViewPatientsPage('aya');
+    browser.loginAndViewParticipantsPage('aya');
 
     browser.visitChildWithTodoTasks();
   });

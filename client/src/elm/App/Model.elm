@@ -5,7 +5,7 @@ import Config.Model
 import Date exposing (Date)
 import Pages.Login.Model exposing (emptyModel, Model)
 import RemoteData exposing (RemoteData(..), WebData)
-import PatientManager.Model exposing (emptyModel, Model)
+import ParticipantManager.Model exposing (emptyModel, Model)
 import Time exposing (Time)
 import Translate exposing (Language(..))
 import User.Model exposing (..)
@@ -14,7 +14,7 @@ import User.Model exposing (..)
 type Msg
     = HandleOfflineEvent (Result String Bool)
     | Logout
-    | MsgPatientManager PatientManager.Model.Msg
+    | MsgParticipantManager ParticipantManager.Model.Msg
     | PageLogin Pages.Login.Model.Msg
     | RedirectByActivePage
     | SetActivePage Page
@@ -32,7 +32,7 @@ type alias Model =
     , language : Language
     , offline : Bool
     , pageLogin : Pages.Login.Model.Model
-    , pagePatient : PatientManager.Model.Model
+    , pageParticipant : ParticipantManager.Model.Model
     , theme : Theme
     , user : WebData User
     }
@@ -69,7 +69,7 @@ emptyModel =
     , language = English
     , offline = False
     , pageLogin = Pages.Login.Model.emptyModel
-    , pagePatient = PatientManager.Model.emptyModel
+    , pageParticipant = ParticipantManager.Model.emptyModel
     , theme = Light
     , user = NotAsked
     }

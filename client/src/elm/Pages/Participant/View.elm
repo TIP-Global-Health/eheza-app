@@ -1,4 +1,4 @@
-module Pages.Patient.View
+module Pages.Participant.View
     exposing
         ( viewChild
         , viewMother
@@ -17,8 +17,8 @@ import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
 import Measurement.View
 import Mother.Model exposing (Mother, MotherId)
-import Pages.Patient.Model exposing (Model, Msg(..), Tab(..))
-import Patient.Model exposing (Patient, PatientId, PatientTypeFilter(..), PatientsDict)
+import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
+import Participant.Model exposing (Participant, ParticipantId, ParticipantTypeFilter(..), ParticipantsDict)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
 import User.Model exposing (User)
@@ -46,9 +46,9 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                         _ ->
                             span [] []
 
-        patients =
+        participants =
             -- @todo: Add mkChild
-            Dict.insert childId ({ info = Patient.Model.PatientChild child }) Dict.empty
+            Dict.insert childId ({ info = Participant.Model.ParticipantChild child }) Dict.empty
     in
         div [ id "child-page" ] <|
             [ div [ class "ui segment" ]
@@ -84,7 +84,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                 ]
             , div [ class "ui segment" ]
                 [ div []
-                    [ viewActivityCards language currentDate currentUser patients Children model.selectedTab model.selectedActivity
+                    [ viewActivityCards language currentDate currentUser participants Children model.selectedTab model.selectedActivity
                     ]
                 ]
             , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
@@ -122,9 +122,9 @@ viewMother language currentDate currentUser motherId mother children model =
                     , ul [] childrenInfo
                     ]
 
-        patients =
+        participants =
             -- @todo: Add mkMother
-            Dict.insert motherId ({ info = Patient.Model.PatientMother mother }) Dict.empty
+            Dict.insert motherId ({ info = Participant.Model.ParticipantMother mother }) Dict.empty
     in
         div [ id "mother-page" ] <|
             [ div [ class "ui segment" ]
@@ -153,7 +153,7 @@ viewMother language currentDate currentUser motherId mother children model =
                 ]
             , div [ class "ui segment" ]
                 [ div []
-                    [ viewActivityCards language currentDate currentUser patients Children model.selectedTab model.selectedActivity
+                    [ viewActivityCards language currentDate currentUser participants Children model.selectedTab model.selectedActivity
                     ]
                 ]
             ]
@@ -163,11 +163,11 @@ viewMother language currentDate currentUser motherId mother children model =
 -- @todo: Cleanup code duplication
 
 
-viewActivityCards : Language -> Date -> User -> PatientsDict -> PatientTypeFilter -> Tab -> Maybe ActivityType -> Html Msg
-viewActivityCards language currentDate user patients patientTypeFilter selectedTab selectedActivity =
+viewActivityCards : Language -> Date -> User -> ParticipantsDict -> ParticipantTypeFilter -> Tab -> Maybe ActivityType -> Html Msg
+viewActivityCards language currentDate user participants participantTypeFilter selectedTab selectedActivity =
     let
         allActivityList =
-            getActivityList currentDate patientTypeFilter patients
+            getActivityList currentDate participantTypeFilter participants
 
         pendingActivities =
             List.filter (\activity -> activity.remaining > 0) allActivityList

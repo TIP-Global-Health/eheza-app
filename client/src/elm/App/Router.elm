@@ -3,7 +3,7 @@ module App.Router exposing (delta2url, location2messages)
 import App.Model exposing (..)
 import App.PageType exposing (..)
 import Navigation exposing (Location)
-import PatientManager.Update
+import ParticipantManager.Update
 import RouteUrl exposing (HistoryEntry(..), UrlChange)
 import UrlParser exposing (Parser, map, parseHash, s, oneOf, (</>), int, string)
 
@@ -26,13 +26,13 @@ delta2url previous current =
         PageNotFound ->
             Just <| UrlChange NewEntry "#404"
 
-        Patient id ->
-            Just <| UrlChange NewEntry ("#patient/" ++ (toString id))
+        Participant id ->
+            Just <| UrlChange NewEntry ("#participant/" ++ (toString id))
 
         Dashboard _ ->
             let
                 fragment =
-                    PatientManager.Update.dashboardUrlFragment current.pagePatient
+                    ParticipantManager.Update.dashboardUrlFragment current.pageParticipant
 
                 url =
                     if fragment == "" then
@@ -59,7 +59,7 @@ parseUrl =
     oneOf
         [ map (SetActivePage <| Dashboard []) (s "")
         , map (SetActivePage Activities) (s "activities")
-        , map (\id -> SetActivePage <| Patient id) (s "patient" </> int)
+        , map (\id -> SetActivePage <| Participant id) (s "participant" </> int)
         , map (SetActivePage Login) (s "login")
         , map (SetActivePage MyAccount) (s "my-account")
         ]

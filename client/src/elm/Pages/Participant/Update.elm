@@ -1,4 +1,4 @@
-port module Pages.Patient.Update exposing (update, subscriptions)
+port module Pages.Participant.Update exposing (update, subscriptions)
 
 import Activity.Model exposing (ActivityType(Child), ChildActivityType(..))
 import App.Model exposing (DropzoneConfig)
@@ -12,26 +12,26 @@ import Examination.Model exposing (emptyExaminationChild)
 import Maybe.Extra exposing (isJust)
 import Measurement.Model as Measurement exposing (Msg(..))
 import Measurement.Update
-import Pages.Patient.Model exposing (Model, Msg(..))
-import Pages.Patient.Utils exposing (updateActivityDate)
-import Patient.Model exposing (Patient, PatientId, PatientType(..))
+import Pages.Participant.Model exposing (Model, Msg(..))
+import Pages.Participant.Utils exposing (updateActivityDate)
+import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..))
 import Pusher.Model exposing (PusherEventData(..))
 import Translate as Trans exposing (Language, translate)
 import User.Model exposing (..)
 import Utils.EditableWebData as EditableWebData
 
 
-update : Date -> BackendUrl -> String -> User -> Language -> Pages.Patient.Model.Msg -> ( PatientId, Patient ) -> Model -> ( Patient, Model, Cmd Pages.Patient.Model.Msg, Maybe Page )
-update currentDate backendUrl accessToken user language msg ( patientId, patient ) model =
+update : Date -> BackendUrl -> String -> User -> Language -> Pages.Participant.Model.Msg -> ( ParticipantId, Participant ) -> Model -> ( Participant, Model, Cmd Pages.Participant.Model.Msg, Maybe Page )
+update currentDate backendUrl accessToken user language msg ( participantId, participant ) model =
     case msg of
         HandlePusherEventData event ->
             case event of
-                PatientUpdate newPatient ->
-                    -- So, the idea is that we have a new or updated patient,
+                ParticipantUpdate newParticipant ->
+                    -- So, the idea is that we have a new or updated participant,
                     -- which has already been saved at the server. Note that
                     -- we may have just pushed this change ourselves, so it's
                     -- already reflected here.
-                    ( newPatient
+                    ( newParticipant
                     , model
                     , Cmd.none
                     , Nothing
@@ -40,20 +40,20 @@ update currentDate backendUrl accessToken user language msg ( patientId, patient
         MsgMeasurement subMsg ->
             let
                 ( measurementsUpdated, cmds, maybeActivityTypeCompleted ) =
-                    Measurement.Update.update backendUrl accessToken user ( patientId, patient ) subMsg model.measurements
+                    Measurement.Update.update backendUrl accessToken user ( participantId, participant ) subMsg model.measurements
 
                 newDate =
                     (Date.toTime currentDate) + (24 * 60 * 60 * 1000) |> Date.fromTime
 
                 -- Hard-wiring the period of one day, while we consider
                 -- the Activity completed.
-                patientUpdated =
+                participantUpdated =
                     case maybeActivityTypeCompleted of
                         Nothing ->
-                            patient
+                            participant
 
                         Just ( activtyTypeCompleted, activityToRedirect ) ->
-                            updateActivityDate newDate activtyTypeCompleted patient
+                            updateActivityDate newDate activtyTypeCompleted participant
 
                 modelWithMeasurements =
                     { model | measurements = measurementsUpdated }
@@ -66,9 +66,9 @@ update currentDate backendUrl accessToken user language msg ( patientId, patient
                         model.selectedActivity
 
                 ( _, modelWithSelectedAtivity, selectedActivityCmds, maybePage ) =
-                    update currentDate backendUrl accessToken user language (SetSelectedActivity selectedActivity) ( patientId, patient ) modelWithMeasurements
+                    update currentDate backendUrl accessToken user language (SetSelectedActivity selectedActivity) ( participantId, participant ) modelWithMeasurements
             in
-                ( patientUpdated
+                ( participantUpdated
                 , modelWithSelectedAtivity
                 , Cmd.batch
                     [ Cmd.map MsgMeasurement cmds
@@ -78,17 +78,17 @@ update currentDate backendUrl accessToken user language msg ( patientId, patient
                 )
 
         SetRedirectPage page ->
-            ( patient, model, Cmd.none, Just page )
+            ( participant, model, Cmd.none, Just page )
 
         SetSelectedActivity maybectivityType ->
-            ( patient
+            ( participant
             , { model | selectedActivity = maybectivityType }
             , setDropzone backendUrl language maybectivityType
             , Nothing
             )
 
         SetSelectedTab tab ->
-            ( patient
+            ( participant
             , { model | selectedTab = tab }
             , Cmd.none
             , Nothing
@@ -97,7 +97,7 @@ update currentDate backendUrl accessToken user language msg ( patientId, patient
 
 {-| Activate the dropzone on a specific activity type.
 -}
-setDropzone : String -> Language -> Maybe ActivityType -> Cmd Pages.Patient.Model.Msg
+setDropzone : String -> Language -> Maybe ActivityType -> Cmd Pages.Participant.Model.Msg
 setDropzone backendUrl language activity =
     let
         isActive =
@@ -117,7 +117,7 @@ setDropzone backendUrl language activity =
         dropzoneConfig config
 
 
-subscriptions : Model -> Sub Pages.Patient.Model.Msg
+subscriptions : Model -> Sub Pages.Participant.Model.Msg
 subscriptions model =
     Sub.map MsgMeasurement <| Measurement.Update.subscriptions model.measurements
 
