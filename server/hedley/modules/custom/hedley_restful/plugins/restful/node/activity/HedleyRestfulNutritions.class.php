@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulNutritions.
  */
-class HedleyRestfulNutritions extends HedleyRestfulActivityBase {
+class HedleyRestfulNutritions extends HedleyRestfulChildActivityBase {
 
   /**
    * Return the type of the activity.
