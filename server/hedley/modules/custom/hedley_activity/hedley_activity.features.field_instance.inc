@@ -132,6 +132,46 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-family_planning-field_mother'.
+  $field_instances['node-family_planning-field_mother'] = array(
+    'bundle' => 'family_planning',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 3,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_mother',
+    'label' => 'Mother',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 1,
+    ),
+  );
+
   // Exported field_instance: 'node-height-field_activity_status'.
   $field_instances['node-height-field_activity_status'] = array(
     'bundle' => 'height',
@@ -978,6 +1018,7 @@ function hedley_activity_field_default_field_instances() {
   t('Family Planning');
   t('Height');
   t('MUAC');
+  t('Mother');
   t('Nutrition Signs');
   t('Photo');
   t('Status');

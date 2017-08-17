@@ -26,6 +26,7 @@ features[field_base][] = field_weight
 features[field_instance][] = node-family_planning-body
 features[field_instance][] = node-family_planning-field_activity_status
 features[field_instance][] = node-family_planning-field_family_planning
+features[field_instance][] = node-family_planning-field_mother
 features[field_instance][] = node-height-field_activity_status
 features[field_instance][] = node-height-field_child
 features[field_instance][] = node-height-field_examination
