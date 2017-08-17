@@ -31,9 +31,9 @@ class HedleyRestfulNutritions extends HedleyRestfulChildActivityBase {
       'resource' => [
         // Bundle name.
         'examination' => [
-            // Resource name.
-            'name' => 'examinations',
-            'full_view' => TRUE,
+          // Resource name.
+          'name' => 'examinations',
+          'full_view' => TRUE,
         ],
       ],
     ];
