@@ -47,7 +47,7 @@ describe('when updating a measurement form', function() {
   };
 
   before(() => {
-    browser.loginAndViewPatientsPage('aya');
+    browser.loginAndViewParticipantsPage('aya');
     browser.visitChildWithTodoTasks();
   })
 

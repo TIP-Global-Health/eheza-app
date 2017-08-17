@@ -7,9 +7,9 @@ import Config
 import Date
 import Dict
 import Http
-import Patient.Model exposing (PatientTypeFilter(..))
-import PatientManager.Model
-import PatientManager.Update
+import Participant.Model exposing (ParticipantTypeFilter(..))
+import ParticipantManager.Model
+import ParticipantManager.Update
 import Pusher.Model
 import Pusher.Utils exposing (getClusterName)
 import Json.Decode exposing (decodeValue, bool)
@@ -102,15 +102,15 @@ update msg model =
                 , accessTokenPort ""
                 )
 
-            MsgPatientManager subMsg ->
+            MsgParticipantManager subMsg ->
                 case model.user of
                     Success user ->
                         let
                             ( val, cmds, redirectPage ) =
-                                PatientManager.Update.update model.currentDate backendUrl model.accessToken user model.language subMsg model.pagePatient
+                                ParticipantManager.Update.update model.currentDate backendUrl model.accessToken user model.language subMsg model.pageParticipant
 
                             modelUpdated =
-                                { model | pagePatient = val }
+                                { model | pageParticipant = val }
 
                             ( modelUpdatedWithSetPage, setPageCmds ) =
                                 Maybe.map
@@ -122,7 +122,7 @@ update msg model =
                         in
                             ( modelUpdatedWithSetPage
                             , Cmd.batch
-                                [ Cmd.map MsgPatientManager cmds
+                                [ Cmd.map MsgParticipantManager cmds
                                 , setPageCmds
                                 ]
                             )
@@ -189,7 +189,7 @@ update msg model =
                         case activePageUpdated of
                             Activities ->
                                 -- If we're showing a `Activities` page, make sure we `Subscribe`
-                                update (MsgPatientManager PatientManager.Model.FetchAll) model
+                                update (MsgParticipantManager ParticipantManager.Model.FetchAll) model
 
                             Dashboard activityTypes ->
                                 let
@@ -200,14 +200,14 @@ update msg model =
                                             activityTypes
 
                                     ( modelUpdatedDashboard, _ ) =
-                                        update (MsgPatientManager <| PatientManager.Model.SetActivityTypeFilters activityTypesUpdated) model
+                                        update (MsgParticipantManager <| ParticipantManager.Model.SetActivityTypeFilters activityTypesUpdated) model
                                 in
-                                    -- If we're showing a `Patients` page, make sure we `Subscribe`
-                                    update (MsgPatientManager PatientManager.Model.FetchAll) modelUpdatedDashboard
+                                    -- If we're showing a `Participants` page, make sure we `Subscribe`
+                                    update (MsgParticipantManager ParticipantManager.Model.FetchAll) modelUpdatedDashboard
 
-                            Patient id ->
-                                -- If we're showing a `Patient`, make sure we `Subscribe`
-                                update (MsgPatientManager (PatientManager.Model.Subscribe id)) model
+                            Participant id ->
+                                -- If we're showing a `Participant`, make sure we `Subscribe`
+                                update (MsgParticipantManager (ParticipantManager.Model.Subscribe id)) model
 
                             _ ->
                                 ( model, Cmd.none )
@@ -268,7 +268,7 @@ getBackButtonTarget activePage =
         PageNotFound ->
             activePage
 
-        Patient patientId ->
+        Participant participantId ->
             Dashboard []
 
 
@@ -303,7 +303,7 @@ setActivePageAccess user page =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Sub.map MsgPatientManager <| PatientManager.Update.subscriptions model.pagePatient model.activePage
+        [ Sub.map MsgParticipantManager <| ParticipantManager.Update.subscriptions model.pageParticipant model.activePage
         , Time.every minute Tick
         , offline (decodeValue bool >> HandleOfflineEvent)
         ]

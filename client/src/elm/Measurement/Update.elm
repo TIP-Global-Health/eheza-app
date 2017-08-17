@@ -9,7 +9,7 @@ import Json.Encode exposing (Value)
 import Measurement.Decoder exposing (decodePhotoFromResponse)
 import Measurement.Encoder exposing (encodePhoto, encodeWeight)
 import Measurement.Model exposing (CompletedAndRedirectToActivityTuple, Model, Msg(..))
-import Patient.Model exposing (Patient, PatientId)
+import Participant.Model exposing (Participant, ParticipantId)
 import RemoteData exposing (RemoteData(..))
 import User.Model exposing (..)
 import Utils.WebData exposing (sendWithHandler)
@@ -17,8 +17,8 @@ import Utils.WebData exposing (sendWithHandler)
 
 {-| Optionally, we bubble up two activity types in a tuple, which form to complete and which form is the next one.
 -}
-update : BackendUrl -> String -> User -> ( PatientId, Patient ) -> Msg -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
-update backendUrl accessToken user ( patientId, patient ) msg model =
+update : BackendUrl -> String -> User -> ( ParticipantId, Participant ) -> Msg -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+update backendUrl accessToken user ( participantId, participant ) msg model =
     case msg of
         HandleDropzoneUploadedFile fileId ->
             ( { model | photo = ( Just fileId, Nothing ) }
@@ -93,13 +93,13 @@ update backendUrl accessToken user ( patientId, patient ) msg model =
                 )
 
         PhotoSave ->
-            postPhoto backendUrl accessToken patientId model
+            postPhoto backendUrl accessToken participantId model
 
         ResetDropZone ->
             ( model, dropzoneReset (), Nothing )
 
         WeightSave ->
-            postWeight backendUrl accessToken patientId model
+            postWeight backendUrl accessToken participantId model
 
         HeightSave ->
             ( model
@@ -130,7 +130,7 @@ postData backendUrl accessToken model path value encoder handler =
 
 {-| Send new photo of a child to the backend.
 -}
-postPhoto : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+postPhoto : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
 postPhoto backendUrl accessToken childId model =
     case model.photo of
         ( Nothing, _ ) ->
@@ -154,7 +154,7 @@ postPhoto backendUrl accessToken childId model =
 
 {-| Send new weight of a child to the backend.
 -}
-postWeight : BackendUrl -> String -> PatientId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+postWeight : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
 postWeight backendUrl accessToken childId model =
     Maybe.map
         (\weight ->

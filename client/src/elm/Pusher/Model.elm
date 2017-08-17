@@ -1,6 +1,6 @@
 module Pusher.Model exposing (..)
 
-import Patient.Model exposing (Patient, PatientId)
+import Participant.Model exposing (Participant, ParticipantId)
 
 
 type Cluster
@@ -16,13 +16,13 @@ type alias PusherAppKey =
 
 
 type alias PusherEvent =
-    { patientId : PatientId
+    { participantId : ParticipantId
     , data : PusherEventData
     }
 
 
 type PusherEventData
-    = PatientUpdate Patient
+    = ParticipantUpdate Participant
 
 
 {-| Return the event names that should be added via JS.

@@ -22,7 +22,7 @@ describe('login page', function() {
         browser.setValueSafe('[name="username"]', 'fabrice');
         browser.setValueSafe('[name="password"]', 'fabrice');
         browser.submitForm(loginForm);
-        browser.waitForVisible('h1=Patients');
+        browser.waitForVisible('h1=Participants');
     });
 
 });

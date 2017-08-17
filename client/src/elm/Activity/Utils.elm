@@ -11,11 +11,11 @@ import Child.Model exposing (Child)
 import Date exposing (Date)
 import Dict exposing (Dict)
 import Mother.Model exposing (Mother)
-import Patient.Model exposing (PatientsDict, PatientTypeFilter(..), PatientType(..))
+import Participant.Model exposing (ParticipantsDict, ParticipantTypeFilter(..), ParticipantType(..))
 
 
-getActivityTypeList : PatientTypeFilter -> List ActivityType
-getActivityTypeList patientTypeFilter =
+getActivityTypeList : ParticipantTypeFilter -> List ActivityType
+getActivityTypeList participantTypeFilter =
     let
         childrenActivities =
             [ Activity.Model.Child ChildPicture
@@ -34,7 +34,7 @@ getActivityTypeList patientTypeFilter =
             , Activity.Model.Mother MotherPicture
             ]
     in
-        case patientTypeFilter of
+        case participantTypeFilter of
             All ->
                 childrenActivities ++ mothersActivities
 
@@ -50,15 +50,15 @@ getActivityTypeList patientTypeFilter =
 @todo: Add also "future"?
 
 -}
-getActivityList : Date -> PatientTypeFilter -> PatientsDict -> List ActivityListItem
-getActivityList currentDate patientTypeFilter patients =
+getActivityList : Date -> ParticipantTypeFilter -> ParticipantsDict -> List ActivityListItem
+getActivityList currentDate participantTypeFilter participants =
     List.map
         (\activityType ->
             { activity = getActivityIdentity activityType
-            , remaining = getPendingNumberPerActivity currentDate activityType patients
+            , remaining = getPendingNumberPerActivity currentDate activityType participants
             }
         )
-        (getActivityTypeList patientTypeFilter)
+        (getActivityTypeList participantTypeFilter)
 
 
 getActivityIdentity : ActivityType -> ActivityIdentity
@@ -109,14 +109,14 @@ getActivityIdentity activityType =
         identityVal activityType
 
 
-getPendingNumberPerActivity : Date -> ActivityType -> PatientsDict -> Int
-getPendingNumberPerActivity currentDate activityType patients =
+getPendingNumberPerActivity : Date -> ActivityType -> ParticipantsDict -> Int
+getPendingNumberPerActivity currentDate activityType participants =
     Dict.foldl
-        (\_ patient accum ->
+        (\_ participant accum ->
             let
                 hasPending =
-                    case patient.info of
-                        PatientChild child ->
+                    case participant.info of
+                        ParticipantChild child ->
                             case activityType of
                                 Child childActivityType ->
                                     hasPendingChildActivity currentDate childActivityType child
@@ -124,7 +124,7 @@ getPendingNumberPerActivity currentDate activityType patients =
                                 _ ->
                                     False
 
-                        PatientMother mother ->
+                        ParticipantMother mother ->
                             case activityType of
                                 Mother motherActivityType ->
                                     hasPendingMotherActivity currentDate motherActivityType mother
@@ -138,7 +138,7 @@ getPendingNumberPerActivity currentDate activityType patients =
                     accum
         )
         0
-        patients
+        participants
 
 
 hasPendingChildActivity : Date -> ChildActivityType -> Child -> Bool

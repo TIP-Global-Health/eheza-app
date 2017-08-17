@@ -10,7 +10,7 @@ import Html.Events exposing (onClick)
 import Pages.Login.View exposing (..)
 import Pages.MyAccount.View exposing (..)
 import Pages.PageNotFound.View exposing (..)
-import PatientManager.View exposing (..)
+import ParticipantManager.View exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
 import User.Model exposing (..)
@@ -87,7 +87,7 @@ viewHeaderThemeSwitcher model =
 {-| Provides context-sensitive top navigation tabs.
 There are two distinct contexts:
 
-  - on the patient page
+  - on the participant page
   - everywhere else
 
 -}
@@ -96,7 +96,7 @@ viewTabSwitcher language model =
     let
         links =
             case model.activePage of
-                Patient _ ->
+                Participant _ ->
                     [ a
                         [ classByPage (Dashboard []) model.activePage
                         ]
@@ -112,7 +112,7 @@ viewTabSwitcher language model =
                         [ classByPage (Dashboard []) model.activePage
                         , onClick <| SetActivePage <| Dashboard []
                         ]
-                        [ text <| translate language Trans.Patients ]
+                        [ text <| translate language Trans.Participants ]
                     , a
                         [ classByPage Activities model.activePage
                         , onClick <| SetActivePage Activities
@@ -147,7 +147,7 @@ viewSidebar language model =
                     [ class "item"
                     , onClick <| SetActivePage <| Dashboard []
                     ]
-                    [ text <| translate language Trans.Patients ]
+                    [ text <| translate language Trans.Participants ]
                 , span
                     [ class "item"
                     ]
@@ -178,7 +178,7 @@ navbarAnonymous language model =
         , onClick <| SetActivePage Login
         ]
         [ text <| translate language Trans.Login ]
-    , viewPageNotFoundPatient language model.activePage
+    , viewPageNotFoundParticipant language model.activePage
     ]
 
 
@@ -189,11 +189,11 @@ navbarAuthenticated language model =
         , onClick <| SetActivePage MyAccount
         ]
         [ text <| translate language Trans.MyAccount ]
-    , viewPageNotFoundPatient language model.activePage
+    , viewPageNotFoundParticipant language model.activePage
     , div [ class "right menu" ]
         [ viewAvatar language model.user
         , a
-            [ class "ui patient"
+            [ class "ui participant"
             , onClick <| Logout
             ]
             [ text <| translate language Trans.Logout ]
@@ -201,8 +201,8 @@ navbarAuthenticated language model =
     ]
 
 
-viewPageNotFoundPatient : Language -> Page -> Html Msg
-viewPageNotFoundPatient language activePage =
+viewPageNotFoundParticipant : Language -> Page -> Html Msg
+viewPageNotFoundParticipant language activePage =
     a
         [ classByPage PageNotFound activePage
         , onClick <| SetActivePage PageNotFound
@@ -216,7 +216,7 @@ viewAvatar language user =
         Success user_ ->
             a
                 [ onClick <| SetActivePage MyAccount
-                , class "ui patient"
+                , class "ui participant"
                 ]
                 [ img
                     [ class "ui avatar image"
@@ -243,8 +243,8 @@ viewMainContent backendUrl model =
                 Activities ->
                     case model.user of
                         Success user ->
-                            Html.map MsgPatientManager <|
-                                PatientManager.View.viewActivities model.language model.currentDate user model.pagePatient
+                            Html.map MsgParticipantManager <|
+                                ParticipantManager.View.viewActivities model.language model.currentDate user model.pageParticipant
 
                         _ ->
                             div [] [ i [ class "notched circle loading icon" ] [] ]
@@ -262,18 +262,18 @@ viewMainContent backendUrl model =
                 Dashboard _ ->
                     case model.user of
                         Success user ->
-                            Html.map MsgPatientManager <|
-                                PatientManager.View.viewPatients model.language model.currentDate user model.pagePatient
+                            Html.map MsgParticipantManager <|
+                                ParticipantManager.View.viewParticipants model.language model.currentDate user model.pageParticipant
 
                         _ ->
                             div []
                                 [ i [ class "notched circle loading icon" ] [] ]
 
-                Patient id ->
+                Participant id ->
                     case model.user of
                         Success user ->
-                            Html.map MsgPatientManager <|
-                                PatientManager.View.viewPagePatient backendUrl model.accessToken user model.language model.currentDate id model.pagePatient
+                            Html.map MsgParticipantManager <|
+                                ParticipantManager.View.viewPageParticipant backendUrl model.accessToken user model.language model.currentDate id model.pageParticipant
 
                         _ ->
                             div [] [ i [ class "notched circle loading icon" ] [] ]
