@@ -430,8 +430,8 @@ function hedley_patient_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-child-field_sex'.
-  $field_instances['node-child-field_sex'] = array(
+  // Exported field_instance: 'node-child-field_gender'.
+  $field_instances['node-child-field_gender'] = array(
     'bundle' => 'child',
     'default_value' => array(
       0 => array(
@@ -456,8 +456,8 @@ function hedley_patient_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_sex',
-    'label' => 'Sex',
+    'field_name' => 'field_gender',
+    'label' => 'Gender',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -685,7 +685,7 @@ function hedley_patient_field_default_field_instances() {
   t('Date weight');
   t('Group');
   t('Mother');
-  t('Sex');
+  t('Gender');
 
   return $field_instances;
 }
