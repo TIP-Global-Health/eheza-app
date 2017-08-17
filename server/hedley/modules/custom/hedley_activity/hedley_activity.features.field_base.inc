@@ -70,13 +70,13 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
-  // Exported field_base: 'field_family_planning'.
-  $field_bases['field_family_planning'] = array(
+  // Exported field_base: 'field_family_planning_signs'.
+  $field_bases['field_family_planning_signs'] = array(
     'active' => 1,
     'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_family_planning',
+    'field_name' => 'field_family_planning_signs',
     'indexes' => array(
       'value' => array(
         0 => 'value',

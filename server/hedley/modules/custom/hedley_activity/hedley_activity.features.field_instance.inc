@@ -95,8 +95,8 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-family_planning-field_family_planning'.
-  $field_instances['node-family_planning-field_family_planning'] = array(
+  // Exported field_instance: 'node-family_planning-field_family_planning_signs'.
+  $field_instances['node-family_planning-field_family_planning_signs'] = array(
     'bundle' => 'family_planning',
     'default_value' => NULL,
     'deleted' => 0,
@@ -117,7 +117,7 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_family_planning',
+    'field_name' => 'field_family_planning_signs',
     'label' => 'Family Planning',
     'required' => 1,
     'settings' => array(
