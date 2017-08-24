@@ -153,7 +153,7 @@ viewMother backendUrl accessToken language currentDate currentUser motherId moth
                 ]
             , div [ class "ui segment" ]
                 [ div []
-                    [ viewActivityCards language currentDate currentUser patients Mothers model.selectedTab model.selectedActivity
+                    [ viewActivityCards language currentDate currentUser participants Mothers model.selectedTab model.selectedActivity
                     ]
                 ]
             , Html.map MsgMeasurement <|
