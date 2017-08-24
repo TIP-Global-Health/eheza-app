@@ -80,7 +80,7 @@ viewMotherFormsTest =
         describe "A nurse visits the assesment of a Mother" <|
             [ test "Then a family planning form should be displayed when selected" <|
                 \() ->
-                    viewMotherWithActivity (Just <| Mother FamilyPlanning) emptyModel
+                    viewMotherWithActivity (Just <| Activity.Model.Mother FamilyPlanning) emptyModel
                         |> Query.fromHtml
                         |> Query.find [ Selector.class "family-planning" ]
                         |> Query.find [ tag "h3" ]
