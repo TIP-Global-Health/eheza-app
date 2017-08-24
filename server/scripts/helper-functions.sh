@@ -306,6 +306,7 @@ function generate_demo_content {
     nutrition
     photo
     weight
+    family_planning
   )
   for TYPE in "${TYPES[@]}"
   do
