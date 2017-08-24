@@ -135,7 +135,7 @@ translate lang trans =
                     { english = "None of these" }
 
                 ActivitiesFamilyPlanningSignsTitle ->
-                    { english = "FamilyPlanning:" }
+                    { english = "Family Planning:" }
 
                 ActivitiesFamilyPlanningSignsPillLabel ->
                     { english = "Pill" }
