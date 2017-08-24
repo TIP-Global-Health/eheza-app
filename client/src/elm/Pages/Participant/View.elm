@@ -225,6 +225,7 @@ viewActivityCards language currentDate user participants participantTypeFilter s
             div [ class "ui text menu" ]
                 [ tabItem Pending pendingActivities
                 , tabItem Completed noPendingActivities
+                , tabItem ProgressReport []
                 ]
     in
         div [ class "ui tasks segment" ]
