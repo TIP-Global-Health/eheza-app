@@ -45,7 +45,6 @@ viewHeader language model =
                     [ class "ui header" ]
                     [ text <| translate language Trans.TitleHealthAssessment ]
                 , viewHeaderBackButton model
-                , viewHeaderThemeSwitcher model
                 , viewTabSwitcher language model
                 ]
 
@@ -64,23 +63,6 @@ viewHeaderBackButton model =
         [ span
             [ class "icon-back" ]
             []
-        ]
-
-
-{-| The theme switcher link.
--}
-viewHeaderThemeSwitcher : Model -> Html Msg
-viewHeaderThemeSwitcher model =
-    a
-        [ class "link-theme"
-        , id "theme-switcher"
-        , href "javascript:void(0);"
-        , onClick (ThemeSwitch model.theme)
-        ]
-        [ span
-            [ class "icon-theme icon-theme-light" ]
-            []
-        , span [] []
         ]
 
 
