@@ -26,12 +26,7 @@ getActivityTypeList participantTypeFilter =
             ]
 
         mothersActivities =
-            [ Activity.Model.Mother Aheza
-            , Activity.Model.Mother Attendance
-            , Activity.Model.Mother Education
-            , Activity.Model.Mother FamilyPlanning
-            , Activity.Model.Mother Hiv
-            , Activity.Model.Mother MotherPicture
+            [ Activity.Model.Mother FamilyPlanning
             ]
     in
         case participantTypeFilter of
@@ -88,23 +83,8 @@ getActivityIdentity activityType =
 
                 Mother motherActivityType ->
                     case motherActivityType of
-                        Aheza ->
-                            ActivityIdentity "Aheza" "food"
-
-                        Attendance ->
-                            ActivityIdentity "Attendance" "thumbs outline up"
-
-                        Education ->
-                            ActivityIdentity "Education" "student"
-
                         FamilyPlanning ->
                             ActivityIdentity "Family planning" "family-planning"
-
-                        Hiv ->
-                            ActivityIdentity "HIV" "doctor"
-
-                        MotherPicture ->
-                            ActivityIdentity "Take pictures (Mother)" "photo"
     in
         identityVal activityType
 
@@ -179,23 +159,8 @@ hasPendingMotherActivity currentDate motherActivityType mother =
     let
         property =
             case motherActivityType of
-                Aheza ->
-                    .aheza
-
-                Attendance ->
-                    .attendance
-
-                Education ->
-                    .education
-
                 FamilyPlanning ->
                     .familyPlanning
-
-                Hiv ->
-                    .hiv
-
-                MotherPicture ->
-                    .motherPicture
 
         activityDate =
             mother.activityDates |> property

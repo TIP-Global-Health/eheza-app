@@ -18,12 +18,7 @@ type ChildActivityType
 
 
 type MotherActivityType
-    = Aheza
-    | Attendance
-    | Education
-    | FamilyPlanning
-    | Hiv
-    | MotherPicture
+    = FamilyPlanning
 
 
 type FamilyPlanningSign
@@ -56,12 +51,7 @@ type alias ChildActivityDates =
 
 
 type alias MotherActivityDates =
-    { aheza : Maybe Date
-    , attendance : Maybe Date
-    , education : Maybe Date
-    , familyPlanning : Maybe Date
-    , hiv : Maybe Date
-    , motherPicture : Maybe Date
+    { familyPlanning : Maybe Date
     }
 
 
@@ -91,10 +81,5 @@ emptyChildActivityDates =
 
 emptyMotherActivityDates : MotherActivityDates
 emptyMotherActivityDates =
-    { aheza = Nothing
-    , attendance = Nothing
-    , education = Nothing
-    , familyPlanning = Nothing
-    , hiv = Nothing
-    , motherPicture = Nothing
+    { familyPlanning = Nothing
     }

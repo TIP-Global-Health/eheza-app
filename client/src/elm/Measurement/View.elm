@@ -477,9 +477,6 @@ viewMother backendUrl accessToken user language selectedActivity model =
                             FamilyPlanning ->
                                 viewFamilyPlanning backendUrl accessToken user language model
 
-                            _ ->
-                                emptyNode
-
                     _ ->
                         emptyNode
             )
