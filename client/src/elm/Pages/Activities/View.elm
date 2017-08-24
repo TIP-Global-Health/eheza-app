@@ -9,17 +9,17 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List as List
 import Pages.Activities.Model exposing (Model, Msg(..))
-import Patient.Model exposing (PatientTypeFilter(..), PatientsDict)
-import Patient.View exposing (viewPatientTypeFilter)
+import Participant.Model exposing (ParticipantTypeFilter(..), ParticipantsDict)
+import Participant.View exposing (viewParticipantTypeFilter)
 import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
 
 
-view : Language -> Date -> User -> PatientsDict -> Model -> Html Msg
-view language currentDate user patients model =
+view : Language -> Date -> User -> ParticipantsDict -> Model -> Html Msg
+view language currentDate user participants model =
     let
         allActivityList =
-            getActivityList currentDate model.patientTypeFilter patients
+            getActivityList currentDate model.participantTypeFilter participants
 
         pendingActivities =
             List.filter (\activity -> activity.remaining > 0) allActivityList
@@ -43,7 +43,7 @@ view language currentDate user patients model =
                     ]
     in
         div []
-            [ viewPatientTypeFilter language SetPatientTypeFilter model.patientTypeFilter
+            [ viewParticipantTypeFilter language SetParticipantTypeFilter model.participantTypeFilter
             , h2 [ class "ui header activities" ] [ text <| translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities ]
             , div [ class "ui cards activities pending" ] pendingActivitiesView
             , completedActivitiesView

@@ -19,11 +19,11 @@ module.exports = function (browser, capabilities, specs) {
   });
 
   /**
-   * After a user login, the displayed page should contain the patients table.
+   * After a user login, the displayed page should contain the participants table.
    */
-  browser.addCommand('loginAndViewPatientsPage', (user) => {
+  browser.addCommand('loginAndViewParticipantsPage', (user) => {
     browser.login(user);
-    browser.waitForVisible('#patients-table');
+    browser.waitForVisible('#participants-table');
   });
 
   /**
@@ -42,7 +42,7 @@ module.exports = function (browser, capabilities, specs) {
       activities: 'h2.header.activities',
       child: '#child-page',
       mother: '#mother-page',
-      patients: '#patients-table'
+      participants: '#participants-table'
     };
 
     browser.waitForVisible(map[page]);
@@ -99,7 +99,7 @@ module.exports = function (browser, capabilities, specs) {
     // The first Child is also special, it has all the dates
     // in the past for activities.
     // @see server/scripts/helper-functions.sh
-    browser.url('/#patient/41');
+    browser.url('/#participant/41');
     browser.waitForVisible('.ui.tasks.segment');
   });
 

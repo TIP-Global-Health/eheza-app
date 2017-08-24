@@ -3,35 +3,35 @@ var assert = require('assert');
 describe('Clicking the Back Button', () => {
 
     before(() => {
-        browser.loginAndViewPatientsPage('aya');
+        browser.loginAndViewParticipantsPage('aya');
     });
 
-    it('should lead to the activities page from the patients page', () => {
-        browser.validateCurrentPageIs('patients');
+    it('should lead to the activities page from the participants page', () => {
+        browser.validateCurrentPageIs('participants');
         browser.goBack();
         browser.validateCurrentPageIs('activities');
     });
 
-    it('should lead to the patients page from the activities page', () => {
+    it('should lead to the participants page from the activities page', () => {
         browser.validateCurrentPageIs('activities');
         browser.goBack();
-        browser.validateCurrentPageIs('patients');
+        browser.validateCurrentPageIs('participants');
     });
 
-    it('should lead to the patients page from a child page', () => {
-        // Following the first patient (child) page.
-        browser.element('#patients-table tbody tr td a.child').click();
+    it('should lead to the participants page from a child page', () => {
+        // Following the first participant (child) page.
+        browser.element('#participants-table tbody tr td a.child').click();
         browser.validateCurrentPageIs('child');
         browser.goBack();
-        browser.validateCurrentPageIs('patients');
+        browser.validateCurrentPageIs('participants');
     });
 
-    it('should lead to the patients page from a mother page', () => {
-        // Following the first patient (mother) page.
-        browser.element('#patients-table tbody tr td a.mother').click();
+    it('should lead to the participants page from a mother page', () => {
+        // Following the first participant (mother) page.
+        browser.element('#participants-table tbody tr td a.mother').click();
         browser.validateCurrentPageIs('mother');
         browser.goBack();
-        browser.validateCurrentPageIs('patients');
+        browser.validateCurrentPageIs('participants');
     });
 
 });

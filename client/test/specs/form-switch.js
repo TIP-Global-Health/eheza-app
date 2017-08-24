@@ -3,7 +3,7 @@ var assert = require('assert');
 describe('assesment pages', () => {
 
     before(() => {
-        browser.loginAndViewPatientsPage('aya');
+        browser.loginAndViewParticipantsPage('aya');
     });
 
     beforeEach(() => {

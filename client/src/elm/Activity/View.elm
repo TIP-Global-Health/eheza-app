@@ -8,17 +8,17 @@ import Activity.Utils exposing (getActivityIdentity, getActivityTypeList)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onCheck, onClick, onInput, onWithOptions)
-import Patient.Model exposing (PatientTypeFilter(..))
+import Participant.Model exposing (ParticipantTypeFilter(..))
 
 
-viewActivityTypeFilter : (ActivityType -> Bool -> msg) -> PatientTypeFilter -> List ActivityType -> Html msg
-viewActivityTypeFilter msg patientTypeFilter activityTypeFilter =
+viewActivityTypeFilter : (ActivityType -> Bool -> msg) -> ParticipantTypeFilter -> List ActivityType -> Html msg
+viewActivityTypeFilter msg participantTypeFilter activityTypeFilter =
     div []
         (List.map
             (\activityType ->
                 checkbox msg activityType activityTypeFilter
             )
-            (getActivityTypeList patientTypeFilter)
+            (getActivityTypeList participantTypeFilter)
         )
 
 
