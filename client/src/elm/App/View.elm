@@ -40,16 +40,54 @@ viewHeader : Language -> Model -> Html Msg
 viewHeader language model =
     case model.user of
         Success user ->
-            div [ class "ui head segment" ]
-                [ h1
-                    [ class "ui header" ]
-                    [ text <| translate language Trans.TitleHealthAssessment ]
-                , viewHeaderBackButton model
-                , viewTabSwitcher language model
-                ]
+            case model.activePage of
+                Participant _ ->
+                    viewParticipantHeader language
+
+                _ ->
+                    div [ class "ui head segment" ]
+                        [ h1
+                            [ class "ui header" ]
+                            [ text <| translate language Trans.TitleHealthAssessment ]
+                        , viewHeaderBackButton model
+                        , viewTabSwitcher language model
+                        ]
 
         _ ->
             div [] []
+
+
+viewParticipantHeader : Language -> Html Msg
+viewParticipantHeader language =
+    div
+        [ class "ui basic head segment" ]
+        [ h1
+            [ class "ui header" ]
+            [ text <| translate language Trans.Assessment ]
+        , a
+            [ class "link-back" ]
+            [ span [ class "icon-back" ] [] ]
+        , ul
+            [ class "links-head" ]
+            [ li
+                [ class "active" ]
+                [ a []
+                    [ span [ class "icon-mother" ] [] ]
+                ]
+            , li []
+                [ a []
+                    [ span [ class "icon-baby" ] []
+                    , span [ class "count" ] [ text "1" ]
+                    ]
+                ]
+            , li []
+                [ a []
+                    [ span [ class "icon-baby" ] []
+                    , span [ class "count" ] [ text "1" ]
+                    ]
+                ]
+            ]
+        ]
 
 
 {-| The back button link.
@@ -75,34 +113,18 @@ There are two distinct contexts:
 -}
 viewTabSwitcher : Language -> Model -> Html Msg
 viewTabSwitcher language model =
-    let
-        links =
-            case model.activePage of
-                Participant _ ->
-                    [ a
-                        [ classByPage (Dashboard []) model.activePage
-                        ]
-                        [ text <| translate language Trans.Mother ]
-                    , a
-                        [ classByPage (Activities) model.activePage
-                        ]
-                        [ text <| translate language Trans.Baby ]
-                    ]
-
-                _ ->
-                    [ a
-                        [ classByPage (Dashboard []) model.activePage
-                        , onClick <| SetActivePage <| Dashboard []
-                        ]
-                        [ text <| translate language Trans.Participants ]
-                    , a
-                        [ classByPage Activities model.activePage
-                        , onClick <| SetActivePage Activities
-                        ]
-                        [ text <| translate language Trans.Activities ]
-                    ]
-    in
-        div [ class "ui fluid two item secondary pointing menu" ] links
+    div [ class "ui fluid two item secondary pointing menu" ]
+        [ a
+            [ classByPage (Dashboard []) model.activePage
+            , onClick <| SetActivePage <| Dashboard []
+            ]
+            [ text <| translate language Trans.Participants ]
+        , a
+            [ classByPage Activities model.activePage
+            , onClick <| SetActivePage Activities
+            ]
+            [ text <| translate language Trans.Activities ]
+        ]
 
 
 viewSidebar : Language -> Model -> Html Msg

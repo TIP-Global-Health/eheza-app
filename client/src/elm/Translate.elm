@@ -42,6 +42,7 @@ type TranslationId
     | ActivitiesWeightHelp
     | ActivitiesWeightLabel
     | ActivitiesWeightTitle
+    | Assessment
     | Baby
     | BabyName String
     | CentimeterShorthand
@@ -169,6 +170,9 @@ translate lang trans =
 
                 ActivitiesWeightTitle ->
                     { english = "Weight:" }
+
+                Assessment ->
+                    { english = "Assessment" }
 
                 Baby ->
                     { english = "Baby" }
