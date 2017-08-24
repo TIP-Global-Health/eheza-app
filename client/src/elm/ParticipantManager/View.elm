@@ -5,6 +5,7 @@ module ParticipantManager.View
         , viewParticipants
         )
 
+import App.PageType
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict
@@ -15,7 +16,7 @@ import Pages.Activities.View
 import Pages.Participant.Model
 import Pages.Participant.View
 import Pages.Participants.View
-import Participant.Model exposing (ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
+import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
 import ParticipantManager.Model exposing (..)
 import ParticipantManager.Utils exposing (getChildren, getMother, getParticipant, unwrapParticipantsDict)
 import RemoteData exposing (RemoteData(..))
@@ -70,24 +71,95 @@ viewPageParticipant backendUrl accessToken user language currentDate id model =
                     Maybe.map identity (Dict.get id model.participantPage)
                         |> Maybe.withDefault Pages.Participant.Model.emptyModel
             in
-                case participant.info of
-                    ParticipantChild child ->
-                        let
-                            motherWebData =
-                                getMother child.motherId model
+                div [ class "wrap" ] <|
+                    viewPageParticipantHeader language participant
+                        :: (case participant.info of
+                                ParticipantChild child ->
+                                    let
+                                        motherWebData =
+                                            getMother child.motherId model
+                                    in
+                                        [ Html.map (MsgPagesParticipant id) <|
+                                            Pages.Participant.View.viewChild backendUrl accessToken user language currentDate motherWebData ( id, child ) participantModel
+                                        ]
 
-                            participantModel =
-                                Maybe.map identity (Dict.get id model.participantPage)
-                                    |> Maybe.withDefault Pages.Participant.Model.emptyModel
-                        in
-                            div [] [ Html.map (MsgPagesParticipant id) <| Pages.Participant.View.viewChild backendUrl accessToken user language currentDate motherWebData ( id, child ) participantModel ]
+                                ParticipantMother mother ->
+                                    let
+                                        childrenWebData =
+                                            getChildren mother model
+                                    in
+                                        [ Html.map (MsgPagesParticipant id) <|
+                                            Pages.Participant.View.viewMother language currentDate user id mother childrenWebData participantModel
+                                        ]
+                           )
 
-                    ParticipantMother mother ->
-                        let
-                            childrenWebData =
-                                getChildren mother model
-                        in
-                            div [] [ Html.map (MsgPagesParticipant id) <| Pages.Participant.View.viewMother language currentDate user id mother childrenWebData participantModel ]
+
+viewPageParticipantHeader : Language -> Participant -> Html Msg
+viewPageParticipantHeader language participant =
+    let
+        log =
+            Debug.log "participant" participant
+
+        viewChild id maybeIndex active =
+            let
+                attributes =
+                    if active then
+                        [ class "active" ]
+                    else
+                        [ onClick <|
+                            MsgPagesParticipant id <|
+                                Pages.Participant.Model.SetRedirectPage (App.PageType.Participant id)
+                        ]
+            in
+                li attributes
+                    [ a [] <|
+                        span [ class "icon-baby" ] []
+                            :: case maybeIndex of
+                                Just index ->
+                                    [ span [ class "count" ] [ text <| toString (index + 1) ] ]
+
+                                Nothing ->
+                                    []
+                    ]
+
+        ( motherAttributes, children ) =
+            case participant.info of
+                ParticipantChild child ->
+                    ( case child.motherId of
+                        Just motherId ->
+                            [ onClick <|
+                                MsgPagesParticipant motherId <|
+                                    Pages.Participant.Model.SetRedirectPage (App.PageType.Participant motherId)
+                            ]
+
+                        Nothing ->
+                            []
+                    , [ viewChild 0 Nothing True ]
+                    )
+
+                ParticipantMother mother ->
+                    ( [ class "active" ]
+                    , List.indexedMap (\index childId -> viewChild childId (Just index) False) mother.children
+                    )
+    in
+        div
+            [ class "ui basic head segment" ]
+            [ h1
+                [ class "ui header" ]
+                [ text <| translate language Trans.Assessment ]
+            , a
+                [ class "link-back" ]
+                [ span [ class "icon-back" ] [] ]
+            , ul
+                [ class "links-head" ]
+              <|
+                li
+                    motherAttributes
+                    [ a []
+                        [ span [ class "icon-mother" ] [] ]
+                    ]
+                    :: children
+            ]
 
 
 viewActivities : Language -> Date -> User -> Model -> Html Msg

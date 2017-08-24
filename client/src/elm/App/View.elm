@@ -24,13 +24,24 @@ view model =
             Config.View.view model.language
 
         Success config ->
-            div [ class "wrap" ]
-                [ viewSidebar model.language model
-                , viewHeader model.language model
-                , div [ class "ui main container" ]
-                    [ viewMainContent config.backendUrl model
-                    ]
-                ]
+            case model.activePage of
+                Participant id ->
+                    case model.user of
+                        Success user ->
+                            Html.map MsgParticipantManager <|
+                                ParticipantManager.View.viewPageParticipant config.backendUrl model.accessToken user model.language model.currentDate id model.pageParticipant
+
+                        _ ->
+                            div [] [ i [ class "notched circle loading icon" ] [] ]
+
+                _ ->
+                    div [ class "wrap" ]
+                        [ viewSidebar model.language model
+                        , viewHeader model.language model
+                        , div [ class "ui main container" ]
+                            [ viewMainContent config.backendUrl model
+                            ]
+                        ]
 
         _ ->
             emptyNode
@@ -42,7 +53,7 @@ viewHeader language model =
         Success user ->
             case model.activePage of
                 Participant _ ->
-                    viewParticipantHeader language
+                    emptyNode
 
                 _ ->
                     div [ class "ui head segment" ]
@@ -55,39 +66,6 @@ viewHeader language model =
 
         _ ->
             div [] []
-
-
-viewParticipantHeader : Language -> Html Msg
-viewParticipantHeader language =
-    div
-        [ class "ui basic head segment" ]
-        [ h1
-            [ class "ui header" ]
-            [ text <| translate language Trans.Assessment ]
-        , a
-            [ class "link-back" ]
-            [ span [ class "icon-back" ] [] ]
-        , ul
-            [ class "links-head" ]
-            [ li
-                [ class "active" ]
-                [ a []
-                    [ span [ class "icon-mother" ] [] ]
-                ]
-            , li []
-                [ a []
-                    [ span [ class "icon-baby" ] []
-                    , span [ class "count" ] [ text "1" ]
-                    ]
-                ]
-            , li []
-                [ a []
-                    [ span [ class "icon-baby" ] []
-                    , span [ class "count" ] [ text "1" ]
-                    ]
-                ]
-            ]
-        ]
 
 
 {-| The back button link.
