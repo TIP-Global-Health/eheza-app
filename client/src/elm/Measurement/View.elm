@@ -490,7 +490,7 @@ viewFamilyPlanning backendUrl accessToken user language model =
             [ class "ui divider" ]
             []
         , div
-            [ class "ui full segment nutrition"
+            [ class "ui full segment family-planning"
             , id "familyPlanningEntryForm"
             ]
             [ h3
