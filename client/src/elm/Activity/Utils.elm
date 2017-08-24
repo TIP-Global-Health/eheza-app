@@ -161,14 +161,9 @@ hasPendingMotherActivity currentDate motherActivityType mother =
             case motherActivityType of
                 FamilyPlanning ->
                     .familyPlanning
-
-        activityDate =
-            mother.activityDates |> property
     in
-        case activityDate of
-            Just date ->
-                Date.toTime date <= Date.toTime currentDate
-
-            -- If there's no date, treat as if pending.
-            Nothing ->
-                True
+        mother.activityDates
+            |> property
+            |> Maybe.map
+                (\date -> Date.toTime date <= Date.toTime currentDate)
+            |> Maybe.withDefault False
