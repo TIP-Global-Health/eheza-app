@@ -79,27 +79,22 @@ viewPageParticipant backendUrl accessToken user language currentDate id model =
                                         motherWebData =
                                             getMother child.motherId model
                                     in
-                                        [ Html.map (MsgPagesParticipant id) <|
+                                        List.map (Html.map (MsgPagesParticipant id)) <|
                                             Pages.Participant.View.viewChild backendUrl accessToken user language currentDate motherWebData ( id, child ) participantModel
-                                        ]
 
                                 ParticipantMother mother ->
                                     let
                                         childrenWebData =
                                             getChildren mother model
                                     in
-                                        [ Html.map (MsgPagesParticipant id) <|
+                                        List.map (Html.map (MsgPagesParticipant id)) <|
                                             Pages.Participant.View.viewMother language currentDate user id mother childrenWebData participantModel
-                                        ]
                            )
 
 
 viewPageParticipantHeader : Language -> Participant -> Html Msg
 viewPageParticipantHeader language participant =
     let
-        log =
-            Debug.log "participant" participant
-
         viewChild id maybeIndex active =
             let
                 attributes =

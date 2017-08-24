@@ -24,7 +24,7 @@ import Translate as Trans exposing (Language, translate)
 import User.Model exposing (User)
 
 
-viewChild : BackendUrl -> String -> User -> Language -> Date -> WebData Mother -> ( ChildId, Child ) -> Model -> Html Msg
+viewChild : BackendUrl -> String -> User -> Language -> Date -> WebData Mother -> ( ChildId, Child ) -> Model -> List (Html Msg)
 viewChild backendUrl accessToken currentUser language currentDate motherWebData ( childId, child ) model =
     let
         motherInfo =
@@ -50,60 +50,65 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
             -- @todo: Add mkChild
             Dict.insert childId ({ info = Participant.Model.ParticipantChild child }) Dict.empty
     in
-        div [ id "child-page" ] <|
-            [ div [ class "ui segment" ]
-                [ div [ class "ui items" ]
-                    [ div [ class "item" ]
-                        [ div [ class "ui image" ]
-                            [ img [ src child.image ]
-                                []
-                            ]
-                        , div [ class "middle aligned content" ]
-                            [ div []
-                                [ h2
-                                    [ class "ui disabled header mother"
-                                    , id "mother-info"
-                                    ]
-                                    [ motherInfo ]
-                                ]
-                            , div []
-                                [ h2 [ class "ui header child" ]
-                                    [ text <| translate language <| Trans.BabyName child.name ]
-                                ]
-                            , div [ class "meta" ]
-                                [ p []
-                                    [ text <| translate language Trans.PlaceholderTextGroupDate
-                                    , br []
-                                        []
-                                    , text <| translate language Trans.PlaceholderTextJoined
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            , div [ class "ui segment" ]
-                [ div []
-                    [ viewActivityCards language currentDate currentUser participants Children model.selectedTab model.selectedActivity
-                    ]
-                ]
-            , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
-            ]
+        [ div [] [ text "child" ], div [] [ text "child" ] ]
 
 
-viewMother : Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Model -> Html Msg
+
+--
+-- div [ id "child-page" ] <|
+--     [ div [ class "ui segment" ]
+--         [ div [ class "ui items" ]
+--             [ div [ class "item" ]
+--                 [ div [ class "ui image" ]
+--                     [ img [ src child.image ]
+--                         []
+--                     ]
+--                 , div [ class "middle aligned content" ]
+--                     [ div []
+--                         [ h2
+--                             [ class "ui disabled header mother"
+--                             , id "mother-info"
+--                             ]
+--                             [ motherInfo ]
+--                         ]
+--                     , div []
+--                         [ h2 [ class "ui header child" ]
+--                             [ text <| translate language <| Trans.BabyName child.name ]
+--                         ]
+--                     , div [ class "meta" ]
+--                         [ p []
+--                             [ text <| translate language Trans.PlaceholderTextGroupDate
+--                             , br []
+--                                 []
+--                             , text <| translate language Trans.PlaceholderTextJoined
+--                             ]
+--                         ]
+--                     ]
+--                 ]
+--             ]
+--         ]
+--     , div [ class "ui segment" ]
+--         [ div []
+--             [ viewActivityCards language currentDate currentUser participants Children model.selectedTab model.selectedActivity
+--             ]
+--         ]
+--     , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
+--     ]
+
+
+viewMother : Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Model -> List (Html Msg)
 viewMother language currentDate currentUser motherId mother children model =
     let
-        childrenInfo =
-            (List.map
-                (\childWebData ->
+        childrenList =
+            (List.indexedMap
+                (\index childWebData ->
                     case childWebData of
                         Success ( childId, child ) ->
-                            li []
-                                [ text child.name ]
+                            p []
+                                [ text <| "Baby " ++ toString (index + 1) ++ ": " ++ child.name ]
 
                         Loading ->
-                            li []
+                            p []
                                 [ i [ class "icon loading spinner" ] []
                                 ]
 
@@ -113,57 +118,27 @@ viewMother language currentDate currentUser motherId mother children model =
                 children
             )
 
-        childrenList =
-            if List.isEmpty mother.children then
-                div [] [ text <| translate language Trans.NoChildrenRegisteredInTheSystem ]
-            else
-                div []
-                    [ text <| translate language Trans.Children ++ ": "
-                    , ul [] childrenInfo
-                    ]
-
         participants =
             -- @todo: Add mkMother
             Dict.insert motherId ({ info = Participant.Model.ParticipantMother mother }) Dict.empty
     in
-        div [ id "mother-page" ] <|
-            [ div [ class "ui segment" ]
-                [ div [ class "ui items" ]
-                    [ div [ class "item" ]
-                        [ div [ class "ui image" ]
-                            [ img [ src mother.image ]
-                                []
-                            ]
-                        , div [ class "middle aligned content" ]
-                            [ h2 [ class "ui header mother" ]
-                                [ text <| translate language <| Trans.MotherName mother.name ]
-                            , h2 [ class "ui disabled header child" ]
-                                [ childrenList ]
-                            , div [ class "meta" ]
-                                [ p []
-                                    [ text <| translate language Trans.PlaceholderTextGroupDate
-                                    , br []
-                                        []
-                                    , text <| translate language Trans.PlaceholderTextJoined
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            , div [ class "ui segment" ]
-                [ div []
-                    [ viewActivityCards language currentDate currentUser participants Children model.selectedTab model.selectedActivity
+        [ div
+            [ class "ui unstackable items" ]
+            [ div [ class "item" ]
+                [ div [ class "ui image" ]
+                    [ img [ src mother.image, attribute "alt" mother.name, width 222, height 222 ] [] ]
+                , div [ class "content" ]
+                    [ h2 [ class "ui header" ] <|
+                        text mother.name
+                            :: childrenList
                     ]
                 ]
             ]
+        ]
+            ++ viewActivityCards language currentDate currentUser participants Children model.selectedTab model.selectedActivity
 
 
-
--- @todo: Cleanup code duplication
-
-
-viewActivityCards : Language -> Date -> User -> ParticipantsDict -> ParticipantTypeFilter -> Tab -> Maybe ActivityType -> Html Msg
+viewActivityCards : Language -> Date -> User -> ParticipantsDict -> ParticipantTypeFilter -> Tab -> Maybe ActivityType -> List (Html Msg)
 viewActivityCards language currentDate user participants participantTypeFilter selectedTab selectedActivity =
     let
         allActivityList =
@@ -188,10 +163,13 @@ viewActivityCards language currentDate user participants participantTypeFilter s
                 List.map (viewActivityListItem language selectedActivity) noPendingActivities
 
         activeView =
-            if selectedTab == Pending then
-                pendingActivitiesView
-            else
-                noPendingActivitiesView
+            div [ class "ui task segment" ]
+                [ div [ class "ui five column grid" ] <|
+                    if selectedTab == Pending then
+                        pendingActivitiesView
+                    else
+                        noPendingActivitiesView
+                ]
 
         tabClass tabType =
             [ ( "item", True )
@@ -219,15 +197,12 @@ viewActivityCards language currentDate user participants participantTypeFilter s
                     [ text <| translate language <| tabTitle <| List.length activitiesList ]
 
         tabs =
-            div [ class "ui text menu" ]
+            div [ class "ui tabular menu" ]
                 [ tabItem Pending pendingActivities
                 , tabItem Completed noPendingActivities
                 ]
     in
-        div [ class "ui tasks segment" ]
-            [ tabs
-            , div [ class "ui five column grid pending" ] activeView
-            ]
+        [ tabs, activeView ]
 
 
 viewActivityListItem : Language -> Maybe ActivityType -> ActivityListItem -> Html Msg
