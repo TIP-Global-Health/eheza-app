@@ -1,6 +1,6 @@
 module Measurement.Test exposing (all)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
+import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChild, exampleUser)
 import Measurement.Model exposing (..)
 import Measurement.View exposing (..)
@@ -92,5 +92,5 @@ all : Test
 all =
     describe "Measurement of children: form tests"
         [ viewChildFormsTest
-        , viewMotherWithActivity
+        , viewMotherFormsTest
         ]
