@@ -49,8 +49,24 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
         participants =
             -- @todo: Add mkChild
             Dict.insert childId ({ info = Participant.Model.ParticipantChild child }) Dict.empty
+
+        childName =
+            translate language <| Trans.BabyName child.name
     in
-        [ div [] [ text "child" ], div [] [ text "child" ] ]
+        div [ class "ui unstackable items" ]
+            [ div [ class "item" ]
+                [ div [ class "ui image" ]
+                    [ img [ src child.image, attribute "alt" childName, width 222, height 222 ] [] ]
+                , div [ class "content" ]
+                    [ h2 [ class "ui header" ]
+                        [ text childName ]
+                    , p [] [ text "Mother: TUYIZERE Gaudence" ]
+                    , p [] [ text "DOB: 06 February 2017" ]
+                    , p [] [ text "Age: 6 months" ]
+                    ]
+                ]
+            ]
+            :: viewActivityCards language currentDate currentUser participants Children model.selectedTab model.selectedActivity
 
 
 
@@ -122,20 +138,18 @@ viewMother language currentDate currentUser motherId mother children model =
             -- @todo: Add mkMother
             Dict.insert motherId ({ info = Participant.Model.ParticipantMother mother }) Dict.empty
     in
-        [ div
-            [ class "ui unstackable items" ]
+        div [ class "ui unstackable items" ]
             [ div [ class "item" ]
                 [ div [ class "ui image" ]
                     [ img [ src mother.image, attribute "alt" mother.name, width 222, height 222 ] [] ]
-                , div [ class "content" ]
-                    [ h2 [ class "ui header" ] <|
-                        text mother.name
-                            :: childrenList
-                    ]
+                , div [ class "content" ] <|
+                    h2
+                        [ class "ui header" ]
+                        [ text mother.name ]
+                        :: childrenList
                 ]
             ]
-        ]
-            ++ viewActivityCards language currentDate currentUser participants Children model.selectedTab model.selectedActivity
+            :: viewActivityCards language currentDate currentUser participants Children model.selectedTab model.selectedActivity
 
 
 viewActivityCards : Language -> Date -> User -> ParticipantsDict -> ParticipantTypeFilter -> Tab -> Maybe ActivityType -> List (Html Msg)
