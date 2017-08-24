@@ -23,7 +23,6 @@ type Msg
 type Tab
     = Completed
     | Pending
-    | ProgressReport
 
 
 type alias Model =

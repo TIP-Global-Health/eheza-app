@@ -210,9 +210,6 @@ viewActivityCards language currentDate user participants participantTypeFilter s
 
                         Completed ->
                             Trans.ActivitiesCompleted
-
-                        ProgressReport ->
-                            Trans.ActivitiesProgressReport
             in
                 a
                     [ classList <| tabClass tabType

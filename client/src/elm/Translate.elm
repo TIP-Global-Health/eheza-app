@@ -39,7 +39,6 @@ type TranslationId
     | ActivitiesNutritionSignsTitle
     | ActivitiesPhotoHelp
     | ActivitiesPhotoTitle
-    | ActivitiesProgressReport Int
     | ActivitiesWeightHelp
     | ActivitiesWeightLabel
     | ActivitiesWeightTitle
@@ -157,9 +156,6 @@ translate lang trans =
 
                 ActivitiesPhotoTitle ->
                     { english = "Photo:" }
-
-                ActivitiesProgressReport _ ->
-                    { english = "Progress Report" }
 
                 ActivitiesWeightHelp ->
                     { english = "Calibrate the scale before taking the first baby's weight.  Place baby in harness with no clothes on." }
