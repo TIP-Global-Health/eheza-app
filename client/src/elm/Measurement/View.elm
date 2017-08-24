@@ -524,7 +524,7 @@ viewFamilyPlanningSelector language familyPlanningSigns =
             [ Pill, Condoms, IUD ]
 
         familyPlanningSignSecond =
-            [ Injection, Necklace, NoFamilyPlanningSign ]
+            [ Injection, Necklace, NoFamilyPlanning ]
     in
         div [ class "ui grid" ]
             [ div [ class "eight wide column" ] <|
@@ -555,7 +555,7 @@ viewFamilyPlanningSelectorItem language familyPlanningSigns sign =
                 Necklace ->
                     ( Trans.ActivitiesFamilyPlanningSignsNecklaceLabel, "necklace" )
 
-                NoFamilyPlanningSign ->
+                NoFamilyPlanning ->
                     ( Trans.ActivitiesFamilyPlanningSignsNoneLabel, "no-family-planning-sign" )
 
                 Pill ->

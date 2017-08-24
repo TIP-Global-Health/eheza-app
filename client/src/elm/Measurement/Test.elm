@@ -71,8 +71,26 @@ viewChildFormsTest =
             ]
 
 
+viewMotherFormsTest : Test
+viewMotherFormsTest =
+    let
+        viewMotherWithActivity selectedActivity model =
+            viewMother exampleBackendUrl exampleAccessToken exampleUser English selectedActivity model
+    in
+        describe "A nurse visits the assesment of a Mother" <|
+            [ test "Then a family planning form should be displayed when selected" <|
+                \() ->
+                    viewMotherWithActivity (Just <| Mother FamilyPlanning) emptyModel
+                        |> Query.fromHtml
+                        |> Query.find [ Selector.class "family-planning" ]
+                        |> Query.find [ tag "h3" ]
+                        |> Query.has [ text "Family Planning:" ]
+            ]
+
+
 all : Test
 all =
     describe "Measurement of children: form tests"
         [ viewChildFormsTest
+        , viewMotherWithActivity
         ]

@@ -31,7 +31,7 @@ type FamilyPlanningSign
     | IUD
     | Injection
     | Necklace
-    | NoFamilyPlanningSign
+    | NoFamilyPlanning
     | Pill
 
 
