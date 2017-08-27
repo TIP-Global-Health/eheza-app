@@ -2,6 +2,8 @@ module Measurement.Test exposing (all)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChild, exampleUser)
+import Html
+import Html.Attributes as Attr
 import Measurement.Model exposing (..)
 import Measurement.View exposing (..)
 import Test exposing (Test, describe, test)
@@ -14,7 +16,9 @@ viewChildFormsTest : Test
 viewChildFormsTest =
     let
         viewChildWithActivity selectedActivity model =
-            viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) Nothing selectedActivity model
+            Html.div [ Attr.class "test-container" ]
+                [ viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) Nothing selectedActivity model
+                ]
     in
         describe "A nurse visits the assesment of a Child" <|
             [ test "Then a height form should be displayed when selected" <|
