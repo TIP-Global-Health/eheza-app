@@ -72,7 +72,7 @@ viewPageParticipant backendUrl accessToken user language currentDate id model =
                         |> Maybe.withDefault Pages.Participant.Model.emptyModel
             in
                 div [ class "wrap" ] <|
-                    viewPageParticipantHeader language participant
+                    viewPageParticipantHeader language ( id, participant )
                         :: (case participant.info of
                                 ParticipantChild child ->
                                     let
@@ -92,9 +92,12 @@ viewPageParticipant backendUrl accessToken user language currentDate id model =
                            )
 
 
-viewPageParticipantHeader : Language -> Participant -> Html Msg
-viewPageParticipantHeader language participant =
+viewPageParticipantHeader : Language -> ( ParticipantId, Participant ) -> Html Msg
+viewPageParticipantHeader language ( participantId, participant ) =
     let
+        log =
+            Debug.log "participant" participant
+
         viewChild id maybeIndex active =
             let
                 attributes =
@@ -143,7 +146,12 @@ viewPageParticipantHeader language participant =
                 [ class "ui header" ]
                 [ text <| translate language Trans.Assessment ]
             , a
-                [ class "link-back" ]
+                [ class "link-back"
+                , onClick <|
+                    MsgPagesParticipant participantId <|
+                        Pages.Participant.Model.SetRedirectPage <|
+                            App.PageType.Dashboard []
+                ]
                 [ span [ class "icon-back" ] [] ]
             , ul
                 [ class "links-head" ]
