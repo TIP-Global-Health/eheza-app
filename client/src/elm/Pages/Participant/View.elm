@@ -66,7 +66,11 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                     ]
                 ]
             ]
-            :: viewActivityCards language currentDate currentUser participants Children model.selectedTab model.selectedActivity
+            :: ((viewActivityCards language currentDate currentUser participants Children model.selectedTab model.selectedActivity)
+                    ++ [ Html.map MsgMeasurement <|
+                            Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
+                       ]
+               )
 
 
 
