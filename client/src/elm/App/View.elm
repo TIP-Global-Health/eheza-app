@@ -252,13 +252,7 @@ viewMainContent backendUrl model =
                                 [ i [ class "notched circle loading icon" ] [] ]
 
                 Participant id ->
-                    case model.user of
-                        Success user ->
-                            Html.map MsgParticipantManager <|
-                                ParticipantManager.View.viewPageParticipant backendUrl model.accessToken user model.language model.currentDate id model.pageParticipant
-
-                        _ ->
-                            div [] [ i [ class "notched circle loading icon" ] [] ]
+                    emptyNode
     in
         case model.user of
             NotAsked ->

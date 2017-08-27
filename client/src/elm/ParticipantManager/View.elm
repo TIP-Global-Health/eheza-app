@@ -95,9 +95,6 @@ viewPageParticipant backendUrl accessToken user language currentDate id model =
 viewPageParticipantHeader : Language -> ( ParticipantId, Participant ) -> Html Msg
 viewPageParticipantHeader language ( participantId, participant ) =
     let
-        log =
-            Debug.log "participant" participant
-
         viewChild id maybeIndex active =
             let
                 attributes =
