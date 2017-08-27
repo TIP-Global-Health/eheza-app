@@ -348,49 +348,39 @@ saveButton language msg model hasInput maybeDivClass =
 
 viewNutritionSigns : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
 viewNutritionSigns backendUrl accessToken user language ( childId, child ) model =
-    div []
-        [ div
-            [ class "ui divider" ]
-            []
-        , div
-            [ class "ui full segment nutrition"
-            , id "nutritionSignsEntryForm"
-            ]
-            [ h3
-                [ class "ui header" ]
+    div
+        [ class "ui full segment nutrition"
+        , id "nutritionSignsEntryForm"
+        ]
+        [ div [ class "content" ]
+            [ h3 [ class "ui header" ]
                 [ text <| translate language Trans.ActivitiesNutritionSignsTitle
                 ]
-            , p
-                []
-                [ text <| translate language Trans.ActivitiesNutritionSignsHelp ]
-            , div
-                [ class "ui form" ]
-                [ p []
-                    [ text <| translate language Trans.ActivitiesNutritionSignsLabel
-                    ]
-                , viewNutritionSignsSelector language model.nutritionSigns
-                ]
-            , div [ class "actions" ] <|
-                saveButton
-                    language
-                    NutritionSignsSave
-                    model
-                    True
-                    Nothing
+            , p [] [ text <| translate language Trans.ActivitiesNutritionSignsHelp ]
+            , div [ class "ui form" ] <|
+                p [] [ text <| translate language Trans.ActivitiesNutritionSignsLabel ]
+                    :: viewNutritionSignsSelector language model.nutritionSigns
             ]
+        , div [ class "actions" ] <|
+            saveButton
+                language
+                NutritionSignsSave
+                model
+                True
+                Nothing
         ]
 
 
-viewNutritionSignsSelector : Language -> EveryDictChildNutritionSign -> Html Msg
+viewNutritionSignsSelector : Language -> EveryDictChildNutritionSign -> List (Html Msg)
 viewNutritionSignsSelector language nutritionSigns =
     let
         nutrionSignsAndTranslationIdsFirst =
-            [ Edema, AbdominalDisortion, DrySkin, PoorAppetite ]
+            [ Edema, AbdominalDisortion, DrySkin ]
 
         nutrionSignsAndTranslationIdsSecond =
-            [ Apathy, BrittleHair, None ]
+            [ Apathy, PoorAppetite, BrittleHair ]
     in
-        div [ class "ui grid" ]
+        [ div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
                 (List.map
                     (viewNutritionSignsSelectorItem language nutritionSigns)
@@ -402,6 +392,9 @@ viewNutritionSignsSelector language nutritionSigns =
                     nutrionSignsAndTranslationIdsSecond
                 )
             ]
+        , div [ class "ui divider" ] []
+        , viewNutritionSignsSelectorItem language nutritionSigns None
+        ]
 
 
 {-| Helper function to return a tuples of checkbox label and attributes value.
