@@ -98,7 +98,8 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                 |> Maybe.withDefault []
 
         inputAttrs =
-            [ type_ "number"
+            [ type_ "text"
+            , placeholder "Enter height here…"
             , name blockName
             , Attr.min <| toString constraints.minVal
             , Attr.max <| toString constraints.maxVal
@@ -106,10 +107,9 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
             ]
                 ++ defaultAttr
     in
-        div []
-            [ divider
-            , div
-                [ class <| "ui full segment " ++ blockName ]
+        div
+            [ class <| "ui full segment " ++ blockName ]
+            [ div [ class "content" ]
                 [ h3
                     [ class "ui header" ]
                     [ text <| translate language headerText
@@ -120,25 +120,34 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                 , div
                     [ class "ui form" ]
                     [ div [ class "ui grid" ]
-                        [ div [ class "ten wide column" ]
+                        [ div [ class "eleven wide column" ]
                             [ div [ class "ui right labeled input" ]
-                                [ div [ class "ui basic label" ] [ text <| translate language labelText ]
-                                , input
-                                    inputAttrs
-                                    []
+                                [ input inputAttrs []
                                 , div [ class "ui basic label" ] [ text <| translate language measurementType ]
                                 ]
                             ]
-                        , div [ class "six wide column" ]
+                        , div [ class "five wide column" ]
                             [ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType model ]
                         ]
                     , viewPreviousMeasurement language floatMeasurement maybePreviousExamination
                     ]
                 , div
-                    [ class "actions" ]
-                    [ saveButton language saveMsg model (isJust measurementValue) Nothing
+                    [ class "ui large header" ]
+                    [ text "Z-Score:"
+                    , span
+                        [ class "sub header" ]
+                        [ text "Requires implementation" ]
                     ]
                 ]
+            , div
+                [ class "actions" ]
+              <|
+                saveButton
+                    language
+                    saveMsg
+                    model
+                    (isJust measurementValue)
+                    Nothing
             ]
 
 
@@ -230,7 +239,7 @@ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType
                                     "down"
                         in
                             p
-                                [ class <| "label-with-icon label-" ++ classSuffix ]
+                                [ class <| "label-with-icon label-form" ]
                                 [ span [ class <| "icon-" ++ classSuffix ] []
                                 , text <| diff ++ " " ++ translate language measurementType
                                 ]
@@ -279,7 +288,7 @@ viewPhoto backendUrl accessToken user language ( childId, child ) model =
                     [ div [ class "ui two column grid" ]
                         [ div
                             [ class "column" ]
-                            [ button
+                            (button
                                 ([ classList
                                     [ ( "ui fluid basic button retake", True )
                                     , ( "disabled", not hasFileId )
@@ -288,8 +297,8 @@ viewPhoto backendUrl accessToken user language ( childId, child ) model =
                                     ++ handleClick
                                 )
                                 [ text <| translate language Trans.Retake ]
-                            ]
-                        , saveButton language PhotoSave model hasFileId (Just "column")
+                                :: saveButton language PhotoSave model hasFileId (Just "column")
+                            )
                         ]
                     ]
                 ]
@@ -302,7 +311,7 @@ Button will also take care of preventing double submission,
 and showing success and error indications.
 
 -}
-saveButton : Language -> Msg -> Model -> Bool -> Maybe String -> Html Msg
+saveButton : Language -> Msg -> Model -> Bool -> Maybe String -> List (Html Msg)
 saveButton language msg model hasInput maybeDivClass =
     let
         isLoading =
@@ -319,27 +328,22 @@ saveButton language msg model hasInput maybeDivClass =
                 []
             else
                 [ onClick msg ]
-
-        attrs =
-            Maybe.map (\divClass -> [ class divClass ]) maybeDivClass
     in
-        div (Maybe.withDefault [] attrs)
-            [ button
-                ([ classList
-                    [ ( "ui fluid basic button", True )
-                    , ( "loading", isLoading )
-                    , ( "basic", not isSuccess )
-                    , ( "negative", isFailure )
-                    , ( "disabled", not hasInput )
-                    ]
-                 , id "save-form"
-                 ]
-                    ++ saveAttr
-                )
-                [ text <| translate language Trans.Save
+        [ button
+            ([ classList
+                [ ( "ui fluid primary button", True )
+                , ( "loading", isLoading )
+                , ( "negative", isFailure )
+                , ( "disabled", not hasInput )
                 ]
-            , showIf isFailure <| div [] [ text <| translate language Trans.SaveError ]
+             , id "save-form"
+             ]
+                ++ saveAttr
+            )
+            [ text <| translate language Trans.Save
             ]
+        , showIf isFailure <| div [] [ text <| translate language Trans.SaveError ]
+        ]
 
 
 viewNutritionSigns : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
@@ -366,9 +370,13 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
                     ]
                 , viewNutritionSignsSelector language model.nutritionSigns
                 ]
-            , div [ class "actions" ]
-                [ saveButton language NutritionSignsSave model True Nothing
-                ]
+            , div [ class "actions" ] <|
+                saveButton
+                    language
+                    NutritionSignsSave
+                    model
+                    True
+                    Nothing
             ]
         ]
 
