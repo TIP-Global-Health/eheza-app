@@ -26,12 +26,7 @@ getActivityTypeList participantTypeFilter =
             ]
 
         mothersActivities =
-            [ Activity.Model.Mother Aheza
-            , Activity.Model.Mother Attendance
-            , Activity.Model.Mother Education
-            , Activity.Model.Mother FamilyPlanning
-            , Activity.Model.Mother Hiv
-            , Activity.Model.Mother MotherPicture
+            [ Activity.Model.Mother FamilyPlanning
             ]
     in
         case participantTypeFilter of
@@ -88,23 +83,8 @@ getActivityIdentity activityType =
 
                 Mother motherActivityType ->
                     case motherActivityType of
-                        Aheza ->
-                            ActivityIdentity "Aheza" "food"
-
-                        Attendance ->
-                            ActivityIdentity "Attendance" "thumbs outline up"
-
-                        Education ->
-                            ActivityIdentity "Education" "student"
-
                         FamilyPlanning ->
-                            ActivityIdentity "Family planning" "users"
-
-                        Hiv ->
-                            ActivityIdentity "HIV" "doctor"
-
-                        MotherPicture ->
-                            ActivityIdentity "Take pictures (Mother)" "photo"
+                            ActivityIdentity "Family planning" "family-planning"
     in
         identityVal activityType
 
@@ -179,27 +159,11 @@ hasPendingMotherActivity currentDate motherActivityType mother =
     let
         property =
             case motherActivityType of
-                Aheza ->
-                    .aheza
-
-                Attendance ->
-                    .attendance
-
-                Education ->
-                    .education
-
                 FamilyPlanning ->
                     .familyPlanning
-
-                Hiv ->
-                    .hiv
-
-                MotherPicture ->
-                    .motherPicture
     in
-        Maybe.map
-            (\date ->
-                Date.toTime date <= Date.toTime currentDate
-            )
-            (mother.activityDates |> property)
+        mother.activityDates
+            |> property
+            |> Maybe.map
+                (\date -> Date.toTime date <= Date.toTime currentDate)
             |> Maybe.withDefault False

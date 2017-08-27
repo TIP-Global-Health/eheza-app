@@ -91,8 +91,8 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
             ]
 
 
-viewMother : Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Model -> Html Msg
-viewMother language currentDate currentUser motherId mother children model =
+viewMother : BackendUrl -> String -> Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Model -> Html Msg
+viewMother backendUrl accessToken language currentDate currentUser motherId mother children model =
     let
         childrenInfo =
             (List.map
@@ -153,9 +153,11 @@ viewMother language currentDate currentUser motherId mother children model =
                 ]
             , div [ class "ui segment" ]
                 [ div []
-                    [ viewActivityCards language currentDate currentUser participants Children model.selectedTab model.selectedActivity
+                    [ viewActivityCards language currentDate currentUser participants Mothers model.selectedTab model.selectedActivity
                     ]
                 ]
+            , Html.map MsgMeasurement <|
+                Measurement.View.viewMother backendUrl accessToken currentUser language model.selectedActivity model.measurements
             ]
 
 
