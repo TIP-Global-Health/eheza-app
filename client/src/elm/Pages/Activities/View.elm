@@ -15,7 +15,7 @@ import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
 
 
-view : Language -> Date -> User -> ParticipantsDict -> Model -> Html Msg
+view : Language -> Date -> User -> ParticipantsDict -> Model -> List (Html Msg)
 view language currentDate user participants model =
     let
         allActivityList =
@@ -42,12 +42,11 @@ view language currentDate user participants model =
                     , div [ class "ui cards activities completed" ] (List.map (viewActivity language) noPendingActivities)
                     ]
     in
-        div []
-            [ viewParticipantTypeFilter language SetParticipantTypeFilter model.participantTypeFilter
-            , h2 [ class "ui header activities" ] [ text <| translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities ]
-            , div [ class "ui cards activities pending" ] pendingActivitiesView
-            , completedActivitiesView
-            ]
+        [ viewParticipantTypeFilter language SetParticipantTypeFilter model.participantTypeFilter
+        , h2 [ class "ui header activities" ] [ text <| translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities ]
+        , div [ class "ui cards activities pending" ] pendingActivitiesView
+        , completedActivitiesView
+        ]
 
 
 viewActivity : Language -> ActivityListItem -> Html Msg

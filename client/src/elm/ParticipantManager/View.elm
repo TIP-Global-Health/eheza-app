@@ -12,9 +12,11 @@ import Dict
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
+import Pages.Activities.Model
 import Pages.Activities.View
 import Pages.Participant.Model
 import Pages.Participant.View
+import Pages.Participants.Model
 import Pages.Participants.View
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
 import ParticipantManager.Model exposing (..)
@@ -33,8 +35,52 @@ viewParticipants language currentDate user model =
         participants =
             unwrapParticipantsDict model.participants
     in
-        div []
-            [ Html.map MsgPagesParticipants <| Pages.Participants.View.view language currentDate user participants model.participantsPage
+        div [ class "wrap" ] <|
+            viewDashboardPageHeader language App.PageType.ParticipantsDashboard
+                :: (List.map (Html.map MsgPagesParticipants) <|
+                        Pages.Participants.View.view language currentDate user participants model.participantsPage
+                   )
+
+
+viewDashboardPageHeader : Language -> App.PageType.DashboardPage -> Html Msg
+viewDashboardPageHeader language dashboardPage =
+    let
+        ( header, activitiesLinkAttributes, participantsLinkAttributes ) =
+            case dashboardPage of
+                App.PageType.ActivitiesDashboard ->
+                    ( Trans.Activities
+                    , [ class "active" ]
+                    , [ onClick <|
+                            MsgPagesActivities <|
+                                Pages.Activities.Model.SetRedirectPage <|
+                                    App.PageType.Dashboard []
+                      ]
+                    )
+
+                App.PageType.ParticipantsDashboard ->
+                    ( Trans.Participants
+                    , [ onClick <|
+                            MsgPagesParticipants <|
+                                Pages.Participants.Model.SetRedirectPage App.PageType.Activities
+                      ]
+                    , [ class "active" ]
+                    )
+    in
+        div
+            [ class "ui basic head segment" ]
+            [ h1
+                [ class "ui header" ]
+                [ text <| translate language header ]
+            , a
+                [ class "link-back" ]
+                [ span [ class "icon-back" ] [] ]
+            , ul
+                [ class "links-head" ]
+                [ li participantsLinkAttributes
+                    [ a [] [ span [ class "icon-mother" ] [] ] ]
+                , li activitiesLinkAttributes
+                    [ a [] [ span [ class "icon-completed" ] [] ] ]
+                ]
             ]
 
 
@@ -163,6 +209,8 @@ viewActivities language currentDate user model =
         participants =
             unwrapParticipantsDict model.participants
     in
-        div []
-            [ Html.map MsgPagesActivities <| Pages.Activities.View.view language currentDate user participants model.activitiesPage
-            ]
+        div [ class "wrap wrap-alt" ] <|
+            viewDashboardPageHeader language App.PageType.ActivitiesDashboard
+                :: (List.map (Html.map MsgPagesActivities) <|
+                        Pages.Activities.View.view language currentDate user participants model.activitiesPage
+                   )
