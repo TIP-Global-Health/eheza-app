@@ -6,7 +6,7 @@ import Measurement.Model exposing (..)
 import Measurement.View exposing (..)
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
-import Test.Html.Selector as Selector exposing (class, classes, id, tag, text)
+import Test.Html.Selector as Selector exposing (class, classes, id, tag, text, className)
 import Translate exposing (..)
 
 
@@ -21,14 +21,14 @@ viewChildFormsTest =
                 \() ->
                     viewChildWithActivity (Just <| Child Height) emptyModel
                         |> Query.fromHtml
-                        |> Query.find [ Selector.class "height" ]
+                        |> Query.find [ Selector.classes [ "ui", "full", "segment", "height" ] ]
                         |> Query.find [ tag "h3" ]
                         |> Query.has [ text "Height:" ]
             , test "Then a MUAC form should be displayed when selected" <|
                 \() ->
                     viewChildWithActivity (Just <| Child Muac) emptyModel
                         |> Query.fromHtml
-                        |> Query.find [ Selector.class "muac" ]
+                        |> Query.find [ Selector.classes [ "ui", "full", "segment", "muac" ] ]
                         |> Query.find [ tag "h3" ]
                         |> Query.has [ text "Mid Upper Arm Circumference (MUAC):" ]
             , test "Then a Nutrition form should be displayed when selected" <|
@@ -42,6 +42,7 @@ viewChildFormsTest =
                 \() ->
                     viewChildWithActivity (Just <| Child Weight) emptyModel
                         |> Query.fromHtml
+                        |> Query.find [ Selector.classes [ "ui", "full", "segment", "weight" ] ]
                         |> Query.find [ tag "h3" ]
                         |> Query.has [ text "Weight:" ]
             , test "Then a Photo form with disabled Save button should be displayed when selected" <|
