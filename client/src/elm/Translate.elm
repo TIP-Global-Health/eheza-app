@@ -50,6 +50,7 @@ type TranslationId
     | Connected
     | Dashboard
     | DropzoneDefaultMessage
+    | EndSession
     | ErrorBadUrl
     | ErrorBadPayload
     | ErrorBadStatus
@@ -79,8 +80,8 @@ type TranslationId
     | PlaceholderTextGroupDate
     | PlaceholderTextJoined
     | PreviousFloatMeasurement Float
-    | ReportRemaining Int
     | ReloadParticipant
+    | ReportCompleted ( Int, Int )
     | Retake
     | Retry
     | Save
@@ -195,6 +196,9 @@ translate lang trans =
                 DropzoneDefaultMessage ->
                     { english = "Touch here to take a photo, or drop a photo file here." }
 
+                EndSession ->
+                    { english = "End Session" }
+
                 ErrorBadUrl ->
                     { english = "URL is not valid." }
 
@@ -282,11 +286,11 @@ translate lang trans =
                 PreviousFloatMeasurement value ->
                     { english = "Previous measurement: " ++ (toString value) }
 
-                ReportRemaining remaining ->
-                    { english = toString remaining ++ " remaning" }
-
                 ReloadParticipant ->
                     { english = "Re-load Participant" }
+
+                ReportCompleted ( pending, total ) ->
+                    { english = (toString (total - pending)) ++ "/" ++ (toString total) ++ " Completed" }
 
                 Retake ->
                     { english = "Retake" }

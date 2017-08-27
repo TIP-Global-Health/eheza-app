@@ -1,7 +1,7 @@
 module Pages.Participants.View exposing (view)
 
 import Activity.Model exposing (ActivityType)
-import Activity.Utils exposing (getPendingNumberPerActivity)
+import Activity.Utils exposing (getTotalsNumberPerActivity)
 import Activity.View exposing (viewActivityTypeFilter)
 import App.PageType exposing (Page(..))
 import Date exposing (Date)
@@ -61,7 +61,7 @@ view language currentDate currentUser participants model =
                                     then
                                         True
                                     else
-                                        getPendingNumberPerActivity currentDate activityType (Dict.insert participantId participant Dict.empty) > 0
+                                        (Tuple.first <| getTotalsNumberPerActivity currentDate activityType (Dict.insert participantId participant Dict.empty)) > 0
                                 )
                                 False
                                 model.activityTypeFilter

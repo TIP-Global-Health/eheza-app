@@ -3,7 +3,7 @@ module Activity.Utils
         ( getActivityList
         , getActivityTypeList
         , getActivityIdentity
-        , getPendingNumberPerActivity
+        , getTotalsNumberPerActivity
         )
 
 import Activity.Model exposing (ActivityIdentity, ActivityListItem, ActivityType(..), ChildActivityType(..), MotherActivityType(..))
@@ -55,7 +55,7 @@ getActivityList currentDate participantTypeFilter participants =
     List.map
         (\activityType ->
             { activity = getActivityIdentity activityType
-            , remaining = getPendingNumberPerActivity currentDate activityType participants
+            , totals = getTotalsNumberPerActivity currentDate activityType participants
             }
         )
         (getActivityTypeList participantTypeFilter)
@@ -109,35 +109,34 @@ getActivityIdentity activityType =
         identityVal activityType
 
 
-getPendingNumberPerActivity : Date -> ActivityType -> ParticipantsDict -> Int
-getPendingNumberPerActivity currentDate activityType participants =
+getTotalsNumberPerActivity : Date -> ActivityType -> ParticipantsDict -> ( Int, Int )
+getTotalsNumberPerActivity currentDate activityType participants =
     Dict.foldl
-        (\_ participant accum ->
-            let
-                hasPending =
-                    case participant.info of
-                        ParticipantChild child ->
-                            case activityType of
-                                Child childActivityType ->
-                                    hasPendingChildActivity currentDate childActivityType child
+        (\_ participant ( pending, total ) ->
+            case participant.info of
+                ParticipantChild child ->
+                    case activityType of
+                        Child childActivityType ->
+                            if hasPendingChildActivity currentDate childActivityType child then
+                                ( pending + 1, total + 1 )
+                            else
+                                ( pending, total + 1 )
 
-                                _ ->
-                                    False
+                        _ ->
+                            ( pending, total )
 
-                        ParticipantMother mother ->
-                            case activityType of
-                                Mother motherActivityType ->
-                                    hasPendingMotherActivity currentDate motherActivityType mother
+                ParticipantMother mother ->
+                    case activityType of
+                        Mother motherActivityType ->
+                            if hasPendingMotherActivity currentDate motherActivityType mother then
+                                ( pending + 1, total + 1 )
+                            else
+                                ( pending, total + 1 )
 
-                                _ ->
-                                    False
-            in
-                if hasPending then
-                    accum + 1
-                else
-                    accum
+                        _ ->
+                            ( pending, total )
         )
-        0
+        ( 0, 0 )
         participants
 
 
