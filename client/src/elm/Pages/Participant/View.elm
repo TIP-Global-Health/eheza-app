@@ -35,7 +35,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                 Just motherId ->
                     case motherWebData of
                         Success mother ->
-                            span []
+                            p []
                                 [ text <| translate language <| Trans.MotherName mother.name ]
 
                         Loading ->
@@ -44,7 +44,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                                 ]
 
                         _ ->
-                            span [] []
+                            p [] []
 
         participants =
             -- @todo: Add mkChild
@@ -60,7 +60,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                 , div [ class "content" ]
                     [ h2 [ class "ui header" ]
                         [ text childName ]
-                    , p [] [ text "Mother: TUYIZERE Gaudence" ]
+                    , motherInfo
                     , p [] [ text "DOB: 06 February 2017" ]
                     , p [] [ text "Age: 6 months" ]
                     ]
