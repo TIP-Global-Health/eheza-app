@@ -20,7 +20,7 @@ decodeChild =
         |> hardcoded NotAsked
         |> hardcoded Nothing
         |> custom decodeChildActivityDates
-        |> custom decodeGender
+        |> required "gender" decodeGender
 
 
 decodeGender : Decoder Gender
