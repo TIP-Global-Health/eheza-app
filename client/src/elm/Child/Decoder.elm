@@ -17,6 +17,7 @@ decodeChild =
         |> required "label" string
         |> optionalAt [ "avatar", "styles", "patient-photo" ] string "https://placehold.it/200x200"
         |> required "mother" (nullable decodeInt)
+        |> required "sibling" (nullable decodeInt)
         |> hardcoded NotAsked
         |> hardcoded Nothing
         |> custom decodeChildActivityDates
