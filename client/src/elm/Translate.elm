@@ -66,10 +66,12 @@ type TranslationId
     | ErrorConfigurationError
     | ErrorNetworkError
     | ErrorTimeout
+    | Female
     | KilogramShorthand
     | LinkToMother
     | Login
     | Logout
+    | Male
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
@@ -88,6 +90,8 @@ type TranslationId
     | PlaceholderTextGroupDate
     | PlaceholderTextJoined
     | PreviousFloatMeasurement Float
+    | ReportAge String
+    | ReportDOB String
     | ReportRemaining Int
     | ReloadParticipant
     | Retake
@@ -252,6 +256,9 @@ translate lang trans =
                 ErrorTimeout ->
                     { english = "The network request timed out." }
 
+                Female ->
+                    { english = "Female" }
+
                 KilogramShorthand ->
                     { english = "kg" }
 
@@ -263,6 +270,9 @@ translate lang trans =
 
                 Logout ->
                     { english = "Logout" }
+
+                Male ->
+                    { english = "Male" }
 
                 MeasurementNoChange ->
                     { english = "No Change" }
@@ -317,6 +327,12 @@ translate lang trans =
 
                 PreviousFloatMeasurement value ->
                     { english = "Previous measurement: " ++ (toString value) }
+
+                ReportAge age ->
+                    { english = "Age: " ++ age }
+
+                ReportDOB dob ->
+                    { english = "DOB: " ++ dob }
 
                 ReportRemaining remaining ->
                     { english = toString remaining ++ " remaning" }

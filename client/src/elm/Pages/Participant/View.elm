@@ -6,7 +6,7 @@ module Pages.Participant.View
 
 import Activity.Model exposing (ActivityListItem, ActivityType(..))
 import Activity.Utils exposing (getActivityList)
-import Child.Model exposing (Child, ChildId)
+import Child.Model exposing (Child, ChildId, Gender(..))
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict
@@ -27,31 +27,42 @@ import User.Model exposing (User)
 viewChild : BackendUrl -> String -> User -> Language -> Date -> WebData Mother -> ( ChildId, Child ) -> Model -> List (Html Msg)
 viewChild backendUrl accessToken currentUser language currentDate motherWebData ( childId, child ) model =
     let
-        motherInfo =
-            case child.motherId of
-                Nothing ->
-                    span [] [ text <| translate language Trans.LinkToMother ]
-
-                Just motherId ->
-                    case motherWebData of
-                        Success mother ->
-                            p []
-                                [ text <| translate language <| Trans.MotherName mother.name ]
-
-                        Loading ->
-                            span []
-                                [ i [ class "icon loading spinner" ] []
-                                ]
-
-                        _ ->
-                            p [] []
-
         participants =
             -- @todo: Add mkChild
             Dict.insert childId ({ info = Participant.Model.ParticipantChild child }) Dict.empty
 
         childName =
             translate language <| Trans.BabyName child.name
+
+        motherInfo =
+            case child.motherId of
+                Nothing ->
+                    []
+
+                Just motherId ->
+                    case motherWebData of
+                        Success mother ->
+                            [ text <| translate language <| Trans.MotherName mother.name ]
+
+                        _ ->
+                            []
+
+        dateOfBirth =
+            text <| translate language <| Trans.ReportDOB "To be implemented"
+
+        age =
+            text <| translate language <| Trans.ReportAge "To be implemented"
+
+        gender =
+            case child.gender of
+                Male ->
+                    text <| translate language <| Trans.Male
+
+                Female ->
+                    text <| translate language <| Trans.Female
+
+        break =
+            br [] []
     in
         div [ class "ui unstackable items" ]
             [ div [ class "item" ]
@@ -60,9 +71,9 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                 , div [ class "content" ]
                     [ h2 [ class "ui header" ]
                         [ text childName ]
-                    , motherInfo
-                    , p [] [ text "DOB: 06 February 2017" ]
-                    , p [] [ text "Age: 6 months" ]
+                    , p [] <|
+                        motherInfo
+                            ++ [ break, dateOfBirth, break, age, break, gender ]
                     ]
                 ]
             ]
@@ -76,24 +87,21 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
 viewMother : BackendUrl -> String -> Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Model -> List (Html Msg)
 viewMother backendUrl accessToken language currentDate currentUser motherId mother children model =
     let
+        break =
+            br [] []
+
         childrenList =
-            (List.indexedMap
-                (\index childWebData ->
-                    case childWebData of
-                        Success ( childId, child ) ->
-                            p []
-                                [ text <| "Baby " ++ toString (index + 1) ++ ": " ++ child.name ]
+            List.intersperse break <|
+                List.indexedMap
+                    (\index childWebData ->
+                        case childWebData of
+                            Success ( childId, child ) ->
+                                text <| (translate language Trans.Baby) ++ " " ++ toString (index + 1) ++ ": " ++ child.name
 
-                        Loading ->
-                            p []
-                                [ i [ class "icon loading spinner" ] []
-                                ]
-
-                        _ ->
-                            div [] []
-                )
-                children
-            )
+                            _ ->
+                                text ""
+                    )
+                    children
 
         participants =
             -- @todo: Add mkMother
@@ -103,11 +111,12 @@ viewMother backendUrl accessToken language currentDate currentUser motherId moth
             [ div [ class "item" ]
                 [ div [ class "ui image" ]
                     [ img [ src mother.image, attribute "alt" mother.name, width 222, height 222 ] [] ]
-                , div [ class "content" ] <|
-                    h2
+                , div [ class "content" ]
+                    [ h2
                         [ class "ui header" ]
                         [ text mother.name ]
-                        :: childrenList
+                    , p [] childrenList
+                    ]
                 ]
             ]
             :: ((viewActivityCards language currentDate currentUser participants Mothers model.selectedTab model.selectedActivity)
