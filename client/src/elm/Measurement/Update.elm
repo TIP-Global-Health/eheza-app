@@ -7,7 +7,7 @@ import Http
 import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
 import Json.Encode exposing (Value)
 import Measurement.Decoder exposing (decodePhotoFromResponse)
-import Measurement.Encoder exposing (encodePhoto, encodeWeight)
+import Measurement.Encoder exposing (encodeNutritionSigns, encodePhoto, encodeWeight)
 import Measurement.Model exposing (CompletedAndRedirectToActivityTuple, Model, Msg(..))
 import Participant.Model exposing (Participant, ParticipantId)
 import RemoteData exposing (RemoteData(..))
@@ -94,7 +94,7 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
 
         NutritionSignsSave ->
             ( model
-            , Cmd.none
+            , postNutritionSigns backendUrl accessToken participantId model
             , Just <| ( Child NutritionSigns, Child ChildPicture )
             )
 
@@ -128,6 +128,25 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
 
         WeightUpdate val ->
             ( { model | weight = Just val }, Cmd.none, Nothing )
+
+
+{-| Send new weight of a child to the backend.
+-}
+postNutritionSigns : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+postNutritionSigns backendUrl accessToken childId model =
+    Maybe.map
+        (\nutritionSigns ->
+            postData
+                backendUrl
+                accessToken
+                model
+                "nutrition_signs"
+                nutritionSigns
+                (encodeNutritionSigns childId)
+                HandleNutritionSignsSave
+        )
+        model.nutritionSigns
+        |> Maybe.withDefault ( model, Cmd.none, Nothing )
 
 
 {-| Enables posting of arbitrary values to the provided back end so long as the encoder matches the desired type

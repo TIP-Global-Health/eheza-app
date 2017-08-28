@@ -1,8 +1,10 @@
 module Measurement.Encoder exposing (..)
 
+import Activity.Model exposing (ChildNutritionSign(..))
 import Child.Model exposing (ChildId)
-import Json.Encode as Encoder exposing (Value, float, int)
-import Measurement.Model exposing (FloatMeasurements(..))
+import EveryDict
+import Json.Encode as Encoder exposing (Value, float, int, list, string)
+import Measurement.Model exposing (EveryDictChildNutritionSign, FloatMeasurements(..))
 
 
 encodeHeight : ChildId -> Float -> Value
@@ -13,6 +15,37 @@ encodeHeight childId value =
 encodeMuac : ChildId -> Float -> Value
 encodeMuac childId value =
     encodeFloatMeasurement childId MuacFloat value
+
+
+encodeNutritionSign : ChildNutritionSign () -> Value
+encodeNutritionSign sign =
+    case sign of
+        AbdominalDisortion ->
+            string "abdominal-disortion"
+
+        Apathy ->
+            string "apathy"
+
+        BrittleHair ->
+            string "brittle-hair"
+
+        DrySkin ->
+            string "dry-skin"
+
+        Edema ->
+            string "edema"
+
+        None ->
+            string "none"
+
+        PoorAppetite ->
+            string "poor-appetite"
+
+
+encodeNutritionSigns : ChildId -> EveryDictChildNutritionSign -> Value
+encodeNutritionSigns childId value =
+    List.map encodeNutritionSign (EveryDict.values value)
+        |> list
 
 
 encodePhoto : ChildId -> Int -> Value
