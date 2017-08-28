@@ -24,9 +24,4 @@ decodeChildActivityDates =
 decodeMotherActivityDates : Decoder MotherActivityDates
 decodeMotherActivityDates =
     decode MotherActivityDates
-        |> optional "date_aheza" (nullable decodeDate) Nothing
-        |> optional "date_attendance" (nullable decodeDate) Nothing
-        |> optional "date_education" (nullable decodeDate) Nothing
         |> optional "date_family_planning" (nullable decodeDate) Nothing
-        |> optional "date_hiv" (nullable decodeDate) Nothing
-        |> optional "date_picture" (nullable decodeDate) Nothing

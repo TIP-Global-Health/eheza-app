@@ -73,51 +73,8 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                )
 
 
-
---
--- div [ id "child-page" ] <|
---     [ div [ class "ui segment" ]
---         [ div [ class "ui items" ]
---             [ div [ class "item" ]
---                 [ div [ class "ui image" ]
---                     [ img [ src child.image ]
---                         []
---                     ]
---                 , div [ class "middle aligned content" ]
---                     [ div []
---                         [ h2
---                             [ class "ui disabled header mother"
---                             , id "mother-info"
---                             ]
---                             [ motherInfo ]
---                         ]
---                     , div []
---                         [ h2 [ class "ui header child" ]
---                             [ text <| translate language <| Trans.BabyName child.name ]
---                         ]
---                     , div [ class "meta" ]
---                         [ p []
---                             [ text <| translate language Trans.PlaceholderTextGroupDate
---                             , br []
---                                 []
---                             , text <| translate language Trans.PlaceholderTextJoined
---                             ]
---                         ]
---                     ]
---                 ]
---             ]
---         ]
---     , div [ class "ui segment" ]
---         [ div []
---             [ viewActivityCards language currentDate currentUser participants Children model.selectedTab model.selectedActivity
---             ]
---         ]
---     , Html.map MsgMeasurement <| Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
---     ]
-
-
-viewMother : Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Model -> List (Html Msg)
-viewMother language currentDate currentUser motherId mother children model =
+viewMother : BackendUrl -> String -> Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Model -> Html Msg
+viewMother backendUrl accessToken language currentDate currentUser motherId mother children model =
     let
         childrenList =
             (List.indexedMap
@@ -152,8 +109,14 @@ viewMother language currentDate currentUser motherId mother children model =
                         [ text mother.name ]
                         :: childrenList
                 ]
+            , Html.map MsgMeasurement <|
+                Measurement.View.viewMother backendUrl accessToken currentUser language model.selectedActivity model.measurements
             ]
-            :: viewActivityCards language currentDate currentUser participants Children model.selectedTab model.selectedActivity
+            :: ((viewActivityCards language currentDate currentUser participants Children model.selectedTab model.selectedActivity)
+                    ++ [ Html.map MsgMeasurement <|
+                          Measurement.View.viewMother backendUrl accessToken currentUser language model.selectedActivity model.measurements
+                       ]            
+               )
 
 
 viewActivityCards : Language -> Date -> User -> ParticipantsDict -> ParticipantTypeFilter -> Tab -> Maybe ActivityType -> List (Html Msg)

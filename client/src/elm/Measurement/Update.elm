@@ -20,6 +20,25 @@ import Utils.WebData exposing (sendWithHandler)
 update : BackendUrl -> String -> User -> ( ParticipantId, Participant ) -> Msg -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
 update backendUrl accessToken user ( participantId, participant ) msg model =
     case msg of
+        FamilyPlanningSignsSave ->
+            ( model
+            , Cmd.none
+            , Nothing
+            )
+
+        FamilyPlanningSignsToggle sign ->
+            let
+                signsUpdated =
+                    if EveryDict.member sign model.familyPlanningSigns then
+                        EveryDict.remove sign model.familyPlanningSigns
+                    else
+                        EveryDict.insert sign () model.familyPlanningSigns
+            in
+                ( { model | familyPlanningSigns = signsUpdated }
+                , Cmd.none
+                , Nothing
+                )
+
         HandleDropzoneUploadedFile fileId ->
             ( { model | photo = ( Just fileId, Nothing ) }
             , Cmd.none

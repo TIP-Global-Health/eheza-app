@@ -70,39 +70,33 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
-  // Exported field_base: 'field_examination'.
-  $field_bases['field_examination'] = array(
+  // Exported field_base: 'field_family_planning_signs'.
+  $field_bases['field_family_planning_signs'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_examination',
+    'field_name' => 'field_family_planning_signs',
     'indexes' => array(
-      'target_id' => array(
-        0 => 'target_id',
+      'value' => array(
+        0 => 'value',
       ),
     ),
     'locked' => 0,
-    'module' => 'entityreference',
+    'module' => 'list',
     'settings' => array(
-      'handler' => 'base',
-      'handler_settings' => array(
-        'behaviors' => array(
-          'views-select-list' => array(
-            'status' => 0,
-          ),
-        ),
-        'sort' => array(
-          'type' => 'none',
-        ),
-        'target_bundles' => array(
-          'examination' => 'examination',
-        ),
+      'allowed_values' => array(
+        'pill' => 'Pill',
+        'condoms' => 'Condoms',
+        'iud' => 'IUD',
+        'injection' => 'Injection',
+        'necklace' => 'Necklace',
+        'none' => 'None of these',
       ),
-      'target_type' => 'node',
+      'allowed_values_function' => '',
     ),
     'translatable' => 0,
-    'type' => 'entityreference',
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_height'.
