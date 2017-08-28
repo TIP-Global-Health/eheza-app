@@ -9,7 +9,6 @@ describe('measurement module', function() {
 
     // Select tab.
     browser.click('a=' + tab);
-    browser.waitForVisible('h3=' + tab + ':');
 
     // Wait for the tab.
     browser.waitForVisible('h3=' + tab + ':');
@@ -27,5 +26,33 @@ describe('measurement module', function() {
 
     // Click save button.
     browser.click('div.weight button');
+  })
+
+  it('should save the nutrition signs via the Save button', () => {
+    const tab = 'Nutrition signs';
+
+    browser.visitChildWithTodoTasks();
+
+    // Select tab.
+    browser.click('a=' + tab);
+
+    // Wait for the tab.
+    browser.waitForVisible('h3=Nutrition:');
+
+    // The Save button is disabled by default.
+    const classesBefore = browser.getAttribute('.nutrition .button', 'class');
+    assert.notEqual(classesBefore.indexOf('disabled'), -1, 'The button is disabled at start');
+
+    // Filling the value.
+    browser.click('#dry-skin');
+
+    // Then it becomes enabled.
+    const classesAfter = browser.getAttribute('.nutrition .button', 'class');
+    assert.equal(classesAfter.indexOf('disabled'), -1, 'The button is not disabled anymore');
+
+    // Click save button.
+    browser.click('div.nutrition button');
+
+    browser.waitForVisible('Photo:');
   })
 })

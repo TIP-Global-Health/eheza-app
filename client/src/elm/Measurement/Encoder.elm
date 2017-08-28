@@ -44,8 +44,15 @@ encodeNutritionSign sign =
 
 encodeNutritionSigns : ChildId -> EveryDictChildNutritionSign -> Value
 encodeNutritionSigns childId value =
-    List.map (\sign -> encodeNutritionSign sign) (EveryDict.keys value)
-        |> list
+    let
+        signsList =
+            List.map (\sign -> encodeNutritionSign sign) (EveryDict.keys value)
+                |> list
+    in
+        Encoder.object <|
+            [ ( "child", Encoder.int childId )
+            , ( "nutrition_signs", signsList )
+            ]
 
 
 encodePhoto : ChildId -> Int -> Value

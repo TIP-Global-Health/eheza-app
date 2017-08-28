@@ -154,7 +154,7 @@ postNutritionSigns backendUrl accessToken childId model =
             backendUrl
             accessToken
             model
-            "nutrition_signs"
+            "nutritions"
             model.nutritionSigns
             (encodeNutritionSigns childId)
             HandleNutritionSignsSave

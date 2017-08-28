@@ -391,7 +391,7 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
                 , viewNutritionSignsSelector language model.nutritionSigns
                 ]
             , div [ class "actions" ]
-                [ saveButton language NutritionSignsSave model True Nothing
+                [ saveButton language NutritionSignsSave model (not (EveryDict.isEmpty model.nutritionSigns)) Nothing
                 ]
             ]
         ]
