@@ -55,6 +55,30 @@ decodeTest =
                         }
                 in
                     Expect.equal (Ok expectedResult) (decodeString decodePusherEvent json)
+        , test "invalid gender" <|
+            \() ->
+                let
+                    json =
+                        """
+{
+    "eventType" : "patient__update",
+    "data" : {
+      "type" : "child",
+      "id" : "100",
+      "label" : "new-patient",
+      "mother": "7",
+      "date_picture": null,
+      "date_height" : null,
+      "date_muac" : null,
+      "date_progress_report" : null,
+      "date_weight" : null,
+      "gender" : "train"
+    }
+
+}
+            """
+                in
+                    Expect.equal (Err "I ran into a `fail` decoder at _.data.gender: train is not a recognized 'type' for Gender.") (decodeString decodePusherEvent json)
         ]
 
 

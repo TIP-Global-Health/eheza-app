@@ -30,6 +30,8 @@ decodeGender =
             (\gender ->
                 if gender == "female" then
                     succeed Female
-                else
+                else if gender == "male" then
                     succeed Male
+                else
+                    fail (gender ++ " is not a recognized 'type' for Gender.")
             )
