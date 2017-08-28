@@ -100,7 +100,7 @@ module.exports = function (browser, capabilities, specs) {
     // in the past for activities.
     // @see server/scripts/helper-functions.sh
     browser.url('/#participant/41');
-    browser.waitForVisible('.ui.tasks.segment');
+    browser.waitForVisible('.ui.task.segment');
   });
 
   /**
@@ -215,4 +215,3 @@ module.exports = function (browser, capabilities, specs) {
   });
 
 }
-
