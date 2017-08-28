@@ -59,7 +59,7 @@ getParticipantAge participant now =
                     mother.birthDate
 
         diff =
-            Date.Extra.Period.diff birthDate now
+            Date.Extra.Period.diff now birthDate
     in
         Participant.Model.AgeDay diff.day
 
@@ -76,7 +76,7 @@ renderParticipantAge language participant now =
                     mother.birthDate
 
         diff =
-            Date.Extra.Duration.diff birthDate now
+            Date.Extra.Duration.diff now birthDate
 
         days =
             diff.day
