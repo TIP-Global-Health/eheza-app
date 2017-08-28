@@ -44,15 +44,6 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
       ],
     ];
 
-    $public_fields['mother'] = [
-      'property' => 'field_mother',
-      'resource' => [
-        // Bundle name.
-        'mother' => [
-          // Resource name.
-          'name' => 'mothers',
-          'full_view' => FALSE,
-        ],
       ],
     ];
 
