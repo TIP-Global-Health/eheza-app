@@ -17,7 +17,7 @@ encodeMuac childId value =
     encodeFloatMeasurement childId MuacFloat value
 
 
-encodeNutritionSign : ChildNutritionSign () -> Value
+encodeNutritionSign : ChildNutritionSign -> Value
 encodeNutritionSign sign =
     case sign of
         AbdominalDisortion ->
@@ -44,7 +44,7 @@ encodeNutritionSign sign =
 
 encodeNutritionSigns : ChildId -> EveryDictChildNutritionSign -> Value
 encodeNutritionSigns childId value =
-    List.map encodeNutritionSign (EveryDict.values value)
+    List.map (\sign -> encodeNutritionSign sign) (EveryDict.keys value)
         |> list
 
 

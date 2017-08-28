@@ -45,6 +45,22 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
             , Nothing
             )
 
+        HandleNutritionSignsSave (Ok ()) ->
+            ( { model | status = Success () }
+            , Cmd.none
+            , Just <| ( Child NutritionSigns, Child ChildPicture )
+            )
+
+        HandleNutritionSignsSave (Err err) ->
+            let
+                _ =
+                    Debug.log "HandleWeightSave (Err)" False
+            in
+                ( { model | status = Failure err }
+                , Cmd.none
+                , Nothing
+                )
+
         HandlePhotoSave (Ok ( photoId, photo )) ->
             ( { model
                 | status = Success ()
@@ -93,10 +109,7 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
             )
 
         NutritionSignsSave ->
-            ( model
-            , postNutritionSigns backendUrl accessToken participantId model
-            , Just <| ( Child NutritionSigns, Child ChildPicture )
-            )
+            postNutritionSigns backendUrl accessToken participantId model
 
         NutritionSignsToggle nutritionSign ->
             let
@@ -134,19 +147,17 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
 -}
 postNutritionSigns : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
 postNutritionSigns backendUrl accessToken childId model =
-    Maybe.map
-        (\nutritionSigns ->
-            postData
-                backendUrl
-                accessToken
-                model
-                "nutrition_signs"
-                nutritionSigns
-                (encodeNutritionSigns childId)
-                HandleNutritionSignsSave
-        )
-        model.nutritionSigns
-        |> Maybe.withDefault ( model, Cmd.none, Nothing )
+    if EveryDict.isEmpty model.nutritionSigns then
+        ( model, Cmd.none, Nothing )
+    else
+        postData
+            backendUrl
+            accessToken
+            model
+            "nutrition_signs"
+            model.nutritionSigns
+            (encodeNutritionSigns childId)
+            HandleNutritionSignsSave
 
 
 {-| Enables posting of arbitrary values to the provided back end so long as the encoder matches the desired type
