@@ -2,6 +2,7 @@ module Pusher.Test exposing (all)
 
 import Activity.Model exposing (emptyChildActivityDates)
 import Date
+import Child.Model exposing (Gender(..))
 import Expect
 import Json.Decode exposing (decodeString)
 import Participant.Model exposing (ParticipantType(..))
@@ -31,7 +32,8 @@ decodeTest =
       "date_muac" : null,
       "date_progress_report" : null,
       "date_weight" : null,
-      "date_birth" : "2016-08-28T10:39:49+02:00"
+      "date_birth" : "2016-08-28T10:39:49+02:00",
+      "gender" : "female"
     }
 
 }
@@ -50,11 +52,36 @@ decodeTest =
                                         , selectedExamination = Nothing
                                         , activityDates = emptyChildActivityDates
                                         , birthDate = Date.fromTime 1472373589000
+                                        , gender = Female
                                         }
                                 }
                         }
                 in
                     Expect.equal (Ok expectedResult) (decodeString decodePusherEvent json)
+        , test "invalid gender" <|
+            \() ->
+                let
+                    json =
+                        """
+{
+    "eventType" : "patient__update",
+    "data" : {
+      "type" : "child",
+      "id" : "100",
+      "label" : "new-patient",
+      "mother": "7",
+      "date_picture": null,
+      "date_height" : null,
+      "date_muac" : null,
+      "date_progress_report" : null,
+      "date_weight" : null,
+      "gender" : "train"
+    }
+
+}
+            """
+                in
+                    Expect.equal (Err "I ran into a `fail` decoder at _.data.gender: train is not a recognized 'type' for Gender.") (decodeString decodePusherEvent json)
         ]
 
 

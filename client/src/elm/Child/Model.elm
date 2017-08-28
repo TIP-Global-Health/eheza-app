@@ -18,6 +18,11 @@ type alias MotherId =
     Int
 
 
+type Gender
+    = Female
+    | Male
+
+
 type alias Child =
     { name : String
     , image : String
@@ -26,4 +31,5 @@ type alias Child =
     , selectedExamination : Maybe ExaminationId
     , activityDates : ChildActivityDates
     , birthDate : Date
+    , gender : Gender
     }
