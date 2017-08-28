@@ -1,10 +1,19 @@
 module Measurement.View
     exposing
         ( viewChild
+        , viewMother
         )
 
 import Activity.Encoder exposing (encodeChildNutritionSign)
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..), ChildNutritionSign(..))
+import Activity.Model
+    exposing
+        ( ActivityType(..)
+        , ChildActivityType(..)
+        , ChildNutritionSign(..)
+        , FamilyPlanningSign(..)
+        , ChildActivityType(..)
+        , MotherActivityType(..)
+        )
 import Child.Model exposing (Child, ChildId)
 import Config.Model exposing (BackendUrl)
 import EveryDict
@@ -13,7 +22,22 @@ import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Maybe.Extra exposing (isJust)
-import Measurement.Model exposing (EveryDictChildNutritionSign, FileId, FloatInput, FloatMeasurements(..), Model, Msg(..), Photo, PhotoId, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight)
+import Measurement.Model
+    exposing
+        ( EveryDictChildNutritionSign
+        , FileId
+        , FloatInput
+        , FloatMeasurements(..)
+        , Model
+        , Msg(..)
+        , Photo
+        , PhotoId
+        , EveryDictFamilyPlanningSigns
+        , getInputConstraintsHeight
+        , getInputConstraintsMuac
+        , getInputConstraintsWeight
+        )
+import Mother.Model exposing (Mother, MotherId)
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import User.Model exposing (..)
@@ -436,6 +460,106 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
                 , name <| encodeChildNutritionSign sign
                 , onClick <| NutritionSignsToggle sign
                 , checked <| EveryDict.member sign nutritionSigns
+                ]
+                []
+            , label [ for attributeValue ]
+                [ text <| translate language body ]
+            ]
+
+
+viewMother : BackendUrl -> String -> User -> Language -> Maybe ActivityType -> Model -> Html Msg
+viewMother backendUrl accessToken user language selectedActivity model =
+    showMaybe <|
+        Maybe.map
+            (\activity ->
+                case activity of
+                    Mother motherActivity ->
+                        case motherActivity of
+                            FamilyPlanning ->
+                                viewFamilyPlanning backendUrl accessToken user language model
+
+                    _ ->
+                        emptyNode
+            )
+            selectedActivity
+
+
+viewFamilyPlanning : BackendUrl -> String -> User -> Language -> Model -> Html Msg
+viewFamilyPlanning backendUrl accessToken user language model =
+    div
+        [ class "ui full segment family-planning"
+        , id "familyPlanningEntryForm"
+        ]
+        [ div [ class "content" ]
+            [ h3
+                [ class "ui header" ]
+                [ text <| translate language Trans.ActivitiesFamilyPlanningSignsTitle
+                ]
+            , p [] [ text <| translate language Trans.ActivitiesFamilyPlanningSignsHelp ]
+            , div [ class "ui form" ] <|
+                p [] [ text <| translate language Trans.ActivitiesFamilyPlanningSignsLabel ]
+                    :: viewFamilyPlanningSelector language model.familyPlanningSigns
+            ]
+        , div [ class "actions" ] <|
+            saveButton language FamilyPlanningSignsSave model True Nothing
+        ]
+
+
+viewFamilyPlanningSelector : Language -> EveryDictFamilyPlanningSigns -> List (Html Msg)
+viewFamilyPlanningSelector language familyPlanningSigns =
+    let
+        familyPlanningSignFirst =
+            [ Pill, Condoms, IUD ]
+
+        familyPlanningSignSecond =
+            [ Injection, Necklace ]
+    in
+        [ div [ class "ui grid" ]
+            [ div [ class "eight wide column" ] <|
+                List.map
+                    (viewFamilyPlanningSelectorItem language familyPlanningSigns)
+                    familyPlanningSignFirst
+            , div [ class "eight wide column" ] <|
+                List.map
+                    (viewFamilyPlanningSelectorItem language familyPlanningSigns)
+                    familyPlanningSignSecond
+            ]
+        , div [ class "ui divider" ] []
+        , viewFamilyPlanningSelectorItem language familyPlanningSigns NoFamilyPlanning
+        ]
+
+
+viewFamilyPlanningSelectorItem : Language -> EveryDictFamilyPlanningSigns -> FamilyPlanningSign -> Html Msg
+viewFamilyPlanningSelectorItem language familyPlanningSigns sign =
+    let
+        ( body, attributeValue ) =
+            case sign of
+                Condoms ->
+                    ( Trans.ActivitiesFamilyPlanningSignsCondomsLabel, "condoms" )
+
+                IUD ->
+                    ( Trans.ActivitiesFamilyPlanningSignsIUDLabel, "iud" )
+
+                Injection ->
+                    ( Trans.ActivitiesFamilyPlanningSignsInjectionLabel, "injection" )
+
+                Necklace ->
+                    ( Trans.ActivitiesFamilyPlanningSignsNecklaceLabel, "necklace" )
+
+                NoFamilyPlanning ->
+                    ( Trans.ActivitiesFamilyPlanningSignsNoneLabel, "no-family-planning-sign" )
+
+                Pill ->
+                    ( Trans.ActivitiesFamilyPlanningSignsPillLabel, "pill" )
+    in
+        div [ class "ui checkbox" ]
+            [ input
+                [ type_ "checkbox"
+                , id attributeValue
+
+                --, name <| encodeChildNutritionSign sign
+                , onClick <| FamilyPlanningSignsToggle sign
+                , checked <| EveryDict.member sign familyPlanningSigns
                 ]
                 []
             , label [ for attributeValue ]

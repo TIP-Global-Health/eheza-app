@@ -118,7 +118,7 @@ viewPageParticipant backendUrl accessToken user language currentDate id model =
                         |> Maybe.withDefault Pages.Participant.Model.emptyModel
             in
                 div [ class "wrap" ] <|
-                    viewPageParticipantHeader language participant
+                    viewPageParticipantHeader language ( id, participant )
                         :: (case participant.info of
                                 ParticipantChild child ->
                                     let
@@ -134,12 +134,12 @@ viewPageParticipant backendUrl accessToken user language currentDate id model =
                                             getChildren mother model
                                     in
                                         List.map (Html.map (MsgPagesParticipant id)) <|
-                                            Pages.Participant.View.viewMother language currentDate user id mother childrenWebData participantModel
+                                            Pages.Participant.View.viewMother backendUrl accessToken language currentDate user id mother childrenWebData participantModel
                            )
 
 
-viewPageParticipantHeader : Language -> Participant -> Html Msg
-viewPageParticipantHeader language participant =
+viewPageParticipantHeader : Language -> ( ParticipantId, Participant ) -> Html Msg
+viewPageParticipantHeader language ( participantId, participant ) =
     let
         viewChild id maybeIndex active =
             let
@@ -175,7 +175,15 @@ viewPageParticipantHeader language participant =
 
                         Nothing ->
                             []
-                    , [ viewChild 0 Nothing True ]
+                    , List.indexedMap (\index childId -> viewChild childId (Just index) (childId == participantId)) <|
+                        List.sort <|
+                            participantId
+                                :: case child.siblingId of
+                                    Just siblingId ->
+                                        [ siblingId ]
+
+                                    Nothing ->
+                                        []
                     )
 
                 ParticipantMother mother ->
@@ -189,7 +197,12 @@ viewPageParticipantHeader language participant =
                 [ class "ui header" ]
                 [ text <| translate language Trans.Assessment ]
             , a
-                [ class "link-back" ]
+                [ class "link-back"
+                , onClick <|
+                    MsgPagesParticipant participantId <|
+                        Pages.Participant.Model.SetRedirectPage <|
+                            App.PageType.Dashboard []
+                ]
                 [ span [ class "icon-back" ] [] ]
             , ul
                 [ class "links-head" ]

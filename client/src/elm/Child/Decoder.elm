@@ -17,6 +17,22 @@ decodeChild =
         |> required "label" string
         |> optionalAt [ "avatar", "styles", "patient-photo" ] string "https://placehold.it/200x200"
         |> required "mother" (nullable decodeInt)
+        |> required "sibling" (nullable decodeInt)
         |> hardcoded NotAsked
         |> hardcoded Nothing
         |> custom decodeChildActivityDates
+        |> required "gender" decodeGender
+
+
+decodeGender : Decoder Gender
+decodeGender =
+    string
+        |> andThen
+            (\gender ->
+                if gender == "female" then
+                    succeed Female
+                else if gender == "male" then
+                    succeed Male
+                else
+                    fail (gender ++ " is not a recognized 'type' for Gender.")
+            )

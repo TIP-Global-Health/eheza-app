@@ -20,6 +20,15 @@ type TranslationId
     = AccessDenied
     | Activities
     | ActivitiesCompleted Int
+    | ActivitiesFamilyPlanningSignsCondomsLabel
+    | ActivitiesFamilyPlanningSignsHelp
+    | ActivitiesFamilyPlanningSignsIUDLabel
+    | ActivitiesFamilyPlanningSignsInjectionLabel
+    | ActivitiesFamilyPlanningSignsLabel
+    | ActivitiesFamilyPlanningSignsNecklaceLabel
+    | ActivitiesFamilyPlanningSignsNoneLabel
+    | ActivitiesFamilyPlanningSignsTitle
+    | ActivitiesFamilyPlanningSignsPillLabel
     | ActivitiesHeightHelp
     | ActivitiesHeightLabel
     | ActivitiesHeightTitle
@@ -58,10 +67,12 @@ type TranslationId
     | ErrorConfigurationError
     | ErrorNetworkError
     | ErrorTimeout
+    | Female
     | KilogramShorthand
     | LinkToMother
     | Login
     | Logout
+    | Male
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
@@ -80,6 +91,12 @@ type TranslationId
     | PlaceholderTextGroupDate
     | PlaceholderTextJoined
     | PreviousFloatMeasurement Float
+<<<<<<< HEAD
+=======
+    | ReportAge String
+    | ReportDOB String
+    | ReportRemaining Int
+>>>>>>> 289-participant-mother
     | ReloadParticipant
     | ReportCompleted ( Int, Int )
     | Retake
@@ -105,6 +122,33 @@ translate lang trans =
 
                 ActivitiesCompleted count ->
                     { english = "Completed (" ++ toString count ++ ")" }
+
+                ActivitiesFamilyPlanningSignsCondomsLabel ->
+                    { english = "Condoms" }
+
+                ActivitiesFamilyPlanningSignsHelp ->
+                    { english = "Every mother should be asked about her family planing method(s) each month. If a mother needs family planning, refer her to a clinic." }
+
+                ActivitiesFamilyPlanningSignsIUDLabel ->
+                    { english = "IUD" }
+
+                ActivitiesFamilyPlanningSignsInjectionLabel ->
+                    { english = "Injection" }
+
+                ActivitiesFamilyPlanningSignsLabel ->
+                    { english = "Which, if any, of the following methods do you use?" }
+
+                ActivitiesFamilyPlanningSignsNecklaceLabel ->
+                    { english = "Necklace" }
+
+                ActivitiesFamilyPlanningSignsNoneLabel ->
+                    { english = "None of these" }
+
+                ActivitiesFamilyPlanningSignsTitle ->
+                    { english = "Planning:" }
+
+                ActivitiesFamilyPlanningSignsPillLabel ->
+                    { english = "Pill" }
 
                 ActivitiesHeightHelp ->
                     { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight." }
@@ -220,6 +264,9 @@ translate lang trans =
                 ErrorTimeout ->
                     { english = "The network request timed out." }
 
+                Female ->
+                    { english = "Female" }
+
                 KilogramShorthand ->
                     { english = "kg" }
 
@@ -231,6 +278,9 @@ translate lang trans =
 
                 Logout ->
                     { english = "Logout" }
+
+                Male ->
+                    { english = "Male" }
 
                 MeasurementNoChange ->
                     { english = "No Change" }
@@ -286,6 +336,18 @@ translate lang trans =
                 PreviousFloatMeasurement value ->
                     { english = "Previous measurement: " ++ (toString value) }
 
+<<<<<<< HEAD
+=======
+                ReportAge age ->
+                    { english = "Age: " ++ age }
+
+                ReportDOB dob ->
+                    { english = "DOB: " ++ dob }
+
+                ReportRemaining remaining ->
+                    { english = toString remaining ++ " remaning" }
+
+>>>>>>> 289-participant-mother
                 ReloadParticipant ->
                     { english = "Re-load Participant" }
 
