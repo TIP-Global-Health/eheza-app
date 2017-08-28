@@ -21,3 +21,18 @@ decodeChild =
         |> hardcoded NotAsked
         |> hardcoded Nothing
         |> custom decodeChildActivityDates
+        |> required "gender" decodeGender
+
+
+decodeGender : Decoder Gender
+decodeGender =
+    string
+        |> andThen
+            (\gender ->
+                if gender == "female" then
+                    succeed Female
+                else if gender == "male" then
+                    succeed Male
+                else
+                    fail (gender ++ " is not a recognized 'type' for Gender.")
+            )
