@@ -190,10 +190,10 @@ viewActivityListItem language selectedActivity report =
         clickHandler =
             onClick <| SetSelectedActivity (Just <| report.activity.activityType)
     in
-        div [ classList [ ( "column", True ), ( "active", selectedActivity == (Just <| report.activity.activityType) ) ] ]
+        div [ class "column" ]
             [ a
                 [ clickHandler
-                , class "link-section"
+                , classList [ ( "link-section", True ), ( "active", selectedActivity == (Just <| report.activity.activityType) ) ]
                 ]
                 [ span [ class ("icon-section icon-" ++ report.activity.icon) ] []
                 , text report.activity.name
