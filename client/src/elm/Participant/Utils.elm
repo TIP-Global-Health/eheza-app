@@ -7,7 +7,7 @@ module Participant.Utils
         , renderParticipantAge
         )
 
-import Date exposing (Date)
+import Date exposing (Date, Day)
 import Date.Extra.Duration
 import Date.Extra.Period
 import Participant.Model exposing (AgeDay, Participant, ParticipantType(..))
@@ -57,11 +57,8 @@ getParticipantAge participant now =
 
                 ParticipantMother mother ->
                     mother.birthDate
-
-        diff =
-            Date.Extra.Period.diff now birthDate
     in
-        Participant.Model.AgeDay diff.day
+        Participant.Model.AgeDay <| Date.Extra.Duration.diffDays now birthDate
 
 
 renderParticipantAge : Language -> Participant -> Date -> String

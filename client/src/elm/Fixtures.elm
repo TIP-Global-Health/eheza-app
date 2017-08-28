@@ -1,8 +1,9 @@
 module Fixtures exposing (..)
 
-import Activity.Model exposing (emptyChildActivityDates)
+import Activity.Model exposing (emptyChildActivityDates, emptyMotherActivityDates)
 import Child.Model exposing (Child)
 import Date
+import Mother.Model exposing (Mother)
 import RemoteData exposing (RemoteData(NotAsked))
 import User.Model exposing (User)
 
@@ -41,5 +42,19 @@ exampleChild =
     , examinations = NotAsked
     , selectedExamination = Nothing
     , activityDates = emptyChildActivityDates
+    , birthDate = Date.fromTime 1472373589000
+    }
+
+
+{-| An example mother.
+-}
+exampleMother : Mother
+exampleMother =
+    { name = "Sebabive Gahiji"
+    , image = "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
+    , children = []
+    , examinations = NotAsked
+    , selectedExamination = Nothing
+    , activityDates = emptyMotherActivityDates
     , birthDate = Date.fromTime 1472373589000
     }
