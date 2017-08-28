@@ -89,7 +89,7 @@ renderParticipantAgeTest =
                             { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1501156048000 }) }
                             today
                         )
-                        "1 month and 1 days"
+                        "1 month and 1 day"
             , test "for a thirteen months old baby" <|
                 \() ->
                     Expect.equal
@@ -97,7 +97,7 @@ renderParticipantAgeTest =
                             { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1469101648000 }) }
                             today
                         )
-                        "13 months and 2 days"
+                        "13 months and 7 days"
             , test "for a 30 years old mother" <|
                 \() ->
                     Expect.equal
@@ -105,7 +105,7 @@ renderParticipantAgeTest =
                             { info = (ParticipantMother { exampleMother | birthDate = Date.fromTime 557840848000 }) }
                             today
                         )
-                        "360 months and 2 days"
+                        "359 months and 23 days"
             ]
 
 
