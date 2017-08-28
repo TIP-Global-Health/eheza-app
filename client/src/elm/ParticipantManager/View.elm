@@ -129,7 +129,15 @@ viewPageParticipantHeader language ( participantId, participant ) =
 
                         Nothing ->
                             []
-                    , [ viewChild 0 Nothing True ]
+                    , List.indexedMap (\index childId -> viewChild childId (Just index) (childId == participantId)) <|
+                        List.sort <|
+                            participantId
+                                :: case child.siblingId of
+                                    Just siblingId ->
+                                        [ siblingId ]
+
+                                    Nothing ->
+                                        []
                     )
 
                 ParticipantMother mother ->
