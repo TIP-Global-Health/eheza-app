@@ -80,7 +80,8 @@ viewMotherFormsTest : Test
 viewMotherFormsTest =
     let
         viewMotherWithActivity selectedActivity model =
-            viewMother exampleBackendUrl exampleAccessToken exampleUser English selectedActivity model
+            Html.div [ Attr.class "test-container" ]
+                [ viewMother exampleBackendUrl exampleAccessToken exampleUser English selectedActivity model ]
     in
         describe "A nurse visits the assesment of a Mother" <|
             [ test "Then a family planning form should be displayed when selected" <|
@@ -89,7 +90,7 @@ viewMotherFormsTest =
                         |> Query.fromHtml
                         |> Query.find [ Selector.class "family-planning" ]
                         |> Query.find [ tag "h3" ]
-                        |> Query.has [ text "Family Planning:" ]
+                        |> Query.has [ text "Planning:" ]
             ]
 
 
