@@ -53,6 +53,7 @@ type TranslationId
     | ActivitiesWeightTitle
     | Age Int Int
     | AgeDays Int
+    | AgeSingleBoth Int Int
     | AgeSingleMonth Int Int
     | AgeSingleDay Int Int
     | Baby
@@ -215,6 +216,9 @@ translate lang trans =
 
                 AgeDays days ->
                     { english = toString days ++ " days" }
+
+                AgeSingleBoth months days ->
+                    { english = toString months ++ " month and " ++ toString days ++ " day" }
 
                 AgeSingleMonth months days ->
                     { english = toString months ++ " month and " ++ toString days ++ " days" }

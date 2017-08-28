@@ -83,7 +83,9 @@ renderParticipantAge language participant now =
     in
         if (months == 0) then
             translate language <| Trans.AgeDays days
-        else if (months == 1) then
+        else if (months == 1 && days == 1) then
+            translate language <| Trans.AgeSingleBoth months days
+        else if (months == 1 && days /= 0) then
             translate language <| Trans.AgeSingleMonth months days
         else if (days == 1) then
             translate language <| Trans.AgeSingleDay months days
