@@ -106,7 +106,7 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
   /**
    * Return the sibling of the child.
    *
-   * @param $nid
+   * @param int $nid
    *   The child node ID.
    *
    * @return mixed|null
