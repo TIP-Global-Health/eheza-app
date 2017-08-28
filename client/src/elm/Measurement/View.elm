@@ -486,44 +486,35 @@ viewMother backendUrl accessToken user language selectedActivity model =
 
 viewFamilyPlanning : BackendUrl -> String -> User -> Language -> Model -> Html Msg
 viewFamilyPlanning backendUrl accessToken user language model =
-    div []
-        [ div
-            [ class "ui divider" ]
-            []
-        , div
-            [ class "ui full segment family-planning"
-            , id "familyPlanningEntryForm"
-            ]
+    div
+        [ class "ui full segment family-planning"
+        , id "familyPlanningEntryForm"
+        ]
+        [ div [ class "content" ]
             [ h3
                 [ class "ui header" ]
                 [ text <| translate language Trans.ActivitiesFamilyPlanningSignsTitle
                 ]
-            , p
-                []
-                [ text <| translate language Trans.ActivitiesFamilyPlanningSignsHelp ]
-            , div
-                [ class "ui form" ]
-                [ p []
-                    [ text <| translate language Trans.ActivitiesFamilyPlanningSignsLabel
-                    ]
-                , viewFamilyPlanningSelector language model.familyPlanningSigns
-                ]
-            , div [ class "actions" ] <|
-                saveButton language FamilyPlanningSignsSave model True Nothing
+            , p [] [ text <| translate language Trans.ActivitiesFamilyPlanningSignsHelp ]
+            , div [ class "ui form" ] <|
+                p [] [ text <| translate language Trans.ActivitiesFamilyPlanningSignsLabel ]
+                    :: viewFamilyPlanningSelector language model.familyPlanningSigns
             ]
+        , div [ class "actions" ] <|
+            saveButton language FamilyPlanningSignsSave model True Nothing
         ]
 
 
-viewFamilyPlanningSelector : Language -> EveryDictFamilyPlanningSigns -> Html Msg
+viewFamilyPlanningSelector : Language -> EveryDictFamilyPlanningSigns -> List (Html Msg)
 viewFamilyPlanningSelector language familyPlanningSigns =
     let
         familyPlanningSignFirst =
             [ Pill, Condoms, IUD ]
 
         familyPlanningSignSecond =
-            [ Injection, Necklace, NoFamilyPlanning ]
+            [ Injection, Necklace ]
     in
-        div [ class "ui grid" ]
+        [ div [ class "ui grid" ]
             [ div [ class "eight wide column" ] <|
                 List.map
                     (viewFamilyPlanningSelectorItem language familyPlanningSigns)
@@ -533,6 +524,9 @@ viewFamilyPlanningSelector language familyPlanningSigns =
                     (viewFamilyPlanningSelectorItem language familyPlanningSigns)
                     familyPlanningSignSecond
             ]
+        , div [ class "ui divider" ] []
+        , viewFamilyPlanningSelectorItem language familyPlanningSigns NoFamilyPlanning
+        ]
 
 
 viewFamilyPlanningSelectorItem : Language -> EveryDictFamilyPlanningSigns -> FamilyPlanningSign -> Html Msg
