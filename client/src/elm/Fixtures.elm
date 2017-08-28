@@ -1,7 +1,7 @@
 module Fixtures exposing (..)
 
 import Activity.Model exposing (emptyChildActivityDates)
-import Child.Model exposing (Child)
+import Child.Model exposing (Child, Gender(..))
 import RemoteData exposing (RemoteData(NotAsked))
 import User.Model exposing (User)
 
@@ -40,4 +40,5 @@ exampleChild =
     , examinations = NotAsked
     , selectedExamination = Nothing
     , activityDates = emptyChildActivityDates
+    , gender = Male
     }
