@@ -90,7 +90,7 @@ function hedley_patient_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_birth',
     'label' => 'Date birth',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
       'default_value' => 'now',
       'default_value2' => 'same',
@@ -551,7 +551,7 @@ function hedley_patient_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_birth',
     'label' => 'Date birth',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
       'default_value' => 'now',
       'default_value2' => 'same',
