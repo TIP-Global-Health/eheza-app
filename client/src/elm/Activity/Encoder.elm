@@ -63,20 +63,5 @@ encodeChildNutritionSign nutritionSign =
 encodeMotherActivityType : MotherActivityType -> String
 encodeMotherActivityType activityType =
     case activityType of
-        Aheza ->
-            "aheza"
-
-        Attendance ->
-            "attendance"
-
-        Education ->
-            "education"
-
         FamilyPlanning ->
             "family_planning"
-
-        Hiv ->
-            "hiv"
-
-        MotherPicture ->
-            "picture"
