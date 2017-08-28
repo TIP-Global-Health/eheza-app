@@ -1,13 +1,29 @@
 module Participant.View
     exposing
-        ( viewParticipantTypeFilter
+        ( getParticipantAge
+        , renderParticipantAge
+        , viewParticipantTypeFilter
         )
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
-import Participant.Model exposing (ParticipantTypeFilter(..))
+import Participant.Model exposing (AgeDay, Participant, ParticipantTypeFilter(..))
 import Translate as Trans exposing (translate, Language)
+
+
+getParticipantAge : Participant -> AgeDay
+getParticipantAge participant =
+    Participant.Model.AgeDay 10
+
+
+renderParticipantAge : Participant -> String
+renderParticipantAge participant =
+    let
+        ageDay =
+            getParticipantAge participant
+    in
+        "4 months and 2 days"
 
 
 viewParticipantTypeFilter : Language -> (String -> msg) -> ParticipantTypeFilter -> Html msg
