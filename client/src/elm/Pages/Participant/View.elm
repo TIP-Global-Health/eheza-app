@@ -73,7 +73,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                )
 
 
-viewMother : BackendUrl -> String -> Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Model -> Html Msg
+viewMother : BackendUrl -> String -> Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Model -> List (Html Msg)
 viewMother backendUrl accessToken language currentDate currentUser motherId mother children model =
     let
         childrenList =
@@ -109,13 +109,11 @@ viewMother backendUrl accessToken language currentDate currentUser motherId moth
                         [ text mother.name ]
                         :: childrenList
                 ]
-            , Html.map MsgMeasurement <|
-                Measurement.View.viewMother backendUrl accessToken currentUser language model.selectedActivity model.measurements
             ]
-            :: ((viewActivityCards language currentDate currentUser participants Children model.selectedTab model.selectedActivity)
+            :: ((viewActivityCards language currentDate currentUser participants Mothers model.selectedTab model.selectedActivity)
                     ++ [ Html.map MsgMeasurement <|
-                          Measurement.View.viewMother backendUrl accessToken currentUser language model.selectedActivity model.measurements
-                       ]            
+                            Measurement.View.viewMother backendUrl accessToken currentUser language model.selectedActivity model.measurements
+                       ]
                )
 
 

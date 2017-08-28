@@ -84,7 +84,7 @@ getActivityIdentity activityType =
                 Mother motherActivityType ->
                     case motherActivityType of
                         FamilyPlanning ->
-                            ActivityIdentity "Family planning" "family-planning"
+                            ActivityIdentity "Family planning" "planning"
     in
         identityVal activityType
 

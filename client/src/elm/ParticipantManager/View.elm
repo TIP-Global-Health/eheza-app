@@ -88,7 +88,7 @@ viewPageParticipant backendUrl accessToken user language currentDate id model =
                                             getChildren mother model
                                     in
                                         List.map (Html.map (MsgPagesParticipant id)) <|
-                                            Pages.Participant.View.viewMother language currentDate user id mother childrenWebData participantModel
+                                            Pages.Participant.View.viewMother backendUrl accessToken language currentDate user id mother childrenWebData participantModel
                            )
 
 

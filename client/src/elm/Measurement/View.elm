@@ -508,9 +508,8 @@ viewFamilyPlanning backendUrl accessToken user language model =
                     ]
                 , viewFamilyPlanningSelector language model.familyPlanningSigns
                 ]
-            , div [ class "actions" ]
-                [ saveButton language FamilyPlanningSignsSave model True Nothing
-                ]
+            , div [ class "actions" ] <|
+                saveButton language FamilyPlanningSignsSave model True Nothing
             ]
         ]
 
