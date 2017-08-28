@@ -81,13 +81,15 @@ renderParticipantAge language participant now =
         months =
             diff.month
     in
-        if (months == 0) then
+        if (days == 1 && months == 0) then
+            translate language <| Trans.AgeSingleDayWithoutMonth months days
+        else if (months == 0) then
             translate language <| Trans.AgeDays days
+        else if (days == 1) then
+            translate language <| Trans.AgeSingleDayWithMonth months days
         else if (months == 1 && days == 1) then
             translate language <| Trans.AgeSingleBoth months days
         else if (months == 1 && days /= 0) then
             translate language <| Trans.AgeSingleMonth months days
-        else if (days == 1) then
-            translate language <| Trans.AgeSingleDay months days
         else
             translate language <| Trans.Age months days

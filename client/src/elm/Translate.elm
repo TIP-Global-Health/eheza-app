@@ -55,7 +55,8 @@ type TranslationId
     | AgeDays Int
     | AgeSingleBoth Int Int
     | AgeSingleMonth Int Int
-    | AgeSingleDay Int Int
+    | AgeSingleDayWithMonth Int Int
+    | AgeSingleDayWithoutMonth Int Int
     | Baby
     | BabyName String
     | CentimeterShorthand
@@ -223,8 +224,11 @@ translate lang trans =
                 AgeSingleMonth months days ->
                     { english = toString months ++ " month and " ++ toString days ++ " days" }
 
-                AgeSingleDay months days ->
+                AgeSingleDayWithMonth months days ->
                     { english = toString months ++ " months and " ++ toString days ++ " day" }
+
+                AgeSingleDayWithoutMonth months days ->
+                    { english = toString days ++ " day" }
 
                 Baby ->
                     { english = "Baby" }
