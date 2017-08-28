@@ -91,12 +91,9 @@ type TranslationId
     | PlaceholderTextGroupDate
     | PlaceholderTextJoined
     | PreviousFloatMeasurement Float
-<<<<<<< HEAD
-=======
     | ReportAge String
     | ReportDOB String
     | ReportRemaining Int
->>>>>>> 289-participant-mother
     | ReloadParticipant
     | ReportCompleted ( Int, Int )
     | Retake
@@ -336,8 +333,6 @@ translate lang trans =
                 PreviousFloatMeasurement value ->
                     { english = "Previous measurement: " ++ (toString value) }
 
-<<<<<<< HEAD
-=======
                 ReportAge age ->
                     { english = "Age: " ++ age }
 
@@ -347,7 +342,6 @@ translate lang trans =
                 ReportRemaining remaining ->
                     { english = toString remaining ++ " remaning" }
 
->>>>>>> 289-participant-mother
                 ReloadParticipant ->
                     { english = "Re-load Participant" }
 
