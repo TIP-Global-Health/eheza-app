@@ -45,7 +45,7 @@ getParticipantTypeAsString participant =
 
 
 {-| Calculates the age of a participant.
-    To get current time, see App/Model.currentDate
+To get current time, see App/Model.currentDate
 -}
 getParticipantAge : Participant -> Date -> AgeDay
 getParticipantAge participant now =
