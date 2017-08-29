@@ -1,6 +1,7 @@
 module Mother.Model exposing (..)
 
 import Activity.Model exposing (MotherActivityDates)
+import Date exposing (Date)
 import Examination.Model exposing (EveryDictListExaminationsMother, ExaminationId)
 import RemoteData exposing (WebData)
 
@@ -20,4 +21,5 @@ type alias Mother =
     , examinations : WebData EveryDictListExaminationsMother
     , selectedExamination : Maybe ExaminationId
     , activityDates : MotherActivityDates
+    , birthDate : Date
     }

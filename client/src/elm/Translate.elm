@@ -1,5 +1,7 @@
 module Translate exposing (..)
 
+import Date exposing (Month(..))
+
 
 type Language
     = English
@@ -51,6 +53,14 @@ type TranslationId
     | ActivitiesWeightHelp
     | ActivitiesWeightLabel
     | ActivitiesWeightTitle
+    | Age Int Int
+    | AgeDays Int
+    | AgeMonthsWithoutDay Int
+    | AgeSingleBoth Int Int
+    | AgeSingleMonth Int Int
+    | AgeSingleMonthWithoutDay Int
+    | AgeSingleDayWithMonth Int Int
+    | AgeSingleDayWithoutMonth Int Int
     | Assessment
     | Baby
     | BabyName String
@@ -96,7 +106,7 @@ type TranslationId
     | ReportRemaining Int
     | ReloadParticipant
     | ReportCompleted ( Int, Int )
-    | Retake
+    | ResolveMonth Month
     | Retry
     | Save
     | SaveError
@@ -212,6 +222,30 @@ translate lang trans =
 
                 ActivitiesWeightTitle ->
                     { english = "Weight:" }
+
+                Age months days ->
+                    { english = toString months ++ " months and " ++ toString days ++ " days" }
+
+                AgeDays days ->
+                    { english = toString days ++ " days" }
+
+                AgeMonthsWithoutDay months ->
+                    { english = toString months ++ " month" }
+
+                AgeSingleBoth months days ->
+                    { english = toString months ++ " month and " ++ toString days ++ " day" }
+
+                AgeSingleMonth months days ->
+                    { english = toString months ++ " month and " ++ toString days ++ " days" }
+
+                AgeSingleDayWithMonth months days ->
+                    { english = toString months ++ " months and " ++ toString days ++ " day" }
+
+                AgeSingleDayWithoutMonth months days ->
+                    { english = toString days ++ " day" }
+
+                AgeSingleMonthWithoutDay month ->
+                    { english = toString month ++ " month" }
 
                 Assessment ->
                     { english = "Assessment" }
@@ -348,8 +382,43 @@ translate lang trans =
                 ReportCompleted ( pending, total ) ->
                     { english = (toString (total - pending)) ++ "/" ++ (toString total) ++ " Completed" }
 
-                Retake ->
-                    { english = "Retake" }
+                ResolveMonth month ->
+                    case month of
+                        Jan ->
+                            { english = "January" }
+
+                        Feb ->
+                            { english = "February" }
+
+                        Mar ->
+                            { english = "March" }
+
+                        Apr ->
+                            { english = "April" }
+
+                        May ->
+                            { english = "May" }
+
+                        Jun ->
+                            { english = "June" }
+
+                        Jul ->
+                            { english = "July" }
+
+                        Aug ->
+                            { english = "August" }
+
+                        Sep ->
+                            { english = "September" }
+
+                        Oct ->
+                            { english = "October" }
+
+                        Nov ->
+                            { english = "November" }
+
+                        Dec ->
+                            { english = "December" }
 
                 Retry ->
                     { english = "Retry" }

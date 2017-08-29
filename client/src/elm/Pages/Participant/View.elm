@@ -19,6 +19,7 @@ import Measurement.View
 import Mother.Model exposing (Mother, MotherId)
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
 import Participant.Model exposing (Participant, ParticipantId, ParticipantTypeFilter(..), ParticipantsDict)
+import Participant.Utils exposing (getParticipantAge, renderParticipantAge)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
 import User.Model exposing (User)
@@ -27,9 +28,12 @@ import User.Model exposing (User)
 viewChild : BackendUrl -> String -> User -> Language -> Date -> WebData Mother -> ( ChildId, Child ) -> Model -> List (Html Msg)
 viewChild backendUrl accessToken currentUser language currentDate motherWebData ( childId, child ) model =
     let
+        childParticipant =
+            { info = Participant.Model.ParticipantChild child }
+
         participants =
             -- @todo: Add mkChild
-            Dict.insert childId ({ info = Participant.Model.ParticipantChild child }) Dict.empty
+            Dict.insert childId childParticipant Dict.empty
 
         childName =
             translate language <| Trans.BabyName child.name
@@ -48,10 +52,31 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                             []
 
         dateOfBirth =
-            text <| translate language <| Trans.ReportDOB "To be implemented"
+            let
+                day =
+                    Date.day child.birthDate
+
+                month =
+                    translate language <| Trans.ResolveMonth <| Date.month child.birthDate
+
+                year =
+                    Date.year child.birthDate
+            in
+                text <|
+                    translate language <|
+                        Trans.ReportDOB <|
+                            (if day < 10 then
+                                "0" ++ toString day
+                             else
+                                toString day
+                            )
+                                ++ " "
+                                ++ month
+                                ++ " "
+                                ++ toString year
 
         age =
-            text <| translate language <| Trans.ReportAge "To be implemented"
+            text <| translate language <| Trans.ReportAge <| renderParticipantAge language childParticipant currentDate
 
         gender =
             case child.gender of
@@ -63,6 +88,9 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
 
         break =
             br [] []
+
+        log =
+            Debug.log "child.birthDate" child.birthDate
     in
         div [ class "ui unstackable items" ]
             [ div [ class "item" ]
