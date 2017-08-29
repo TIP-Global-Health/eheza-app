@@ -1,6 +1,7 @@
 module Participant.Model
     exposing
-        ( Participant
+        ( AgeDay(..)
+        , Participant
         , ParticipantId
         , ParticipantTypeFilter(..)
         , ParticipantType(..)
@@ -10,6 +11,10 @@ module Participant.Model
 import Dict exposing (Dict)
 import Child.Model exposing (Child)
 import Mother.Model exposing (Mother)
+
+
+type AgeDay
+    = AgeDay Int
 
 
 type alias ParticipantId =
