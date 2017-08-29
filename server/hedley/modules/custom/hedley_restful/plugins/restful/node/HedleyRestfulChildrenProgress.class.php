@@ -16,16 +16,19 @@ class HedleyRestfulChildrenProgress extends HedleyRestfulEntityBaseNode {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $field_names = ['field_date_birth', 'field_gender'];
-    foreach ($field_names as $field_name) {
-      $public_name = str_replace('field_', '', $field_name);
-      $public_fields[$public_name] = [
-        'property' => $field_name,
-      ];
-    }
-
     $public_fields['type'] = [
       'callback' => 'static::getType',
+    ];
+
+    $public_fields['date_birth'] = [
+      'property' => 'field_date_birth',
+      'process_callbacks' => [
+        [$this, 'convertTimestampToIso8601'],
+      ],
+    ];
+
+    $public_fields['gender'] = [
+      'property' => 'field_gender',
     ];
 
     $public_fields['examinations'] = [
@@ -48,6 +51,15 @@ class HedleyRestfulChildrenProgress extends HedleyRestfulEntityBaseNode {
     return 'child-progress';
   }
 
+  /**
+   * Return child examinations.
+   *
+   * @param int $nid
+   *   The child node ID.
+   *
+   * @return array|null
+   *   Examinations array, or NULL if none exist.
+   */
   protected function getChildExaminations($nid) {
     $child_measurement_types = [
       'weight' => 'weight',
@@ -92,4 +104,5 @@ class HedleyRestfulChildrenProgress extends HedleyRestfulEntityBaseNode {
 
     return [$child_examination];
   }
+
 }
