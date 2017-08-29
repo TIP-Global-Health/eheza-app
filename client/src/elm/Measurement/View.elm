@@ -292,25 +292,17 @@ viewPhoto backendUrl accessToken user language ( childId, child ) model =
             else
                 []
     in
-        div []
-            [ divider
-            , div
-                [ class "ui full segment photo"
-                ]
-                [ h3
-                    [ class "ui header" ]
-                    [ text <| translate language Trans.ActivitiesPhotoTitle
-                    ]
-                , p
-                    []
-                    [ text <| translate language Trans.ActivitiesPhotoHelp ]
+        div
+            [ class "ui full segment photo" ]
+            [ div [ class "content" ]
+                [ h3 [ class "ui header" ]
+                    [ text <| translate language Trans.ActivitiesPhotoTitle ]
+                , p [] [ text <| translate language Trans.ActivitiesPhotoHelp ]
                 , viewPhotoThumb model.photo
-                , div
-                    [ class "dropzone" ]
-                    []
-                , div [ class "actions" ] <|
-                    saveButton language PhotoSave model hasFileId (Just "column")
+                , div [ class "dropzone" ] []
                 ]
+            , div [ class "actions" ] <|
+                saveButton language PhotoSave model hasFileId (Just "column")
             ]
 
 

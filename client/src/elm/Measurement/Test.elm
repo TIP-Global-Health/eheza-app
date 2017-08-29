@@ -49,6 +49,13 @@ viewChildFormsTest =
                         |> Query.find [ Selector.classes [ "ui", "full", "segment", "weight" ] ]
                         |> Query.find [ tag "h3" ]
                         |> Query.has [ text "Weight:" ]
+            , test "Then a Photo form should be displayed when selected" <|
+                \() ->
+                    viewChildWithActivity (Just <| Child ChildPicture) emptyModel
+                        |> Query.fromHtml
+                        |> Query.find [ Selector.classes [ "ui", "full", "segment", "photo" ] ]
+                        |> Query.find [ tag "h3" ]
+                        |> Query.has [ text "Photo:" ]
             , test "Then a Photo form with disabled Save button should be displayed when selected" <|
                 \() ->
                     viewChildWithActivity (Just <| Child ChildPicture) emptyModel
