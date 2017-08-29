@@ -83,11 +83,11 @@ class HedleyRestfulChildrenProgress extends HedleyRestfulEntityBaseNode {
     }
 
     $child_examination['id'] = 'dummy';
-    foreach(array_keys($child_measurement_types) as $measurement_type) {
+    foreach (array_keys($child_measurement_types) as $measurement_type) {
       $child_examination[$measurement_type] = NULL;
     }
 
-    foreach($result['node'] as $measurement) {
+    foreach ($result['node'] as $measurement) {
       if (is_null($child_examination[$measurement->type])) {
         $wrapper = entity_metadata_wrapper('node', $measurement->nid);
         $field = 'field_' . $child_measurement_types[$measurement->type];
