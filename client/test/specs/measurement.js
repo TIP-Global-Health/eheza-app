@@ -26,7 +26,7 @@ describe('measurement module', function() {
 
     // Click save button.
     browser.click('div.weight button');
-  })
+  });
 
   it('should save the nutrition signs via the Save button', () => {
     const tab = 'Nutrition signs';
@@ -54,5 +54,5 @@ describe('measurement module', function() {
     browser.click('div.nutrition button');
 
     browser.waitForVisible('h3=Photo:');
-  })
-})
+  });
+});

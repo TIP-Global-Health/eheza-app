@@ -1,10 +1,11 @@
 module Measurement.Encoder exposing (..)
 
-import Activity.Model exposing (ChildNutritionSign(..))
+import Activity.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..))
 import Child.Model exposing (ChildId)
 import EveryDict
 import Json.Encode as Encoder exposing (Value, float, int, list, string)
-import Measurement.Model exposing (EveryDictChildNutritionSign, FloatMeasurements(..))
+import Measurement.Model exposing (EveryDictChildNutritionSign, EveryDictFamilyPlanningSigns, FloatMeasurements(..))
+import Mother.Model exposing (MotherId)
 
 
 encodeHeight : ChildId -> Float -> Value
@@ -52,6 +53,41 @@ encodeNutritionSigns childId value =
         Encoder.object <|
             [ ( "child", Encoder.int childId )
             , ( "nutrition_signs", signsList )
+            ]
+
+
+encodeFamilyPlanningSign : FamilyPlanningSign -> Value
+encodeFamilyPlanningSign sign =
+    case sign of
+        Condoms ->
+            string "condoms"
+
+        IUD ->
+            string "iud"
+
+        Injection ->
+            string "injection"
+
+        Necklace ->
+            string "necklace"
+
+        NoFamilyPlanning ->
+            string "abdominal-disortion"
+
+        Pill ->
+            string "pill"
+
+
+encodeFamilyPlanning : MotherId -> EveryDictFamilyPlanningSigns -> Value
+encodeFamilyPlanning motherId value =
+    let
+        familyPlanning =
+            List.map (\method -> encodeFamilyPlanningSign method) (EveryDict.keys value)
+                |> list
+    in
+        Encoder.object <|
+            [ ( "mother", Encoder.int motherId )
+            , ( "family_planning_signs", familyPlanning )
             ]
 
 

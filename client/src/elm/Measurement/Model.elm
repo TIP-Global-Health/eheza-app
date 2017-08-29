@@ -47,7 +47,10 @@ type Msg
     = FamilyPlanningSignsSave
     | FamilyPlanningSignsToggle FamilyPlanningSign
     | HandleDropzoneUploadedFile Int
+    | HandleFamilyPlanningSave (Result Http.Error ())
+    | HandleHeightSave (Result Http.Error ())
     | HandleNutritionSignsSave (Result Http.Error ())
+    | HandleMuacSave (Result Http.Error ())
     | HandlePhotoSave (Result Http.Error ( PhotoId, Photo ))
     | HandleWeightSave (Result Http.Error ())
     | HeightSave

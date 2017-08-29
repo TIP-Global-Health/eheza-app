@@ -25,7 +25,7 @@ describe('assesment pages', () => {
         browser.waitForVisible('div=' + secondUsedTab + ':');
     });
 
-    it('should preserve Nutrition Signs  data while the user is switching between forms', () => {
+    it('should preserve Nutrition Signs data while the user is switching between forms', () => {
         const firstUsedTab = 'Nutrition signs';
         const secondUsedTab = 'Photo';
 
