@@ -51,6 +51,14 @@ type TranslationId
     | ActivitiesWeightHelp
     | ActivitiesWeightLabel
     | ActivitiesWeightTitle
+    | Age Int Int
+    | AgeDays Int
+    | AgeMonthsWithoutDay Int
+    | AgeSingleBoth Int Int
+    | AgeSingleMonth Int Int
+    | AgeSingleMonthWithoutDay Int
+    | AgeSingleDayWithMonth Int Int
+    | AgeSingleDayWithoutMonth Int Int
     | Assessment
     | Baby
     | BabyName String
@@ -211,9 +219,33 @@ translate lang trans =
                 ActivitiesWeightTitle ->
                     { english = "Weight:" }
 
+                Age months days ->
+                    { english = toString months ++ " months and " ++ toString days ++ " days" }
+
+                AgeDays days ->
+                    { english = toString days ++ " days" }
+
+                AgeMonthsWithoutDay months ->
+                    { english = toString months ++ " month" }
+
+                AgeSingleBoth months days ->
+                    { english = toString months ++ " month and " ++ toString days ++ " day" }
+
+                AgeSingleMonth months days ->
+                    { english = toString months ++ " month and " ++ toString days ++ " days" }
+
+                AgeSingleDayWithMonth months days ->
+                    { english = toString months ++ " months and " ++ toString days ++ " day" }
+
+                AgeSingleDayWithoutMonth months days ->
+                    { english = toString days ++ " day" }
+
+                AgeSingleMonthWithoutDay month ->
+                    { english = toString month ++ " month" }
+                    
                 Assessment ->
                     { english = "Assessment" }
-
+                    
                 Baby ->
                     { english = "Baby" }
 
