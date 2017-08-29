@@ -300,21 +300,7 @@ viewPhoto backendUrl accessToken user language ( childId, child ) model =
                     [ class "dropzone" ]
                     []
                 , div [ class "actions" ]
-                    [ div [ class "ui two column grid" ]
-                        [ div
-                            [ class "column" ]
-                            [ button
-                                ([ classList
-                                    [ ( "ui fluid basic button retake", True )
-                                    , ( "disabled", not hasFileId )
-                                    ]
-                                 ]
-                                    ++ handleClick
-                                )
-                                [ text <| translate language Trans.Retake ]
-                            ]
-                        , saveButton language PhotoSave model hasFileId (Just "column")
-                        ]
+                    [ saveButton language PhotoSave model hasFileId (Just "column")
                     ]
                 ]
             ]
