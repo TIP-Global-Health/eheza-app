@@ -86,6 +86,14 @@ renderParticipantAgeTest =
                 \() ->
                     Expect.equal
                         (renderParticipantAge English
+                            { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1501242448000 }) }
+                            today
+                        )
+                        "1 month"
+            , test "for a one month, one day old baby" <|
+                \() ->
+                    Expect.equal
+                        (renderParticipantAge English
                             { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1501156048000 }) }
                             today
                         )
