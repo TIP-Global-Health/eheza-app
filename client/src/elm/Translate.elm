@@ -105,7 +105,6 @@ type TranslationId
     | ReportRemaining Int
     | ReloadParticipant
     | ResolveMonth Month
-    | Retake
     | Retry
     | Save
     | SaveError
@@ -412,9 +411,6 @@ translate lang trans =
 
                         Dec ->
                             { english = "December" }
-
-                Retake ->
-                    { english = "Retake" }
 
                 Retry ->
                     { english = "Retry" }

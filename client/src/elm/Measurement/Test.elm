@@ -61,18 +61,6 @@ viewChildFormsTest =
                         |> Query.fromHtml
                         |> Query.find [ id "save-form" ]
                         |> Query.hasNot [ classes [ "disabled" ] ]
-            , test "Then a Photo form with disabled Retake button should be displayed when selected" <|
-                \() ->
-                    viewChildWithActivity (Just <| Child ChildPicture) emptyModel
-                        |> Query.fromHtml
-                        |> Query.find [ class "retake" ]
-                        |> Query.has [ classes [ "disabled" ] ]
-            , test "Then a Photo form with enabled Retake button should be displayed when selected and there is one photo" <|
-                \() ->
-                    viewChildWithActivity (Just <| Child ChildPicture) { emptyModel | photo = ( Just 1, Nothing ) }
-                        |> Query.fromHtml
-                        |> Query.find [ class "retake" ]
-                        |> Query.hasNot [ classes [ "disabled" ] ]
             ]
 
 
