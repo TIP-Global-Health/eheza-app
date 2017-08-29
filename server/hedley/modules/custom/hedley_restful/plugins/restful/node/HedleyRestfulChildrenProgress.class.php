@@ -82,7 +82,10 @@ class HedleyRestfulChildrenProgress extends HedleyRestfulEntityBaseNode {
       return NULL;
     }
 
-    $child_examination['id'] = 'dummy';
+    // @todo: refactor to get data via Examination node, replace it with the
+    // actual Node Id.
+    $child_examination['id'] = '1';
+
     foreach (array_keys($child_measurement_types) as $measurement_type) {
       $child_examination[$measurement_type] = NULL;
     }
