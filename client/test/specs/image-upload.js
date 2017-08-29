@@ -23,12 +23,6 @@ describe('The Photo form', () => {
     assert.notEqual(classesBefore.indexOf('disabled'), -1, 'The Save button is disabled');
   });
 
-  it('should not allow to Retake without an image', () => {
-    // The Retake button is disabled.
-    const classesBefore = browser.getAttribute('button.retake', 'class');
-    assert.notEqual(classesBefore.indexOf('disabled'), -1, 'The Retake button is disabled');
-  });
-
   it('should allow to upload an image to the dropzone', () => {
     // Add and then check the image.
     browser.addTestImage('Testfile1');
