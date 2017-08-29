@@ -1,11 +1,17 @@
 module Participant.Utils
     exposing
-        ( getParticipantAvatarThumb
+        ( getParticipantAge
+        , getParticipantAvatarThumb
         , getParticipantName
         , getParticipantTypeAsString
+        , renderParticipantAge
         )
 
-import Participant.Model exposing (Participant, ParticipantType(..))
+import Date exposing (Date, Day)
+import Date.Extra.Duration
+import Date.Extra.Period
+import Participant.Model exposing (AgeDay, Participant, ParticipantType(..))
+import Translate as Trans exposing (translate, Language)
 
 
 getParticipantAvatarThumb : Participant -> String
@@ -36,3 +42,58 @@ getParticipantTypeAsString participant =
 
         ParticipantMother mother ->
             "mother"
+
+
+{-| Calculates the age of a participant.
+To get current time, see App/Model.currentDate
+-}
+getParticipantAge : Participant -> Date -> AgeDay
+getParticipantAge participant now =
+    let
+        birthDate =
+            case participant.info of
+                ParticipantChild child ->
+                    child.birthDate
+
+                ParticipantMother mother ->
+                    mother.birthDate
+    in
+        Participant.Model.AgeDay <| Date.Extra.Duration.diffDays now birthDate
+
+
+renderParticipantAge : Language -> Participant -> Date -> String
+renderParticipantAge language participant now =
+    let
+        birthDate =
+            case participant.info of
+                ParticipantChild child ->
+                    child.birthDate
+
+                ParticipantMother mother ->
+                    mother.birthDate
+
+        diff =
+            Date.Extra.Duration.diff now birthDate
+
+        days =
+            diff.day
+
+        months =
+            diff.month + (diff.year * 12)
+    in
+        if (days == 1 && months == 0) then
+            translate language <| Trans.AgeSingleDayWithoutMonth months days
+        else if (months == 0) then
+            translate language <| Trans.AgeDays days
+        else if (months == 1 && days == 0) then
+            translate language <| Trans.AgeSingleMonthWithoutDay months
+        else if (months > 1 && days == 0) then
+            translate language <| Trans.AgeMonthsWithoutDay months
+        else if (months == 1 && days == 1) then
+            translate language <| Trans.AgeSingleBoth months days
+        else if (days == 1) then
+            translate language <| Trans.AgeSingleDayWithMonth months days
+        else if (months == 1 && days /= 0) then
+            translate language <| Trans.AgeSingleMonth months days
+        else
+            translate language <| Trans.Age months days
