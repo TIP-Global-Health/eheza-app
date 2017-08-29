@@ -7,7 +7,7 @@ import Http
 import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
 import Json.Encode exposing (Value)
 import Measurement.Decoder exposing (decodePhotoFromResponse)
-import Measurement.Encoder exposing (encodeFamilyPlanning, encodeNutritionSigns, encodePhoto, encodeWeight)
+import Measurement.Encoder exposing (encodeFamilyPlanning, encodeHeight, encodeMuac, encodeNutritionSigns, encodePhoto, encodeWeight)
 import Measurement.Model exposing (CompletedAndRedirectToActivityTuple, Model, Msg(..))
 import Participant.Model exposing (Participant, ParticipantId)
 import RemoteData exposing (RemoteData(..))
@@ -51,7 +51,23 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
         HandleFamilyPlanningSave (Err err) ->
             let
                 _ =
-                    Debug.log "HandleWeightSave (Err)" False
+                    Debug.log "HandleFamilyPlanningSave (Err)" False
+            in
+                ( { model | status = Failure err }
+                , Cmd.none
+                , Nothing
+                )
+
+        HandleHeightSave (Ok ()) ->
+            ( { model | status = Success () }
+            , Cmd.none
+            , Just <| ( Child Height, Child Muac )
+            )
+
+        HandleHeightSave (Err err) ->
+            let
+                _ =
+                    Debug.log "HandleHeightSave (Err)" False
             in
                 ( { model | status = Failure err }
                 , Cmd.none
@@ -67,7 +83,23 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
         HandleNutritionSignsSave (Err err) ->
             let
                 _ =
-                    Debug.log "HandleWeightSave (Err)" False
+                    Debug.log "HandleNutritionSignsSave (Err)" False
+            in
+                ( { model | status = Failure err }
+                , Cmd.none
+                , Nothing
+                )
+
+        HandleMuacSave (Ok ()) ->
+            ( { model | status = Success () }
+            , Cmd.none
+            , Just <| ( Child Muac, Child NutritionSigns )
+            )
+
+        HandleMuacSave (Err err) ->
+            let
+                _ =
+                    Debug.log "HandleMuacSave (Err)" False
             in
                 ( { model | status = Failure err }
                 , Cmd.none
@@ -116,10 +148,7 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
             ( { model | muac = Just val }, Cmd.none, Nothing )
 
         MuacSave ->
-            ( model
-            , Cmd.none
-            , Just <| ( Child Muac, Child NutritionSigns )
-            )
+            postMuac backendUrl accessToken participantId model
 
         NutritionSignsSave ->
             postNutritionSigns backendUrl accessToken participantId model
@@ -147,10 +176,7 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
             postWeight backendUrl accessToken participantId model
 
         HeightSave ->
-            ( model
-            , Cmd.none
-            , Just <| ( Child Height, Child Muac )
-            )
+            postHeight backendUrl accessToken participantId model
 
         WeightUpdate val ->
             ( { model | weight = Just val }, Cmd.none, Nothing )
@@ -247,6 +273,44 @@ postWeight backendUrl accessToken childId model =
                 HandleWeightSave
         )
         model.weight
+        |> Maybe.withDefault ( model, Cmd.none, Nothing )
+
+
+{-| Send new height of a child to the backend.
+-}
+postHeight : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+postHeight backendUrl accessToken childId model =
+    Maybe.map
+        (\height ->
+            postData
+                backendUrl
+                accessToken
+                model
+                "heights"
+                height
+                (encodeHeight childId)
+                HandleHeightSave
+        )
+        model.height
+        |> Maybe.withDefault ( model, Cmd.none, Nothing )
+
+
+{-| Send new MUAC of a child to the backend.
+-}
+postMuac : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+postMuac backendUrl accessToken childId model =
+    Maybe.map
+        (\muac ->
+            postData
+                backendUrl
+                accessToken
+                model
+                "muacs"
+                muac
+                (encodeMuac childId)
+                HandleMuacSave
+        )
+        model.muac
         |> Maybe.withDefault ( model, Cmd.none, Nothing )
 
 
