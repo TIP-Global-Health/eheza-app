@@ -45,23 +45,8 @@ updateActivityDate date activityType participant =
 
                 updatedActivityDates =
                     case motherActivityType of
-                        Aheza ->
-                            { activityDates | aheza = Just date }
-
-                        Attendance ->
-                            { activityDates | attendance = Just date }
-
-                        Education ->
-                            { activityDates | education = Just date }
-
                         FamilyPlanning ->
                             { activityDates | familyPlanning = Just date }
-
-                        Hiv ->
-                            { activityDates | hiv = Just date }
-
-                        MotherPicture ->
-                            { activityDates | motherPicture = Just date }
             in
                 { info = ParticipantMother { mother | activityDates = updatedActivityDates } }
 

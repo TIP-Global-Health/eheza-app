@@ -87,7 +87,7 @@ viewPageParticipant backendUrl accessToken user language currentDate id model =
                             childrenWebData =
                                 getChildren mother model
                         in
-                            div [] [ Html.map (MsgPagesParticipant id) <| Pages.Participant.View.viewMother language currentDate user id mother childrenWebData participantModel ]
+                            div [] [ Html.map (MsgPagesParticipant id) <| Pages.Participant.View.viewMother backendUrl accessToken language currentDate user id mother childrenWebData participantModel ]
 
 
 viewActivities : Language -> Date -> User -> Model -> Html Msg
