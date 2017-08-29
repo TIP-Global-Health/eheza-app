@@ -55,4 +55,26 @@ describe('measurement module', function() {
 
     browser.waitForVisible('h3=Photo:');
   })
+
+  it('should save the muac via the Save button', () => {
+    const tab = 'MUAC';
+
+    // Select tab.
+    browser.click('a=MUAC');
+    browser.waitForVisible('h3=Mid Upper Arm Circumference (MUAC):');
+
+    // The Save button is disabled by default.
+    const classesBefore = browser.getAttribute('.muac .button', 'class');
+    assert.notEqual(classesBefore.indexOf('disabled'), -1, 'The button is not disabled anymore');
+
+    // Filling the value.
+    browser.setValueSafe('.muac input', '2');
+
+    // Then it becomes enabled.
+    const classesAfter = browser.getAttribute('.muac .button', 'class');
+    assert.equal(classesAfter.indexOf('disabled'), -1, 'The button is not disabled anymore');
+
+    // Click save button.
+    browser.click('div.muac button');
+  });
 })
