@@ -97,7 +97,6 @@ type TranslationId
     | PreviousFloatMeasurement Float
     | ReportRemaining Int
     | ReloadParticipant
-    | Retake
     | Retry
     | Save
     | SaveError
@@ -351,9 +350,6 @@ translate lang trans =
 
                 ReloadParticipant ->
                     { english = "Re-load Participant" }
-
-                Retake ->
-                    { english = "Retake" }
 
                 Retry ->
                     { english = "Retry" }
