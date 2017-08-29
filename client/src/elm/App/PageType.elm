@@ -1,4 +1,4 @@
-module App.PageType exposing (Page(..), DashboardPage(..))
+module App.PageType exposing (DashboardPage(..), Page(..))
 
 import Activity.Model exposing (ActivityType)
 
