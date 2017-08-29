@@ -1,5 +1,7 @@
 module Translate exposing (..)
 
+import Date exposing (Month(..))
+
 
 type Language
     = English
@@ -102,6 +104,7 @@ type TranslationId
     | ReportDOB String
     | ReportRemaining Int
     | ReloadParticipant
+    | ResolveMonth Month
     | Retake
     | Retry
     | Save
@@ -242,10 +245,10 @@ translate lang trans =
 
                 AgeSingleMonthWithoutDay month ->
                     { english = toString month ++ " month" }
-                    
+
                 Assessment ->
                     { english = "Assessment" }
-                    
+
                 Baby ->
                     { english = "Baby" }
 
@@ -371,6 +374,44 @@ translate lang trans =
 
                 ReloadParticipant ->
                     { english = "Re-load Participant" }
+
+                ResolveMonth month ->
+                    case month of
+                        Jan ->
+                            { english = "January" }
+
+                        Feb ->
+                            { english = "February" }
+
+                        Mar ->
+                            { english = "March" }
+
+                        Apr ->
+                            { english = "April" }
+
+                        May ->
+                            { english = "May" }
+
+                        Jun ->
+                            { english = "June" }
+
+                        Jul ->
+                            { english = "July" }
+
+                        Aug ->
+                            { english = "August" }
+
+                        Sep ->
+                            { english = "September" }
+
+                        Oct ->
+                            { english = "October" }
+
+                        Nov ->
+                            { english = "November" }
+
+                        Dec ->
+                            { english = "December" }
 
                 Retake ->
                     { english = "Retake" }

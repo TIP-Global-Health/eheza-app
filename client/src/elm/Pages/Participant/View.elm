@@ -52,7 +52,28 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                             []
 
         dateOfBirth =
-            text <| translate language <| Trans.ReportDOB <| "stam"
+            let
+                day =
+                    Date.day child.birthDate
+
+                month =
+                    translate language <| Trans.ResolveMonth <| Date.month child.birthDate
+
+                year =
+                    Date.year child.birthDate
+            in
+                text <|
+                    translate language <|
+                        Trans.ReportDOB <|
+                            (if day < 10 then
+                                "0" ++ toString day
+                             else
+                                toString day
+                            )
+                                ++ " "
+                                ++ month
+                                ++ " "
+                                ++ toString year
 
         age =
             text <| translate language <| Trans.ReportAge <| renderParticipantAge language childParticipant currentDate
