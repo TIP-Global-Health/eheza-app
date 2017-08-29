@@ -1,6 +1,7 @@
 module Pusher.Test exposing (all)
 
 import Activity.Model exposing (emptyChildActivityDates)
+import Date
 import Child.Model exposing (Gender(..))
 import Expect
 import Json.Decode exposing (decodeString)
@@ -31,6 +32,7 @@ decodeTest =
       "date_muac" : null,
       "date_progress_report" : null,
       "date_weight" : null,
+      "date_birth" : "2016-08-28T10:39:49+02:00",
       "gender" : "female"
     }
 
@@ -49,6 +51,7 @@ decodeTest =
                                         , examinations = NotAsked
                                         , selectedExamination = Nothing
                                         , activityDates = emptyChildActivityDates
+                                        , birthDate = Date.fromTime 1472373589000
                                         , gender = Female
                                         }
                                 }

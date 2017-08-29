@@ -6,7 +6,7 @@ module Participant.View
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
-import Participant.Model exposing (ParticipantTypeFilter(..))
+import Participant.Model exposing (AgeDay, Participant, ParticipantTypeFilter(..))
 import Translate as Trans exposing (translate, Language)
 
 
