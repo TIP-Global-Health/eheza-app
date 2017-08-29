@@ -53,6 +53,6 @@ describe('measurement module', function() {
     // Click save button.
     browser.click('div.nutrition button');
 
-    browser.waitForVisible('Photo:');
+    browser.waitForVisible('h3=Photo:');
   })
 })
