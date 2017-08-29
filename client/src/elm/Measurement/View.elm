@@ -494,7 +494,7 @@ viewFamilyPlanning backendUrl accessToken user language model =
                 , viewFamilyPlanningSelector language model.familyPlanningSigns
                 ]
             , div [ class "actions" ]
-                [ saveButton language FamilyPlanningSignsSave model True Nothing
+                [ saveButton language FamilyPlanningSignsSave model (not (EveryDict.isEmpty model.familyPlanningSigns)) Nothing
                 ]
             ]
         ]
