@@ -1,4 +1,4 @@
-module App.PageType exposing (Page(..))
+module App.PageType exposing (DashboardPage(..), Page(..))
 
 import Activity.Model exposing (ActivityType)
 
@@ -17,3 +17,8 @@ type Page
     | MyAccount
     | PageNotFound
     | Participant ParticipantId
+
+
+type DashboardPage
+    = ActivitiesDashboard
+    | ParticipantsDashboard

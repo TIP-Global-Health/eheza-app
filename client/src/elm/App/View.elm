@@ -25,6 +25,24 @@ view model =
 
         Success config ->
             case model.activePage of
+                Activities ->
+                    case model.user of
+                        Success user ->
+                            Html.map MsgParticipantManager <|
+                                ParticipantManager.View.viewActivities model.language model.currentDate user model.pageParticipant
+
+                        _ ->
+                            div [] [ i [ class "notched circle loading icon" ] [] ]
+
+                Dashboard _ ->
+                    case model.user of
+                        Success user ->
+                            Html.map MsgParticipantManager <|
+                                ParticipantManager.View.viewParticipants model.language model.currentDate user model.pageParticipant
+
+                        _ ->
+                            div [] [ i [ class "notched circle loading icon" ] [] ]
+
                 Participant id ->
                     case model.user of
                         Success user ->
@@ -52,6 +70,12 @@ viewHeader language model =
     case model.user of
         Success user ->
             case model.activePage of
+                Activities ->
+                    emptyNode
+
+                Dashboard _ ->
+                    emptyNode
+
                 Participant _ ->
                     emptyNode
 
@@ -223,13 +247,7 @@ viewMainContent backendUrl model =
                     div [] [ text <| translate language Trans.AccessDenied ]
 
                 Activities ->
-                    case model.user of
-                        Success user ->
-                            Html.map MsgParticipantManager <|
-                                ParticipantManager.View.viewActivities model.language model.currentDate user model.pageParticipant
-
-                        _ ->
-                            div [] [ i [ class "notched circle loading icon" ] [] ]
+                    emptyNode
 
                 Login ->
                     Html.map PageLogin (Pages.Login.View.view language model.user model.pageLogin)
@@ -242,14 +260,7 @@ viewMainContent backendUrl model =
                     Pages.PageNotFound.View.view language
 
                 Dashboard _ ->
-                    case model.user of
-                        Success user ->
-                            Html.map MsgParticipantManager <|
-                                ParticipantManager.View.viewParticipants model.language model.currentDate user model.pageParticipant
-
-                        _ ->
-                            div []
-                                [ i [ class "notched circle loading icon" ] [] ]
+                    emptyNode
 
                 Participant id ->
                     emptyNode

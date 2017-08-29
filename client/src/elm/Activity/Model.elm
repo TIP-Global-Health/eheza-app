@@ -64,7 +64,7 @@ type alias ActivityIdentity =
 
 type alias ActivityListItem =
     { activity : ActivityIdentity
-    , remaining : Int
+    , totals : ( Int, Int )
     }
 
 

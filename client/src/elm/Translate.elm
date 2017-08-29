@@ -69,6 +69,7 @@ type TranslationId
     | Connected
     | Dashboard
     | DropzoneDefaultMessage
+    | EndSession
     | ErrorBadUrl
     | ErrorBadPayload
     | ErrorBadStatus
@@ -104,6 +105,7 @@ type TranslationId
     | ReportDOB String
     | ReportRemaining Int
     | ReloadParticipant
+    | ReportCompleted ( Int, Int )
     | ResolveMonth Month
     | Retry
     | Save
@@ -269,6 +271,9 @@ translate lang trans =
                 DropzoneDefaultMessage ->
                     { english = "Touch here to take a photo, or drop a photo file here." }
 
+                EndSession ->
+                    { english = "End Session" }
+
                 ErrorBadUrl ->
                     { english = "URL is not valid." }
 
@@ -373,6 +378,9 @@ translate lang trans =
 
                 ReloadParticipant ->
                     { english = "Re-load Participant" }
+
+                ReportCompleted ( pending, total ) ->
+                    { english = (toString (total - pending)) ++ "/" ++ (toString total) ++ " Completed" }
 
                 ResolveMonth month ->
                     case month of

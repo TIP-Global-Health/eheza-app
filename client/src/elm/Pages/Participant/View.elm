@@ -161,10 +161,10 @@ viewActivityCards language currentDate user participants participantTypeFilter s
             getActivityList currentDate participantTypeFilter participants
 
         pendingActivities =
-            List.filter (\activity -> activity.remaining > 0) allActivityList
+            List.filter (\activity -> (Tuple.first activity.totals) > 0) allActivityList
 
         noPendingActivities =
-            List.filter (\activity -> activity.remaining == 0) allActivityList
+            List.filter (\activity -> (Tuple.first activity.totals) == 0) allActivityList
 
         pendingActivitiesView =
             if List.isEmpty pendingActivities then
