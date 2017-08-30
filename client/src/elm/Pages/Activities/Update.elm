@@ -10,6 +10,9 @@ import Participant.Model exposing (ParticipantTypeFilter(..), ParticipantsDict)
 update : BackendUrl -> String -> User -> Msg -> ParticipantsDict -> Model -> ( Model, Cmd Msg, Maybe Page )
 update backendUrl accessToken user msg participants model =
     case msg of
+        SetActiveTab tab ->
+            ( { model | activeTab = tab }, Cmd.none, Nothing )
+
         SetParticipantTypeFilter participantTypeFilterString ->
             let
                 participantTypeFilter =

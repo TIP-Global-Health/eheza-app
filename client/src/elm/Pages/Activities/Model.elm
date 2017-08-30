@@ -5,14 +5,24 @@ import Participant.Model exposing (ParticipantTypeFilter(..))
 
 
 type alias Model =
-    { participantTypeFilter : ParticipantTypeFilter }
+    { participantTypeFilter : ParticipantTypeFilter
+    , activeTab : Tab
+    }
 
 
 type Msg
-    = SetParticipantTypeFilter String
+    = SetActiveTab Tab
+    | SetParticipantTypeFilter String
     | SetRedirectPage Page
+
+
+type Tab
+    = Completed
+    | Pending
 
 
 emptyModel : Model
 emptyModel =
-    { participantTypeFilter = All }
+    { participantTypeFilter = All
+    , activeTab = Pending
+    }

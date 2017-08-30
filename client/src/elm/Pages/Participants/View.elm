@@ -1,7 +1,7 @@
 module Pages.Participants.View exposing (view)
 
 import Activity.Model exposing (ActivityType)
-import Activity.Utils exposing (getPendingNumberPerActivity)
+import Activity.Utils exposing (getTotalsNumberPerActivity)
 import Activity.View exposing (viewActivityTypeFilter)
 import App.PageType exposing (Page(..))
 import Date exposing (Date)
@@ -18,7 +18,7 @@ import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
 
 
-view : Language -> Date -> User -> ParticipantsDict -> Model -> Html Msg
+view : Language -> Date -> User -> ParticipantsDict -> Model -> List (Html Msg)
 view language currentDate currentUser participants model =
     let
         lowerQuery =
@@ -61,7 +61,7 @@ view language currentDate currentUser participants model =
                                     then
                                         True
                                     else
-                                        getPendingNumberPerActivity currentDate activityType (Dict.insert participantId participant Dict.empty) > 0
+                                        (Tuple.first <| getTotalsNumberPerActivity currentDate activityType (Dict.insert participantId participant Dict.empty)) > 0
                                 )
                                 False
                                 model.activityTypeFilter
@@ -82,19 +82,18 @@ view language currentDate currentUser participants model =
             else
                 Table.view config model.tableState acceptableParticipants
     in
-        div []
-            [ h1 [] [ text <| translate language Trans.Participants ]
-            , div [ class "ui input" ]
-                [ input
-                    [ placeholder <| translate language Trans.SearchByName
-                    , onInput SetQuery
-                    ]
-                    []
-                , viewParticipantTypeFilter language SetParticipantTypeFilter model.participantTypeFilter
+        [ h1 [] [ text <| translate language Trans.Participants ]
+        , div [ class "ui input" ]
+            [ input
+                [ placeholder <| translate language Trans.SearchByName
+                , onInput SetQuery
                 ]
-            , viewActivityTypeFilterWrapper language model.participantTypeFilter model.activityTypeFilter
-            , searchResult
+                []
+            , viewParticipantTypeFilter language SetParticipantTypeFilter model.participantTypeFilter
             ]
+        , viewActivityTypeFilterWrapper language model.participantTypeFilter model.activityTypeFilter
+        , searchResult
+        ]
 
 
 viewActivityTypeFilterWrapper : Language -> ParticipantTypeFilter -> List ActivityType -> Html Msg

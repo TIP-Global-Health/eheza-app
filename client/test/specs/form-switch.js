@@ -16,13 +16,13 @@ describe('assesment pages', () => {
 
         // Switching to Weight.
         browser.click('a=' + firstUsedTab);
-        browser.waitForVisible('div=' + firstUsedTab + ':');
-        browser.waitForVisible('div=' + secondUsedTab + ':', 500, true);
+        browser.waitForVisible('h3=' + firstUsedTab + ':');
+        browser.waitForVisible('h3=' + secondUsedTab + ':', 500, true);
 
         // Switching to Height.
         browser.click('a=' + secondUsedTab);
-        browser.waitForVisible('div=' + firstUsedTab + ':', 500, true);
-        browser.waitForVisible('div=' + secondUsedTab + ':');
+        browser.waitForVisible('h3=' + firstUsedTab + ':', 500, true);
+        browser.waitForVisible('h3=' + secondUsedTab + ':');
     });
 
     it('should preserve Nutrition Signs  data while the user is switching between forms', () => {
@@ -31,7 +31,7 @@ describe('assesment pages', () => {
 
         // Switching to Nutrition Signs, fill data.
         browser.click('a=' + firstUsedTab);
-        browser.waitForVisible('div=' + secondUsedTab + ':', 500, true);
+        browser.waitForVisible('h3=' + secondUsedTab + ':', 500, true);
         assert(!browser.isSelected('#apathy'), 'Apathy is not selected');
         assert(!browser.isSelected('#brittle-hair'), 'Brittle Hair is not selected');
         assert(!browser.isSelected('#edema'), 'Edema is not selected');
@@ -44,7 +44,7 @@ describe('assesment pages', () => {
 
         // Switching to Photo.
         browser.click('a=' + secondUsedTab);
-        browser.waitForVisible('div=' + firstUsedTab + ':', 500, true);
+        browser.waitForVisible('h3=' + firstUsedTab + ':', 500, true);
         browser.waitForVisible('h3=' + secondUsedTab + ':');
 
         // Switching back to Nutrition Signs, check existence of the previous selection.
