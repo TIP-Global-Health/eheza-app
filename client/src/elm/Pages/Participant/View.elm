@@ -180,6 +180,9 @@ viewActivityCards language currentDate user participants participantTypeFilter s
 
                         Completed ->
                             Trans.ActivitiesCompleted
+
+                        ProgressReport ->
+                            Trans.ActivitiesProgressReport
             in
                 a
                     [ classList <| tabClass tabType
@@ -192,6 +195,7 @@ viewActivityCards language currentDate user participants participantTypeFilter s
             div [ class "ui tabular menu" ]
                 [ tabItem Pending pendingActivities
                 , tabItem Completed noPendingActivities
+                , tabItem ProgressReport []
                 ]
     in
         [ tabs, activeView ]
