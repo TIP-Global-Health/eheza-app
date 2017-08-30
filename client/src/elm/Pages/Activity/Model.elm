@@ -5,7 +5,7 @@ import App.PageType exposing (Page)
 
 
 type alias Model =
-    { selectedActivity : Maybe ActivityType
+    { selectedActivity : ActivityType
     }
 
 
@@ -15,5 +15,5 @@ type Msg
 
 emptyModel : Model
 emptyModel =
-    { selectedActivity = Just <| Child Height
+    { selectedActivity = Child Height
     }

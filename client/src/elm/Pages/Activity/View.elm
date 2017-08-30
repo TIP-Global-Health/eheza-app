@@ -14,13 +14,13 @@ import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
 
 
-view : BackendUrl -> String -> User -> Language -> Date -> Model -> Html Msg
+view : BackendUrl -> String -> User -> Language -> Date -> Model -> List (Html Msg)
 view backendUrl accessToken user language currentDate model =
     let
         log =
             Debug.log "model" model
     in
-        div [] [ text "activity" ]
+        [ div [] [ text "activity" ] ]
 
 
 

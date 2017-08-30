@@ -7,6 +7,7 @@ module ParticipantManager.View
         )
 
 import Activity.Model exposing (ActivityType)
+import Activity.Utils exposing (getActivityIdentity)
 import App.PageType
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
@@ -239,9 +240,34 @@ viewPageActivity backendUrl accessToken user language currentDate maybeActivityT
         activitytModel =
             case maybeActivityType of
                 Just activityType ->
-                    { selectedActivity = Just activityType }
+                    { selectedActivity = activityType }
 
                 Nothing ->
                     Pages.Activity.Model.emptyModel
     in
-        Html.map MsgPagesActivity <| Pages.Activity.View.view backendUrl accessToken user language currentDate activitytModel
+        div [ class "wrap" ] <|
+            viewPageActivityHeader activitytModel
+                :: (List.map (Html.map MsgPagesActivity) <|
+                        Pages.Activity.View.view backendUrl accessToken user language currentDate activitytModel
+                   )
+
+
+viewPageActivityHeader : Pages.Activity.Model.Model -> Html Msg
+viewPageActivityHeader pageActivity =
+    let
+        identity =
+            getActivityIdentity pageActivity.selectedActivity
+    in
+        div
+            [ class "ui basic head segment" ]
+            [ h1 [ class "ui header" ]
+                [ text identity.name ]
+            , a
+                [ class "link-back"
+                , onClick <|
+                    MsgPagesActivity <|
+                        Pages.Activity.Model.SetRedirectPage <|
+                            App.PageType.Activities
+                ]
+                [ span [ class "icon-back" ] [] ]
+            ]
