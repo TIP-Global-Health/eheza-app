@@ -23,6 +23,7 @@ import Participant.Utils exposing (getParticipantAge, renderParticipantAge, rend
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
 import User.Model exposing (User)
+import Utils.Html exposing (tabItem)
 
 
 viewChild : BackendUrl -> String -> User -> Language -> Date -> WebData Mother -> ( ChildId, Child ) -> Model -> List (Html Msg)
@@ -163,35 +164,16 @@ viewActivityCards language currentDate user participants participantTypeFilter s
                         noPendingActivitiesView
                 ]
 
-        tabClass tabType =
-            [ ( "item", True )
-            , ( "active", selectedTab == tabType )
-            ]
+        pendingTabTitle =
+            translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities
 
-        tabItem tabType activitiesList =
-            let
-                tabId =
-                    (String.toLower <| (toString tabType)) ++ "-tab"
-
-                tabTitle =
-                    case tabType of
-                        Pending ->
-                            Trans.ActivitiesToComplete
-
-                        Completed ->
-                            Trans.ActivitiesCompleted
-            in
-                a
-                    [ classList <| tabClass tabType
-                    , id tabId
-                    , onClick <| SetSelectedTab tabType
-                    ]
-                    [ text <| translate language <| tabTitle <| List.length activitiesList ]
+        completedTabTitle =
+            translate language <| Trans.ActivitiesCompleted <| List.length noPendingActivities
 
         tabs =
             div [ class "ui tabular menu" ]
-                [ tabItem Pending pendingActivities
-                , tabItem Completed noPendingActivities
+                [ tabItem pendingTabTitle (selectedTab == Pending) (SetSelectedTab Pending)
+                , tabItem completedTabTitle (selectedTab == Completed) (SetSelectedTab Completed)
                 ]
     in
         [ tabs, activeView ]

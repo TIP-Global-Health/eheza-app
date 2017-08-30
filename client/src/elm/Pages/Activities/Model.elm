@@ -6,14 +6,14 @@ import Participant.Model exposing (ParticipantTypeFilter(..))
 
 type alias Model =
     { participantTypeFilter : ParticipantTypeFilter
-    , activeTab : Tab
+    , selectedTab : Tab
     }
 
 
 type Msg
-    = SetActiveTab Tab
-    | SetParticipantTypeFilter String
+    = SetParticipantTypeFilter String
     | SetRedirectPage Page
+    | SetSelectedTab Tab
 
 
 type Tab
@@ -24,5 +24,5 @@ type Tab
 emptyModel : Model
 emptyModel =
     { participantTypeFilter = All
-    , activeTab = Pending
+    , selectedTab = Pending
     }
