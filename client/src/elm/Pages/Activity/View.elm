@@ -21,59 +21,88 @@ view backendUrl accessToken user language currentDate model =
         identity =
             getActivityIdentity model.selectedActivity
 
-        description =
-            case identity.activityType of
-                Child ChildPicture ->
-                    Trans.ActivityChildPhotoDescription
-
-                Child Height ->
-                    Trans.ActivityHeightDescription
-
-                Child Muac ->
-                    Trans.ActivityMuacDescription
-
-                Child NutritionSigns ->
-                    Trans.ActivityNutritionSigns
-
-                Child Weight ->
-                    Trans.ActivityWeightDescription
-
-                Mother FamilyPlanning ->
-                    Trans.ActivityFamilyPlanningDescription
-
-                _ ->
-                    Trans.EmptyString
-
         activityDescription =
-            div
-                [ class "ui unstackable items" ]
-                [ div [ class "item" ]
-                    [ div [ class "ui image" ]
-                        [ span [ class <| "icon-item icon-item-" ++ identity.icon ] [] ]
-                    , div [ class "content" ]
-                        [ p [] [ text <| translate language description ] ]
+            let
+                description =
+                    case identity.activityType of
+                        Child ChildPicture ->
+                            Trans.ActivityChildPhotoDescription
+
+                        Child Height ->
+                            Trans.ActivityHeightDescription
+
+                        Child Muac ->
+                            Trans.ActivityMuacDescription
+
+                        Child NutritionSigns ->
+                            Trans.ActivityNutritionSigns
+
+                        Child Weight ->
+                            Trans.ActivityWeightDescription
+
+                        Mother FamilyPlanning ->
+                            Trans.ActivityFamilyPlanningDescription
+
+                        _ ->
+                            Trans.EmptyString
+            in
+                div
+                    [ class "ui unstackable items" ]
+                    [ div [ class "item" ]
+                        [ div [ class "ui image" ]
+                            [ span [ class <| "icon-item icon-item-" ++ identity.icon ] [] ]
+                        , div [ class "content" ]
+                            [ p [] [ text <| translate language description ] ]
+                        ]
                     ]
-                ]
 
         pendingParticipants =
-            []
+            [ { name = "John", id = Just 1 }, { name = "Bob", id = Just 2 } ]
 
         completedParticipants =
-            []
-
-        pendingTabTitle =
-            translate language <| Trans.ActivitiesToComplete <| List.length pendingParticipants
-
-        completedTabTitle =
-            translate language <| Trans.ActivitiesCompleted <| List.length completedParticipants
+            [ { name = "Tim", id = Just 3 }, { name = "Alice", id = Just 4 } ]
 
         tabs =
-            div [ class "ui tabular menu" ]
-                [ tabItem pendingTabTitle (model.selectedTab == Pending) (SetSelectedTab Pending)
-                , tabItem completedTabTitle (model.selectedTab == Completed) (SetSelectedTab Completed)
-                ]
+            let
+                pendingTabTitle =
+                    translate language <| Trans.ActivitiesToComplete <| List.length pendingParticipants
+
+                completedTabTitle =
+                    translate language <| Trans.ActivitiesCompleted <| List.length completedParticipants
+            in
+                div [ class "ui tabular menu" ]
+                    [ tabItem pendingTabTitle (model.selectedTab == Pending) (SetSelectedTab Pending)
+                    , tabItem completedTabTitle (model.selectedTab == Completed) (SetSelectedTab Completed)
+                    ]
+
+        participants =
+            let
+                selectedParticipants =
+                    case model.selectedTab of
+                        Pending ->
+                            pendingParticipants
+
+                        Completed ->
+                            completedParticipants
+
+                participantCard selectedParticipantId participant =
+                    div [ classList [ ( "participant card", True ), ( "active", selectedParticipantId == participant.id ) ] ]
+                        [ div
+                            [ class "image"
+                            , onClick <| SetSelectedParticipant participant.id
+                            ]
+                            [ span [ class "icon-participant" ] [] ]
+                        , div [ class "content" ]
+                            [ p [] [ text participant.name ] ]
+                        ]
+            in
+                div
+                    [ class "ui participant segment" ]
+                    [ div [ class "ui four participant cards" ] <|
+                        List.map (participantCard model.selectedParticipantId) selectedParticipants
+                    ]
     in
-        [ activityDescription, tabs ]
+        [ activityDescription, tabs, participants ]
 
 
 
