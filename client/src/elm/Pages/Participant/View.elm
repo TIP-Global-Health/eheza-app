@@ -17,7 +17,7 @@ import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
 import Measurement.View
 import Mother.Model exposing (Mother, MotherId)
-import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
+import Pages.Participant.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
 import Participant.Model exposing (Participant, ParticipantId, ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (getParticipantAge, renderParticipantAge)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -95,7 +95,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
         div [ class "ui unstackable items" ]
             [ div [ class "item" ]
                 [ div [ class "ui image" ]
-                    [ img [ src child.image, attribute "alt" childName, width 222, height 222 ] [] ]
+                    [ img [ src child.image, attribute "alt" childName, width thumbnailDimensions.width, height thumbnailDimensions.height ] [] ]
                 , div [ class "content" ]
                     [ h2 [ class "ui header" ]
                         [ text childName ]
@@ -138,7 +138,7 @@ viewMother backendUrl accessToken language currentDate currentUser motherId moth
         div [ class "ui unstackable items" ]
             [ div [ class "item" ]
                 [ div [ class "ui image" ]
-                    [ img [ src mother.image, attribute "alt" mother.name, width 222, height 222 ] [] ]
+                    [ img [ src mother.image, attribute "alt" mother.name, width thumbnailDimensions.width, height thumbnailDimensions.height ] [] ]
                 , div [ class "content" ]
                     [ h2
                         [ class "ui header" ]
