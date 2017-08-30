@@ -72,7 +72,7 @@ encodeFamilyPlanningSign sign =
             string "necklace"
 
         NoFamilyPlanning ->
-            string "abdominal-disortion"
+            string "none"
 
         Pill ->
             string "pill"
