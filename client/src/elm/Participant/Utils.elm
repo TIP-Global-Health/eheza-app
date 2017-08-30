@@ -5,6 +5,7 @@ module Participant.Utils
         , getParticipantName
         , getParticipantTypeAsString
         , renderParticipantAge
+        , renderParticipantDateOfBirth
         )
 
 import Date exposing (Date, Day)
@@ -97,3 +98,36 @@ renderParticipantAge language participant now =
             translate language <| Trans.AgeSingleMonth months days
         else
             translate language <| Trans.Age months days
+
+
+renderParticipantDateOfBirth : Language -> Participant -> String
+renderParticipantDateOfBirth language participant =
+    let
+        birthDate =
+            case participant.info of
+                ParticipantChild child ->
+                    child.birthDate
+
+                ParticipantMother mother ->
+                    mother.birthDate
+
+        day =
+            Date.day birthDate
+
+        month =
+            translate language <| Trans.ResolveMonth <| Date.month birthDate
+
+        year =
+            Date.year birthDate
+    in
+        translate language <|
+            Trans.ReportDOB <|
+                (if day < 10 then
+                    "0" ++ toString day
+                 else
+                    toString day
+                )
+                    ++ " "
+                    ++ month
+                    ++ " "
+                    ++ toString year

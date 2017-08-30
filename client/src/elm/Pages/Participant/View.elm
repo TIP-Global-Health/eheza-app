@@ -19,7 +19,7 @@ import Measurement.View
 import Mother.Model exposing (Mother, MotherId)
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
 import Participant.Model exposing (Participant, ParticipantId, ParticipantTypeFilter(..), ParticipantsDict)
-import Participant.Utils exposing (getParticipantAge, renderParticipantAge)
+import Participant.Utils exposing (getParticipantAge, renderParticipantAge, renderParticipantDateOfBirth)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
 import User.Model exposing (User)
@@ -52,28 +52,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                             []
 
         dateOfBirth =
-            let
-                day =
-                    Date.day child.birthDate
-
-                month =
-                    translate language <| Trans.ResolveMonth <| Date.month child.birthDate
-
-                year =
-                    Date.year child.birthDate
-            in
-                text <|
-                    translate language <|
-                        Trans.ReportDOB <|
-                            (if day < 10 then
-                                "0" ++ toString day
-                             else
-                                toString day
-                            )
-                                ++ " "
-                                ++ month
-                                ++ " "
-                                ++ toString year
+            text <| renderParticipantDateOfBirth language childParticipant
 
         age =
             text <| translate language <| Trans.ReportAge <| renderParticipantAge language childParticipant currentDate
@@ -88,9 +67,6 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
 
         break =
             br [] []
-
-        log =
-            Debug.log "child.birthDate" child.birthDate
     in
         div [ class "ui unstackable items" ]
             [ div [ class "item" ]
