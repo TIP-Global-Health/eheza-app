@@ -5,7 +5,7 @@ import Expect
 import Fixtures exposing (exampleChild, exampleMother)
 import Test exposing (describe, test, Test)
 import Participant.Model exposing (AgeDay(..), ParticipantType(ParticipantChild, ParticipantMother))
-import Participant.Utils exposing (getParticipantAge, renderParticipantAge)
+import Participant.Utils exposing (getParticipantAge, renderParticipantAge, renderParticipantDateOfBirth)
 import Translate exposing (Language(English))
 
 
@@ -117,9 +117,51 @@ renderParticipantAgeTest =
             ]
 
 
+renderParticipantDateOfBirthTest : Test
+renderParticipantDateOfBirthTest =
+    describe "date of birth renderring"
+        [ test "for July" <|
+            \() ->
+                Expect.equal
+                    (renderParticipantDateOfBirth English
+                        { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1501404215000 }) }
+                    )
+                    "30 July 2017"
+        , test "for March" <|
+            \() ->
+                Expect.equal
+                    (renderParticipantDateOfBirth English
+                        { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1490751015000 }) }
+                    )
+                    "29 March 2017"
+        , test "for January" <|
+            \() ->
+                Expect.equal
+                    (renderParticipantDateOfBirth English
+                        { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1484961345000 }) }
+                    )
+                    "21 January 2017"
+        , test "for August 2014" <|
+            \() ->
+                Expect.equal
+                    (renderParticipantDateOfBirth English
+                        { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1408995000000 }) }
+                    )
+                    "25 August 2014"
+        , test "for May 2017" <|
+            \() ->
+                Expect.equal
+                    (renderParticipantDateOfBirth English
+                        { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1494081915000 }) }
+                    )
+                    "06 May 2017"
+        ]
+
+
 all : Test
 all =
     describe "Participant tests"
         [ getParticipantAgeTest
         , renderParticipantAgeTest
+        , renderParticipantDateOfBirthTest
         ]

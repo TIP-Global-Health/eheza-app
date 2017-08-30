@@ -34,21 +34,6 @@ module.exports = function (browser, capabilities, specs) {
   });
 
   /**
-   * Validate the current page.
-   */
-  browser.addCommand('validateCurrentPageIs', (page) => {
-    // A structure to keep a page and a selector that should be visible in it.
-    const map = {
-      activities: 'h2.header.activities',
-      child: '#child-page',
-      mother: '#mother-page',
-      participants: '#participants-table'
-    };
-
-    browser.waitForVisible(map[page]);
-  });
-
-  /**
    * Add an image to the dropzone.
    *
    * @param {filename} filename The name for the added file.
@@ -100,7 +85,7 @@ module.exports = function (browser, capabilities, specs) {
     // in the past for activities.
     // @see server/scripts/helper-functions.sh
     browser.url('/#participant/41');
-    browser.waitForVisible('.ui.tasks.segment');
+    browser.waitForVisible('.ui.task.segment');
   });
 
   /**
@@ -215,4 +200,3 @@ module.exports = function (browser, capabilities, specs) {
   });
 
 }
-

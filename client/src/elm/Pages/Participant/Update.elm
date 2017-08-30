@@ -89,7 +89,7 @@ update currentDate backendUrl accessToken user language msg ( participantId, par
 
         SetSelectedTab tab ->
             ( participant
-            , { model | selectedTab = tab }
+            , { model | selectedTab = tab, selectedActivity = Nothing }
             , Cmd.none
             , Nothing
             )

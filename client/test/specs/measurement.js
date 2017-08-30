@@ -27,5 +27,5 @@ describe('measurement module', function() {
 
     // Click save button.
     browser.click('div.weight button');
-  })
+  });
 })
