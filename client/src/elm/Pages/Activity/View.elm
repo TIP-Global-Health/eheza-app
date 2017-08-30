@@ -1,7 +1,7 @@
 module Pages.Activity.View exposing (view)
 
-import Activity.Model exposing (ActivityType, ActivityListItem)
-import Activity.Utils exposing (getActivityList)
+import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
+import Activity.Utils exposing (getActivityIdentity)
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
@@ -17,10 +17,44 @@ import User.Model exposing (User)
 view : BackendUrl -> String -> User -> Language -> Date -> Model -> List (Html Msg)
 view backendUrl accessToken user language currentDate model =
     let
-        log =
-            Debug.log "model" model
+        identity =
+            getActivityIdentity model.selectedActivity
+
+        description =
+            case identity.activityType of
+                Child ChildPicture ->
+                    Trans.ActivityChildPhotoDescription
+
+                Child Height ->
+                    Trans.ActivityHeightDescription
+
+                Child Muac ->
+                    Trans.ActivityMuacDescription
+
+                Child NutritionSigns ->
+                    Trans.ActivityNutritionSigns
+
+                Child Weight ->
+                    Trans.ActivityWeightDescription
+
+                Mother FamilyPlanning ->
+                    Trans.ActivityFamilyPlanningDescription
+
+                _ ->
+                    Trans.EmptyString
+
+        activityDescription =
+            div
+                [ class "ui unstackable items" ]
+                [ div [ class "item" ]
+                    [ div [ class "ui image" ]
+                        [ span [ class <| "icon-item icon-item-" ++ identity.icon ] [] ]
+                    , div [ class "content" ]
+                        [ p [] [ text <| translate language description ] ]
+                    ]
+                ]
     in
-        [ div [] [ text "activity" ] ]
+        [ activityDescription ]
 
 
 
