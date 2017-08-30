@@ -58,7 +58,9 @@ view language currentDate user participants model =
             div
                 [ class "card" ]
                 [ div
-                    [ class "image" ]
+                    [ class "image"
+                    , onClick <| SetRedirectPage <| Activity <| Just identity.activity.activityType
+                    ]
                     [ span [ class <| "icon-task icon-task-" ++ identity.activity.icon ] [] ]
                 , div
                     [ class "content" ]
