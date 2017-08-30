@@ -34,26 +34,6 @@ module.exports = function (browser, capabilities, specs) {
   });
 
   /**
-   * Validate the current page.
-   */
-  browser.addCommand('validateCurrentPageIs', (page) => {
-
-    // Implementation note: checking which page we're on should be done by 
-    // looking at URL, an not some class or id on page.
-    // Need to reimplement this.
-
-    // A structure to keep a page and a selector that should be visible in it.
-    // const map = {
-    //   activities: 'h2.header.activities',
-    //   child: '#child-page',
-    //   mother: '#mother-page',
-    //   participants: '#participants-table'
-    // };
-    //
-    // browser.waitForVisible(map[page]);
-  });
-
-  /**
    * Add an image to the dropzone.
    *
    * @param {filename} filename The name for the added file.
