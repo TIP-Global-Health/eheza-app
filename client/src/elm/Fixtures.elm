@@ -40,6 +40,7 @@ exampleChild =
     { name = "Michelle Kelly"
     , image = "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , motherId = Nothing
+    , siblingId = Nothing
     , examinations = NotAsked
     , selectedExamination = Nothing
     , activityDates = emptyChildActivityDates

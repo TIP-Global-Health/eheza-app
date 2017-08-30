@@ -79,18 +79,18 @@ viewChild backendUrl accessToken user language ( childId, child ) maybePreviousE
 viewFloatForm : BackendUrl -> String -> User -> Language -> FloatMeasurements -> ( ChildId, Child ) -> Maybe ExaminationChild -> Model -> Html Msg
 viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, child ) maybePreviousExamination model =
     let
-        ( blockName, headerText, helpText, labelText, constraints, measurementValue, measurementType, updateMsg, saveMsg ) =
+        ( blockName, headerText, helpText, labelText, placeholderText, constraints, measurementValue, measurementType, ( updateMsg, saveMsg ) ) =
             case floatMeasurement of
                 HeightFloat ->
                     ( "height"
                     , Trans.ActivitiesHeightTitle
                     , Trans.ActivitiesHeightHelp
                     , Trans.ActivitiesHeightLabel
+                    , Trans.PlaceholderEnterHeight
                     , getInputConstraintsHeight
                     , model.height
                     , Trans.CentimeterShorthand
-                    , HeightUpdate
-                    , HeightSave
+                    , ( HeightUpdate, HeightSave )
                     )
 
                 MuacFloat ->
@@ -98,11 +98,11 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     , Trans.ActivitiesMuacTitle
                     , Trans.ActivitiesMuacHelp
                     , Trans.ActivitiesMuacLabel
+                    , Trans.PlaceholderEnterMUAC
                     , getInputConstraintsMuac
                     , model.muac
                     , Trans.CentimeterShorthand
-                    , MuacUpdate
-                    , MuacSave
+                    , ( MuacUpdate, MuacSave )
                     )
 
                 WeightFloat ->
@@ -110,11 +110,11 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     , Trans.ActivitiesWeightTitle
                     , Trans.ActivitiesWeightHelp
                     , Trans.ActivitiesWeightLabel
+                    , Trans.PlaceholderEnterWeight
                     , getInputConstraintsWeight
                     , model.weight
                     , Trans.KilogramShorthand
-                    , WeightUpdate
-                    , WeightSave
+                    , ( WeightUpdate, WeightSave )
                     )
 
         defaultAttr =
@@ -122,7 +122,8 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                 |> Maybe.withDefault []
 
         inputAttrs =
-            [ type_ "number"
+            [ type_ "text"
+            , placeholder <| translate language placeholderText
             , name blockName
             , Attr.min <| toString constraints.minVal
             , Attr.max <| toString constraints.maxVal
@@ -130,10 +131,9 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
             ]
                 ++ defaultAttr
     in
-        div []
-            [ divider
-            , div
-                [ class <| "ui full segment " ++ blockName ]
+        div
+            [ class <| "ui full segment " ++ blockName ]
+            [ div [ class "content" ]
                 [ h3
                     [ class "ui header" ]
                     [ text <| translate language headerText
@@ -144,25 +144,34 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                 , div
                     [ class "ui form" ]
                     [ div [ class "ui grid" ]
-                        [ div [ class "ten wide column" ]
+                        [ div [ class "eleven wide column" ]
                             [ div [ class "ui right labeled input" ]
-                                [ div [ class "ui basic label" ] [ text <| translate language labelText ]
-                                , input
-                                    inputAttrs
-                                    []
+                                [ input inputAttrs []
                                 , div [ class "ui basic label" ] [ text <| translate language measurementType ]
                                 ]
                             ]
-                        , div [ class "six wide column" ]
+                        , div [ class "five wide column" ]
                             [ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType model ]
                         ]
-                    , viewPreviousMeasurement language floatMeasurement maybePreviousExamination
+                    , viewPreviousMeasurement language floatMeasurement maybePreviousExamination measurementType
                     ]
                 , div
-                    [ class "actions" ]
-                    [ saveButton language saveMsg model (isJust measurementValue) Nothing
+                    [ class "ui large header" ]
+                    [ text <| translate language Trans.ZScore
+                    , span
+                        [ class "sub header" ]
+                        [ text "Requires implementation" ]
                     ]
                 ]
+            , div
+                [ class "actions" ]
+              <|
+                saveButton
+                    language
+                    saveMsg
+                    model
+                    (isJust measurementValue)
+                    Nothing
             ]
 
 
@@ -180,8 +189,8 @@ viewPhotoThumb maybePhoto =
             (Tuple.second maybePhoto)
 
 
-viewPreviousMeasurement : Language -> FloatMeasurements -> Maybe ExaminationChild -> Html Msg
-viewPreviousMeasurement language floatMeasurement maybePreviousExamination =
+viewPreviousMeasurement : Language -> FloatMeasurements -> Maybe ExaminationChild -> TranslationId -> Html Msg
+viewPreviousMeasurement language floatMeasurement maybePreviousExamination measurementType =
     case maybePreviousExamination of
         Nothing ->
             emptyNode
@@ -201,7 +210,12 @@ viewPreviousMeasurement language floatMeasurement maybePreviousExamination =
             in
                 Maybe.map
                     (\previousValue ->
-                        div [] [ text <| translate language <| Trans.PreviousFloatMeasurement previousValue ]
+                        div []
+                            [ text <|
+                                (translate language <| Trans.PreviousFloatMeasurement previousValue)
+                                    ++ " "
+                                    ++ (translate language measurementType)
+                            ]
                     )
                     maybePreviousValue
                     |> Maybe.withDefault emptyNode
@@ -254,7 +268,7 @@ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType
                                     "down"
                         in
                             p
-                                [ class <| "label-with-icon label-" ++ classSuffix ]
+                                [ class <| "label-with-icon label-form" ]
                                 [ span [ class <| "icon-" ++ classSuffix ] []
                                 , text <| diff ++ " " ++ translate language measurementType
                                 ]
@@ -283,26 +297,17 @@ viewPhoto backendUrl accessToken user language ( childId, child ) model =
             else
                 []
     in
-        div []
-            [ divider
-            , div
-                [ class "ui full segment photo"
-                ]
-                [ h3
-                    [ class "ui header" ]
-                    [ text <| translate language Trans.ActivitiesPhotoTitle
-                    ]
-                , p
-                    []
-                    [ text <| translate language Trans.ActivitiesPhotoHelp ]
+        div
+            [ class "ui full segment photo" ]
+            [ div [ class "content" ]
+                [ h3 [ class "ui header" ]
+                    [ text <| translate language Trans.ActivitiesPhotoTitle ]
+                , p [] [ text <| translate language Trans.ActivitiesPhotoHelp ]
                 , viewPhotoThumb model.photo
-                , div
-                    [ class "dropzone" ]
-                    []
-                , div [ class "actions" ]
-                    [ saveButton language PhotoSave model hasFileId (Just "column")
-                    ]
+                , div [ class "dropzone" ] []
                 ]
+            , div [ class "actions" ] <|
+                saveButton language PhotoSave model hasFileId (Just "column")
             ]
 
 
@@ -312,7 +317,7 @@ Button will also take care of preventing double submission,
 and showing success and error indications.
 
 -}
-saveButton : Language -> Msg -> Model -> Bool -> Maybe String -> Html Msg
+saveButton : Language -> Msg -> Model -> Bool -> Maybe String -> List (Html Msg)
 saveButton language msg model hasInput maybeDivClass =
     let
         isLoading =
@@ -329,70 +334,59 @@ saveButton language msg model hasInput maybeDivClass =
                 []
             else
                 [ onClick msg ]
-
-        attrs =
-            Maybe.map (\divClass -> [ class divClass ]) maybeDivClass
     in
-        div (Maybe.withDefault [] attrs)
-            [ button
-                ([ classList
-                    [ ( "ui fluid basic button", True )
-                    , ( "loading", isLoading )
-                    , ( "basic", not isSuccess )
-                    , ( "negative", isFailure )
-                    , ( "disabled", not hasInput )
-                    ]
-                 , id "save-form"
-                 ]
-                    ++ saveAttr
-                )
-                [ text <| translate language Trans.Save
+        [ button
+            ([ classList
+                [ ( "ui fluid primary button", True )
+                , ( "loading", isLoading )
+                , ( "negative", isFailure )
+                , ( "disabled", not hasInput )
                 ]
-            , showIf isFailure <| div [] [ text <| translate language Trans.SaveError ]
+             , id "save-form"
+             ]
+                ++ saveAttr
+            )
+            [ text <| translate language Trans.Save
             ]
+        , showIf isFailure <| div [] [ text <| translate language Trans.SaveError ]
+        ]
 
 
 viewNutritionSigns : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
 viewNutritionSigns backendUrl accessToken user language ( childId, child ) model =
-    div []
-        [ div
-            [ class "ui divider" ]
-            []
-        , div
-            [ class "ui full segment nutrition"
-            , id "nutritionSignsEntryForm"
-            ]
-            [ h3
-                [ class "ui header" ]
+    div
+        [ class "ui full segment nutrition"
+        , id "nutritionSignsEntryForm"
+        ]
+        [ div [ class "content" ]
+            [ h3 [ class "ui header" ]
                 [ text <| translate language Trans.ActivitiesNutritionSignsTitle
                 ]
-            , p
-                []
-                [ text <| translate language Trans.ActivitiesNutritionSignsHelp ]
-            , div
-                [ class "ui form" ]
-                [ p []
-                    [ text <| translate language Trans.ActivitiesNutritionSignsLabel
-                    ]
-                , viewNutritionSignsSelector language model.nutritionSigns
-                ]
-            , div [ class "actions" ]
-                [ saveButton language NutritionSignsSave model (not (EveryDict.isEmpty model.nutritionSigns)) Nothing
-                ]
+            , p [] [ text <| translate language Trans.ActivitiesNutritionSignsHelp ]
+            , div [ class "ui form" ] <|
+                p [] [ text <| translate language Trans.ActivitiesNutritionSignsLabel ]
+                    :: viewNutritionSignsSelector language model.nutritionSigns
             ]
+        , div [ class "actions" ] <|
+            saveButton
+                language
+                NutritionSignsSave
+                model
+                (not (EveryDict.isEmpty model.nutritionSigns))
+                Nothing
         ]
 
 
-viewNutritionSignsSelector : Language -> EveryDictChildNutritionSign -> Html Msg
+viewNutritionSignsSelector : Language -> EveryDictChildNutritionSign -> List (Html Msg)
 viewNutritionSignsSelector language nutritionSigns =
     let
         nutrionSignsAndTranslationIdsFirst =
-            [ Edema, AbdominalDisortion, DrySkin, PoorAppetite ]
+            [ Edema, AbdominalDisortion, DrySkin ]
 
         nutrionSignsAndTranslationIdsSecond =
-            [ Apathy, BrittleHair, None ]
+            [ Apathy, PoorAppetite, BrittleHair ]
     in
-        div [ class "ui grid" ]
+        [ div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
                 (List.map
                     (viewNutritionSignsSelectorItem language nutritionSigns)
@@ -404,6 +398,9 @@ viewNutritionSignsSelector language nutritionSigns =
                     nutrionSignsAndTranslationIdsSecond
                 )
             ]
+        , div [ class "ui divider" ] []
+        , viewNutritionSignsSelectorItem language nutritionSigns None
+        ]
 
 
 {-| Helper function to return a tuples of checkbox label and attributes value.
@@ -471,45 +468,35 @@ viewMother backendUrl accessToken user language selectedActivity model =
 
 viewFamilyPlanning : BackendUrl -> String -> User -> Language -> Model -> Html Msg
 viewFamilyPlanning backendUrl accessToken user language model =
-    div []
-        [ div
-            [ class "ui divider" ]
-            []
-        , div
-            [ class "ui full segment family-planning"
-            , id "familyPlanningEntryForm"
-            ]
+    div
+        [ class "ui full segment family-planning"
+        , id "familyPlanningEntryForm"
+        ]
+        [ div [ class "content" ]
             [ h3
                 [ class "ui header" ]
                 [ text <| translate language Trans.ActivitiesFamilyPlanningSignsTitle
                 ]
-            , p
-                []
-                [ text <| translate language Trans.ActivitiesFamilyPlanningSignsHelp ]
-            , div
-                [ class "ui form" ]
-                [ p []
-                    [ text <| translate language Trans.ActivitiesFamilyPlanningSignsLabel
-                    ]
-                , viewFamilyPlanningSelector language model.familyPlanningSigns
-                ]
-            , div [ class "actions" ]
-                [ saveButton language FamilyPlanningSignsSave model (not (EveryDict.isEmpty model.familyPlanningSigns)) Nothing
-                ]
+            , p [] [ text <| translate language Trans.ActivitiesFamilyPlanningSignsHelp ]
+            , div [ class "ui form" ] <|
+                p [] [ text <| translate language Trans.ActivitiesFamilyPlanningSignsLabel ]
+                    :: viewFamilyPlanningSelector language model.familyPlanningSigns
             ]
+        , div [ class "actions" ] <|
+            saveButton language FamilyPlanningSignsSave model (not (EveryDict.isEmpty model.familyPlanningSigns)) Nothing
         ]
 
 
-viewFamilyPlanningSelector : Language -> EveryDictFamilyPlanningSigns -> Html Msg
+viewFamilyPlanningSelector : Language -> EveryDictFamilyPlanningSigns -> List (Html Msg)
 viewFamilyPlanningSelector language familyPlanningSigns =
     let
         familyPlanningSignFirst =
             [ Pill, Condoms, IUD ]
 
         familyPlanningSignSecond =
-            [ Injection, Necklace, NoFamilyPlanning ]
+            [ Injection, Necklace ]
     in
-        div [ class "ui grid" ]
+        [ div [ class "ui grid" ]
             [ div [ class "eight wide column" ] <|
                 List.map
                     (viewFamilyPlanningSelectorItem language familyPlanningSigns)
@@ -519,6 +506,9 @@ viewFamilyPlanningSelector language familyPlanningSigns =
                     (viewFamilyPlanningSelectorItem language familyPlanningSigns)
                     familyPlanningSignSecond
             ]
+        , div [ class "ui divider" ] []
+        , viewFamilyPlanningSelectorItem language familyPlanningSigns NoFamilyPlanning
+        ]
 
 
 viewFamilyPlanningSelectorItem : Language -> EveryDictFamilyPlanningSigns -> FamilyPlanningSign -> Html Msg

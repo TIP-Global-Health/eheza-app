@@ -12,8 +12,8 @@ describe('The measurement forms', () => {
         browser.visitChildWithTodoTasks();
 
         // Initially follow the Photo form.
-        browser.element('a=Photo').click();
-        assert.equal(browser.elements('.pending a').value.length, 5, 'There are five pending activities');
+        browser.click('a=Photo');
+        assert.equal(browser.elements('.ui.five.column.grid .column').value.length, 5, 'There are five pending activities');
     });
 
     it('should present the activities in the right order', () => {
@@ -22,7 +22,7 @@ describe('The measurement forms', () => {
         let position = 1;
         for (let activity of activities) {
             // Checks the order of the Activities at the To Do activity selector, one by one.
-            assert.equal(browser.getText('.grid.pending div:nth-child(' + position + ') a'), activity);
+            assert.equal(browser.getText('.ui.five.column.grid div:nth-child(' + position + ') a'), activity);
             position++;
         }
     });
@@ -32,7 +32,7 @@ describe('The measurement forms', () => {
         browser.element('#save-form').click();
         // The help text of the Weight form.
         browser.waitForVisible("p=Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on.");
-        assert.equal(browser.elements('.pending a').value.length, 4, 'There are four pending activities');
+        assert.equal(browser.elements('.ui.five.column.grid .column').value.length, 4, 'There are four pending activities');
     });
 
     it('should lead to the Height form upon saving the Weight form', () => {
@@ -40,7 +40,7 @@ describe('The measurement forms', () => {
         browser.element('#save-form').click();
         // The help text of the Height form.
         browser.waitForVisible("p=Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight.");
-      assert.equal(browser.elements('.pending a').value.length, 3, 'There are three pending activities');
+      assert.equal(browser.elements('.ui.five.column.grid .column').value.length, 3, 'There are three pending activities');
     });
 
     it('should lead to the MUAC form upon saving the Height form', () => {
@@ -48,7 +48,7 @@ describe('The measurement forms', () => {
         browser.element('#save-form').click();
         // The help text of the MUAC form.
         browser.waitForVisible("p=Make sure to measure at the center of the baby’s upper arm.");
-        assert.equal(browser.elements('.pending a').value.length, 2, 'There are two two pending activities');
+        assert.equal(browser.elements('.ui.five.column.grid .column').value.length, 2, 'There are two two pending activities');
     });
 
     it('should lead to the Nutrition Signs form upon saving the MUAC form', () => {
@@ -56,7 +56,7 @@ describe('The measurement forms', () => {
         browser.element('#save-form').click();
         // The help text of the Nutrition Signs form.
         browser.waitForVisible("p=Explain to the mother how to check the malnutrition signs for their own child.");
-        assert.equal(browser.elements('.pending a').value.length, 1, 'There is only one pending activity');
+        assert.equal(browser.elements('.ui.five.column.grid .column').value.length, 1, 'There is only one pending activity');
     });
 
     it('should have zero pending activities after saving the Nutrition Signs', () => {

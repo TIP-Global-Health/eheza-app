@@ -44,15 +44,10 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
       ],
     ];
 
-    $public_fields['mother'] = [
-      'property' => 'field_mother',
-      'resource' => [
-        // Bundle name.
-        'mother' => [
-          // Resource name.
-          'name' => 'mothers',
-          'full_view' => FALSE,
-        ],
+    $public_fields['sibling'] = [
+      'property' => 'nid',
+      'process_callbacks' => [
+        [$this, 'getSibling'],
       ],
     ];
 
@@ -106,6 +101,35 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
   public static function getMother($nid) {
     $child_wrapper = entity_metadata_wrapper('node', $nid);
     return $child_wrapper->field_mother->getIdentifier();
+  }
+
+  /**
+   * Return the sibling of the child.
+   *
+   * @param int $nid
+   *   The child node ID.
+   *
+   * @return mixed|null
+   *   Sibling node ID, or NULL, if none exist.
+   */
+  public static function getSibling($nid) {
+    $mother_nid = self::getMother($nid);
+    if (!$mother_nid) {
+      return NULL;
+    }
+
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'child')
+      ->propertyCondition('nid', $nid, '<>')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldCondition('field_mother', 'target_id', $mother_nid)
+      // Child may have up to one sibling.
+      ->range(0, 1)
+      ->execute();
+
+    return empty($result['node']) ? NULL : key($result['node']);
   }
 
   /**

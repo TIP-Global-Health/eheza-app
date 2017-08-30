@@ -4,6 +4,7 @@ module Pages.Participant.Model
         , Model
         , Tab(..)
         , emptyModel
+        , thumbnailDimensions
         )
 
 import Activity.Model exposing (ActivityType)
@@ -37,4 +38,10 @@ emptyModel =
     { measurements = Measurement.Model.emptyModel
     , selectedActivity = Nothing
     , selectedTab = Pending
+    }
+
+
+thumbnailDimensions =
+    { width = 222
+    , height = 222
     }
