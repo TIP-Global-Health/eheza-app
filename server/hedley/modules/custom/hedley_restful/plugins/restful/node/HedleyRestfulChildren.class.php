@@ -125,8 +125,8 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
       ->propertyCondition('nid', $nid, '<>')
       ->propertyCondition('status', NODE_PUBLISHED)
       ->fieldCondition('field_mother', 'target_id', $mother_nid)
-      // Prevent any abuse.
-      ->range(0, 50)
+      // Child may have up to one sibling.
+      ->range(0, 1)
       ->execute();
 
     return empty($result['node']) ? NULL : key($result['node']);
