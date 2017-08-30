@@ -1,8 +1,12 @@
-module ZScore.Common exposing (ZScore(..), compareZScore, viewZScore)
+module ZScore.Model exposing (ZScore(..), compareZScore, viewZScore)
 
 {-| This module represents some common elements to determining
-standard deviations for various measurements.
+ZScore for various measurements.
 -}
+
+import ZScore.HeightGirls
+import ZScore.HeightBoys
+import Child.Model exposing (Gender(..))
 
 
 {-| A ZScore. This isn't really a number -- e.g. you can't
@@ -27,6 +31,15 @@ type ZScore
     | ZScore3
 
 
+{-| Convert the ZScore to a string for display purposes.
+
+E.g.
+
+    ZScore3Neg -> "-3"
+    ZScore0 -> "0"
+    ZScore1 -> "1"
+
+-}
 viewZScore : ZScore -> String
 viewZScore =
     toString << zScoreToInt
