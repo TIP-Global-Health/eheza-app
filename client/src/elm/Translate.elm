@@ -98,6 +98,9 @@ type TranslationId
     | PageNotFoundMsg
     | Password
     | Participants
+    | PlaceholderEnterHeight
+    | PlaceholderEnterMUAC
+    | PlaceholderEnterWeight
     | PlaceholderTextGroupDate
     | PlaceholderTextJoined
     | PreviousFloatMeasurement Float
@@ -114,6 +117,7 @@ type TranslationId
     | TitleHealthAssessment
     | Username
     | WelcomeUser String
+    | ZScore
 
 
 translate : Language -> TranslationId -> String
@@ -358,6 +362,15 @@ translate lang trans =
                 Participants ->
                     { english = "Participants" }
 
+                PlaceholderEnterHeight ->
+                    { english = "Enter height here…" }
+
+                PlaceholderEnterMUAC ->
+                    { english = "Enter muac here…" }
+
+                PlaceholderEnterWeight ->
+                    { english = "Enter weight here…" }
+
                 PlaceholderTextGroupDate ->
                     { english = "Group Date" }
 
@@ -440,6 +453,9 @@ translate lang trans =
 
                 WelcomeUser name ->
                     { english = "Welcome " ++ name }
+
+                ZScore ->
+                    { english = "Z-Score: " }
     in
         case lang of
             English ->

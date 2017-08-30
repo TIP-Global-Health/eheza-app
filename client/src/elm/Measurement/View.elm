@@ -79,18 +79,18 @@ viewChild backendUrl accessToken user language ( childId, child ) maybePreviousE
 viewFloatForm : BackendUrl -> String -> User -> Language -> FloatMeasurements -> ( ChildId, Child ) -> Maybe ExaminationChild -> Model -> Html Msg
 viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, child ) maybePreviousExamination model =
     let
-        ( blockName, headerText, helpText, labelText, constraints, measurementValue, measurementType, updateMsg, saveMsg ) =
+        ( blockName, headerText, helpText, labelText, placeholderText, constraints, measurementValue, measurementType, ( updateMsg, saveMsg ) ) =
             case floatMeasurement of
                 HeightFloat ->
                     ( "height"
                     , Trans.ActivitiesHeightTitle
                     , Trans.ActivitiesHeightHelp
                     , Trans.ActivitiesHeightLabel
+                    , Trans.PlaceholderEnterHeight
                     , getInputConstraintsHeight
                     , model.height
                     , Trans.CentimeterShorthand
-                    , HeightUpdate
-                    , HeightSave
+                    , ( HeightUpdate, HeightSave )
                     )
 
                 MuacFloat ->
@@ -98,11 +98,11 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     , Trans.ActivitiesMuacTitle
                     , Trans.ActivitiesMuacHelp
                     , Trans.ActivitiesMuacLabel
+                    , Trans.PlaceholderEnterMUAC
                     , getInputConstraintsMuac
                     , model.muac
                     , Trans.CentimeterShorthand
-                    , MuacUpdate
-                    , MuacSave
+                    , ( MuacUpdate, MuacSave )
                     )
 
                 WeightFloat ->
@@ -110,11 +110,11 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     , Trans.ActivitiesWeightTitle
                     , Trans.ActivitiesWeightHelp
                     , Trans.ActivitiesWeightLabel
+                    , Trans.PlaceholderEnterWeight
                     , getInputConstraintsWeight
                     , model.weight
                     , Trans.KilogramShorthand
-                    , WeightUpdate
-                    , WeightSave
+                    , ( WeightUpdate, WeightSave )
                     )
 
         defaultAttr =
@@ -123,7 +123,7 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
 
         inputAttrs =
             [ type_ "text"
-            , placeholder "Enter height here…"
+            , placeholder <| translate language placeholderText
             , name blockName
             , Attr.min <| toString constraints.minVal
             , Attr.max <| toString constraints.maxVal
@@ -153,11 +153,11 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                         , div [ class "five wide column" ]
                             [ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType model ]
                         ]
-                    , viewPreviousMeasurement language floatMeasurement maybePreviousExamination
+                    , viewPreviousMeasurement language floatMeasurement maybePreviousExamination measurementType
                     ]
                 , div
                     [ class "ui large header" ]
-                    [ text "Z-Score:"
+                    [ text <| translate language Trans.ZScore
                     , span
                         [ class "sub header" ]
                         [ text "Requires implementation" ]
@@ -189,8 +189,8 @@ viewPhotoThumb maybePhoto =
             (Tuple.second maybePhoto)
 
 
-viewPreviousMeasurement : Language -> FloatMeasurements -> Maybe ExaminationChild -> Html Msg
-viewPreviousMeasurement language floatMeasurement maybePreviousExamination =
+viewPreviousMeasurement : Language -> FloatMeasurements -> Maybe ExaminationChild -> TranslationId -> Html Msg
+viewPreviousMeasurement language floatMeasurement maybePreviousExamination measurementType =
     case maybePreviousExamination of
         Nothing ->
             emptyNode
@@ -210,7 +210,12 @@ viewPreviousMeasurement language floatMeasurement maybePreviousExamination =
             in
                 Maybe.map
                     (\previousValue ->
-                        div [] [ text <| translate language <| Trans.PreviousFloatMeasurement previousValue ]
+                        div []
+                            [ text <|
+                                (translate language <| Trans.PreviousFloatMeasurement previousValue)
+                                    ++ " "
+                                    ++ (translate language measurementType)
+                            ]
                     )
                     maybePreviousValue
                     |> Maybe.withDefault emptyNode
