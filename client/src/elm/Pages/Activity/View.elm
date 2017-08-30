@@ -9,9 +9,10 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List as List
-import Pages.Activity.Model exposing (Model, Msg(..))
+import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
 import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
+import Utils.Html exposing (tabItem)
 
 
 view : BackendUrl -> String -> User -> Language -> Date -> Model -> List (Html Msg)
@@ -53,8 +54,26 @@ view backendUrl accessToken user language currentDate model =
                         [ p [] [ text <| translate language description ] ]
                     ]
                 ]
+
+        pendingParticipants =
+            []
+
+        completedParticipants =
+            []
+
+        pendingTabTitle =
+            translate language <| Trans.ActivitiesToComplete <| List.length pendingParticipants
+
+        completedTabTitle =
+            translate language <| Trans.ActivitiesCompleted <| List.length completedParticipants
+
+        tabs =
+            div [ class "ui tabular menu" ]
+                [ tabItem pendingTabTitle (model.selectedTab == Pending) (SetSelectedTab Pending)
+                , tabItem completedTabTitle (model.selectedTab == Completed) (SetSelectedTab Completed)
+                ]
     in
-        [ activityDescription ]
+        [ activityDescription, tabs ]
 
 
 

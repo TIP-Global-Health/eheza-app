@@ -240,10 +240,14 @@ viewPageActivity backendUrl accessToken user language currentDate maybeActivityT
         activitytModel =
             case maybeActivityType of
                 Just activityType ->
-                    { selectedActivity = activityType }
+                    let
+                        initialModel =
+                            model.activityPage
+                    in
+                        { initialModel | selectedActivity = activityType }
 
                 Nothing ->
-                    Pages.Activity.Model.emptyModel
+                    model.activityPage
     in
         div [ class "wrap" ] <|
             viewPageActivityHeader activitytModel

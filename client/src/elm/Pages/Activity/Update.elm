@@ -12,3 +12,9 @@ update backendUrl accessToken user msg model =
     case msg of
         SetRedirectPage page ->
             ( model, Cmd.none, Just page )
+
+        SetSelectedTab tab ->
+            ( { model | selectedTab = tab }
+            , Cmd.none
+            , Nothing
+            )
