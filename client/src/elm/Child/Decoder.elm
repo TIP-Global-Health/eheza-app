@@ -19,6 +19,7 @@ decodeChild =
         |> required "mother" (nullable decodeInt)
         |> required "sibling" (nullable decodeInt)
         |> hardcoded NotAsked
+        |> hardcoded NotAsked
         |> hardcoded Nothing
         |> custom decodeChildActivityDates
         |> required "date_birth" decodeDate
