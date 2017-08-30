@@ -1,10 +1,12 @@
 module ParticipantManager.View
     exposing
         ( viewActivities
+        , viewPageActivity
         , viewPageParticipant
         , viewParticipants
         )
 
+import Activity.Model exposing (ActivityType)
 import App.PageType
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
@@ -14,6 +16,8 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Pages.Activities.Model
 import Pages.Activities.View
+import Pages.Activity.Model
+import Pages.Activity.View
 import Pages.Participant.Model
 import Pages.Participant.View
 import Pages.Participants.Model
@@ -227,3 +231,17 @@ viewActivities language currentDate user model =
                 :: (List.map (Html.map MsgPagesActivities) <|
                         Pages.Activities.View.view language currentDate user participants model.activitiesPage
                    )
+
+
+viewPageActivity : BackendUrl -> String -> User -> Language -> Date -> Maybe ActivityType -> Model -> Html Msg
+viewPageActivity backendUrl accessToken user language currentDate maybeActivityType model =
+    let
+        activitytModel =
+            case maybeActivityType of
+                Just activityType ->
+                    { selectedActivity = Just activityType }
+
+                Nothing ->
+                    Pages.Activity.Model.emptyModel
+    in
+        Html.map MsgPagesActivity <| Pages.Activity.View.view backendUrl accessToken user language currentDate activitytModel

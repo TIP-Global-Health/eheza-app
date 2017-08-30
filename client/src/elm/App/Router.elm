@@ -17,6 +17,9 @@ delta2url previous current =
         Activities ->
             Just <| UrlChange NewEntry "#activities"
 
+        Activity _ ->
+            Just <| UrlChange NewEntry "#activity"
+
         Login ->
             Just <| UrlChange NewEntry "#login"
 
@@ -59,6 +62,7 @@ parseUrl =
     oneOf
         [ map (SetActivePage <| Dashboard []) (s "")
         , map (SetActivePage Activities) (s "activities")
+        , map (SetActivePage <| Activity Nothing) (s "activity")
         , map (\id -> SetActivePage <| Participant id) (s "participant" </> int)
         , map (SetActivePage Login) (s "login")
         , map (SetActivePage MyAccount) (s "my-account")

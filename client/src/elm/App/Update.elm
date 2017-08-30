@@ -191,6 +191,10 @@ update msg model =
                                 -- If we're showing a `Activities` page, make sure we `Subscribe`
                                 update (MsgParticipantManager ParticipantManager.Model.FetchAll) model
 
+                            Activity maybeActivityType ->
+                                -- If we're showing a `Activities` page, make sure we `Subscribe`
+                                update (MsgParticipantManager ParticipantManager.Model.FetchAll) model
+
                             Dashboard activityTypes ->
                                 let
                                     activityTypesUpdated =
@@ -255,6 +259,9 @@ getBackButtonTarget activePage =
 
         Activities ->
             Dashboard []
+
+        Activity _ ->
+            Activities
 
         Dashboard activity ->
             Activities

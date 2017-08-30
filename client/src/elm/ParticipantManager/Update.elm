@@ -8,6 +8,7 @@ import Json.Decode exposing (decodeValue)
 import Json.Encode exposing (Value)
 import HttpBuilder exposing (get, withJsonBody, withQueryParams)
 import Pages.Activities.Update
+import Pages.Activity.Update
 import Pages.Participant.Model
 import Pages.Participant.Update
 import Pages.Participants.Model
@@ -89,6 +90,16 @@ update currentDate backendUrl accessToken user language msg model =
             in
                 ( { model | activitiesPage = subModel }
                 , Cmd.map MsgPagesActivities subCmd
+                , redirectPage
+                )
+
+        MsgPagesActivity subMsg ->
+            let
+                ( subModel, subCmd, redirectPage ) =
+                    Pages.Activity.Update.update backendUrl accessToken user subMsg model.activityPage
+            in
+                ( { model | activityPage = subModel }
+                , Cmd.map MsgPagesActivity subCmd
                 , redirectPage
                 )
 
