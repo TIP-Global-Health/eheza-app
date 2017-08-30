@@ -52,7 +52,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                             []
 
         dateOfBirth =
-            text <| renderParticipantDateOfBirth language childParticipant
+            text <| translate language <| Trans.ReportDOB <| renderParticipantDateOfBirth language childParticipant
 
         age =
             text <| translate language <| Trans.ReportAge <| renderParticipantAge language childParticipant currentDate

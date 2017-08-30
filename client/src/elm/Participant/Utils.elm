@@ -120,14 +120,12 @@ renderParticipantDateOfBirth language participant =
         year =
             Date.year birthDate
     in
-        translate language <|
-            Trans.ReportDOB <|
-                (if day < 10 then
-                    "0" ++ toString day
-                 else
-                    toString day
-                )
-                    ++ " "
-                    ++ month
-                    ++ " "
-                    ++ toString year
+        (if day < 10 then
+            "0" ++ toString day
+         else
+            toString day
+        )
+            ++ " "
+            ++ month
+            ++ " "
+            ++ toString year
