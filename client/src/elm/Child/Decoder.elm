@@ -7,6 +7,7 @@ import Activity.Decoder exposing (decodeChildActivityDates)
 import Child.Model exposing (..)
 import Json.Decode exposing (Decoder, andThen, dict, fail, field, int, list, map, map2, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required)
+import ProgressReport.Decoder exposing (decodeProgressReport)
 import RemoteData exposing (RemoteData(NotAsked))
 import Utils.Json exposing (decodeDate, decodeInt)
 
@@ -19,7 +20,7 @@ decodeChild =
         |> required "mother" (nullable decodeInt)
         |> required "sibling" (nullable decodeInt)
         |> hardcoded NotAsked
-        |> hardcoded NotAsked
+        |> required "progress-report" decodeProgressReport
         |> hardcoded Nothing
         |> custom decodeChildActivityDates
         |> required "date_birth" decodeDate
