@@ -79,9 +79,9 @@ type alias Model =
 tool referenced at <https://github.com/Gizra/ihangane/issues/282>
 -}
 type MuacIndication
-    = MuacRed
+    = MuacGreen
+    | MuacRed
     | MuacYellow
-    | MuacGreen
 
 
 type FloatMeasurements
