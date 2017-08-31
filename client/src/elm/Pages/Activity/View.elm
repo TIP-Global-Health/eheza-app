@@ -35,28 +35,6 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                             ParticipantChild child ->
                                 case selectedActivityIdentity.activityType of
                                     Child activityType ->
-                                        not <| hasPendingChildActivity currentDate activityType child
-
-                                    Mother _ ->
-                                        False
-
-                            ParticipantMother mother ->
-                                case selectedActivityIdentity.activityType of
-                                    Child _ ->
-                                        False
-
-                                    Mother activityType ->
-                                        not <| hasPendingMotherActivity currentDate activityType mother
-                    )
-
-        participantsWithCompletedActivity =
-            participantsDict
-                |> Dict.filter
-                    (\participantId participant ->
-                        case participant.info of
-                            ParticipantChild child ->
-                                case selectedActivityIdentity.activityType of
-                                    Child activityType ->
                                         hasPendingChildActivity currentDate activityType child
 
                                     Mother _ ->
@@ -69,6 +47,28 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
 
                                     Mother activityType ->
                                         hasPendingMotherActivity currentDate activityType mother
+                    )
+
+        participantsWithCompletedActivity =
+            participantsDict
+                |> Dict.filter
+                    (\participantId participant ->
+                        case participant.info of
+                            ParticipantChild child ->
+                                case selectedActivityIdentity.activityType of
+                                    Child activityType ->
+                                        not <| hasPendingChildActivity currentDate activityType child
+
+                                    Mother _ ->
+                                        False
+
+                            ParticipantMother mother ->
+                                case selectedActivityIdentity.activityType of
+                                    Child _ ->
+                                        False
+
+                                    Mother activityType ->
+                                        not <| hasPendingMotherActivity currentDate activityType mother
                     )
 
         activityDescription =

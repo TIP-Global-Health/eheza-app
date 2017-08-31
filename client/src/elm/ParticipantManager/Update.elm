@@ -95,10 +95,36 @@ update currentDate backendUrl accessToken user language msg model =
 
         MsgPagesActivity subMsg ->
             let
-                ( subModel, subCmd, redirectPage ) =
-                    Pages.Activity.Update.update backendUrl accessToken user subMsg model.activityPage
+                ( participantUpdated, updatedActivityPage, subCmd, redirectPage ) =
+                    Pages.Activity.Update.update currentDate backendUrl accessToken user subMsg model.activityPage
+
+                updatedModel =
+                    case participantUpdated of
+                        Just ( participantId, participant ) ->
+                            case Dict.get participantId model.participantPage of
+                                Just participantPage ->
+                                    let
+                                        updatedParticipantPage =
+                                            { participantPage | measurements = updatedActivityPage.measurements }
+                                    in
+                                        { model
+                                            | activityPage = updatedActivityPage
+                                            , participants = Dict.insert participantId (Success participant) model.participants
+                                            , participantPage = Dict.insert participantId updatedParticipantPage model.participantPage
+                                        }
+
+                                Nothing ->
+                                    { model
+                                        | activityPage = updatedActivityPage
+                                        , participants = Dict.insert participantId (Success participant) model.participants
+
+                                        -- , participants = Dict.update participantId (Maybe.andThen (\value -> Just (Success participant))) model.participants
+                                    }
+
+                        Nothing ->
+                            { model | activityPage = updatedActivityPage }
             in
-                ( { model | activityPage = subModel }
+                ( updatedModel
                 , Cmd.map MsgPagesActivity subCmd
                 , redirectPage
                 )
