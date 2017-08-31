@@ -19,7 +19,6 @@ import Mother.Model exposing (Mother, MotherId)
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
 import Participant.Model exposing (Participant, ParticipantId, ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (getParticipantAge, renderParticipantAge, renderParticipantDateOfBirth)
-import ProgressReport.View
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
 import User.Model exposing (User)
@@ -71,7 +70,9 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
 
         content =
             if model.selectedTab == ProgressReport then
-                [ ProgressReport.View.viewProgressReport backendUrl accessToken currentUser language ( childId, child )
+                [ div
+                    [ class "ui full segment progress-report" ]
+                    [ text "progress report" ]
                 ]
             else
                 [ Html.map MsgMeasurement <|

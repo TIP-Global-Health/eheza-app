@@ -29,7 +29,6 @@ type alias Child =
     , motherId : Maybe MotherId
     , siblingId : Maybe ChildId
     , examinations : WebData EveryDictListExaminationsChild
-    , progressReport : WebData String
     , selectedExamination : Maybe ExaminationId
     , activityDates : ChildActivityDates
     , birthDate : Date
