@@ -26,17 +26,14 @@ class HedleyRestfulNutritions extends HedleyRestfulChildActivityBase {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $public_fields['examination'] = [
-      'property' => 'field_examination',
-      'resource' => [
-        // Bundle name.
-        'examination' => [
-          // Resource name.
-          'name' => 'examinations',
-          'full_view' => TRUE,
-        ],
-      ],
-    ];
+    $field_names = [];
+
+    foreach ($field_names as $field_name) {
+      $public_name = str_replace('field_', '', $field_name);
+      $public_fields[$public_name] = [
+        'property' => $field_name,
+      ];
+    }
 
     $public_fields['nutrition_signs'] = [
       'property' => 'field_nutrition_signs',

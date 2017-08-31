@@ -179,6 +179,7 @@ function hedley_standard_install() {
     'height',
     'mother',
     'muac',
+    'nutrition',
     'photo',
     'weight',
   ];
