@@ -2,11 +2,13 @@ module Pages.Activity.Model exposing (..)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import App.PageType exposing (Page)
-import Participant.Model exposing (ParticipantId)
+import Measurement.Model
+import Participant.Model exposing (ParticipantId, Participant)
 
 
 type alias Model =
-    { selectedActivity : ActivityType
+    { measurements : Measurement.Model.Model
+    , selectedActivity : ActivityType
     , selectedParticipantId : Maybe ParticipantId
     , selectedTab : Tab
     }
@@ -14,6 +16,7 @@ type alias Model =
 
 type Msg
     = SetRedirectPage Page
+    | MsgMeasurement ( ParticipantId, Participant ) Measurement.Model.Msg
     | SetSelectedParticipant (Maybe ParticipantId)
     | SetSelectedTab Tab
 
@@ -25,7 +28,8 @@ type Tab
 
 emptyModel : Model
 emptyModel =
-    { selectedActivity = Child Height
+    { measurements = Measurement.Model.emptyModel
+    , selectedActivity = Child Height
     , selectedParticipantId = Nothing
     , selectedTab = Pending
     }

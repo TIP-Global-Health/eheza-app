@@ -106,6 +106,12 @@ view backendUrl accessToken user language currentDate model =
 
 
 
+-- ++ [ Html.map MsgMeasurement <|
+--         Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
+--    ]
+-- ++ [ Html.map MsgMeasurement <|
+--         Measurement.View.viewMother backendUrl accessToken currentUser language model.selectedActivity model.measurements
+--    ]
 -- let
 --     allActivityList =
 --         getActivityList currentDate model.participantTypeFilter participants
