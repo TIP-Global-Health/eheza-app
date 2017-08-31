@@ -33,3 +33,9 @@ emptyModel =
     , selectedParticipant = Nothing
     , selectedTab = Pending
     }
+
+
+thumbnailDimensions =
+    { width = 96
+    , height = 96
+    }

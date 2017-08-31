@@ -12,9 +12,9 @@ import Html.Events exposing (onClick)
 import List as List
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.View
-import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
+import Pages.Activity.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
-import Participant.Utils exposing (getParticipantName)
+import Participant.Utils exposing (getParticipantName, getParticipantAvatarThumb)
 import ParticipantManager.Utils exposing (filterParticipantsDict)
 import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
@@ -26,41 +26,6 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
     let
         selectedActivityIdentity =
             getActivityIdentity model.selectedActivity
-
-        activityDescription =
-            let
-                description =
-                    case selectedActivityIdentity.activityType of
-                        Child ChildPicture ->
-                            Trans.ActivityChildPhotoDescription
-
-                        Child Height ->
-                            Trans.ActivityHeightDescription
-
-                        Child Muac ->
-                            Trans.ActivityMuacDescription
-
-                        Child NutritionSigns ->
-                            Trans.ActivityNutritionSigns
-
-                        Child Weight ->
-                            Trans.ActivityWeightDescription
-
-                        Mother FamilyPlanning ->
-                            Trans.ActivityFamilyPlanningDescription
-
-                        _ ->
-                            Trans.EmptyString
-            in
-                div
-                    [ class "ui unstackable items" ]
-                    [ div [ class "item" ]
-                        [ div [ class "ui image" ]
-                            [ span [ class <| "icon-item icon-item-" ++ selectedActivityIdentity.icon ] [] ]
-                        , div [ class "content" ]
-                            [ p [] [ text <| translate language description ] ]
-                        ]
-                    ]
 
         participantsWithPendingActivity =
             participantsDict
@@ -106,6 +71,41 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                                         hasPendingMotherActivity currentDate activityType mother
                     )
 
+        activityDescription =
+            let
+                description =
+                    case selectedActivityIdentity.activityType of
+                        Child ChildPicture ->
+                            Trans.ActivityChildPhotoDescription
+
+                        Child Height ->
+                            Trans.ActivityHeightDescription
+
+                        Child Muac ->
+                            Trans.ActivityMuacDescription
+
+                        Child NutritionSigns ->
+                            Trans.ActivityNutritionSigns
+
+                        Child Weight ->
+                            Trans.ActivityWeightDescription
+
+                        Mother FamilyPlanning ->
+                            Trans.ActivityFamilyPlanningDescription
+
+                        _ ->
+                            Trans.EmptyString
+            in
+                div
+                    [ class "ui unstackable items" ]
+                    [ div [ class "item" ]
+                        [ div [ class "ui image" ]
+                            [ span [ class <| "icon-item icon-item-" ++ selectedActivityIdentity.icon ] [] ]
+                        , div [ class "content" ]
+                            [ p [] [ text <| translate language description ] ]
+                        ]
+                    ]
+
         tabs =
             let
                 pendingTabTitle =
@@ -130,27 +130,47 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                             participantsWithCompletedActivity
 
                 viewParticipantCard maybeSelectedParticipant ( participantId, participant ) =
-                    div
-                        [ classList
-                            [ ( "participant card", True )
-                            , ( "active"
-                              , case maybeSelectedParticipant of
-                                    Just ( id, _ ) ->
-                                        id == participantId
+                    let
+                        name =
+                            getParticipantName participant
 
-                                    Nothing ->
-                                        False
-                              )
-                            ]
-                        ]
-                        [ div
-                            [ class "image"
+                        imageSrc =
+                            getParticipantAvatarThumb participant
+
+                        imageView =
+                            if String.isEmpty imageSrc then
+                                span [ class "icon-participant" ] []
+                            else
+                                img
+                                    [ src imageSrc
+                                    , attribute "alt" name
+                                    , style
+                                        [ ( "height", (toString thumbnailDimensions.height) ++ "px" )
+                                        , ( "width", (toString thumbnailDimensions.height) ++ "px" )
+                                        ]
+                                    ]
+                                    []
+                    in
+                        div
+                            [ classList
+                                [ ( "participant card", True )
+                                , ( "active"
+                                  , case maybeSelectedParticipant of
+                                        Just ( id, _ ) ->
+                                            id == participantId
+
+                                        Nothing ->
+                                            False
+                                  )
+                                ]
                             , onClick <| SetSelectedParticipant <| Just ( participantId, participant )
                             ]
-                            [ span [ class "icon-participant" ] [] ]
-                        , div [ class "content" ]
-                            [ p [] [ text <| getParticipantName participant ] ]
-                        ]
+                            [ div
+                                [ class "image" ]
+                                [ imageView ]
+                            , div [ class "content" ]
+                                [ p [] [ text <| getParticipantName participant ] ]
+                            ]
             in
                 div
                     [ class "ui participant segment" ]
@@ -175,89 +195,3 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                     emptyNode
     in
         [ activityDescription, tabs, participants, measurementsForm ]
-
-
-
--- ++ [ Html.map MsgMeasurement <|
---         Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
---    ]
--- ++ [ Html.map MsgMeasurement <|
---         Measurement.View.viewMother backendUrl accessToken currentUser language model.selectedActivity model.measurements
---    ]
--- let
---     allActivityList =
---         getActivityList currentDate model.participantTypeFilter participants
---
---     pendingActivities =
---         List.filter (\activity -> (Tuple.first activity.totals > 0)) allActivityList
---
---     noPendingActivities =
---         List.filter (\activity -> (Tuple.first activity.totals == 0)) allActivityList
---
---     tabItem tab activitiesList =
---         let
---             tabTitle =
---                 case tab of
---                     Pending ->
---                         Trans.ActivitiesToComplete
---
---                     Completed ->
---                         Trans.ActivitiesCompleted
---
---             tabClass tab =
---                 [ ( "item", True )
---                 , ( "active", model.activeTab == tab )
---                 ]
---         in
---             a
---                 [ classList <| tabClass tab
---                 , onClick <| SetActiveTab tab
---                 ]
---                 [ text <| translate language <| tabTitle <| List.length activitiesList ]
---
---     tabs =
---         div [ class "ui tabular menu" ]
---             [ tabItem Pending pendingActivities
---             , tabItem Completed noPendingActivities
---             ]
---
---     viewCard language identity =
---         div
---             [ class "card" ]
---             [ div
---                 [ class "image" ]
---                 [ span [ class <| "icon-task icon-task-" ++ identity.activity.icon ] [] ]
---             , div
---                 [ class "content" ]
---                 [ p [] [ text <| String.toUpper identity.activity.name ]
---                 , div
---                     [ class "ui tiny progress" ]
---                     [ div
---                         [ class "label" ]
---                         [ text <| translate language <| Trans.ReportCompleted identity.totals ]
---                     ]
---                 ]
---             ]
---
---     selectedActivies =
---         case model.activeTab of
---             Pending ->
---                 pendingActivities
---
---             Completed ->
---                 noPendingActivities
--- in
---     [ tabs
---     , div
---         [ class "ui full segment" ]
---         [ div [ class "content" ]
---             [ div [ class "ui four cards" ] <|
---                 List.map (viewCard language) selectedActivies
---             ]
---         , div [ class "actions" ]
---             [ button
---                 [ class "ui fluid button" ]
---                 [ text <| translate language Trans.EndSession ]
---             ]
---         ]
---     ]
