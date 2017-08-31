@@ -97,7 +97,7 @@ describe('when updating a measurement form', function() {
 
   it('should display an indication when MUAC is green', () => {
     const tab = 'MUAC';
-    const expected = 'green'
+    const expected = 'green';
 
     // Select tab.
     browser.click('a=' + tab);
@@ -110,9 +110,18 @@ describe('when updating a measurement form', function() {
   })
 
   it('should display an indication when MUAC is red', () => {
-    const expected = 'red'
+    const expected = 'red';
 
     adjustFormValue(5);
+    waitForMuacIndication(expected);
+    const result = getMuacIndicationText(expected);
+    assert.equal(result, expected.toUpperCase(), 'Indication for the' + expected + ' MUAC is incorrect.');
+  })
+
+  it('should display an indication when MUAC is yellow', () => {
+    const expected = 'yellow';
+
+    adjustFormValue(12);
     waitForMuacIndication(expected);
     const result = getMuacIndicationText(expected);
     assert.equal(result, expected.toUpperCase(), 'Indication for the' + expected + ' MUAC is incorrect.');
