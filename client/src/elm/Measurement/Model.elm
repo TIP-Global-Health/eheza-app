@@ -112,3 +112,28 @@ emptyModel =
     , photo = ( Nothing, Nothing )
     , weight = Nothing
     }
+
+
+saveMeasurementMessage : Msg -> Bool
+saveMeasurementMessage msg =
+    case msg of
+        FamilyPlanningSignsSave ->
+            True
+
+        HeightSave ->
+            True
+
+        MuacSave ->
+            True
+
+        NutritionSignsSave ->
+            True
+
+        PhotoSave ->
+            True
+
+        WeightSave ->
+            True
+
+        _ ->
+            False

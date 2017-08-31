@@ -100,12 +100,12 @@ update currentDate backendUrl accessToken user language msg model =
 
                 updatedModel =
                     case participantUpdated of
-                        Just ( participantId, participant ) ->
+                        Just ( participantId, participant, updatedMeasurements ) ->
                             case Dict.get participantId model.participantPage of
                                 Just participantPage ->
                                     let
                                         updatedParticipantPage =
-                                            { participantPage | measurements = updatedActivityPage.measurements }
+                                            { participantPage | measurements = updatedMeasurements }
                                     in
                                         { model
                                             | activityPage = updatedActivityPage

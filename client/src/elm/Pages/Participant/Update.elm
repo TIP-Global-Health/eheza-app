@@ -21,7 +21,16 @@ import User.Model exposing (..)
 import Utils.EditableWebData as EditableWebData
 
 
-update : Date -> BackendUrl -> String -> User -> Language -> Pages.Participant.Model.Msg -> ( ParticipantId, Participant ) -> Model -> ( Participant, Model, Cmd Pages.Participant.Model.Msg, Maybe Page )
+update :
+    Date
+    -> BackendUrl
+    -> String
+    -> User
+    -> Language
+    -> Pages.Participant.Model.Msg
+    -> ( ParticipantId, Participant )
+    -> Model
+    -> ( Participant, Model, Cmd Pages.Participant.Model.Msg, Maybe Page )
 update currentDate backendUrl accessToken user language msg ( participantId, participant ) model =
     case msg of
         HandlePusherEventData event ->

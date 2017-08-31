@@ -3,7 +3,7 @@ module Pages.Activity.Update exposing (update)
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
-import Maybe.Extra exposing (isJust)
+import Measurement.Model exposing (saveMeasurementMessage)
 import Measurement.Update
 import User.Model exposing (..)
 import Pages.Activity.Model exposing (Model, Msg(..))
@@ -11,7 +11,14 @@ import Pages.Participant.Utils exposing (updateActivityDate)
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
 
 
-update : Date -> BackendUrl -> String -> User -> Msg -> Model -> ( Maybe ( ParticipantId, Participant ), Model, Cmd Msg, Maybe Page )
+update :
+    Date
+    -> BackendUrl
+    -> String
+    -> User
+    -> Msg
+    -> Model
+    -> ( Maybe ( ParticipantId, Participant, Measurement.Model.Model ), Model, Cmd Msg, Maybe Page )
 update currentDate backendUrl accessToken user msg model =
     case msg of
         MsgMeasurement ( participantId, participant ) subMsg ->
@@ -32,11 +39,14 @@ update currentDate backendUrl accessToken user msg model =
                         Just ( activtyTypeCompleted, activityToRedirect ) ->
                             updateActivityDate newDate activtyTypeCompleted participant
 
-                modelWithMeasurements =
-                    { model | measurements = measurementsUpdated }
+                updatedModel =
+                    if saveMeasurementMessage subMsg then
+                        { model | measurements = Measurement.Model.emptyModel, selectedParticipant = Nothing }
+                    else
+                        { model | measurements = measurementsUpdated }
             in
-                ( Just ( participantId, participantUpdated )
-                , modelWithMeasurements
+                ( Just ( participantId, participantUpdated, measurementsUpdated )
+                , updatedModel
                 , Cmd.map (MsgMeasurement ( participantId, participantUpdated )) cmds
                 , Nothing
                 )
@@ -45,7 +55,14 @@ update currentDate backendUrl accessToken user msg model =
             ( Nothing, model, Cmd.none, Just page )
 
         SetSelectedParticipant maybeParticipant ->
-            ( Nothing, { model | selectedParticipant = maybeParticipant }, Cmd.none, Nothing )
+            let
+                updatedModel =
+                    if maybeParticipant /= model.selectedParticipant then
+                        { model | selectedParticipant = maybeParticipant, measurements = Measurement.Model.emptyModel }
+                    else
+                        model
+            in
+                ( Nothing, updatedModel, Cmd.none, Nothing )
 
         SetSelectedTab tab ->
             ( Nothing, { model | selectedTab = tab, selectedParticipant = Nothing }, Cmd.none, Nothing )
