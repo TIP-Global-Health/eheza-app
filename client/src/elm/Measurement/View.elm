@@ -200,7 +200,7 @@ muacIndication value =
         MuacGreen
 
 
-muacColor : MuacIndication -> Attribute msg
+muacColor : MuacIndication -> Attribute any
 muacColor muac =
     class <|
         case muac of
@@ -214,7 +214,7 @@ muacColor muac =
                 "label-green"
 
 
-viewMuacIndication : Language -> MuacIndication -> Html msg
+viewMuacIndication : Language -> MuacIndication -> Html any
 viewMuacIndication language muac =
     div [ muacColor muac ]
         [ text <| translate language (Trans.MuacIsDesignated muac) ]
