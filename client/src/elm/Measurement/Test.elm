@@ -1,6 +1,7 @@
 module Measurement.Test exposing (all)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
+import Date
 import Expect
 import Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChild, exampleUser)
 import Html

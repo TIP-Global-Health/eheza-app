@@ -10,7 +10,6 @@ import Child.Model exposing (Child, ChildId, Gender(..))
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict
-import Examination.Model exposing (ExaminationChild)
 import Examination.Utils exposing (getLastExaminationFromChild)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
@@ -20,9 +19,11 @@ import Mother.Model exposing (Mother, MotherId)
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
 import Participant.Model exposing (Participant, ParticipantId, ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (getParticipantAge, renderParticipantAge, renderParticipantDateOfBirth)
+import ProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
 import User.Model exposing (User)
+import Utils.Html exposing (emptyNode)
 
 
 viewChild : BackendUrl -> String -> User -> Language -> Date -> WebData Mother -> ( ChildId, Child ) -> Model -> List (Html Msg)
@@ -67,6 +68,14 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
 
         break =
             br [] []
+
+        content =
+            if model.selectedTab == ProgressReport then
+                [ viewProgressReport backendUrl accessToken currentUser language ( childId, child ) ]
+            else
+                [ Html.map MsgMeasurement <|
+                    Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
+                ]
     in
         div [ class "ui unstackable items" ]
             [ div [ class "item" ]
@@ -82,9 +91,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                 ]
             ]
             :: ((viewActivityCards language currentDate currentUser participants Children model.selectedTab model.selectedActivity)
-                    ++ [ Html.map MsgMeasurement <|
-                            Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
-                       ]
+                    ++ content
                )
 
 
@@ -155,13 +162,16 @@ viewActivityCards language currentDate user participants participantTypeFilter s
                 List.map (viewActivityListItem language selectedActivity) noPendingActivities
 
         activeView =
-            div [ class "ui task segment" ]
-                [ div [ class "ui five column grid" ] <|
-                    if selectedTab == Pending then
-                        pendingActivitiesView
-                    else
-                        noPendingActivitiesView
-                ]
+            if selectedTab == ProgressReport then
+                emptyNode
+            else
+                div [ class "ui task segment" ]
+                    [ div [ class "ui five column grid" ] <|
+                        if selectedTab == Pending then
+                            pendingActivitiesView
+                        else
+                            noPendingActivitiesView
+                    ]
 
         tabClass tabType =
             [ ( "item", True )
@@ -180,6 +190,9 @@ viewActivityCards language currentDate user participants participantTypeFilter s
 
                         Completed ->
                             Trans.ActivitiesCompleted
+
+                        ProgressReport ->
+                            Trans.ActivitiesProgressReport
             in
                 a
                     [ classList <| tabClass tabType
@@ -192,6 +205,7 @@ viewActivityCards language currentDate user participants participantTypeFilter s
             div [ class "ui tabular menu" ]
                 [ tabItem Pending pendingActivities
                 , tabItem Completed noPendingActivities
+                , tabItem ProgressReport []
                 ]
     in
         [ tabs, activeView ]
