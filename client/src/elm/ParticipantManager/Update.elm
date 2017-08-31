@@ -117,8 +117,6 @@ update currentDate backendUrl accessToken user language msg model =
                                     { model
                                         | activityPage = updatedActivityPage
                                         , participants = Dict.insert participantId (Success participant) model.participants
-
-                                        -- , participants = Dict.update participantId (Maybe.andThen (\value -> Just (Success participant))) model.participants
                                     }
 
                         Nothing ->
