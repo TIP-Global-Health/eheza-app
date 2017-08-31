@@ -8,7 +8,7 @@ import Json.Decode exposing (decodeString)
 import Participant.Model exposing (ParticipantType(..))
 import Pusher.Decoder exposing (..)
 import Pusher.Model exposing (..)
-import RemoteData exposing (RemoteData(NotAsked, Success))
+import RemoteData exposing (RemoteData(NotAsked))
 import Test exposing (Test, describe, test)
 
 
@@ -34,9 +34,9 @@ decodeTest =
       "date_progress_report" : null,
       "date_weight" : null,
       "date_birth" : "2016-08-28T10:39:49+02:00",
-      "gender" : "female",
-      "progress-report" : "some dummy data for now"
+      "gender" : "female"
     }
+
 }
             """
 
@@ -51,7 +51,6 @@ decodeTest =
                                         , motherId = Just 7
                                         , siblingId = Just 22
                                         , examinations = NotAsked
-                                        , progressReport = Success "\"some dummy data for now\""
                                         , selectedExamination = Nothing
                                         , activityDates = emptyChildActivityDates
                                         , birthDate = Date.fromTime 1472373589000
@@ -78,9 +77,9 @@ decodeTest =
       "date_muac" : null,
       "date_progress_report" : null,
       "date_weight" : null,
-      "gender" : "train",
-      "progress-report" : "some dummy data for now"
+      "gender" : "train"
     }
+
 }
             """
                 in

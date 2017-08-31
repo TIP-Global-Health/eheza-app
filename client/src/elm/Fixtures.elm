@@ -42,7 +42,6 @@ exampleChild =
     , motherId = Nothing
     , siblingId = Nothing
     , examinations = NotAsked
-    , progressReport = NotAsked
     , selectedExamination = Nothing
     , activityDates = emptyChildActivityDates
     , birthDate = Date.fromTime 1472373589000
