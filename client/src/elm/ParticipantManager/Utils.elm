@@ -1,6 +1,7 @@
 module ParticipantManager.Utils
     exposing
-        ( getChildren
+        ( filterParticipantsDict
+        , getChildren
         , getMother
         , getParticipant
         , wrapParticipantsDict
@@ -11,9 +12,36 @@ import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherA
 import Child.Model exposing (Child, ChildId)
 import Dict exposing (Dict)
 import Mother.Model exposing (Mother, MotherId)
-import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantsDict)
+import Participant.Model exposing (Participant, ParticipantsDict, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..))
 import ParticipantManager.Model as ParticipantManager
 import RemoteData exposing (RemoteData(..), WebData)
+
+
+filterParticipantsDict : ParticipantsDict -> ParticipantTypeFilter -> ParticipantsDict
+filterParticipantsDict participantsDict participantTypeFilter =
+    participantsDict
+        |> Dict.filter
+            (\participantId participant ->
+                case participantTypeFilter of
+                    All ->
+                        True
+
+                    Children ->
+                        case participant.info of
+                            ParticipantChild _ ->
+                                True
+
+                            _ ->
+                                False
+
+                    Mothers ->
+                        case participant.info of
+                            ParticipantMother _ ->
+                                True
+
+                            _ ->
+                                False
+            )
 
 
 getChildren : Mother -> ParticipantManager.Model -> List (WebData ( ChildId, Child ))

@@ -4,6 +4,8 @@ module Activity.Utils
         , getActivityTypeList
         , getActivityIdentity
         , getTotalsNumberPerActivity
+        , hasPendingChildActivity
+        , hasPendingMotherActivity
         )
 
 import Activity.Model exposing (ActivityIdentity, ActivityListItem, ActivityType(..), ChildActivityType(..), MotherActivityType(..))

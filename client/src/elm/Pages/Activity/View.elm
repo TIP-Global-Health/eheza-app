@@ -1,30 +1,33 @@
 module Pages.Activity.View exposing (view)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
-import Activity.Utils exposing (getActivityIdentity)
-import App.PageType exposing (Page(..))
+import Activity.Utils exposing (getActivityIdentity, hasPendingChildActivity, hasPendingMotherActivity)
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
+import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List as List
+import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
+import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
+import ParticipantManager.Utils exposing (filterParticipantsDict)
 import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
 import Utils.Html exposing (tabItem)
 
 
-view : BackendUrl -> String -> User -> Language -> Date -> Model -> List (Html Msg)
-view backendUrl accessToken user language currentDate model =
+view : BackendUrl -> String -> User -> Language -> Date -> ParticipantsDict -> Model -> List (Html Msg)
+view backendUrl accessToken user language currentDate participantsDict model =
     let
-        identity =
+        selectedActivityIdentity =
             getActivityIdentity model.selectedActivity
 
         activityDescription =
             let
                 description =
-                    case identity.activityType of
+                    case selectedActivityIdentity.activityType of
                         Child ChildPicture ->
                             Trans.ActivityChildPhotoDescription
 
@@ -50,25 +53,63 @@ view backendUrl accessToken user language currentDate model =
                     [ class "ui unstackable items" ]
                     [ div [ class "item" ]
                         [ div [ class "ui image" ]
-                            [ span [ class <| "icon-item icon-item-" ++ identity.icon ] [] ]
+                            [ span [ class <| "icon-item icon-item-" ++ selectedActivityIdentity.icon ] [] ]
                         , div [ class "content" ]
                             [ p [] [ text <| translate language description ] ]
                         ]
                     ]
 
-        pendingParticipants =
-            [ { name = "John", id = Just 1 }, { name = "Bob", id = Just 2 } ]
+        participantsWithPendingActivity =
+            participantsDict
+                |> Dict.filter
+                    (\participantId participant ->
+                        case participant.info of
+                            ParticipantChild child ->
+                                case selectedActivityIdentity.activityType of
+                                    Child activityType ->
+                                        not <| hasPendingChildActivity currentDate activityType child
 
-        completedParticipants =
-            [ { name = "Tim", id = Just 3 }, { name = "Alice", id = Just 4 } ]
+                                    Mother _ ->
+                                        False
+
+                            ParticipantMother mother ->
+                                case selectedActivityIdentity.activityType of
+                                    Child _ ->
+                                        False
+
+                                    Mother activityType ->
+                                        not <| hasPendingMotherActivity currentDate activityType mother
+                    )
+
+        participantsWithCompletedActivity =
+            participantsDict
+                |> Dict.filter
+                    (\participantId participant ->
+                        case participant.info of
+                            ParticipantChild child ->
+                                case selectedActivityIdentity.activityType of
+                                    Child activityType ->
+                                        hasPendingChildActivity currentDate activityType child
+
+                                    Mother _ ->
+                                        False
+
+                            ParticipantMother mother ->
+                                case selectedActivityIdentity.activityType of
+                                    Child _ ->
+                                        False
+
+                                    Mother activityType ->
+                                        hasPendingMotherActivity currentDate activityType mother
+                    )
 
         tabs =
             let
                 pendingTabTitle =
-                    translate language <| Trans.ActivitiesToComplete <| List.length pendingParticipants
+                    translate language <| Trans.ActivitiesToComplete <| Dict.size participantsWithPendingActivity
 
                 completedTabTitle =
-                    translate language <| Trans.ActivitiesCompleted <| List.length completedParticipants
+                    translate language <| Trans.ActivitiesCompleted <| Dict.size participantsWithCompletedActivity
             in
                 div [ class "ui tabular menu" ]
                     [ tabItem pendingTabTitle (model.selectedTab == Pending) (SetSelectedTab Pending)
@@ -80,10 +121,10 @@ view backendUrl accessToken user language currentDate model =
                 selectedParticipants =
                     case model.selectedTab of
                         Pending ->
-                            pendingParticipants
+                            participantsWithPendingActivity
 
                         Completed ->
-                            completedParticipants
+                            participantsWithCompletedActivity
 
                 participantCard selectedParticipantId participant =
                     div [ classList [ ( "participant card", True ), ( "active", selectedParticipantId == participant.id ) ] ]
@@ -99,7 +140,18 @@ view backendUrl accessToken user language currentDate model =
                 div
                     [ class "ui participant segment" ]
                     [ div [ class "ui four participant cards" ] <|
-                        List.map (participantCard model.selectedParticipantId) selectedParticipants
+                        List.map (participantCard model.selectedParticipantId) <|
+                            Dict.values <|
+                                Dict.map
+                                    (\participantId participant ->
+                                        case participant.info of
+                                            ParticipantChild child ->
+                                                { id = Just participantId, name = child.name }
+
+                                            ParticipantMother mother ->
+                                                { id = Just participantId, name = mother.name }
+                                    )
+                                    selectedParticipants
                     ]
     in
         [ activityDescription, tabs, participants ]

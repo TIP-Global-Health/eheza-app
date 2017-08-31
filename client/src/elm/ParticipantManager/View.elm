@@ -248,11 +248,14 @@ viewPageActivity backendUrl accessToken user language currentDate maybeActivityT
 
                 Nothing ->
                     model.activityPage
+
+        participants =
+            unwrapParticipantsDict model.participants
     in
         div [ class "wrap" ] <|
             viewPageActivityHeader activitytModel
                 :: (List.map (Html.map MsgPagesActivity) <|
-                        Pages.Activity.View.view backendUrl accessToken user language currentDate activitytModel
+                        Pages.Activity.View.view backendUrl accessToken user language currentDate participants activitytModel
                    )
 
 
