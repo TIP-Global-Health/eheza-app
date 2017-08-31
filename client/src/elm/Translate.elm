@@ -91,7 +91,6 @@ type TranslationId
     | MotherName String
     | Mothers
     | MuacIndication MuacIndication
-    | MuacIsDesignated MuacIndication
     | MyAccount
     | NoActiveIncidents
     | NoChildrenRegisteredInTheSystem
@@ -348,9 +347,6 @@ translate lang trans =
 
                         MuacGreen ->
                             { english = "green" }
-
-                MuacIsDesignated indication ->
-                    { english = "This MUAC is designated " ++ String.toUpper (translate English (MuacIndication indication)) }
 
                 MyAccount ->
                     { english = "My Account" }

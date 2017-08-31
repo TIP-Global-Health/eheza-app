@@ -40,7 +40,6 @@ import Measurement.Model
         , getInputConstraintsMuac
         , getInputConstraintsWeight
         )
-import Mother.Model exposing (Mother, MotherId)
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import User.Model exposing (..)
@@ -120,13 +119,13 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     , ( WeightUpdate, WeightSave )
                     )
 
-        additionalIndication =
+        viewDiff =
             case ( floatMeasurement, measurementValue ) of
                 ( MuacFloat, Just value ) ->
                     viewMuacIndication language (muacIndication value)
 
                 _ ->
-                    emptyNode
+                    viewFloatDiff language floatMeasurement maybePreviousExamination measurementType model
 
         defaultAttr =
             Maybe.map (\val -> [ value <| toString val ]) measurementValue
@@ -161,10 +160,8 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                                 , div [ class "ui basic label" ] [ text <| translate language measurementType ]
                                 ]
                             ]
-                        , div [ class "five wide column" ]
-                            [ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType model ]
+                        , div [ class "five wide column" ] [ viewDiff ]
                         ]
-                    , additionalIndication
                     , viewPreviousMeasurement language floatMeasurement maybePreviousExamination measurementType
                     ]
                 , div
@@ -216,8 +213,14 @@ muacColor muac =
 
 viewMuacIndication : Language -> MuacIndication -> Html any
 viewMuacIndication language muac =
-    div [ muacColor muac ]
-        [ text <| translate language (Trans.MuacIsDesignated muac) ]
+    p
+        [ muacColor muac
+        , class "label-form"
+        ]
+        [ translate language (Trans.MuacIndication muac)
+            |> String.toUpper
+            |> text
+        ]
 
 
 {-| Show a photo thumbnail, if it exists.
