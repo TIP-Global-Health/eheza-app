@@ -68,11 +68,21 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
 
         break =
             br [] []
+
+        viewImage =
+            img
+                [ src child.image
+                , attribute "alt" childName
+                , style
+                    [ ( "height", (toString thumbnailDimensions.height) ++ "px" )
+                    , ( "width", (toString thumbnailDimensions.height) ++ "px" )
+                    ]
+                ]
+                []
     in
         div [ class "ui unstackable items" ]
             [ div [ class "item" ]
-                [ div [ class "ui image" ]
-                    [ img [ src child.image, attribute "alt" childName, width thumbnailDimensions.width, height thumbnailDimensions.height ] [] ]
+                [ div [ class "ui image" ] [ viewImage ]
                 , div [ class "content" ]
                     [ h2 [ class "ui header" ]
                         [ text childName ]
@@ -111,14 +121,23 @@ viewMother backendUrl accessToken language currentDate currentUser motherId moth
         participants =
             -- @todo: Add mkMother
             Dict.insert motherId ({ info = Participant.Model.ParticipantMother mother }) Dict.empty
+
+        viewImage =
+            img
+                [ src mother.image
+                , attribute "alt" mother.name
+                , style
+                    [ ( "height", (toString thumbnailDimensions.height) ++ "px" )
+                    , ( "width", (toString thumbnailDimensions.height) ++ "px" )
+                    ]
+                ]
+                []
     in
         div [ class "ui unstackable items" ]
             [ div [ class "item" ]
-                [ div [ class "ui image" ]
-                    [ img [ src mother.image, attribute "alt" mother.name, width thumbnailDimensions.width, height thumbnailDimensions.height ] [] ]
+                [ div [ class "ui image" ] [ viewImage ]
                 , div [ class "content" ]
-                    [ h2
-                        [ class "ui header" ]
+                    [ h2 [ class "ui header" ]
                         [ text mother.name ]
                     , p [] childrenList
                     ]
