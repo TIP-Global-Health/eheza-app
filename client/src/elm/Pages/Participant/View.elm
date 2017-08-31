@@ -23,7 +23,7 @@ import Participant.Utils exposing (getParticipantAge, renderParticipantAge, rend
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
 import User.Model exposing (User)
-import Utils.Html exposing (tabItem)
+import Utils.Html exposing (tabItem, thumbnailImage)
 
 
 viewChild : BackendUrl -> String -> User -> Language -> Date -> WebData Mother -> ( ChildId, Child ) -> Model -> List (Html Msg)
@@ -68,21 +68,11 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
 
         break =
             br [] []
-
-        viewImage =
-            img
-                [ src child.image
-                , attribute "alt" childName
-                , style
-                    [ ( "height", (toString thumbnailDimensions.height) ++ "px" )
-                    , ( "width", (toString thumbnailDimensions.height) ++ "px" )
-                    ]
-                ]
-                []
     in
         div [ class "ui unstackable items" ]
             [ div [ class "item" ]
-                [ div [ class "ui image" ] [ viewImage ]
+                [ div [ class "ui image" ]
+                    [ thumbnailImage child.image childName thumbnailDimensions.height thumbnailDimensions.width ]
                 , div [ class "content" ]
                     [ h2 [ class "ui header" ]
                         [ text childName ]
@@ -121,21 +111,11 @@ viewMother backendUrl accessToken language currentDate currentUser motherId moth
         participants =
             -- @todo: Add mkMother
             Dict.insert motherId ({ info = Participant.Model.ParticipantMother mother }) Dict.empty
-
-        viewImage =
-            img
-                [ src mother.image
-                , attribute "alt" mother.name
-                , style
-                    [ ( "height", (toString thumbnailDimensions.height) ++ "px" )
-                    , ( "width", (toString thumbnailDimensions.height) ++ "px" )
-                    ]
-                ]
-                []
     in
         div [ class "ui unstackable items" ]
             [ div [ class "item" ]
-                [ div [ class "ui image" ] [ viewImage ]
+                [ div [ class "ui image" ]
+                    [ thumbnailImage mother.image mother.name thumbnailDimensions.height thumbnailDimensions.width ]
                 , div [ class "content" ]
                     [ h2 [ class "ui header" ]
                         [ text mother.name ]

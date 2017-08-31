@@ -18,7 +18,7 @@ import Participant.Utils exposing (getParticipantName, getParticipantAvatarThumb
 import ParticipantManager.Utils exposing (filterParticipantsDict)
 import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
-import Utils.Html exposing (emptyNode, tabItem)
+import Utils.Html exposing (emptyNode, tabItem, thumbnailImage)
 
 
 view : BackendUrl -> String -> User -> Language -> Date -> ParticipantsDict -> Model -> List (Html Msg)
@@ -141,15 +141,7 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                             if String.isEmpty imageSrc then
                                 span [ class "icon-participant" ] []
                             else
-                                img
-                                    [ src imageSrc
-                                    , attribute "alt" name
-                                    , style
-                                        [ ( "height", (toString thumbnailDimensions.height) ++ "px" )
-                                        , ( "width", (toString thumbnailDimensions.height) ++ "px" )
-                                        ]
-                                    ]
-                                    []
+                                thumbnailImage imageSrc name thumbnailDimensions.height thumbnailDimensions.width
                     in
                         div
                             [ classList
