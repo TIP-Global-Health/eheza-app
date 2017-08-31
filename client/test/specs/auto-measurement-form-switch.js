@@ -60,6 +60,8 @@ describe('The measurement forms', () => {
     });
 
     it('should have zero pending activities after saving the Nutrition Signs', () => {
+        browser.click('#none-of-these');
+        browser.waitForEnabled('#save-form');
         browser.element('#save-form').click();
         browser.waitForVisible("a=Completed (5)");
 

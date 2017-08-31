@@ -372,7 +372,7 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
                 language
                 NutritionSignsSave
                 model
-                True
+                (not (EveryDict.isEmpty model.nutritionSigns))
                 Nothing
         ]
 
@@ -483,7 +483,7 @@ viewFamilyPlanning backendUrl accessToken user language model =
                     :: viewFamilyPlanningSelector language model.familyPlanningSigns
             ]
         , div [ class "actions" ] <|
-            saveButton language FamilyPlanningSignsSave model True Nothing
+            saveButton language FamilyPlanningSignsSave model (not (EveryDict.isEmpty model.familyPlanningSigns)) Nothing
         ]
 
 
