@@ -14,10 +14,21 @@ class HedleyRestfulChildrenProgress extends HedleyRestfulEntityBaseNode {
    * {@inheritdoc}
    */
   public function publicFieldsInfo() {
-    $public_fields = [];
+    $public_fields = parent::publicFieldsInfo();
 
     $public_fields['type'] = [
       'callback' => 'static::getType',
+    ];
+
+    $public_fields['date_birth'] = [
+      'property' => 'field_date_birth',
+      'process_callbacks' => [
+        [$this, 'convertTimestampToIso8601'],
+      ],
+    ];
+
+    $public_fields['gender'] = [
+      'property' => 'field_gender',
     ];
 
     $public_fields['examinations'] = [
