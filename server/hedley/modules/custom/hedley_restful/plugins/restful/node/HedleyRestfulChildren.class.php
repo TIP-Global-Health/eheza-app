@@ -76,7 +76,34 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
       'property' => 'field_gender',
     ];
 
+    $public_fields['progress-report'] = [
+      'property' => 'nid',
+      'process_callbacks' => [
+        [$this, 'getReport'],
+      ],
+    ];
+
     return $public_fields;
+  }
+
+  /**
+   * Embeds report for Child.
+   *
+   * @param int $nid
+   *   The child node ID.
+   *
+   * @return array
+   *   The report.
+   */
+  public function getReport($nid) {
+    $handler = restful_get_restful_handler('children-progress');
+
+    // Pipe the parent request and account to the sub-request.
+    $piped_request = $this->getRequestForSubRequest();
+    $handler->setAccount($this->getAccount());
+    $handler->setRequest($piped_request);
+
+    return $handler->viewEntity($nid)['examinations'];
   }
 
   /**
