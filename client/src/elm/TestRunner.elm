@@ -10,6 +10,7 @@ import Test.Runner.Node exposing (TestProgram, run)
 import App.Test exposing (all)
 import Measurement.Test exposing (all)
 import Participant.Test exposing (all)
+import ProgressReport.Test exposing (all)
 import Pusher.Test exposing (all)
 
 
@@ -19,6 +20,7 @@ allTests =
         [ App.Test.all
         , Measurement.Test.all
         , Participant.Test.all
+        , ProgressReport.Test.all
         , Pusher.Test.all
         ]
 
