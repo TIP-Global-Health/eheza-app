@@ -2,6 +2,8 @@ module Measurement.View
     exposing
         ( viewChild
         , viewMother
+        , muacIndication
+        , viewMuacIndication
         )
 
 import Activity.Encoder exposing (encodeChildNutritionSign)
