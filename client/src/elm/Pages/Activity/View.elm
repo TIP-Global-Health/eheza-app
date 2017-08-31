@@ -5,21 +5,24 @@ import Activity.Utils exposing (getActivityIdentity, hasPendingChildActivity, ha
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict
+import Examination.Utils exposing (getLastExaminationFromChild)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List as List
 import Maybe.Extra exposing (isJust, isNothing)
+import Measurement.View
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
+import Participant.Utils exposing (getParticipantName)
 import ParticipantManager.Utils exposing (filterParticipantsDict)
 import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
-import Utils.Html exposing (tabItem)
+import Utils.Html exposing (emptyNode, tabItem)
 
 
 view : BackendUrl -> String -> User -> Language -> Date -> ParticipantsDict -> Model -> List (Html Msg)
-view backendUrl accessToken user language currentDate participantsDict model =
+view backendUrl accessToken currentUser language currentDate participantsDict model =
     let
         selectedActivityIdentity =
             getActivityIdentity model.selectedActivity
@@ -126,35 +129,52 @@ view backendUrl accessToken user language currentDate participantsDict model =
                         Completed ->
                             participantsWithCompletedActivity
 
-                participantCard selectedParticipantId participant =
-                    div [ classList [ ( "participant card", True ), ( "active", selectedParticipantId == participant.id ) ] ]
+                viewParticipantCard maybeSelectedParticipant ( participantId, participant ) =
+                    div
+                        [ classList
+                            [ ( "participant card", True )
+                            , ( "active"
+                              , case maybeSelectedParticipant of
+                                    Just ( id, _ ) ->
+                                        id == participantId
+
+                                    Nothing ->
+                                        False
+                              )
+                            ]
+                        ]
                         [ div
                             [ class "image"
-                            , onClick <| SetSelectedParticipant participant.id
+                            , onClick <| SetSelectedParticipant <| Just ( participantId, participant )
                             ]
                             [ span [ class "icon-participant" ] [] ]
                         , div [ class "content" ]
-                            [ p [] [ text participant.name ] ]
+                            [ p [] [ text <| getParticipantName participant ] ]
                         ]
             in
                 div
                     [ class "ui participant segment" ]
                     [ div [ class "ui four participant cards" ] <|
-                        List.map (participantCard model.selectedParticipantId) <|
-                            Dict.values <|
-                                Dict.map
-                                    (\participantId participant ->
-                                        case participant.info of
-                                            ParticipantChild child ->
-                                                { id = Just participantId, name = child.name }
-
-                                            ParticipantMother mother ->
-                                                { id = Just participantId, name = mother.name }
-                                    )
-                                    selectedParticipants
+                        List.map (viewParticipantCard model.selectedParticipant) <|
+                            Dict.toList selectedParticipants
                     ]
+
+        measurementsForm =
+            case model.selectedParticipant of
+                Just ( participantId, participant ) ->
+                    case participant.info of
+                        ParticipantChild child ->
+                            Html.map (MsgMeasurement ( participantId, participant )) <|
+                                Measurement.View.viewChild backendUrl accessToken currentUser language ( participantId, child ) (getLastExaminationFromChild child) (Just model.selectedActivity) model.measurements
+
+                        ParticipantMother mother ->
+                            Html.map (MsgMeasurement ( participantId, participant )) <|
+                                Measurement.View.viewMother backendUrl accessToken currentUser language (Just model.selectedActivity) model.measurements
+
+                Nothing ->
+                    emptyNode
     in
-        [ activityDescription, tabs, participants ]
+        [ activityDescription, tabs, participants, measurementsForm ]
 
 
 

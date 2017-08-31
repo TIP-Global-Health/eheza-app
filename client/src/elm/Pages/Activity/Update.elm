@@ -48,8 +48,8 @@ update backendUrl accessToken user msg model =
         SetRedirectPage page ->
             ( model, Cmd.none, Just page )
 
-        SetSelectedParticipant maybeId ->
-            ( { model | selectedParticipantId = maybeId }, Cmd.none, Nothing )
+        SetSelectedParticipant maybeParticipant ->
+            ( { model | selectedParticipant = maybeParticipant }, Cmd.none, Nothing )
 
         SetSelectedTab tab ->
-            ( { model | selectedTab = tab, selectedParticipantId = Nothing }, Cmd.none, Nothing )
+            ( { model | selectedTab = tab, selectedParticipant = Nothing }, Cmd.none, Nothing )

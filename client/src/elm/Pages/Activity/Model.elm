@@ -9,7 +9,7 @@ import Participant.Model exposing (ParticipantId, Participant)
 type alias Model =
     { measurements : Measurement.Model.Model
     , selectedActivity : ActivityType
-    , selectedParticipantId : Maybe ParticipantId
+    , selectedParticipant : Maybe ( ParticipantId, Participant )
     , selectedTab : Tab
     }
 
@@ -17,7 +17,7 @@ type alias Model =
 type Msg
     = SetRedirectPage Page
     | MsgMeasurement ( ParticipantId, Participant ) Measurement.Model.Msg
-    | SetSelectedParticipant (Maybe ParticipantId)
+    | SetSelectedParticipant (Maybe ( ParticipantId, Participant ))
     | SetSelectedTab Tab
 
 
@@ -30,6 +30,6 @@ emptyModel : Model
 emptyModel =
     { measurements = Measurement.Model.emptyModel
     , selectedActivity = Child Height
-    , selectedParticipantId = Nothing
+    , selectedParticipant = Nothing
     , selectedTab = Pending
     }
