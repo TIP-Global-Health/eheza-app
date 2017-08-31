@@ -75,6 +75,15 @@ type alias Model =
     }
 
 
+{-| An interpretation of a MUAC, according to the measurement
+tool referenced at <https://github.com/Gizra/ihangane/issues/282>
+-}
+type MuacIndication
+    = MuacRed
+    | MuacYellow
+    | MuacGreen
+
+
 type FloatMeasurements
     = HeightFloat
     | MuacFloat

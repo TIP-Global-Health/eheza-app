@@ -29,6 +29,7 @@ import Measurement.Model
         , FloatInput
         , FloatMeasurements(..)
         , Model
+        , MuacIndication(..)
         , Msg(..)
         , Photo
         , PhotoId
@@ -117,6 +118,14 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     , ( WeightUpdate, WeightSave )
                     )
 
+        additionalIndication =
+            case ( floatMeasurement, measurementValue ) of
+                ( MuacFloat, Just value ) ->
+                    viewMuacIndication language (muacIndication value)
+
+                _ ->
+                    emptyNode
+
         defaultAttr =
             Maybe.map (\val -> [ value <| toString val ]) measurementValue
                 |> Maybe.withDefault []
@@ -153,6 +162,7 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                         , div [ class "five wide column" ]
                             [ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType model ]
                         ]
+                    , additionalIndication
                     , viewPreviousMeasurement language floatMeasurement maybePreviousExamination measurementType
                     ]
                 , div
@@ -173,6 +183,39 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     (isJust measurementValue)
                     Nothing
             ]
+
+
+{-| Given a MUAC in cm, classify according to the measurement tool shown
+at <https://github.com/Gizra/ihangane/issues/282>
+-}
+muacIndication : Float -> MuacIndication
+muacIndication value =
+    if value <= 11.5 then
+        MuacRed
+    else if value <= 12.5 then
+        MuacYellow
+    else
+        MuacGreen
+
+
+muacColor : MuacIndication -> Attribute msg
+muacColor muac =
+    class <|
+        case muac of
+            MuacRed ->
+                "label-red"
+
+            MuacYellow ->
+                "label-yellow"
+
+            MuacGreen ->
+                "label-green"
+
+
+viewMuacIndication : Language -> MuacIndication -> Html msg
+viewMuacIndication language muac =
+    div [ muacColor muac ]
+        [ text <| translate language (Trans.MuacIsDesignated muac) ]
 
 
 {-| Show a photo thumbnail, if it exists.
