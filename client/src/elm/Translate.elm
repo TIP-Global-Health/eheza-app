@@ -1,6 +1,7 @@
 module Translate exposing (..)
 
 import Date exposing (Month(..))
+import Measurement.Model exposing (MuacIndication(..))
 
 
 type Language
@@ -90,6 +91,7 @@ type TranslationId
     | Mother
     | MotherName String
     | Mothers
+    | MuacIndication MuacIndication
     | MyAccount
     | NoActiveIncidents
     | NoChildrenRegisteredInTheSystem
@@ -338,6 +340,17 @@ translate lang trans =
 
                 Mothers ->
                     { english = "Mothers" }
+
+                MuacIndication indication ->
+                    case indication of
+                        MuacRed ->
+                            { english = "red" }
+
+                        MuacYellow ->
+                            { english = "yellow" }
+
+                        MuacGreen ->
+                            { english = "green" }
 
                 MyAccount ->
                     { english = "My Account" }
