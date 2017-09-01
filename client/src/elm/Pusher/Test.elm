@@ -51,7 +51,6 @@ decodeTest =
                                         , motherId = Just 7
                                         , siblingId = Just 22
                                         , examinations = NotAsked
-                                        , selectedExamination = Nothing
                                         , activityDates = emptyChildActivityDates
                                         , birthDate = Date.fromTime 1472373589000
                                         , gender = Female
