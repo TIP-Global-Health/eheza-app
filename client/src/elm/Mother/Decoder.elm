@@ -18,6 +18,5 @@ decodeMother =
         |> optionalAt [ "avatar", "styles", "patient-photo" ] string "https://placehold.it/200x200"
         |> required "children" (oneOf [ list int, decodeNullAsEmptyArray ])
         |> hardcoded NotAsked
-        |> hardcoded Nothing
         |> custom decodeMotherActivityDates
         |> required "date_birth" decodeDate
