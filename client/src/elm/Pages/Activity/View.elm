@@ -166,7 +166,12 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                     [ class "ui participant segment" ]
                     [ div [ class "ui four participant cards" ] <|
                         List.map (viewParticipantCard model.selectedParticipant) <|
-                            Dict.toList selectedParticipants
+                            List.sortBy
+                                (\( _, participant ) ->
+                                    getParticipantName participant
+                                )
+                            <|
+                                Dict.toList selectedParticipants
                     ]
 
         measurementsForm =
