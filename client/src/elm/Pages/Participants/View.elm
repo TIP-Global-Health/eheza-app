@@ -103,7 +103,12 @@ view language currentDate currentUser participantsDict model =
                     [ div [ class "wrap-cards" ]
                         [ div [ class "ui four cards" ] <|
                             List.map viewMotherCard <|
-                                Dict.toList selectedMothers
+                                List.sortBy
+                                    (\( _, mother ) ->
+                                        getParticipantName mother
+                                    )
+                                <|
+                                    Dict.toList selectedMothers
                         ]
                     ]
 
