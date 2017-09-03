@@ -11,7 +11,7 @@ module Utils.Html
 
 import Config.Model exposing (Model)
 import Html exposing (Html, a, div, h5, img, text)
-import Html.Attributes exposing (attribute, class, classList, src, style)
+import Html.Attributes exposing (attribute, class, classList, id, src, style)
 import Html.Events exposing (onClick)
 
 
@@ -59,11 +59,12 @@ divider =
     div [ class "ui divider" ] []
 
 
-tabItem : String -> Bool -> msg -> Html msg
-tabItem title active action =
+tabItem : String -> Bool -> String -> msg -> Html msg
+tabItem title active taId action =
     a
         [ classList [ ( "item", True ), ( "active", active ) ]
         , onClick action
+        , id <| taId ++ "-tab"
         ]
         [ text title ]
 

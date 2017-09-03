@@ -36,8 +36,8 @@ view language currentDate user participants model =
 
         tabs =
             div [ class "ui tabular menu" ]
-                [ tabItem pendingTabTitle (model.selectedTab == Pending) (SetSelectedTab Pending)
-                , tabItem completedTabTitle (model.selectedTab == Completed) (SetSelectedTab Completed)
+                [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
+                , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
                 ]
 
         viewCard language identity =

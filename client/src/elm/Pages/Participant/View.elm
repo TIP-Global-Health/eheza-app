@@ -183,9 +183,9 @@ viewActivityCards language currentDate user participants participantTypeFilter s
 
         tabs =
             div [ class "ui tabular menu" ]
-                [ tabItem pendingTabTitle (selectedTab == Pending) (SetSelectedTab Pending)
-                , tabItem completedTabTitle (selectedTab == Completed) (SetSelectedTab Completed)
-                , tabItem progressTabTitle (selectedTab == ProgressReport) (SetSelectedTab ProgressReport)
+                [ tabItem pendingTabTitle (selectedTab == Pending) "pending" (SetSelectedTab Pending)
+                , tabItem completedTabTitle (selectedTab == Completed) "completed" (SetSelectedTab Completed)
+                , tabItem progressTabTitle (selectedTab == ProgressReport) "progressreport" (SetSelectedTab ProgressReport)
                 ]
     in
         [ tabs, activeView ]
