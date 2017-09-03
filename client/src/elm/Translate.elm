@@ -53,12 +53,6 @@ type TranslationId
     | ActivitiesWeightHelp
     | ActivitiesWeightLabel
     | ActivitiesWeightTitle
-    | ActivityChildPhotoDescription
-    | ActivityFamilyPlanningDescription
-    | ActivityHeightDescription
-    | ActivityMuacDescription
-    | ActivityNutritionSigns
-    | ActivityWeightDescription
     | Age Int Int
     | AgeDays Int
     | AgeMonthsWithoutDay Int
@@ -217,7 +211,7 @@ translate lang trans =
                     { english = "Nutrition:" }
 
                 ActivitiesPhotoHelp ->
-                    { english = "Take each baby's picture at each health assesment. Then you and the mother will see the how the baby has grown!" }
+                    { english = "Take each baby’s photo at each health assessment. Photos should show the entire body of each child." }
 
                 ActivitiesPhotoTitle ->
                     { english = "Photo:" }
@@ -233,24 +227,6 @@ translate lang trans =
 
                 ActivitiesWeightTitle ->
                     { english = "Weight:" }
-
-                ActivityChildPhotoDescription ->
-                    { english = "Take each baby’s photo at each health assessment. Photos should show the entire body of each child." }
-
-                ActivityFamilyPlanningDescription ->
-                    { english = "Every mother should be asked about her family planing method(s) each month. If a mother needs family planning, refer her to a clinic." }
-
-                ActivityHeightDescription ->
-                    { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight." }
-
-                ActivityMuacDescription ->
-                    { english = "Make sure to measure at the center of the baby’s upper arm." }
-
-                ActivityNutritionSigns ->
-                    { english = "Explain to the mother how to check the malnutrition signs for their own child." }
-
-                ActivityWeightDescription ->
-                    { english = "Calibrate the scale before taking the first baby’s weight. Place baby in harness with no clothes on." }
 
                 Age months days ->
                     { english = toString months ++ " months and " ++ toString days ++ " days" }

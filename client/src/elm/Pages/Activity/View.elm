@@ -76,22 +76,22 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                 description =
                     case selectedActivityIdentity.activityType of
                         Child ChildPicture ->
-                            Trans.ActivityChildPhotoDescription
+                            Trans.ActivitiesPhotoHelp
 
                         Child Height ->
-                            Trans.ActivityHeightDescription
+                            Trans.ActivitiesHeightHelp
 
                         Child Muac ->
-                            Trans.ActivityMuacDescription
+                            Trans.ActivitiesMuacHelp
 
                         Child NutritionSigns ->
-                            Trans.ActivityNutritionSigns
+                            Trans.ActivitiesNutritionSignsHelp
 
                         Child Weight ->
-                            Trans.ActivityWeightDescription
+                            Trans.ActivitiesWeightHelp
 
                         Mother FamilyPlanning ->
-                            Trans.ActivityFamilyPlanningDescription
+                            Trans.ActivitiesFamilyPlanningSignsHelp
 
                         _ ->
                             Trans.EmptyString
