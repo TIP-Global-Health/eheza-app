@@ -65,8 +65,9 @@ describe('The measurement forms', () => {
         browser.element('#save-form').click();
         browser.waitForVisible("a=Completed (5)");
 
+        console.log(browser.elements('.ui.five.column.grid .column').value.length);
         // Check if all activities disappeared.
-        assert.equal(browser.elements('.pending a').value.length, 0, 'There is no pending activity');
+        assert.equal(browser.elements('.ui.five.column.grid .column').value.length, 0, 'There is no pending activity');
     });
 
 });
