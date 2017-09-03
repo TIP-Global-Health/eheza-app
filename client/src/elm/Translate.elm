@@ -52,6 +52,7 @@ type TranslationId
     | ActivitiesPhotoHelp
     | ActivitiesPhotoTitle
     | ActivitiesProgressReport
+    | ActivitiesProgressReportHelp
     | ActivitiesWeightHelp
     | ActivitiesWeightLabel
     | ActivitiesWeightTitle
@@ -71,7 +72,6 @@ type TranslationId
     | Connected
     | Dashboard
     | DropzoneDefaultMessage
-    | EmptyString
     | EndSession
     | ErrorBadUrl
     | ErrorBadPayload
@@ -222,6 +222,9 @@ translate lang trans =
                 ActivitiesProgressReport ->
                     { english = "Progress Report" }
 
+                ActivitiesProgressReportHelp ->
+                    { english = "" }
+
                 ActivitiesWeightHelp ->
                     { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on." }
 
@@ -281,9 +284,6 @@ translate lang trans =
 
                 DropzoneDefaultMessage ->
                     { english = "Touch here to take a photo, or drop a photo file here." }
-
-                EmptyString ->
-                    { english = "" }
 
                 EndSession ->
                     { english = "End Session" }

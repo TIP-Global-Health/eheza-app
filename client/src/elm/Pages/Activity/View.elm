@@ -88,11 +88,11 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                         Child Weight ->
                             Trans.ActivitiesWeightHelp
 
+                        Child ProgressReport ->
+                            Trans.ActivitiesProgressReportHelp
+
                         Mother FamilyPlanning ->
                             Trans.ActivitiesFamilyPlanningSignsHelp
-
-                        _ ->
-                            Trans.EmptyString
             in
                 div
                     [ class "ui unstackable items" ]
