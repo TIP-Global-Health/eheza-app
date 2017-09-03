@@ -2,6 +2,8 @@ module Measurement.View
     exposing
         ( viewChild
         , viewMother
+        , muacIndication
+        , viewMuacIndication
         )
 
 import Activity.Encoder exposing (encodeChildNutritionSign)
@@ -29,6 +31,7 @@ import Measurement.Model
         , FloatInput
         , FloatMeasurements(..)
         , Model
+        , MuacIndication(..)
         , Msg(..)
         , Photo
         , PhotoId
@@ -37,7 +40,6 @@ import Measurement.Model
         , getInputConstraintsMuac
         , getInputConstraintsWeight
         )
-import Mother.Model exposing (Mother, MotherId)
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import User.Model exposing (..)
@@ -117,6 +119,14 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     , ( WeightUpdate, WeightSave )
                     )
 
+        viewDiff =
+            case ( floatMeasurement, measurementValue ) of
+                ( MuacFloat, Just value ) ->
+                    viewMuacIndication language (muacIndication value)
+
+                _ ->
+                    viewFloatDiff language floatMeasurement maybePreviousExamination measurementType model
+
         defaultAttr =
             Maybe.map (\val -> [ value <| toString val ]) measurementValue
                 |> Maybe.withDefault []
@@ -150,8 +160,7 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                                 , div [ class "ui basic label" ] [ text <| translate language measurementType ]
                                 ]
                             ]
-                        , div [ class "five wide column" ]
-                            [ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType model ]
+                        , div [ class "five wide column" ] [ viewDiff ]
                         ]
                     , viewPreviousMeasurement language floatMeasurement maybePreviousExamination measurementType
                     ]
@@ -173,6 +182,45 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     (isJust measurementValue)
                     Nothing
             ]
+
+
+{-| Given a MUAC in cm, classify according to the measurement tool shown
+at <https://github.com/Gizra/ihangane/issues/282>
+-}
+muacIndication : Float -> MuacIndication
+muacIndication value =
+    if value <= 11.5 then
+        MuacRed
+    else if value <= 12.5 then
+        MuacYellow
+    else
+        MuacGreen
+
+
+muacColor : MuacIndication -> Attribute any
+muacColor muac =
+    class <|
+        case muac of
+            MuacRed ->
+                "label-red"
+
+            MuacYellow ->
+                "label-yellow"
+
+            MuacGreen ->
+                "label-green"
+
+
+viewMuacIndication : Language -> MuacIndication -> Html any
+viewMuacIndication language muac =
+    p
+        [ muacColor muac
+        , class "label-form"
+        ]
+        [ translate language (Trans.MuacIndication muac)
+            |> String.toUpper
+            |> text
+        ]
 
 
 {-| Show a photo thumbnail, if it exists.

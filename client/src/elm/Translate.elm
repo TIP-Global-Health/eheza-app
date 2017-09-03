@@ -1,6 +1,7 @@
 module Translate exposing (..)
 
 import Date exposing (Month(..))
+import Measurement.Model exposing (MuacIndication(..))
 
 
 type Language
@@ -50,6 +51,7 @@ type TranslationId
     | ActivitiesNutritionSignsTitle
     | ActivitiesPhotoHelp
     | ActivitiesPhotoTitle
+    | ActivitiesProgressReport
     | ActivitiesWeightHelp
     | ActivitiesWeightLabel
     | ActivitiesWeightTitle
@@ -90,6 +92,7 @@ type TranslationId
     | Mother
     | MotherName String
     | Mothers
+    | MuacIndication MuacIndication
     | MyAccount
     | NoActiveIncidents
     | NoChildrenRegisteredInTheSystem
@@ -216,6 +219,9 @@ translate lang trans =
                 ActivitiesPhotoTitle ->
                     { english = "Photo:" }
 
+                ActivitiesProgressReport ->
+                    { english = "Progress Report" }
+
                 ActivitiesWeightHelp ->
                     { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on." }
 
@@ -338,6 +344,17 @@ translate lang trans =
 
                 Mothers ->
                     { english = "Mothers" }
+
+                MuacIndication indication ->
+                    case indication of
+                        MuacRed ->
+                            { english = "red" }
+
+                        MuacYellow ->
+                            { english = "yellow" }
+
+                        MuacGreen ->
+                            { english = "green" }
 
                 MyAccount ->
                     { english = "My Account" }

@@ -1,6 +1,8 @@
 module Measurement.Test exposing (all)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
+import Date
+import Expect
 import Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChild, exampleUser)
 import Html
 import Html.Attributes as Attr
@@ -89,9 +91,60 @@ viewMotherFormsTest =
             ]
 
 
+muacIndicationTest : Test
+muacIndicationTest =
+    describe "MuacIndication tests"
+        [ describe "muacIndication"
+            [ test "red" <|
+                \_ ->
+                    muacIndication 11.5
+                        |> Expect.equal MuacRed
+            , test "yellow1" <|
+                \_ ->
+                    muacIndication 11.6
+                        |> Expect.equal MuacYellow
+            , test "yellow2" <|
+                \_ ->
+                    muacIndication 12.5
+                        |> Expect.equal MuacYellow
+            , test "green" <|
+                \_ ->
+                    muacIndication 12.6
+                        |> Expect.equal MuacGreen
+            ]
+        , describe "viewMuacIndication"
+            [ test "red" <|
+                \_ ->
+                    viewMuacIndication English MuacRed
+                        |> Query.fromHtml
+                        |> Query.has
+                            [ classes [ "label-red" ]
+                            , text "RED"
+                            ]
+            , test "yellow" <|
+                \_ ->
+                    viewMuacIndication English MuacYellow
+                        |> Query.fromHtml
+                        |> Query.has
+                            [ classes [ "label-yellow" ]
+                            , text "YELLOW"
+                            ]
+            , test "green" <|
+                \_ ->
+                    viewMuacIndication English MuacGreen
+                        |> Query.fromHtml
+                        |> Query.has
+                            [ classes [ "label-green" ]
+                            , text "GREEN"
+                            ]
+            ]
+        ]
+
+
 all : Test
 all =
     describe "Measurement of children: form tests"
         [ viewChildFormsTest
         , viewMotherFormsTest
+        , muacIndicationTest
         ]

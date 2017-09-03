@@ -19,7 +19,6 @@ type alias Mother =
     , image : String
     , children : List ChildId
     , examinations : WebData EveryDictListExaminationsMother
-    , selectedExamination : Maybe ExaminationId
     , activityDates : MotherActivityDates
     , birthDate : Date
     }

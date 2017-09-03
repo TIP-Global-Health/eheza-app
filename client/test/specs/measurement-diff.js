@@ -36,6 +36,20 @@ describe('when updating a measurement form', function() {
     return browser.getText('.label-with-icon');
   };
 
+  /**
+   * Waiting for muac indication to be shown.
+   */
+  var waitForMuacIndication = function (expected) {
+    browser.waitForVisible('.label-form.label-' + expected);
+  }
+
+  /**
+   * Get text of muacIndication
+   */
+  var getMuacIndicationText = function (expected) {
+    return browser.getText('.label-form.label-' + expected);
+  };
+
   before(() => {
     browser.loginAndViewParticipantsPage('aya');
     browser.visitChildWithTodoTasks();
@@ -81,24 +95,36 @@ describe('when updating a measurement form', function() {
     assert.equal(result, '40 cm', 'Indication for the lost height is incorrect.');
   })
 
-  it('should display an indication when MUAC is gained', () => {
+  it('should display an indication when MUAC is green', () => {
     const tab = 'MUAC';
+    const expected = 'green';
 
     // Select tab.
     browser.click('a=' + tab);
     browser.waitForVisible('h3=Mid Upper Arm Circumference (MUAC):');
 
     adjustFormValue(50);
-    waitForGainedIndication();
-    const result = getDiffFromIndication();
-    assert.equal(result, '37 cm', 'Indication for the gained MUAC is incorrect.');
+    waitForMuacIndication(expected);
+    const result = getMuacIndicationText(expected);
+    assert.equal(result, expected.toUpperCase(), 'Indication for the' + expected + ' MUAC is incorrect.');
   })
 
-  it('should display an indication when MUAC is lost', () => {
+  it('should display an indication when MUAC is red', () => {
+    const expected = 'red';
+
     adjustFormValue(5);
-    waitForLostIndication();
-    const result = getDiffFromIndication();
-    assert.equal(result, '8 cm', 'Indication for the lost MUAC is incorrect.');
+    waitForMuacIndication(expected);
+    const result = getMuacIndicationText(expected);
+    assert.equal(result, expected.toUpperCase(), 'Indication for the' + expected + ' MUAC is incorrect.');
+  })
+
+  it('should display an indication when MUAC is yellow', () => {
+    const expected = 'yellow';
+
+    adjustFormValue(12);
+    waitForMuacIndication(expected);
+    const result = getMuacIndicationText(expected);
+    assert.equal(result, expected.toUpperCase(), 'Indication for the' + expected + ' MUAC is incorrect.');
   })
 
   after(() => browser.logout());
