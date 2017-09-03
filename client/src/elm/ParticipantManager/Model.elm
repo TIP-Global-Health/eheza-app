@@ -51,7 +51,6 @@ type Msg
     | HandleFetchedParticipant ParticipantId (Result Http.Error Participant)
     | HandleFetchedParticipants (Result Http.Error ParticipantsDict)
     | HandlePusherEvent (Result String PusherEvent)
-    | SetActivityTypeFilters (List ActivityType)
 
 
 emptyModel : Model

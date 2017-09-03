@@ -4,6 +4,7 @@ module Activity.Utils
         , getActivityTypeList
         , getActivityIdentity
         , getTotalsNumberPerActivity
+        , participantGotPendingActivity
         )
 
 import Activity.Model exposing (ActivityIdentity, ActivityListItem, ActivityType(..), ChildActivityType(..), MotherActivityType(..))
@@ -11,7 +12,7 @@ import Child.Model exposing (Child)
 import Date exposing (Date)
 import Dict exposing (Dict)
 import Mother.Model exposing (Mother)
-import Participant.Model exposing (ParticipantsDict, ParticipantTypeFilter(..), ParticipantType(..))
+import Participant.Model exposing (Participant, ParticipantsDict, ParticipantTypeFilter(..), ParticipantType(..))
 
 
 getActivityTypeList : ParticipantTypeFilter -> List ActivityType
@@ -89,6 +90,16 @@ getActivityIdentity activityType =
         identityVal activityType
 
 
+getAllChildActivities : List ChildActivityType
+getAllChildActivities =
+    [ ChildPicture, Height, Muac, NutritionSigns, ProgressReport, Weight ]
+
+
+getAllMotherActivities : List MotherActivityType
+getAllMotherActivities =
+    [ FamilyPlanning ]
+
+
 getTotalsNumberPerActivity : Date -> ActivityType -> ParticipantsDict -> ( Int, Int )
 getTotalsNumberPerActivity currentDate activityType participants =
     Dict.foldl
@@ -97,7 +108,7 @@ getTotalsNumberPerActivity currentDate activityType participants =
                 ParticipantChild child ->
                     case activityType of
                         Child childActivityType ->
-                            if hasPendingChildActivity currentDate childActivityType child then
+                            if hasPendingChildActivity currentDate child childActivityType then
                                 ( pending + 1, total + 1 )
                             else
                                 ( pending, total + 1 )
@@ -108,7 +119,7 @@ getTotalsNumberPerActivity currentDate activityType participants =
                 ParticipantMother mother ->
                     case activityType of
                         Mother motherActivityType ->
-                            if hasPendingMotherActivity currentDate motherActivityType mother then
+                            if hasPendingMotherActivity currentDate mother motherActivityType then
                                 ( pending + 1, total + 1 )
                             else
                                 ( pending, total + 1 )
@@ -120,8 +131,8 @@ getTotalsNumberPerActivity currentDate activityType participants =
         participants
 
 
-hasPendingChildActivity : Date -> ChildActivityType -> Child -> Bool
-hasPendingChildActivity currentDate childActivityType child =
+hasPendingChildActivity : Date -> Child -> ChildActivityType -> Bool
+hasPendingChildActivity currentDate child childActivityType =
     let
         property =
             case childActivityType of
@@ -153,8 +164,8 @@ hasPendingChildActivity currentDate childActivityType child =
             |> Maybe.withDefault False
 
 
-hasPendingMotherActivity : Date -> MotherActivityType -> Mother -> Bool
-hasPendingMotherActivity currentDate motherActivityType mother =
+hasPendingMotherActivity : Date -> Mother -> MotherActivityType -> Bool
+hasPendingMotherActivity currentDate mother motherActivityType =
     let
         property =
             case motherActivityType of
@@ -166,3 +177,13 @@ hasPendingMotherActivity currentDate motherActivityType mother =
             |> Maybe.map
                 (\date -> Date.toTime date <= Date.toTime currentDate)
             |> Maybe.withDefault False
+
+
+participantGotPendingActivity : Date -> Participant -> Bool
+participantGotPendingActivity currentDate participant =
+    case participant.info of
+        ParticipantChild child ->
+            (List.length <| List.filter (hasPendingChildActivity currentDate child) getAllChildActivities) > 0
+
+        ParticipantMother mother ->
+            (List.length <| List.filter (hasPendingMotherActivity currentDate mother) getAllMotherActivities) > 0

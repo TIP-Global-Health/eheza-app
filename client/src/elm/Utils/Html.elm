@@ -5,11 +5,13 @@ module Utils.Html
         , emptyNode
         , showIf
         , showMaybe
+        , tabItem
         )
 
 import Config.Model exposing (Model)
-import Html exposing (Html, div, h5, text)
-import Html.Attributes exposing (class)
+import Html exposing (Html, a, div, h5, text)
+import Html.Attributes exposing (class, classList, id)
+import Html.Events exposing (onClick)
 
 
 {-| Produces an empty text node in the DOM.
@@ -54,3 +56,13 @@ debugView config html =
 divider : Html msg
 divider =
     div [ class "ui divider" ] []
+
+
+tabItem : String -> Bool -> String -> msg -> Html msg
+tabItem title active taId action =
+    a
+        [ classList [ ( "item", True ), ( "active", active ) ]
+        , onClick action
+        , id <| taId ++ "-tab"
+        ]
+        [ text title ]
