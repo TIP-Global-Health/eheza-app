@@ -10,12 +10,10 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List as List
-import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.View
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (getParticipantName, getParticipantAvatarThumb)
-import ParticipantManager.Utils exposing (filterParticipantsDict)
 import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
 import Utils.Html exposing (emptyNode, tabItem, thumbnailImage)
