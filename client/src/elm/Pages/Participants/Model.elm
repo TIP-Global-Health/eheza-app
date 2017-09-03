@@ -26,3 +26,9 @@ emptyModel : Model
 emptyModel =
     { selectedTab = Pending
     }
+
+
+thumbnailDimensions =
+    { width = 122
+    , height = 122
+    }

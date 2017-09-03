@@ -6,11 +6,12 @@ module Utils.Html
         , showIf
         , showMaybe
         , tabItem
+        , thumbnailImage
         )
 
 import Config.Model exposing (Model)
-import Html exposing (Html, a, div, h5, text)
-import Html.Attributes exposing (class, classList, id)
+import Html exposing (Html, a, div, h5, img, text)
+import Html.Attributes exposing (attribute, class, classList, id, src, style)
 import Html.Events exposing (onClick)
 
 
@@ -66,3 +67,16 @@ tabItem title active taId action =
         , id <| taId ++ "-tab"
         ]
         [ text title ]
+
+
+thumbnailImage : String -> String -> Int -> Int -> Html any
+thumbnailImage source label height width =
+    img
+        [ src source
+        , attribute "alt" label
+        , style
+            [ ( "height", (toString height) ++ "px" )
+            , ( "width", (toString width) ++ "px" )
+            ]
+        ]
+        []

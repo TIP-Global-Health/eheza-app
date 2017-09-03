@@ -10,14 +10,14 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Maybe.Extra exposing (isJust)
-import Pages.Participants.Model exposing (Model, Msg(..), Tab(..))
+import Pages.Participants.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (getParticipantAvatarThumb, getParticipantName, getParticipantTypeAsString)
 import Participant.View exposing (viewParticipantTypeFilter)
 import Table exposing (..)
 import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
-import Utils.Html exposing (tabItem)
+import Utils.Html exposing (tabItem, thumbnailImage)
 
 
 view : Language -> Date -> User -> ParticipantsDict -> Model -> List (Html Msg)
@@ -64,5 +64,50 @@ view language currentDate currentUser participantsDict model =
                     [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
                     , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
                     ]
+
+        mothers =
+            let
+                selectedMothers =
+                    case model.selectedTab of
+                        Pending ->
+                            mothersWithPendingActivity
+
+                        Completed ->
+                            mothersWithoutPendingActivity
+
+                viewMotherCard ( motherId, mother ) =
+                    let
+                        name =
+                            getParticipantName mother
+
+                        imageSrc =
+                            getParticipantAvatarThumb mother
+
+                        imageView =
+                            if String.isEmpty imageSrc then
+                                span [ class "icon-mother" ] []
+                            else
+                                thumbnailImage imageSrc name thumbnailDimensions.height thumbnailDimensions.width
+                    in
+                        div
+                            [ class "card"
+                            , onClick <| SetRedirectPage <| App.PageType.Participant motherId
+                            ]
+                            [ div [ class "image" ]
+                                [ imageView ]
+                            , div [ class "content" ]
+                                [ p [] [ text name ] ]
+                            ]
+            in
+                div
+                    [ class "ui full segment" ]
+                    [ div [ class "full content" ]
+                        [ div [ class "wrap-cards" ]
+                            [ div [ class "ui four cards" ] <|
+                                List.map viewMotherCard <|
+                                    Dict.toList selectedMothers
+                            ]
+                        ]
+                    ]
     in
-        [ tabs ]
+        [ tabs, mothers ]
