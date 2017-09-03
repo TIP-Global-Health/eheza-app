@@ -99,15 +99,24 @@ view language currentDate currentUser participantsDict model =
                                 [ p [] [ text name ] ]
                             ]
             in
-                div
-                    [ class "ui full segment" ]
-                    [ div [ class "full content" ]
-                        [ div [ class "wrap-cards" ]
-                            [ div [ class "ui four cards" ] <|
-                                List.map viewMotherCard <|
-                                    Dict.toList selectedMothers
-                            ]
+                div [ class "full content" ]
+                    [ div [ class "wrap-cards" ]
+                        [ div [ class "ui four cards" ] <|
+                            List.map viewMotherCard <|
+                                Dict.toList selectedMothers
                         ]
                     ]
+
+        endSessionButton =
+            div [ class "actions" ]
+                [ button
+                    [ class "ui fluid button" ]
+                    [ text <| translate language Trans.EndSession ]
+                ]
+
+        content =
+            div
+                [ class "ui full segment" ]
+                [ mothers, endSessionButton ]
     in
-        [ tabs, mothers ]
+        [ tabs, content ]
