@@ -81,7 +81,10 @@ update currentDate backendUrl accessToken user language msg model =
                 ( val, cmds ) =
                     fetchAllParticipantsFromBackend backendUrl accessToken model
             in
-                ( val, cmds, Nothing )
+                if Dict.size model.participants == 0 then
+                    ( val, cmds, Nothing )
+                else
+                    ( model, Cmd.none, Nothing )
 
         MsgPagesActivities subMsg ->
             let
