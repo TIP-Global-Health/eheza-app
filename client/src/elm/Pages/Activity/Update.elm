@@ -55,12 +55,12 @@ update currentDate backendUrl accessToken user language msg model =
 
                         Just ( activtyTypeCompleted, activityToRedirect ) ->
                             ( updateActivityDate newDate activtyTypeCompleted participant
-                            , [ MsgFilePicker <| FilePicker.Model.Unbind ]
+                            , [ SetSelectedParticipant Nothing ]
                             )
 
                 updatedModel =
                     if saveMeasurementMessage subMsg then
-                        { model | measurements = Measurement.Model.emptyModel, selectedParticipant = Nothing }
+                        { model | measurements = Measurement.Model.emptyModel }
                     else
                         { model | measurements = measurementsUpdated }
             in
