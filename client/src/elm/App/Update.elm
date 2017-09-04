@@ -1,7 +1,6 @@
 port module App.Update exposing (init, update, subscriptions)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
-import Activity.Utils exposing (getActivityTypeList)
 import App.Model exposing (..)
 import App.PageType exposing (Page(..))
 import Config
@@ -10,7 +9,6 @@ import Dict
 import Http
 import Pages.Activity.Model
 import FilePicker.Model
-import Participant.Model exposing (ParticipantTypeFilter(..))
 import ParticipantManager.Model
 import ParticipantManager.Update
 import Pusher.Model
@@ -253,7 +251,7 @@ update msg model =
                                     )
 
                             Dashboard activityTypes ->
-                                ( (update (MsgParticipantManager ParticipantManager.Model.FetchAll) modelUpdatedDashboard), [] )
+                                ( (update (MsgParticipantManager ParticipantManager.Model.FetchAll) model), [] )
 
                             Participant id ->
                                 -- If we're showing a `Participant`, make sure we `Subscribe`

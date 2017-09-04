@@ -33,7 +33,7 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                             ParticipantChild child ->
                                 case selectedActivityIdentity.activityType of
                                     Child activityType ->
-                                        hasPendingChildActivity currentDate activityType child
+                                        hasPendingChildActivity currentDate child activityType
 
                                     Mother _ ->
                                         False
@@ -44,7 +44,7 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                                         False
 
                                     Mother activityType ->
-                                        hasPendingMotherActivity currentDate activityType mother
+                                        hasPendingMotherActivity currentDate mother activityType
                     )
 
         participantsWithCompletedActivity =
@@ -55,7 +55,7 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                             ParticipantChild child ->
                                 case selectedActivityIdentity.activityType of
                                     Child activityType ->
-                                        not <| hasPendingChildActivity currentDate activityType child
+                                        not <| hasPendingChildActivity currentDate child activityType
 
                                     Mother _ ->
                                         False
@@ -66,7 +66,7 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                                         False
 
                                     Mother activityType ->
-                                        not <| hasPendingMotherActivity currentDate activityType mother
+                                        not <| hasPendingMotherActivity currentDate mother activityType
                     )
 
         activityDescription =

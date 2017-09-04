@@ -193,8 +193,6 @@ viewActivityCards language currentDate user participants participantTypeFilter s
                 , tabItem completedTabTitle (selectedTab == Completed) "completed" (SetSelectedTab Completed)
                 ]
                     ++ extraTabs
-                
-
     in
         [ tabs, activeView ]
 
