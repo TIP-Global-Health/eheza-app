@@ -209,11 +209,10 @@ viewActivityCards language currentDate user participants participantTypeFilter s
 
         tabs =
             div [ class "ui tabular menu" ]
-                (List.append
-                    [ tabItem Pending pendingActivities
-                    , tabItem Completed noPendingActivities
-                    ]
-                    extraTabs
+                ([ tabItem Pending pendingActivities
+                 , tabItem Completed noPendingActivities
+                 ]
+                    ++ extraTabs
                 )
     in
         [ tabs, activeView ]
