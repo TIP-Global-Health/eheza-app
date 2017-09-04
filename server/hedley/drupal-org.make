@@ -34,7 +34,7 @@ projects[entitycache][subdir] = "contrib"
 projects[entitycache][version] = 1.2
 
 projects[entityreference][subdir] = "contrib"
-projects[entityreference][version] = "1.4"
+projects[entityreference][version] = "1.5"
 
 projects[entity_validator][subdir] = "contrib"
 projects[entity_validator][version] = "1.2"
@@ -91,7 +91,7 @@ projects[token][subdir] = "contrib"
 projects[token][version] = "1.7"
 
 projects[views][subdir] = "contrib"
-projects[views][version] = "3.16"
+projects[views][version] = "3.18"
 
 projects[views_bulk_operations][subdir] = "contrib"
 projects[views_bulk_operations][version] = "3.4"
