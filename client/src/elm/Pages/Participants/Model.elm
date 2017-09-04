@@ -8,26 +8,27 @@ import Table
 
 
 type alias Model =
-    { activityTypeFilter : List ActivityType
-    , participantTypeFilter : ParticipantTypeFilter
-    , query : String
-    , tableState : Table.State
+    { selectedTab : Tab
     }
 
 
 type Msg
-    = SetActivityTypeFilter ActivityType Bool
-    | SetActivityTypeFilters (List ActivityType)
-    | SetParticipantTypeFilter String
-    | SetRedirectPage Page
-    | SetTableState Table.State
-    | SetQuery String
+    = SetRedirectPage Page
+    | SetSelectedTab Tab
+
+
+type Tab
+    = Completed
+    | Pending
 
 
 emptyModel : Model
 emptyModel =
-    { activityTypeFilter = getActivityTypeList All
-    , participantTypeFilter = All
-    , query = ""
-    , tableState = Table.initialSort "Name"
+    { selectedTab = Pending
+    }
+
+
+thumbnailDimensions =
+    { width = 122
+    , height = 122
     }
