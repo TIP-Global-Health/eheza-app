@@ -253,18 +253,7 @@ update msg model =
                                     )
 
                             Dashboard activityTypes ->
-                                let
-                                    activityTypesUpdated =
-                                        if List.isEmpty activityTypes then
-                                            getActivityTypeList All
-                                        else
-                                            activityTypes
-
-                                    ( modelUpdatedDashboard, _ ) =
-                                        update (MsgParticipantManager <| ParticipantManager.Model.SetActivityTypeFilters activityTypesUpdated) model
-                                in
-                                    -- If we're showing a `Participants` page, make sure we `Subscribe`
-                                    ( (update (MsgParticipantManager ParticipantManager.Model.FetchAll) modelUpdatedDashboard), [] )
+                                ( (update (MsgParticipantManager ParticipantManager.Model.FetchAll) modelUpdatedDashboard), [] )
 
                             Participant id ->
                                 -- If we're showing a `Participant`, make sure we `Subscribe`

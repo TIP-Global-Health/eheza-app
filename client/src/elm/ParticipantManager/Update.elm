@@ -1,4 +1,4 @@
-port module ParticipantManager.Update exposing (update, subscriptions, dashboardUrlFragment)
+port module ParticipantManager.Update exposing (update, subscriptions)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import App.PageType exposing (Page(..))
@@ -28,14 +28,6 @@ import RemoteData exposing (RemoteData(..))
 import Translate as Trans exposing (Language, translate)
 import User.Model exposing (User)
 import Utils.WebData exposing (sendWithHandler)
-
-
-{-| If we're on the `Dashboard` page, what should we show in the part of the URL
-that we'll be asked to decode?
--}
-dashboardUrlFragment : Model -> String
-dashboardUrlFragment model =
-    Pages.Participants.Update.urlFragment model.participantsPage
 
 
 update : Date -> BackendUrl -> String -> User -> Language -> Msg -> Model -> ( Model, Cmd Msg, Maybe Page )
@@ -258,9 +250,6 @@ update currentDate backendUrl accessToken user language msg model =
                     in
                         -- We'll log the error decoding the pusher event
                         ( model, Cmd.none, Nothing )
-
-        SetActivityTypeFilters activityTypeFilters ->
-            update currentDate backendUrl accessToken user language (MsgPagesParticipants <| Pages.Participants.Model.SetActivityTypeFilters activityTypeFilters) model
 
 
 {-| A single port for all messages coming in from pusher for a `Participant` ... they

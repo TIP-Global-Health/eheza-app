@@ -33,18 +33,7 @@ delta2url previous current =
             Just <| UrlChange NewEntry ("#participant/" ++ (toString id))
 
         Dashboard _ ->
-            let
-                fragment =
-                    ParticipantManager.Update.dashboardUrlFragment current.pageParticipant
-
-                url =
-                    if fragment == "" then
-                        -- Hack to allow dashboard to change the URL.
-                        "# "
-                    else
-                        "#/" ++ fragment
-            in
-                Just <| UrlChange NewEntry url
+            Just <| UrlChange NewEntry "#"
 
 
 location2messages : Location -> List Msg

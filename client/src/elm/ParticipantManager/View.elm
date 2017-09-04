@@ -40,7 +40,7 @@ viewParticipants language currentDate user model =
         participants =
             unwrapParticipantsDict model.participants
     in
-        div [ class "wrap" ] <|
+        div [ class "wrap wrap-alt page-participants" ] <|
             viewDashboardPageHeader language App.PageType.ParticipantsDashboard
                 :: (List.map (Html.map MsgPagesParticipants) <|
                         Pages.Participants.View.view language currentDate user participants model.participantsPage

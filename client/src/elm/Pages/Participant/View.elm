@@ -181,12 +181,20 @@ viewActivityCards language currentDate user participants participantTypeFilter s
         progressTabTitle =
             translate language Trans.ActivitiesProgressReport
 
+        extraTabs =
+            if participantTypeFilter == Children then
+                [ tabItem progressTabTitle (selectedTab == ProgressReport) "progressreport" (SetSelectedTab ProgressReport) ]
+            else
+                []
+
         tabs =
-            div [ class "ui tabular menu" ]
+            div [ class "ui tabular menu" ] <|
                 [ tabItem pendingTabTitle (selectedTab == Pending) "pending" (SetSelectedTab Pending)
                 , tabItem completedTabTitle (selectedTab == Completed) "completed" (SetSelectedTab Completed)
-                , tabItem progressTabTitle (selectedTab == ProgressReport) "progressreport" (SetSelectedTab ProgressReport)
                 ]
+                    ++ extraTabs
+                
+
     in
         [ tabs, activeView ]
 

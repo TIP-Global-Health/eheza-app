@@ -23,7 +23,7 @@ module.exports = function (browser, capabilities, specs) {
    */
   browser.addCommand('loginAndViewParticipantsPage', (user) => {
     browser.login(user);
-    browser.waitForVisible('#participants-table');
+    browser.waitForVisible('.wrap.page-participants');
   });
 
   /**
