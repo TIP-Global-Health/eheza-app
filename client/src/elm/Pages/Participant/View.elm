@@ -201,12 +201,19 @@ viewActivityCards language currentDate user participants participantTypeFilter s
                     ]
                     [ text <| translate language <| tabTitle <| List.length activitiesList ]
 
+        extraTabs =
+            if participantTypeFilter == Children then
+                [ tabItem ProgressReport [] ]
+            else
+                []
+
         tabs =
             div [ class "ui tabular menu" ]
-                [ tabItem Pending pendingActivities
-                , tabItem Completed noPendingActivities
-                , tabItem ProgressReport []
-                ]
+                ([ tabItem Pending pendingActivities
+                 , tabItem Completed noPendingActivities
+                 ]
+                    ++ extraTabs
+                )
     in
         [ tabs, activeView ]
 
