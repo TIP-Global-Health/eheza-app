@@ -73,7 +73,9 @@ update currentDate backendUrl accessToken user language msg model =
                     )
 
         SetRedirectPage page ->
-            ( Nothing, model, Cmd.none, Just page )
+            sequenceExtra (update currentDate backendUrl accessToken user language)
+                [ SetSelectedParticipant Nothing ]
+                ( Nothing, model, Cmd.none, Just page )
 
         SetSelectedParticipant maybeParticipant ->
             let

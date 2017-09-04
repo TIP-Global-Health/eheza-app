@@ -7,8 +7,9 @@ import Config
 import Date
 import Dict
 import Http
-import Pages.Activity.Model
 import FilePicker.Model
+import Pages.Activity.Model
+import Pages.Participant.Model
 import ParticipantManager.Model
 import ParticipantManager.Update
 import Pusher.Model
@@ -186,39 +187,36 @@ update msg model =
                     activePageUpdated =
                         setActivePageAccess model.user page
 
-                    bindDropZoneMsg active =
-                        let
-                            filePickerMsg =
-                                if active then
-                                    FilePicker.Model.Bind
-                                else
-                                    FilePicker.Model.Unbind
-                        in
-                            MsgParticipantManager <|
-                                ParticipantManager.Model.MsgPagesActivity <|
-                                    Pages.Activity.Model.MsgFilePicker filePickerMsg
-
-                    pageSwitchMsgs =
+                    unbindFilePickerMsg =
                         case model.activePage of
                             Activity (Just (Child ChildPicture)) ->
-                                [ bindDropZoneMsg False ]
+                                [ MsgParticipantManager <|
+                                    ParticipantManager.Model.MsgPagesActivity <|
+                                        Pages.Activity.Model.MsgFilePicker FilePicker.Model.Unbind
+                                ]
+
+                            Participant participantId ->
+                                [ MsgParticipantManager <|
+                                    ParticipantManager.Model.MsgPagesParticipant participantId <|
+                                        Pages.Participant.Model.MsgFilePicker FilePicker.Model.Unbind
+                                ]
 
                             _ ->
                                 []
 
-                    ( ( modelUpdated, command ), pageSpecificMsgs ) =
+                    ( modelUpdated, command ) =
                         -- For a few, we also delegate some initialization
                         case activePageUpdated of
                             Activities ->
                                 -- If we're showing a `Activities` page, make sure we `Subscribe`
-                                ( (update (MsgParticipantManager ParticipantManager.Model.FetchAll) model), [] )
+                                update (MsgParticipantManager ParticipantManager.Model.FetchAll) model
 
                             Activity maybeActivityType ->
                                 let
                                     currentActivityPage =
                                         model.pageParticipant.activityPage
 
-                                    ( msgs, updatedActivityPage ) =
+                                    updatedActivityPage =
                                         case maybeActivityType of
                                             Just activityType ->
                                                 let
@@ -230,12 +228,10 @@ update msg model =
                                                             _ ->
                                                                 False
                                                 in
-                                                    ( [ bindDropZoneMsg isActive ]
-                                                    , { currentActivityPage | selectedActivity = activityType }
-                                                    )
+                                                    { currentActivityPage | selectedActivity = activityType }
 
                                             _ ->
-                                                ( [], currentActivityPage )
+                                                currentActivityPage
 
                                     currentParticipanstManagerPage =
                                         model.pageParticipant
@@ -244,24 +240,21 @@ update msg model =
                                         { currentParticipanstManagerPage | activityPage = updatedActivityPage }
                                 in
                                     -- If we're showing a `Activities` page, make sure we `Subscribe`
-                                    ( (update (MsgParticipantManager ParticipantManager.Model.FetchAll)
+                                    update (MsgParticipantManager ParticipantManager.Model.FetchAll)
                                         { model | pageParticipant = updatedParticipanstManagerPage }
-                                      )
-                                    , msgs
-                                    )
 
                             Dashboard activityTypes ->
-                                ( (update (MsgParticipantManager ParticipantManager.Model.FetchAll) model), [] )
+                                update (MsgParticipantManager ParticipantManager.Model.FetchAll) model
 
                             Participant id ->
                                 -- If we're showing a `Participant`, make sure we `Subscribe`
-                                ( (update (MsgParticipantManager (ParticipantManager.Model.Subscribe id)) model), [] )
+                                update (MsgParticipantManager (ParticipantManager.Model.Subscribe id)) model
 
                             _ ->
-                                ( ( model, Cmd.none ), [] )
+                                ( model, Cmd.none )
                 in
                     sequence update
-                        (pageSpecificMsgs ++ pageSwitchMsgs)
+                        unbindFilePickerMsg
                         ( { modelUpdated | activePage = setActivePageAccess model.user activePageUpdated }
                         , Cmd.batch
                             [ activePage [ (toString activePageUpdated), backendUrl ]
