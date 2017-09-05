@@ -63,10 +63,10 @@ view language currentDate user participants model =
         ( selectedActivies, emptySectionMessage ) =
             case model.selectedTab of
                 Pending ->
-                    ( pendingActivities, "This section has been completed." )
+                    ( pendingActivities, translate language Trans.PendingSectionEmpty )
 
                 Completed ->
-                    ( noPendingActivities, "This section has not yet been completed." )
+                    ( noPendingActivities, translate language Trans.CompletedSectionEmpty )
     in
         [ tabs
         , div

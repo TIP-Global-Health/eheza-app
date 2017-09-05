@@ -69,6 +69,7 @@ type TranslationId
     | BabyName String
     | CentimeterShorthand
     | Children
+    | CompletedSectionEmpty
     | Connected
     | Dashboard
     | DropzoneDefaultMessage
@@ -102,6 +103,7 @@ type TranslationId
     | PageNotFoundMsg
     | Password
     | Participants
+    | PendingSectionEmpty
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
     | PlaceholderEnterWeight
@@ -276,6 +278,9 @@ translate lang trans =
                 Children ->
                     { english = "Children" }
 
+                CompletedSectionEmpty ->
+                    { english = "This section has not yet been completed." }
+
                 Connected ->
                     { english = "Connected" }
 
@@ -382,6 +387,9 @@ translate lang trans =
 
                 Participants ->
                     { english = "Participants" }
+
+                PendingSectionEmpty ->
+                    { english = "This section has been completed." }
 
                 PlaceholderEnterHeight ->
                     { english = "Enter height here…" }

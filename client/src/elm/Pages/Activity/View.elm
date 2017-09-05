@@ -122,10 +122,10 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                 ( selectedParticipants, emptySectionMessage ) =
                     case model.selectedTab of
                         Pending ->
-                            ( participantsWithPendingActivity, "This section has been completed." )
+                            ( participantsWithPendingActivity, translate language Trans.PendingSectionEmpty )
 
                         Completed ->
-                            ( participantsWithCompletedActivity, "This section has not yet been completed." )
+                            ( participantsWithCompletedActivity, translate language Trans.CompletedSectionEmpty )
 
                 viewParticipantCard maybeSelectedParticipant ( participantId, participant ) =
                     let
