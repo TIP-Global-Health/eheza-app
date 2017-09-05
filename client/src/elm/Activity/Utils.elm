@@ -4,14 +4,15 @@ module Activity.Utils
         , getActivityTypeList
         , getActivityIdentity
         , getTotalsNumberPerActivity
-        , participantGotPendingActivity
+        , participantHasPendingActivity
+        , hasAnyPendingChildActivity
+        , hasAnyPendingMotherActivity
         )
 
 import Activity.Model exposing (ActivityIdentity, ActivityListItem, ActivityType(..), ChildActivityType(..), MotherActivityType(..))
-import Child.Model exposing (Child)
-import Date exposing (Date)
 import Dict exposing (Dict)
-import Mother.Model exposing (Mother)
+import Examination.Model exposing (ExaminationChild, ExaminationMother, emptyExaminationChild, emptyExaminationMother)
+import Maybe.Extra exposing (isNothing)
 import Participant.Model exposing (Participant, ParticipantsDict, ParticipantTypeFilter(..), ParticipantType(..))
 
 
@@ -43,15 +44,17 @@ getActivityTypeList participantTypeFilter =
 
 {-| Get the pending and completed activities.
 
-@todo: Add also "future"?
+At the moment, this just looks at the single, mocked examination. Eventually,
+this will need to be paramterized in some way to deal with multiple
+examinations.
 
 -}
-getActivityList : Date -> ParticipantTypeFilter -> ParticipantsDict -> List ActivityListItem
-getActivityList currentDate participantTypeFilter participants =
+getActivityList : ParticipantTypeFilter -> ParticipantsDict -> List ActivityListItem
+getActivityList participantTypeFilter participants =
     List.map
         (\activityType ->
             { activity = getActivityIdentity activityType
-            , totals = getTotalsNumberPerActivity currentDate activityType participants
+            , totals = getTotalsNumberPerActivity activityType participants
             }
         )
         (getActivityTypeList participantTypeFilter)
@@ -100,18 +103,26 @@ getAllMotherActivities =
     [ FamilyPlanning ]
 
 
-getTotalsNumberPerActivity : Date -> ActivityType -> ParticipantsDict -> ( Int, Int )
-getTotalsNumberPerActivity currentDate activityType participants =
+{-| For the moment, we just look at each participant's single, mocked examination.
+This will need to change once we can have more than one.
+-}
+getTotalsNumberPerActivity : ActivityType -> ParticipantsDict -> ( Int, Int )
+getTotalsNumberPerActivity activityType participants =
     Dict.foldl
         (\_ participant ( pending, total ) ->
             case participant.info of
                 ParticipantChild child ->
                     case activityType of
                         Child childActivityType ->
-                            if hasPendingChildActivity currentDate child childActivityType then
-                                ( pending + 1, total + 1 )
-                            else
-                                ( pending, total + 1 )
+                            List.head child.examinations
+                                |> Maybe.withDefault emptyExaminationChild
+                                |> hasPendingChildActivity childActivityType
+                                |> (\result ->
+                                        if result then
+                                            ( pending + 1, total + 1 )
+                                        else
+                                            ( pending, total + 1 )
+                                   )
 
                         _ ->
                             ( pending, total )
@@ -119,10 +130,15 @@ getTotalsNumberPerActivity currentDate activityType participants =
                 ParticipantMother mother ->
                     case activityType of
                         Mother motherActivityType ->
-                            if hasPendingMotherActivity currentDate mother motherActivityType then
-                                ( pending + 1, total + 1 )
-                            else
-                                ( pending, total + 1 )
+                            List.head mother.examinations
+                                |> Maybe.withDefault emptyExaminationMother
+                                |> hasPendingMotherActivity motherActivityType
+                                |> (\result ->
+                                        if result then
+                                            ( pending + 1, total + 1 )
+                                        else
+                                            ( pending, total + 1 )
+                                   )
 
                         _ ->
                             ( pending, total )
@@ -131,59 +147,67 @@ getTotalsNumberPerActivity currentDate activityType participants =
         participants
 
 
-hasPendingChildActivity : Date -> Child -> ChildActivityType -> Bool
-hasPendingChildActivity currentDate child childActivityType =
-    let
-        property =
-            case childActivityType of
-                ChildPicture ->
-                    .childPicture
+hasPendingChildActivity : ChildActivityType -> ExaminationChild -> Bool
+hasPendingChildActivity childActivityType ex =
+    case childActivityType of
+        ChildPicture ->
+            isNothing ex.photo
 
-                Height ->
-                    .height
+        Height ->
+            isNothing ex.height
 
-                Weight ->
-                    .weight
+        Weight ->
+            isNothing ex.weight
 
-                Muac ->
-                    .muac
+        Muac ->
+            isNothing ex.muac
 
-                NutritionSigns ->
-                    .nutritionSigns
+        NutritionSigns ->
+            -- We don't have this in `ExaminationChild` yet, so it's
+            -- necessarily pending.
+            True
 
-                ProgressReport ->
-                    .progressReport
-    in
-        Maybe.map
-            (\date ->
-                Date.toTime
-                    date
-                    <= Date.toTime currentDate
-            )
-            (child.activityDates |> property)
-            |> Maybe.withDefault False
+        ProgressReport ->
+            -- We don't have this in `ExaminationChild` yet, so it's
+            -- necessarily pending.
+            True
 
 
-hasPendingMotherActivity : Date -> Mother -> MotherActivityType -> Bool
-hasPendingMotherActivity currentDate mother motherActivityType =
-    let
-        property =
-            case motherActivityType of
-                FamilyPlanning ->
-                    .familyPlanning
-    in
-        mother.activityDates
-            |> property
-            |> Maybe.map
-                (\date -> Date.toTime date <= Date.toTime currentDate)
-            |> Maybe.withDefault False
+hasPendingMotherActivity : MotherActivityType -> ExaminationMother -> Bool
+hasPendingMotherActivity motherActivityType ex =
+    case motherActivityType of
+        FamilyPlanning ->
+            -- We don't have this in `MotherExamination` yet, so it's
+            -- necessarily pending.
+            True
 
 
-participantGotPendingActivity : Date -> Participant -> Bool
-participantGotPendingActivity currentDate participant =
+hasAnyPendingMotherActivity : ExaminationMother -> Bool
+hasAnyPendingMotherActivity ex =
+    getAllMotherActivities
+        |> List.any ((flip hasPendingMotherActivity) ex)
+
+
+hasAnyPendingChildActivity : ExaminationChild -> Bool
+hasAnyPendingChildActivity ex =
+    getAllChildActivities
+        |> List.any ((flip hasPendingChildActivity) ex)
+
+
+{-| Just looking at the single examination for the moment
+Will need to parameterize when we have more than one.
+-}
+participantHasPendingActivity : Participant -> Bool
+participantHasPendingActivity participant =
     case participant.info of
         ParticipantChild child ->
-            (List.length <| List.filter (hasPendingChildActivity currentDate child) getAllChildActivities) > 0
+            child.examinations
+                |> List.head
+                |> Maybe.withDefault emptyExaminationChild
+                |> hasAnyPendingChildActivity
 
         ParticipantMother mother ->
-            (List.length <| List.filter (hasPendingMotherActivity currentDate mother) getAllMotherActivities) > 0
+            mother.examinations
+                |> List.head
+                |> Maybe.withDefault emptyExaminationMother
+                |> hasAnyPendingMotherActivity

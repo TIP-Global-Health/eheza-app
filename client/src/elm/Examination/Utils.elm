@@ -4,6 +4,10 @@ import Child.Model exposing (Child)
 import Examination.Model exposing (ExaminationChild)
 
 
+{-| For now, we're just returning a mocked version. Eventually
+we'll need to do something different, once we can have more than
+one examination.
+-}
 getLastExaminationFromChild : Child -> Maybe ExaminationChild
 getLastExaminationFromChild child =
     Just

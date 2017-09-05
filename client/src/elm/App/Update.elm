@@ -1,13 +1,11 @@
 port module App.Update exposing (init, update, subscriptions)
 
-import Activity.Utils exposing (getActivityTypeList)
 import App.Model exposing (..)
 import App.PageType exposing (Page(..))
 import Config
 import Date
 import Dict
 import Http
-import Participant.Model exposing (ParticipantTypeFilter(..))
 import ParticipantManager.Model
 import ParticipantManager.Update
 import Pusher.Model

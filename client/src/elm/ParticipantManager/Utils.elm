@@ -7,7 +7,6 @@ module ParticipantManager.Utils
         , unwrapParticipantsDict
         )
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Child.Model exposing (Child, ChildId)
 import Dict exposing (Dict)
 import Mother.Model exposing (Mother, MotherId)

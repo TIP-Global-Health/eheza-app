@@ -1,6 +1,5 @@
 module Pages.Participants.Update exposing (update)
 
-import Activity.Encoder exposing (encodeActivityType)
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Pages.Participants.Model exposing (Model, Msg(..))

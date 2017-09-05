@@ -141,7 +141,7 @@ viewActivityCards : Language -> Date -> User -> ParticipantsDict -> ParticipantT
 viewActivityCards language currentDate user participants participantTypeFilter selectedTab selectedActivity =
     let
         allActivityList =
-            getActivityList currentDate participantTypeFilter participants
+            getActivityList participantTypeFilter participants
 
         pendingActivities =
             List.filter (\activity -> (Tuple.first activity.totals) > 0) allActivityList

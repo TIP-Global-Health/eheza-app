@@ -1,20 +1,15 @@
 module Pages.Participants.View exposing (view)
 
-import Activity.Model exposing (ActivityType)
-import Activity.Utils exposing (getTotalsNumberPerActivity, participantGotPendingActivity)
-import Activity.View exposing (viewActivityTypeFilter)
+import Activity.Utils exposing (getTotalsNumberPerActivity, participantHasPendingActivity)
 import App.PageType exposing (Page(..))
 import Date exposing (Date)
 import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
-import Maybe.Extra exposing (isJust)
 import Pages.Participants.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (getParticipantAvatarThumb, getParticipantName, getParticipantTypeAsString)
-import Participant.View exposing (viewParticipantTypeFilter)
-import Table exposing (..)
 import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
 import Utils.Html exposing (tabItem, thumbnailImage)
@@ -30,19 +25,16 @@ view language currentDate currentUser participantsDict model =
 
                 ParticipantMother mother ->
                     let
-                        motherGotPendingActivity =
-                            participantGotPendingActivity currentDate participant
-
                         children =
                             List.filterMap (\childId -> Dict.get childId participantsDict) mother.children
 
                         gotPendingActivity =
-                            motherGotPendingActivity || List.any (participantGotPendingActivity currentDate) children
+                            participantHasPendingActivity participant || List.any participantHasPendingActivity children
                     in
                         if withPending then
                             gotPendingActivity
                         else
-                            not <| gotPendingActivity
+                            not gotPendingActivity
 
         mothersWithPendingActivity =
             participantsDict

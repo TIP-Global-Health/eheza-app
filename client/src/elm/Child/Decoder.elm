@@ -3,11 +3,10 @@ module Child.Decoder
         ( decodeChild
         )
 
-import Activity.Decoder exposing (decodeChildActivityDates)
 import Child.Model exposing (..)
+import Examination.Decoder exposing (decodeExaminationChild)
 import Json.Decode exposing (Decoder, andThen, dict, fail, field, int, list, map, map2, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required)
-import RemoteData exposing (RemoteData(NotAsked))
 import Utils.Json exposing (decodeDate, decodeInt)
 
 
@@ -18,8 +17,7 @@ decodeChild =
         |> optionalAt [ "avatar", "styles", "patient-photo" ] string "https://placehold.it/200x200"
         |> required "mother" (nullable decodeInt)
         |> required "sibling" (nullable decodeInt)
-        |> hardcoded NotAsked
-        |> custom decodeChildActivityDates
+        |> required "examinations" (list decodeExaminationChild)
         |> required "date_birth" decodeDate
         |> required "gender" decodeGender
 

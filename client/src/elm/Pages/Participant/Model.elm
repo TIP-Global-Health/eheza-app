@@ -42,6 +42,7 @@ emptyModel =
     }
 
 
+thumbnailDimensions : { width : Int, height : Int }
 thumbnailDimensions =
     { width = 222
     , height = 222

@@ -1,8 +1,6 @@
 module Pages.Activities.View exposing (view)
 
-import Activity.Model exposing (ActivityListItem)
 import Activity.Utils exposing (getActivityList)
-import App.PageType exposing (Page(..))
 import Date exposing (Date)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -10,7 +8,6 @@ import Html.Events exposing (onClick)
 import List as List
 import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
 import Participant.Model exposing (ParticipantTypeFilter(..), ParticipantsDict)
-import Participant.View exposing (viewParticipantTypeFilter)
 import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
 
@@ -19,7 +16,7 @@ view : Language -> Date -> User -> ParticipantsDict -> Model -> List (Html Msg)
 view language currentDate user participants model =
     let
         allActivityList =
-            getActivityList currentDate model.participantTypeFilter participants
+            getActivityList model.participantTypeFilter participants
 
         pendingActivities =
             List.filter (\activity -> (Tuple.first activity.totals > 0)) allActivityList

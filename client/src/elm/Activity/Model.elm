@@ -1,7 +1,5 @@
 module Activity.Model exposing (..)
 
-import Date exposing (Date)
-
 
 type ActivityType
     = Child ChildActivityType
@@ -40,21 +38,6 @@ type ChildNutritionSign
     | PoorAppetite
 
 
-type alias ChildActivityDates =
-    { childPicture : Maybe Date
-    , height : Maybe Date
-    , muac : Maybe Date
-    , nutritionSigns : Maybe Date
-    , progressReport : Maybe Date
-    , weight : Maybe Date
-    }
-
-
-type alias MotherActivityDates =
-    { familyPlanning : Maybe Date
-    }
-
-
 type alias ActivityIdentity =
     { name : String
     , icon : String
@@ -65,21 +48,4 @@ type alias ActivityIdentity =
 type alias ActivityListItem =
     { activity : ActivityIdentity
     , totals : ( Int, Int )
-    }
-
-
-emptyChildActivityDates : ChildActivityDates
-emptyChildActivityDates =
-    { childPicture = Nothing
-    , height = Nothing
-    , muac = Nothing
-    , nutritionSigns = Nothing
-    , progressReport = Nothing
-    , weight = Nothing
-    }
-
-
-emptyMotherActivityDates : MotherActivityDates
-emptyMotherActivityDates =
-    { familyPlanning = Nothing
     }

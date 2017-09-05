@@ -1,6 +1,5 @@
 module ParticipantManager.Model exposing (..)
 
-import Activity.Model exposing (ActivityType)
 import Dict exposing (Dict)
 import Http
 import Pages.Activities.Model

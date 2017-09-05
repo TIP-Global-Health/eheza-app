@@ -1,10 +1,6 @@
 module Pages.Participants.Model exposing (..)
 
-import Activity.Model exposing (ActivityType)
-import Activity.Utils exposing (getActivityTypeList)
 import App.PageType exposing (Page(..))
-import Participant.Model exposing (ParticipantTypeFilter(..))
-import Table
 
 
 type alias Model =
@@ -28,6 +24,7 @@ emptyModel =
     }
 
 
+thumbnailDimensions : { width : Int, height : Int }
 thumbnailDimensions =
     { width = 122
     , height = 122

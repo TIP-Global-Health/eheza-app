@@ -10,7 +10,6 @@ module Participant.Utils
 
 import Date exposing (Date, Day)
 import Date.Extra.Duration
-import Date.Extra.Period
 import Participant.Model exposing (AgeDay, Participant, ParticipantType(..))
 import Translate as Trans exposing (translate, Language)
 
