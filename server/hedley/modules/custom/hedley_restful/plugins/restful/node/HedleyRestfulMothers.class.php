@@ -37,6 +37,13 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       'image_styles' => ['large', 'patient-photo'],
     ];
 
+    $public_fields['examinations'] = [
+      'property' => 'nid',
+      'process_callbacks' => [
+        [$this, 'getExaminations'],
+      ],
+    ];
+
     foreach (array_keys(field_info_instances($this->getEntityType(), $this->getBundle())) as $field_name) {
       if (strpos($field_name, 'field_date') !== 0) {
         // Not a date field.
@@ -76,6 +83,59 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
    */
   protected static function getType() {
     return 'mother';
+  }
+
+  /**
+   * Get the examinations for this mother.
+   *
+   * This is temporary code until we figure out how mothers, examinations and
+   * measurements relate.  For the moment, we simply get all the measuremts for
+   * the mother, as if they were part of one examination.
+   *
+   * Also, we might eventually want this on its own endpoint, rather than
+   * always including it with the mother's data.
+   *
+   * @param int $nid
+   *   The child node ID.
+   *
+   * @return array
+   *   The examinations!
+   */
+  public function getExaminations($nid) {
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', ['family_planning'])
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldCondition('field_child', 'target_id', $nid)
+      ->range(0, 200)
+      ->execute();
+
+    $exam = [];
+    $account = $this->getAccount();
+
+    if (empty($result['node'])) {
+      return [$exam];
+    }
+
+    foreach (node_load_multiple(array_keys($result['node'])) as $node) {
+      if ($node->type == "family_planning") {
+        $handler = restful_get_restful_handler("family-plannings");
+      }
+      else {
+        $handler = restful_get_restful_handler($node->type . 's');
+      }
+
+      if ($handler) {
+        $handler->setAccount($account);
+        $rest = $handler->get($node->nid);
+        $exam[$node->type] = $rest[0];
+      }
+    }
+
+    // So, this returns an array with a single examination.  That examination
+    // is a record, which contains an entry for `family_planning'.
+    return [$exam];
   }
 
   /**
