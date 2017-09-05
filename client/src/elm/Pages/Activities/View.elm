@@ -60,20 +60,23 @@ view language currentDate user participants model =
                     ]
                 ]
 
-        selectedActivies =
+        ( selectedActivies, emptySectionMessage ) =
             case model.selectedTab of
                 Pending ->
-                    pendingActivities
+                    ( pendingActivities, "This section has been completed." )
 
                 Completed ->
-                    noPendingActivities
+                    ( noPendingActivities, "This section has not yet been completed." )
     in
         [ tabs
         , div
             [ class "ui full segment" ]
             [ div [ class "content" ]
                 [ div [ class "ui four cards" ] <|
-                    List.map (viewCard language) selectedActivies
+                    if List.isEmpty selectedActivies then
+                        [ span [] [ text emptySectionMessage ] ]
+                    else
+                        List.map (viewCard language) selectedActivies
                 ]
             , div [ class "actions" ]
                 [ button

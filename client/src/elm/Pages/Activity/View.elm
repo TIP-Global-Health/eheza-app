@@ -119,13 +119,13 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
 
         participants =
             let
-                selectedParticipants =
+                ( selectedParticipants, emptySectionMessage ) =
                     case model.selectedTab of
                         Pending ->
-                            participantsWithPendingActivity
+                            ( participantsWithPendingActivity, "This section has been completed." )
 
                         Completed ->
-                            participantsWithCompletedActivity
+                            ( participantsWithCompletedActivity, "This section has not yet been completed." )
 
                 viewParticipantCard maybeSelectedParticipant ( participantId, participant ) =
                     let
@@ -161,10 +161,11 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                             , div [ class "content" ]
                                 [ p [] [ text <| getParticipantName participant ] ]
                             ]
-            in
-                div
-                    [ class "ui participant segment" ]
-                    [ div [ class "ui four participant cards" ] <|
+
+                participantsCards =
+                    if Dict.size selectedParticipants == 0 then
+                        [ span [] [ text emptySectionMessage ] ]
+                    else
                         List.map (viewParticipantCard model.selectedParticipant) <|
                             List.sortBy
                                 (\( _, participant ) ->
@@ -172,6 +173,11 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                                 )
                             <|
                                 Dict.toList selectedParticipants
+            in
+                div
+                    [ class "ui participant segment" ]
+                    [ div [ class "ui four participant cards" ]
+                        participantsCards
                     ]
 
         measurementsForm =

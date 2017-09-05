@@ -150,13 +150,13 @@ viewActivityCards language currentDate user participants participantTypeFilter s
 
         pendingActivitiesView =
             if List.isEmpty pendingActivities then
-                []
+                [ span [] [ text "This section has been completed." ] ]
             else
                 List.map (viewActivityListItem language selectedActivity) pendingActivities
 
         noPendingActivitiesView =
             if List.isEmpty noPendingActivities then
-                []
+                [ span [] [ text "This section has not yet been completed." ] ]
             else
                 List.map (viewActivityListItem language selectedActivity) noPendingActivities
 
