@@ -67,13 +67,13 @@ view language currentDate currentUser participantsDict model =
 
         mothers =
             let
-                selectedMothers =
+                ( selectedMothers, emptySectionMessage ) =
                     case model.selectedTab of
                         Pending ->
-                            mothersWithPendingActivity
+                            ( mothersWithPendingActivity, translate language Trans.PendingSectionEmpty )
 
                         Completed ->
-                            mothersWithoutPendingActivity
+                            ( mothersWithoutPendingActivity, translate language Trans.CompletedSectionEmpty )
 
                 viewMotherCard ( motherId, mother ) =
                     let
@@ -98,17 +98,23 @@ view language currentDate currentUser participantsDict model =
                             , div [ class "content" ]
                                 [ p [] [ text name ] ]
                             ]
+
+                mothersCards =
+                    if Dict.size selectedMothers == 0 then
+                        [ span [] [ text emptySectionMessage ] ]
+                    else
+                        List.map viewMotherCard <|
+                            List.sortBy
+                                (\( _, mother ) ->
+                                    getParticipantName mother
+                                )
+                            <|
+                                Dict.toList selectedMothers
             in
                 div [ class "full content" ]
                     [ div [ class "wrap-cards" ]
-                        [ div [ class "ui four cards" ] <|
-                            List.map viewMotherCard <|
-                                List.sortBy
-                                    (\( _, mother ) ->
-                                        getParticipantName mother
-                                    )
-                                <|
-                                    Dict.toList selectedMothers
+                        [ div [ class "ui four cards" ]
+                            mothersCards
                         ]
                     ]
 
