@@ -2,7 +2,6 @@ module App.View exposing (..)
 
 import App.Model exposing (..)
 import App.PageType exposing (Page(..))
-import Config.Model exposing (BackendUrl)
 import Config.View
 import Html exposing (..)
 import Html.Attributes exposing (class, classList, href, id, src, style, target)
@@ -29,7 +28,7 @@ view model =
                     case model.user of
                         Success user ->
                             Html.map MsgParticipantManager <|
-                                ParticipantManager.View.viewActivities model.language model.currentDate user model.pageParticipant
+                                ParticipantManager.View.viewActivities model.language model.pageParticipant
 
                         _ ->
                             div [] [ i [ class "notched circle loading icon" ] [] ]
@@ -38,7 +37,7 @@ view model =
                     case model.user of
                         Success user ->
                             Html.map MsgParticipantManager <|
-                                ParticipantManager.View.viewParticipants model.language model.currentDate user model.pageParticipant
+                                ParticipantManager.View.viewParticipants model.language model.pageParticipant
 
                         _ ->
                             div [] [ i [ class "notched circle loading icon" ] [] ]
@@ -47,7 +46,7 @@ view model =
                     case model.user of
                         Success user ->
                             Html.map MsgParticipantManager <|
-                                ParticipantManager.View.viewPageParticipant config.backendUrl model.accessToken user model.language model.currentDate id model.pageParticipant
+                                ParticipantManager.View.viewPageParticipant model.language model.currentDate id model.pageParticipant
 
                         _ ->
                             div [] [ i [ class "notched circle loading icon" ] [] ]
@@ -57,7 +56,7 @@ view model =
                         [ viewSidebar model.language model
                         , viewHeader model.language model
                         , div [ class "ui main container" ]
-                            [ viewMainContent config.backendUrl model
+                            [ viewMainContent model
                             ]
                         ]
 
@@ -235,8 +234,8 @@ viewAvatar language user =
             div [] []
 
 
-viewMainContent : BackendUrl -> Model -> Html Msg
-viewMainContent backendUrl model =
+viewMainContent : Model -> Html Msg
+viewMainContent model =
     let
         language =
             model.language

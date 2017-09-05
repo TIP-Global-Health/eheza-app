@@ -20,9 +20,6 @@ viewChildProgressReportTest =
         viewChildWithTab selectedTab =
             div []
                 (viewChild
-                    exampleBackendUrl
-                    exampleAccessToken
-                    exampleUser
                     English
                     (Date.fromTime 1504185446000)
                     NotAsked
@@ -52,11 +49,7 @@ viewMotherProgressReportTest =
         viewMotherWithTab selectedTab =
             div []
                 (viewMother
-                    exampleBackendUrl
-                    exampleAccessToken
                     English
-                    (Date.fromTime 1504185446000)
-                    exampleUser
                     5
                     exampleMother
                     []

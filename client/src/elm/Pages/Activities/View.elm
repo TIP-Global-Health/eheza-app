@@ -1,7 +1,6 @@
 module Pages.Activities.View exposing (view)
 
 import Activity.Utils exposing (getActivityList)
-import Date exposing (Date)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -9,11 +8,10 @@ import List as List
 import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
 import Participant.Model exposing (ParticipantTypeFilter(..), ParticipantsDict)
 import Translate as Trans exposing (translate, Language)
-import User.Model exposing (User)
 
 
-view : Language -> Date -> User -> ParticipantsDict -> Model -> List (Html Msg)
-view language currentDate user participants model =
+view : Language -> ParticipantsDict -> Model -> List (Html Msg)
+view language participants model =
     let
         allActivityList =
             getActivityList model.participantTypeFilter participants

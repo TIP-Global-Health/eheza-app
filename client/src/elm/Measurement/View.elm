@@ -17,7 +17,6 @@ import Activity.Model
         , MotherActivityType(..)
         )
 import Child.Model exposing (Child, ChildId)
-import Config.Model exposing (BackendUrl)
 import EverySet exposing (EverySet)
 import Examination.Model exposing (ExaminationChild)
 import Html exposing (..)
@@ -40,12 +39,11 @@ import Measurement.Model
         )
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
 import Translate as Trans exposing (Language(..), TranslationId, translate)
-import User.Model exposing (..)
 import Utils.Html exposing (divider, emptyNode, showIf, showMaybe)
 
 
-viewChild : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Maybe ExaminationChild -> Maybe ActivityType -> Model -> Html Msg
-viewChild backendUrl accessToken user language ( childId, child ) maybePreviousExamination selectedActivity model =
+viewChild : Language -> ( ChildId, Child ) -> Maybe ExaminationChild -> Maybe ActivityType -> Model -> Html Msg
+viewChild language ( childId, child ) maybePreviousExamination selectedActivity model =
     showMaybe <|
         Maybe.map
             (\activity ->
@@ -53,19 +51,19 @@ viewChild backendUrl accessToken user language ( childId, child ) maybePreviousE
                     Child childActivity ->
                         case childActivity of
                             ChildPicture ->
-                                viewPhoto backendUrl accessToken user language ( childId, child ) model
+                                viewPhoto language ( childId, child ) model
 
                             Height ->
-                                viewFloatForm backendUrl accessToken user language HeightFloat ( childId, child ) maybePreviousExamination model
+                                viewFloatForm language HeightFloat ( childId, child ) maybePreviousExamination model
 
                             Muac ->
-                                viewFloatForm backendUrl accessToken user language MuacFloat ( childId, child ) maybePreviousExamination model
+                                viewFloatForm language MuacFloat ( childId, child ) maybePreviousExamination model
 
                             NutritionSigns ->
-                                viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
+                                viewNutritionSigns language ( childId, child ) model
 
                             Weight ->
-                                viewFloatForm backendUrl accessToken user language WeightFloat ( childId, child ) maybePreviousExamination model
+                                viewFloatForm language WeightFloat ( childId, child ) maybePreviousExamination model
 
                             _ ->
                                 emptyNode
@@ -76,8 +74,8 @@ viewChild backendUrl accessToken user language ( childId, child ) maybePreviousE
             selectedActivity
 
 
-viewFloatForm : BackendUrl -> String -> User -> Language -> FloatMeasurements -> ( ChildId, Child ) -> Maybe ExaminationChild -> Model -> Html Msg
-viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, child ) maybePreviousExamination model =
+viewFloatForm : Language -> FloatMeasurements -> ( ChildId, Child ) -> Maybe ExaminationChild -> Model -> Html Msg
+viewFloatForm language floatMeasurement ( childId, child ) maybePreviousExamination model =
     let
         ( blockName, headerText, helpText, labelText, placeholderText, constraints, measurementValue, measurementType, ( updateMsg, saveMsg ) ) =
             case floatMeasurement of
@@ -331,8 +329,8 @@ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType
                 emptyNode
 
 
-viewPhoto : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
-viewPhoto backendUrl accessToken user language ( childId, child ) model =
+viewPhoto : Language -> ( ChildId, Child ) -> Model -> Html Msg
+viewPhoto language ( childId, child ) model =
     let
         hasFileId =
             isJust <| Tuple.first model.photo
@@ -398,8 +396,8 @@ saveButton language msg model hasInput maybeDivClass =
         ]
 
 
-viewNutritionSigns : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Model -> Html Msg
-viewNutritionSigns backendUrl accessToken user language ( childId, child ) model =
+viewNutritionSigns : Language -> ( ChildId, Child ) -> Model -> Html Msg
+viewNutritionSigns language ( childId, child ) model =
     div
         [ class "ui full segment nutrition"
         , id "nutritionSignsEntryForm"
@@ -495,8 +493,8 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
             ]
 
 
-viewMother : BackendUrl -> String -> User -> Language -> Maybe ActivityType -> Model -> Html Msg
-viewMother backendUrl accessToken user language selectedActivity model =
+viewMother : Language -> Maybe ActivityType -> Model -> Html Msg
+viewMother language selectedActivity model =
     showMaybe <|
         Maybe.map
             (\activity ->
@@ -504,7 +502,7 @@ viewMother backendUrl accessToken user language selectedActivity model =
                     Mother motherActivity ->
                         case motherActivity of
                             FamilyPlanning ->
-                                viewFamilyPlanning backendUrl accessToken user language model
+                                viewFamilyPlanning language model
 
                     _ ->
                         emptyNode
@@ -512,8 +510,8 @@ viewMother backendUrl accessToken user language selectedActivity model =
             selectedActivity
 
 
-viewFamilyPlanning : BackendUrl -> String -> User -> Language -> Model -> Html Msg
-viewFamilyPlanning backendUrl accessToken user language model =
+viewFamilyPlanning : Language -> Model -> Html Msg
+viewFamilyPlanning language model =
     div
         [ class "ui full segment family-planning"
         , id "familyPlanningEntryForm"

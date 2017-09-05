@@ -19,7 +19,7 @@ viewChildFormsTest =
     let
         viewChildWithActivity selectedActivity model =
             Html.div [ Attr.class "test-container" ]
-                [ viewChild exampleBackendUrl exampleAccessToken exampleUser English ( 5, exampleChild ) Nothing selectedActivity model
+                [ viewChild English ( 5, exampleChild ) Nothing selectedActivity model
                 ]
     in
         describe "A nurse visits the assesment of a Child" <|
@@ -78,7 +78,7 @@ viewMotherFormsTest =
     let
         viewMotherWithActivity selectedActivity model =
             Html.div [ Attr.class "test-container" ]
-                [ viewMother exampleBackendUrl exampleAccessToken exampleUser English selectedActivity model ]
+                [ viewMother English selectedActivity model ]
     in
         describe "A nurse visits the assesment of a Mother" <|
             [ test "Then a family planning form should be displayed when selected" <|

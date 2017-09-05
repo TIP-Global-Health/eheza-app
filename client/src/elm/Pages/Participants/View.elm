@@ -2,7 +2,6 @@ module Pages.Participants.View exposing (view)
 
 import Activity.Utils exposing (getTotalsNumberPerActivity, participantHasPendingActivity)
 import App.PageType exposing (Page(..))
-import Date exposing (Date)
 import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -11,12 +10,11 @@ import Pages.Participants.Model exposing (Model, Msg(..), Tab(..), thumbnailDime
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (getParticipantAvatarThumb, getParticipantName, getParticipantTypeAsString)
 import Translate as Trans exposing (translate, Language)
-import User.Model exposing (User)
 import Utils.Html exposing (tabItem, thumbnailImage)
 
 
-view : Language -> Date -> User -> ParticipantsDict -> Model -> List (Html Msg)
-view language currentDate currentUser participantsDict model =
+view : Language -> ParticipantsDict -> Model -> List (Html Msg)
+view language participantsDict model =
     let
         filterMothersByPendingActivity withPending participantId participant =
             case participant.info of

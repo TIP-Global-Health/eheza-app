@@ -7,7 +7,6 @@ module Pages.Participant.View
 import Activity.Model exposing (ActivityListItem, ActivityType(..))
 import Activity.Utils exposing (getActivityList)
 import Child.Model exposing (Child, ChildId, Gender(..))
-import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict
 import Examination.Utils exposing (getLastExaminationFromChild)
@@ -22,12 +21,13 @@ import Participant.Utils exposing (getParticipantAge, renderParticipantAge, rend
 import ProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
-import User.Model exposing (User)
 import Utils.Html exposing (emptyNode)
 
 
-viewChild : BackendUrl -> String -> User -> Language -> Date -> WebData Mother -> ( ChildId, Child ) -> Model -> List (Html Msg)
-viewChild backendUrl accessToken currentUser language currentDate motherWebData ( childId, child ) model =
+{-| This one needs the `currentDate` in order to calculate ages from dates of birth.
+-}
+viewChild : Language -> Date -> WebData Mother -> ( ChildId, Child ) -> Model -> List (Html Msg)
+viewChild language currentDate motherWebData ( childId, child ) model =
     let
         childParticipant =
             { info = Participant.Model.ParticipantChild child }
@@ -71,10 +71,10 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
 
         content =
             if model.selectedTab == ProgressReport then
-                [ viewProgressReport backendUrl accessToken currentUser language ( childId, child ) ]
+                [ viewProgressReport language ( childId, child ) ]
             else
                 [ Html.map MsgMeasurement <|
-                    Measurement.View.viewChild backendUrl accessToken currentUser language ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
+                    Measurement.View.viewChild language ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
                 ]
     in
         div [ class "ui unstackable items" ]
@@ -90,13 +90,13 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                     ]
                 ]
             ]
-            :: ((viewActivityCards language currentDate currentUser participants Children model.selectedTab model.selectedActivity)
+            :: ((viewActivityCards language participants Children model.selectedTab model.selectedActivity)
                     ++ content
                )
 
 
-viewMother : BackendUrl -> String -> Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Model -> List (Html Msg)
-viewMother backendUrl accessToken language currentDate currentUser motherId mother children model =
+viewMother : Language -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Model -> List (Html Msg)
+viewMother language motherId mother children model =
     let
         break =
             br [] []
@@ -130,15 +130,15 @@ viewMother backendUrl accessToken language currentDate currentUser motherId moth
                     ]
                 ]
             ]
-            :: ((viewActivityCards language currentDate currentUser participants Mothers model.selectedTab model.selectedActivity)
+            :: ((viewActivityCards language participants Mothers model.selectedTab model.selectedActivity)
                     ++ [ Html.map MsgMeasurement <|
-                            Measurement.View.viewMother backendUrl accessToken currentUser language model.selectedActivity model.measurements
+                            Measurement.View.viewMother language model.selectedActivity model.measurements
                        ]
                )
 
 
-viewActivityCards : Language -> Date -> User -> ParticipantsDict -> ParticipantTypeFilter -> Tab -> Maybe ActivityType -> List (Html Msg)
-viewActivityCards language currentDate user participants participantTypeFilter selectedTab selectedActivity =
+viewActivityCards : Language -> ParticipantsDict -> ParticipantTypeFilter -> Tab -> Maybe ActivityType -> List (Html Msg)
+viewActivityCards language participants participantTypeFilter selectedTab selectedActivity =
     let
         allActivityList =
             getActivityList participantTypeFilter participants

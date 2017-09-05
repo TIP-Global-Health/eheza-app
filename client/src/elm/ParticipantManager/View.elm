@@ -6,7 +6,6 @@ module ParticipantManager.View
         )
 
 import App.PageType
-import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict
 import Html exposing (..)
@@ -23,14 +22,13 @@ import ParticipantManager.Model exposing (..)
 import ParticipantManager.Utils exposing (getChildren, getMother, getParticipant, unwrapParticipantsDict)
 import RemoteData exposing (RemoteData(..))
 import Translate as Trans exposing (Language, translate)
-import User.Model exposing (User)
 import Utils.WebData exposing (viewError)
 
 
 {-| Show all Participants page.
 -}
-viewParticipants : Language -> Date -> User -> Model -> Html Msg
-viewParticipants language currentDate user model =
+viewParticipants : Language -> Model -> Html Msg
+viewParticipants language model =
     let
         participants =
             unwrapParticipantsDict model.participants
@@ -38,7 +36,7 @@ viewParticipants language currentDate user model =
         div [ class "wrap wrap-alt page-participants" ] <|
             viewDashboardPageHeader language App.PageType.ParticipantsDashboard
                 :: (List.map (Html.map MsgPagesParticipants) <|
-                        Pages.Participants.View.view language currentDate user participants model.participantsPage
+                        Pages.Participants.View.view language participants model.participantsPage
                    )
 
 
@@ -85,9 +83,12 @@ viewDashboardPageHeader language dashboardPage =
 
 
 {-| Show the Participant page.
+
+This one needs the `currentDate` to calculate ages.
+
 -}
-viewPageParticipant : BackendUrl -> String -> User -> Language -> Date -> ParticipantId -> Model -> Html Msg
-viewPageParticipant backendUrl accessToken user language currentDate id model =
+viewPageParticipant : Language -> Date -> ParticipantId -> Model -> Html Msg
+viewPageParticipant language currentDate id model =
     case getParticipant id model of
         NotAsked ->
             -- This shouldn't happen, but if it does, we provide
@@ -126,7 +127,7 @@ viewPageParticipant backendUrl accessToken user language currentDate id model =
                                             getMother child.motherId model
                                     in
                                         List.map (Html.map (MsgPagesParticipant id)) <|
-                                            Pages.Participant.View.viewChild backendUrl accessToken user language currentDate motherWebData ( id, child ) participantModel
+                                            Pages.Participant.View.viewChild language currentDate motherWebData ( id, child ) participantModel
 
                                 ParticipantMother mother ->
                                     let
@@ -134,7 +135,7 @@ viewPageParticipant backendUrl accessToken user language currentDate id model =
                                             getChildren mother model
                                     in
                                         List.map (Html.map (MsgPagesParticipant id)) <|
-                                            Pages.Participant.View.viewMother backendUrl accessToken language currentDate user id mother childrenWebData participantModel
+                                            Pages.Participant.View.viewMother language id mother childrenWebData participantModel
                            )
 
 
@@ -216,8 +217,8 @@ viewPageParticipantHeader language ( participantId, participant ) =
             ]
 
 
-viewActivities : Language -> Date -> User -> Model -> Html Msg
-viewActivities language currentDate user model =
+viewActivities : Language -> Model -> Html Msg
+viewActivities language model =
     let
         participants =
             unwrapParticipantsDict model.participants
@@ -225,5 +226,5 @@ viewActivities language currentDate user model =
         div [ class "wrap wrap-alt" ] <|
             viewDashboardPageHeader language App.PageType.ActivitiesDashboard
                 :: (List.map (Html.map MsgPagesActivities) <|
-                        Pages.Activities.View.view language currentDate user participants model.activitiesPage
+                        Pages.Activities.View.view language participants model.activitiesPage
                    )
