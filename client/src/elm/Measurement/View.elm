@@ -1,8 +1,8 @@
 module Measurement.View
     exposing
-        ( viewChild
+        ( muacIndication
+        , viewChild
         , viewMother
-        , muacIndication
         , viewMuacIndication
         )
 
@@ -36,11 +36,13 @@ import Measurement.Model
         , Photo
         , PhotoId
         , EveryDictFamilyPlanningSigns
+        , getFloatInputValue
         , getInputConstraintsHeight
         , getInputConstraintsMuac
         , getInputConstraintsWeight
         )
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
+import Round
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import User.Model exposing (..)
 import Utils.Html exposing (divider, emptyNode, showIf, showMaybe)
@@ -122,14 +124,17 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
         viewDiff =
             case ( floatMeasurement, measurementValue ) of
                 ( MuacFloat, Just value ) ->
-                    viewMuacIndication language (muacIndication value)
+                    viewMuacIndication language (muacIndication <| getFloatInputValue value)
 
                 _ ->
                     viewFloatDiff language floatMeasurement maybePreviousExamination measurementType model
 
+        log =
+            Debug.log "measurementValue" measurementValue
+
         defaultAttr =
-            Maybe.map (\val -> [ value <| toString val ]) measurementValue
-                |> Maybe.withDefault []
+            Maybe.map (\val -> [ value val ]) measurementValue
+                |> Maybe.withDefault [ value "" ]
 
         inputAttrs =
             [ type_ "text"
@@ -137,7 +142,7 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
             , name blockName
             , Attr.min <| toString constraints.minVal
             , Attr.max <| toString constraints.maxVal
-            , onInput <| (\v -> updateMsg <| Result.withDefault 0.0 <| String.toFloat v)
+            , onInput updateMsg
             ]
                 ++ defaultAttr
     in
@@ -302,10 +307,13 @@ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType
                     model.weight
     in
         case ( maybePreviousValue, maybeCurrentValue ) of
-            ( Just previousValue, Just currentValue ) ->
+            ( Just previousValue, Just currentInput ) ->
                 let
+                    currentValue =
+                        getFloatInputValue currentInput
+
                     diff =
-                        toString <| abs (currentValue - previousValue)
+                        Round.round 3 <| abs (currentValue - previousValue)
 
                     viewMessage isGain =
                         let
