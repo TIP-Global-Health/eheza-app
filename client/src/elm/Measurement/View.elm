@@ -129,9 +129,6 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                 _ ->
                     viewFloatDiff language floatMeasurement maybePreviousExamination measurementType model
 
-        log =
-            Debug.log "measurementValue" measurementValue
-
         defaultAttr =
             Maybe.map (\val -> [ value val ]) measurementValue
                 |> Maybe.withDefault [ value "" ]
