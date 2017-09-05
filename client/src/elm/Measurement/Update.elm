@@ -2,7 +2,7 @@ port module Measurement.Update exposing (update, subscriptions)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(FamilyPlanning))
 import Config.Model exposing (BackendUrl)
-import EveryDict exposing (EveryDict)
+import EverySet exposing (EverySet)
 import Http
 import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
 import Json.Encode exposing (Value)
@@ -26,10 +26,10 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
         FamilyPlanningSignsToggle sign ->
             let
                 signsUpdated =
-                    if EveryDict.member sign model.familyPlanningSigns then
-                        EveryDict.remove sign model.familyPlanningSigns
+                    if EverySet.member sign model.familyPlanningSigns then
+                        EverySet.remove sign model.familyPlanningSigns
                     else
-                        EveryDict.insert sign () model.familyPlanningSigns
+                        EverySet.insert sign model.familyPlanningSigns
             in
                 ( { model | familyPlanningSigns = signsUpdated }
                 , Cmd.none
@@ -156,10 +156,10 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
         NutritionSignsToggle nutritionSign ->
             let
                 nutritionSignsUpdated =
-                    if EveryDict.member nutritionSign model.nutritionSigns then
-                        EveryDict.remove nutritionSign model.nutritionSigns
+                    if EverySet.member nutritionSign model.nutritionSigns then
+                        EverySet.remove nutritionSign model.nutritionSigns
                     else
-                        EveryDict.insert nutritionSign () model.nutritionSigns
+                        EverySet.insert nutritionSign model.nutritionSigns
             in
                 ( { model | nutritionSigns = nutritionSignsUpdated }
                 , Cmd.none
@@ -186,7 +186,7 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
 -}
 postFamilyPlanning : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
 postFamilyPlanning backendUrl accessToken motherId model =
-    if EveryDict.isEmpty model.familyPlanningSigns then
+    if EverySet.isEmpty model.familyPlanningSigns then
         ( model, Cmd.none, Nothing )
     else
         postData
@@ -203,7 +203,7 @@ postFamilyPlanning backendUrl accessToken motherId model =
 -}
 postNutritionSigns : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
 postNutritionSigns backendUrl accessToken childId model =
-    if EveryDict.isEmpty model.nutritionSigns then
+    if EverySet.isEmpty model.nutritionSigns then
         ( model, Cmd.none, Nothing )
     else
         postData

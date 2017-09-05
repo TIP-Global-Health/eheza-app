@@ -2,9 +2,9 @@ module Measurement.Encoder exposing (..)
 
 import Activity.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..))
 import Child.Model exposing (ChildId)
-import EveryDict
+import EverySet exposing (EverySet)
 import Json.Encode as Encoder exposing (Value, float, int, list, string)
-import Measurement.Model exposing (EveryDictChildNutritionSign, EveryDictFamilyPlanningSigns, FloatMeasurements(..))
+import Measurement.Model exposing (FloatMeasurements(..))
 import Mother.Model exposing (MotherId)
 
 
@@ -43,11 +43,11 @@ encodeNutritionSign sign =
             string "poor-appetite"
 
 
-encodeNutritionSigns : ChildId -> EveryDictChildNutritionSign -> Value
+encodeNutritionSigns : ChildId -> EverySet ChildNutritionSign -> Value
 encodeNutritionSigns childId value =
     let
         signsList =
-            List.map (\sign -> encodeNutritionSign sign) (EveryDict.keys value)
+            List.map (\sign -> encodeNutritionSign sign) (EverySet.toList value)
                 |> list
     in
         Encoder.object <|
@@ -78,11 +78,11 @@ encodeFamilyPlanningSign sign =
             string "pill"
 
 
-encodeFamilyPlanning : MotherId -> EveryDictFamilyPlanningSigns -> Value
+encodeFamilyPlanning : MotherId -> EverySet FamilyPlanningSign -> Value
 encodeFamilyPlanning motherId value =
     let
         familyPlanning =
-            List.map (\method -> encodeFamilyPlanningSign method) (EveryDict.keys value)
+            List.map (\method -> encodeFamilyPlanningSign method) (EverySet.toList value)
                 |> list
     in
         Encoder.object <|

@@ -1,7 +1,7 @@
 module Measurement.Model exposing (..)
 
 import Activity.Model exposing (ActivityType, ChildNutritionSign, FamilyPlanningSign)
-import EveryDict exposing (EveryDict)
+import EverySet exposing (EverySet)
 import Http
 import RemoteData exposing (RemoteData(..), WebData)
 
@@ -11,14 +11,6 @@ This can be used as a return value in an `update` function upon form save.
 -}
 type alias CompletedAndRedirectToActivityTuple =
     ( ActivityType, ActivityType )
-
-
-type alias EveryDictChildNutritionSign =
-    EveryDict ChildNutritionSign ()
-
-
-type alias EveryDictFamilyPlanningSigns =
-    EveryDict FamilyPlanningSign ()
 
 
 type alias FloatInputConstraints =
@@ -69,11 +61,8 @@ type alias Model =
     { status : WebData ()
     , height : FloatInput
     , muac : FloatInput
-
-    -- We use EveryDict instead of Set, as we want the key to be a typed value
-    -- and not have to cast it to string.
-    , nutritionSigns : EveryDictChildNutritionSign
-    , familyPlanningSigns : EveryDictFamilyPlanningSigns
+    , nutritionSigns : EverySet ChildNutritionSign
+    , familyPlanningSigns : EverySet FamilyPlanningSign
     , photo : ( Maybe FileId, Maybe ( PhotoId, Photo ) )
     , weight : FloatInput
     }
@@ -120,8 +109,8 @@ emptyModel =
     { status = NotAsked
     , height = Nothing
     , muac = Nothing
-    , nutritionSigns = EveryDict.empty
-    , familyPlanningSigns = EveryDict.empty
+    , nutritionSigns = EverySet.empty
+    , familyPlanningSigns = EverySet.empty
     , photo = ( Nothing, Nothing )
     , weight = Nothing
     }

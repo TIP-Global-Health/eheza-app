@@ -18,7 +18,7 @@ import Activity.Model
         )
 import Child.Model exposing (Child, ChildId)
 import Config.Model exposing (BackendUrl)
-import EveryDict
+import EverySet exposing (EverySet)
 import Examination.Model exposing (ExaminationChild)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
@@ -26,8 +26,7 @@ import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Maybe.Extra exposing (isJust)
 import Measurement.Model
     exposing
-        ( EveryDictChildNutritionSign
-        , FileId
+        ( FileId
         , FloatInput
         , FloatMeasurements(..)
         , Model
@@ -35,7 +34,6 @@ import Measurement.Model
         , Msg(..)
         , Photo
         , PhotoId
-        , EveryDictFamilyPlanningSigns
         , getInputConstraintsHeight
         , getInputConstraintsMuac
         , getInputConstraintsWeight
@@ -420,12 +418,12 @@ viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
                 language
                 NutritionSignsSave
                 model
-                (not (EveryDict.isEmpty model.nutritionSigns))
+                (not (EverySet.isEmpty model.nutritionSigns))
                 Nothing
         ]
 
 
-viewNutritionSignsSelector : Language -> EveryDictChildNutritionSign -> List (Html Msg)
+viewNutritionSignsSelector : Language -> EverySet ChildNutritionSign -> List (Html Msg)
 viewNutritionSignsSelector language nutritionSigns =
     let
         nutrionSignsAndTranslationIdsFirst =
@@ -457,7 +455,7 @@ For each nutrition sign the function will return a the translaed label of the
 checkbox and a value for the id and for attributes.
 
 -}
-viewNutritionSignsSelectorItem : Language -> EveryDictChildNutritionSign -> ChildNutritionSign -> Html Msg
+viewNutritionSignsSelectorItem : Language -> EverySet ChildNutritionSign -> ChildNutritionSign -> Html Msg
 viewNutritionSignsSelectorItem language nutritionSigns sign =
     let
         ( body, attributeValue ) =
@@ -489,7 +487,7 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
                 , id attributeValue
                 , name <| encodeChildNutritionSign sign
                 , onClick <| NutritionSignsToggle sign
-                , checked <| EveryDict.member sign nutritionSigns
+                , checked <| EverySet.member sign nutritionSigns
                 ]
                 []
             , label [ for attributeValue ]
@@ -531,11 +529,11 @@ viewFamilyPlanning backendUrl accessToken user language model =
                     :: viewFamilyPlanningSelector language model.familyPlanningSigns
             ]
         , div [ class "actions" ] <|
-            saveButton language FamilyPlanningSignsSave model (not (EveryDict.isEmpty model.familyPlanningSigns)) Nothing
+            saveButton language FamilyPlanningSignsSave model (not (EverySet.isEmpty model.familyPlanningSigns)) Nothing
         ]
 
 
-viewFamilyPlanningSelector : Language -> EveryDictFamilyPlanningSigns -> List (Html Msg)
+viewFamilyPlanningSelector : Language -> EverySet FamilyPlanningSign -> List (Html Msg)
 viewFamilyPlanningSelector language familyPlanningSigns =
     let
         familyPlanningSignFirst =
@@ -559,7 +557,7 @@ viewFamilyPlanningSelector language familyPlanningSigns =
         ]
 
 
-viewFamilyPlanningSelectorItem : Language -> EveryDictFamilyPlanningSigns -> FamilyPlanningSign -> Html Msg
+viewFamilyPlanningSelectorItem : Language -> EverySet FamilyPlanningSign -> FamilyPlanningSign -> Html Msg
 viewFamilyPlanningSelectorItem language familyPlanningSigns sign =
     let
         ( body, attributeValue ) =
@@ -589,7 +587,7 @@ viewFamilyPlanningSelectorItem language familyPlanningSigns sign =
 
                 --, name <| encodeChildNutritionSign sign
                 , onClick <| FamilyPlanningSignsToggle sign
-                , checked <| EveryDict.member sign familyPlanningSigns
+                , checked <| EverySet.member sign familyPlanningSigns
                 ]
                 []
             , label [ for attributeValue ]
