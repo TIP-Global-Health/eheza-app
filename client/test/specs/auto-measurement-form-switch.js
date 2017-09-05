@@ -18,7 +18,7 @@ describe('The measurement forms', () => {
 
     it('should present the activities in the right order', () => {
         // The expected order of the Activities.
-        let activities = ['Photo', 'Weight', 'Height', 'MUAC', 'Nutrition signs'];
+        let activities = ['Photo', 'Weight', 'Height', 'MUAC', 'Nutrition'];
         let position = 1;
         for (let activity of activities) {
             // Checks the order of the Activities at the To Do activity selector, one by one.
