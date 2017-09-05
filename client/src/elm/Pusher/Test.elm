@@ -1,6 +1,5 @@
 module Pusher.Test exposing (all)
 
-import Activity.Model exposing (emptyChildActivityDates)
 import Date
 import Child.Model exposing (Gender(..))
 import Expect
@@ -28,11 +27,7 @@ decodeTest =
       "label" : "new-patient",
       "mother": "7",
       "sibling": "22",
-      "date_picture": null,
-      "date_height" : null,
-      "date_muac" : null,
-      "date_progress_report" : null,
-      "date_weight" : null,
+      "examinations": [],
       "date_birth" : "2016-08-28T10:39:49+02:00",
       "gender" : "female"
     }
@@ -50,8 +45,7 @@ decodeTest =
                                         , image = "https://placehold.it/200x200"
                                         , motherId = Just 7
                                         , siblingId = Just 22
-                                        , examinations = NotAsked
-                                        , activityDates = emptyChildActivityDates
+                                        , examinations = []
                                         , birthDate = Date.fromTime 1472373589000
                                         , gender = Female
                                         }
@@ -71,11 +65,7 @@ decodeTest =
       "id" : "100",
       "label" : "new-patient",
       "mother": "7",
-      "date_picture": null,
-      "date_height" : null,
-      "date_muac" : null,
-      "date_progress_report" : null,
-      "date_weight" : null,
+      "examinations": [],
       "gender" : "train"
     }
 
