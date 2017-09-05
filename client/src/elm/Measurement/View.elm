@@ -310,7 +310,7 @@ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType
                         getFloatInputValue currentInput
 
                     diff =
-                        Round.round 3 <| abs (currentValue - previousValue)
+                        Round.round 2 <| abs (currentValue - previousValue)
 
                     viewMessage isGain =
                         let
