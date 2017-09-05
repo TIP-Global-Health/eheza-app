@@ -37,6 +37,13 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
       'image_styles' => ['large', 'patient-photo'],
     ];
 
+    $public_fields['examinations'] = [
+      'property' => 'nid',
+      'process_callbacks' => [
+        [$this, 'getExaminations'],
+      ],
+    ];
+
     $public_fields['mother'] = [
       'property' => 'nid',
       'process_callbacks' => [
@@ -87,6 +94,56 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
    */
   protected static function getType() {
     return 'child';
+  }
+
+  /**
+   * Get the examinations for this child.
+   *
+   * This is temporary code until we figure out how children, examinations and
+   * measurements relate.  For the moment, we simply get all the measuremts for
+   * the child, as if they were part of one examination.
+   *
+   * Also, we might eventually want this on its own endpoint, rather than
+   * always including it with the child's data.
+   *
+   * @param int $nid
+   *   The child node ID.
+   *
+   * @return array
+   *   The examinations!
+   */
+  public function getExaminations($nid) {
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', ['height', 'weight', 'muac'])
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldCondition('field_child', 'target_id', $nid)
+      ->range(0, 200)
+      ->execute();
+
+    $exam = [];
+    $account = $this->getAccount();
+
+    if (empty($result['node'])) {
+      return [$exam];
+    }
+
+    foreach (node_load_multiple(array_keys($result['node'])) as $node) {
+      $handler = restful_get_restful_handler($node->type . 's');
+
+      if ($handler) {
+        $handler->setAccount($account);
+        $rest = $handler->get($node->nid);
+        $exam[$node->type] = $rest[0];
+      }
+    }
+
+    // So, this returns an array with a single examination.  That examination
+    // is a record, which contains an entry for `height`, `weight` and `muac`.
+    // The value for each entry is the restful output you'd get from `heights`,
+    // `weights`, `muacs`.
+    return [$exam];
   }
 
   /**
