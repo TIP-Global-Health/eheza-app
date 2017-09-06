@@ -62,17 +62,17 @@ describe('when updating a measurement form', function() {
     browser.click('a=' + tab);
     browser.waitForVisible('h3=' + tab + ':');
 
-    adjustFormValue(50);
+    adjustFormValue(49.5);
     waitForGainedIndication();
     const result = getDiffFromIndication();
-    assert.equal(result, '46 kg', 'Indication for the gained weight is incorrect.');
+    assert.equal(result, '45.50 kg', 'Indication for the gained weight is incorrect.');
   })
 
   it('should display an indication when weight is lost', () => {
-    adjustFormValue(1);
+    adjustFormValue(1.55);
     waitForLostIndication();
     const result = getDiffFromIndication();
-    assert.equal(result, '3 kg', 'Indication for the lost weight is incorrect.');
+    assert.equal(result, '2.45 kg', 'Indication for the lost weight is incorrect.');
   })
 
   it('should display an indication when height is gained', () => {
@@ -85,14 +85,14 @@ describe('when updating a measurement form', function() {
     adjustFormValue(100);
     waitForGainedIndication();
     const result = getDiffFromIndication();
-    assert.equal(result, '50 cm', 'Indication for the gained height is incorrect.');
+    assert.equal(result, '50.00 cm', 'Indication for the gained height is incorrect.');
   })
 
   it('should display an indication when height is lost', () => {
     adjustFormValue(10);
     waitForLostIndication();
     const result = getDiffFromIndication();
-    assert.equal(result, '40 cm', 'Indication for the lost height is incorrect.');
+    assert.equal(result, '40.00 cm', 'Indication for the lost height is incorrect.');
   })
 
   it('should display an indication when MUAC is green', () => {
