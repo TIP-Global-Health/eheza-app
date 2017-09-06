@@ -1,6 +1,11 @@
 port module Measurement.Update exposing (update, subscriptions)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(FamilyPlanning))
+import Activity.Model
+    exposing
+        ( ActivityType(..)
+        , ChildActivityType(..)
+        , MotherActivityType(FamilyPlanning)
+        )
 import Config.Model exposing (BackendUrl)
 import EveryDict exposing (EveryDict)
 import Http
@@ -8,7 +13,15 @@ import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
 import Json.Encode exposing (Value)
 import Measurement.Decoder exposing (decodePhotoFromResponse)
 import Measurement.Encoder exposing (encodeFamilyPlanning, encodeHeight, encodeMuac, encodeNutritionSigns, encodePhoto, encodeWeight)
-import Measurement.Model exposing (CompletedAndRedirectToActivityTuple, Model, Msg(..))
+import Measurement.Model
+    exposing
+        ( CompletedAndRedirectToActivityTuple
+        , Model
+        , Msg(..)
+        , getFloatInputValue
+        , normalizeFloatFormInput
+        , normalizeFloatInput
+        )
 import Participant.Model exposing (Participant, ParticipantId)
 import RemoteData exposing (RemoteData(..))
 import User.Model exposing (..)
@@ -59,7 +72,7 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
                 )
 
         HandleHeightSave (Ok ()) ->
-            ( { model | status = Success () }
+            ( { model | status = Success (), height = (normalizeFloatInput model.height) }
             , Cmd.none
             , Just <| ( Child Height, Child Muac )
             )
@@ -91,7 +104,7 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
                 )
 
         HandleMuacSave (Ok ()) ->
-            ( { model | status = Success () }
+            ( { model | status = Success (), muac = (normalizeFloatInput model.muac) }
             , Cmd.none
             , Just <| ( Child Muac, Child NutritionSigns )
             )
@@ -126,7 +139,7 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
                 )
 
         HandleWeightSave (Ok ()) ->
-            ( { model | status = Success () }
+            ( { model | status = Success (), weight = (normalizeFloatInput model.weight) }
             , Cmd.none
             , Just <| ( Child Weight, Child Height )
             )
@@ -142,10 +155,10 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
                 )
 
         HeightUpdate val ->
-            ( { model | height = Just val }, Cmd.none, Nothing )
+            ( { model | height = Just (normalizeFloatFormInput val) }, Cmd.none, Nothing )
 
         MuacUpdate val ->
-            ( { model | muac = Just val }, Cmd.none, Nothing )
+            ( { model | muac = Just (normalizeFloatFormInput val) }, Cmd.none, Nothing )
 
         MuacSave ->
             postMuac backendUrl accessToken participantId model
@@ -179,7 +192,7 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
             postHeight backendUrl accessToken participantId model
 
         WeightUpdate val ->
-            ( { model | weight = Just val }, Cmd.none, Nothing )
+            ( { model | weight = Just (normalizeFloatFormInput val) }, Cmd.none, Nothing )
 
 
 {-| Send new family planning of a mother to the backend.
@@ -268,7 +281,7 @@ postWeight backendUrl accessToken childId model =
                 accessToken
                 model
                 "weights"
-                weight
+                (getFloatInputValue weight)
                 (encodeWeight childId)
                 HandleWeightSave
         )
@@ -287,7 +300,7 @@ postHeight backendUrl accessToken childId model =
                 accessToken
                 model
                 "heights"
-                height
+                (getFloatInputValue height)
                 (encodeHeight childId)
                 HandleHeightSave
         )
@@ -306,7 +319,7 @@ postMuac backendUrl accessToken childId model =
                 accessToken
                 model
                 "muacs"
-                muac
+                (getFloatInputValue muac)
                 (encodeMuac childId)
                 HandleMuacSave
         )
