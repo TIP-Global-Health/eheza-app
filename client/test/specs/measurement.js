@@ -80,7 +80,7 @@ describe('measurement module', function() {
   });
 
   it('should verify checkbox selection logic Nutrition Form', () => {
-    const tab = 'Nutrition signs';
+    const tab = 'Nutrition';
 
     browser.visitChildWithTodoTasks();
 
