@@ -1,4 +1,4 @@
-module App.Model exposing (DropzoneConfig, emptyModel, FileId(..), Flags, Msg(..), Model, Theme(..), ThemeConfig)
+module App.Model exposing (emptyModel, FileId(..), Flags, Msg(..), Model, Theme(..), ThemeConfig)
 
 import App.PageType exposing (Page(..))
 import Config.Model
@@ -72,11 +72,4 @@ emptyModel =
     , pageParticipant = ParticipantManager.Model.emptyModel
     , theme = Light
     , user = NotAsked
-    }
-
-
-type alias DropzoneConfig =
-    { active : Bool
-    , backendUrl : String
-    , defaultMessage : String
     }

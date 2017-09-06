@@ -53,7 +53,8 @@ describe('measurement module', function() {
     // Click save button.
     browser.click('div.nutrition button');
 
-    browser.waitForVisible('h3=Photo:');
+    // Wait for measurements form to close.
+    browser.waitForVisible('.ui.full.segment.nutrition', 1000, true);
   })
 
   it('should save the muac via the Save button', () => {
