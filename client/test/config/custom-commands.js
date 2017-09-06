@@ -199,7 +199,7 @@ module.exports = function (browser, capabilities, specs) {
    * @param {String} selector The css selector of the element to click.
    * @param {Bool} state True, if verifying that checkbox should be checked.
    */
-  browser.addCommand('verifyCheckboxChecked', (selector, state = true) => {
+  browser.addCommand('verifyCheckboxChecked', (selector, state) => {
     const checkboxClass = browser.getAttribute(selector, 'class');
 
     if (state === true) {

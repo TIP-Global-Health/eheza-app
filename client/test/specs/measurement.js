@@ -91,13 +91,13 @@ describe('measurement module', function() {
 
     // Select 2 signs and make sure they're checked.
     browser.click('#dry-skin');
-    browser.verifyCheckboxChecked('#dry-skin');
+    browser.verifyCheckboxChecked('#dry-skin', true);
     browser.click('#edema');
-    browser.verifyCheckboxChecked('#edema');
+    browser.verifyCheckboxChecked('#edema', true);
 
     // Select 'None of these'.
     browser.click('#none-of-these');
-    browser.verifyCheckboxChecked('#none-of-these');
+    browser.verifyCheckboxChecked('#none-of-these', true);
 
     // Verify that previously selected signs are not checked.
     browser.verifyCheckboxChecked('#dry-skin', false);
