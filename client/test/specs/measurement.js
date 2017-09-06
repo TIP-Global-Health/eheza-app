@@ -78,10 +78,8 @@ describe('measurement module', function() {
     browser.click('div.muac button');
   });
 
-  it('should verify that deselect all capability works properly at Nutrition Form', () => {
+  it('should verify checkbox selection logic Nutrition Form', () => {
     const tab = 'Nutrition signs';
-
-    browser.login('aya');
 
     browser.visitChildWithTodoTasks();
 
@@ -91,17 +89,25 @@ describe('measurement module', function() {
     // Wait for the tab.
     browser.waitForVisible('h3=Nutrition:');
 
+    // Select 2 signs and make sure they're checked.
     browser.click('#dry-skin');
     browser.verifyCheckboxChecked('#dry-skin');
     browser.click('#edema');
     browser.verifyCheckboxChecked('#edema');
 
+    // Select 'None of these'.
     browser.click('#none-of-these');
     browser.verifyCheckboxChecked('#none-of-these');
+
+    // Verify that previously selected signs are not checked.
     browser.verifyCheckboxChecked('#dry-skin', false);
     browser.verifyCheckboxChecked('#edema', false);
 
+    // Select another sign.
     browser.click('#apathy');
+
+    // Verify that 'None of these' is not checked.
     browser.verifyCheckboxChecked('#none-of-these', false);
   });
-})
+
+});
