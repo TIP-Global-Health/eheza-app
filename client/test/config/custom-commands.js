@@ -215,5 +215,4 @@ module.exports = function (browser, capabilities, specs) {
     width: 1500,
     height: 900
   });
-
 }
