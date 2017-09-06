@@ -1,5 +1,8 @@
 module Translate exposing (..)
 
+import Date exposing (Month(..))
+import Measurement.Model exposing (MuacIndication(..))
+
 
 type Language
     = English
@@ -48,6 +51,8 @@ type TranslationId
     | ActivitiesNutritionSignsTitle
     | ActivitiesPhotoHelp
     | ActivitiesPhotoTitle
+    | ActivitiesProgressReport
+    | ActivitiesProgressReportHelp
     | ActivitiesWeightHelp
     | ActivitiesWeightLabel
     | ActivitiesWeightTitle
@@ -59,13 +64,16 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int Int
+    | Assessment
     | Baby
     | BabyName String
     | CentimeterShorthand
     | Children
+    | CompletedSectionEmpty
     | Connected
     | Dashboard
     | DropzoneDefaultMessage
+    | EndSession
     | ErrorBadUrl
     | ErrorBadPayload
     | ErrorBadStatus
@@ -73,16 +81,19 @@ type TranslationId
     | ErrorConfigurationError
     | ErrorNetworkError
     | ErrorTimeout
+    | Female
     | KilogramShorthand
     | LinkToMother
     | Login
     | Logout
+    | Male
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
     | Mother
     | MotherName String
     | Mothers
+    | MuacIndication MuacIndication
     | MyAccount
     | NoActiveIncidents
     | NoChildrenRegisteredInTheSystem
@@ -92,11 +103,19 @@ type TranslationId
     | PageNotFoundMsg
     | Password
     | Participants
+    | PendingSectionEmpty
+    | PlaceholderEnterHeight
+    | PlaceholderEnterMUAC
+    | PlaceholderEnterWeight
     | PlaceholderTextGroupDate
     | PlaceholderTextJoined
     | PreviousFloatMeasurement Float
+    | ReportAge String
+    | ReportDOB String
     | ReportRemaining Int
     | ReloadParticipant
+    | ReportCompleted ( Int, Int )
+    | ResolveMonth Month
     | Retry
     | Save
     | SaveError
@@ -104,6 +123,7 @@ type TranslationId
     | TitleHealthAssessment
     | Username
     | WelcomeUser String
+    | ZScore
 
 
 translate : Language -> TranslationId -> String
@@ -142,7 +162,7 @@ translate lang trans =
                     { english = "None of these" }
 
                 ActivitiesFamilyPlanningSignsTitle ->
-                    { english = "Family Planning:" }
+                    { english = "Planning:" }
 
                 ActivitiesFamilyPlanningSignsPillLabel ->
                     { english = "Pill" }
@@ -196,13 +216,19 @@ translate lang trans =
                     { english = "Nutrition:" }
 
                 ActivitiesPhotoHelp ->
-                    { english = "Take each baby's picture at each health assesment. Then you and the mother will see the how the baby has grown!" }
+                    { english = "Take each baby’s photo at each health assessment. Photos should show the entire body of each child." }
 
                 ActivitiesPhotoTitle ->
                     { english = "Photo:" }
 
+                ActivitiesProgressReport ->
+                    { english = "Progress Report" }
+
+                ActivitiesProgressReportHelp ->
+                    { english = "" }
+
                 ActivitiesWeightHelp ->
-                    { english = "Calibrate the scale before taking the first baby's weight.  Place baby in harness with no clothes on." }
+                    { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on." }
 
                 ActivitiesToComplete count ->
                     { english = "To Do (" ++ toString count ++ ")" }
@@ -237,6 +263,9 @@ translate lang trans =
                 AgeSingleMonthWithoutDay month ->
                     { english = toString month ++ " month" }
 
+                Assessment ->
+                    { english = "Assessment" }
+
                 Baby ->
                     { english = "Baby" }
 
@@ -249,6 +278,9 @@ translate lang trans =
                 Children ->
                     { english = "Children" }
 
+                CompletedSectionEmpty ->
+                    { english = "This section has not yet been completed." }
+
                 Connected ->
                     { english = "Connected" }
 
@@ -257,6 +289,9 @@ translate lang trans =
 
                 DropzoneDefaultMessage ->
                     { english = "Touch here to take a photo, or drop a photo file here." }
+
+                EndSession ->
+                    { english = "End Session" }
 
                 ErrorBadUrl ->
                     { english = "URL is not valid." }
@@ -279,6 +314,9 @@ translate lang trans =
                 ErrorTimeout ->
                     { english = "The network request timed out." }
 
+                Female ->
+                    { english = "Female" }
+
                 KilogramShorthand ->
                     { english = "kg" }
 
@@ -290,6 +328,9 @@ translate lang trans =
 
                 Logout ->
                     { english = "Logout" }
+
+                Male ->
+                    { english = "Male" }
 
                 MeasurementNoChange ->
                     { english = "No Change" }
@@ -308,6 +349,17 @@ translate lang trans =
 
                 Mothers ->
                     { english = "Mothers" }
+
+                MuacIndication indication ->
+                    case indication of
+                        MuacRed ->
+                            { english = "red" }
+
+                        MuacYellow ->
+                            { english = "yellow" }
+
+                        MuacGreen ->
+                            { english = "green" }
 
                 MyAccount ->
                     { english = "My Account" }
@@ -336,6 +388,18 @@ translate lang trans =
                 Participants ->
                     { english = "Participants" }
 
+                PendingSectionEmpty ->
+                    { english = "This section has been completed." }
+
+                PlaceholderEnterHeight ->
+                    { english = "Enter height here…" }
+
+                PlaceholderEnterMUAC ->
+                    { english = "Enter muac here…" }
+
+                PlaceholderEnterWeight ->
+                    { english = "Enter weight here…" }
+
                 PlaceholderTextGroupDate ->
                     { english = "Group Date" }
 
@@ -345,11 +409,58 @@ translate lang trans =
                 PreviousFloatMeasurement value ->
                     { english = "Previous measurement: " ++ (toString value) }
 
+                ReportAge age ->
+                    { english = "Age: " ++ age }
+
+                ReportDOB dob ->
+                    { english = "DOB: " ++ dob }
+
                 ReportRemaining remaining ->
                     { english = toString remaining ++ " remaning" }
 
                 ReloadParticipant ->
                     { english = "Re-load Participant" }
+
+                ReportCompleted ( pending, total ) ->
+                    { english = (toString (total - pending)) ++ "/" ++ (toString total) ++ " Completed" }
+
+                ResolveMonth month ->
+                    case month of
+                        Jan ->
+                            { english = "January" }
+
+                        Feb ->
+                            { english = "February" }
+
+                        Mar ->
+                            { english = "March" }
+
+                        Apr ->
+                            { english = "April" }
+
+                        May ->
+                            { english = "May" }
+
+                        Jun ->
+                            { english = "June" }
+
+                        Jul ->
+                            { english = "July" }
+
+                        Aug ->
+                            { english = "August" }
+
+                        Sep ->
+                            { english = "September" }
+
+                        Oct ->
+                            { english = "October" }
+
+                        Nov ->
+                            { english = "November" }
+
+                        Dec ->
+                            { english = "December" }
 
                 Retry ->
                     { english = "Retry" }
@@ -371,6 +482,9 @@ translate lang trans =
 
                 WelcomeUser name ->
                     { english = "Welcome " ++ name }
+
+                ZScore ->
+                    { english = "Z-Score: " }
     in
         case lang of
             English ->

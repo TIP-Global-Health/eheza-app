@@ -24,13 +24,51 @@ view model =
             Config.View.view model.language
 
         Success config ->
-            div [ class "wrap" ]
-                [ viewSidebar model.language model
-                , viewHeader model.language model
-                , div [ class "ui main container" ]
-                    [ viewMainContent config.backendUrl model
-                    ]
-                ]
+            case model.activePage of
+                Activities ->
+                    case model.user of
+                        Success user ->
+                            Html.map MsgParticipantManager <|
+                                ParticipantManager.View.viewActivities model.language model.currentDate user model.pageParticipant
+
+                        _ ->
+                            div [] [ i [ class "notched circle loading icon" ] [] ]
+
+                Activity maybeSelectedActivity ->
+                    case model.user of
+                        Success user ->
+                            Html.map MsgParticipantManager <|
+                                ParticipantManager.View.viewPageActivity config.backendUrl model.accessToken user model.language model.currentDate maybeSelectedActivity model.pageParticipant
+
+                        _ ->
+                            div [] [ i [ class "notched circle loading icon" ] [] ]
+
+                Dashboard _ ->
+                    case model.user of
+                        Success user ->
+                            Html.map MsgParticipantManager <|
+                                ParticipantManager.View.viewParticipants model.language model.currentDate user model.pageParticipant
+
+                        _ ->
+                            div [] [ i [ class "notched circle loading icon" ] [] ]
+
+                Participant id ->
+                    case model.user of
+                        Success user ->
+                            Html.map MsgParticipantManager <|
+                                ParticipantManager.View.viewPageParticipant config.backendUrl model.accessToken user model.language model.currentDate id model.pageParticipant
+
+                        _ ->
+                            div [] [ i [ class "notched circle loading icon" ] [] ]
+
+                _ ->
+                    div [ class "wrap" ]
+                        [ viewSidebar model.language model
+                        , viewHeader model.language model
+                        , div [ class "ui main container" ]
+                            [ viewMainContent config.backendUrl model
+                            ]
+                        ]
 
         _ ->
             emptyNode
@@ -40,14 +78,24 @@ viewHeader : Language -> Model -> Html Msg
 viewHeader language model =
     case model.user of
         Success user ->
-            div [ class "ui head segment" ]
-                [ h1
-                    [ class "ui header" ]
-                    [ text <| translate language Trans.TitleHealthAssessment ]
-                , viewHeaderBackButton model
-                , viewHeaderThemeSwitcher model
-                , viewTabSwitcher language model
-                ]
+            case model.activePage of
+                Activities ->
+                    emptyNode
+
+                Dashboard _ ->
+                    emptyNode
+
+                Participant _ ->
+                    emptyNode
+
+                _ ->
+                    div [ class "ui head segment" ]
+                        [ h1
+                            [ class "ui header" ]
+                            [ text <| translate language Trans.TitleHealthAssessment ]
+                        , viewHeaderBackButton model
+                        , viewTabSwitcher language model
+                        ]
 
         _ ->
             div [] []
@@ -67,23 +115,6 @@ viewHeaderBackButton model =
         ]
 
 
-{-| The theme switcher link.
--}
-viewHeaderThemeSwitcher : Model -> Html Msg
-viewHeaderThemeSwitcher model =
-    a
-        [ class "link-theme"
-        , id "theme-switcher"
-        , href "javascript:void(0);"
-        , onClick (ThemeSwitch model.theme)
-        ]
-        [ span
-            [ class "icon-theme icon-theme-light" ]
-            []
-        , span [] []
-        ]
-
-
 {-| Provides context-sensitive top navigation tabs.
 There are two distinct contexts:
 
@@ -93,34 +124,18 @@ There are two distinct contexts:
 -}
 viewTabSwitcher : Language -> Model -> Html Msg
 viewTabSwitcher language model =
-    let
-        links =
-            case model.activePage of
-                Participant _ ->
-                    [ a
-                        [ classByPage (Dashboard []) model.activePage
-                        ]
-                        [ text <| translate language Trans.Mother ]
-                    , a
-                        [ classByPage (Activities) model.activePage
-                        ]
-                        [ text <| translate language Trans.Baby ]
-                    ]
-
-                _ ->
-                    [ a
-                        [ classByPage (Dashboard []) model.activePage
-                        , onClick <| SetActivePage <| Dashboard []
-                        ]
-                        [ text <| translate language Trans.Participants ]
-                    , a
-                        [ classByPage Activities model.activePage
-                        , onClick <| SetActivePage Activities
-                        ]
-                        [ text <| translate language Trans.Activities ]
-                    ]
-    in
-        div [ class "ui fluid two item secondary pointing menu" ] links
+    div [ class "ui fluid two item secondary pointing menu" ]
+        [ a
+            [ classByPage (Dashboard []) model.activePage
+            , onClick <| SetActivePage <| Dashboard []
+            ]
+            [ text <| translate language Trans.Participants ]
+        , a
+            [ classByPage Activities model.activePage
+            , onClick <| SetActivePage Activities
+            ]
+            [ text <| translate language Trans.Activities ]
+        ]
 
 
 viewSidebar : Language -> Model -> Html Msg
@@ -240,15 +255,6 @@ viewMainContent backendUrl model =
                 AccessDenied ->
                     div [] [ text <| translate language Trans.AccessDenied ]
 
-                Activities ->
-                    case model.user of
-                        Success user ->
-                            Html.map MsgParticipantManager <|
-                                ParticipantManager.View.viewActivities model.language model.currentDate user model.pageParticipant
-
-                        _ ->
-                            div [] [ i [ class "notched circle loading icon" ] [] ]
-
                 Login ->
                     Html.map PageLogin (Pages.Login.View.view language model.user model.pageLogin)
 
@@ -259,24 +265,8 @@ viewMainContent backendUrl model =
                     -- We don't need to pass any cmds, so we can call the view directly
                     Pages.PageNotFound.View.view language
 
-                Dashboard _ ->
-                    case model.user of
-                        Success user ->
-                            Html.map MsgParticipantManager <|
-                                ParticipantManager.View.viewParticipants model.language model.currentDate user model.pageParticipant
-
-                        _ ->
-                            div []
-                                [ i [ class "notched circle loading icon" ] [] ]
-
-                Participant id ->
-                    case model.user of
-                        Success user ->
-                            Html.map MsgParticipantManager <|
-                                ParticipantManager.View.viewPageParticipant backendUrl model.accessToken user model.language model.currentDate id model.pageParticipant
-
-                        _ ->
-                            div [] [ i [ class "notched circle loading icon" ] [] ]
+                _ ->
+                    emptyNode
     in
         case model.user of
             NotAsked ->

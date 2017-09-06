@@ -3,7 +3,10 @@ module Activity.Utils
         ( getActivityList
         , getActivityTypeList
         , getActivityIdentity
-        , getPendingNumberPerActivity
+        , getTotalsNumberPerActivity
+        , hasPendingChildActivity
+        , hasPendingMotherActivity
+        , participantGotPendingActivity
         )
 
 import Activity.Model exposing (ActivityIdentity, ActivityListItem, ActivityType(..), ChildActivityType(..), MotherActivityType(..))
@@ -11,7 +14,7 @@ import Child.Model exposing (Child)
 import Date exposing (Date)
 import Dict exposing (Dict)
 import Mother.Model exposing (Mother)
-import Participant.Model exposing (ParticipantsDict, ParticipantTypeFilter(..), ParticipantType(..))
+import Participant.Model exposing (Participant, ParticipantsDict, ParticipantTypeFilter(..), ParticipantType(..))
 
 
 getActivityTypeList : ParticipantTypeFilter -> List ActivityType
@@ -50,7 +53,7 @@ getActivityList currentDate participantTypeFilter participants =
     List.map
         (\activityType ->
             { activity = getActivityIdentity activityType
-            , remaining = getPendingNumberPerActivity currentDate activityType participants
+            , totals = getTotalsNumberPerActivity currentDate activityType participants
             }
         )
         (getActivityTypeList participantTypeFilter)
@@ -76,7 +79,7 @@ getActivityIdentity activityType =
                             ActivityIdentity "MUAC" "muac"
 
                         NutritionSigns ->
-                            ActivityIdentity "Nutrition signs" "nutrition"
+                            ActivityIdentity "Nutrition" "nutrition"
 
                         ProgressReport ->
                             ActivityIdentity "Progress reports" "bar chart"
@@ -84,45 +87,54 @@ getActivityIdentity activityType =
                 Mother motherActivityType ->
                     case motherActivityType of
                         FamilyPlanning ->
-                            ActivityIdentity "Family planning" "family-planning"
+                            ActivityIdentity "Family planning" "planning"
     in
         identityVal activityType
 
 
-getPendingNumberPerActivity : Date -> ActivityType -> ParticipantsDict -> Int
-getPendingNumberPerActivity currentDate activityType participants =
+getAllChildActivities : List ChildActivityType
+getAllChildActivities =
+    [ ChildPicture, Height, Muac, NutritionSigns, ProgressReport, Weight ]
+
+
+getAllMotherActivities : List MotherActivityType
+getAllMotherActivities =
+    [ FamilyPlanning ]
+
+
+getTotalsNumberPerActivity : Date -> ActivityType -> ParticipantsDict -> ( Int, Int )
+getTotalsNumberPerActivity currentDate activityType participants =
     Dict.foldl
-        (\_ participant accum ->
-            let
-                hasPending =
-                    case participant.info of
-                        ParticipantChild child ->
-                            case activityType of
-                                Child childActivityType ->
-                                    hasPendingChildActivity currentDate childActivityType child
+        (\_ participant ( pending, total ) ->
+            case participant.info of
+                ParticipantChild child ->
+                    case activityType of
+                        Child childActivityType ->
+                            if hasPendingChildActivity currentDate child childActivityType then
+                                ( pending + 1, total + 1 )
+                            else
+                                ( pending, total + 1 )
 
-                                _ ->
-                                    False
+                        _ ->
+                            ( pending, total )
 
-                        ParticipantMother mother ->
-                            case activityType of
-                                Mother motherActivityType ->
-                                    hasPendingMotherActivity currentDate motherActivityType mother
+                ParticipantMother mother ->
+                    case activityType of
+                        Mother motherActivityType ->
+                            if hasPendingMotherActivity currentDate mother motherActivityType then
+                                ( pending + 1, total + 1 )
+                            else
+                                ( pending, total + 1 )
 
-                                _ ->
-                                    False
-            in
-                if hasPending then
-                    accum + 1
-                else
-                    accum
+                        _ ->
+                            ( pending, total )
         )
-        0
+        ( 0, 0 )
         participants
 
 
-hasPendingChildActivity : Date -> ChildActivityType -> Child -> Bool
-hasPendingChildActivity currentDate childActivityType child =
+hasPendingChildActivity : Date -> Child -> ChildActivityType -> Bool
+hasPendingChildActivity currentDate child childActivityType =
     let
         property =
             case childActivityType of
@@ -154,8 +166,8 @@ hasPendingChildActivity currentDate childActivityType child =
             |> Maybe.withDefault False
 
 
-hasPendingMotherActivity : Date -> MotherActivityType -> Mother -> Bool
-hasPendingMotherActivity currentDate motherActivityType mother =
+hasPendingMotherActivity : Date -> Mother -> MotherActivityType -> Bool
+hasPendingMotherActivity currentDate mother motherActivityType =
     let
         property =
             case motherActivityType of
@@ -167,3 +179,13 @@ hasPendingMotherActivity currentDate motherActivityType mother =
             |> Maybe.map
                 (\date -> Date.toTime date <= Date.toTime currentDate)
             |> Maybe.withDefault False
+
+
+participantGotPendingActivity : Date -> Participant -> Bool
+participantGotPendingActivity currentDate participant =
+    case participant.info of
+        ParticipantChild child ->
+            (List.length <| List.filter (hasPendingChildActivity currentDate child) getAllChildActivities) > 0
+
+        ParticipantMother mother ->
+            (List.length <| List.filter (hasPendingMotherActivity currentDate mother) getAllMotherActivities) > 0

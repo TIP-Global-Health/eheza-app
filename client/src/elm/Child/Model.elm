@@ -27,8 +27,8 @@ type alias Child =
     { name : String
     , image : String
     , motherId : Maybe MotherId
+    , siblingId : Maybe ChildId
     , examinations : WebData EveryDictListExaminationsChild
-    , selectedExamination : Maybe ExaminationId
     , activityDates : ChildActivityDates
     , birthDate : Date
     , gender : Gender

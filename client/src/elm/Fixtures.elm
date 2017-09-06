@@ -40,8 +40,8 @@ exampleChild =
     { name = "Michelle Kelly"
     , image = "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , motherId = Nothing
+    , siblingId = Nothing
     , examinations = NotAsked
-    , selectedExamination = Nothing
     , activityDates = emptyChildActivityDates
     , birthDate = Date.fromTime 1472373589000
     , gender = Male
@@ -56,7 +56,6 @@ exampleMother =
     , image = "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , children = []
     , examinations = NotAsked
-    , selectedExamination = Nothing
     , activityDates = emptyMotherActivityDates
     , birthDate = Date.fromTime 1472373589000
     }

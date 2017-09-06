@@ -9,41 +9,45 @@ describe('when updating a measurement form', function() {
    *   The new value to set.
    */
   var adjustFormValue = function (value) {
-    browser.setValue('input[type="number"]', value);
+    browser.setValue('input[type="text"]', value);
   };
 
   /**
    * Waiting for the up arrow to be shown.
    */
   var waitForGainedIndication = function () {
-    browser.waitForVisible('.label-up .icon-up');
+    browser.waitForVisible('.label-with-icon .icon-up');
   };
 
   /**
    * Waiting for the down arrow to be shown.
    */
   var waitForLostIndication = function () {
-    browser.waitForVisible('.label-down .icon-down');
+    browser.waitForVisible('.label-with-icon .icon-down');
   };
 
   /**
-   * Get the indication message of the 'gained' value.
+   * Get difference indication message.
    *
    * @returns {String|String[]}
    *   The indication message.
    */
-  var getDiffFromGainedIndication = function () {
-    return browser.getText('.label-up');
+  var getDiffFromIndication = function () {
+    return browser.getText('.label-with-icon');
   };
 
   /**
-   * Get the indication message of the 'lost' value.
-   *
-   * @returns {String|String[]}
-   *   The indication message.
+   * Waiting for muac indication to be shown.
    */
-  var getDiffFromLostIndication = function () {
-    return browser.getText('.label-down');
+  var waitForMuacIndication = function (expected) {
+    browser.waitForVisible('.label-form.label-' + expected);
+  }
+
+  /**
+   * Get text of muacIndication
+   */
+  var getMuacIndicationText = function (expected) {
+    return browser.getText('.label-form.label-' + expected);
   };
 
   before(() => {
@@ -58,17 +62,17 @@ describe('when updating a measurement form', function() {
     browser.click('a=' + tab);
     browser.waitForVisible('h3=' + tab + ':');
 
-    adjustFormValue(50);
+    adjustFormValue(49.5);
     waitForGainedIndication();
-    const result = getDiffFromGainedIndication();
-    assert.equal(result, '46 kg', 'Indication for the gained weight is incorrect.');
+    const result = getDiffFromIndication();
+    assert.equal(result, '45.50 kg', 'Indication for the gained weight is incorrect.');
   })
 
   it('should display an indication when weight is lost', () => {
-    adjustFormValue(1);
+    adjustFormValue(1.55);
     waitForLostIndication();
-    const result = getDiffFromLostIndication();
-    assert.equal(result, '3 kg', 'Indication for the lost weight is incorrect.');
+    const result = getDiffFromIndication();
+    assert.equal(result, '2.45 kg', 'Indication for the lost weight is incorrect.');
   })
 
   it('should display an indication when height is gained', () => {
@@ -80,35 +84,47 @@ describe('when updating a measurement form', function() {
 
     adjustFormValue(100);
     waitForGainedIndication();
-    const result = getDiffFromGainedIndication();
-    assert.equal(result, '50 cm', 'Indication for the gained height is incorrect.');
+    const result = getDiffFromIndication();
+    assert.equal(result, '50.00 cm', 'Indication for the gained height is incorrect.');
   })
 
   it('should display an indication when height is lost', () => {
     adjustFormValue(10);
     waitForLostIndication();
-    const result = getDiffFromLostIndication();
-    assert.equal(result, '40 cm', 'Indication for the lost height is incorrect.');
+    const result = getDiffFromIndication();
+    assert.equal(result, '40.00 cm', 'Indication for the lost height is incorrect.');
   })
 
-  it('should display an indication when MUAC is gained', () => {
+  it('should display an indication when MUAC is green', () => {
     const tab = 'MUAC';
+    const expected = 'green';
 
     // Select tab.
     browser.click('a=' + tab);
     browser.waitForVisible('h3=Mid Upper Arm Circumference (MUAC):');
 
     adjustFormValue(50);
-    waitForGainedIndication();
-    const result = getDiffFromGainedIndication();
-    assert.equal(result, '37 cm', 'Indication for the gained MUAC is incorrect.');
+    waitForMuacIndication(expected);
+    const result = getMuacIndicationText(expected);
+    assert.equal(result, expected.toUpperCase(), 'Indication for the' + expected + ' MUAC is incorrect.');
   })
 
-  it('should display an indication when MUAC is lost', () => {
+  it('should display an indication when MUAC is red', () => {
+    const expected = 'red';
+
     adjustFormValue(5);
-    waitForLostIndication();
-    const result = getDiffFromLostIndication();
-    assert.equal(result, '8 cm', 'Indication for the lost MUAC is incorrect.');
+    waitForMuacIndication(expected);
+    const result = getMuacIndicationText(expected);
+    assert.equal(result, expected.toUpperCase(), 'Indication for the' + expected + ' MUAC is incorrect.');
+  })
+
+  it('should display an indication when MUAC is yellow', () => {
+    const expected = 'yellow';
+
+    adjustFormValue(12);
+    waitForMuacIndication(expected);
+    const result = getMuacIndicationText(expected);
+    assert.equal(result, expected.toUpperCase(), 'Indication for the' + expected + ' MUAC is incorrect.');
   })
 
   after(() => browser.logout());

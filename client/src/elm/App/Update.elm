@@ -1,13 +1,15 @@
 port module App.Update exposing (init, update, subscriptions)
 
-import Activity.Utils exposing (getActivityTypeList)
+import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import App.Model exposing (..)
 import App.PageType exposing (Page(..))
 import Config
 import Date
 import Dict
 import Http
-import Participant.Model exposing (ParticipantTypeFilter(..))
+import FilePicker.Model
+import Pages.Activity.Model
+import Pages.Participant.Model
 import ParticipantManager.Model
 import ParticipantManager.Update
 import Pusher.Model
@@ -18,6 +20,7 @@ import Pages.Login.Update
 import RemoteData exposing (RemoteData(..), WebData)
 import Task
 import Time exposing (minute)
+import Update.Extra exposing (sequence)
 import User.Model exposing (..)
 
 
@@ -184,6 +187,23 @@ update msg model =
                     activePageUpdated =
                         setActivePageAccess model.user page
 
+                    unbindFilePickerMsg =
+                        case model.activePage of
+                            Activity (Just (Child ChildPicture)) ->
+                                [ MsgParticipantManager <|
+                                    ParticipantManager.Model.MsgPagesActivity <|
+                                        Pages.Activity.Model.MsgFilePicker FilePicker.Model.Unbind
+                                ]
+
+                            Participant participantId ->
+                                [ MsgParticipantManager <|
+                                    ParticipantManager.Model.MsgPagesParticipant participantId <|
+                                        Pages.Participant.Model.MsgFilePicker FilePicker.Model.Unbind
+                                ]
+
+                            _ ->
+                                []
+
                     ( modelUpdated, command ) =
                         -- For a few, we also delegate some initialization
                         case activePageUpdated of
@@ -191,19 +211,40 @@ update msg model =
                                 -- If we're showing a `Activities` page, make sure we `Subscribe`
                                 update (MsgParticipantManager ParticipantManager.Model.FetchAll) model
 
-                            Dashboard activityTypes ->
+                            Activity maybeActivityType ->
                                 let
-                                    activityTypesUpdated =
-                                        if List.isEmpty activityTypes then
-                                            getActivityTypeList All
-                                        else
-                                            activityTypes
+                                    currentActivityPage =
+                                        model.pageParticipant.activityPage
 
-                                    ( modelUpdatedDashboard, _ ) =
-                                        update (MsgParticipantManager <| ParticipantManager.Model.SetActivityTypeFilters activityTypesUpdated) model
+                                    updatedActivityPage =
+                                        case maybeActivityType of
+                                            Just activityType ->
+                                                let
+                                                    isActive =
+                                                        case activityType of
+                                                            Child ChildPicture ->
+                                                                True
+
+                                                            _ ->
+                                                                False
+                                                in
+                                                    { currentActivityPage | selectedActivity = activityType }
+
+                                            _ ->
+                                                currentActivityPage
+
+                                    currentParticipanstManagerPage =
+                                        model.pageParticipant
+
+                                    updatedParticipanstManagerPage =
+                                        { currentParticipanstManagerPage | activityPage = updatedActivityPage }
                                 in
-                                    -- If we're showing a `Participants` page, make sure we `Subscribe`
-                                    update (MsgParticipantManager ParticipantManager.Model.FetchAll) modelUpdatedDashboard
+                                    -- If we're showing a `Activities` page, make sure we `Subscribe`
+                                    update (MsgParticipantManager ParticipantManager.Model.FetchAll)
+                                        { model | pageParticipant = updatedParticipanstManagerPage }
+
+                            Dashboard activityTypes ->
+                                update (MsgParticipantManager ParticipantManager.Model.FetchAll) model
 
                             Participant id ->
                                 -- If we're showing a `Participant`, make sure we `Subscribe`
@@ -212,12 +253,14 @@ update msg model =
                             _ ->
                                 ( model, Cmd.none )
                 in
-                    ( { modelUpdated | activePage = setActivePageAccess model.user activePageUpdated }
-                    , Cmd.batch
-                        [ activePage [ (toString activePageUpdated), backendUrl ]
-                        , command
-                        ]
-                    )
+                    sequence update
+                        unbindFilePickerMsg
+                        ( { modelUpdated | activePage = setActivePageAccess model.user activePageUpdated }
+                        , Cmd.batch
+                            [ activePage [ (toString activePageUpdated), backendUrl ]
+                            , command
+                            ]
+                        )
 
             SetCurrentDate date ->
                 { model | currentDate = date } ! []
@@ -255,6 +298,9 @@ getBackButtonTarget activePage =
 
         Activities ->
             Dashboard []
+
+        Activity _ ->
+            Activities
 
         Dashboard activity ->
             Activities

@@ -17,6 +17,9 @@ delta2url previous current =
         Activities ->
             Just <| UrlChange NewEntry "#activities"
 
+        Activity _ ->
+            Just <| UrlChange NewEntry "#activity"
+
         Login ->
             Just <| UrlChange NewEntry "#login"
 
@@ -30,18 +33,7 @@ delta2url previous current =
             Just <| UrlChange NewEntry ("#participant/" ++ (toString id))
 
         Dashboard _ ->
-            let
-                fragment =
-                    ParticipantManager.Update.dashboardUrlFragment current.pageParticipant
-
-                url =
-                    if fragment == "" then
-                        -- Hack to allow dashboard to change the URL.
-                        "# "
-                    else
-                        "#/" ++ fragment
-            in
-                Just <| UrlChange NewEntry url
+            Just <| UrlChange NewEntry "#"
 
 
 location2messages : Location -> List Msg
@@ -59,6 +51,7 @@ parseUrl =
     oneOf
         [ map (SetActivePage <| Dashboard []) (s "")
         , map (SetActivePage Activities) (s "activities")
+        , map (SetActivePage <| Activity Nothing) (s "activity")
         , map (\id -> SetActivePage <| Participant id) (s "participant" </> int)
         , map (SetActivePage Login) (s "login")
         , map (SetActivePage MyAccount) (s "my-account")

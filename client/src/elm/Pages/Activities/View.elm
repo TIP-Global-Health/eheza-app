@@ -8,62 +8,80 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List as List
-import Pages.Activities.Model exposing (Model, Msg(..))
+import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
 import Participant.Model exposing (ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.View exposing (viewParticipantTypeFilter)
 import Translate as Trans exposing (translate, Language)
 import User.Model exposing (User)
+import Utils.Html exposing (tabItem)
 
 
-view : Language -> Date -> User -> ParticipantsDict -> Model -> Html Msg
+view : Language -> Date -> User -> ParticipantsDict -> Model -> List (Html Msg)
 view language currentDate user participants model =
     let
         allActivityList =
             getActivityList currentDate model.participantTypeFilter participants
 
         pendingActivities =
-            List.filter (\activity -> activity.remaining > 0) allActivityList
+            List.filter (\activity -> (Tuple.first activity.totals > 0)) allActivityList
 
         noPendingActivities =
-            List.filter (\activity -> activity.remaining == 0) allActivityList
+            List.filter (\activity -> (Tuple.first activity.totals == 0)) allActivityList
 
-        pendingActivitiesView =
-            if List.isEmpty pendingActivities then
-                []
-            else
-                List.map (viewActivity language) pendingActivities
+        pendingTabTitle =
+            translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities
 
-        completedActivitiesView =
-            if List.isEmpty noPendingActivities then
-                div [] []
-            else
-                div []
-                    [ h2 [ class "ui header activities" ] [ text <| translate language <| Trans.ActivitiesCompleted <| List.length noPendingActivities ]
-                    , div [ class "ui cards activities completed" ] (List.map (viewActivity language) noPendingActivities)
+        completedTabTitle =
+            translate language <| Trans.ActivitiesCompleted <| List.length noPendingActivities
+
+        tabs =
+            div [ class "ui tabular menu" ]
+                [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
+                , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
+                ]
+
+        viewCard language identity =
+            div
+                [ class "card" ]
+                [ div
+                    [ class "image"
+                    , onClick <| SetRedirectPage <| Activity <| Just identity.activity.activityType
                     ]
-    in
-        div []
-            [ viewParticipantTypeFilter language SetParticipantTypeFilter model.participantTypeFilter
-            , h2 [ class "ui header activities" ] [ text <| translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities ]
-            , div [ class "ui cards activities pending" ] pendingActivitiesView
-            , completedActivitiesView
-            ]
-
-
-viewActivity : Language -> ActivityListItem -> Html Msg
-viewActivity language report =
-    let
-        redirect =
-            onClick <| SetRedirectPage <| Dashboard [ report.activity.activityType ]
-    in
-        div [ class "ui card activities__item" ]
-            [ a
-                [ href "#"
-                , redirect
+                    [ span [ class <| "icon-task icon-task-" ++ identity.activity.icon ] [] ]
+                , div
+                    [ class "content" ]
+                    [ p [] [ text <| String.toUpper identity.activity.name ]
+                    , div
+                        [ class "ui tiny progress" ]
+                        [ div
+                            [ class "label" ]
+                            [ text <| translate language <| Trans.ReportCompleted identity.totals ]
+                        ]
+                    ]
                 ]
-                [ i [ class (report.activity.icon ++ " icon") ] [] ]
-            , div [ class "content" ]
-                [ a [ class "header activities__item__title", redirect ] [ text report.activity.name ]
-                , div [ class "meta" ] [ text <| translate language <| Trans.ReportRemaining report.remaining ]
+
+        ( selectedActivies, emptySectionMessage ) =
+            case model.selectedTab of
+                Pending ->
+                    ( pendingActivities, translate language Trans.PendingSectionEmpty )
+
+                Completed ->
+                    ( noPendingActivities, translate language Trans.CompletedSectionEmpty )
+    in
+        [ tabs
+        , div
+            [ class "ui full segment" ]
+            [ div [ class "content" ]
+                [ div [ class "ui four cards" ] <|
+                    if List.isEmpty selectedActivies then
+                        [ span [] [ text emptySectionMessage ] ]
+                    else
+                        List.map (viewCard language) selectedActivies
+                ]
+            , div [ class "actions" ]
+                [ button
+                    [ class "ui fluid button" ]
+                    [ text <| translate language Trans.EndSession ]
                 ]
             ]
+        ]

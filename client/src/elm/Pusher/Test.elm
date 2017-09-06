@@ -27,6 +27,7 @@ decodeTest =
       "id" : "100",
       "label" : "new-patient",
       "mother": "7",
+      "sibling": "22",
       "date_picture": null,
       "date_height" : null,
       "date_muac" : null,
@@ -48,8 +49,8 @@ decodeTest =
                                         { name = "new-patient"
                                         , image = "https://placehold.it/200x200"
                                         , motherId = Just 7
+                                        , siblingId = Just 22
                                         , examinations = NotAsked
-                                        , selectedExamination = Nothing
                                         , activityDates = emptyChildActivityDates
                                         , birthDate = Date.fromTime 1472373589000
                                         , gender = Female
