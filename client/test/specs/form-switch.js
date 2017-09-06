@@ -26,7 +26,7 @@ describe('assesment pages', () => {
     });
 
     it('should preserve Nutrition Signs data while the user is switching between forms', () => {
-        const firstUsedTab = 'Nutrition signs';
+        const firstUsedTab = 'Nutrition';
         const secondUsedTab = 'Photo';
 
         // Switching to Nutrition Signs, fill data.
