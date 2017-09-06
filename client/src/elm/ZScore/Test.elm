@@ -107,10 +107,37 @@ zScoreForWeightTest =
         |> describe "zScoreForWeight"
 
 
+heightData : List ( Int, Float, Gender, ZScore )
+heightData =
+    [ ( 10, 60, Male, ZScore3 )
+    , ( 12, 60, Female, ZScore3 )
+    , ( 14, 49, Male, ZScore1Neg )
+    , ( 17, 53.82, Female, ZScore1 )
+    , ( 18, 52.065, Female, ZScore1 )
+    , ( 20, 60, Female, ZScore3 )
+    , ( 30, 60, Male, ZScore3 )
+    , ( 40, 70, Female, ZScore3 )
+    ]
+
+
+zScoreForHeightTest : Test
+zScoreForHeightTest =
+    heightData
+        |> List.map
+            (\( age, height, gender, expected ) ->
+                test (toString age) <|
+                    \() ->
+                        zScoreForHeight (AgeInDays age) gender (Centimetres height)
+                            |> Expect.equal (Just expected)
+            )
+        |> describe "zScoreForHeight"
+
+
 all : Test
 all =
     describe "ZScore"
         [ compareZScoreTest
         , viewZScoreTest
+        , zScoreForHeightTest
         , zScoreForWeightTest
         ]
