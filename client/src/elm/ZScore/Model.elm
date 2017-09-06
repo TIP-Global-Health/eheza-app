@@ -77,10 +77,10 @@ zScoreForWeight (AgeInDays age) gender (Kilograms kg) =
         data =
             case gender of
                 Male ->
-                    HeightBoys.data
+                    WeightBoys.data
 
                 Female ->
-                    HeightGirls.data
+                    WeightGirls.data
     in
         zScoreFromData age kg data
 
