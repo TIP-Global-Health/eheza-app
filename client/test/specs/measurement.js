@@ -54,7 +54,7 @@ describe('measurement module', function() {
     browser.click('div.nutrition button');
 
     // Wait for measurements form to close.
-    browser.waitForVisible('.ui.full.segment.nutrition', 1000, true);
+    browser.waitForVisible('.ui.full.segment.nutrition', 2000, true);
   })
 
   it('should save the muac via the Save button', () => {
@@ -78,4 +78,37 @@ describe('measurement module', function() {
     // Click save button.
     browser.click('div.muac button');
   });
-})
+
+  it('should verify checkbox selection logic Nutrition Form', () => {
+    const tab = 'Nutrition';
+
+    browser.visitChildWithTodoTasks();
+
+    // Select tab.
+    browser.click('a=' + tab);
+
+    // Wait for the tab.
+    browser.waitForVisible('h3=Nutrition:');
+
+    // Select 2 signs and make sure they're checked.
+    browser.click('#dry-skin');
+    browser.verifyCheckboxChecked('#dry-skin', true);
+    browser.click('#edema');
+    browser.verifyCheckboxChecked('#edema', true);
+
+    // Select 'None of these'.
+    browser.click('#none-of-these');
+    browser.verifyCheckboxChecked('#none-of-these', true);
+
+    // Verify that previously selected signs are not checked.
+    browser.verifyCheckboxChecked('#dry-skin', false);
+    browser.verifyCheckboxChecked('#edema', false);
+
+    // Select another sign.
+    browser.click('#apathy');
+
+    // Verify that 'None of these' is not checked.
+    browser.verifyCheckboxChecked('#none-of-these', false);
+  });
+
+});

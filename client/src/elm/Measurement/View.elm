@@ -487,15 +487,23 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
 
                 None ->
                     ( Trans.ActivitiesNutritionSignsNoneLabel, "none-of-these" )
+
+        isChecked =
+            EveryDict.member sign nutritionSigns
     in
         div [ class "ui checkbox" ]
             [ input
-                [ type_ "checkbox"
-                , id attributeValue
-                , name <| encodeChildNutritionSign sign
-                , onClick <| NutritionSignsToggle sign
-                , checked <| EveryDict.member sign nutritionSigns
-                ]
+                ([ type_ "checkbox"
+                 , id attributeValue
+                 , name <| encodeChildNutritionSign sign
+                 , onClick <| NutritionSignsToggle sign
+                 , checked isChecked
+                 ]
+                    ++ if isChecked then
+                        [ class "checked" ]
+                       else
+                        []
+                )
                 []
             , label [ for attributeValue ]
                 [ text <| translate language body ]
@@ -586,16 +594,22 @@ viewFamilyPlanningSelectorItem language familyPlanningSigns sign =
 
                 Pill ->
                     ( Trans.ActivitiesFamilyPlanningSignsPillLabel, "pill" )
+
+        isChecked =
+            EveryDict.member sign familyPlanningSigns
     in
         div [ class "ui checkbox" ]
             [ input
-                [ type_ "checkbox"
-                , id attributeValue
-
-                --, name <| encodeChildNutritionSign sign
-                , onClick <| FamilyPlanningSignsToggle sign
-                , checked <| EveryDict.member sign familyPlanningSigns
-                ]
+                ([ type_ "checkbox"
+                 , id attributeValue
+                 , onClick <| FamilyPlanningSignsToggle sign
+                 , checked isChecked
+                 ]
+                    ++ if isChecked then
+                        [ class "checked" ]
+                       else
+                        []
+                )
                 []
             , label [ for attributeValue ]
                 [ text <| translate language body ]
