@@ -1,5 +1,9 @@
 module Measurement.Model exposing (..)
 
+{-| These modules manage the UI for the various measurements that collectively
+form an examination for a participant.
+-}
+
 import Activity.Model exposing (ActivityType, ChildNutritionSign, FamilyPlanningSign)
 import EverySet exposing (EverySet)
 import Http
@@ -35,16 +39,21 @@ type alias Photo =
     { url : String }
 
 
+{-| For the `Handle` msgs, we should probably actually decode the
+response from the backend. For the moment, we're just threading
+through the value we supplied, and assuming that if the backend
+indicated success, it accepted the value unchanged.
+-}
 type Msg
     = FamilyPlanningSignsSave
     | FamilyPlanningSignsToggle FamilyPlanningSign
     | HandleDropzoneUploadedFile Int
     | HandleFamilyPlanningSave (Result Http.Error ())
-    | HandleHeightSave (Result Http.Error ())
+    | HandleHeightSave Float (Result Http.Error ())
     | HandleNutritionSignsSave (Result Http.Error ())
-    | HandleMuacSave (Result Http.Error ())
+    | HandleMuacSave Float (Result Http.Error ())
     | HandlePhotoSave (Result Http.Error ( PhotoId, Photo ))
-    | HandleWeightSave (Result Http.Error ())
+    | HandleWeightSave Float (Result Http.Error ())
     | HeightSave
     | HeightUpdate Float
     | MuacUpdate Float
@@ -57,6 +66,21 @@ type Msg
     | WeightUpdate Float
 
 
+{-| The strategy here, at least for now, is this:
+
+  - The values in the `Model` here reflect what is entered in the UI. So, they
+    are updated on every key-press etc.
+
+  - The `update` function takes an `examination` parameter. It updates that
+    parameter only when the value has actually been saved to the backend.
+
+An alternative would be to operate on the examination directly, so we wouldn't
+have these values in the `Model` at all. In that case, the values in the
+`ExaminationChild` would need to be more complex types -- e.g. something
+like `EditableWebData`. Which is probably ultimately a good idea -- for the
+moment, just trying to get this to work at all.
+
+-}
 type alias Model =
     { status : WebData ()
     , height : FloatInput

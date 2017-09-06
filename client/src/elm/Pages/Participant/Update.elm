@@ -1,21 +1,51 @@
-port module Pages.Participant.Update exposing (update, subscriptions)
+port module Pages.Participant.Update exposing (update, subscriptions, init)
 
 import Activity.Model exposing (ActivityType(Child), ChildActivityType(..))
 import App.Model exposing (DropzoneConfig)
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
-import Date exposing (Date)
+import Examination.Model exposing (Examination(..), emptyExaminationChild, emptyExaminationMother)
 import Maybe.Extra exposing (isJust)
+import Measurement.Model
 import Measurement.Update
-import Pages.Participant.Model exposing (Model, Msg(..))
+import Pages.Participant.Model exposing (Model, Msg(..), emptyModel)
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..))
+import Participant.Utils exposing (getExamination, setExamination)
 import Pusher.Model exposing (PusherEventData(..))
 import Translate as Trans exposing (Language, translate)
 import User.Model exposing (..)
 
 
-update : Date -> BackendUrl -> String -> User -> Language -> Pages.Participant.Model.Msg -> ( ParticipantId, Participant ) -> Model -> ( Participant, Model, Cmd Pages.Participant.Model.Msg, Maybe Page )
-update currentDate backendUrl accessToken user language msg ( participantId, participant ) model =
+{-| Construct a default model for a participant. This assumes one examination
+per participant, so will need to change.
+-}
+init : Participant -> Model
+init participant =
+    case getExamination participant of
+        MotherExamination exam ->
+            emptyModel
+
+        ChildExamination exam ->
+            let
+                measurementModel =
+                    Measurement.Model.emptyModel
+
+                measurements =
+                    { measurementModel
+                        | height = exam.height
+                        , weight = exam.weight
+                        , muac = exam.muac
+                    }
+            in
+                { emptyModel | measurements = measurements }
+
+
+{-| This is implicitly scoped to a particular examination ... for now, we're
+just picking out the single examination that we've mocked for the participant.
+Eventually, we'll need to parameterize this in some way.
+-}
+update : BackendUrl -> String -> User -> Language -> Pages.Participant.Model.Msg -> ( ParticipantId, Participant ) -> Model -> ( Participant, Model, Cmd Pages.Participant.Model.Msg, Maybe Page )
+update backendUrl accessToken user language msg ( participantId, participant ) model =
     case msg of
         HandlePusherEventData event ->
             case event of
@@ -32,11 +62,8 @@ update currentDate backendUrl accessToken user language msg ( participantId, par
 
         MsgMeasurement subMsg ->
             let
-                ( measurementsUpdated, cmds, maybeActivityTypeCompleted ) =
-                    Measurement.Update.update backendUrl accessToken user ( participantId, participant ) subMsg model.measurements
-
-                newDate =
-                    (Date.toTime currentDate) + (24 * 60 * 60 * 1000) |> Date.fromTime
+                ( measurementsUpdated, examinationUpdated, cmds, maybeActivityTypeCompleted ) =
+                    Measurement.Update.update backendUrl accessToken participantId subMsg model.measurements (getExamination participant)
 
                 modelWithMeasurements =
                     { model | measurements = measurementsUpdated }
@@ -48,11 +75,11 @@ update currentDate backendUrl accessToken user language msg ( participantId, par
                     else
                         model.selectedActivity
 
-                ( _, modelWithSelectedAtivity, selectedActivityCmds, maybePage ) =
-                    update currentDate backendUrl accessToken user language (SetSelectedActivity selectedActivity) ( participantId, participant ) modelWithMeasurements
+                ( _, modelWithSelectedActivity, selectedActivityCmds, maybePage ) =
+                    update backendUrl accessToken user language (SetSelectedActivity selectedActivity) ( participantId, participant ) modelWithMeasurements
             in
-                ( participant
-                , modelWithSelectedAtivity
+                ( setExamination examinationUpdated participant
+                , modelWithSelectedActivity
                 , Cmd.batch
                     [ Cmd.map MsgMeasurement cmds
                     , selectedActivityCmds
@@ -63,10 +90,10 @@ update currentDate backendUrl accessToken user language msg ( participantId, par
         SetRedirectPage page ->
             ( participant, model, Cmd.none, Just page )
 
-        SetSelectedActivity maybectivityType ->
+        SetSelectedActivity maybeActivityType ->
             ( participant
-            , { model | selectedActivity = maybectivityType }
-            , setDropzone backendUrl language maybectivityType
+            , { model | selectedActivity = maybeActivityType }
+            , setDropzone backendUrl language maybeActivityType
             , Nothing
             )
 

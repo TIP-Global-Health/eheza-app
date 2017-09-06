@@ -14,6 +14,7 @@ import Html.Events exposing (onClick)
 import Pages.Activities.Model
 import Pages.Activities.View
 import Pages.Participant.Model
+import Pages.Participant.Update
 import Pages.Participant.View
 import Pages.Participants.Model
 import Pages.Participants.View
@@ -116,7 +117,7 @@ viewPageParticipant language currentDate id model =
             let
                 participantModel =
                     Maybe.map identity (Dict.get id model.participantPage)
-                        |> Maybe.withDefault Pages.Participant.Model.emptyModel
+                        |> Maybe.withDefault (Pages.Participant.Update.init participant)
             in
                 div [ class "wrap" ] <|
                     viewPageParticipantHeader language ( id, participant )

@@ -8,7 +8,6 @@ import Json.Decode exposing (decodeValue)
 import Json.Encode exposing (Value)
 import HttpBuilder exposing (get, withJsonBody, withQueryParams)
 import Pages.Activities.Update
-import Pages.Participant.Model
 import Pages.Participant.Update
 import Pages.Participants.Update
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..))
@@ -93,10 +92,10 @@ update currentDate backendUrl accessToken user language msg model =
                         let
                             participantModel =
                                 Maybe.map identity (Dict.get id model.participantPage)
-                                    |> Maybe.withDefault Pages.Participant.Model.emptyModel
+                                    |> Maybe.withDefault (Pages.Participant.Update.init participant)
 
                             ( participantUpdated, subModel, subCmd, redirectPage ) =
-                                Pages.Participant.Update.update currentDate backendUrl accessToken user language subMsg ( id, participant ) participantModel
+                                Pages.Participant.Update.update backendUrl accessToken user language subMsg ( id, participant ) participantModel
                         in
                             ( { model
                                 | participants = Dict.insert id (Success participantUpdated) model.participants

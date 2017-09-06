@@ -3,6 +3,8 @@ port module Measurement.Update exposing (update, subscriptions)
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(FamilyPlanning))
 import Config.Model exposing (BackendUrl)
 import EverySet exposing (EverySet)
+import Examination.Model exposing (Examination(..))
+import Examination.Utils exposing (mapExaminationChild, mapExaminationMother)
 import Http
 import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
 import Json.Encode exposing (Value)
@@ -11,183 +13,226 @@ import Measurement.Encoder exposing (encodeFamilyPlanning, encodeHeight, encodeM
 import Measurement.Model exposing (CompletedAndRedirectToActivityTuple, Model, Msg(..))
 import Participant.Model exposing (Participant, ParticipantId)
 import RemoteData exposing (RemoteData(..))
-import User.Model exposing (..)
 import Utils.WebData exposing (sendWithHandler)
 
 
-{-| Optionally, we bubble up two activity types in a tuple, which form to complete and which form is the next one.
+{-| Optionally, we bubble up two activity types in a tuple, which form to
+complete and which form is the next one.
+
+The strategy used here, for the moment, is that the `model` tracks the UI,
+whereas the `examination` tracks the underlying data from the backend. So,
+we'll update the `examination` only after data has actually been successfully
+saved to the backend. (Ultimately, it will probably be better to use an
+`EditableWebData` in the examination for each measurement, but this is
+easier to implement for the moment). It is the caller's rsponsibility to
+provided the relevant examination, and store it in the relevant structure
+when it is returned.
+
+It's possible that we ought to split this up into an `updateMother` and
+`updateChild` (so we can specialize the examination), but perhaps not.
+
 -}
-update : BackendUrl -> String -> User -> ( ParticipantId, Participant ) -> Msg -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
-update backendUrl accessToken user ( participantId, participant ) msg model =
-    case msg of
-        FamilyPlanningSignsSave ->
-            postFamilyPlanning backendUrl accessToken participantId model
+update : BackendUrl -> String -> ParticipantId -> Msg -> Model -> Examination -> ( Model, Examination, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+update backendUrl accessToken participantId msg model examination =
+    let
+        -- This processes a common case below, to supply an unchanged
+        -- examination and no redirection
+        unchangedExaminationNoRedirect ( updatedModel, cmd ) =
+            ( updatedModel, examination, cmd, Nothing )
+    in
+        case msg of
+            FamilyPlanningSignsSave ->
+                postFamilyPlanning backendUrl accessToken participantId model
+                    |> unchangedExaminationNoRedirect
 
-        FamilyPlanningSignsToggle sign ->
-            let
-                signsUpdated =
-                    if EverySet.member sign model.familyPlanningSigns then
-                        EverySet.remove sign model.familyPlanningSigns
-                    else
-                        EverySet.insert sign model.familyPlanningSigns
-            in
-                ( { model | familyPlanningSigns = signsUpdated }
+            FamilyPlanningSignsToggle sign ->
+                let
+                    signsUpdated =
+                        if EverySet.member sign model.familyPlanningSigns then
+                            EverySet.remove sign model.familyPlanningSigns
+                        else
+                            EverySet.insert sign model.familyPlanningSigns
+                in
+                    ( { model | familyPlanningSigns = signsUpdated }
+                    , Cmd.none
+                    )
+                        |> unchangedExaminationNoRedirect
+
+            HandleDropzoneUploadedFile fileId ->
+                ( { model | photo = ( Just fileId, Nothing ) }
                 , Cmd.none
-                , Nothing
+                )
+                    |> unchangedExaminationNoRedirect
+
+            HandleFamilyPlanningSave (Ok ()) ->
+                ( { model | status = Success () }
+                , examination
+                , Cmd.none
+                , Just <| ( Mother FamilyPlanning, Mother FamilyPlanning )
                 )
 
-        HandleDropzoneUploadedFile fileId ->
-            ( { model | photo = ( Just fileId, Nothing ) }
-            , Cmd.none
-            , Nothing
-            )
+            HandleFamilyPlanningSave (Err err) ->
+                let
+                    _ =
+                        Debug.log "HandleFamilyPlanningSave (Err)" False
+                in
+                    ( { model | status = Failure err }
+                    , Cmd.none
+                    )
+                        |> unchangedExaminationNoRedirect
 
-        HandleFamilyPlanningSave (Ok ()) ->
-            ( { model | status = Success () }
-            , Cmd.none
-            , Just <| ( Mother FamilyPlanning, Mother FamilyPlanning )
-            )
-
-        HandleFamilyPlanningSave (Err err) ->
-            let
-                _ =
-                    Debug.log "HandleFamilyPlanningSave (Err)" False
-            in
-                ( { model | status = Failure err }
+            HandleHeightSave value (Ok ()) ->
+                ( { model | status = Success () }
+                , mapExaminationChild (\ex -> { ex | height = Just value }) examination
                 , Cmd.none
-                , Nothing
+                , Just <| ( Child Height, Child Muac )
                 )
 
-        HandleHeightSave (Ok ()) ->
-            ( { model | status = Success () }
-            , Cmd.none
-            , Just <| ( Child Height, Child Muac )
-            )
+            HandleHeightSave value (Err err) ->
+                let
+                    _ =
+                        Debug.log "HandleHeightSave (Err)" False
+                in
+                    ( { model | status = Failure err }
+                    , Cmd.none
+                    )
+                        |> unchangedExaminationNoRedirect
 
-        HandleHeightSave (Err err) ->
-            let
-                _ =
-                    Debug.log "HandleHeightSave (Err)" False
-            in
-                ( { model | status = Failure err }
+            HandleNutritionSignsSave (Ok ()) ->
+                ( { model | status = Success () }
+                , examination
                 , Cmd.none
-                , Nothing
+                , Just <| ( Child NutritionSigns, Child ChildPicture )
                 )
 
-        HandleNutritionSignsSave (Ok ()) ->
-            ( { model | status = Success () }
-            , Cmd.none
-            , Just <| ( Child NutritionSigns, Child ChildPicture )
-            )
+            HandleNutritionSignsSave (Err err) ->
+                let
+                    _ =
+                        Debug.log "HandleNutritionSignsSave (Err)" False
+                in
+                    ( { model | status = Failure err }
+                    , Cmd.none
+                    )
+                        |> unchangedExaminationNoRedirect
 
-        HandleNutritionSignsSave (Err err) ->
-            let
-                _ =
-                    Debug.log "HandleNutritionSignsSave (Err)" False
-            in
-                ( { model | status = Failure err }
+            HandleMuacSave value (Ok ()) ->
+                ( { model | status = Success () }
+                , mapExaminationChild (\ex -> { ex | muac = Just value }) examination
                 , Cmd.none
-                , Nothing
+                , Just <| ( Child Muac, Child NutritionSigns )
                 )
 
-        HandleMuacSave (Ok ()) ->
-            ( { model | status = Success () }
-            , Cmd.none
-            , Just <| ( Child Muac, Child NutritionSigns )
-            )
+            HandleMuacSave value (Err err) ->
+                let
+                    _ =
+                        Debug.log "HandleMuacSave (Err)" False
+                in
+                    ( { model | status = Failure err }
+                    , Cmd.none
+                    )
+                        |> unchangedExaminationNoRedirect
 
-        HandleMuacSave (Err err) ->
-            let
-                _ =
-                    Debug.log "HandleMuacSave (Err)" False
-            in
-                ( { model | status = Failure err }
+            HandlePhotoSave (Ok ( photoId, photo )) ->
+                ( { model
+                    | status = Success ()
+                    , photo = ( Tuple.first model.photo, Just ( photoId, photo ) )
+                  }
+                , examination
                 , Cmd.none
-                , Nothing
+                , Just <| ( Child ChildPicture, Child Weight )
                 )
 
-        HandlePhotoSave (Ok ( photoId, photo )) ->
-            ( { model
-                | status = Success ()
-                , photo = ( Tuple.first model.photo, Just ( photoId, photo ) )
-              }
-            , Cmd.none
-            , Just <| ( Child ChildPicture, Child Weight )
-            )
+            HandlePhotoSave (Err err) ->
+                let
+                    _ =
+                        Debug.log "HandlePhotoSave (Err)" False
+                in
+                    ( { model | status = Failure err }
+                    , Cmd.none
+                    )
+                        |> unchangedExaminationNoRedirect
 
-        HandlePhotoSave (Err err) ->
-            let
-                _ =
-                    Debug.log "HandlePhotoSave (Err)" False
-            in
-                ( { model | status = Failure err }
+            HandleWeightSave value (Ok ()) ->
+                ( { model | status = Success () }
+                , mapExaminationChild (\ex -> { ex | weight = Just value }) examination
                 , Cmd.none
-                , Nothing
+                , Just <| ( Child Weight, Child Height )
                 )
 
-        HandleWeightSave (Ok ()) ->
-            ( { model | status = Success () }
-            , Cmd.none
-            , Just <| ( Child Weight, Child Height )
-            )
+            HandleWeightSave value (Err err) ->
+                let
+                    _ =
+                        Debug.log "HandleWeightSave (Err)" False
+                in
+                    ( { model | status = Failure err }
+                    , Cmd.none
+                    )
+                        |> unchangedExaminationNoRedirect
 
-        HandleWeightSave (Err err) ->
-            let
-                _ =
-                    Debug.log "HandleWeightSave (Err)" False
-            in
-                ( { model | status = Failure err }
+            HeightUpdate val ->
+                ( { model | height = Just val }
                 , Cmd.none
-                , Nothing
                 )
+                    |> unchangedExaminationNoRedirect
 
-        HeightUpdate val ->
-            ( { model | height = Just val }, Cmd.none, Nothing )
-
-        MuacUpdate val ->
-            ( { model | muac = Just val }, Cmd.none, Nothing )
-
-        MuacSave ->
-            postMuac backendUrl accessToken participantId model
-
-        NutritionSignsSave ->
-            postNutritionSigns backendUrl accessToken participantId model
-
-        NutritionSignsToggle nutritionSign ->
-            let
-                nutritionSignsUpdated =
-                    if EverySet.member nutritionSign model.nutritionSigns then
-                        EverySet.remove nutritionSign model.nutritionSigns
-                    else
-                        EverySet.insert nutritionSign model.nutritionSigns
-            in
-                ( { model | nutritionSigns = nutritionSignsUpdated }
+            MuacUpdate val ->
+                ( { model | muac = Just val }
                 , Cmd.none
-                , Nothing
                 )
+                    |> unchangedExaminationNoRedirect
 
-        PhotoSave ->
-            postPhoto backendUrl accessToken participantId model
+            MuacSave ->
+                postMuac backendUrl accessToken participantId model
+                    |> unchangedExaminationNoRedirect
 
-        ResetDropZone ->
-            ( model, dropzoneReset (), Nothing )
+            NutritionSignsSave ->
+                postNutritionSigns backendUrl accessToken participantId model
+                    |> unchangedExaminationNoRedirect
 
-        WeightSave ->
-            postWeight backendUrl accessToken participantId model
+            NutritionSignsToggle nutritionSign ->
+                let
+                    nutritionSignsUpdated =
+                        if EverySet.member nutritionSign model.nutritionSigns then
+                            EverySet.remove nutritionSign model.nutritionSigns
+                        else
+                            EverySet.insert nutritionSign model.nutritionSigns
+                in
+                    ( { model | nutritionSigns = nutritionSignsUpdated }
+                    , Cmd.none
+                    )
+                        |> unchangedExaminationNoRedirect
 
-        HeightSave ->
-            postHeight backendUrl accessToken participantId model
+            PhotoSave ->
+                postPhoto backendUrl accessToken participantId model
+                    |> unchangedExaminationNoRedirect
 
-        WeightUpdate val ->
-            ( { model | weight = Just val }, Cmd.none, Nothing )
+            ResetDropZone ->
+                ( model
+                , dropzoneReset ()
+                )
+                    |> unchangedExaminationNoRedirect
+
+            WeightSave ->
+                postWeight backendUrl accessToken participantId model
+                    |> unchangedExaminationNoRedirect
+
+            HeightSave ->
+                postHeight backendUrl accessToken participantId model
+                    |> unchangedExaminationNoRedirect
+
+            WeightUpdate val ->
+                ( { model | weight = Just val }
+                , Cmd.none
+                )
+                    |> unchangedExaminationNoRedirect
 
 
 {-| Send new family planning of a mother to the backend.
 -}
-postFamilyPlanning : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+postFamilyPlanning : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg )
 postFamilyPlanning backendUrl accessToken motherId model =
     if EverySet.isEmpty model.familyPlanningSigns then
-        ( model, Cmd.none, Nothing )
+        ( model, Cmd.none )
     else
         postData
             backendUrl
@@ -201,10 +246,10 @@ postFamilyPlanning backendUrl accessToken motherId model =
 
 {-| Send new nutrition signs of a child to the backend.
 -}
-postNutritionSigns : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+postNutritionSigns : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg )
 postNutritionSigns backendUrl accessToken childId model =
     if EverySet.isEmpty model.nutritionSigns then
-        ( model, Cmd.none, Nothing )
+        ( model, Cmd.none )
     else
         postData
             backendUrl
@@ -218,7 +263,7 @@ postNutritionSigns backendUrl accessToken childId model =
 
 {-| Enables posting of arbitrary values to the provided back end so long as the encoder matches the desired type
 -}
-postData : BackendUrl -> String -> Model -> String -> value -> (value -> Value) -> (Result Http.Error () -> Msg) -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+postData : BackendUrl -> String -> Model -> String -> value -> (value -> Value) -> (Result Http.Error () -> Msg) -> ( Model, Cmd Msg )
 postData backendUrl accessToken model path value encoder handler =
     let
         command =
@@ -229,19 +274,18 @@ postData backendUrl accessToken model path value encoder handler =
     in
         ( { model | status = Loading }
         , command
-        , Nothing
         )
 
 
 {-| Send new photo of a child to the backend.
 -}
-postPhoto : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+postPhoto : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg )
 postPhoto backendUrl accessToken childId model =
     case model.photo of
         ( Nothing, _ ) ->
             -- This shouldn't happen, but in case we don't have a file ID, we won't issue
             -- a POST request.
-            ( model, Cmd.none, Nothing )
+            ( model, Cmd.none )
 
         ( Just fileId, _ ) ->
             let
@@ -253,13 +297,12 @@ postPhoto backendUrl accessToken childId model =
             in
                 ( { model | status = Loading }
                 , command
-                , Nothing
                 )
 
 
 {-| Send new weight of a child to the backend.
 -}
-postWeight : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+postWeight : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg )
 postWeight backendUrl accessToken childId model =
     Maybe.map
         (\weight ->
@@ -270,15 +313,15 @@ postWeight backendUrl accessToken childId model =
                 "weights"
                 weight
                 (encodeWeight childId)
-                HandleWeightSave
+                (HandleWeightSave weight)
         )
         model.weight
-        |> Maybe.withDefault ( model, Cmd.none, Nothing )
+        |> Maybe.withDefault ( model, Cmd.none )
 
 
 {-| Send new height of a child to the backend.
 -}
-postHeight : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+postHeight : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg )
 postHeight backendUrl accessToken childId model =
     Maybe.map
         (\height ->
@@ -289,15 +332,15 @@ postHeight backendUrl accessToken childId model =
                 "heights"
                 height
                 (encodeHeight childId)
-                HandleHeightSave
+                (HandleHeightSave height)
         )
         model.height
-        |> Maybe.withDefault ( model, Cmd.none, Nothing )
+        |> Maybe.withDefault ( model, Cmd.none )
 
 
 {-| Send new MUAC of a child to the backend.
 -}
-postMuac : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+postMuac : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg )
 postMuac backendUrl accessToken childId model =
     Maybe.map
         (\muac ->
@@ -308,10 +351,10 @@ postMuac backendUrl accessToken childId model =
                 "muacs"
                 muac
                 (encodeMuac childId)
-                HandleMuacSave
+                (HandleMuacSave muac)
         )
         model.muac
-        |> Maybe.withDefault ( model, Cmd.none, Nothing )
+        |> Maybe.withDefault ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
