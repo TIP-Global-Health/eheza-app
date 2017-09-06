@@ -29,7 +29,7 @@ describe('measurement module', function() {
   });
 
   it('should save the nutrition signs via the Save button', () => {
-    const tab = 'Nutrition signs';
+    const tab = 'Nutrition';
 
     browser.visitChildWithTodoTasks();
 

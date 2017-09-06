@@ -77,7 +77,7 @@ getActivityIdentity activityType =
                             ActivityIdentity "MUAC" "muac"
 
                         NutritionSigns ->
-                            ActivityIdentity "Nutrition signs" "nutrition"
+                            ActivityIdentity "Nutrition" "nutrition"
 
                         ProgressReport ->
                             ActivityIdentity "Progress reports" "bar chart"
