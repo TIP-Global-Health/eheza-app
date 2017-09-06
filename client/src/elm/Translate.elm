@@ -51,7 +51,8 @@ type TranslationId
     | ActivitiesNutritionSignsTitle
     | ActivitiesPhotoHelp
     | ActivitiesPhotoTitle
-    | ActivitiesProgressReport Int
+    | ActivitiesProgressReport
+    | ActivitiesProgressReportHelp
     | ActivitiesWeightHelp
     | ActivitiesWeightLabel
     | ActivitiesWeightTitle
@@ -68,6 +69,7 @@ type TranslationId
     | BabyName String
     | CentimeterShorthand
     | Children
+    | CompletedSectionEmpty
     | Connected
     | Dashboard
     | DropzoneDefaultMessage
@@ -101,6 +103,7 @@ type TranslationId
     | PageNotFoundMsg
     | Password
     | Participants
+    | PendingSectionEmpty
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
     | PlaceholderEnterWeight
@@ -213,16 +216,19 @@ translate lang trans =
                     { english = "Nutrition:" }
 
                 ActivitiesPhotoHelp ->
-                    { english = "Take each baby's picture at each health assesment. Then you and the mother will see the how the baby has grown!" }
+                    { english = "Take each baby’s photo at each health assessment. Photos should show the entire body of each child." }
 
                 ActivitiesPhotoTitle ->
                     { english = "Photo:" }
 
-                ActivitiesProgressReport _ ->
+                ActivitiesProgressReport ->
                     { english = "Progress Report" }
 
+                ActivitiesProgressReportHelp ->
+                    { english = "" }
+
                 ActivitiesWeightHelp ->
-                    { english = "Calibrate the scale before taking the first baby's weight.  Place baby in harness with no clothes on." }
+                    { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on." }
 
                 ActivitiesToComplete count ->
                     { english = "To Do (" ++ toString count ++ ")" }
@@ -271,6 +277,9 @@ translate lang trans =
 
                 Children ->
                     { english = "Children" }
+
+                CompletedSectionEmpty ->
+                    { english = "This section has not yet been completed." }
 
                 Connected ->
                     { english = "Connected" }
@@ -378,6 +387,9 @@ translate lang trans =
 
                 Participants ->
                     { english = "Participants" }
+
+                PendingSectionEmpty ->
+                    { english = "This section has been completed." }
 
                 PlaceholderEnterHeight ->
                     { english = "Enter height here…" }

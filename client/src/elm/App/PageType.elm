@@ -12,6 +12,7 @@ type alias ParticipantId =
 type Page
     = AccessDenied
     | Activities
+    | Activity (Maybe ActivityType)
     | Dashboard (List ActivityType)
     | Login
     | MyAccount

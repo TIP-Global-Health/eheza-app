@@ -23,7 +23,7 @@ import ProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
 import User.Model exposing (User)
-import Utils.Html exposing (emptyNode)
+import Utils.Html exposing (emptyNode, tabItem, thumbnailImage)
 
 
 viewChild : BackendUrl -> String -> User -> Language -> Date -> WebData Mother -> ( ChildId, Child ) -> Model -> List (Html Msg)
@@ -80,7 +80,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
         div [ class "ui unstackable items" ]
             [ div [ class "item" ]
                 [ div [ class "ui image" ]
-                    [ img [ src child.image, attribute "alt" childName, width thumbnailDimensions.width, height thumbnailDimensions.height ] [] ]
+                    [ thumbnailImage child.image childName thumbnailDimensions.height thumbnailDimensions.width ]
                 , div [ class "content" ]
                     [ h2 [ class "ui header" ]
                         [ text childName ]
@@ -121,10 +121,9 @@ viewMother backendUrl accessToken language currentDate currentUser motherId moth
         div [ class "ui unstackable items" ]
             [ div [ class "item" ]
                 [ div [ class "ui image" ]
-                    [ img [ src mother.image, attribute "alt" mother.name, width thumbnailDimensions.width, height thumbnailDimensions.height ] [] ]
+                    [ thumbnailImage mother.image mother.name thumbnailDimensions.height thumbnailDimensions.width ]
                 , div [ class "content" ]
-                    [ h2
-                        [ class "ui header" ]
+                    [ h2 [ class "ui header" ]
                         [ text mother.name ]
                     , p [] childrenList
                     ]
@@ -151,13 +150,13 @@ viewActivityCards language currentDate user participants participantTypeFilter s
 
         pendingActivitiesView =
             if List.isEmpty pendingActivities then
-                []
+                [ span [] [ text <| translate language Trans.PendingSectionEmpty ] ]
             else
                 List.map (viewActivityListItem language selectedActivity) pendingActivities
 
         noPendingActivitiesView =
             if List.isEmpty noPendingActivities then
-                []
+                [ span [] [ text <| translate language Trans.CompletedSectionEmpty ] ]
             else
                 List.map (viewActivityListItem language selectedActivity) noPendingActivities
 
@@ -173,47 +172,27 @@ viewActivityCards language currentDate user participants participantTypeFilter s
                             noPendingActivitiesView
                     ]
 
-        tabClass tabType =
-            [ ( "item", True )
-            , ( "active", selectedTab == tabType )
-            ]
+        pendingTabTitle =
+            translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities
 
-        tabItem tabType activitiesList =
-            let
-                tabId =
-                    (String.toLower <| (toString tabType)) ++ "-tab"
+        completedTabTitle =
+            translate language <| Trans.ActivitiesCompleted <| List.length noPendingActivities
 
-                tabTitle =
-                    case tabType of
-                        Pending ->
-                            Trans.ActivitiesToComplete
-
-                        Completed ->
-                            Trans.ActivitiesCompleted
-
-                        ProgressReport ->
-                            Trans.ActivitiesProgressReport
-            in
-                a
-                    [ classList <| tabClass tabType
-                    , id tabId
-                    , onClick <| SetSelectedTab tabType
-                    ]
-                    [ text <| translate language <| tabTitle <| List.length activitiesList ]
+        progressTabTitle =
+            translate language Trans.ActivitiesProgressReport
 
         extraTabs =
             if participantTypeFilter == Children then
-                [ tabItem ProgressReport [] ]
+                [ tabItem progressTabTitle (selectedTab == ProgressReport) "progressreport" (SetSelectedTab ProgressReport) ]
             else
                 []
 
         tabs =
-            div [ class "ui tabular menu" ]
-                ([ tabItem Pending pendingActivities
-                 , tabItem Completed noPendingActivities
-                 ]
+            div [ class "ui tabular menu" ] <|
+                [ tabItem pendingTabTitle (selectedTab == Pending) "pending" (SetSelectedTab Pending)
+                , tabItem completedTabTitle (selectedTab == Completed) "completed" (SetSelectedTab Completed)
+                ]
                     ++ extraTabs
-                )
     in
         [ tabs, activeView ]
 

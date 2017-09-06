@@ -1,5 +1,6 @@
 port module ParticipantManager.Update exposing (update, subscriptions)
 
+import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
@@ -8,6 +9,7 @@ import Json.Decode exposing (decodeValue)
 import Json.Encode exposing (Value)
 import HttpBuilder exposing (get, withJsonBody, withQueryParams)
 import Pages.Activities.Update
+import Pages.Activity.Update
 import Pages.Participant.Model
 import Pages.Participant.Update
 import Pages.Participants.Model
@@ -69,10 +71,13 @@ update currentDate backendUrl accessToken user language msg model =
 
         FetchAll ->
             let
-                ( val, cmds ) =
+                ( val, cmd ) =
                     fetchAllParticipantsFromBackend backendUrl accessToken model
             in
-                ( val, cmds, Nothing )
+                if Dict.size model.participants == 0 then
+                    ( val, cmd, Nothing )
+                else
+                    ( model, Cmd.none, Nothing )
 
         MsgPagesActivities subMsg ->
             let
@@ -81,6 +86,40 @@ update currentDate backendUrl accessToken user language msg model =
             in
                 ( { model | activitiesPage = subModel }
                 , Cmd.map MsgPagesActivities subCmd
+                , redirectPage
+                )
+
+        MsgPagesActivity subMsg ->
+            let
+                ( participantUpdated, updatedActivityPage, subCmd, redirectPage ) =
+                    Pages.Activity.Update.update currentDate backendUrl accessToken user language subMsg model.activityPage
+
+                updatedModel =
+                    case participantUpdated of
+                        Just ( participantId, participant, updatedMeasurements ) ->
+                            case Dict.get participantId model.participantPage of
+                                Just participantPage ->
+                                    let
+                                        updatedParticipantPage =
+                                            { participantPage | measurements = updatedMeasurements }
+                                    in
+                                        { model
+                                            | activityPage = updatedActivityPage
+                                            , participants = Dict.insert participantId (Success participant) model.participants
+                                            , participantPage = Dict.insert participantId updatedParticipantPage model.participantPage
+                                        }
+
+                                Nothing ->
+                                    { model
+                                        | activityPage = updatedActivityPage
+                                        , participants = Dict.insert participantId (Success participant) model.participants
+                                    }
+
+                        Nothing ->
+                            { model | activityPage = updatedActivityPage }
+            in
+                ( updatedModel
+                , Cmd.map MsgPagesActivity subCmd
                 , redirectPage
                 )
 
@@ -97,7 +136,7 @@ update currentDate backendUrl accessToken user language msg model =
                                     |> Maybe.withDefault Pages.Participant.Model.emptyModel
 
                             ( participantUpdated, subModel, subCmd, redirectPage ) =
-                                Pages.Participant.Update.update currentDate backendUrl accessToken user language subMsg ( id, participant ) participantModel
+                                Pages.Participant.Update.update currentDate backendUrl accessToken user language ( id, participant ) subMsg participantModel
                         in
                             ( { model
                                 | participants = Dict.insert id (Success participantUpdated) model.participants
@@ -259,6 +298,19 @@ subscriptions model activePage =
                             [ Sub.map (MsgPagesParticipant participantId) (Pages.Participant.Update.subscriptions participantPage) ]
 
                         Nothing ->
+                            []
+
+                Activity maybeActivityType ->
+                    case maybeActivityType of
+                        Just (Child ChildPicture) ->
+                            case model.activityPage.selectedParticipant of
+                                Just ( participantId, participant ) ->
+                                    [ Sub.map MsgPagesActivity <| Pages.Activity.Update.subscriptions model.activityPage ( participantId, participant ) ]
+
+                                Nothing ->
+                                    []
+
+                        _ ->
                             []
 
                 _ ->
