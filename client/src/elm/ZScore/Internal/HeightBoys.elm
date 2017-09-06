@@ -1,13 +1,11 @@
-module ZScore.HeightBoys exposing (..)
+module ZScore.Internal.HeightBoys exposing (..)
 
-{-| This module represents height data derived from
+{-| This module represents data derived from
 
 <http://www.who.int/childgrowth/standards/lhfa_boys_z_exp.txt>
 
 The format here kind of matches that page, for the sake of
 avoiding any transcription errors.
-
-So, the "key" is the age in days.
 
 The (Float, Float) are the SD0 and SD1 values, in cm. (In theory,
 we could use the difference instead of SD1, but this is
@@ -16,20 +14,16 @@ easier to verify).
 If you paste in the data from the web pate referenced above,
 here's the `vim` command I used to transform it:
 
-:%s/^(\d+)(\t[0-9.]+){4}\t([0-9.]+)\t([0-9.]+).*/, (\1, (\3, \4))/
-
-Note that this is a bit of a naive implementation. If there
-are performance or memory issues, we may need to do something
-more sophisticated.
+    :%s/^\(\d\+\)\(\t[0-9.]\+\)\{4\}\t\([0-9.]\+\)\t\([0-9.]\+\).*/, (\1, (\3, \4))/
 
 -}
 
-import Dict exposing (Dict)
+import IntDict exposing (IntDict)
 
 
-data : Dict Int ( Float, Float )
+data : IntDict ( Float, Float )
 data =
-    Dict.fromList
+    IntDict.fromList
         [ ( 0, ( 49.884, 51.777 ) )
         , ( 1, ( 50.06, 51.955 ) )
         , ( 2, ( 50.236, 52.132 ) )
