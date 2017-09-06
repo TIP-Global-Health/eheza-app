@@ -77,4 +77,31 @@ describe('measurement module', function() {
     // Click save button.
     browser.click('div.muac button');
   });
+
+  it('should verify that deselect all capability works properly at Nutrition Form', () => {
+    const tab = 'Nutrition signs';
+
+    browser.login('aya');
+
+    browser.visitChildWithTodoTasks();
+
+    // Select tab.
+    browser.click('a=' + tab);
+
+    // Wait for the tab.
+    browser.waitForVisible('h3=Nutrition:');
+
+    browser.click('#dry-skin');
+    browser.verifyCheckboxChecked('#dry-skin');
+    browser.click('#edema');
+    browser.verifyCheckboxChecked('#edema');
+
+    browser.click('#none-of-these');
+    browser.verifyCheckboxChecked('#none-of-these');
+    browser.verifyCheckboxChecked('#dry-skin', false);
+    browser.verifyCheckboxChecked('#edema', false);
+
+    browser.click('#apathy');
+    browser.verifyCheckboxChecked('#none-of-these', false);
+  });
 })
