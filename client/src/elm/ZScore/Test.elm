@@ -156,6 +156,29 @@ zScoreForMuacTest =
         |> describe "zScoreForMuac"
 
 
+weightForHeightData : List ( Float, Float, Gender, ZScore )
+weightForHeightData =
+    [ ( 67.5, 8.3, Female, ZScore1 )
+    , ( 65, 6.25, Male, ZScore3 )
+    , ( 65, 6.5, Female, ZScore3 )
+    , ( 67.8, 7, Male, ZScore3 )
+    , ( 67.8, 9, Female, ZScore0 )
+    ]
+
+
+zScoreWeightForHeightTest : Test
+zScoreWeightForHeightTest =
+    weightForHeightData
+        |> List.map
+            (\( height, weight, gender, expected ) ->
+                test (toString height ++ " " ++ toString weight) <|
+                    \() ->
+                        zScoreWeightForHeight (Centimetres height) gender (Kilograms weight)
+                            |> Expect.equal (Just expected)
+            )
+        |> describe "zScoreWeightForHeight"
+
+
 all : Test
 all =
     describe "ZScore"
@@ -164,4 +187,5 @@ all =
         , zScoreForHeightTest
         , zScoreForMuacTest
         , zScoreForWeightTest
+        , zScoreWeightForHeightTest
         ]

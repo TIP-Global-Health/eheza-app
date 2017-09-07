@@ -9,6 +9,7 @@ module ZScore.Model
         , zScoreForHeight
         , zScoreForMuac
         , zScoreForWeight
+        , zScoreWeightForHeight
         )
 
 {-| This module determines a ZScore for various measurements, using an
@@ -23,6 +24,8 @@ import ZScore.Internal.MuacBoys as MuacBoys
 import ZScore.Internal.MuacGirls as MuacGirls
 import ZScore.Internal.WeightBoys as WeightBoys
 import ZScore.Internal.WeightGirls as WeightGirls
+import ZScore.Internal.WeightHeightBoys as WeightHeightBoys
+import ZScore.Internal.WeightHeightGirls as WeightHeightGirls
 
 
 {- We might want to re-use some of these types generally. In fact, there would
@@ -105,6 +108,31 @@ zScoreForWeight (AgeInDays age) gender (Kilograms kg) =
                     WeightGirls.data
     in
         zScoreFromData age kg data
+
+
+{-| Calculates the ZScore from the provided data.
+
+Returns a `Maybe` in case the age is out of the range of our data.
+
+-}
+zScoreWeightForHeight : Centimetres -> Gender -> Kilograms -> Maybe ZScore
+zScoreWeightForHeight (Centimetres cm) gender (Kilograms kg) =
+    let
+        data =
+            case gender of
+                Male ->
+                    WeightHeightBoys.data
+
+                Female ->
+                    WeightHeightGirls.data
+
+        -- This one is a little different, because the data is keyed by integer
+        -- millimetres. So, we take the float cm, multiply by 10, and round to
+        -- get to the closest key.
+        integerMillimetres =
+            round (cm * 10)
+    in
+        zScoreFromData integerMillimetres (cm / kg) data
 
 
 {-| A ZScore. This isn't really a number -- e.g. you can't
