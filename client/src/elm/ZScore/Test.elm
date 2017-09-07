@@ -133,11 +133,35 @@ zScoreForHeightTest =
         |> describe "zScoreForHeight"
 
 
+muacData : List ( Int, Float, Gender, ZScore )
+muacData =
+    [ ( 100, 12.05, Female, ZScore0 )
+    , ( 110, 13.695, Male, ZScore1 )
+    , ( 120, 12.8, Female, ZScore0 )
+    , ( 130, 11.89, Male, ZScore1Neg )
+    , ( 125, 13.39, Female, ZScore0 )
+    ]
+
+
+zScoreForMuacTest : Test
+zScoreForMuacTest =
+    muacData
+        |> List.map
+            (\( age, muac, gender, expected ) ->
+                test (toString age) <|
+                    \() ->
+                        zScoreForMuac (AgeInDays age) gender (Centimetres muac)
+                            |> Expect.equal (Just expected)
+            )
+        |> describe "zScoreForMuac"
+
+
 all : Test
 all =
     describe "ZScore"
         [ compareZScoreTest
         , viewZScoreTest
         , zScoreForHeightTest
+        , zScoreForMuacTest
         , zScoreForWeightTest
         ]

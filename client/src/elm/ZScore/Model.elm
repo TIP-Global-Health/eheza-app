@@ -7,6 +7,7 @@ module ZScore.Model
         , compareZScore
         , viewZScore
         , zScoreForHeight
+        , zScoreForMuac
         , zScoreForWeight
         )
 
@@ -18,6 +19,8 @@ import Child.Model exposing (Gender(..))
 import IntDict exposing (IntDict)
 import ZScore.Internal.HeightBoys as HeightBoys
 import ZScore.Internal.HeightGirls as HeightGirls
+import ZScore.Internal.MuacBoys as MuacBoys
+import ZScore.Internal.MuacGirls as MuacGirls
 import ZScore.Internal.WeightBoys as WeightBoys
 import ZScore.Internal.WeightGirls as WeightGirls
 
@@ -62,6 +65,25 @@ zScoreForHeight (AgeInDays age) gender (Centimetres cm) =
 
                 Female ->
                     HeightGirls.data
+    in
+        zScoreFromData age cm data
+
+
+{-| Calculates the ZScore from the provided data.
+
+Returns a `Maybe` in case the age is out of the range of our data.
+
+-}
+zScoreForMuac : AgeInDays -> Gender -> Centimetres -> Maybe ZScore
+zScoreForMuac (AgeInDays age) gender (Centimetres cm) =
+    let
+        data =
+            case gender of
+                Male ->
+                    MuacBoys.data
+
+                Female ->
+                    MuacGirls.data
     in
         zScoreFromData age cm data
 
