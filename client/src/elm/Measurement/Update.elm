@@ -4,6 +4,8 @@ import Activity.Model
     exposing
         ( ActivityType(..)
         , ChildActivityType(..)
+        , ChildNutritionSign(..)
+        , FamilyPlanningSign(..)
         , MotherActivityType(FamilyPlanning)
         )
 import Config.Model exposing (BackendUrl)
@@ -42,7 +44,14 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
                     if EveryDict.member sign model.familyPlanningSigns then
                         EveryDict.remove sign model.familyPlanningSigns
                     else
-                        EveryDict.insert sign () model.familyPlanningSigns
+                        case sign of
+                            -- 'None of these' checked. Need to empty all selected signs.
+                            NoFamilyPlanning ->
+                                EveryDict.insert sign () EveryDict.empty
+
+                            -- Another option checked checked. Need to uncheck 'None of these', if it's checked.
+                            _ ->
+                                EveryDict.insert sign () <| EveryDict.remove NoFamilyPlanning model.familyPlanningSigns
             in
                 ( { model | familyPlanningSigns = signsUpdated }
                 , Cmd.none
@@ -166,13 +175,20 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
         NutritionSignsSave ->
             postNutritionSigns backendUrl accessToken participantId model
 
-        NutritionSignsToggle nutritionSign ->
+        NutritionSignsToggle sign ->
             let
                 nutritionSignsUpdated =
-                    if EveryDict.member nutritionSign model.nutritionSigns then
-                        EveryDict.remove nutritionSign model.nutritionSigns
+                    if EveryDict.member sign model.nutritionSigns then
+                        EveryDict.remove sign model.nutritionSigns
                     else
-                        EveryDict.insert nutritionSign () model.nutritionSigns
+                        case sign of
+                            -- 'None of these' checked. Need to empty all selected signs.
+                            None ->
+                                EveryDict.insert sign () EveryDict.empty
+
+                            -- Another option checked checked. Need to uncheck 'None of these', if it's checked.
+                            _ ->
+                                EveryDict.insert sign () <| EveryDict.remove None model.nutritionSigns
             in
                 ( { model | nutritionSigns = nutritionSignsUpdated }
                 , Cmd.none
