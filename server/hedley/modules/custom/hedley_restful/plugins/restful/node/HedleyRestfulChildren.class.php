@@ -116,7 +116,7 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
     $query = new EntityFieldQuery();
     $result = $query
       ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', ['height', 'weight', 'muac'])
+      ->entityCondition('bundle', ['height', 'weight', 'muac', 'nutrition', 'photo'])
       ->propertyCondition('status', NODE_PUBLISHED)
       ->fieldCondition('field_child', 'target_id', $nid)
       ->range(0, 200)
@@ -140,9 +140,9 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
     }
 
     // So, this returns an array with a single examination.  That examination
-    // is a record, which contains an entry for `height`, `weight` and `muac`.
-    // The value for each entry is the restful output you'd get from `heights`,
-    // `weights`, `muacs`.
+    // is a record, which contains an entry for `height`, `weight`, `muac` and
+    // `nutrition`.  The value for each entry is the restful output you'd get
+    // from `heights`, `weights`, `muacs`, `nutritions`.
     return [$exam];
   }
 
