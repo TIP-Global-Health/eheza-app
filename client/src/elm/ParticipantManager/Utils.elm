@@ -10,7 +10,7 @@ module ParticipantManager.Utils
 import Child.Model exposing (Child, ChildId)
 import Dict exposing (Dict)
 import Mother.Model exposing (Mother, MotherId)
-import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantsDict)
+import Participant.Model exposing (Participant, ParticipantsDict, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..))
 import ParticipantManager.Model as ParticipantManager
 import RemoteData exposing (RemoteData(..), WebData)
 

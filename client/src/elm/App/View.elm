@@ -33,6 +33,15 @@ view model =
                         _ ->
                             div [] [ i [ class "notched circle loading icon" ] [] ]
 
+                Activity maybeSelectedActivity ->
+                    case model.user of
+                        Success user ->
+                            Html.map MsgParticipantManager <|
+                                ParticipantManager.View.viewPageActivity model.language model.currentDate maybeSelectedActivity model.pageParticipant
+
+                        _ ->
+                            div [] [ i [ class "notched circle loading icon" ] [] ]
+
                 Dashboard _ ->
                     case model.user of
                         Success user ->
@@ -245,9 +254,6 @@ viewMainContent model =
                 AccessDenied ->
                     div [] [ text <| translate language Trans.AccessDenied ]
 
-                Activities ->
-                    emptyNode
-
                 Login ->
                     Html.map PageLogin (Pages.Login.View.view language model.user model.pageLogin)
 
@@ -258,10 +264,7 @@ viewMainContent model =
                     -- We don't need to pass any cmds, so we can call the view directly
                     Pages.PageNotFound.View.view language
 
-                Dashboard _ ->
-                    emptyNode
-
-                Participant id ->
+                _ ->
                     emptyNode
     in
         case model.user of

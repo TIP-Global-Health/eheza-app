@@ -1,8 +1,8 @@
 module Measurement.View
     exposing
-        ( viewChild
+        ( muacIndication
+        , viewChild
         , viewMother
-        , muacIndication
         , viewMuacIndication
         )
 
@@ -33,11 +33,13 @@ import Measurement.Model
         , Msg(..)
         , Photo
         , PhotoId
+        , getFloatInputValue
         , getInputConstraintsHeight
         , getInputConstraintsMuac
         , getInputConstraintsWeight
         )
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
+import Round
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import Utils.Html exposing (divider, emptyNode, showIf, showMaybe)
 
@@ -118,14 +120,14 @@ viewFloatForm language floatMeasurement ( childId, child ) maybePreviousExaminat
         viewDiff =
             case ( floatMeasurement, measurementValue ) of
                 ( MuacFloat, Just value ) ->
-                    viewMuacIndication language (muacIndication value)
+                    viewMuacIndication language (muacIndication <| getFloatInputValue value)
 
                 _ ->
                     viewFloatDiff language floatMeasurement maybePreviousExamination measurementType model
 
         defaultAttr =
-            Maybe.map (\val -> [ value <| toString val ]) measurementValue
-                |> Maybe.withDefault []
+            Maybe.map (\val -> [ value val ]) measurementValue
+                |> Maybe.withDefault [ value "" ]
 
         inputAttrs =
             [ type_ "text"
@@ -133,7 +135,7 @@ viewFloatForm language floatMeasurement ( childId, child ) maybePreviousExaminat
             , name blockName
             , Attr.min <| toString constraints.minVal
             , Attr.max <| toString constraints.maxVal
-            , onInput <| (\v -> updateMsg <| Result.withDefault 0.0 <| String.toFloat v)
+            , onInput updateMsg
             ]
                 ++ defaultAttr
     in
@@ -298,10 +300,13 @@ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType
                     model.weight
     in
         case ( maybePreviousValue, maybeCurrentValue ) of
-            ( Just previousValue, Just currentValue ) ->
+            ( Just previousValue, Just currentInput ) ->
                 let
+                    currentValue =
+                        getFloatInputValue currentInput
+
                     diff =
-                        toString <| abs (currentValue - previousValue)
+                        Round.round 2 <| abs (currentValue - previousValue)
 
                     viewMessage isGain =
                         let
@@ -478,15 +483,23 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
 
                 None ->
                     ( Trans.ActivitiesNutritionSignsNoneLabel, "none-of-these" )
+
+        isChecked =
+            EverySet.member sign nutritionSigns
     in
         div [ class "ui checkbox" ]
             [ input
-                [ type_ "checkbox"
-                , id attributeValue
-                , name <| encodeChildNutritionSign sign
-                , onClick <| NutritionSignsToggle sign
-                , checked <| EverySet.member sign nutritionSigns
-                ]
+                ([ type_ "checkbox"
+                 , id attributeValue
+                 , name <| encodeChildNutritionSign sign
+                 , onClick <| NutritionSignsToggle sign
+                 , checked isChecked
+                 ]
+                    ++ if isChecked then
+                        [ class "checked" ]
+                       else
+                        []
+                )
                 []
             , label [ for attributeValue ]
                 [ text <| translate language body ]
@@ -577,16 +590,22 @@ viewFamilyPlanningSelectorItem language familyPlanningSigns sign =
 
                 Pill ->
                     ( Trans.ActivitiesFamilyPlanningSignsPillLabel, "pill" )
+
+        isChecked =
+            EverySet.member sign familyPlanningSigns
     in
         div [ class "ui checkbox" ]
             [ input
-                [ type_ "checkbox"
-                , id attributeValue
-
-                --, name <| encodeChildNutritionSign sign
-                , onClick <| FamilyPlanningSignsToggle sign
-                , checked <| EverySet.member sign familyPlanningSigns
-                ]
+                ([ type_ "checkbox"
+                 , id attributeValue
+                 , onClick <| FamilyPlanningSignsToggle sign
+                 , checked isChecked
+                 ]
+                    ++ if isChecked then
+                        [ class "checked" ]
+                       else
+                        []
+                )
                 []
             , label [ for attributeValue ]
                 [ text <| translate language body ]

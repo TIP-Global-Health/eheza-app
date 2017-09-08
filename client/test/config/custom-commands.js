@@ -193,10 +193,26 @@ module.exports = function (browser, capabilities, specs) {
     browser.elementIdClick(element.value.ELEMENT);
   });
 
+  /**
+   * Verifies if checkbox is clicked or not.
+   *
+   * @param {String} selector The css selector of the element to click.
+   * @param {Bool} state True, if verifying that checkbox should be checked.
+   */
+  browser.addCommand('verifyCheckboxChecked', (selector, state) => {
+    const checkboxClass = browser.getAttribute(selector, 'class');
+
+    if (state === true) {
+      assert.equal(checkboxClass, "checked", 'Checkbox with selector ' + selector + ' is not checked!');
+    }
+    else {
+      assert.notEqual(checkboxClass, "checked", 'Checkbox with selector ' + selector + ' is checked!');
+    }
+  });
+
   // Set the window size to avoid clipping things off.
   browser.windowHandleSize({
     width: 1500,
     height: 900
   });
-
 }

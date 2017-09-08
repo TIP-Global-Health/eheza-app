@@ -1,6 +1,7 @@
 module Pages.Activities.View exposing (view)
 
 import Activity.Utils exposing (getActivityList)
+import App.PageType exposing (Page(..))
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -8,6 +9,7 @@ import List as List
 import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
 import Participant.Model exposing (ParticipantTypeFilter(..), ParticipantsDict)
 import Translate as Trans exposing (translate, Language)
+import Utils.Html exposing (tabItem)
 
 
 view : Language -> ParticipantsDict -> Model -> List (Html Msg)
@@ -22,38 +24,25 @@ view language participants model =
         noPendingActivities =
             List.filter (\activity -> (Tuple.first activity.totals == 0)) allActivityList
 
-        tabItem tab activitiesList =
-            let
-                tabTitle =
-                    case tab of
-                        Pending ->
-                            Trans.ActivitiesToComplete
+        pendingTabTitle =
+            translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities
 
-                        Completed ->
-                            Trans.ActivitiesCompleted
-
-                tabClass tab =
-                    [ ( "item", True )
-                    , ( "active", model.activeTab == tab )
-                    ]
-            in
-                a
-                    [ classList <| tabClass tab
-                    , onClick <| SetActiveTab tab
-                    ]
-                    [ text <| translate language <| tabTitle <| List.length activitiesList ]
+        completedTabTitle =
+            translate language <| Trans.ActivitiesCompleted <| List.length noPendingActivities
 
         tabs =
             div [ class "ui tabular menu" ]
-                [ tabItem Pending pendingActivities
-                , tabItem Completed noPendingActivities
+                [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
+                , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
                 ]
 
         viewCard language identity =
             div
                 [ class "card" ]
                 [ div
-                    [ class "image" ]
+                    [ class "image"
+                    , onClick <| SetRedirectPage <| Activity <| Just identity.activity.activityType
+                    ]
                     [ span [ class <| "icon-task icon-task-" ++ identity.activity.icon ] [] ]
                 , div
                     [ class "content" ]
@@ -67,20 +56,23 @@ view language participants model =
                     ]
                 ]
 
-        selectedActivies =
-            case model.activeTab of
+        ( selectedActivies, emptySectionMessage ) =
+            case model.selectedTab of
                 Pending ->
-                    pendingActivities
+                    ( pendingActivities, translate language Trans.PendingSectionEmpty )
 
                 Completed ->
-                    noPendingActivities
+                    ( noPendingActivities, translate language Trans.CompletedSectionEmpty )
     in
         [ tabs
         , div
             [ class "ui full segment" ]
             [ div [ class "content" ]
                 [ div [ class "ui four cards" ] <|
-                    List.map (viewCard language) selectedActivies
+                    if List.isEmpty selectedActivies then
+                        [ span [] [ text emptySectionMessage ] ]
+                    else
+                        List.map (viewCard language) selectedActivies
                 ]
             , div [ class "actions" ]
                 [ button

@@ -1,14 +1,16 @@
 port module Pages.Participant.Update exposing (update, subscriptions, init)
 
 import Activity.Model exposing (ActivityType(Child), ChildActivityType(..))
-import App.Model exposing (DropzoneConfig)
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Examination.Model exposing (Examination(..), emptyExaminationChild, emptyExaminationMother)
+import FilePicker.Model
+import FilePicker.Update
 import Maybe.Extra exposing (isJust)
 import Measurement.Model
 import Measurement.Update
 import Pages.Participant.Model exposing (Model, Msg(..), emptyModel)
+import Pages.Participant.Utils exposing (sequenceExtra)
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..))
 import Participant.Utils exposing (getExamination, setExamination)
 import Pusher.Model exposing (PusherEventData(..))
@@ -32,9 +34,9 @@ init participant =
 
                 measurements =
                     { measurementModel
-                        | height = exam.height
-                        , weight = exam.weight
-                        , muac = exam.muac
+                        | height = Maybe.map toString exam.height
+                        , weight = Maybe.map toString exam.weight
+                        , muac = Maybe.map toString exam.muac
                     }
             in
                 { emptyModel | measurements = measurements }
@@ -44,8 +46,16 @@ init participant =
 just picking out the single examination that we've mocked for the participant.
 Eventually, we'll need to parameterize this in some way.
 -}
-update : BackendUrl -> String -> User -> Language -> Pages.Participant.Model.Msg -> ( ParticipantId, Participant ) -> Model -> ( Participant, Model, Cmd Pages.Participant.Model.Msg, Maybe Page )
-update backendUrl accessToken user language msg ( participantId, participant ) model =
+update :
+    BackendUrl
+    -> String
+    -> User
+    -> Language
+    -> ( ParticipantId, Participant )
+    -> Pages.Participant.Model.Msg
+    -> Model
+    -> ( Participant, Model, Cmd Pages.Participant.Model.Msg, Maybe Page )
+update backendUrl accessToken user language ( participantId, participant ) msg model =
     case msg of
         HandlePusherEventData event ->
             case event of
@@ -60,6 +70,17 @@ update backendUrl accessToken user language msg ( participantId, participant ) m
                     , Nothing
                     )
 
+        MsgFilePicker subMsg ->
+            let
+                ( subModel, cmd ) =
+                    FilePicker.Update.update backendUrl language subMsg model.filePicker
+            in
+                ( participant
+                , { model | filePicker = subModel }
+                , Cmd.map MsgFilePicker cmd
+                , Nothing
+                )
+
         MsgMeasurement subMsg ->
             let
                 ( measurementsUpdated, examinationUpdated, cmds, maybeActivityTypeCompleted ) =
@@ -68,70 +89,43 @@ update backendUrl accessToken user language msg ( participantId, participant ) m
                 modelWithMeasurements =
                     { model | measurements = measurementsUpdated }
 
-                selectedActivity =
+                additionalMsgs =
                     if isJust maybeActivityTypeCompleted then
-                        Maybe.map (\( _, redirectToActivity ) -> Just redirectToActivity) maybeActivityTypeCompleted
-                            |> Maybe.withDefault Nothing
+                        [ SetSelectedActivity Nothing ]
                     else
-                        model.selectedActivity
-
-                ( _, modelWithSelectedActivity, selectedActivityCmds, maybePage ) =
-                    update backendUrl accessToken user language (SetSelectedActivity selectedActivity) ( participantId, participant ) modelWithMeasurements
+                        []
             in
-                ( setExamination examinationUpdated participant
-                , modelWithSelectedActivity
-                , Cmd.batch
-                    [ Cmd.map MsgMeasurement cmds
-                    , selectedActivityCmds
-                    ]
-                , Nothing
-                )
+                sequenceExtra (update backendUrl accessToken user language ( participantId, participant ))
+                    additionalMsgs
+                    ( setExamination examinationUpdated participant
+                    , modelWithMeasurements
+                    , Cmd.map MsgMeasurement cmds
+                    , Nothing
+                    )
 
         SetRedirectPage page ->
             ( participant, model, Cmd.none, Just page )
 
         SetSelectedActivity maybeActivityType ->
-            ( participant
-            , { model | selectedActivity = maybeActivityType }
-            , setDropzone backendUrl language maybeActivityType
-            , Nothing
-            )
+            let
+                additionalMsgs =
+                    case maybeActivityType of
+                        Just (Child ChildPicture) ->
+                            [ MsgFilePicker <| FilePicker.Model.Bind ]
+
+                        _ ->
+                            [ MsgFilePicker <| FilePicker.Model.Unbind ]
+            in
+                sequenceExtra (update backendUrl accessToken user language ( participantId, participant ))
+                    additionalMsgs
+                    ( participant, { model | selectedActivity = maybeActivityType }, Cmd.none, Nothing )
 
         SetSelectedTab tab ->
-            ( participant
-            , { model | selectedTab = tab, selectedActivity = Nothing }
-            , Cmd.none
-            , Nothing
-            )
-
-
-{-| Activate the dropzone on a specific activity type.
--}
-setDropzone : String -> Language -> Maybe ActivityType -> Cmd Pages.Participant.Model.Msg
-setDropzone backendUrl language activity =
-    let
-        isActive =
-            case activity of
-                Just (Child ChildPicture) ->
-                    True
-
-                _ ->
-                    False
-
-        config =
-            { active = isActive
-            , backendUrl = backendUrl
-            , defaultMessage = translate language Trans.DropzoneDefaultMessage
-            }
-    in
-        dropzoneConfig config
+            sequenceExtra (update backendUrl accessToken user language ( participantId, participant ))
+                [ SetSelectedActivity Nothing ]
+                ( participant, { model | selectedTab = tab }, Cmd.none, Nothing )
 
 
 subscriptions : Model -> Sub Pages.Participant.Model.Msg
 subscriptions model =
     Sub.map MsgMeasurement <| Measurement.Update.subscriptions model.measurements
-
-
-{-| Send dropzone config to JS.
--}
-port dropzoneConfig : DropzoneConfig -> Cmd msg

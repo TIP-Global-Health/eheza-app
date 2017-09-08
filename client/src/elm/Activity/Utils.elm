@@ -7,12 +7,16 @@ module Activity.Utils
         , participantHasPendingActivity
         , hasAnyPendingChildActivity
         , hasAnyPendingMotherActivity
+        , hasPendingChildActivity
+        , hasPendingMotherActivity
         )
 
 import Activity.Model exposing (ActivityIdentity, ActivityListItem, ActivityType(..), ChildActivityType(..), MotherActivityType(..))
+import Child.Model exposing (Child)
 import Dict exposing (Dict)
 import Examination.Model exposing (ExaminationChild, ExaminationMother, emptyExaminationChild, emptyExaminationMother)
 import Maybe.Extra exposing (isNothing)
+import Mother.Model exposing (Mother)
 import Participant.Model exposing (Participant, ParticipantsDict, ParticipantTypeFilter(..), ParticipantType(..))
 
 
@@ -80,7 +84,7 @@ getActivityIdentity activityType =
                             ActivityIdentity "MUAC" "muac"
 
                         NutritionSigns ->
-                            ActivityIdentity "Nutrition signs" "nutrition"
+                            ActivityIdentity "Nutrition" "nutrition"
 
                         ProgressReport ->
                             ActivityIdentity "Progress reports" "bar chart"
@@ -116,7 +120,7 @@ getTotalsNumberPerActivity activityType participants =
                         Child childActivityType ->
                             List.head child.examinations
                                 |> Maybe.withDefault emptyExaminationChild
-                                |> hasPendingChildActivity childActivityType
+                                |> examinationHasPendingChildActivity childActivityType
                                 |> (\result ->
                                         if result then
                                             ( pending + 1, total + 1 )
@@ -132,7 +136,7 @@ getTotalsNumberPerActivity activityType participants =
                         Mother motherActivityType ->
                             List.head mother.examinations
                                 |> Maybe.withDefault emptyExaminationMother
-                                |> hasPendingMotherActivity motherActivityType
+                                |> examinationHasPendingMotherActivity motherActivityType
                                 |> (\result ->
                                         if result then
                                             ( pending + 1, total + 1 )
@@ -147,8 +151,19 @@ getTotalsNumberPerActivity activityType participants =
         participants
 
 
-hasPendingChildActivity : ChildActivityType -> ExaminationChild -> Bool
-hasPendingChildActivity childActivityType ex =
+{-| This is using a single examination for the child, so will need to change
+and become parameterized in some way.
+-}
+hasPendingChildActivity : Child -> ChildActivityType -> Bool
+hasPendingChildActivity child activityType =
+    child.examinations
+        |> List.head
+        |> Maybe.withDefault emptyExaminationChild
+        |> examinationHasPendingChildActivity activityType
+
+
+examinationHasPendingChildActivity : ChildActivityType -> ExaminationChild -> Bool
+examinationHasPendingChildActivity childActivityType ex =
     case childActivityType of
         ChildPicture ->
             isNothing ex.photo
@@ -173,8 +188,19 @@ hasPendingChildActivity childActivityType ex =
             True
 
 
-hasPendingMotherActivity : MotherActivityType -> ExaminationMother -> Bool
-hasPendingMotherActivity motherActivityType ex =
+{-| This is using a single examination for the child, so will need to change
+and become parameterized in some way.
+-}
+hasPendingMotherActivity : Mother -> MotherActivityType -> Bool
+hasPendingMotherActivity mother activityType =
+    mother.examinations
+        |> List.head
+        |> Maybe.withDefault emptyExaminationMother
+        |> examinationHasPendingMotherActivity activityType
+
+
+examinationHasPendingMotherActivity : MotherActivityType -> ExaminationMother -> Bool
+examinationHasPendingMotherActivity motherActivityType ex =
     case motherActivityType of
         FamilyPlanning ->
             -- We don't have this in `MotherExamination` yet, so it's
@@ -185,13 +211,13 @@ hasPendingMotherActivity motherActivityType ex =
 hasAnyPendingMotherActivity : ExaminationMother -> Bool
 hasAnyPendingMotherActivity ex =
     getAllMotherActivities
-        |> List.any ((flip hasPendingMotherActivity) ex)
+        |> List.any ((flip examinationHasPendingMotherActivity) ex)
 
 
 hasAnyPendingChildActivity : ExaminationChild -> Bool
 hasAnyPendingChildActivity ex =
     getAllChildActivities
-        |> List.any ((flip hasPendingChildActivity) ex)
+        |> List.any ((flip examinationHasPendingChildActivity) ex)
 
 
 {-| Just looking at the single examination for the moment

@@ -1,6 +1,13 @@
 port module Measurement.Update exposing (update, subscriptions)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(FamilyPlanning))
+import Activity.Model
+    exposing
+        ( ActivityType(..)
+        , ChildActivityType(..)
+        , ChildNutritionSign(..)
+        , FamilyPlanningSign(..)
+        , MotherActivityType(FamilyPlanning)
+        )
 import Config.Model exposing (BackendUrl)
 import EverySet exposing (EverySet)
 import Examination.Model exposing (Examination(..))
@@ -10,7 +17,15 @@ import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
 import Json.Encode exposing (Value)
 import Measurement.Decoder exposing (decodePhotoFromResponse)
 import Measurement.Encoder exposing (encodeFamilyPlanning, encodeHeight, encodeMuac, encodeNutritionSigns, encodePhoto, encodeWeight)
-import Measurement.Model exposing (CompletedAndRedirectToActivityTuple, Model, Msg(..))
+import Measurement.Model
+    exposing
+        ( CompletedAndRedirectToActivityTuple
+        , Model
+        , Msg(..)
+        , getFloatInputValue
+        , normalizeFloatFormInput
+        , normalizeFloatInput
+        )
 import Participant.Model exposing (Participant, ParticipantId)
 import RemoteData exposing (RemoteData(..))
 import Utils.WebData exposing (sendWithHandler)
@@ -51,7 +66,15 @@ update backendUrl accessToken participantId msg model examination =
                         if EverySet.member sign model.familyPlanningSigns then
                             EverySet.remove sign model.familyPlanningSigns
                         else
-                            EverySet.insert sign model.familyPlanningSigns
+                            case sign of
+                                -- 'None of these' checked. Need to empty all selected signs.
+                                NoFamilyPlanning ->
+                                    EverySet.insert sign EverySet.empty
+
+                                -- Another option checked checked. Need to uncheck 'None of these', if it's checked.
+                                _ ->
+                                    EverySet.insert sign <|
+                                        EverySet.remove NoFamilyPlanning model.familyPlanningSigns
                 in
                     ( { model | familyPlanningSigns = signsUpdated }
                     , Cmd.none
@@ -82,7 +105,7 @@ update backendUrl accessToken participantId msg model examination =
                         |> unchangedExaminationNoRedirect
 
             HandleHeightSave value (Ok ()) ->
-                ( { model | status = Success () }
+                ( { model | status = Success (), height = (normalizeFloatInput model.height) }
                 , mapExaminationChild (\ex -> { ex | height = Just value }) examination
                 , Cmd.none
                 , Just <| ( Child Height, Child Muac )
@@ -116,7 +139,7 @@ update backendUrl accessToken participantId msg model examination =
                         |> unchangedExaminationNoRedirect
 
             HandleMuacSave value (Ok ()) ->
-                ( { model | status = Success () }
+                ( { model | status = Success (), muac = (normalizeFloatInput model.muac) }
                 , mapExaminationChild (\ex -> { ex | muac = Just value }) examination
                 , Cmd.none
                 , Just <| ( Child Muac, Child NutritionSigns )
@@ -153,7 +176,7 @@ update backendUrl accessToken participantId msg model examination =
                         |> unchangedExaminationNoRedirect
 
             HandleWeightSave value (Ok ()) ->
-                ( { model | status = Success () }
+                ( { model | status = Success (), weight = (normalizeFloatInput model.weight) }
                 , mapExaminationChild (\ex -> { ex | weight = Just value }) examination
                 , Cmd.none
                 , Just <| ( Child Weight, Child Height )
@@ -170,13 +193,13 @@ update backendUrl accessToken participantId msg model examination =
                         |> unchangedExaminationNoRedirect
 
             HeightUpdate val ->
-                ( { model | height = Just val }
+                ( { model | height = Just (normalizeFloatFormInput val) }
                 , Cmd.none
                 )
                     |> unchangedExaminationNoRedirect
 
             MuacUpdate val ->
-                ( { model | muac = Just val }
+                ( { model | muac = Just (normalizeFloatFormInput val) }
                 , Cmd.none
                 )
                     |> unchangedExaminationNoRedirect
@@ -189,13 +212,21 @@ update backendUrl accessToken participantId msg model examination =
                 postNutritionSigns backendUrl accessToken participantId model
                     |> unchangedExaminationNoRedirect
 
-            NutritionSignsToggle nutritionSign ->
+            NutritionSignsToggle sign ->
                 let
                     nutritionSignsUpdated =
-                        if EverySet.member nutritionSign model.nutritionSigns then
-                            EverySet.remove nutritionSign model.nutritionSigns
+                        if EverySet.member sign model.nutritionSigns then
+                            EverySet.remove sign model.nutritionSigns
                         else
-                            EverySet.insert nutritionSign model.nutritionSigns
+                            case sign of
+                                -- 'None of these' checked. Need to empty all selected signs.
+                                None ->
+                                    EverySet.insert sign EverySet.empty
+
+                                -- Another option checked checked. Need to uncheck 'None of these', if it's checked.
+                                _ ->
+                                    EverySet.insert sign <|
+                                        EverySet.remove None model.nutritionSigns
                 in
                     ( { model | nutritionSigns = nutritionSignsUpdated }
                     , Cmd.none
@@ -221,7 +252,7 @@ update backendUrl accessToken participantId msg model examination =
                     |> unchangedExaminationNoRedirect
 
             WeightUpdate val ->
-                ( { model | weight = Just val }
+                ( { model | weight = Just (normalizeFloatFormInput val) }
                 , Cmd.none
                 )
                     |> unchangedExaminationNoRedirect
@@ -311,9 +342,9 @@ postWeight backendUrl accessToken childId model =
                 accessToken
                 model
                 "weights"
-                weight
+                (getFloatInputValue weight)
                 (encodeWeight childId)
-                (HandleWeightSave weight)
+                (HandleWeightSave (getFloatInputValue weight))
         )
         model.weight
         |> Maybe.withDefault ( model, Cmd.none )
@@ -330,9 +361,9 @@ postHeight backendUrl accessToken childId model =
                 accessToken
                 model
                 "heights"
-                height
+                (getFloatInputValue height)
                 (encodeHeight childId)
-                (HandleHeightSave height)
+                (HandleHeightSave (getFloatInputValue height))
         )
         model.height
         |> Maybe.withDefault ( model, Cmd.none )
@@ -349,9 +380,9 @@ postMuac backendUrl accessToken childId model =
                 accessToken
                 model
                 "muacs"
-                muac
+                (getFloatInputValue muac)
                 (encodeMuac childId)
-                (HandleMuacSave muac)
+                (HandleMuacSave (getFloatInputValue muac))
         )
         model.muac
         |> Maybe.withDefault ( model, Cmd.none )

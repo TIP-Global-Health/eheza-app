@@ -24,7 +24,7 @@ type alias FloatInputConstraints =
 
 
 type alias FloatInput =
-    Maybe Float
+    Maybe String
 
 
 type alias FileId =
@@ -55,15 +55,15 @@ type Msg
     | HandlePhotoSave (Result Http.Error ( PhotoId, Photo ))
     | HandleWeightSave Float (Result Http.Error ())
     | HeightSave
-    | HeightUpdate Float
-    | MuacUpdate Float
+    | HeightUpdate String
+    | MuacUpdate String
     | MuacSave
     | NutritionSignsToggle ChildNutritionSign
     | NutritionSignsSave
     | PhotoSave
     | ResetDropZone
     | WeightSave
-    | WeightUpdate Float
+    | WeightUpdate String
 
 
 {-| The strategy here, at least for now, is this:
@@ -138,3 +138,77 @@ emptyModel =
     , photo = ( Nothing, Nothing )
     , weight = Nothing
     }
+
+
+saveMeasurementMessage : Msg -> Bool
+saveMeasurementMessage msg =
+    case msg of
+        FamilyPlanningSignsSave ->
+            True
+
+        HeightSave ->
+            True
+
+        MuacSave ->
+            True
+
+        NutritionSignsSave ->
+            True
+
+        PhotoSave ->
+            True
+
+        WeightSave ->
+            True
+
+        _ ->
+            False
+
+
+getFloatInputValue : String -> Float
+getFloatInputValue input =
+    let
+        normilizedInput =
+            if String.endsWith "." input && (List.length <| String.indexes "." input) == 1 then
+                String.dropRight 1 input
+            else
+                input
+    in
+        case String.toFloat normilizedInput of
+            Ok value ->
+                value
+
+            Err error ->
+                0.0
+
+
+normalizeFloatFormInput : String -> String
+normalizeFloatFormInput input =
+    let
+        normilizedInput =
+            if String.endsWith "." input && (List.length <| String.indexes "." input) == 1 then
+                String.dropRight 1 input
+            else
+                input
+    in
+        case String.toFloat normilizedInput of
+            Ok value ->
+                input
+
+            Err error ->
+                if input == "." then
+                    "0."
+                else
+                    String.dropRight 1 input
+
+
+normalizeFloatInput : FloatInput -> FloatInput
+normalizeFloatInput floatInput =
+    let
+        input =
+            floatInput |> Maybe.withDefault "0.0"
+    in
+        if String.endsWith "." input && (List.length <| String.indexes "." input) == 1 then
+            Just <| String.dropRight 1 input
+        else
+            Just input

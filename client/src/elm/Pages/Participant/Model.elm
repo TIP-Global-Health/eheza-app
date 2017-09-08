@@ -9,12 +9,14 @@ module Pages.Participant.Model
 
 import Activity.Model exposing (ActivityType)
 import App.PageType exposing (Page(..))
+import FilePicker.Model
 import Measurement.Model
 import Pusher.Model exposing (PusherEventData)
 
 
 type Msg
     = HandlePusherEventData PusherEventData
+    | MsgFilePicker FilePicker.Model.Msg
     | MsgMeasurement Measurement.Model.Msg
     | SetRedirectPage Page
     | SetSelectedActivity (Maybe ActivityType)
@@ -31,6 +33,7 @@ type alias Model =
     { measurements : Measurement.Model.Model
     , selectedActivity : Maybe ActivityType
     , selectedTab : Tab
+    , filePicker : FilePicker.Model.Model
     }
 
 
@@ -39,6 +42,7 @@ emptyModel =
     { measurements = Measurement.Model.emptyModel
     , selectedActivity = Nothing
     , selectedTab = Pending
+    , filePicker = FilePicker.Model.emptyMode
     }
 
 

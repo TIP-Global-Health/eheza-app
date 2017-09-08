@@ -1,10 +1,13 @@
 module ParticipantManager.View
     exposing
         ( viewActivities
+        , viewPageActivity
         , viewPageParticipant
         , viewParticipants
         )
 
+import Activity.Model exposing (ActivityType)
+import Activity.Utils exposing (getActivityIdentity)
 import App.PageType
 import Date exposing (Date)
 import Dict
@@ -13,6 +16,8 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Pages.Activities.Model
 import Pages.Activities.View
+import Pages.Activity.Model
+import Pages.Activity.View
 import Pages.Participant.Model
 import Pages.Participant.Update
 import Pages.Participant.View
@@ -229,3 +234,49 @@ viewActivities language model =
                 :: (List.map (Html.map MsgPagesActivities) <|
                         Pages.Activities.View.view language participants model.activitiesPage
                    )
+
+
+viewPageActivity : Language -> Date -> Maybe ActivityType -> Model -> Html Msg
+viewPageActivity language currentDate maybeActivityType model =
+    let
+        activitytModel =
+            case maybeActivityType of
+                Just activityType ->
+                    let
+                        initialModel =
+                            model.activityPage
+                    in
+                        { initialModel | selectedActivity = activityType }
+
+                Nothing ->
+                    model.activityPage
+
+        participants =
+            unwrapParticipantsDict model.participants
+    in
+        div [ class "wrap" ] <|
+            viewPageActivityHeader activitytModel
+                :: (List.map (Html.map MsgPagesActivity) <|
+                        Pages.Activity.View.view language currentDate participants activitytModel
+                   )
+
+
+viewPageActivityHeader : Pages.Activity.Model.Model -> Html Msg
+viewPageActivityHeader pageActivity =
+    let
+        identity =
+            getActivityIdentity pageActivity.selectedActivity
+    in
+        div
+            [ class "ui basic head segment" ]
+            [ h1 [ class "ui header" ]
+                [ text identity.name ]
+            , a
+                [ class "link-back"
+                , onClick <|
+                    MsgPagesActivity <|
+                        Pages.Activity.Model.SetRedirectPage <|
+                            App.PageType.Activities
+                ]
+                [ span [ class "icon-back" ] [] ]
+            ]

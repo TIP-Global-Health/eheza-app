@@ -23,12 +23,11 @@ function hedley_patient_image_default_styles() {
   $styles['patient-photo'] = array(
     'label' => 'Patient photo',
     'effects' => array(
-      1 => array(
-        'name' => 'image_scale',
+      2 => array(
+        'name' => 'image_scale_and_crop',
         'data' => array(
           'width' => 200,
           'height' => 200,
-          'upscale' => 0,
         ),
         'weight' => 1,
       ),
