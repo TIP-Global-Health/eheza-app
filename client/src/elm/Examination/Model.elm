@@ -2,14 +2,11 @@ module Examination.Model exposing (..)
 
 import Utils.EditableWebData exposing (EditableWebData)
 import EveryDictList exposing (EveryDictList)
+import StorageKey exposing (StorageKey)
 
 
 type ExaminationId
     = ExaminationId Int
-
-
-type alias FloatInput =
-    Maybe Float
 
 
 {-| For some function signatures, we need a type that can either be a
@@ -22,19 +19,38 @@ type Examination
     | MotherExamination ExaminationMother
 
 
-{-| A record which ties together various child measurements
-that were taken together. Note that ultimately these are likely to need to get
-the full `EditableWebData` treatment, since they are indeed editable, and
-individually updated to the backend. And, they actually represent individual
-nodes on the backend, so they'll need a `Storage` wrapper as well. Will
-get to that shortly, no doubt -- for the moment, just hooking this into the
-UI at all.
+type HeightId
+    = HeightId Int
+
+
+type MuacId
+    = MuacId Int
+
+
+type WeightId
+    = WeightId Int
+
+
+{-| A record which ties together various child measurements that were taken
+together.
+
+This represents data from the backend, and should only be updated once the
+backend has actually been updated. There are structures in `Measurement.Model`
+that track in-progress edits on forms. (In theory, we could use something like
+`EditableWebData` here instead -- one would have to think through the
+advantages and disadvantages of doing so).
+
+Each of the measurements currently reflect separate nodes on the backend,
+so we need to track a node ID for each of them. We use the `StorageKey`
+construct to track whether the value has been saved or not. And, the whole
+thing is then wrapped in a `Maybe`, because the user might not have entered
+anything at all yet.
 -}
 type alias ExaminationChild =
-    { height : FloatInput
-    , muac : FloatInput
+    { height : Maybe ( StorageKey HeightId, Float )
+    , muac : Maybe ( StorageKey MuacId, Float )
     , photo : Maybe Int
-    , weight : FloatInput
+    , weight : Maybe ( StorageKey WeightId, Float )
     }
 
 

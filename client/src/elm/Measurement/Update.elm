@@ -11,7 +11,7 @@ import Activity.Model
 import Config.Model exposing (BackendUrl)
 import EverySet exposing (EverySet)
 import Examination.Model exposing (Examination(..))
-import Examination.Utils exposing (mapExaminationChild, mapExaminationMother)
+import Examination.Utils exposing (mapExaminationChild, mapExaminationMother, supplyMeasurement)
 import Http
 import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
 import Json.Encode exposing (Value)
@@ -106,7 +106,7 @@ update backendUrl accessToken participantId msg model examination =
 
             HandleHeightSave value (Ok ()) ->
                 ( { model | status = Success (), height = (normalizeFloatInput model.height) }
-                , mapExaminationChild (\ex -> { ex | height = Just value }) examination
+                , mapExaminationChild (\ex -> { ex | height = supplyMeasurement value ex.height }) examination
                 , Cmd.none
                 , Just <| ( Child Height, Child Muac )
                 )
@@ -140,7 +140,7 @@ update backendUrl accessToken participantId msg model examination =
 
             HandleMuacSave value (Ok ()) ->
                 ( { model | status = Success (), muac = (normalizeFloatInput model.muac) }
-                , mapExaminationChild (\ex -> { ex | muac = Just value }) examination
+                , mapExaminationChild (\ex -> { ex | muac = supplyMeasurement value ex.muac }) examination
                 , Cmd.none
                 , Just <| ( Child Muac, Child NutritionSigns )
                 )
@@ -177,7 +177,7 @@ update backendUrl accessToken participantId msg model examination =
 
             HandleWeightSave value (Ok ()) ->
                 ( { model | status = Success (), weight = (normalizeFloatInput model.weight) }
-                , mapExaminationChild (\ex -> { ex | weight = Just value }) examination
+                , mapExaminationChild (\ex -> { ex | weight = supplyMeasurement value ex.weight }) examination
                 , Cmd.none
                 , Just <| ( Child Weight, Child Height )
                 )

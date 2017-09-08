@@ -34,9 +34,9 @@ init participant =
 
                 measurements =
                     { measurementModel
-                        | height = Maybe.map toString exam.height
-                        , weight = Maybe.map toString exam.weight
-                        , muac = Maybe.map toString exam.muac
+                        | height = Maybe.map (Tuple.second >> toString) exam.height
+                        , weight = Maybe.map (Tuple.second >> toString) exam.weight
+                        , muac = Maybe.map (Tuple.second >> toString) exam.muac
                     }
             in
                 { emptyModel | measurements = measurements }

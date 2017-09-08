@@ -246,13 +246,13 @@ viewPreviousMeasurement language floatMeasurement maybePreviousExamination measu
                 maybePreviousValue =
                     case floatMeasurement of
                         HeightFloat ->
-                            previousExamination.height
+                            Maybe.map Tuple.second previousExamination.height
 
                         MuacFloat ->
-                            previousExamination.muac
+                            Maybe.map Tuple.second previousExamination.muac
 
                         WeightFloat ->
-                            previousExamination.weight
+                            Maybe.map Tuple.second previousExamination.weight
             in
                 Maybe.map
                     (\previousValue ->
@@ -277,13 +277,13 @@ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType
                 Just previousExamination ->
                     case floatMeasurement of
                         HeightFloat ->
-                            previousExamination.height
+                            Maybe.map Tuple.second previousExamination.height
 
                         MuacFloat ->
-                            previousExamination.muac
+                            Maybe.map Tuple.second previousExamination.muac
 
                         WeightFloat ->
-                            previousExamination.weight
+                            Maybe.map Tuple.second previousExamination.weight
 
                 Nothing ->
                     Nothing
