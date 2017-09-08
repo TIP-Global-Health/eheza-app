@@ -98,6 +98,7 @@ type TranslationId
     | NoActiveIncidents
     | NoChildrenRegisteredInTheSystem
     | NoParticipantsFound
+    | NotAvailable
     | NotConnected
     | Page404
     | PageNotFoundMsg
@@ -123,7 +124,8 @@ type TranslationId
     | TitleHealthAssessment
     | Username
     | WelcomeUser String
-    | ZScore
+    | ZScoreForAge
+    | ZScoreForHeight
 
 
 translate : Language -> TranslationId -> String
@@ -373,6 +375,9 @@ translate lang trans =
                 NoParticipantsFound ->
                     { english = "No participants found" }
 
+                NotAvailable ->
+                    { english = "not available" }
+
                 NotConnected ->
                     { english = "Not Connected" }
 
@@ -483,8 +488,11 @@ translate lang trans =
                 WelcomeUser name ->
                     { english = "Welcome " ++ name }
 
-                ZScore ->
-                    { english = "Z-Score: " }
+                ZScoreForAge ->
+                    { english = "Z-Score for age: " }
+
+                ZScoreForHeight ->
+                    { english = "Z-Score for height: " }
     in
         case lang of
             English ->

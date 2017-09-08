@@ -186,7 +186,7 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                     case participant.info of
                         ParticipantChild child ->
                             Html.map (MsgMeasurement ( participantId, participant )) <|
-                                Measurement.View.viewChild backendUrl accessToken currentUser language ( participantId, child ) (getLastExaminationFromChild child) (Just model.selectedActivity) model.measurements
+                                Measurement.View.viewChild backendUrl accessToken currentUser language currentDate ( participantId, child ) (getLastExaminationFromChild child) (Just model.selectedActivity) model.measurements
 
                         ParticipantMother mother ->
                             Html.map (MsgMeasurement ( participantId, participant )) <|

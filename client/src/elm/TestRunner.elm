@@ -7,11 +7,12 @@ import Test.Runner.Node exposing (TestProgram, run)
 
 -- Register Test Stubs Here
 
-import App.Test exposing (all)
-import Measurement.Test exposing (all)
-import Participant.Test exposing (all)
-import ProgressReport.Test exposing (all)
-import Pusher.Test exposing (all)
+import App.Test
+import Measurement.Test
+import Participant.Test
+import ProgressReport.Test
+import Pusher.Test
+import ZScore.Test
 
 
 allTests : Test
@@ -22,6 +23,7 @@ allTests =
         , Participant.Test.all
         , ProgressReport.Test.all
         , Pusher.Test.all
+        , ZScore.Test.all
         ]
 
 

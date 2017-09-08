@@ -18,6 +18,7 @@ import Activity.Model
         )
 import Child.Model exposing (Child, ChildId)
 import Config.Model exposing (BackendUrl)
+import Date exposing (Date)
 import EveryDict
 import Examination.Model exposing (ExaminationChild)
 import Html exposing (..)
@@ -41,15 +42,19 @@ import Measurement.Model
         , getInputConstraintsMuac
         , getInputConstraintsWeight
         )
+import Participant.Model
+import Participant.Utils exposing (getParticipantAge)
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
 import Round
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import User.Model exposing (..)
 import Utils.Html exposing (divider, emptyNode, showIf, showMaybe)
+import ZScore.Model exposing (Centimetres, Kilograms)
+import ZScore.Utils exposing (viewZScore, zScoreForHeight, zScoreForMuac, zScoreForWeight, zScoreWeightForHeight)
 
 
-viewChild : BackendUrl -> String -> User -> Language -> ( ChildId, Child ) -> Maybe ExaminationChild -> Maybe ActivityType -> Model -> Html Msg
-viewChild backendUrl accessToken user language ( childId, child ) maybePreviousExamination selectedActivity model =
+viewChild : BackendUrl -> String -> User -> Language -> Date -> ( ChildId, Child ) -> Maybe ExaminationChild -> Maybe ActivityType -> Model -> Html Msg
+viewChild backendUrl accessToken user language currentDate ( childId, child ) maybePreviousExamination selectedActivity model =
     showMaybe <|
         Maybe.map
             (\activity ->
@@ -60,16 +65,16 @@ viewChild backendUrl accessToken user language ( childId, child ) maybePreviousE
                                 viewPhoto backendUrl accessToken user language ( childId, child ) model
 
                             Height ->
-                                viewFloatForm backendUrl accessToken user language HeightFloat ( childId, child ) maybePreviousExamination model
+                                viewFloatForm backendUrl accessToken user language currentDate HeightFloat ( childId, child ) maybePreviousExamination model
 
                             Muac ->
-                                viewFloatForm backendUrl accessToken user language MuacFloat ( childId, child ) maybePreviousExamination model
+                                viewFloatForm backendUrl accessToken user language currentDate MuacFloat ( childId, child ) maybePreviousExamination model
 
                             NutritionSigns ->
                                 viewNutritionSigns backendUrl accessToken user language ( childId, child ) model
 
                             Weight ->
-                                viewFloatForm backendUrl accessToken user language WeightFloat ( childId, child ) maybePreviousExamination model
+                                viewFloatForm backendUrl accessToken user language currentDate WeightFloat ( childId, child ) maybePreviousExamination model
 
                             _ ->
                                 emptyNode
@@ -80,8 +85,8 @@ viewChild backendUrl accessToken user language ( childId, child ) maybePreviousE
             selectedActivity
 
 
-viewFloatForm : BackendUrl -> String -> User -> Language -> FloatMeasurements -> ( ChildId, Child ) -> Maybe ExaminationChild -> Model -> Html Msg
-viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, child ) maybePreviousExamination model =
+viewFloatForm : BackendUrl -> String -> User -> Language -> Date -> FloatMeasurements -> ( ChildId, Child ) -> Maybe ExaminationChild -> Model -> Html Msg
+viewFloatForm backendUrl accessToken user language currentDate floatMeasurement ( childId, child ) maybePreviousExamination model =
     let
         ( blockName, headerText, helpText, labelText, placeholderText, constraints, measurementValue, measurementType, ( updateMsg, saveMsg ) ) =
             case floatMeasurement of
@@ -121,6 +126,9 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     , ( WeightUpdate, WeightSave )
                     )
 
+        childParticipant =
+            { info = Participant.Model.ParticipantChild child }
+
         viewDiff =
             case ( floatMeasurement, measurementValue ) of
                 ( MuacFloat, Just value ) ->
@@ -142,6 +150,30 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
             , onInput updateMsg
             ]
                 ++ defaultAttr
+
+        calculatedZScoreForAge =
+            case ( floatMeasurement, measurementValue ) of
+                ( _, Just value ) ->
+                    case floatMeasurement of
+                        HeightFloat ->
+                            zScoreForHeight (getParticipantAge childParticipant currentDate) child.gender (ZScore.Model.Centimetres <| getFloatInputValue value)
+
+                        MuacFloat ->
+                            zScoreForMuac (getParticipantAge childParticipant currentDate) child.gender (ZScore.Model.Centimetres <| getFloatInputValue value)
+
+                        WeightFloat ->
+                            zScoreForWeight (getParticipantAge childParticipant currentDate) child.gender (ZScore.Model.Kilograms <| getFloatInputValue value)
+
+                _ ->
+                    Nothing
+
+        renderedZScoreForAge =
+            case calculatedZScoreForAge of
+                Just val ->
+                    viewZScore val
+
+                Nothing ->
+                    translate language Trans.NotAvailable
     in
         div
             [ class <| "ui full segment " ++ blockName ]
@@ -168,10 +200,10 @@ viewFloatForm backendUrl accessToken user language floatMeasurement ( childId, c
                     ]
                 , div
                     [ class "ui large header" ]
-                    [ text <| translate language Trans.ZScore
+                    [ text <| translate language Trans.ZScoreForAge
                     , span
                         [ class "sub header" ]
-                        [ text "Requires implementation" ]
+                        [ text renderedZScoreForAge ]
                     ]
                 ]
             , div
