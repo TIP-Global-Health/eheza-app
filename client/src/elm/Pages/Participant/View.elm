@@ -17,7 +17,7 @@ import Measurement.View
 import Mother.Model exposing (Mother, MotherId)
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
 import Participant.Model exposing (Participant, ParticipantId, ParticipantTypeFilter(..), ParticipantsDict)
-import Participant.Utils exposing (getParticipantAge, renderParticipantAge, renderParticipantDateOfBirth)
+import Participant.Utils exposing (renderParticipantAge, renderParticipantDateOfBirth)
 import ProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
@@ -74,7 +74,7 @@ viewChild language currentDate motherWebData ( childId, child ) model =
                 [ viewProgressReport language ( childId, child ) ]
             else
                 [ Html.map MsgMeasurement <|
-                    Measurement.View.viewChild language ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
+                    Measurement.View.viewChild language currentDate ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
                 ]
     in
         div [ class "ui unstackable items" ]

@@ -17,6 +17,7 @@ import Activity.Model
         , MotherActivityType(..)
         )
 import Child.Model exposing (Child, ChildId)
+import Date exposing (Date)
 import EverySet exposing (EverySet)
 import Examination.Model exposing (ExaminationChild)
 import Html exposing (..)
@@ -38,14 +39,23 @@ import Measurement.Model
         , getInputConstraintsMuac
         , getInputConstraintsWeight
         )
+import Participant.Model
+import Participant.Utils exposing (getParticipantAge)
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
 import Round
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import Utils.Html exposing (divider, emptyNode, showIf, showMaybe)
+import ZScore.Model exposing (Centimetres, Kilograms)
+import ZScore.Utils exposing (viewZScore, zScoreForHeight, zScoreForMuac, zScoreForWeight, zScoreWeightForHeight)
 
 
-viewChild : Language -> ( ChildId, Child ) -> Maybe ExaminationChild -> Maybe ActivityType -> Model -> Html Msg
-viewChild language ( childId, child ) maybePreviousExamination selectedActivity model =
+{-| This one needs the `currentDate` in order to calculate the age of the
+child, for the purpose of Z-scores. However, this will ultimately need to
+change, because the relevant age is not based on the current date, but instead
+the date on which the measurement was taken.
+-}
+viewChild : Language -> Date -> ( ChildId, Child ) -> Maybe ExaminationChild -> Maybe ActivityType -> Model -> Html Msg
+viewChild language currentDate ( childId, child ) maybePreviousExamination selectedActivity model =
     showMaybe <|
         Maybe.map
             (\activity ->
@@ -56,16 +66,16 @@ viewChild language ( childId, child ) maybePreviousExamination selectedActivity 
                                 viewPhoto language ( childId, child ) model
 
                             Height ->
-                                viewFloatForm language HeightFloat ( childId, child ) maybePreviousExamination model
+                                viewFloatForm language currentDate HeightFloat ( childId, child ) maybePreviousExamination model
 
                             Muac ->
-                                viewFloatForm language MuacFloat ( childId, child ) maybePreviousExamination model
+                                viewFloatForm language currentDate MuacFloat ( childId, child ) maybePreviousExamination model
 
                             NutritionSigns ->
                                 viewNutritionSigns language ( childId, child ) model
 
                             Weight ->
-                                viewFloatForm language WeightFloat ( childId, child ) maybePreviousExamination model
+                                viewFloatForm language currentDate WeightFloat ( childId, child ) maybePreviousExamination model
 
                             _ ->
                                 emptyNode
@@ -76,8 +86,8 @@ viewChild language ( childId, child ) maybePreviousExamination selectedActivity 
             selectedActivity
 
 
-viewFloatForm : Language -> FloatMeasurements -> ( ChildId, Child ) -> Maybe ExaminationChild -> Model -> Html Msg
-viewFloatForm language floatMeasurement ( childId, child ) maybePreviousExamination model =
+viewFloatForm : Language -> Date -> FloatMeasurements -> ( ChildId, Child ) -> Maybe ExaminationChild -> Model -> Html Msg
+viewFloatForm language currentDate floatMeasurement ( childId, child ) maybePreviousExamination model =
     let
         ( blockName, headerText, helpText, labelText, placeholderText, constraints, measurementValue, measurementType, ( updateMsg, saveMsg ) ) =
             case floatMeasurement of
@@ -117,6 +127,9 @@ viewFloatForm language floatMeasurement ( childId, child ) maybePreviousExaminat
                     , ( WeightUpdate, WeightSave )
                     )
 
+        childParticipant =
+            { info = Participant.Model.ParticipantChild child }
+
         viewDiff =
             case ( floatMeasurement, measurementValue ) of
                 ( MuacFloat, Just value ) ->
@@ -138,6 +151,32 @@ viewFloatForm language floatMeasurement ( childId, child ) maybePreviousExaminat
             , onInput updateMsg
             ]
                 ++ defaultAttr
+
+        calculatedZScoreForAge =
+            case ( floatMeasurement, measurementValue ) of
+                ( _, Just value ) ->
+                    case floatMeasurement of
+                        -- Eventually, we will need to use the date the
+                        -- measurement was taken, not the current date.
+                        HeightFloat ->
+                            zScoreForHeight (getParticipantAge childParticipant currentDate) child.gender (ZScore.Model.Centimetres <| getFloatInputValue value)
+
+                        MuacFloat ->
+                            zScoreForMuac (getParticipantAge childParticipant currentDate) child.gender (ZScore.Model.Centimetres <| getFloatInputValue value)
+
+                        WeightFloat ->
+                            zScoreForWeight (getParticipantAge childParticipant currentDate) child.gender (ZScore.Model.Kilograms <| getFloatInputValue value)
+
+                _ ->
+                    Nothing
+
+        renderedZScoreForAge =
+            case calculatedZScoreForAge of
+                Just val ->
+                    viewZScore val
+
+                Nothing ->
+                    translate language Trans.NotAvailable
     in
         div
             [ class <| "ui full segment " ++ blockName ]
@@ -164,10 +203,10 @@ viewFloatForm language floatMeasurement ( childId, child ) maybePreviousExaminat
                     ]
                 , div
                     [ class "ui large header" ]
-                    [ text <| translate language Trans.ZScore
+                    [ text <| translate language Trans.ZScoreForAge
                     , span
                         [ class "sub header" ]
-                        [ text "Requires implementation" ]
+                        [ text renderedZScoreForAge ]
                     ]
                 ]
             , div

@@ -19,7 +19,7 @@ viewChildFormsTest =
     let
         viewChildWithActivity selectedActivity model =
             Html.div [ Attr.class "test-container" ]
-                [ viewChild English ( 5, exampleChild ) Nothing selectedActivity model
+                [ viewChild English (Date.fromTime 1504858608000) ( 5, exampleChild ) Nothing selectedActivity model
                 ]
     in
         describe "A nurse visits the assesment of a Child" <|

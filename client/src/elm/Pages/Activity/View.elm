@@ -184,7 +184,7 @@ view language currentDate participantsDict model =
                     case participant.info of
                         ParticipantChild child ->
                             Html.map (MsgMeasurement ( participantId, participant )) <|
-                                Measurement.View.viewChild language ( participantId, child ) (getLastExaminationFromChild child) (Just model.selectedActivity) model.measurements
+                                Measurement.View.viewChild language currentDate ( participantId, child ) (getLastExaminationFromChild child) (Just model.selectedActivity) model.measurements
 
                         ParticipantMother mother ->
                             Html.map (MsgMeasurement ( participantId, participant )) <|
