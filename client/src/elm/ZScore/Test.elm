@@ -2,7 +2,7 @@ module ZScore.Test exposing (all)
 
 import Child.Model exposing (Gender(..))
 import Expect
-import Participant.Model exposing (AgeDay)
+import Participant.Model exposing (AgeDay(..))
 import Test exposing (Test, describe, test)
 import ZScore.Model exposing (..)
 
