@@ -11,13 +11,22 @@ module Utils.Json
         , decodeListAsIntDict
         , decodeListAsIntDictByProperty
         , decodeNullAsEmptyArray
+        , decodeSingleton
         )
 
 import Date exposing (Date)
 import Dict exposing (Dict)
-import Json.Decode exposing (Decoder, andThen, dict, fail, field, float, int, list, map, map2, nullable, oneOf, string, succeed, value)
+import Json.Decode exposing (Decoder, andThen, dict, fail, field, float, index, int, list, map, map2, nullable, oneOf, string, succeed, value)
 import Json.Decode.Extra exposing (date)
 import String
+
+
+{-| Given a decoder, applies it what Drupal wraps in a `data` field,
+and an array with one value.
+-}
+decodeSingleton : Decoder a -> Decoder a
+decodeSingleton =
+    field "data" << index 0
 
 
 decodeDate : Decoder Date
