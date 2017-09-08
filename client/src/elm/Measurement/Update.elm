@@ -13,8 +13,9 @@ import EverySet exposing (EverySet)
 import Examination.Model exposing (Examination(..))
 import Examination.Utils exposing (mapExaminationChild, mapExaminationMother, supplyMeasurement)
 import Http
-import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
+import HttpBuilder exposing (get, send, withJsonBody, withQueryParams, withExpect)
 import Json.Encode exposing (Value)
+import Json.Decode exposing (Decoder)
 import Measurement.Decoder exposing (decodePhotoFromResponse)
 import Measurement.Encoder exposing (encodeFamilyPlanning, encodeHeight, encodeMuac, encodeNutritionSigns, encodePhoto, encodeWeight)
 import Measurement.Model
@@ -28,6 +29,7 @@ import Measurement.Model
         )
 import Participant.Model exposing (Participant, ParticipantId)
 import RemoteData exposing (RemoteData(..))
+import StorageKey exposing (StorageKey(..))
 import Utils.WebData exposing (sendWithHandler)
 
 
@@ -306,6 +308,50 @@ postData backendUrl accessToken model path value encoder handler =
         ( { model | status = Loading }
         , command
         )
+
+
+{-| Some things that `upsert` needs to know.
+
+The pattern here is that we try to isolate those parameters which are purely
+dependennt on the types ... that is, which are static and will not vary. That
+way, we can pre-construct a configuration for each combination of types we're
+interested in. So, the moral equivalent of a type-class.
+
+The difference between `encodePost` and `encodePatch` is that `encodePost` needs
+to encode everything, for a record that doesn't exist yet. `encodePatch`, on the
+other hand, can encode only those things which we want to change -- it is only
+used if we have an existing record.
+-}
+type alias UpsertConfig key value msg =
+    { path : String
+    , encodeId : key -> String
+    , encodePost : value -> Value
+    , encodePatch : value -> Value
+    , decodeStorage : Decoder ( StorageKey key, value )
+    , handler : Result Http.Error ( StorageKey key, value ) -> msg
+    }
+
+
+{-| If we have an `Existing` storage key, then update the backend via `patch`.
+
+If we have a `New` storage key, insert it in the backend via `post`.
+-}
+upsert : UpsertConfig key value msg -> BackendUrl -> String -> ( StorageKey key, value ) -> Cmd msg
+upsert config backendUrl accessToken ( key, value ) =
+    case key of
+        Existing id ->
+            HttpBuilder.patch (backendUrl ++ "/api/" ++ config.path ++ "/" ++ config.encodeId id)
+                |> withQueryParams [ ( "access_token", accessToken ) ]
+                |> withJsonBody (config.encodePatch value)
+                |> withExpect (Http.expectJson config.decodeStorage)
+                |> send config.handler
+
+        New ->
+            HttpBuilder.post (backendUrl ++ "/api/" ++ config.path)
+                |> withQueryParams [ ( "access_token", accessToken ) ]
+                |> withJsonBody (config.encodePost value)
+                |> withExpect (Http.expectJson config.decodeStorage)
+                |> send config.handler
 
 
 {-| Send new photo of a child to the backend.
