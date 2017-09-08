@@ -20,6 +20,7 @@ type alias Model =
     }
 
 
-emptyMode =
+emptyModel : Model
+emptyModel =
     { isBound = False
     }

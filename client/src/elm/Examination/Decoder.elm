@@ -4,7 +4,6 @@ import Examination.Model exposing (..)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Measurement.Decoder exposing (decodeHeight, decodeWeight, decodeMuac)
-import Utils.Json exposing (decodeFloat, decodeInt)
 
 
 decodeExaminationChild : Decoder ExaminationChild

@@ -2,7 +2,6 @@ module Pages.Activity.View exposing (view)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Activity.Utils exposing (getActivityIdentity, hasPendingChildActivity, hasPendingMotherActivity)
-import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict
 import Examination.Utils exposing (getLastExaminationFromChild)
@@ -15,7 +14,6 @@ import Pages.Activity.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensio
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (getParticipantName, getParticipantAvatarThumb)
 import Translate as Trans exposing (translate, Language)
-import User.Model exposing (User)
 import Utils.Html exposing (emptyNode, tabItem, thumbnailImage)
 
 

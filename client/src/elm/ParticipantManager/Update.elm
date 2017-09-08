@@ -10,7 +10,6 @@ import Json.Encode exposing (Value)
 import HttpBuilder exposing (get, withJsonBody, withQueryParams)
 import Pages.Activities.Update
 import Pages.Activity.Update
-import Pages.Participant.Model
 import Pages.Participant.Update
 import Pages.Participants.Update
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..))

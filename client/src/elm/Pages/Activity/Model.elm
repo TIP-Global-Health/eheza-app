@@ -35,10 +35,11 @@ emptyModel =
     , selectedActivity = Child Height
     , selectedParticipant = Nothing
     , selectedTab = Pending
-    , filePicker = FilePicker.Model.emptyMode
+    , filePicker = FilePicker.Model.emptyModel
     }
 
 
+thumbnailDimensions : { height : Int, width : Int }
 thumbnailDimensions =
     { width = 96
     , height = 96

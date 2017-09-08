@@ -42,7 +42,7 @@ emptyModel =
     { measurements = Measurement.Model.emptyModel
     , selectedActivity = Nothing
     , selectedTab = Pending
-    , filePicker = FilePicker.Model.emptyMode
+    , filePicker = FilePicker.Model.emptyModel
     }
 
 
