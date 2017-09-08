@@ -8,25 +8,18 @@ import Activity.Model
         , FamilyPlanningSign(..)
         , MotherActivityType(FamilyPlanning)
         )
+import Child.Model exposing (ChildId)
 import Config.Model exposing (BackendUrl)
 import EverySet exposing (EverySet)
 import Examination.Model exposing (Examination(..))
-import Examination.Utils exposing (mapExaminationChild, mapExaminationMother, supplyMeasurement)
+import Examination.Utils exposing (mapExaminationChild, mapExaminationMother, supplyMeasurement, toExaminationChild)
 import Http
 import HttpBuilder exposing (get, send, withJsonBody, withQueryParams, withExpect)
 import Json.Encode exposing (Value)
 import Json.Decode exposing (Decoder)
-import Measurement.Decoder exposing (decodePhotoFromResponse)
+import Measurement.Decoder exposing (decodePhotoFromResponse, decodeWeight, decodeHeight, decodeMuac)
 import Measurement.Encoder exposing (encodeFamilyPlanning, encodeHeight, encodeMuac, encodeNutritionSigns, encodePhoto, encodeWeight)
-import Measurement.Model
-    exposing
-        ( CompletedAndRedirectToActivityTuple
-        , Model
-        , Msg(..)
-        , getFloatInputValue
-        , normalizeFloatFormInput
-        , normalizeFloatInput
-        )
+import Measurement.Model exposing (..)
 import Participant.Model exposing (Participant, ParticipantId)
 import RemoteData exposing (RemoteData(..))
 import StorageKey exposing (StorageKey(..))
@@ -106,14 +99,17 @@ update backendUrl accessToken participantId msg model examination =
                     )
                         |> unchangedExaminationNoRedirect
 
-            HandleHeightSave value (Ok ()) ->
-                ( { model | status = Success (), height = (normalizeFloatInput model.height) }
-                , mapExaminationChild (\ex -> { ex | height = supplyMeasurement value ex.height }) examination
+            HandleHeightSave (Ok value) ->
+                ( { model
+                    | status = Success ()
+                    , height = Just (toString (Tuple.second value))
+                  }
+                , mapExaminationChild (\ex -> { ex | height = Just value }) examination
                 , Cmd.none
                 , Just <| ( Child Height, Child Muac )
                 )
 
-            HandleHeightSave value (Err err) ->
+            HandleHeightSave (Err err) ->
                 let
                     _ =
                         Debug.log "HandleHeightSave (Err)" False
@@ -140,14 +136,17 @@ update backendUrl accessToken participantId msg model examination =
                     )
                         |> unchangedExaminationNoRedirect
 
-            HandleMuacSave value (Ok ()) ->
-                ( { model | status = Success (), muac = (normalizeFloatInput model.muac) }
-                , mapExaminationChild (\ex -> { ex | muac = supplyMeasurement value ex.muac }) examination
+            HandleMuacSave (Ok value) ->
+                ( { model
+                    | status = Success ()
+                    , muac = Just (toString (Tuple.second value))
+                  }
+                , mapExaminationChild (\ex -> { ex | muac = Just value }) examination
                 , Cmd.none
                 , Just <| ( Child Muac, Child NutritionSigns )
                 )
 
-            HandleMuacSave value (Err err) ->
+            HandleMuacSave (Err err) ->
                 let
                     _ =
                         Debug.log "HandleMuacSave (Err)" False
@@ -177,14 +176,17 @@ update backendUrl accessToken participantId msg model examination =
                     )
                         |> unchangedExaminationNoRedirect
 
-            HandleWeightSave value (Ok ()) ->
-                ( { model | status = Success (), weight = (normalizeFloatInput model.weight) }
-                , mapExaminationChild (\ex -> { ex | weight = supplyMeasurement value ex.weight }) examination
+            HandleWeightSave (Ok value) ->
+                ( { model
+                    | status = Success ()
+                    , weight = Just (toString (Tuple.second value))
+                  }
+                , mapExaminationChild (\ex -> { ex | weight = Just value }) examination
                 , Cmd.none
                 , Just <| ( Child Weight, Child Height )
                 )
 
-            HandleWeightSave value (Err err) ->
+            HandleWeightSave (Err err) ->
                 let
                     _ =
                         Debug.log "HandleWeightSave (Err)" False
@@ -207,8 +209,32 @@ update backendUrl accessToken participantId msg model examination =
                     |> unchangedExaminationNoRedirect
 
             MuacSave ->
-                postMuac backendUrl accessToken participantId model
-                    |> unchangedExaminationNoRedirect
+                let
+                    -- We apply the value from the UI to the value stored in
+                    -- the examination in order to send it to the backend.
+                    -- But, we only update the examination itself when we get
+                    -- the successful response from the backend.
+                    cmd =
+                        Maybe.map2
+                            (\muac ex ->
+                                upsert
+                                    (upsertMuac participantId)
+                                    backendUrl
+                                    accessToken
+                                    (supplyMeasurement (getFloatInputValue muac) ex.muac)
+                            )
+                            model.muac
+                            (toExaminationChild examination)
+                            |> Maybe.withDefault Cmd.none
+                in
+                    -- In principle, we shouldn't have a separate `status` ...
+                    -- instead, the measurement itself ought to be an
+                    -- `StorageEditableWebData` or something of the kind ...
+                    -- but leaving it like this for now.
+                    ( { model | status = Loading }
+                    , cmd
+                    )
+                        |> unchangedExaminationNoRedirect
 
             NutritionSignsSave ->
                 postNutritionSigns backendUrl accessToken participantId model
@@ -246,12 +272,60 @@ update backendUrl accessToken participantId msg model examination =
                     |> unchangedExaminationNoRedirect
 
             WeightSave ->
-                postWeight backendUrl accessToken participantId model
-                    |> unchangedExaminationNoRedirect
+                let
+                    -- We apply the value from the UI to the value stored in
+                    -- the examination in order to send it to the backend.
+                    -- But, we only update the examination itself when we get
+                    -- the successful response from the backend.
+                    cmd =
+                        Maybe.map2
+                            (\weight ex ->
+                                upsert
+                                    (upsertWeight participantId)
+                                    backendUrl
+                                    accessToken
+                                    (supplyMeasurement (getFloatInputValue weight) ex.weight)
+                            )
+                            model.weight
+                            (toExaminationChild examination)
+                            |> Maybe.withDefault Cmd.none
+                in
+                    -- In principle, we shouldn't have a separate `status` ...
+                    -- instead, the measurement itself ought to be an
+                    -- `StorageEditableWebData` or something of the kind ...
+                    -- but leaving it like this for now.
+                    ( { model | status = Loading }
+                    , cmd
+                    )
+                        |> unchangedExaminationNoRedirect
 
             HeightSave ->
-                postHeight backendUrl accessToken participantId model
-                    |> unchangedExaminationNoRedirect
+                let
+                    -- We apply the value from the UI to the value stored in
+                    -- the examination in order to send it to the backend.
+                    -- But, we only update the examination itself when we get
+                    -- the successful response from the backend.
+                    cmd =
+                        Maybe.map2
+                            (\height ex ->
+                                upsert
+                                    (upsertHeight participantId)
+                                    backendUrl
+                                    accessToken
+                                    (supplyMeasurement (getFloatInputValue height) ex.height)
+                            )
+                            model.height
+                            (toExaminationChild examination)
+                            |> Maybe.withDefault Cmd.none
+                in
+                    -- In principle, we shouldn't have a separate `status` ...
+                    -- instead, the measurement itself ought to be an
+                    -- `StorageEditableWebData` or something of the kind ...
+                    -- but leaving it like this for now.
+                    ( { model | status = Loading }
+                    , cmd
+                    )
+                        |> unchangedExaminationNoRedirect
 
             WeightUpdate val ->
                 ( { model | weight = Just (normalizeFloatFormInput val) }
@@ -317,24 +391,57 @@ dependennt on the types ... that is, which are static and will not vary. That
 way, we can pre-construct a configuration for each combination of types we're
 interested in. So, the moral equivalent of a type-class.
 
-The difference between `encodePost` and `encodePatch` is that `encodePost` needs
-to encode everything, for a record that doesn't exist yet. `encodePatch`, on the
-other hand, can encode only those things which we want to change -- it is only
-used if we have an existing record.
+The `encodeStorage` function should check whether the record is `New` or
+`Existing` and encode whatever is relevant.
+
 -}
 type alias UpsertConfig key value msg =
-    { path : String
+    { decodeStorage : Decoder ( StorageKey key, value )
     , encodeId : key -> String
-    , encodePost : value -> Value
-    , encodePatch : value -> Value
-    , decodeStorage : Decoder ( StorageKey key, value )
+    , encodeStorage : ( StorageKey key, value ) -> Value
     , handler : Result Http.Error ( StorageKey key, value ) -> msg
+    , path : String
+    }
+
+
+{-| Actually, the `ChildId` ought to be part of the `Weight` type ... but
+I'll leave that for now, as it may change depending on what will be done
+with the `Examination` type.
+-}
+upsertWeight : ChildId -> UpsertConfig WeightId Float Msg
+upsertWeight childId =
+    { decodeStorage = decodeWeight
+    , encodeId = \(WeightId id) -> toString id
+    , encodeStorage = encodeWeight childId
+    , handler = HandleWeightSave
+    , path = "weights"
+    }
+
+
+upsertHeight : ChildId -> UpsertConfig HeightId Float Msg
+upsertHeight childId =
+    { decodeStorage = decodeHeight
+    , encodeId = \(HeightId id) -> toString id
+    , encodeStorage = encodeHeight childId
+    , handler = HandleHeightSave
+    , path = "heights"
+    }
+
+
+upsertMuac : ChildId -> UpsertConfig MuacId Float Msg
+upsertMuac childId =
+    { decodeStorage = decodeMuac
+    , encodeId = \(MuacId id) -> toString id
+    , encodeStorage = encodeMuac childId
+    , handler = HandleMuacSave
+    , path = "muacs"
     }
 
 
 {-| If we have an `Existing` storage key, then update the backend via `patch`.
 
 If we have a `New` storage key, insert it in the backend via `post`.
+
 -}
 upsert : UpsertConfig key value msg -> BackendUrl -> String -> ( StorageKey key, value ) -> Cmd msg
 upsert config backendUrl accessToken ( key, value ) =
@@ -342,14 +449,14 @@ upsert config backendUrl accessToken ( key, value ) =
         Existing id ->
             HttpBuilder.patch (backendUrl ++ "/api/" ++ config.path ++ "/" ++ config.encodeId id)
                 |> withQueryParams [ ( "access_token", accessToken ) ]
-                |> withJsonBody (config.encodePatch value)
+                |> withJsonBody (config.encodeStorage ( key, value ))
                 |> withExpect (Http.expectJson config.decodeStorage)
                 |> send config.handler
 
         New ->
             HttpBuilder.post (backendUrl ++ "/api/" ++ config.path)
                 |> withQueryParams [ ( "access_token", accessToken ) ]
-                |> withJsonBody (config.encodePost value)
+                |> withJsonBody (config.encodeStorage ( key, value ))
                 |> withExpect (Http.expectJson config.decodeStorage)
                 |> send config.handler
 
@@ -375,63 +482,6 @@ postPhoto backendUrl accessToken childId model =
                 ( { model | status = Loading }
                 , command
                 )
-
-
-{-| Send new weight of a child to the backend.
--}
-postWeight : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg )
-postWeight backendUrl accessToken childId model =
-    Maybe.map
-        (\weight ->
-            postData
-                backendUrl
-                accessToken
-                model
-                "weights"
-                (getFloatInputValue weight)
-                (encodeWeight childId)
-                (HandleWeightSave (getFloatInputValue weight))
-        )
-        model.weight
-        |> Maybe.withDefault ( model, Cmd.none )
-
-
-{-| Send new height of a child to the backend.
--}
-postHeight : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg )
-postHeight backendUrl accessToken childId model =
-    Maybe.map
-        (\height ->
-            postData
-                backendUrl
-                accessToken
-                model
-                "heights"
-                (getFloatInputValue height)
-                (encodeHeight childId)
-                (HandleHeightSave (getFloatInputValue height))
-        )
-        model.height
-        |> Maybe.withDefault ( model, Cmd.none )
-
-
-{-| Send new MUAC of a child to the backend.
--}
-postMuac : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg )
-postMuac backendUrl accessToken childId model =
-    Maybe.map
-        (\muac ->
-            postData
-                backendUrl
-                accessToken
-                model
-                "muacs"
-                (getFloatInputValue muac)
-                (encodeMuac childId)
-                (HandleMuacSave (getFloatInputValue muac))
-        )
-        model.muac
-        |> Maybe.withDefault ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg

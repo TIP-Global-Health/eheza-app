@@ -4,18 +4,51 @@ import Activity.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..))
 import Child.Model exposing (ChildId)
 import EverySet exposing (EverySet)
 import Json.Encode as Encoder exposing (Value, float, int, list, string)
-import Measurement.Model exposing (FloatMeasurements(..))
+import Measurement.Model exposing (..)
 import Mother.Model exposing (MotherId)
+import StorageKey exposing (StorageKey(..))
 
 
-encodeHeight : ChildId -> Float -> Value
-encodeHeight childId value =
-    encodeFloatMeasurement childId HeightFloat value
+encodeHeight : ChildId -> ( StorageKey HeightId, Float ) -> Value
+encodeHeight childId ( key, value ) =
+    case key of
+        New ->
+            Encoder.object
+                [ ( "child", Encoder.int childId )
+                , ( "height", Encoder.float value )
+                ]
+
+        Existing _ ->
+            Encoder.object
+                [ ( "height", Encoder.float value ) ]
 
 
-encodeMuac : ChildId -> Float -> Value
-encodeMuac childId value =
-    encodeFloatMeasurement childId MuacFloat value
+encodeMuac : ChildId -> ( StorageKey MuacId, Float ) -> Value
+encodeMuac childId ( key, value ) =
+    case key of
+        New ->
+            Encoder.object
+                [ ( "child", Encoder.int childId )
+                , ( "muac", Encoder.float value )
+                ]
+
+        Existing _ ->
+            Encoder.object
+                [ ( "muac", Encoder.float value ) ]
+
+
+encodeWeight : ChildId -> ( StorageKey WeightId, Float ) -> Value
+encodeWeight childId ( key, value ) =
+    case key of
+        New ->
+            Encoder.object
+                [ ( "child", Encoder.int childId )
+                , ( "weight", Encoder.float value )
+                ]
+
+        Existing _ ->
+            Encoder.object
+                [ ( "weight", Encoder.float value ) ]
 
 
 encodeNutritionSign : ChildNutritionSign -> Value
@@ -97,28 +130,3 @@ encodePhoto childId value =
         [ ( "child", Encoder.int childId )
         , ( "photo", Encoder.int value )
         ]
-
-
-encodeWeight : ChildId -> Float -> Value
-encodeWeight childId value =
-    encodeFloatMeasurement childId WeightFloat value
-
-
-encodeFloatMeasurement : ChildId -> FloatMeasurements -> Float -> Value
-encodeFloatMeasurement childId floatMeasurement value =
-    let
-        key =
-            case floatMeasurement of
-                HeightFloat ->
-                    "height"
-
-                MuacFloat ->
-                    "muac"
-
-                WeightFloat ->
-                    "weight"
-    in
-        Encoder.object <|
-            [ ( "child", Encoder.int childId )
-            , ( key, Encoder.float value )
-            ]

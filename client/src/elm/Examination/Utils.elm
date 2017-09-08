@@ -1,4 +1,4 @@
-module Examination.Utils exposing (getLastExaminationFromChild, mapExaminationChild, mapExaminationMother, supplyMeasurement)
+module Examination.Utils exposing (getLastExaminationFromChild, mapExaminationChild, mapExaminationMother, supplyMeasurement, toExaminationChild, toExaminationMother)
 
 import Child.Model exposing (Child)
 import Examination.Model exposing (ExaminationChild, ExaminationMother, Examination(..), emptyExaminationChild, emptyExaminationMother)
@@ -18,6 +18,30 @@ getLastExaminationFromChild child =
         , photo = Nothing
         , weight = Just ( New, 4.0 )
         }
+
+
+{-| Extracts an `ExaminationChild` from an `Examination`, or `Nothing`
+if it is a `MotherExamination`. (The need to use this suggests our data
+modeling could be a bit better).
+-}
+toExaminationChild : Examination -> Maybe ExaminationChild
+toExaminationChild ex =
+    case ex of
+        ChildExamination childEx ->
+            Just childEx
+
+        MotherExamination _ ->
+            Nothing
+
+
+toExaminationMother : Examination -> Maybe ExaminationMother
+toExaminationMother ex =
+    case ex of
+        MotherExamination motherEx ->
+            Just motherEx
+
+        ChildExamination _ ->
+            Nothing
 
 
 {-| This is a convenience for cases in which we've got an `Examination` and
@@ -54,18 +78,19 @@ mapExaminationMother func examination =
 Now, when the user actually edits a value, we want to do
 a couple of things to this, depending the initial state.
 So, this is a helper for that.
+
 -}
-supplyMeasurement : v -> Maybe ( StorageKey k, v ) -> Maybe ( StorageKey k, v )
+supplyMeasurement : v -> Maybe ( StorageKey k, v ) -> ( StorageKey k, v )
 supplyMeasurement value storage =
     case storage of
         Nothing ->
             -- If it was `Nothing`, then we hadn't entered or retrieved
             -- anything at all. So, logically, now it is a 'new' value.
-            Just ( New, value )
+            ( New, value )
 
         Just ( New, _ ) ->
             -- Otherwise, we can just replace the value and keep the key
-            Just ( New, value )
+            ( New, value )
 
         Just ( Existing key, _ ) ->
-            Just ( Existing key, value )
+            ( Existing key, value )

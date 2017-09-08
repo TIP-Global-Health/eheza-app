@@ -8,6 +8,7 @@ import Activity.Model exposing (ActivityType, ChildNutritionSign, FamilyPlanning
 import EverySet exposing (EverySet)
 import Http
 import RemoteData exposing (RemoteData(..), WebData)
+import StorageKey exposing (StorageKey(..))
 
 
 {-| Indicate which Activity was completed, and to which Activity to redirect to.
@@ -61,11 +62,11 @@ type Msg
     | FamilyPlanningSignsToggle FamilyPlanningSign
     | HandleDropzoneUploadedFile Int
     | HandleFamilyPlanningSave (Result Http.Error ())
-    | HandleHeightSave Float (Result Http.Error ())
+    | HandleHeightSave (Result Http.Error ( StorageKey HeightId, Float ))
     | HandleNutritionSignsSave (Result Http.Error ())
-    | HandleMuacSave Float (Result Http.Error ())
+    | HandleMuacSave (Result Http.Error ( StorageKey MuacId, Float ))
     | HandlePhotoSave (Result Http.Error ( PhotoId, Photo ))
-    | HandleWeightSave Float (Result Http.Error ())
+    | HandleWeightSave (Result Http.Error ( StorageKey WeightId, Float ))
     | HeightSave
     | HeightUpdate String
     | MuacUpdate String
