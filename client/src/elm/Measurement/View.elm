@@ -50,7 +50,7 @@ import Translate as Trans exposing (Language(..), TranslationId, translate)
 import User.Model exposing (..)
 import Utils.Html exposing (divider, emptyNode, showIf, showMaybe)
 import ZScore.Model exposing (Centimetres, Kilograms)
-import ZScore.Utils exposing (viewZScore, zScoreForHeight, zScoreForMuac, zScoreForWeight)
+import ZScore.Utils exposing (viewZScore, zScoreForHeight, zScoreForMuac, zScoreForWeight, zScoreWeightForHeight)
 
 
 viewChild : BackendUrl -> String -> User -> Language -> Date -> ( ChildId, Child ) -> Maybe ExaminationChild -> Maybe ActivityType -> Model -> Html Msg
@@ -151,7 +151,7 @@ viewFloatForm backendUrl accessToken user language currentDate floatMeasurement 
             ]
                 ++ defaultAttr
 
-        zScore =
+        calculatedZScoreForAge =
             case ( floatMeasurement, measurementValue ) of
                 ( MuacFloat, Just value ) ->
                     case floatMeasurement of
@@ -167,13 +167,47 @@ viewFloatForm backendUrl accessToken user language currentDate floatMeasurement 
                 _ ->
                     Nothing
 
-        renderedZScore =
-            case zScore of
+        calculatedZScoreForHeight =
+            case ( floatMeasurement, measurementValue ) of
+                ( MuacFloat, Just value ) ->
+                    case floatMeasurement of
+                        HeightFloat ->
+                            Nothing
+
+                        MuacFloat ->
+                            Nothing
+
+                        WeightFloat ->
+                            case maybePreviousExamination of
+                                Nothing ->
+                                    Nothing
+
+                                Just previousExamination ->
+                                    case previousExamination.height of
+                                        Just height ->
+                                            zScoreWeightForHeight (ZScore.Model.Centimetres height) child.gender (ZScore.Model.Kilograms <| getFloatInputValue value)
+
+                                        Nothing ->
+                                            Nothing
+
+                _ ->
+                    Nothing
+
+        renderedZScoreForAge =
+            case calculatedZScoreForAge of
                 Just val ->
                     viewZScore val
 
                 Nothing ->
-                    "not available"
+                    translate language Trans.NotAvailable
+
+        renderedZScoreForHeight =
+            case calculatedZScoreForHeight of
+                Just val ->
+                    Just <| viewZScore val
+
+                Nothing ->
+                    Nothing
     in
         div
             [ class <| "ui full segment " ++ blockName ]
@@ -200,11 +234,24 @@ viewFloatForm backendUrl accessToken user language currentDate floatMeasurement 
                     ]
                 , div
                     [ class "ui large header" ]
-                    [ text <| translate language Trans.ZScore
+                    [ text <| translate language Trans.ZScoreForAge
                     , span
                         [ class "sub header" ]
-                        [ text renderedZScore ]
+                        [ text renderedZScoreForAge ]
                     ]
+                , case renderedZScoreForHeight of
+                    Just forHeight ->
+                        (div
+                            [ class "ui large header" ]
+                            [ text <| translate language Trans.ZScoreForAge
+                            , span
+                                [ class "sub header" ]
+                                [ text forHeight ]
+                            ]
+                        )
+
+                    Nothing ->
+                        emptyNode
                 ]
             , div
                 [ class "actions" ]
