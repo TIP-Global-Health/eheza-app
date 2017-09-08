@@ -167,32 +167,6 @@ viewFloatForm backendUrl accessToken user language currentDate floatMeasurement 
                 _ ->
                     Nothing
 
-        calculatedZScoreForHeight =
-            case ( floatMeasurement, measurementValue ) of
-                ( _, Just value ) ->
-                    case floatMeasurement of
-                        HeightFloat ->
-                            Nothing
-
-                        MuacFloat ->
-                            Nothing
-
-                        WeightFloat ->
-                            case maybePreviousExamination of
-                                Nothing ->
-                                    Nothing
-
-                                Just previousExamination ->
-                                    case previousExamination.height of
-                                        Just height ->
-                                            zScoreWeightForHeight (ZScore.Model.Centimetres height) child.gender (ZScore.Model.Kilograms <| getFloatInputValue value)
-
-                                        Nothing ->
-                                            Nothing
-
-                _ ->
-                    Nothing
-
         renderedZScoreForAge =
             case calculatedZScoreForAge of
                 Just val ->
@@ -200,14 +174,6 @@ viewFloatForm backendUrl accessToken user language currentDate floatMeasurement 
 
                 Nothing ->
                     translate language Trans.NotAvailable
-
-        renderedZScoreForHeight =
-            case calculatedZScoreForHeight of
-                Just val ->
-                    Just <| viewZScore val
-
-                Nothing ->
-                    Nothing
     in
         div
             [ class <| "ui full segment " ++ blockName ]
@@ -239,19 +205,6 @@ viewFloatForm backendUrl accessToken user language currentDate floatMeasurement 
                         [ class "sub header" ]
                         [ text renderedZScoreForAge ]
                     ]
-                , case renderedZScoreForHeight of
-                    Just forHeight ->
-                        (div
-                            [ class "ui large header" ]
-                            [ text <| translate language Trans.ZScoreForAge
-                            , span
-                                [ class "sub header" ]
-                                [ text forHeight ]
-                            ]
-                        )
-
-                    Nothing ->
-                        emptyNode
                 ]
             , div
                 [ class "actions" ]
