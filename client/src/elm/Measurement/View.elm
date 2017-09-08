@@ -153,7 +153,7 @@ viewFloatForm backendUrl accessToken user language currentDate floatMeasurement 
 
         calculatedZScoreForAge =
             case ( floatMeasurement, measurementValue ) of
-                ( MuacFloat, Just value ) ->
+                ( _, Just value ) ->
                     case floatMeasurement of
                         HeightFloat ->
                             zScoreForHeight (getParticipantAge childParticipant currentDate) child.gender (ZScore.Model.Centimetres <| getFloatInputValue value)
@@ -169,7 +169,7 @@ viewFloatForm backendUrl accessToken user language currentDate floatMeasurement 
 
         calculatedZScoreForHeight =
             case ( floatMeasurement, measurementValue ) of
-                ( MuacFloat, Just value ) ->
+                ( _, Just value ) ->
                     case floatMeasurement of
                         HeightFloat ->
                             Nothing
