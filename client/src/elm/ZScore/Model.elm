@@ -1,7 +1,6 @@
 module ZScore.Model
     exposing
-        ( AgeInDays(..)
-        , Centimetres(..)
+        ( Centimetres(..)
         , Kilograms(..)
         , ZScore(..)
         , compareZScore
@@ -18,6 +17,7 @@ algorithm described at <https://github.com/Gizra/ihangane/issues/303>.
 
 import Child.Model exposing (Gender(..))
 import IntDict exposing (IntDict)
+import Participant.Model exposing (AgeDay(..))
 import ZScore.Internal.HeightBoys as HeightBoys
 import ZScore.Internal.HeightGirls as HeightGirls
 import ZScore.Internal.MuacBoys as MuacBoys
@@ -35,14 +35,10 @@ import ZScore.Internal.WeightHeightGirls as WeightHeightGirls
    The types are mainly to avoid any confusion about what the units are. It
    forces the caller to do things like:
 
-       zScoreFromHeight (AgeInDays 27) Male (Centimetres 27)
+       zScoreFromHeight (AgeDay 27) Male (Centimetres 27)
 
    ... so that the caller has to think about what units are being provided.
 -}
-
-
-type AgeInDays
-    = AgeInDays Int
 
 
 type Centimetres
@@ -58,8 +54,8 @@ type Kilograms
 Returns a `Maybe` in case the age is out of the range of our data.
 
 -}
-zScoreForHeight : AgeInDays -> Gender -> Centimetres -> Maybe ZScore
-zScoreForHeight (AgeInDays age) gender (Centimetres cm) =
+zScoreForHeight : AgeDay -> Gender -> Centimetres -> Maybe ZScore
+zScoreForHeight (AgeDay age) gender (Centimetres cm) =
     let
         data =
             case gender of
@@ -77,8 +73,8 @@ zScoreForHeight (AgeInDays age) gender (Centimetres cm) =
 Returns a `Maybe` in case the age is out of the range of our data.
 
 -}
-zScoreForMuac : AgeInDays -> Gender -> Centimetres -> Maybe ZScore
-zScoreForMuac (AgeInDays age) gender (Centimetres cm) =
+zScoreForMuac : AgeDay -> Gender -> Centimetres -> Maybe ZScore
+zScoreForMuac (AgeDay age) gender (Centimetres cm) =
     let
         data =
             case gender of
@@ -96,8 +92,8 @@ zScoreForMuac (AgeInDays age) gender (Centimetres cm) =
 Returns a `Maybe` in case the age is out of the range of our data.
 
 -}
-zScoreForWeight : AgeInDays -> Gender -> Kilograms -> Maybe ZScore
-zScoreForWeight (AgeInDays age) gender (Kilograms kg) =
+zScoreForWeight : AgeDay -> Gender -> Kilograms -> Maybe ZScore
+zScoreForWeight (AgeDay age) gender (Kilograms kg) =
     let
         data =
             case gender of
