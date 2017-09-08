@@ -5,6 +5,7 @@ import Expect
 import Participant.Model exposing (AgeDay(..))
 import Test exposing (Test, describe, test)
 import ZScore.Model exposing (..)
+import ZScore.Utils exposing (..)
 
 
 viewZScoreTest : Test

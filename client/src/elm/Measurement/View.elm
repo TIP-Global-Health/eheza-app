@@ -49,7 +49,8 @@ import Round
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import User.Model exposing (..)
 import Utils.Html exposing (divider, emptyNode, showIf, showMaybe)
-import ZScore.Model exposing (Centimetres, Kilograms, viewZScore, zScoreForHeight, zScoreForMuac, zScoreForWeight)
+import ZScore.Model exposing (Centimetres, Kilograms)
+import ZScore.Utils exposing (viewZScore, zScoreForHeight, zScoreForMuac, zScoreForWeight)
 
 
 viewChild : BackendUrl -> String -> User -> Language -> Date -> ( ChildId, Child ) -> Maybe ExaminationChild -> Maybe ActivityType -> Model -> Html Msg
