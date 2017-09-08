@@ -35,6 +35,18 @@ type alias PhotoId =
     Int
 
 
+type HeightId
+    = HeightId Int
+
+
+type MuacId
+    = MuacId Int
+
+
+type WeightId
+    = WeightId Int
+
+
 type alias Photo =
     { url : String }
 

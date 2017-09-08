@@ -2,6 +2,7 @@ module Examination.Model exposing (..)
 
 import Utils.EditableWebData exposing (EditableWebData)
 import EveryDictList exposing (EveryDictList)
+import Measurement.Model exposing (HeightId, MuacId, WeightId)
 import StorageKey exposing (StorageKey)
 
 
@@ -17,18 +18,6 @@ better way to model some of this, or perhaps not.
 type Examination
     = ChildExamination ExaminationChild
     | MotherExamination ExaminationMother
-
-
-type HeightId
-    = HeightId Int
-
-
-type MuacId
-    = MuacId Int
-
-
-type WeightId
-    = WeightId Int
 
 
 {-| A record which ties together various child measurements that were taken
