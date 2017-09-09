@@ -4,7 +4,7 @@ import Activity.Model exposing (FamilyPlanningSign, ChildNutritionSign)
 import Utils.EditableWebData exposing (EditableWebData)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (HeightId, MuacId, WeightId, FamilyPlanningId, NutritionId)
-import StorageKey exposing (StorageKey)
+import StorageKey exposing (StorageKey(..))
 
 
 type ExaminationId
@@ -36,11 +36,15 @@ construct to track whether the value has been saved or not. And, the whole
 thing is then wrapped in a `Maybe`, because the user might not have entered
 anything at all yet.
 
+Except for nutrition and familyPlanning -- in those cases, we interpret
+an empty set as "no entry" -- you have to actually choose the "none"
+option to be considered to have made an entry.
+
 -}
 type alias ExaminationChild =
     { height : Maybe ( StorageKey HeightId, Float )
     , muac : Maybe ( StorageKey MuacId, Float )
-    , nutrition : Maybe ( StorageKey NutritionId, EverySet ChildNutritionSign )
+    , nutrition : ( StorageKey NutritionId, EverySet ChildNutritionSign )
     , photo : Maybe Int
     , weight : Maybe ( StorageKey WeightId, Float )
     }
@@ -50,7 +54,7 @@ emptyExaminationChild : ExaminationChild
 emptyExaminationChild =
     { height = Nothing
     , muac = Nothing
-    , nutrition = Nothing
+    , nutrition = ( New, EverySet.empty )
     , photo = Nothing
     , weight = Nothing
     }
@@ -59,11 +63,11 @@ emptyExaminationChild =
 {-| Record holding a completed examination of a Mother.
 -}
 type alias ExaminationMother =
-    { familyPlanning : Maybe ( StorageKey FamilyPlanningId, EverySet FamilyPlanningSign )
+    { familyPlanning : ( StorageKey FamilyPlanningId, EverySet FamilyPlanningSign )
     }
 
 
 emptyExaminationMother : ExaminationMother
 emptyExaminationMother =
-    { familyPlanning = Nothing
+    { familyPlanning = ( New, EverySet.empty )
     }

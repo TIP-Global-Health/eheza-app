@@ -14,6 +14,7 @@ module Activity.Utils
 import Activity.Model exposing (ActivityIdentity, ActivityListItem, ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Child.Model exposing (Child)
 import Dict exposing (Dict)
+import EverySet
 import Examination.Model exposing (ExaminationChild, ExaminationMother, emptyExaminationChild, emptyExaminationMother)
 import Maybe.Extra exposing (isNothing)
 import Mother.Model exposing (Mother)
@@ -178,9 +179,10 @@ examinationHasPendingChildActivity childActivityType ex =
             isNothing ex.muac
 
         NutritionSigns ->
-            -- We don't have this in `ExaminationChild` yet, so it's
-            -- necessarily pending.
-            True
+            -- In this case, it is an empty set that indicates that it is
+            -- pending.  You have to explicitly choose "none" to make it
+            -- completed.
+            EverySet.isEmpty (Tuple.second ex.nutrition)
 
         ProgressReport ->
             -- We don't have this in `ExaminationChild` yet, so it's
@@ -203,9 +205,10 @@ examinationHasPendingMotherActivity : MotherActivityType -> ExaminationMother ->
 examinationHasPendingMotherActivity motherActivityType ex =
     case motherActivityType of
         FamilyPlanning ->
-            -- We don't have this in `MotherExamination` yet, so it's
-            -- necessarily pending.
-            True
+            -- In this case, it is an empty set that indicates that it is
+            -- pending.  You have to explicitly choose "none" to make it
+            -- completed.
+            EverySet.isEmpty (Tuple.second ex.familyPlanning)
 
 
 hasAnyPendingMotherActivity : ExaminationMother -> Bool

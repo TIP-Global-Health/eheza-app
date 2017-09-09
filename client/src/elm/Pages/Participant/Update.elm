@@ -1,9 +1,10 @@
-port module Pages.Participant.Update exposing (update, subscriptions, init)
+port module Pages.Participant.Update exposing (init, update, subscriptions)
 
 import Activity.Model exposing (ActivityType(Child), ChildActivityType(..))
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Examination.Model exposing (Examination(..), emptyExaminationChild, emptyExaminationMother)
+import Examination.Utils exposing (toMeasurements)
 import FilePicker.Model
 import FilePicker.Update
 import Maybe.Extra exposing (isJust)
@@ -19,27 +20,11 @@ import User.Model exposing (..)
 
 
 {-| Construct a default model for a participant. This assumes one examination
-per participant, so will need to change.
+-per participant, so will need to change.
 -}
 init : Participant -> Model
 init participant =
-    case getExamination participant of
-        MotherExamination exam ->
-            emptyModel
-
-        ChildExamination exam ->
-            let
-                measurementModel =
-                    Measurement.Model.emptyModel
-
-                measurements =
-                    { measurementModel
-                        | height = Maybe.map (Tuple.second >> toString) exam.height
-                        , weight = Maybe.map (Tuple.second >> toString) exam.weight
-                        , muac = Maybe.map (Tuple.second >> toString) exam.muac
-                    }
-            in
-                { emptyModel | measurements = measurements }
+    { emptyModel | measurements = toMeasurements (getExamination participant) }
 
 
 {-| This is implicitly scoped to a particular examination ... for now, we're

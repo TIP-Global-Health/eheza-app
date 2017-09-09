@@ -1,7 +1,9 @@
-module Examination.Utils exposing (getLastExaminationFromChild, mapExaminationChild, mapExaminationMother, supplyMeasurement, toExaminationChild, toExaminationMother)
+module Examination.Utils exposing (getLastExaminationFromChild, mapExaminationChild, mapExaminationMother, supplyMeasurement, toMeasurements, toExaminationChild, toExaminationMother)
 
 import Child.Model exposing (Child)
+import EverySet
 import Examination.Model exposing (ExaminationChild, ExaminationMother, Examination(..), emptyExaminationChild, emptyExaminationMother)
+import Measurement.Model
 import StorageKey exposing (StorageKey(..))
 
 
@@ -15,7 +17,7 @@ getLastExaminationFromChild child =
     Just
         { height = Just ( New, 50.0 )
         , muac = Just ( New, 13.0 )
-        , nutrition = Nothing
+        , nutrition = ( New, EverySet.empty )
         , photo = Nothing
         , weight = Just ( New, 4.0 )
         }
@@ -95,3 +97,24 @@ supplyMeasurement value storage =
 
         Just ( Existing key, _ ) ->
             ( Existing key, value )
+
+
+toMeasurements : Examination -> Measurement.Model.Model
+toMeasurements examination =
+    let
+        emptyModel =
+            Measurement.Model.emptyModel
+    in
+        case examination of
+            MotherExamination exam ->
+                { emptyModel
+                    | familyPlanningSigns = Tuple.second exam.familyPlanning
+                }
+
+            ChildExamination exam ->
+                { emptyModel
+                    | height = Maybe.map (Tuple.second >> toString) exam.height
+                    , weight = Maybe.map (Tuple.second >> toString) exam.weight
+                    , muac = Maybe.map (Tuple.second >> toString) exam.muac
+                    , nutritionSigns = Tuple.second exam.nutrition
+                }
