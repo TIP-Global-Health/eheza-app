@@ -113,10 +113,18 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
    *   The examinations!
    */
   public function getExaminations($nid) {
+    $bundles = [
+      'height',
+      'weight',
+      'muac',
+      'nutrition',
+      'photo',
+    ];
+
     $query = new EntityFieldQuery();
     $result = $query
       ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', ['height', 'weight', 'muac', 'nutrition', 'photo'])
+      ->entityCondition('bundle', $bundles)
       ->propertyCondition('status', NODE_PUBLISHED)
       ->fieldCondition('field_child', 'target_id', $nid)
       ->range(0, 200)
