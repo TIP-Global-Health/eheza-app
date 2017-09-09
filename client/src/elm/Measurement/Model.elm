@@ -48,6 +48,14 @@ type WeightId
     = WeightId Int
 
 
+type NutritionId
+    = NutritionId Int
+
+
+type FamilyPlanningId
+    = FamilyPlanningId Int
+
+
 type alias Photo =
     { url : String }
 

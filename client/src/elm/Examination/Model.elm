@@ -1,8 +1,9 @@
 module Examination.Model exposing (..)
 
+import Activity.Model exposing (FamilyPlanningSign, ChildNutritionSign)
 import Utils.EditableWebData exposing (EditableWebData)
-import EveryDictList exposing (EveryDictList)
-import Measurement.Model exposing (HeightId, MuacId, WeightId)
+import EverySet exposing (EverySet)
+import Measurement.Model exposing (HeightId, MuacId, WeightId, FamilyPlanningId, NutritionId)
 import StorageKey exposing (StorageKey)
 
 
@@ -34,10 +35,12 @@ so we need to track a node ID for each of them. We use the `StorageKey`
 construct to track whether the value has been saved or not. And, the whole
 thing is then wrapped in a `Maybe`, because the user might not have entered
 anything at all yet.
+
 -}
 type alias ExaminationChild =
     { height : Maybe ( StorageKey HeightId, Float )
     , muac : Maybe ( StorageKey MuacId, Float )
+    , nutrition : Maybe ( StorageKey NutritionId, EverySet ChildNutritionSign )
     , photo : Maybe Int
     , weight : Maybe ( StorageKey WeightId, Float )
     }
@@ -47,6 +50,7 @@ emptyExaminationChild : ExaminationChild
 emptyExaminationChild =
     { height = Nothing
     , muac = Nothing
+    , nutrition = Nothing
     , photo = Nothing
     , weight = Nothing
     }
@@ -55,17 +59,11 @@ emptyExaminationChild =
 {-| Record holding a completed examination of a Mother.
 -}
 type alias ExaminationMother =
-    {}
+    { familyPlanning : Maybe ( StorageKey FamilyPlanningId, EverySet FamilyPlanningSign )
+    }
 
 
 emptyExaminationMother : ExaminationMother
 emptyExaminationMother =
-    {}
-
-
-type alias EveryDictListExaminationsChild =
-    EveryDictList ExaminationId (EditableWebData ExaminationChild)
-
-
-type alias EveryDictListExaminationsMother =
-    EveryDictList ExaminationId (EditableWebData ExaminationMother)
+    { familyPlanning = Nothing
+    }

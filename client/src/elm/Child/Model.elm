@@ -1,7 +1,7 @@
 module Child.Model exposing (..)
 
 import Date exposing (Date)
-import Examination.Model exposing (EveryDictListExaminationsChild, ExaminationChild, ExaminationId)
+import Examination.Model exposing (ExaminationChild, ExaminationId)
 
 
 type alias ChildId =

@@ -15,6 +15,7 @@ getLastExaminationFromChild child =
     Just
         { height = Just ( New, 50.0 )
         , muac = Just ( New, 13.0 )
+        , nutrition = Nothing
         , photo = Nothing
         , weight = Just ( New, 4.0 )
         }
