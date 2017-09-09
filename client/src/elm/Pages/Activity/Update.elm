@@ -4,6 +4,7 @@ import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
+import Examination.Utils exposing (toMeasurements)
 import FilePicker.Model
 import FilePicker.Update
 import Maybe.Extra exposing (isNothing)
@@ -77,11 +78,18 @@ update currentDate backendUrl accessToken user language msg model =
 
         SetSelectedParticipant maybeParticipant ->
             let
+                measurements =
+                    -- We're loading them from our single, mocked examintion, for the moment ...
+                    -- this will need to change.
+                    maybeParticipant
+                        |> Maybe.map (\( participantId, participant ) -> toMeasurements (getExamination participant))
+                        |> Maybe.withDefault Measurement.Model.emptyModel
+
                 ( updatedModel, additionaMsgs ) =
                     if maybeParticipant /= model.selectedParticipant then
                         ( { model
                             | selectedParticipant = maybeParticipant
-                            , measurements = Measurement.Model.emptyModel
+                            , measurements = measurements
                           }
                         , if isNothing maybeParticipant then
                             [ MsgFilePicker <| FilePicker.Model.Unbind ]
