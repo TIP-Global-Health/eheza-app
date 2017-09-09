@@ -107,7 +107,7 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', ['family_planning'])
       ->propertyCondition('status', NODE_PUBLISHED)
-      ->fieldCondition('field_child', 'target_id', $nid)
+      ->fieldCondition('field_mother', 'target_id', $nid)
       ->range(0, 200)
       ->execute();
 
@@ -120,16 +120,21 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
 
     foreach (node_load_multiple(array_keys($result['node'])) as $node) {
       if ($node->type == "family_planning") {
-        $handler = restful_get_restful_handler("family-plannings");
+        $handlerName = "family-plannings";
       }
       else {
-        $handler = restful_get_restful_handler($node->type . 's');
+        $handlerName = $node->type . 's';
       }
+
+      $handler = restful_get_restful_handler($handlerName);
 
       if ($handler) {
         $handler->setAccount($account);
         $rest = $handler->get($node->nid);
         $exam[$node->type] = $rest[0];
+      }
+      else {
+        error_log("No handler: " . $handlerName);
       }
     }
 
