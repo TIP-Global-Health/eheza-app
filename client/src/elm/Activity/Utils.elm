@@ -19,6 +19,7 @@ import Examination.Model exposing (ExaminationChild, ExaminationMother, emptyExa
 import Maybe.Extra exposing (isNothing)
 import Mother.Model exposing (Mother)
 import Participant.Model exposing (Participant, ParticipantsDict, ParticipantTypeFilter(..), ParticipantType(..))
+import StorageKey exposing (StorageKey, isNew)
 
 
 getActivityTypeList : ParticipantTypeFilter -> List ActivityType
@@ -163,6 +164,13 @@ hasPendingChildActivity child activityType =
         |> examinationHasPendingChildActivity activityType
 
 
+maybeStorageIsPending : Maybe ( StorageKey a, b ) -> Bool
+maybeStorageIsPending =
+    -- Basically, we're pending if we're `Nothing`, or if we haven't been
+    -- saved yet.
+    Maybe.map (Tuple.first >> isNew) >> Maybe.withDefault True
+
+
 examinationHasPendingChildActivity : ChildActivityType -> ExaminationChild -> Bool
 examinationHasPendingChildActivity childActivityType ex =
     case childActivityType of
@@ -170,19 +178,17 @@ examinationHasPendingChildActivity childActivityType ex =
             isNothing ex.photo
 
         Height ->
-            isNothing ex.height
+            maybeStorageIsPending ex.height
 
         Weight ->
-            isNothing ex.weight
+            maybeStorageIsPending ex.weight
 
         Muac ->
-            isNothing ex.muac
+            maybeStorageIsPending ex.muac
 
         NutritionSigns ->
-            -- In this case, it is an empty set that indicates that it is
-            -- pending.  You have to explicitly choose "none" to make it
-            -- completed.
-            EverySet.isEmpty (Tuple.second ex.nutrition)
+            -- No `Maybe` here, so just see if it's been saved
+            isNew (Tuple.first ex.nutrition)
 
         ProgressReport ->
             -- We don't have this in `ExaminationChild` yet, so it's
@@ -205,10 +211,7 @@ examinationHasPendingMotherActivity : MotherActivityType -> ExaminationMother ->
 examinationHasPendingMotherActivity motherActivityType ex =
     case motherActivityType of
         FamilyPlanning ->
-            -- In this case, it is an empty set that indicates that it is
-            -- pending.  You have to explicitly choose "none" to make it
-            -- completed.
-            EverySet.isEmpty (Tuple.second ex.familyPlanning)
+            isNew (Tuple.first ex.familyPlanning)
 
 
 hasAnyPendingMotherActivity : ExaminationMother -> Bool

@@ -76,17 +76,25 @@ encodeNutritionSign sign =
             string "poor-appetite"
 
 
-encodeNutritionSigns : ChildId -> EverySet ChildNutritionSign -> Value
-encodeNutritionSigns childId value =
+encodeNutritionSigns : ChildId -> ( StorageKey NutritionId, EverySet ChildNutritionSign ) -> Value
+encodeNutritionSigns childId ( key, value ) =
     let
         signsList =
-            List.map (\sign -> encodeNutritionSign sign) (EverySet.toList value)
+            value
+                |> EverySet.toList
+                |> List.map encodeNutritionSign
                 |> list
     in
-        Encoder.object <|
-            [ ( "child", Encoder.int childId )
-            , ( "nutrition_signs", signsList )
-            ]
+        case key of
+            New ->
+                Encoder.object
+                    [ ( "child", Encoder.int childId )
+                    , ( "nutrition_signs", signsList )
+                    ]
+
+            Existing _ ->
+                Encoder.object
+                    [ ( "nutrition_signs", signsList ) ]
 
 
 encodeFamilyPlanningSign : FamilyPlanningSign -> Value
@@ -111,17 +119,25 @@ encodeFamilyPlanningSign sign =
             string "pill"
 
 
-encodeFamilyPlanning : MotherId -> EverySet FamilyPlanningSign -> Value
-encodeFamilyPlanning motherId value =
+encodeFamilyPlanning : MotherId -> ( StorageKey FamilyPlanningId, EverySet FamilyPlanningSign ) -> Value
+encodeFamilyPlanning motherId ( key, value ) =
     let
         familyPlanning =
-            List.map (\method -> encodeFamilyPlanningSign method) (EverySet.toList value)
+            value
+                |> EverySet.toList
+                |> List.map encodeFamilyPlanningSign
                 |> list
     in
-        Encoder.object <|
-            [ ( "mother", Encoder.int motherId )
-            , ( "family_planning_signs", familyPlanning )
-            ]
+        case key of
+            New ->
+                Encoder.object
+                    [ ( "mother", Encoder.int motherId )
+                    , ( "family_planning_signs", familyPlanning )
+                    ]
+
+            Existing _ ->
+                Encoder.object
+                    [ ( "family_planning_signs", familyPlanning ) ]
 
 
 encodePhoto : ChildId -> Int -> Value

@@ -69,9 +69,9 @@ type Msg
     = FamilyPlanningSignsSave
     | FamilyPlanningSignsToggle FamilyPlanningSign
     | HandleDropzoneUploadedFile Int
-    | HandleFamilyPlanningSave (Result Http.Error ())
+    | HandleFamilyPlanningSave (Result Http.Error ( StorageKey FamilyPlanningId, EverySet FamilyPlanningSign ))
     | HandleHeightSave (Result Http.Error ( StorageKey HeightId, Float ))
-    | HandleNutritionSignsSave (Result Http.Error ())
+    | HandleNutritionSignsSave (Result Http.Error ( StorageKey NutritionId, EverySet ChildNutritionSign ))
     | HandleMuacSave (Result Http.Error ( StorageKey MuacId, Float ))
     | HandlePhotoSave (Result Http.Error ( PhotoId, Photo ))
     | HandleWeightSave (Result Http.Error ( StorageKey WeightId, Float ))

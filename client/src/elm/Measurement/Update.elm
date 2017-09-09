@@ -12,12 +12,12 @@ import Child.Model exposing (ChildId)
 import Config.Model exposing (BackendUrl)
 import EverySet exposing (EverySet)
 import Examination.Model exposing (Examination(..))
-import Examination.Utils exposing (mapExaminationChild, mapExaminationMother, supplyMeasurement, toExaminationChild)
+import Examination.Utils exposing (mapExaminationChild, mapExaminationMother, supplyMeasurement, toExaminationChild, toExaminationMother)
 import Http
 import HttpBuilder exposing (get, send, withJsonBody, withQueryParams, withExpect)
 import Json.Encode exposing (Value)
 import Json.Decode exposing (Decoder)
-import Measurement.Decoder exposing (decodePhotoFromResponse, decodeWeight, decodeHeight, decodeMuac)
+import Measurement.Decoder exposing (decodePhotoFromResponse, decodeWeight, decodeHeight, decodeMuac, decodeFamilyPlanning, decodeNutrition)
 import Measurement.Encoder exposing (encodeFamilyPlanning, encodeHeight, encodeMuac, encodeNutritionSigns, encodePhoto, encodeWeight)
 import Measurement.Model exposing (..)
 import Participant.Model exposing (Participant, ParticipantId)
@@ -53,8 +53,34 @@ update backendUrl accessToken participantId msg model examination =
     in
         case msg of
             FamilyPlanningSignsSave ->
-                postFamilyPlanning backendUrl accessToken participantId model
-                    |> unchangedExaminationNoRedirect
+                let
+                    -- We apply the value from the UI to the value stored in
+                    -- the examination in order to send it to the backend.
+                    -- But, we only update the examination itself when we get
+                    -- the successful response from the backend.
+                    cmd =
+                        toExaminationMother examination
+                            |> Maybe.map
+                                (\ex ->
+                                    if EverySet.isEmpty model.familyPlanningSigns then
+                                        Cmd.none
+                                    else
+                                        upsert
+                                            (upsertFamilyPlanning participantId)
+                                            backendUrl
+                                            accessToken
+                                            (supplyMeasurement model.familyPlanningSigns (Just ex.familyPlanning))
+                                )
+                            |> Maybe.withDefault Cmd.none
+                in
+                    -- In principle, we shouldn't have a separate `status` ...
+                    -- instead, the measurement itself ought to be an
+                    -- `StorageEditableWebData` or something of the kind ...
+                    -- but leaving it like this for now.
+                    ( { model | status = Loading }
+                    , cmd
+                    )
+                        |> unchangedExaminationNoRedirect
 
             FamilyPlanningSignsToggle sign ->
                 let
@@ -83,9 +109,12 @@ update backendUrl accessToken participantId msg model examination =
                 )
                     |> unchangedExaminationNoRedirect
 
-            HandleFamilyPlanningSave (Ok ()) ->
-                ( { model | status = Success () }
-                , examination
+            HandleFamilyPlanningSave (Ok value) ->
+                ( { model
+                    | status = Success ()
+                    , familyPlanningSigns = Tuple.second value
+                  }
+                , mapExaminationMother (\ex -> { ex | familyPlanning = value }) examination
                 , Cmd.none
                 , Just <| ( Mother FamilyPlanning, Mother FamilyPlanning )
                 )
@@ -120,11 +149,14 @@ update backendUrl accessToken participantId msg model examination =
                     )
                         |> unchangedExaminationNoRedirect
 
-            HandleNutritionSignsSave (Ok ()) ->
-                ( { model | status = Success () }
-                , examination
+            HandleNutritionSignsSave (Ok value) ->
+                ( { model
+                    | status = Success ()
+                    , nutritionSigns = Tuple.second value
+                  }
+                , mapExaminationChild (\ex -> { ex | nutrition = value }) examination
                 , Cmd.none
-                , Just <| ( Child NutritionSigns, Child ChildPicture )
+                , Just ( Child NutritionSigns, Child ChildPicture )
                 )
 
             HandleNutritionSignsSave (Err err) ->
@@ -238,8 +270,34 @@ update backendUrl accessToken participantId msg model examination =
                         |> unchangedExaminationNoRedirect
 
             NutritionSignsSave ->
-                postNutritionSigns backendUrl accessToken participantId model
-                    |> unchangedExaminationNoRedirect
+                let
+                    -- We apply the value from the UI to the value stored in
+                    -- the examination in order to send it to the backend.
+                    -- But, we only update the examination itself when we get
+                    -- the successful response from the backend.
+                    cmd =
+                        toExaminationChild examination
+                            |> Maybe.map
+                                (\ex ->
+                                    if EverySet.isEmpty model.nutritionSigns then
+                                        Cmd.none
+                                    else
+                                        upsert
+                                            (upsertNutrition participantId)
+                                            backendUrl
+                                            accessToken
+                                            (supplyMeasurement model.nutritionSigns (Just ex.nutrition))
+                                )
+                            |> Maybe.withDefault Cmd.none
+                in
+                    -- In principle, we shouldn't have a separate `status` ...
+                    -- instead, the measurement itself ought to be an
+                    -- `StorageEditableWebData` or something of the kind ...
+                    -- but leaving it like this for now.
+                    ( { model | status = Loading }
+                    , cmd
+                    )
+                        |> unchangedExaminationNoRedirect
 
             NutritionSignsToggle sign ->
                 let
@@ -335,56 +393,6 @@ update backendUrl accessToken participantId msg model examination =
                     |> unchangedExaminationNoRedirect
 
 
-{-| Send new family planning of a mother to the backend.
--}
-postFamilyPlanning : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg )
-postFamilyPlanning backendUrl accessToken motherId model =
-    if EverySet.isEmpty model.familyPlanningSigns then
-        ( model, Cmd.none )
-    else
-        postData
-            backendUrl
-            accessToken
-            model
-            "family-plannings"
-            model.familyPlanningSigns
-            (encodeFamilyPlanning motherId)
-            HandleFamilyPlanningSave
-
-
-{-| Send new nutrition signs of a child to the backend.
--}
-postNutritionSigns : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg )
-postNutritionSigns backendUrl accessToken childId model =
-    if EverySet.isEmpty model.nutritionSigns then
-        ( model, Cmd.none )
-    else
-        postData
-            backendUrl
-            accessToken
-            model
-            "nutritions"
-            model.nutritionSigns
-            (encodeNutritionSigns childId)
-            HandleNutritionSignsSave
-
-
-{-| Enables posting of arbitrary values to the provided back end so long as the encoder matches the desired type
--}
-postData : BackendUrl -> String -> Model -> String -> value -> (value -> Value) -> (Result Http.Error () -> Msg) -> ( Model, Cmd Msg )
-postData backendUrl accessToken model path value encoder handler =
-    let
-        command =
-            HttpBuilder.post (backendUrl ++ "/api/" ++ path)
-                |> withQueryParams [ ( "access_token", accessToken ) ]
-                |> withJsonBody (encoder value)
-                |> send handler
-    in
-        ( { model | status = Loading }
-        , command
-        )
-
-
 {-| Some things that `upsert` needs to know.
 
 The pattern here is that we try to isolate those parameters which are purely
@@ -436,6 +444,26 @@ upsertMuac childId =
     , encodeStorage = encodeMuac childId
     , handler = HandleMuacSave
     , path = "muacs"
+    }
+
+
+upsertFamilyPlanning : ChildId -> UpsertConfig FamilyPlanningId (EverySet FamilyPlanningSign) Msg
+upsertFamilyPlanning childId =
+    { decodeStorage = decodeFamilyPlanning
+    , encodeId = \(FamilyPlanningId id) -> toString id
+    , encodeStorage = encodeFamilyPlanning childId
+    , handler = HandleFamilyPlanningSave
+    , path = "family-plannings"
+    }
+
+
+upsertNutrition : ChildId -> UpsertConfig NutritionId (EverySet ChildNutritionSign) Msg
+upsertNutrition childId =
+    { decodeStorage = decodeNutrition
+    , encodeId = \(NutritionId id) -> toString id
+    , encodeStorage = encodeNutritionSigns childId
+    , handler = HandleNutritionSignsSave
+    , path = "nutritions"
     }
 
 
