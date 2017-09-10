@@ -85,7 +85,14 @@ view language currentDate currentUser participantsDict model =
 
                         imageView =
                             if String.isEmpty imageSrc then
-                                span [ class "icon-mother" ] []
+                                span
+                                    [ class "icon-participant"
+                                    , style
+                                        [ ( "height", (toString thumbnailDimensions.height) ++ "px" )
+                                        , ( "width", (toString thumbnailDimensions.width) ++ "px" )
+                                        ]
+                                    ]
+                                    []
                             else
                                 thumbnailImage imageSrc name thumbnailDimensions.height thumbnailDimensions.width
                     in

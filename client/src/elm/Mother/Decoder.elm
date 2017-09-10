@@ -15,7 +15,7 @@ decodeMother : Decoder Mother
 decodeMother =
     decode Mother
         |> required "label" string
-        |> optionalAt [ "avatar", "styles", "patient-photo" ] string "https://placehold.it/200x200"
+        |> optionalAt [ "avatar", "styles", "patient-photo" ] string ""
         |> required "children" (oneOf [ list int, decodeNullAsEmptyArray ])
         |> hardcoded NotAsked
         |> custom decodeMotherActivityDates
