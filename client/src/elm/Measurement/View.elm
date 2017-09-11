@@ -171,17 +171,8 @@ viewFloatForm backendUrl accessToken user language currentDate floatMeasurement 
             case model.height of
                 Just heightValue ->
                     case ( floatMeasurement, measurementValue ) of
-                        ( _, Just value ) ->
-                            case floatMeasurement of
-                                WeightFloat ->
-                                    let
-                                        _ =
-                                            Debug.log "wfl" value
-                                    in
-                                        zScoreWeightForHeight (ZScore.Model.Centimetres <| getFloatInputValue heightValue) child.gender (ZScore.Model.Kilograms <| getFloatInputValue value)
-
-                                _ ->
-                                    Nothing
+                        ( WeightFloat, Just value ) ->
+                            zScoreWeightForHeight (ZScore.Model.Centimetres <| getFloatInputValue heightValue) child.gender (ZScore.Model.Kilograms <| getFloatInputValue value)
 
                         _ ->
                             Nothing
