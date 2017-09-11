@@ -77,7 +77,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
                     Measurement.View.viewChild backendUrl accessToken currentUser language currentDate ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
                 ]
     in
-        div [ class "ui unstackable items" ]
+        div [ class "ui unstackable items participant-page child" ]
             [ div [ class "item" ]
                 [ div [ class "ui image" ]
                     [ thumbnailImage (ParticipantChild child) child.image childName thumbnailDimensions.height thumbnailDimensions.width ]
@@ -118,7 +118,7 @@ viewMother backendUrl accessToken language currentDate currentUser motherId moth
             -- @todo: Add mkMother
             Dict.insert motherId ({ info = Participant.Model.ParticipantMother mother }) Dict.empty
     in
-        div [ class "ui unstackable items" ]
+        div [ class "ui unstackable items participant-page mother" ]
             [ div [ class "item" ]
                 [ div [ class "ui image" ]
                     [ thumbnailImage (ParticipantMother mother) mother.image mother.name thumbnailDimensions.height thumbnailDimensions.width ]

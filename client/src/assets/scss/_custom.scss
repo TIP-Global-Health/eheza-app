@@ -407,6 +407,13 @@ h3.ui.header {
   }
 }
 
+.participant-page {
+  .icon-participant {
+    background-color: white;
+    border-radius: 0;
+    box-shadow: 0 0 10px rgba(0,0,0,0.35);
+  }
+}
 
 // Progress Bar
 
