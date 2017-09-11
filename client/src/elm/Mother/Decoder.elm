@@ -15,6 +15,7 @@ decodeMother : Decoder Mother
 decodeMother =
     decode Mother
         |> required "label" string
+        -- The default avatar comes from SASS , not from the Model.
         |> optionalAt [ "avatar", "styles", "patient-photo" ] string ""
         |> required "children" (oneOf [ list int, decodeNullAsEmptyArray ])
         |> hardcoded NotAsked
