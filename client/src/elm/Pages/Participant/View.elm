@@ -17,7 +17,7 @@ import Html.Events exposing (onClick)
 import Measurement.View
 import Mother.Model exposing (Mother, MotherId)
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
-import Participant.Model exposing (Participant, ParticipantId, ParticipantTypeFilter(..), ParticipantsDict)
+import Participant.Model exposing (Participant, ParticipantId, ParticipantType(ParticipantChild, ParticipantMother), ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (renderParticipantAge, renderParticipantDateOfBirth)
 import ProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -80,7 +80,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
         div [ class "ui unstackable items" ]
             [ div [ class "item" ]
                 [ div [ class "ui image" ]
-                    [ thumbnailImage child.image childName thumbnailDimensions.height thumbnailDimensions.width ]
+                    [ thumbnailImage (ParticipantChild child) child.image childName thumbnailDimensions.height thumbnailDimensions.width ]
                 , div [ class "content" ]
                     [ h2 [ class "ui header" ]
                         [ text childName ]
@@ -121,7 +121,7 @@ viewMother backendUrl accessToken language currentDate currentUser motherId moth
         div [ class "ui unstackable items" ]
             [ div [ class "item" ]
                 [ div [ class "ui image" ]
-                    [ thumbnailImage mother.image mother.name thumbnailDimensions.height thumbnailDimensions.width ]
+                    [ thumbnailImage (ParticipantMother mother) mother.image mother.name thumbnailDimensions.height thumbnailDimensions.width ]
                 , div [ class "content" ]
                     [ h2 [ class "ui header" ]
                         [ text mother.name ]
