@@ -11,7 +11,7 @@ module Utils.Json
         , decodeListAsIntDict
         , decodeListAsIntDictByProperty
         , decodeNullAsEmptyArray
-        , decodeSingleton
+        , decodeSingleDrupalEntity
         )
 
 import Date exposing (Date)
@@ -21,11 +21,28 @@ import Json.Decode.Extra exposing (date)
 import String
 
 
-{-| Given a decoder, applies it what Drupal wraps in a `data` field,
-and an array with one value.
+{-| Given a decoder for a Drupal entity, applies it to the kind of response Drupal
+sends when you do a PUT, POST, or PATCH.
+
+For instance, if you POST an entity, Drupal will send back the JSON for that entity,
+as the single element of an array, then wrapped in a `data` field, e.g.:
+
+    { data :
+        [
+            {
+                id: 27,
+                label: "The label",
+                ...
+            }
+        ]
+    }
+
+To decode this, write a decoder for the "inner" part (the actual entity), and then
+supply that as a parameter to `decodeSingleDrupalEntity`.
+
 -}
-decodeSingleton : Decoder a -> Decoder a
-decodeSingleton =
+decodeSingleDrupalEntity : Decoder a -> Decoder a
+decodeSingleDrupalEntity =
     field "data" << index 0
 
 

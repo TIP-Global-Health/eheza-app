@@ -23,7 +23,7 @@ import Measurement.Model exposing (..)
 import Participant.Model exposing (Participant, ParticipantId)
 import RemoteData exposing (RemoteData(..))
 import StorageKey exposing (StorageKey(..))
-import Utils.Json exposing (decodeSingleton)
+import Utils.Json exposing (decodeSingleDrupalEntity)
 import Utils.WebData exposing (sendWithHandler)
 
 
@@ -479,14 +479,14 @@ upsert config backendUrl accessToken ( key, value ) =
             HttpBuilder.patch (backendUrl ++ "/api/" ++ config.path ++ "/" ++ config.encodeId id)
                 |> withQueryParams [ ( "access_token", accessToken ) ]
                 |> withJsonBody (config.encodeStorage ( key, value ))
-                |> withExpect (Http.expectJson (decodeSingleton config.decodeStorage))
+                |> withExpect (Http.expectJson (decodeSingleDrupalEntity config.decodeStorage))
                 |> send config.handler
 
         New ->
             HttpBuilder.post (backendUrl ++ "/api/" ++ config.path)
                 |> withQueryParams [ ( "access_token", accessToken ) ]
                 |> withJsonBody (config.encodeStorage ( key, value ))
-                |> withExpect (Http.expectJson (decodeSingleton config.decodeStorage))
+                |> withExpect (Http.expectJson (decodeSingleDrupalEntity config.decodeStorage))
                 |> send config.handler
 
 
