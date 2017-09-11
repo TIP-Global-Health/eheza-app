@@ -14,7 +14,7 @@ encodeHeight childId ( key, value ) =
     case key of
         New ->
             Encoder.object
-                [ ( "child", Encoder.int childId )
+                [ childField childId
                 , ( "height", Encoder.float value )
                 ]
 
@@ -28,7 +28,7 @@ encodeMuac childId ( key, value ) =
     case key of
         New ->
             Encoder.object
-                [ ( "child", Encoder.int childId )
+                [ childField childId
                 , ( "muac", Encoder.float value )
                 ]
 
@@ -42,13 +42,18 @@ encodeWeight childId ( key, value ) =
     case key of
         New ->
             Encoder.object
-                [ ( "child", Encoder.int childId )
+                [ childField childId
                 , ( "weight", Encoder.float value )
                 ]
 
         Existing _ ->
             Encoder.object
                 [ ( "weight", Encoder.float value ) ]
+
+
+childField : ChildId -> ( String, Value )
+childField childId =
+    ( "child", Encoder.int childId )
 
 
 encodeNutritionSign : ChildNutritionSign -> Value
@@ -143,6 +148,6 @@ encodeFamilyPlanning motherId ( key, value ) =
 encodePhoto : ChildId -> Int -> Value
 encodePhoto childId value =
     Encoder.object <|
-        [ ( "child", Encoder.int childId )
+        [ childField childId
         , ( "photo", Encoder.int value )
         ]

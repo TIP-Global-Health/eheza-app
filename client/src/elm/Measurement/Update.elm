@@ -61,7 +61,7 @@ update backendUrl accessToken participantId msg model examination =
                     cmd =
                         toExaminationMother examination
                             |> Maybe.map
-                                (\ex ->
+                                (\exam ->
                                     if EverySet.isEmpty model.familyPlanningSigns then
                                         Cmd.none
                                     else
@@ -69,7 +69,7 @@ update backendUrl accessToken participantId msg model examination =
                                             (upsertFamilyPlanning participantId)
                                             backendUrl
                                             accessToken
-                                            (supplyMeasurement model.familyPlanningSigns (Just ex.familyPlanning))
+                                            (supplyMeasurement model.familyPlanningSigns (Just exam.familyPlanning))
                                 )
                             |> Maybe.withDefault Cmd.none
                 in
@@ -114,7 +114,7 @@ update backendUrl accessToken participantId msg model examination =
                     | status = Success ()
                     , familyPlanningSigns = Tuple.second value
                   }
-                , mapExaminationMother (\ex -> { ex | familyPlanning = value }) examination
+                , mapExaminationMother (\exam -> { exam | familyPlanning = value }) examination
                 , Cmd.none
                 , Just <| ( Mother FamilyPlanning, Mother FamilyPlanning )
                 )
@@ -134,7 +134,7 @@ update backendUrl accessToken participantId msg model examination =
                     | status = Success ()
                     , height = Just (toString (Tuple.second value))
                   }
-                , mapExaminationChild (\ex -> { ex | height = Just value }) examination
+                , mapExaminationChild (\exam -> { exam | height = Just value }) examination
                 , Cmd.none
                 , Just <| ( Child Height, Child Muac )
                 )
@@ -154,7 +154,7 @@ update backendUrl accessToken participantId msg model examination =
                     | status = Success ()
                     , nutritionSigns = Tuple.second value
                   }
-                , mapExaminationChild (\ex -> { ex | nutrition = value }) examination
+                , mapExaminationChild (\exam -> { exam | nutrition = value }) examination
                 , Cmd.none
                 , Just ( Child NutritionSigns, Child ChildPicture )
                 )
@@ -174,7 +174,7 @@ update backendUrl accessToken participantId msg model examination =
                     | status = Success ()
                     , muac = Just (toString (Tuple.second value))
                   }
-                , mapExaminationChild (\ex -> { ex | muac = Just value }) examination
+                , mapExaminationChild (\exam -> { exam | muac = Just value }) examination
                 , Cmd.none
                 , Just <| ( Child Muac, Child NutritionSigns )
                 )
@@ -214,7 +214,7 @@ update backendUrl accessToken participantId msg model examination =
                     | status = Success ()
                     , weight = Just (toString (Tuple.second value))
                   }
-                , mapExaminationChild (\ex -> { ex | weight = Just value }) examination
+                , mapExaminationChild (\exam -> { exam | weight = Just value }) examination
                 , Cmd.none
                 , Just <| ( Child Weight, Child Height )
                 )
@@ -249,12 +249,12 @@ update backendUrl accessToken participantId msg model examination =
                     -- the successful response from the backend.
                     cmd =
                         Maybe.map2
-                            (\muac ex ->
+                            (\muac exam ->
                                 upsert
                                     (upsertMuac participantId)
                                     backendUrl
                                     accessToken
-                                    (supplyMeasurement (getFloatInputValue muac) ex.muac)
+                                    (supplyMeasurement (getFloatInputValue muac) exam.muac)
                             )
                             model.muac
                             (toExaminationChild examination)
@@ -278,7 +278,7 @@ update backendUrl accessToken participantId msg model examination =
                     cmd =
                         toExaminationChild examination
                             |> Maybe.map
-                                (\ex ->
+                                (\exam ->
                                     if EverySet.isEmpty model.nutritionSigns then
                                         Cmd.none
                                     else
@@ -286,7 +286,7 @@ update backendUrl accessToken participantId msg model examination =
                                             (upsertNutrition participantId)
                                             backendUrl
                                             accessToken
-                                            (supplyMeasurement model.nutritionSigns (Just ex.nutrition))
+                                            (supplyMeasurement model.nutritionSigns (Just exam.nutrition))
                                 )
                             |> Maybe.withDefault Cmd.none
                 in
@@ -338,12 +338,12 @@ update backendUrl accessToken participantId msg model examination =
                     -- the successful response from the backend.
                     cmd =
                         Maybe.map2
-                            (\weight ex ->
+                            (\weight exam ->
                                 upsert
                                     (upsertWeight participantId)
                                     backendUrl
                                     accessToken
-                                    (supplyMeasurement (getFloatInputValue weight) ex.weight)
+                                    (supplyMeasurement (getFloatInputValue weight) exam.weight)
                             )
                             model.weight
                             (toExaminationChild examination)
@@ -366,12 +366,12 @@ update backendUrl accessToken participantId msg model examination =
                     -- the successful response from the backend.
                     cmd =
                         Maybe.map2
-                            (\height ex ->
+                            (\height exam ->
                                 upsert
                                     (upsertHeight participantId)
                                     backendUrl
                                     accessToken
-                                    (supplyMeasurement (getFloatInputValue height) ex.height)
+                                    (supplyMeasurement (getFloatInputValue height) exam.height)
                             )
                             model.height
                             (toExaminationChild examination)
@@ -413,10 +413,6 @@ type alias UpsertConfig key value msg =
     }
 
 
-{-| Actually, the `ChildId` ought to be part of the `Weight` type ... but
-I'll leave that for now, as it may change depending on what will be done
-with the `Examination` type.
--}
 upsertWeight : ChildId -> UpsertConfig WeightId Float Msg
 upsertWeight childId =
     { decodeStorage = decodeWeight

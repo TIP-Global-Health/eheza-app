@@ -75,8 +75,8 @@ decodeChildNutritionSign : Decoder ChildNutritionSign
 decodeChildNutritionSign =
     string
         |> andThen
-            (\s ->
-                case s of
+            (\sign ->
+                case sign of
                     "abdominal-disortion" ->
                         succeed AbdominalDisortion
 
@@ -100,7 +100,7 @@ decodeChildNutritionSign =
 
                     _ ->
                         fail <|
-                            s
+                            sign
                                 ++ " is not a recognized ChildNutritionSign"
             )
 
@@ -109,8 +109,8 @@ decodeFamilyPlanningSign : Decoder FamilyPlanningSign
 decodeFamilyPlanningSign =
     string
         |> andThen
-            (\s ->
-                case s of
+            (\sign ->
+                case sign of
                     "pill" ->
                         succeed Pill
 
@@ -131,7 +131,7 @@ decodeFamilyPlanningSign =
 
                     _ ->
                         fail <|
-                            s
+                            sign
                                 ++ " is not a recognized FamilyPlanningSign"
             )
 

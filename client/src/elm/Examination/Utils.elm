@@ -91,14 +91,13 @@ supplyMeasurement value storage =
             -- anything at all. So, logically, now it is a 'new' value.
             ( New, value )
 
-        Just ( New, _ ) ->
+        Just ( key, _ ) ->
             -- Otherwise, we can just replace the value and keep the key
-            ( New, value )
-
-        Just ( Existing key, _ ) ->
-            ( Existing key, value )
+            ( key, value )
 
 
+{-| Extracts the measurements from an examination.
+-}
 toMeasurements : Examination -> Measurement.Model.Model
 toMeasurements examination =
     let

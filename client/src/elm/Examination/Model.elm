@@ -13,8 +13,13 @@ type ExaminationId
 
 {-| For some function signatures, we need a type that can either be a
 `ExaminationChild` or `ExaminationMother` ... this corresponds to
-how a `Participant` can be a `Child` or a `Mother`. There may actually be a
-better way to model some of this, or perhaps not.
+how a `Participant` can be a `Child` or a `Mother`.
+
+There may be a way to explicitly associate a `Child` with an
+`ExaminationChild`, and to associate the kind of measurements appropriate
+to an `ExaminationChild` ... e.g. the relationship between this and some
+of the things in `Activity.Model` may be worth further thinking.
+
 -}
 type Examination
     = ChildExamination ExaminationChild

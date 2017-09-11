@@ -60,11 +60,6 @@ type alias Photo =
     { url : String }
 
 
-{-| For the `Handle` msgs, we should probably actually decode the
-response from the backend. For the moment, we're just threading
-through the value we supplied, and assuming that if the backend
-indicated success, it accepted the value unchanged.
--}
 type Msg
     = FamilyPlanningSignsSave
     | FamilyPlanningSignsToggle FamilyPlanningSign
