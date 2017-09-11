@@ -42,7 +42,7 @@ decodeTest =
                                 { info =
                                     ParticipantChild
                                         { name = "new-patient"
-                                        , image = "https://placehold.it/200x200"
+                                        , image = ""
                                         , motherId = Just 7
                                         , siblingId = Just 22
                                         , examinations = []

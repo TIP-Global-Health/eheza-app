@@ -14,7 +14,8 @@ decodeMother : Decoder Mother
 decodeMother =
     decode Mother
         |> required "label" string
-        |> optionalAt [ "avatar", "styles", "patient-photo" ] string "https://placehold.it/200x200"
+        -- The default avatar comes from SASS , not from the Model.
+        |> optionalAt [ "avatar", "styles", "patient-photo" ] string ""
         |> required "children" (oneOf [ list int, decodeNullAsEmptyArray ])
         |> required "examinations" (list decodeExaminationMother)
         |> required "date_birth" decodeDate
