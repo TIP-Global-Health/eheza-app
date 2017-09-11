@@ -135,9 +135,17 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                         imageSrc =
                             getParticipantAvatarThumb participant
 
+                        subClass =
+                            case participant.info of
+                                ParticipantMother _ ->
+                                    "mother"
+
+                                ParticipantChild _ ->
+                                    "child"
+
                         imageView =
                             if String.isEmpty imageSrc then
-                                span [ class "icon-participant" ] []
+                                span [ class <| "icon-participant " ++ subClass ] []
                             else
                                 thumbnailImage imageSrc name thumbnailDimensions.height thumbnailDimensions.width
                     in
