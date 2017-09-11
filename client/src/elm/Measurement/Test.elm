@@ -70,6 +70,18 @@ viewChildFormsTest =
                         |> Query.fromHtml
                         |> Query.find [ id "save-form" ]
                         |> Query.hasNot [ classes [ "disabled" ] ]
+            , test "Then the Weight form contains Z-Score for Age" <|
+                \() ->
+                    viewChildWithActivity (Just <| Child Weight) { emptyModel | weight = Just "10.0" }
+                        |> Query.fromHtml
+                        |> Query.find [ classes [ "z-score", "age" ] ]
+                        |> Query.has [ classes [ "header" ] ]
+            , test "Then the Weight form contains Z-Score for Height" <|
+                \() ->
+                    viewChildWithActivity (Just <| Child Weight) { emptyModel | weight = Just "10.0", height = Just "69.0" }
+                        |> Query.fromHtml
+                        |> Query.find [ classes [ "z-score", "height" ] ]
+                        |> Query.has [ text "-2" ]
             ]
 
 

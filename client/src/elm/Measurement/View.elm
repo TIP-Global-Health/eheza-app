@@ -182,7 +182,7 @@ viewFloatForm backendUrl accessToken user language currentDate floatMeasurement 
 
         renderedZScoreForAge =
             div
-                [ class "ui large header" ]
+                [ class "ui large header z-score age" ]
                 [ text <| translate language Trans.ZScoreForAge
                 , span
                     [ class "sub header" ]
@@ -201,7 +201,7 @@ viewFloatForm backendUrl accessToken user language currentDate floatMeasurement 
             case floatMeasurement of
                 WeightFloat ->
                     div
-                        [ class "ui large header" ]
+                        [ class "ui large header z-score height" ]
                         [ text <| translate language Trans.ZScoreForHeight
                         , span
                             [ class "sub header" ]
