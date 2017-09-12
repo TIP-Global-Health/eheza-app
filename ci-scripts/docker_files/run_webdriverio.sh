@@ -25,6 +25,11 @@ for SPEC in test/specs/*js; do
   SPEC_BASENAME=$(echo "$SPEC" | cut -d '/' -f 3 | cut -d '.' -f 1)
   sed "s/<<SPECNAME>>/$SPEC_BASENAME/" < $WDIO_CONF.orig > "$WDIO_CONF"
   for i in $(seq 3); do
+    # Reset node 41, so that it has no completed tests
+    cd "$ROOT_DIR"/server/www
+    drush delete-child-measurements 41
+    cd "$ROOT_DIR"/client
+
     ./node_modules/.bin/wdio "$WDIO_CONF" --spec "$SPEC"
     WDIO_RET=$?
     if [[ "$WDIO_RET" -eq 0 ]]; then
