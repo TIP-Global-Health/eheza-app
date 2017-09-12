@@ -12,7 +12,6 @@ import Pages.Activities.Update
 import Pages.Activity.Update
 import Pages.Participant.Model
 import Pages.Participant.Update
-import Pages.Participants.Model
 import Pages.Participants.Update
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..))
 import ParticipantManager.Decoder
@@ -92,7 +91,7 @@ update currentDate backendUrl accessToken user language msg model =
         MsgPagesActivity subMsg ->
             let
                 ( participantUpdated, updatedActivityPage, subCmd, redirectPage ) =
-                    Pages.Activity.Update.update currentDate backendUrl accessToken user language subMsg model.activityPage
+                    Pages.Activity.Update.update currentDate backendUrl accessToken user language (unwrapParticipantsDict model.participants) subMsg model.activityPage
 
                 updatedModel =
                     case participantUpdated of

@@ -24,10 +24,11 @@ update :
     -> String
     -> User
     -> Language
+    -> ParticipantsDict
     -> Msg
     -> Model
     -> ( Maybe ( ParticipantId, Participant, Measurement.Model.Model ), Model, Cmd Msg, Maybe Page )
-update currentDate backendUrl accessToken user language msg model =
+update currentDate backendUrl accessToken user language participants msg model =
     case msg of
         MsgFilePicker subMsg ->
             let
@@ -57,7 +58,7 @@ update currentDate backendUrl accessToken user language msg model =
 
                         Just activityTypeCompleted ->
                             ( updateActivityDate newDate activityTypeCompleted participant
-                            , [ SetSelectedParticipant <| nextParticipant currentDate model ]
+                            , [ SetSelectedParticipant <| nextParticipant currentDate participants model ]
                             )
 
                 updatedModel =
@@ -66,7 +67,7 @@ update currentDate backendUrl accessToken user language msg model =
                     else
                         { model | measurements = measurementsUpdated }
             in
-                sequenceExtra (update currentDate backendUrl accessToken user language)
+                sequenceExtra (update currentDate backendUrl accessToken user language participants)
                     additionalMsgs
                     ( Just ( participantId, participantUpdated, measurementsUpdated )
                     , updatedModel
@@ -75,7 +76,7 @@ update currentDate backendUrl accessToken user language msg model =
                     )
 
         SetRedirectPage page ->
-            sequenceExtra (update currentDate backendUrl accessToken user language)
+            sequenceExtra (update currentDate backendUrl accessToken user language participants)
                 [ SetSelectedParticipant Nothing ]
                 ( Nothing, model, Cmd.none, Just page )
 
@@ -100,7 +101,7 @@ update currentDate backendUrl accessToken user language msg model =
                     else
                         ( model, [] )
             in
-                sequenceExtra (update currentDate backendUrl accessToken user language)
+                sequenceExtra (update currentDate backendUrl accessToken user language participants)
                     additionaMsgs
                     ( Nothing, updatedModel, Cmd.none, Nothing )
 
@@ -117,16 +118,16 @@ update currentDate backendUrl accessToken user language msg model =
                         _ ->
                             []
             in
-                sequenceExtra (update currentDate backendUrl accessToken user language)
+                sequenceExtra (update currentDate backendUrl accessToken user language participants)
                     additionalMsgs
                     ( Nothing, updatedModel, Cmd.none, Nothing )
 
 
-nextParticipant : Date -> Model -> Maybe ( ParticipantId, Participant )
-nextParticipant currentDate model =
+nextParticipant : Date -> ParticipantsDict -> Model -> Maybe ( ParticipantId, Participant )
+nextParticipant currentDate participants model =
     let
         pendingParticipants =
-            participantsWithPendingActivity currentDate Dict.empty model
+            participantsWithPendingActivity currentDate participants model
     in
         if Dict.isEmpty pendingParticipants then
             Nothing
