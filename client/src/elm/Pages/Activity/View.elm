@@ -12,6 +12,7 @@ import Html.Events exposing (onClick)
 import List as List
 import Measurement.View
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
+import Pages.Activity.Utils
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (getParticipantName, getParticipantAvatarThumb)
 import Translate as Trans exposing (translate, Language)
@@ -26,26 +27,7 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
             getActivityIdentity model.selectedActivity
 
         participantsWithPendingActivity =
-            participantsDict
-                |> Dict.filter
-                    (\participantId participant ->
-                        case participant.info of
-                            ParticipantChild child ->
-                                case selectedActivityIdentity.activityType of
-                                    Child activityType ->
-                                        hasPendingChildActivity currentDate child activityType
-
-                                    Mother _ ->
-                                        False
-
-                            ParticipantMother mother ->
-                                case selectedActivityIdentity.activityType of
-                                    Child _ ->
-                                        False
-
-                                    Mother activityType ->
-                                        hasPendingMotherActivity currentDate mother activityType
-                    )
+            Pages.Activity.Utils.participantsWithPendingActivity currentDate participantsDict model
 
         participantsWithCompletedActivity =
             participantsDict
