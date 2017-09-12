@@ -73,7 +73,7 @@ update currentDate backendUrl accessToken user language ( participantId, partici
                         Nothing ->
                             participant
 
-                        Just ( activtyTypeCompleted, activityToRedirect ) ->
+                        Just activtyTypeCompleted ->
                             updateActivityDate newDate activtyTypeCompleted participant
 
                 modelWithMeasurements =
@@ -81,10 +81,7 @@ update currentDate backendUrl accessToken user language ( participantId, partici
 
                 additionalMsgs =
                     if isJust maybeActivityTypeCompleted then
-                        [ SetSelectedActivity
-                            (Maybe.map (\( _, redirectToActivity ) -> Just redirectToActivity) maybeActivityTypeCompleted
-                                |> Maybe.withDefault Nothing
-                            )
+                        [ SetSelectedActivity <| nextActivity model
                         ]
                     else
                         []
@@ -118,6 +115,11 @@ update currentDate backendUrl accessToken user language ( participantId, partici
             sequenceExtra (update currentDate backendUrl accessToken user language ( participantId, participant ))
                 [ SetSelectedActivity Nothing ]
                 ( participant, { model | selectedTab = tab }, Cmd.none, Nothing )
+
+
+nextActivity : Model -> Maybe ActivityType
+nextActivity model =
+    Nothing
 
 
 subscriptions : Model -> Sub Pages.Participant.Model.Msg

@@ -53,9 +53,9 @@ update currentDate backendUrl accessToken user language msg model =
                         Nothing ->
                             ( participant, [] )
 
-                        Just ( activtyTypeCompleted, activityToRedirect ) ->
-                            ( updateActivityDate newDate activtyTypeCompleted participant
-                            , [ SetSelectedParticipant Nothing ]
+                        Just activityTypeCompleted ->
+                            ( updateActivityDate newDate activityTypeCompleted participant
+                            , [ SetSelectedParticipant <| nextParticipant model ]
                             )
 
                 updatedModel =
@@ -118,6 +118,11 @@ update currentDate backendUrl accessToken user language msg model =
                 sequenceExtra (update currentDate backendUrl accessToken user language)
                     additionalMsgs
                     ( Nothing, updatedModel, Cmd.none, Nothing )
+
+
+nextParticipant : Model -> Maybe ( ParticipantId, Participant )
+nextParticipant model =
+    Nothing
 
 
 subscriptions : Model -> ( ParticipantId, Participant ) -> Sub Pages.Activity.Model.Msg
