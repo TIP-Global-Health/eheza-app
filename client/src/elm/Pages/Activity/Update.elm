@@ -133,21 +133,12 @@ nextParticipant currentDate participants model =
             Nothing
         else
             let
-                firstParticipantId =
-                    List.head <| Dict.keys pendingParticipants
+                firstParticipant =
+                    List.head <| Dict.toList pendingParticipants
             in
-                case firstParticipantId of
-                    Just id ->
-                        let
-                            firstParticipant =
-                                Dict.get id pendingParticipants
-                        in
-                            case firstParticipant of
-                                Just participant ->
-                                    Just ( id, participant )
-
-                                Nothing ->
-                                    Nothing
+                case firstParticipant of
+                    Just ( id, participant ) ->
+                        Just ( id, participant )
 
                     Nothing ->
                         Nothing
