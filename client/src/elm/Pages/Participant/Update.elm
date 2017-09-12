@@ -81,7 +81,11 @@ update currentDate backendUrl accessToken user language ( participantId, partici
 
                 additionalMsgs =
                     if isJust maybeActivityTypeCompleted then
-                        [ SetSelectedActivity Nothing ]
+                        [ SetSelectedActivity
+                            (Maybe.map (\( _, redirectToActivity ) -> Just redirectToActivity) maybeActivityTypeCompleted
+                                |> Maybe.withDefault Nothing
+                            )
+                        ]
                     else
                         []
             in
