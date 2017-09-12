@@ -4,11 +4,13 @@ import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
+import Dict
 import FilePicker.Model
 import FilePicker.Update
 import Maybe.Extra exposing (isNothing)
 import Measurement.Model exposing (saveMeasurementMessage)
 import Measurement.Update
+import Pages.Activity.Utils exposing (participantsWithPendingActivity)
 import User.Model exposing (..)
 import Pages.Activity.Model exposing (Model, Msg(..))
 import Pages.Participant.Utils exposing (updateActivityDate, sequenceExtra)
@@ -55,7 +57,7 @@ update currentDate backendUrl accessToken user language msg model =
 
                         Just activityTypeCompleted ->
                             ( updateActivityDate newDate activityTypeCompleted participant
-                            , [ SetSelectedParticipant <| nextParticipant model ]
+                            , [ SetSelectedParticipant <| nextParticipant currentDate model ]
                             )
 
                 updatedModel =
@@ -120,9 +122,34 @@ update currentDate backendUrl accessToken user language msg model =
                     ( Nothing, updatedModel, Cmd.none, Nothing )
 
 
-nextParticipant : Model -> Maybe ( ParticipantId, Participant )
-nextParticipant model =
-    Nothing
+nextParticipant : Date -> Model -> Maybe ( ParticipantId, Participant )
+nextParticipant currentDate model =
+    let
+        pendingParticipants =
+            participantsWithPendingActivity currentDate Dict.empty model
+    in
+        if Dict.isEmpty pendingParticipants then
+            Nothing
+        else
+            let
+                firstParticipantId =
+                    List.head <| Dict.keys pendingParticipants
+            in
+                case firstParticipantId of
+                    Just id ->
+                        let
+                            firstParticipant =
+                                Dict.get id pendingParticipants
+                        in
+                            case firstParticipant of
+                                Just participant ->
+                                    Just ( id, participant )
+
+                                Nothing ->
+                                    Nothing
+
+                    Nothing ->
+                        Nothing
 
 
 subscriptions : Model -> ( ParticipantId, Participant ) -> Sub Pages.Activity.Model.Msg
