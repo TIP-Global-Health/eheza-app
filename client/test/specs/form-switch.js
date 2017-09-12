@@ -49,6 +49,7 @@ describe('assesment pages', () => {
 
         // Switching back to Nutrition Signs, check existence of the previous selection.
         browser.click('#completed-tab');
+        browser.waitForVisible('a=' + firstUsedTab);
         browser.click('a=' + firstUsedTab);
         assert(browser.isSelected('#apathy'), 'Apathy is still selected');
         assert(browser.isSelected('#brittle-hair'), 'Brittle Hair is still selected');

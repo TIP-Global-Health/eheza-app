@@ -314,6 +314,10 @@ function generate_demo_content {
     drush generate-content 20 0 --types="$TYPE"
   done
 
+  # Delete measurements for node 41, for the sake of the WDIO tests,
+  # which assume that node 41 has no measurements
+  drush delete-child-measurements 41
+
   cd "$ROOT"
   echo
 }
