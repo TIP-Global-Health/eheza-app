@@ -1,8 +1,21 @@
 module Pages.Participant.Utils exposing (..)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
+import Child.Model exposing (ChildId)
 import Date exposing (Date)
+import Dict
+import Mother.Model exposing (MotherId)
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantsDict)
+
+
+makeLoneMotherDict : MotherId -> Mother.Model.Mother -> ParticipantsDict
+makeLoneMotherDict motherId mother =
+    Dict.insert motherId ({ info = Participant.Model.ParticipantMother mother }) Dict.empty
+
+
+makeLoneChildDict : ChildId -> Child.Model.Child -> ParticipantsDict
+makeLoneChildDict childId child =
+    Dict.insert childId ({ info = Participant.Model.ParticipantChild child }) Dict.empty
 
 
 {-| Model update helper which applies the provided date to the specified activity type field in the

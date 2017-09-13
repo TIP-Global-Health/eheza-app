@@ -17,6 +17,7 @@ import Html.Events exposing (onClick)
 import Measurement.View
 import Mother.Model exposing (Mother, MotherId)
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
+import Pages.Participant.Utils exposing (makeLoneMotherDict, makeLoneChildDict)
 import Participant.Model exposing (Participant, ParticipantId, ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (renderParticipantAge, renderParticipantDateOfBirth)
 import ProgressReport.View exposing (viewProgressReport)
@@ -33,8 +34,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
             { info = Participant.Model.ParticipantChild child }
 
         participants =
-            -- @todo: Add mkChild
-            Dict.insert childId childParticipant Dict.empty
+            makeLoneChildDict childId child
 
         childName =
             translate language <| Trans.BabyName child.name
@@ -115,8 +115,7 @@ viewMother backendUrl accessToken language currentDate currentUser motherId moth
                     children
 
         participants =
-            -- @todo: Add mkMother
-            Dict.insert motherId ({ info = Participant.Model.ParticipantMother mother }) Dict.empty
+            makeLoneMotherDict motherId mother
     in
         div [ class "ui unstackable items" ]
             [ div [ class "item" ]
