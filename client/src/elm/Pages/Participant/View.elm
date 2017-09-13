@@ -8,7 +8,6 @@ import Activity.Model exposing (ActivityListItem, ActivityType(..))
 import Activity.Utils exposing (getActivityList)
 import Child.Model exposing (Child, ChildId, Gender(..))
 import Date exposing (Date)
-import Dict
 import Examination.Utils exposing (getLastExaminationFromChild)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
@@ -16,7 +15,8 @@ import Html.Events exposing (onClick)
 import Measurement.View
 import Mother.Model exposing (Mother, MotherId)
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
-import Participant.Model exposing (Participant, ParticipantId, ParticipantTypeFilter(..), ParticipantsDict)
+import Pages.Participant.Utils exposing (makeLoneMotherDict, makeLoneChildDict)
+import Participant.Model exposing (Participant, ParticipantId, ParticipantType(ParticipantChild, ParticipantMother), ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (renderParticipantAge, renderParticipantDateOfBirth)
 import ProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -33,8 +33,7 @@ viewChild language currentDate motherWebData ( childId, child ) model =
             { info = Participant.Model.ParticipantChild child }
 
         participants =
-            -- @todo: Add mkChild
-            Dict.insert childId childParticipant Dict.empty
+            makeLoneChildDict childId child
 
         childName =
             translate language <| Trans.BabyName child.name
@@ -77,10 +76,10 @@ viewChild language currentDate motherWebData ( childId, child ) model =
                     Measurement.View.viewChild language currentDate ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
                 ]
     in
-        div [ class "ui unstackable items" ]
+        div [ class "ui unstackable items participant-page child" ]
             [ div [ class "item" ]
                 [ div [ class "ui image" ]
-                    [ thumbnailImage child.image childName thumbnailDimensions.height thumbnailDimensions.width ]
+                    [ thumbnailImage (ParticipantChild child) child.image childName thumbnailDimensions.height thumbnailDimensions.width ]
                 , div [ class "content" ]
                     [ h2 [ class "ui header" ]
                         [ text childName ]
@@ -115,13 +114,12 @@ viewMother language motherId mother children model =
                     children
 
         participants =
-            -- @todo: Add mkMother
-            Dict.insert motherId ({ info = Participant.Model.ParticipantMother mother }) Dict.empty
+            makeLoneMotherDict motherId mother
     in
-        div [ class "ui unstackable items" ]
+        div [ class "ui unstackable items participant-page mother" ]
             [ div [ class "item" ]
                 [ div [ class "ui image" ]
-                    [ thumbnailImage mother.image mother.name thumbnailDimensions.height thumbnailDimensions.width ]
+                    [ thumbnailImage (ParticipantMother mother) mother.image mother.name thumbnailDimensions.height thumbnailDimensions.width ]
                 , div [ class "content" ]
                     [ h2 [ class "ui header" ]
                         [ text mother.name ]

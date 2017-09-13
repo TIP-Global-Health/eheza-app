@@ -3,7 +3,7 @@ module Measurement.Test exposing (all)
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Date
 import Expect
-import Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChild, exampleUser)
+import Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildA, exampleUser)
 import Html
 import Html.Attributes as Attr
 import Measurement.Model exposing (..)
@@ -19,7 +19,7 @@ viewChildFormsTest =
     let
         viewChildWithActivity selectedActivity model =
             Html.div [ Attr.class "test-container" ]
-                [ viewChild English (Date.fromTime 1504858608000) ( 5, exampleChild ) Nothing selectedActivity model
+                [ viewChild English (Date.fromTime 1504858608000) ( 5, exampleChildA ) Nothing selectedActivity model
                 ]
     in
         describe "A nurse visits the assesment of a Child" <|
@@ -70,6 +70,18 @@ viewChildFormsTest =
                         |> Query.fromHtml
                         |> Query.find [ id "save-form" ]
                         |> Query.hasNot [ classes [ "disabled" ] ]
+            , test "Then the Weight form contains Z-Score for Age" <|
+                \() ->
+                    viewChildWithActivity (Just <| Child Weight) { emptyModel | weight = Just "10.0" }
+                        |> Query.fromHtml
+                        |> Query.find [ classes [ "z-score", "age" ] ]
+                        |> Query.has [ classes [ "header" ] ]
+            , test "Then the Weight form contains Z-Score for Height" <|
+                \() ->
+                    viewChildWithActivity (Just <| Child Weight) { emptyModel | weight = Just "10.0", height = Just "69.0" }
+                        |> Query.fromHtml
+                        |> Query.find [ classes [ "z-score", "height" ] ]
+                        |> Query.has [ text "-2" ]
             ]
 
 

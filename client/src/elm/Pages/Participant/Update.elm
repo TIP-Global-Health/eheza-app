@@ -1,8 +1,10 @@
-port module Pages.Participant.Update exposing (init, update, subscriptions)
+port module Pages.Participant.Update exposing (init, nextActivity, update, subscriptions)
 
 import Activity.Model exposing (ActivityType(Child), ChildActivityType(..))
+import Activity.Utils exposing (getActivityList)
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
+import Dict
 import Examination.Model exposing (Examination(..), emptyExaminationChild, emptyExaminationMother)
 import Examination.Utils exposing (toMeasurements)
 import FilePicker.Model
@@ -12,7 +14,7 @@ import Measurement.Model
 import Measurement.Update
 import Pages.Participant.Model exposing (Model, Msg(..), emptyModel)
 import Pages.Participant.Utils exposing (sequenceExtra)
-import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..))
+import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (getExamination, setExamination)
 import Pusher.Model exposing (PusherEventData(..))
 import Translate as Trans exposing (Language, translate)
@@ -76,7 +78,8 @@ update backendUrl accessToken user language ( participantId, participant ) msg m
 
                 additionalMsgs =
                     if isJust maybeActivityTypeCompleted then
-                        [ SetSelectedActivity Nothing ]
+                        [ SetSelectedActivity <| nextActivity ( participantId, participant ) model
+                        ]
                     else
                         []
             in
@@ -109,6 +112,35 @@ update backendUrl accessToken user language ( participantId, participant ) msg m
             sequenceExtra (update backendUrl accessToken user language ( participantId, participant ))
                 [ SetSelectedActivity Nothing ]
                 ( participant, { model | selectedTab = tab }, Cmd.none, Nothing )
+
+
+{-| Eventually, this will need to be parameterized to deal with multiple examinations.
+-}
+nextActivity : ( ParticipantId, Participant ) -> Model -> Maybe ActivityType
+nextActivity ( participantId, participant ) model =
+    let
+        participants =
+            Dict.insert participantId participant Dict.empty
+
+        allActivityList =
+            getActivityList Children participants
+
+        pendingActivities =
+            List.filter (\activity -> (Tuple.first activity.totals) > 0 && (Just <| activity.activity.activityType) /= model.selectedActivity) allActivityList
+    in
+        if List.isEmpty pendingActivities then
+            Nothing
+        else
+            let
+                firstPendingActivity =
+                    List.head <| pendingActivities
+            in
+                case firstPendingActivity of
+                    Just activityInfo ->
+                        Just activityInfo.activity.activityType
+
+                    Nothing ->
+                        Nothing
 
 
 subscriptions : Model -> Sub Pages.Participant.Model.Msg

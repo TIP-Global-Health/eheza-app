@@ -74,17 +74,7 @@ view language participantsDict model =
                             getParticipantAvatarThumb mother
 
                         imageView =
-                            if String.isEmpty imageSrc then
-                                span
-                                    [ class "icon-participant mother"
-                                    , style
-                                        [ ( "height", (toString thumbnailDimensions.height) ++ "px" )
-                                        , ( "width", (toString thumbnailDimensions.width) ++ "px" )
-                                        ]
-                                    ]
-                                    []
-                            else
-                                thumbnailImage imageSrc name thumbnailDimensions.height thumbnailDimensions.width
+                            thumbnailImage mother.info imageSrc name thumbnailDimensions.height thumbnailDimensions.width
                     in
                         div
                             [ class "card"

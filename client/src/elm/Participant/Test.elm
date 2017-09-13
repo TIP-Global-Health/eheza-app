@@ -2,7 +2,7 @@ module Participant.Test exposing (all)
 
 import Date
 import Expect
-import Fixtures exposing (exampleChild, exampleMother)
+import Fixtures exposing (exampleChildA, exampleChildB, exampleMother)
 import Test exposing (describe, test, Test)
 import Participant.Model exposing (AgeDay(..), ParticipantType(ParticipantChild, ParticipantMother))
 import Participant.Utils exposing (getParticipantAge, renderParticipantAge, renderParticipantDateOfBirth)
@@ -20,7 +20,7 @@ getParticipantAgeTest =
                 \() ->
                     Expect.equal
                         (getParticipantAge
-                            { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1503834862000 }) }
+                            { info = (ParticipantChild { exampleChildA | birthDate = Date.fromTime 1503834862000 }) }
                             today
                         )
                         (Participant.Model.AgeDay 1)
@@ -28,7 +28,7 @@ getParticipantAgeTest =
                 \() ->
                     Expect.equal
                         (getParticipantAge
-                            { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1503316462000 }) }
+                            { info = (ParticipantChild { exampleChildA | birthDate = Date.fromTime 1503316462000 }) }
                             today
                         )
                         (Participant.Model.AgeDay 7)
@@ -36,7 +36,7 @@ getParticipantAgeTest =
                 \() ->
                     Expect.equal
                         (getParticipantAge
-                            { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1501156048000 }) }
+                            { info = (ParticipantChild { exampleChildA | birthDate = Date.fromTime 1501156048000 }) }
                             today
                         )
                         (Participant.Model.AgeDay 32)
@@ -44,7 +44,7 @@ getParticipantAgeTest =
                 \() ->
                     Expect.equal
                         (getParticipantAge
-                            { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1469101648000 }) }
+                            { info = (ParticipantChild { exampleChildA | birthDate = Date.fromTime 1469101648000 }) }
                             today
                         )
                         (Participant.Model.AgeDay 403)
@@ -70,7 +70,7 @@ renderParticipantAgeTest =
                 \() ->
                     Expect.equal
                         (renderParticipantAge English
-                            { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1503834862000 }) }
+                            { info = (ParticipantChild { exampleChildA | birthDate = Date.fromTime 1503834862000 }) }
                             today
                         )
                         "1 day"
@@ -78,7 +78,7 @@ renderParticipantAgeTest =
                 \() ->
                     Expect.equal
                         (renderParticipantAge English
-                            { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1503316462000 }) }
+                            { info = (ParticipantChild { exampleChildA | birthDate = Date.fromTime 1503316462000 }) }
                             today
                         )
                         "7 days"
@@ -86,7 +86,7 @@ renderParticipantAgeTest =
                 \() ->
                     Expect.equal
                         (renderParticipantAge English
-                            { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1501242448000 }) }
+                            { info = (ParticipantChild { exampleChildA | birthDate = Date.fromTime 1501242448000 }) }
                             today
                         )
                         "1 month"
@@ -94,7 +94,7 @@ renderParticipantAgeTest =
                 \() ->
                     Expect.equal
                         (renderParticipantAge English
-                            { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1501156048000 }) }
+                            { info = (ParticipantChild { exampleChildB | birthDate = Date.fromTime 1501156048000 }) }
                             today
                         )
                         "1 month and 1 day"
@@ -102,7 +102,7 @@ renderParticipantAgeTest =
                 \() ->
                     Expect.equal
                         (renderParticipantAge English
-                            { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1469101648000 }) }
+                            { info = (ParticipantChild { exampleChildA | birthDate = Date.fromTime 1469101648000 }) }
                             today
                         )
                         "13 months and 7 days"
@@ -124,35 +124,35 @@ renderParticipantDateOfBirthTest =
             \() ->
                 Expect.equal
                     (renderParticipantDateOfBirth English
-                        { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1501404215000 }) }
+                        { info = (ParticipantChild { exampleChildA | birthDate = Date.fromTime 1501404215000 }) }
                     )
                     "30 July 2017"
         , test "for March" <|
             \() ->
                 Expect.equal
                     (renderParticipantDateOfBirth English
-                        { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1490751015000 }) }
+                        { info = (ParticipantChild { exampleChildB | birthDate = Date.fromTime 1490751015000 }) }
                     )
                     "29 March 2017"
         , test "for January" <|
             \() ->
                 Expect.equal
                     (renderParticipantDateOfBirth English
-                        { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1484961345000 }) }
+                        { info = (ParticipantChild { exampleChildA | birthDate = Date.fromTime 1484961345000 }) }
                     )
                     "21 January 2017"
         , test "for August 2014" <|
             \() ->
                 Expect.equal
                     (renderParticipantDateOfBirth English
-                        { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1408995000000 }) }
+                        { info = (ParticipantChild { exampleChildA | birthDate = Date.fromTime 1408995000000 }) }
                     )
                     "25 August 2014"
         , test "for May 2017" <|
             \() ->
                 Expect.equal
                     (renderParticipantDateOfBirth English
-                        { info = (ParticipantChild { exampleChild | birthDate = Date.fromTime 1494081915000 }) }
+                        { info = (ParticipantChild { exampleChildB | birthDate = Date.fromTime 1494081915000 }) }
                     )
                     "06 May 2017"
         ]

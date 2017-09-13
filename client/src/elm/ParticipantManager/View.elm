@@ -83,7 +83,7 @@ viewDashboardPageHeader language dashboardPage =
                 [ li participantsLinkAttributes
                     [ a [] [ span [ class "icon-mother" ] [] ] ]
                 , li activitiesLinkAttributes
-                    [ a [] [ span [ class "icon-completed" ] [] ] ]
+                    [ a [] [ span [ class "icon-activity" ] [] ] ]
                 ]
             ]
 

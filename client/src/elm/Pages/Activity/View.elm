@@ -11,6 +11,7 @@ import Html.Events exposing (onClick)
 import List as List
 import Measurement.View
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
+import Pages.Activity.Utils
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (getParticipantName, getParticipantAvatarThumb)
 import Translate as Trans exposing (translate, Language)
@@ -24,26 +25,7 @@ view language currentDate participantsDict model =
             getActivityIdentity model.selectedActivity
 
         participantsWithPendingActivity =
-            participantsDict
-                |> Dict.filter
-                    (\participantId participant ->
-                        case participant.info of
-                            ParticipantChild child ->
-                                case selectedActivityIdentity.activityType of
-                                    Child activityType ->
-                                        hasPendingChildActivity child activityType
-
-                                    Mother _ ->
-                                        False
-
-                            ParticipantMother mother ->
-                                case selectedActivityIdentity.activityType of
-                                    Child _ ->
-                                        False
-
-                                    Mother activityType ->
-                                        hasPendingMotherActivity mother activityType
-                    )
+            Pages.Activity.Utils.participantsWithPendingActivity participantsDict model
 
         participantsWithCompletedActivity =
             participantsDict
@@ -133,19 +115,8 @@ view language currentDate participantsDict model =
                         imageSrc =
                             getParticipantAvatarThumb participant
 
-                        subClass =
-                            case participant.info of
-                                ParticipantMother _ ->
-                                    "mother"
-
-                                ParticipantChild _ ->
-                                    "child"
-
                         imageView =
-                            if String.isEmpty imageSrc then
-                                span [ class <| "icon-participant " ++ subClass ] []
-                            else
-                                thumbnailImage imageSrc name thumbnailDimensions.height thumbnailDimensions.width
+                            thumbnailImage participant.info imageSrc name thumbnailDimensions.height thumbnailDimensions.width
                     in
                         div
                             [ classList

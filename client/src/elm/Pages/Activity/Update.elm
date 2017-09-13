@@ -1,15 +1,18 @@
-module Pages.Activity.Update exposing (update, subscriptions)
+module Pages.Activity.Update exposing (nextParticipant, update, subscriptions)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
+import Dict
 import Examination.Utils exposing (toMeasurements)
 import FilePicker.Model
 import FilePicker.Update
 import Maybe.Extra exposing (isNothing)
 import Measurement.Model exposing (saveMeasurementMessage)
 import Measurement.Update
+import Pages.Activity.Utils exposing (participantsWithPendingActivity)
+import Participant.Utils exposing (getParticipantName)
 import User.Model exposing (..)
 import Pages.Activity.Model exposing (Model, Msg(..))
 import Pages.Participant.Utils exposing (sequenceExtra)
@@ -19,15 +22,15 @@ import Translate as Trans exposing (Language)
 
 
 update :
-    Date
-    -> BackendUrl
+    BackendUrl
     -> String
     -> User
     -> Language
+    -> ParticipantsDict
     -> Msg
     -> Model
     -> ( Maybe ( ParticipantId, Participant, Measurement.Model.Model ), Model, Cmd Msg, Maybe Page )
-update currentDate backendUrl accessToken user language msg model =
+update backendUrl accessToken user language participants msg model =
     case msg of
         MsgFilePicker subMsg ->
             let
@@ -50,8 +53,15 @@ update currentDate backendUrl accessToken user language msg model =
                         Nothing ->
                             []
 
-                        Just ( activtyTypeCompleted, activityToRedirect ) ->
-                            [ SetSelectedParticipant Nothing ]
+                        Just _ ->
+                            case model.selectedActivity of
+                                Child ChildPicture ->
+                                    [ SetSelectedParticipant Nothing
+                                    , SetSelectedParticipant <| nextParticipant participants model
+                                    ]
+
+                                _ ->
+                                    [ SetSelectedParticipant <| nextParticipant participants model ]
 
                 updatedModel =
                     if saveMeasurementMessage subMsg then
@@ -59,7 +69,7 @@ update currentDate backendUrl accessToken user language msg model =
                     else
                         { model | measurements = measurementsUpdated }
             in
-                sequenceExtra (update currentDate backendUrl accessToken user language)
+                sequenceExtra (update backendUrl accessToken user language participants)
                     additionalMsgs
                     ( Just
                         ( participantId
@@ -72,7 +82,7 @@ update currentDate backendUrl accessToken user language msg model =
                     )
 
         SetRedirectPage page ->
-            sequenceExtra (update currentDate backendUrl accessToken user language)
+            sequenceExtra (update backendUrl accessToken user language participants)
                 [ SetSelectedParticipant Nothing ]
                 ( Nothing, model, Cmd.none, Just page )
 
@@ -104,7 +114,7 @@ update currentDate backendUrl accessToken user language msg model =
                     else
                         ( model, [] )
             in
-                sequenceExtra (update currentDate backendUrl accessToken user language)
+                sequenceExtra (update backendUrl accessToken user language participants)
                     additionaMsgs
                     ( Nothing, updatedModel, Cmd.none, Nothing )
 
@@ -121,9 +131,29 @@ update currentDate backendUrl accessToken user language msg model =
                         _ ->
                             []
             in
-                sequenceExtra (update currentDate backendUrl accessToken user language)
+                sequenceExtra (update backendUrl accessToken user language participants)
                     additionalMsgs
                     ( Nothing, updatedModel, Cmd.none, Nothing )
+
+
+{-| Eventually, this will need to be parameterized to deal with multiple examinations.
+-}
+nextParticipant : ParticipantsDict -> Model -> Maybe ( ParticipantId, Participant )
+nextParticipant participants model =
+    let
+        pendingParticipants =
+            List.filter (\participant -> (Just <| participant) /= model.selectedParticipant)
+                (List.sortBy
+                    (\( _, participant ) ->
+                        getParticipantName participant
+                    )
+                 <|
+                    Dict.toList <|
+                        participantsWithPendingActivity participants model
+                )
+    in
+        -- At this point, the just completed form is still in pendingActivities.
+        List.head pendingParticipants
 
 
 subscriptions : Model -> ( ParticipantId, Participant ) -> Sub Pages.Activity.Model.Msg

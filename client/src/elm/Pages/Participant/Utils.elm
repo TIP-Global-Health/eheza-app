@@ -1,6 +1,20 @@
 module Pages.Participant.Utils exposing (..)
 
+import Dict
 import List
+import Child.Model exposing (ChildId, Child)
+import Mother.Model exposing (MotherId, Mother)
+import Participant.Model exposing (ParticipantsDict)
+
+
+makeLoneMotherDict : MotherId -> Mother.Model.Mother -> ParticipantsDict
+makeLoneMotherDict motherId mother =
+    Dict.insert motherId ({ info = Participant.Model.ParticipantMother mother }) Dict.empty
+
+
+makeLoneChildDict : ChildId -> Child.Model.Child -> ParticipantsDict
+makeLoneChildDict childId child =
+    Dict.insert childId ({ info = Participant.Model.ParticipantChild child }) Dict.empty
 
 
 {-| Like `Update.Extra.sequence`, but for `update` signatures that also

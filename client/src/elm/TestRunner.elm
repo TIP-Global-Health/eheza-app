@@ -9,6 +9,8 @@ import Test.Runner.Node exposing (TestProgram, run)
 
 import App.Test
 import Measurement.Test
+import Pages.Activity.Test
+import Pages.Participant.Test
 import Participant.Test
 import ProgressReport.Test
 import Pusher.Test
@@ -20,6 +22,8 @@ allTests =
     describe "All tests"
         [ App.Test.all
         , Measurement.Test.all
+        , Pages.Activity.Test.all
+        , Pages.Participant.Test.all
         , Participant.Test.all
         , ProgressReport.Test.all
         , Pusher.Test.all

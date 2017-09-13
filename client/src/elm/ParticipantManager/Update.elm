@@ -90,7 +90,7 @@ update currentDate backendUrl accessToken user language msg model =
         MsgPagesActivity subMsg ->
             let
                 ( participantUpdated, updatedActivityPage, subCmd, redirectPage ) =
-                    Pages.Activity.Update.update currentDate backendUrl accessToken user language subMsg model.activityPage
+                    Pages.Activity.Update.update backendUrl accessToken user language (unwrapParticipantsDict model.participants) subMsg model.activityPage
 
                 updatedModel =
                     case participantUpdated of

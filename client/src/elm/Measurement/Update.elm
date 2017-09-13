@@ -27,8 +27,8 @@ import Utils.Json exposing (decodeSingleDrupalEntity)
 import Utils.WebData exposing (sendWithHandler)
 
 
-{-| Optionally, we bubble up two activity types in a tuple, which form to
-complete and which form is the next one.
+{-| Optionally, we bubble up an activity type which should now be considered to
+be completed.
 
 The strategy used here, for the moment, is that the `model` tracks the UI,
 whereas the `examination` tracks the underlying data from the backend. So,
@@ -43,7 +43,7 @@ It's possible that we ought to split this up into an `updateMother` and
 `updateChild` (so we can specialize the examination), but perhaps not.
 
 -}
-update : BackendUrl -> String -> ParticipantId -> Msg -> Model -> Examination -> ( Model, Examination, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+update : BackendUrl -> String -> ParticipantId -> Msg -> Model -> Examination -> ( Model, Examination, Cmd Msg, Maybe ActivityType )
 update backendUrl accessToken participantId msg model examination =
     let
         -- This processes a common case below, to supply an unchanged
@@ -116,7 +116,7 @@ update backendUrl accessToken participantId msg model examination =
                   }
                 , mapExaminationMother (\exam -> { exam | familyPlanning = value }) examination
                 , Cmd.none
-                , Just <| ( Mother FamilyPlanning, Mother FamilyPlanning )
+                , Just <| Mother FamilyPlanning
                 )
 
             HandleFamilyPlanningSave (Err err) ->
@@ -136,7 +136,7 @@ update backendUrl accessToken participantId msg model examination =
                   }
                 , mapExaminationChild (\exam -> { exam | height = Just value }) examination
                 , Cmd.none
-                , Just <| ( Child Height, Child Muac )
+                , Just <| Child Height
                 )
 
             HandleHeightSave (Err err) ->
@@ -156,7 +156,7 @@ update backendUrl accessToken participantId msg model examination =
                   }
                 , mapExaminationChild (\exam -> { exam | nutrition = value }) examination
                 , Cmd.none
-                , Just ( Child NutritionSigns, Child ChildPicture )
+                , Just <| Child NutritionSigns
                 )
 
             HandleNutritionSignsSave (Err err) ->
@@ -176,7 +176,7 @@ update backendUrl accessToken participantId msg model examination =
                   }
                 , mapExaminationChild (\exam -> { exam | muac = Just value }) examination
                 , Cmd.none
-                , Just <| ( Child Muac, Child NutritionSigns )
+                , Just <| Child Muac
                 )
 
             HandleMuacSave (Err err) ->
@@ -196,7 +196,7 @@ update backendUrl accessToken participantId msg model examination =
                   }
                 , examination
                 , Cmd.none
-                , Just <| ( Child ChildPicture, Child Weight )
+                , Just <| Child ChildPicture
                 )
 
             HandlePhotoSave (Err err) ->
@@ -216,7 +216,7 @@ update backendUrl accessToken participantId msg model examination =
                   }
                 , mapExaminationChild (\exam -> { exam | weight = Just value }) examination
                 , Cmd.none
-                , Just <| ( Child Weight, Child Height )
+                , Just <| Child Weight
                 )
 
             HandleWeightSave (Err err) ->
