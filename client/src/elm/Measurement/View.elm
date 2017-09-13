@@ -167,6 +167,17 @@ viewFloatForm backendUrl accessToken user language currentDate floatMeasurement 
                 _ ->
                     Nothing
 
+        labelZScoreForAge =
+            case floatMeasurement of
+                HeightFloat ->
+                    Trans.ZScoreHeightForAge
+
+                MuacFloat ->
+                    Trans.ZScoreMuacForAge
+
+                WeightFloat ->
+                    Trans.ZScoreWeightForAge
+
         calculatedZScoreForWeight =
             case model.height of
                 Just heightValue ->
@@ -183,7 +194,7 @@ viewFloatForm backendUrl accessToken user language currentDate floatMeasurement 
         renderedZScoreForAge =
             div
                 [ class "ui large header z-score age" ]
-                [ text <| translate language Trans.ZScoreForAge
+                [ text <| translate language labelZScoreForAge
                 , span
                     [ class "sub header" ]
                     [ text
@@ -202,7 +213,7 @@ viewFloatForm backendUrl accessToken user language currentDate floatMeasurement 
                 WeightFloat ->
                     div
                         [ class "ui large header z-score height" ]
-                        [ text <| translate language Trans.ZScoreForHeight
+                        [ text <| translate language Trans.ZScoreWeightForHeight
                         , span
                             [ class "sub header" ]
                             [ text
