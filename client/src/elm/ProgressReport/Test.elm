@@ -2,7 +2,7 @@ module ProgressReport.Test exposing (all)
 
 import Date
 import Expect
-import Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChild, exampleMother, exampleUser)
+import Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildB, exampleMother, exampleUser)
 import Html exposing (div)
 import Html.Attributes as Attr
 import Pages.Participant.Model exposing (Tab(..), emptyModel)
@@ -26,7 +26,7 @@ viewChildProgressReportTest =
                     English
                     (Date.fromTime 1504185446000)
                     NotAsked
-                    ( 5, exampleChild )
+                    ( 5, exampleChildB )
                     { emptyModel | selectedTab = selectedTab }
                 )
     in

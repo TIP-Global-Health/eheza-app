@@ -1,4 +1,4 @@
-port module Pages.Participant.Update exposing (update, subscriptions)
+port module Pages.Participant.Update exposing (nextActivity, update, subscriptions)
 
 import Activity.Model exposing (ActivityType(Child), ChildActivityType(..))
 import Activity.Utils exposing (getActivityList)

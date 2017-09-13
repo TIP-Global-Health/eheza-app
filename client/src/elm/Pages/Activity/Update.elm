@@ -1,4 +1,4 @@
-module Pages.Activity.Update exposing (update, subscriptions)
+module Pages.Activity.Update exposing (nextParticipant, update, subscriptions)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import App.PageType exposing (Page(..))
