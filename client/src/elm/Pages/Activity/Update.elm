@@ -143,10 +143,10 @@ nextParticipant currentDate participants model =
                 -- We have this trick to grab the 2nd pending element, as
                 -- at this moment, the currently completed participant sits
                 -- at the first place.
-                firstParticipant =
+                firstPendingParticipant =
                     List.head <| List.reverse <| List.take 2 pendingParticipants
             in
-                case firstParticipant of
+                case firstPendingParticipant of
                     Just ( id, participant ) ->
                         Just ( id, participant )
 
