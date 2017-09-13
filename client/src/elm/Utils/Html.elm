@@ -10,9 +10,10 @@ module Utils.Html
         )
 
 import Config.Model exposing (Model)
-import Html exposing (Html, a, div, h5, img, text)
+import Html exposing (Html, a, div, h5, img, span, text)
 import Html.Attributes exposing (attribute, class, classList, id, src, style)
 import Html.Events exposing (onClick)
+import Participant.Model exposing (ParticipantType(..))
 
 
 {-| Produces an empty text node in the DOM.
@@ -69,14 +70,34 @@ tabItem title active taId action =
         [ text title ]
 
 
-thumbnailImage : String -> String -> Int -> Int -> Html any
-thumbnailImage source label height width =
-    img
-        [ src source
-        , attribute "alt" label
-        , style
-            [ ( "height", (toString height) ++ "px" )
-            , ( "width", (toString width) ++ "px" )
-            ]
-        ]
-        []
+thumbnailImage : ParticipantType -> String -> String -> Int -> Int -> Html any
+thumbnailImage participantType source label height width =
+    let
+        subClass =
+            case participantType of
+                ParticipantMother _ ->
+                    "mother"
+
+                ParticipantChild _ ->
+                    "child"
+    in
+        if String.isEmpty source then
+            span
+                [ class <| "icon-participant " ++ subClass
+                , style
+                    [ ( "height", (toString height) ++ "px" )
+                    , ( "width", (toString width) ++ "px" )
+                    ]
+                ]
+                []
+        else
+            img
+                [ src source
+                , attribute "alt" label
+                , style
+                    [ ( "height", (toString height) ++ "px" )
+                    , ( "width", (toString width) ++ "px" )
+                    ]
+                , class <| "photo-participant" ++ subClass
+                ]
+                []
