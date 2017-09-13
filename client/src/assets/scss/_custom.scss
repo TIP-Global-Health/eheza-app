@@ -794,7 +794,7 @@ input::placeholder {
 
 .icon-mother,
 .icon-baby,
-.icon-completed {
+.icon-activity {
   width: 54px;
   height: 54px;
   display: block;
@@ -810,9 +810,9 @@ input::placeholder {
   background-size: 25px 34px;
 }
 
-.icon-completed {
-  background: url(#{$img-path}icon-completed.svg) no-repeat center;
-  background-size: 26px 24px;
+.icon-activity {
+  background: url(#{$img-path}activities.svg) no-repeat center;
+  background-size: 40px 40px;
 }
 
 
