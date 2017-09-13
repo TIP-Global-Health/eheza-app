@@ -133,8 +133,11 @@ nextParticipant currentDate participants model =
             Nothing
         else
             let
+                -- We have this trick to grab the 2nd pending element, as
+                -- at this moment, the currently completed participant sits
+                -- at the first place.
                 firstParticipant =
-                    List.head <| Dict.toList pendingParticipants
+                    List.head <| List.reverse <| List.take 2 pendingParticipants
             in
                 case firstParticipant of
                     Just ( id, participant ) ->
