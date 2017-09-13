@@ -494,7 +494,7 @@ translate lang trans =
                     { english = "Z-Score Height for Age: " }
 
                 ZScoreMuacForAge ->
-                    { english = "Z-Score Height for Age: " }
+                    { english = "Z-Score MUAC for Age: " }
 
                 ZScoreWeightForAge ->
                     { english = "Z-Score Weight for Age: " }
