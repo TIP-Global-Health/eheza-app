@@ -129,18 +129,14 @@ nextActivity currentDate ( participantId, participant ) model =
             getActivityList currentDate Children participants
 
         pendingActivities =
-            List.filter (\activity -> (Tuple.first activity.totals) > 0) allActivityList
+            List.filter (\activity -> (Tuple.first activity.totals) > 0 && (Just <| activity.activity.activityType) /= model.selectedActivity) allActivityList
     in
-        -- At this point, the just completed form is still in pendingActivities.
-        if List.length pendingActivities < 2 then
+        if List.isEmpty pendingActivities then
             Nothing
         else
             let
-                -- We have this trick to grab the 2nd pending element, as
-                -- at this moment, the currently completed activity sits
-                -- at the first place.
                 firstPendingActivity =
-                    List.head <| List.reverse <| List.take 2 pendingActivities
+                    List.head <| pendingActivities
             in
                 case firstPendingActivity of
                     Just activityInfo ->
