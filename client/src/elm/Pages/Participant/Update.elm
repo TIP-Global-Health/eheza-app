@@ -131,7 +131,8 @@ nextActivity currentDate ( participantId, participant ) model =
         pendingActivities =
             List.filter (\activity -> (Tuple.first activity.totals) > 0) allActivityList
     in
-        if List.isEmpty pendingActivities then
+        -- At this point, the just completed form is still in pendingActivities.
+        if List.length pendingActivities < 2 then
             Nothing
         else
             let

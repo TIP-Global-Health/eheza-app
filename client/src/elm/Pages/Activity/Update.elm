@@ -136,7 +136,8 @@ nextParticipant currentDate participants model =
                 Dict.toList <|
                     participantsWithPendingActivity currentDate participants model
     in
-        if List.isEmpty pendingParticipants then
+        -- At this point, the just completed form is still in pendingActivities.
+        if List.length pendingParticipants < 2 then
             Nothing
         else
             let
