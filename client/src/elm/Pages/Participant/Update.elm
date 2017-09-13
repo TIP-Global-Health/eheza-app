@@ -135,10 +135,13 @@ nextActivity currentDate ( participantId, participant ) model =
             Nothing
         else
             let
-                firstActivity =
-                    List.head pendingActivities
+                -- We have this trick to grab the 2nd pending element, as
+                -- at this moment, the currently completed activity sits
+                -- at the first place.
+                firstPendingActivity =
+                    List.head <| List.reverse <| List.take 2 pendingActivities
             in
-                case firstActivity of
+                case firstPendingActivity of
                     Just activityInfo ->
                         Just activityInfo.activity.activityType
 
