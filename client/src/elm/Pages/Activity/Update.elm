@@ -128,24 +128,23 @@ nextParticipant : Date -> ParticipantsDict -> Model -> Maybe ( ParticipantId, Pa
 nextParticipant currentDate participants model =
     let
         pendingParticipants =
-            List.sortBy
-                (\( _, participant ) ->
-                    getParticipantName participant
+            List.filter (\participant -> (Just <| participant) /= model.selectedParticipant)
+                (List.sortBy
+                    (\( _, participant ) ->
+                        getParticipantName participant
+                    )
+                 <|
+                    Dict.toList <|
+                        participantsWithPendingActivity currentDate participants model
                 )
-            <|
-                Dict.toList <|
-                    participantsWithPendingActivity currentDate participants model
     in
         -- At this point, the just completed form is still in pendingActivities.
-        if List.length pendingParticipants < 2 then
+        if List.isEmpty pendingParticipants then
             Nothing
         else
             let
-                -- We have this trick to grab the 2nd pending element, as
-                -- at this moment, the currently completed participant sits
-                -- at the first place.
                 firstPendingParticipant =
-                    List.head <| List.reverse <| List.take 2 pendingParticipants
+                    List.head pendingParticipants
             in
                 case firstPendingParticipant of
                     Just ( id, participant ) ->
