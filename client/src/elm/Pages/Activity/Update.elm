@@ -58,9 +58,16 @@ update currentDate backendUrl accessToken user language participants msg model =
                             ( participant, [] )
 
                         Just activityTypeCompleted ->
-                            ( updateActivityDate newDate activityTypeCompleted participant
-                            , [ SetSelectedParticipant <| nextParticipant currentDate participants model ]
-                            )
+                            case model.selectedActivity of
+                                Child ChildPicture ->
+                                    ( updateActivityDate newDate activityTypeCompleted participant
+                                    , [ SetSelectedParticipant <| Nothing, SetSelectedParticipant <| nextParticipant currentDate participants model ]
+                                    )
+
+                                _ ->
+                                    ( updateActivityDate newDate activityTypeCompleted participant
+                                    , [ SetSelectedParticipant <| nextParticipant currentDate participants model ]
+                                    )
 
                 updatedModel =
                     if saveMeasurementMessage subMsg then
