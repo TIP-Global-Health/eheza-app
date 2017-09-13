@@ -29,7 +29,7 @@ import User.Model exposing (..)
 import Utils.WebData exposing (sendWithHandler)
 
 
-{-| Optionally, we bubble up two activity types in a tuple, which form to complete and which form is the next one.
+{-| Optionally, we bubble up an activity type which should now be considered to be completed.
 -}
 update : BackendUrl -> String -> User -> ( ParticipantId, Participant ) -> Msg -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
 update backendUrl accessToken user ( participantId, participant ) msg model =
