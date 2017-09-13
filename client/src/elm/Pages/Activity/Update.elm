@@ -11,6 +11,7 @@ import Maybe.Extra exposing (isNothing)
 import Measurement.Model exposing (saveMeasurementMessage)
 import Measurement.Update
 import Pages.Activity.Utils exposing (participantsWithPendingActivity)
+import Participant.Utils exposing (getParticipantName)
 import User.Model exposing (..)
 import Pages.Activity.Model exposing (Model, Msg(..))
 import Pages.Participant.Utils exposing (updateActivityDate, sequenceExtra)
@@ -127,9 +128,15 @@ nextParticipant : Date -> ParticipantsDict -> Model -> Maybe ( ParticipantId, Pa
 nextParticipant currentDate participants model =
     let
         pendingParticipants =
-            participantsWithPendingActivity currentDate participants model
+            List.sortBy
+                (\( _, participant ) ->
+                    getParticipantName participant
+                )
+            <|
+                Dict.toList <|
+                    participantsWithPendingActivity currentDate participants model
     in
-        if Dict.isEmpty pendingParticipants then
+        if List.isEmpty pendingParticipants then
             Nothing
         else
             let
