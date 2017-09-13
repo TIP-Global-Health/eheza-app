@@ -167,13 +167,68 @@ viewFloatForm backendUrl accessToken user language currentDate floatMeasurement 
                 _ ->
                     Nothing
 
-        renderedZScoreForAge =
-            case calculatedZScoreForAge of
-                Just val ->
-                    viewZScore val
+        labelZScoreForAge =
+            case floatMeasurement of
+                HeightFloat ->
+                    Trans.ZScoreHeightForAge
 
-                Nothing ->
-                    translate language Trans.NotAvailable
+                MuacFloat ->
+                    Trans.ZScoreMuacForAge
+
+                WeightFloat ->
+                    Trans.ZScoreWeightForAge
+
+        calculatedZScoreForWeight =
+            case model.height of
+                Just heightValue ->
+                    case ( floatMeasurement, measurementValue ) of
+                        ( WeightFloat, Just value ) ->
+                            zScoreWeightForHeight (ZScore.Model.Centimetres <| getFloatInputValue heightValue) child.gender (ZScore.Model.Kilograms <| getFloatInputValue value)
+
+                        _ ->
+                            Nothing
+
+                _ ->
+                    Nothing
+
+        renderedZScoreForAge =
+            div
+                [ class "ui large header z-score age" ]
+                [ text <| translate language labelZScoreForAge
+                , span
+                    [ class "sub header" ]
+                    [ text
+                        (case calculatedZScoreForAge of
+                            Just val ->
+                                viewZScore val
+
+                            Nothing ->
+                                translate language Trans.NotAvailable
+                        )
+                    ]
+                ]
+
+        renderedZScoreForWeight =
+            case floatMeasurement of
+                WeightFloat ->
+                    div
+                        [ class "ui large header z-score height" ]
+                        [ text <| translate language Trans.ZScoreWeightForHeight
+                        , span
+                            [ class "sub header" ]
+                            [ text
+                                (case calculatedZScoreForWeight of
+                                    Just val ->
+                                        viewZScore val
+
+                                    Nothing ->
+                                        translate language Trans.NotAvailable
+                                )
+                            ]
+                        ]
+
+                _ ->
+                    emptyNode
     in
         div
             [ class <| "ui full segment " ++ blockName ]
@@ -198,13 +253,8 @@ viewFloatForm backendUrl accessToken user language currentDate floatMeasurement 
                         ]
                     , viewPreviousMeasurement language floatMeasurement maybePreviousExamination measurementType
                     ]
-                , div
-                    [ class "ui large header" ]
-                    [ text <| translate language Trans.ZScoreForAge
-                    , span
-                        [ class "sub header" ]
-                        [ text renderedZScoreForAge ]
-                    ]
+                , renderedZScoreForAge
+                , renderedZScoreForWeight
                 ]
             , div
                 [ class "actions" ]

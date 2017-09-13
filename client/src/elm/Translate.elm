@@ -124,8 +124,10 @@ type TranslationId
     | TitleHealthAssessment
     | Username
     | WelcomeUser String
-    | ZScoreForAge
-    | ZScoreForHeight
+    | ZScoreHeightForAge
+    | ZScoreMuacForAge
+    | ZScoreWeightForAge
+    | ZScoreWeightForHeight
 
 
 translate : Language -> TranslationId -> String
@@ -488,11 +490,17 @@ translate lang trans =
                 WelcomeUser name ->
                     { english = "Welcome " ++ name }
 
-                ZScoreForAge ->
-                    { english = "Z-Score for age: " }
+                ZScoreHeightForAge ->
+                    { english = "Z-Score Height for Age: " }
 
-                ZScoreForHeight ->
-                    { english = "Z-Score for height: " }
+                ZScoreMuacForAge ->
+                    { english = "Z-Score Height for Age: " }
+
+                ZScoreWeightForAge ->
+                    { english = "Z-Score Weight for Age: " }
+
+                ZScoreWeightForHeight ->
+                    { english = "Z-Score Weight for Height: " }
     in
         case lang of
             English ->
