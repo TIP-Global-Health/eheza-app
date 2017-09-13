@@ -146,19 +146,7 @@ nextParticipant currentDate participants model =
                 )
     in
         -- At this point, the just completed form is still in pendingActivities.
-        if List.isEmpty pendingParticipants then
-            Nothing
-        else
-            let
-                firstPendingParticipant =
-                    List.head pendingParticipants
-            in
-                case firstPendingParticipant of
-                    Just ( id, participant ) ->
-                        Just ( id, participant )
-
-                    Nothing ->
-                        Nothing
+        List.head pendingParticipants
 
 
 subscriptions : Model -> ( ParticipantId, Participant ) -> Sub Pages.Activity.Model.Msg
