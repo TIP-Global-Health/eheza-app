@@ -35,8 +35,8 @@ exampleUser =
 
 {-| An example child.
 -}
-exampleChild : Child
-exampleChild =
+exampleChildA : Child
+exampleChildA =
     { name = "Michelle Kelly"
     , image = "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , motherId = Nothing
@@ -45,6 +45,21 @@ exampleChild =
     , activityDates = emptyChildActivityDates
     , birthDate = Date.fromTime 1472373589000
     , gender = Male
+    }
+
+
+{-| Another example child.
+-}
+exampleChildB : Child
+exampleChildB =
+    { name = "Habimana Hakizimana"
+    , image = "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
+    , motherId = Nothing
+    , siblingId = Nothing
+    , examinations = NotAsked
+    , activityDates = emptyChildActivityDates
+    , birthDate = Date.fromTime 1479373589000
+    , gender = Female
     }
 
 

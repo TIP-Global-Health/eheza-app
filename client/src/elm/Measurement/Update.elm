@@ -17,8 +17,7 @@ import Measurement.Decoder exposing (decodePhotoFromResponse)
 import Measurement.Encoder exposing (encodeFamilyPlanning, encodeHeight, encodeMuac, encodeNutritionSigns, encodePhoto, encodeWeight)
 import Measurement.Model
     exposing
-        ( CompletedAndRedirectToActivityTuple
-        , Model
+        ( Model
         , Msg(..)
         , getFloatInputValue
         , normalizeFloatFormInput
@@ -30,9 +29,9 @@ import User.Model exposing (..)
 import Utils.WebData exposing (sendWithHandler)
 
 
-{-| Optionally, we bubble up two activity types in a tuple, which form to complete and which form is the next one.
+{-| Optionally, we bubble up an activity type which should now be considered to be completed.
 -}
-update : BackendUrl -> String -> User -> ( ParticipantId, Participant ) -> Msg -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+update : BackendUrl -> String -> User -> ( ParticipantId, Participant ) -> Msg -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
 update backendUrl accessToken user ( participantId, participant ) msg model =
     case msg of
         FamilyPlanningSignsSave ->
@@ -67,7 +66,7 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
         HandleFamilyPlanningSave (Ok ()) ->
             ( { model | status = Success () }
             , Cmd.none
-            , Just <| ( Mother FamilyPlanning, Mother FamilyPlanning )
+            , Just <| Mother FamilyPlanning
             )
 
         HandleFamilyPlanningSave (Err err) ->
@@ -83,7 +82,7 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
         HandleHeightSave (Ok ()) ->
             ( { model | status = Success (), height = (normalizeFloatInput model.height) }
             , Cmd.none
-            , Just <| ( Child Height, Child Muac )
+            , Just <| Child Height
             )
 
         HandleHeightSave (Err err) ->
@@ -99,7 +98,7 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
         HandleNutritionSignsSave (Ok ()) ->
             ( { model | status = Success () }
             , Cmd.none
-            , Just <| ( Child NutritionSigns, Child ChildPicture )
+            , Just <| Child NutritionSigns
             )
 
         HandleNutritionSignsSave (Err err) ->
@@ -115,7 +114,7 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
         HandleMuacSave (Ok ()) ->
             ( { model | status = Success (), muac = (normalizeFloatInput model.muac) }
             , Cmd.none
-            , Just <| ( Child Muac, Child NutritionSigns )
+            , Just <| Child Muac
             )
 
         HandleMuacSave (Err err) ->
@@ -134,7 +133,7 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
                 , photo = ( Tuple.first model.photo, Just ( photoId, photo ) )
               }
             , Cmd.none
-            , Just <| ( Child ChildPicture, Child Weight )
+            , Just <| Child ChildPicture
             )
 
         HandlePhotoSave (Err err) ->
@@ -150,7 +149,7 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
         HandleWeightSave (Ok ()) ->
             ( { model | status = Success (), weight = (normalizeFloatInput model.weight) }
             , Cmd.none
-            , Just <| ( Child Weight, Child Height )
+            , Just <| Child Weight
             )
 
         HandleWeightSave (Err err) ->
@@ -213,7 +212,7 @@ update backendUrl accessToken user ( participantId, participant ) msg model =
 
 {-| Send new family planning of a mother to the backend.
 -}
-postFamilyPlanning : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+postFamilyPlanning : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
 postFamilyPlanning backendUrl accessToken motherId model =
     if EveryDict.isEmpty model.familyPlanningSigns then
         ( model, Cmd.none, Nothing )
@@ -230,7 +229,7 @@ postFamilyPlanning backendUrl accessToken motherId model =
 
 {-| Send new nutrition signs of a child to the backend.
 -}
-postNutritionSigns : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+postNutritionSigns : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
 postNutritionSigns backendUrl accessToken childId model =
     if EveryDict.isEmpty model.nutritionSigns then
         ( model, Cmd.none, Nothing )
@@ -247,7 +246,7 @@ postNutritionSigns backendUrl accessToken childId model =
 
 {-| Enables posting of arbitrary values to the provided back end so long as the encoder matches the desired type
 -}
-postData : BackendUrl -> String -> Model -> String -> value -> (value -> Value) -> (Result Http.Error () -> Msg) -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+postData : BackendUrl -> String -> Model -> String -> value -> (value -> Value) -> (Result Http.Error () -> Msg) -> ( Model, Cmd Msg, Maybe ActivityType )
 postData backendUrl accessToken model path value encoder handler =
     let
         command =
@@ -264,7 +263,7 @@ postData backendUrl accessToken model path value encoder handler =
 
 {-| Send new photo of a child to the backend.
 -}
-postPhoto : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+postPhoto : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
 postPhoto backendUrl accessToken childId model =
     case model.photo of
         ( Nothing, _ ) ->
@@ -288,7 +287,7 @@ postPhoto backendUrl accessToken childId model =
 
 {-| Send new weight of a child to the backend.
 -}
-postWeight : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+postWeight : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
 postWeight backendUrl accessToken childId model =
     Maybe.map
         (\weight ->
@@ -307,7 +306,7 @@ postWeight backendUrl accessToken childId model =
 
 {-| Send new height of a child to the backend.
 -}
-postHeight : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+postHeight : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
 postHeight backendUrl accessToken childId model =
     Maybe.map
         (\height ->
@@ -326,7 +325,7 @@ postHeight backendUrl accessToken childId model =
 
 {-| Send new MUAC of a child to the backend.
 -}
-postMuac : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe CompletedAndRedirectToActivityTuple )
+postMuac : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
 postMuac backendUrl accessToken childId model =
     Maybe.map
         (\muac ->

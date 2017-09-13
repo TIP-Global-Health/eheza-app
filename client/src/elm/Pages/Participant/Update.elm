@@ -1,10 +1,12 @@
-port module Pages.Participant.Update exposing (update, subscriptions)
+port module Pages.Participant.Update exposing (nextActivity, update, subscriptions)
 
 import Activity.Model exposing (ActivityType(Child), ChildActivityType(..))
+import Activity.Utils exposing (getActivityList)
 import App.PageType exposing (Page(..))
 import Child.Model exposing (Child)
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
+import Dict
 import Editable
 import EveryDictList
 import Examination.Model exposing (emptyExaminationChild)
@@ -15,7 +17,7 @@ import Measurement.Model as Measurement exposing (Msg(..))
 import Measurement.Update
 import Pages.Participant.Model exposing (Model, Msg(..))
 import Pages.Participant.Utils exposing (updateActivityDate, sequenceExtra)
-import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..))
+import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
 import Pusher.Model exposing (PusherEventData(..))
 import Translate as Trans exposing (Language, translate)
 import User.Model exposing (..)
@@ -73,15 +75,16 @@ update currentDate backendUrl accessToken user language ( participantId, partici
                         Nothing ->
                             participant
 
-                        Just ( activtyTypeCompleted, activityToRedirect ) ->
-                            updateActivityDate newDate activtyTypeCompleted participant
+                        Just activityTypeCompleted ->
+                            updateActivityDate newDate activityTypeCompleted participant
 
                 modelWithMeasurements =
                     { model | measurements = measurementsUpdated }
 
                 additionalMsgs =
                     if isJust maybeActivityTypeCompleted then
-                        [ SetSelectedActivity Nothing ]
+                        [ SetSelectedActivity <| nextActivity currentDate ( participantId, participant ) model
+                        ]
                     else
                         []
             in
@@ -114,6 +117,33 @@ update currentDate backendUrl accessToken user language ( participantId, partici
             sequenceExtra (update currentDate backendUrl accessToken user language ( participantId, participant ))
                 [ SetSelectedActivity Nothing ]
                 ( participant, { model | selectedTab = tab }, Cmd.none, Nothing )
+
+
+nextActivity : Date -> ( ParticipantId, Participant ) -> Model -> Maybe ActivityType
+nextActivity currentDate ( participantId, participant ) model =
+    let
+        participants =
+            Dict.insert participantId participant Dict.empty
+
+        allActivityList =
+            getActivityList currentDate Children participants
+
+        pendingActivities =
+            List.filter (\activity -> (Tuple.first activity.totals) > 0 && (Just <| activity.activity.activityType) /= model.selectedActivity) allActivityList
+    in
+        if List.isEmpty pendingActivities then
+            Nothing
+        else
+            let
+                firstPendingActivity =
+                    List.head <| pendingActivities
+            in
+                case firstPendingActivity of
+                    Just activityInfo ->
+                        Just activityInfo.activity.activityType
+
+                    Nothing ->
+                        Nothing
 
 
 subscriptions : Model -> Sub Pages.Participant.Model.Msg

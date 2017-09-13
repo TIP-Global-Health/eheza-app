@@ -9,7 +9,6 @@ import Activity.Utils exposing (getActivityList)
 import Child.Model exposing (Child, ChildId, Gender(..))
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
-import Dict
 import Examination.Utils exposing (getLastExaminationFromChild)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
@@ -17,6 +16,7 @@ import Html.Events exposing (onClick)
 import Measurement.View
 import Mother.Model exposing (Mother, MotherId)
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
+import Pages.Participant.Utils exposing (makeLoneMotherDict, makeLoneChildDict)
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(ParticipantChild, ParticipantMother), ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (renderParticipantAge, renderParticipantDateOfBirth)
 import ProgressReport.View exposing (viewProgressReport)
@@ -33,8 +33,7 @@ viewChild backendUrl accessToken currentUser language currentDate motherWebData 
             { info = Participant.Model.ParticipantChild child }
 
         participants =
-            -- @todo: Add mkChild
-            Dict.insert childId childParticipant Dict.empty
+            makeLoneChildDict childId child
 
         childName =
             translate language <| Trans.BabyName child.name
@@ -115,8 +114,7 @@ viewMother backendUrl accessToken language currentDate currentUser motherId moth
                     children
 
         participants =
-            -- @todo: Add mkMother
-            Dict.insert motherId ({ info = Participant.Model.ParticipantMother mother }) Dict.empty
+            makeLoneMotherDict motherId mother
     in
         div [ class "ui unstackable items participant-page mother" ]
             [ div [ class "item" ]
