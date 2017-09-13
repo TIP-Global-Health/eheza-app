@@ -30,12 +30,11 @@ update :
     -> String
     -> User
     -> Language
-    -> ParticipantsDict
     -> ( ParticipantId, Participant )
     -> Pages.Participant.Model.Msg
     -> Model
     -> ( Participant, Model, Cmd Pages.Participant.Model.Msg, Maybe Page )
-update currentDate backendUrl accessToken user language participants ( participantId, participant ) msg model =
+update currentDate backendUrl accessToken user language ( participantId, participant ) msg model =
     case msg of
         HandlePusherEventData event ->
             case event of
@@ -84,12 +83,12 @@ update currentDate backendUrl accessToken user language participants ( participa
 
                 additionalMsgs =
                     if isJust maybeActivityTypeCompleted then
-                        [ SetSelectedActivity <| nextActivity currentDate participants model
+                        [ SetSelectedActivity <| nextActivity currentDate ( participantId, participant ) model
                         ]
                     else
                         []
             in
-                sequenceExtra (update currentDate backendUrl accessToken user language participants ( participantId, participant ))
+                sequenceExtra (update currentDate backendUrl accessToken user language ( participantId, participant ))
                     additionalMsgs
                     ( participantUpdated
                     , modelWithMeasurements
@@ -110,19 +109,22 @@ update currentDate backendUrl accessToken user language participants ( participa
                         _ ->
                             [ MsgFilePicker <| FilePicker.Model.Unbind ]
             in
-                sequenceExtra (update currentDate backendUrl accessToken user language participants ( participantId, participant ))
+                sequenceExtra (update currentDate backendUrl accessToken user language ( participantId, participant ))
                     additionalMsgs
                     ( participant, { model | selectedActivity = maybeActivityType }, Cmd.none, Nothing )
 
         SetSelectedTab tab ->
-            sequenceExtra (update currentDate backendUrl accessToken user language participants ( participantId, participant ))
+            sequenceExtra (update currentDate backendUrl accessToken user language ( participantId, participant ))
                 [ SetSelectedActivity Nothing ]
                 ( participant, { model | selectedTab = tab }, Cmd.none, Nothing )
 
 
-nextActivity : Date -> ParticipantsDict -> Model -> Maybe ActivityType
-nextActivity currentDate participants model =
+nextActivity : Date -> ( ParticipantId, Participant ) -> Model -> Maybe ActivityType
+nextActivity currentDate ( participantId, participant ) model =
     let
+        participants =
+            Dict.insert participantId participant Dict.empty
+
         allActivityList =
             getActivityList currentDate Children participants
 

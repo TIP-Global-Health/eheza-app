@@ -135,7 +135,7 @@ update currentDate backendUrl accessToken user language msg model =
                                     |> Maybe.withDefault Pages.Participant.Model.emptyModel
 
                             ( participantUpdated, subModel, subCmd, redirectPage ) =
-                                Pages.Participant.Update.update currentDate backendUrl accessToken user language (unwrapParticipantsDict model.participants) ( id, participant ) subMsg participantModel
+                                Pages.Participant.Update.update currentDate backendUrl accessToken user language ( id, participant ) subMsg participantModel
                         in
                             ( { model
                                 | participants = Dict.insert id (Success participantUpdated) model.participants
