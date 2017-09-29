@@ -12,8 +12,8 @@ use Faker\Generator;
  */
 function hedley_migrate_migrate_api() {
   $migrations = array(
-    // Users.
     'HedleyMigrateUsers',
+    'HedleyMigrateClinics',
   );
 
   $api['api'] = 2;

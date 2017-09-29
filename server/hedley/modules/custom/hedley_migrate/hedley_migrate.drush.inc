@@ -42,5 +42,7 @@ function hedley_delete_child_measurements($child_id) {
     ->range(0, 200)
     ->execute();
 
-  node_delete_multiple(array_keys($result['node']));
+  if ($result['node']) {
+    node_delete_multiple(array_keys($result['node']));
+  }
 }
