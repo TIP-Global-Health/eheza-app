@@ -10,67 +10,25 @@
 function hedley_activity_field_default_field_instances() {
   $field_instances = array();
 
-  // Exported field_instance: 'node-family_planning-body'.
-  $field_instances['node-family_planning-body'] = array(
+  // Exported field_instance: 'node-family_planning-field_date_measured'.
+  $field_instances['node-family_planning-field_date_measured'] = array(
     'bundle' => 'family_planning',
-    'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'module' => 'text',
-        'settings' => array(),
-        'type' => 'text_default',
-        'weight' => 0,
-      ),
-      'teaser' => array(
-        'label' => 'hidden',
-        'module' => 'text',
-        'settings' => array(
-          'trim_length' => 600,
-        ),
-        'type' => 'text_summary_or_trimmed',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'body',
-    'label' => 'Body',
-    'required' => FALSE,
-    'settings' => array(
-      'display_summary' => TRUE,
-      'text_processing' => 1,
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'module' => 'text',
-      'settings' => array(
-        'rows' => 20,
-        'summary_rows' => 5,
-      ),
-      'type' => 'text_textarea_with_summary',
-      'weight' => -4,
-    ),
-  );
-
-  // Exported field_instance: 'node-family_planning-field_activity_status'.
-  $field_instances['node-family_planning-field_activity_status'] = array(
-    'bundle' => 'family_planning',
-    'default_value' => array(
-      0 => array(
-        'value' => 'pending',
-      ),
-    ),
-    'deleted' => 0,
-    'description' => '',
+    'description' => 'Represents the date which on which the measurement took place. This is distinct from the date which data entry was scheduled (though that would be the default). It is also distinct from the creation date of the node, since that could be different from the date the measurement took place.',
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 1,
+        'module' => 'date',
+        'settings' => array(
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 4,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -80,22 +38,35 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_activity_status',
-    'label' => 'Status',
-    'required' => 0,
+    'field_name' => 'field_date_measured',
+    'label' => 'Date Measured',
+    'required' => 1,
     'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
       'user_register_form' => FALSE,
     ),
     'widget' => array(
       'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => -2,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 2,
     ),
   );
 
-  // Exported field_instance: 'node-family_planning-field_family_planning_signs'.
+  // Exported field_instance:
+  // 'node-family_planning-field_family_planning_signs'.
   $field_instances['node-family_planning-field_family_planning_signs'] = array(
     'bundle' => 'family_planning',
     'default_value' => NULL,
@@ -172,23 +143,22 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-height-field_activity_status'.
-  $field_instances['node-height-field_activity_status'] = array(
-    'bundle' => 'height',
-    'default_value' => array(
-      0 => array(
-        'value' => 'pending',
-      ),
-    ),
+  // Exported field_instance: 'node-family_planning-field_session'.
+  $field_instances['node-family_planning-field_session'] = array(
+    'bundle' => 'family_planning',
+    'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'Refers to the date-entry session which this measurement was taken in.',
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 2,
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 5,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -198,18 +168,22 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_activity_status',
-    'label' => 'Status',
-    'required' => 1,
+    'field_name' => 'field_session',
+    'label' => 'Session',
+    'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
     ),
     'widget' => array(
       'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 3,
     ),
   );
 
@@ -253,21 +227,24 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-height-field_examination'.
-  $field_instances['node-height-field_examination'] = array(
+  // Exported field_instance: 'node-height-field_date_measured'.
+  $field_instances['node-height-field_date_measured'] = array(
     'bundle' => 'height',
-    'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'When was this measurement actually made (as opposed to scheduled, or entered)?',
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'entityreference',
+        'module' => 'date',
         'settings' => array(
-          'bypass_access' => FALSE,
-          'link' => FALSE,
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
         ),
-        'type' => 'entityreference_label',
+        'type' => 'date_default',
         'weight' => 4,
       ),
       'teaser' => array(
@@ -278,21 +255,29 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_examination',
-    'label' => 'Examination',
+    'field_name' => 'field_date_measured',
+    'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
       'user_register_form' => FALSE,
     ),
     'widget' => array(
       'active' => 1,
-      'module' => 'entityreference',
+      'module' => 'date',
       'settings' => array(
-        'match_operator' => 'CONTAINS',
-        'path' => '',
-        'size' => 60,
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
       ),
-      'type' => 'entityreference_autocomplete',
+      'type' => 'date_select',
       'weight' => 4,
     ),
   );
@@ -343,19 +328,22 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-muac-field_activity_status'.
-  $field_instances['node-muac-field_activity_status'] = array(
-    'bundle' => 'muac',
+  // Exported field_instance: 'node-height-field_session'.
+  $field_instances['node-height-field_session'] = array(
+    'bundle' => 'height',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 1,
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 5,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -365,18 +353,22 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_activity_status',
-    'label' => 'Status',
-    'required' => 1,
+    'field_name' => 'field_session',
+    'label' => 'Session',
+    'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
     ),
     'widget' => array(
       'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 3,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 6,
     ),
   );
 
@@ -420,22 +412,25 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-muac-field_examination'.
-  $field_instances['node-muac-field_examination'] = array(
+  // Exported field_instance: 'node-muac-field_date_measured'.
+  $field_instances['node-muac-field_date_measured'] = array(
     'bundle' => 'muac',
-    'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'When was this measurement actually made (as opposed to scheduled, or entered)?',
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'entityreference',
+        'module' => 'date',
         'settings' => array(
-          'bypass_access' => FALSE,
-          'link' => FALSE,
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
         ),
-        'type' => 'entityreference_label',
-        'weight' => 3,
+        'type' => 'date_default',
+        'weight' => 5,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -445,22 +440,30 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_examination',
-    'label' => 'Examination',
+    'field_name' => 'field_date_measured',
+    'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
       'user_register_form' => FALSE,
     ),
     'widget' => array(
       'active' => 1,
-      'module' => 'entityreference',
+      'module' => 'date',
       'settings' => array(
-        'match_operator' => 'CONTAINS',
-        'path' => '',
-        'size' => 60,
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
       ),
-      'type' => 'entityreference_autocomplete',
-      'weight' => 5,
+      'type' => 'date_select',
+      'weight' => 8,
     ),
   );
 
@@ -510,19 +513,22 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-nutrition-field_activity_status'.
-  $field_instances['node-nutrition-field_activity_status'] = array(
-    'bundle' => 'nutrition',
+  // Exported field_instance: 'node-muac-field_session'.
+  $field_instances['node-muac-field_session'] = array(
+    'bundle' => 'muac',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 2,
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 6,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -532,18 +538,22 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_activity_status',
-    'label' => 'Status',
+    'field_name' => 'field_session',
+    'label' => 'Session',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
     ),
     'widget' => array(
       'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 10,
     ),
   );
 
@@ -587,22 +597,25 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-nutrition-field_examination'.
-  $field_instances['node-nutrition-field_examination'] = array(
+  // Exported field_instance: 'node-nutrition-field_date_measured'.
+  $field_instances['node-nutrition-field_date_measured'] = array(
     'bundle' => 'nutrition',
-    'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'When was this measurement actually made (as opposed to scheduled, or entered)?',
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'entityreference',
+        'module' => 'date',
         'settings' => array(
-          'bypass_access' => FALSE,
-          'link' => FALSE,
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
         ),
-        'type' => 'entityreference_label',
-        'weight' => 1,
+        'type' => 'date_default',
+        'weight' => 4,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -612,22 +625,30 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_examination',
-    'label' => 'Examination',
-    'required' => 0,
+    'field_name' => 'field_date_measured',
+    'label' => 'Date Measured',
+    'required' => 1,
     'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
       'user_register_form' => FALSE,
     ),
     'widget' => array(
       'active' => 1,
-      'module' => 'entityreference',
+      'module' => 'date',
       'settings' => array(
-        'match_operator' => 'CONTAINS',
-        'path' => '',
-        'size' => 60,
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
       ),
-      'type' => 'entityreference_autocomplete',
-      'weight' => -1,
+      'type' => 'date_select',
+      'weight' => 4,
     ),
   );
 
@@ -668,19 +689,22 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-photo-field_activity_status'.
-  $field_instances['node-photo-field_activity_status'] = array(
-    'bundle' => 'photo',
+  // Exported field_instance: 'node-nutrition-field_session'.
+  $field_instances['node-nutrition-field_session'] = array(
+    'bundle' => 'nutrition',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 2,
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 5,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -690,18 +714,22 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_activity_status',
-    'label' => 'Status',
+    'field_name' => 'field_session',
+    'label' => 'Session',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
     ),
     'widget' => array(
       'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 0,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 6,
     ),
   );
 
@@ -745,22 +773,25 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-photo-field_examination'.
-  $field_instances['node-photo-field_examination'] = array(
+  // Exported field_instance: 'node-photo-field_date_measured'.
+  $field_instances['node-photo-field_date_measured'] = array(
     'bundle' => 'photo',
-    'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'When was this measurement actually made (as opposed to scheduled, or entered)?',
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'entityreference',
+        'module' => 'date',
         'settings' => array(
-          'bypass_access' => FALSE,
-          'link' => FALSE,
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
         ),
-        'type' => 'entityreference_label',
-        'weight' => 1,
+        'type' => 'date_default',
+        'weight' => 4,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -770,22 +801,30 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_examination',
-    'label' => 'Examination',
-    'required' => 0,
+    'field_name' => 'field_date_measured',
+    'label' => 'Date Measured',
+    'required' => 1,
     'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
       'user_register_form' => FALSE,
     ),
     'widget' => array(
       'active' => 1,
-      'module' => 'entityreference',
+      'module' => 'date',
       'settings' => array(
-        'match_operator' => 'CONTAINS',
-        'path' => '',
-        'size' => 60,
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
       ),
-      'type' => 'entityreference_autocomplete_tags',
-      'weight' => -2,
+      'type' => 'date_select',
+      'weight' => 3,
     ),
   );
 
@@ -839,23 +878,22 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-weight-field_activity_status'.
-  $field_instances['node-weight-field_activity_status'] = array(
-    'bundle' => 'weight',
-    'default_value' => array(
-      0 => array(
-        'value' => 'pending',
-      ),
-    ),
+  // Exported field_instance: 'node-photo-field_session'.
+  $field_instances['node-photo-field_session'] = array(
+    'bundle' => 'photo',
+    'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 3,
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 5,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -865,18 +903,22 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_activity_status',
-    'label' => 'Status',
-    'required' => 1,
+    'field_name' => 'field_session',
+    'label' => 'Session',
+    'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
     ),
     'widget' => array(
       'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 0,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 5,
     ),
   );
 
@@ -920,8 +962,63 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-weight-field_examination'.
-  $field_instances['node-weight-field_examination'] = array(
+  // Exported field_instance: 'node-weight-field_date_measured'.
+  $field_instances['node-weight-field_date_measured'] = array(
+    'bundle' => 'weight',
+    'deleted' => 0,
+    'description' => 'When was this measurement actually made (as opposed to scheduled, or entered)?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 5,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_date_measured',
+    'label' => 'Date Measured',
+    'required' => 1,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance: 'node-weight-field_session'.
+  $field_instances['node-weight-field_session'] = array(
     'bundle' => 'weight',
     'default_value' => NULL,
     'deleted' => 0,
@@ -935,7 +1032,7 @@ function hedley_activity_field_default_field_instances() {
           'link' => FALSE,
         ),
         'type' => 'entityreference_label',
-        'weight' => 5,
+        'weight' => 6,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -945,9 +1042,9 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_examination',
-    'label' => 'Examination',
-    'required' => 1,
+    'field_name' => 'field_session',
+    'label' => 'Session',
+    'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
     ),
@@ -960,7 +1057,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 2,
+      'weight' => 5,
     ),
   );
 
@@ -1012,17 +1109,19 @@ function hedley_activity_field_default_field_instances() {
 
   // Translatables
   // Included for use with string extractors like potx.
-  t('Body');
   t('Child');
-  t('Examination');
+  t('Date Measured');
   t('Family Planning');
   t('Height');
   t('MUAC');
   t('Mother');
   t('Nutrition Signs');
   t('Photo');
-  t('Status');
+  t('Refers to the date-entry session which this measurement was taken in.');
+  t('Represents the date which on which the measurement took place. This is distinct from the date which data entry was scheduled (though that would be the default). It is also distinct from the creation date of the node, since that could be different from the date the measurement took place.');
+  t('Session');
   t('Weight');
+  t('When was this measurement actually made (as opposed to scheduled, or entered)?');
 
   return $field_instances;
 }

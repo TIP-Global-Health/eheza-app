@@ -20,10 +20,6 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulEntityBaseNode {
       'callback' => 'static::getType',
     ];
 
-    $public_fields['status'] = [
-      'property' => 'field_activity_status',
-    ];
-
     return $public_fields;
   }
 

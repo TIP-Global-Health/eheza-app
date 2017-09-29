@@ -28,18 +28,6 @@ abstract class HedleyRestfulChildActivityBase extends HedleyRestfulActivityBase 
       ],
     ];
 
-    $public_fields['examination'] = [
-      'property' => 'field_examination',
-      'resource' => [
-        // Bundle name.
-        'examination' => [
-          // Resource name.
-          'name' => 'examinations',
-          'full_view' => FALSE,
-        ],
-      ],
-    ];
-
     return $public_fields;
   }
 

@@ -93,68 +93,6 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
   }
 
   /**
-   * Testing the lastExamination handling and filtering.
-   *
-   * The whole flow of filtering for the last examination
-   * while getting all activities for a patient, here a child.
-   */
-  public function testLastExaminationFiltering() {
-    $activityHandler = restful_get_restful_handler('activities');
-    $childrenHandler = restful_get_restful_handler('children');
-
-    // Creating all the needed test nodes with populated Entity References.
-    $group = $this->drupalCreateNode(['type' => 'group']);
-    $mother = $this->drupalCreateNode(['type' => 'mother']);
-    $mother_wrapper = entity_metadata_wrapper('node', $mother);
-    $mother_wrapper->field_group->set($group->nid);
-    $mother_wrapper->save();
-
-    $child = $this->drupalCreateNode(['type' => 'child']);
-    $child_wrapper = entity_metadata_wrapper('node', $child->nid);
-    $child_wrapper->field_mother->set($mother->nid);
-    $child_wrapper->save();
-
-    // Just to make sure that it won't be returned as the latest examination.
-    $examination_unused = $this->drupalCreateNode(['type' => 'examination']);
-
-    $examination = $this->drupalCreateNode(['type' => 'examination']);
-    $examination_wrapper = entity_metadata_wrapper('node', $examination);
-    $examination_wrapper->field_group->set($group->nid);
-    $examination_wrapper->save();
-
-    $weight = $this->drupalCreateNode(['type' => 'weight']);
-    $weight_wrapper = entity_metadata_wrapper('node', $weight);
-    $weight_wrapper->field_child->set($child->nid);
-    $weight_wrapper->field_examination->set($examination->nid);
-    $weight_wrapper->save();
-
-    // Just to make sure that it won't be returned as an activity, as it does
-    // not belong to a Group or an Examination.
-    $this->drupalCreateNode(['type' => 'height']);
-
-    // Test with authorized user, anonymous would not have access to anything.
-    $childrenHandler->setAccount($this->user);
-    $activityHandler->setAccount($this->user);
-
-    $results = $childrenHandler->get($child->nid);
-    $this->assertEqual($results[0]['lastExamination'], $examination->nid, 'The last examination is available and matches to the newly created Examination.');
-    $this->assertNotEqual($results[0]['lastExamination'], $examination_unused->nid, 'The last examination does not match the Examination which is not referred.');
-
-    // Retrieves activities for the given Child and the given Examination.
-    $results = $activityHandler->get('', [
-      'filter' => [
-        'child' => $child->nid,
-        'examination' => $results[0]['lastExamination'],
-      ],
-    ]);
-    // We created a Weight node above and a Height node, only one of them is
-    // expected here.
-    $this->assertEqual(count($results), 1, 'Exactly one result is returned.');
-    // And it's the Weight, which is linked to the given Examination.
-    $this->assertEqual($results[0]['type'], 'weight', 'The type is weight of the returned activity.');
-  }
-
-  /**
    * Testing the entry point of the muacs.
    */
   public function testMuacsEndpoint() {

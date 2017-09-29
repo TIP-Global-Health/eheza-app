@@ -246,6 +246,46 @@ function hedley_patient_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-mother-field_clinic'.
+  $field_instances['node-mother-field_clinic'] = array(
+    'bundle' => 'mother',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Assign each mother to a clinic so that she will be included when data-entry sessions are scheduled for the clinic.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_clinic',
+    'label' => 'Clinic',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 7,
+    ),
+  );
+
   // Exported field_instance: 'node-mother-field_date_birth'.
   $field_instances['node-mother-field_date_birth'] = array(
     'bundle' => 'mother',
@@ -301,56 +341,13 @@ function hedley_patient_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-mother-field_group'.
-  $field_instances['node-mother-field_group'] = array(
-    'bundle' => 'mother',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'entityreference',
-        'settings' => array(
-          'bypass_access' => FALSE,
-          'link' => FALSE,
-        ),
-        'type' => 'entityreference_label',
-        'weight' => 6,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_group',
-    'label' => 'Group',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'entityreference',
-      'settings' => array(
-        'match_operator' => 'CONTAINS',
-        'path' => '',
-        'size' => 60,
-      ),
-      'type' => 'entityreference_autocomplete',
-      'weight' => 4,
-    ),
-  );
-
   // Translatables
   // Included for use with string extractors like potx.
+  t('Assign each mother to a clinic so that she will be included when data-entry sessions are scheduled for the clinic.');
   t('Avatar');
+  t('Clinic');
   t('Date birth');
   t('Gender');
-  t('Group');
   t('Mother');
 
   return $field_instances;

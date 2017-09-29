@@ -13,6 +13,13 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_node_family_planning';
+  $strongarm->value = '1';
+  $export['auto_entitylabel_node_family_planning'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_node_height';
   $strongarm->value = '1';
   $export['auto_entitylabel_node_height'] = $strongarm;
@@ -34,6 +41,13 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_pattern_node_family_planning';
+  $strongarm->value = '';
+  $export['auto_entitylabel_pattern_node_family_planning'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_pattern_node_height';
   $strongarm->value = '[random:number]';
   $export['auto_entitylabel_pattern_node_height'] = $strongarm;
@@ -51,6 +65,13 @@ function hedley_activity_strongarm() {
   $strongarm->name = 'auto_entitylabel_pattern_node_weight';
   $strongarm->value = '[random:number]';
   $export['auto_entitylabel_pattern_node_weight'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_php_node_family_planning';
+  $strongarm->value = 0;
+  $export['auto_entitylabel_php_node_family_planning'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
