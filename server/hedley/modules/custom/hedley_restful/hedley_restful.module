@@ -19,3 +19,24 @@ function hedley_restful_ctools_plugin_directory($module, $plugin) {
     return 'plugins/' . $plugin;
   }
 }
+
+/**
+ * Convert strings to short form dates.
+ *
+ * From form "2014-11-13 18:00:00" to
+ * preserve just the date part, i.e. "2014-11-13".
+ *
+ * This is suitable only for values which do not have
+ * interesting time zone information ... that is, only
+ * for values that represent nominal dates without times.
+ *
+ * @param string $value
+ *   The date string, e.g. "2014-11-13 18:00:00".
+ *
+ * @return false|string
+ *   The date portion only, e.g. "2014-11-13".
+ */
+function hedley_restful_timestamp_only_date($value) {
+  $date = explode(' ', $value);
+  return $date[0];
+}
