@@ -17,6 +17,40 @@ import Translate as Trans exposing (Language, translate)
 import User.Model exposing (..)
 
 
+{-| See the comment in Pages.OpenSessions.View for an explanatio of this.
+Basically, we're following down the `view` hierarchy to determine, given
+what the `view` methods are going to want, what messages we ought to send
+in order to get the data they will need.
+
+For the sake of convenience, this isn't called by our own `update` method --
+it would need to be called at the end, after the new model is determined.
+Instead, it's integrated up one level, in `Main.elm`, where we hook together
+the Elm architecture. (This is really a kind of little extension to the Elm
+architecture).
+
+As a future optimization, one could actually integrate this with
+`animationFrame`, since you don't need to figure out what to fetch for
+views. more often than that.
+
+-}
+fetch : Model -> List Msg
+fetch model =
+    -- For now, wait until we have a user to fetch anything else.
+    -- This may or may not be the most elegant way to handle that.
+    case model.user of
+        Success user ->
+            case model.activePage of
+                OpenSessions ->
+                    Pages.OpenSessions.View.fetch model.currentDate model.clinics model.openSessions
+
+                _ ->
+                    -- For now, we've only implemented this pattern for OpenSessions.
+                    []
+
+        _ ->
+            []
+
+
 view : Model -> Html Msg
 view model =
     case model.config of
@@ -48,14 +82,6 @@ view model =
                         Success user ->
                             Html.map MsgParticipantManager <|
                                 ParticipantManager.View.viewParticipants model.language model.pageParticipant
-
-                        _ ->
-                            div [] [ i [ class "notched circle loading icon" ] [] ]
-
-                OpenSessions ->
-                    case model.user of
-                        Success user ->
-                            Pages.OpenSessions.View.view model.language model.currentDate model.clinics model.openSessions
 
                         _ ->
                             div [] [ i [ class "notched circle loading icon" ] [] ]
@@ -94,6 +120,9 @@ viewHeader language model =
                     emptyNode
 
                 Participant _ ->
+                    emptyNode
+
+                OpenSessions ->
                     emptyNode
 
                 _ ->
@@ -268,6 +297,9 @@ viewMainContent model =
 
                 MyAccount ->
                     Pages.MyAccount.View.view language model.user
+
+                OpenSessions ->
+                    Pages.OpenSessions.View.view language model.currentDate model.clinics model.openSessions
 
                 PageNotFound ->
                     -- We don't need to pass any cmds, so we can call the view directly

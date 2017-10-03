@@ -2,13 +2,14 @@ module Utils.Html
     exposing
         ( debugView
         , divider
+        , spinner
         , tabItem
         , thumbnailImage
         )
 
 import Config.Model exposing (Model)
 import Gizra.Html exposing (showIf)
-import Html exposing (Html, a, div, h5, img, span, text)
+import Html exposing (Html, a, div, h5, img, span, text, i)
 import Html.Attributes exposing (attribute, class, classList, id, src, style)
 import Html.Events exposing (onClick)
 import Participant.Model exposing (ParticipantType(..))
@@ -29,6 +30,13 @@ debugView config html =
 divider : Html msg
 divider =
     div [ class "ui divider" ] []
+
+
+spinner : Html any
+spinner =
+    div []
+        [ i [ class "icon loading spinner" ] []
+        ]
 
 
 tabItem : String -> Bool -> String -> msg -> Html msg
