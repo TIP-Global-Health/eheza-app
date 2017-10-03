@@ -88,7 +88,7 @@ init flags =
 
 clinicEndpoint : EndPoint Error () ClinicId Clinic
 clinicEndpoint =
-    { path = "clinics"
+    { path = "api/clinics"
     , tag = ClinicId
     , decoder = decodeClinic
     , error = identity
@@ -112,7 +112,7 @@ encodeSessionParams params =
 
 sessionEndpoint : EndPoint Error SessionParams SessionId Session
 sessionEndpoint =
-    { path = "sessions"
+    { path = "api/sessions"
     , tag = SessionId
     , decoder = decodeSession
     , error = identity
@@ -131,16 +131,16 @@ update msg model =
                 _ ->
                     ""
 
-        get =
+        getFromBackend =
             -- Partially apply the backendUrl and accessToken, just for fun
-            Drupal.Restful.get backendUrl model.accessToken
+            Drupal.Restful.get backendUrl (Just model.accessToken)
     in
         case msg of
             FetchClinics ->
                 -- Ultimately, it would be nice to preserve any existing value of clnics
                 -- if we're reloading ... will need an `UpdateableWebData` for that.
                 ( { model | clinics = Loading }
-                , get clinicEndpoint () <|
+                , getFromBackend clinicEndpoint () <|
                     (RemoteData.fromResult >> RemoteData.map EveryDictList.fromList >> HandleFetchedClinics)
                 )
 
@@ -151,7 +151,7 @@ update msg model =
 
             FetchSessionsOpenOn date ->
                 ( { model | openSessions = Loading }
-                , get sessionEndpoint (SessionParams (Just date)) <|
+                , getFromBackend sessionEndpoint (SessionParams (Just date)) <|
                     (RemoteData.fromResult >> RemoteData.map EveryDictList.fromList >> HandleFetchedSessions date)
                 )
 

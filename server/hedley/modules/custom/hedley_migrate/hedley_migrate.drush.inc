@@ -38,28 +38,28 @@ function hedley_migrate_drush_command() {
  */
 function hedley_create_sessions_today() {
   // Get all the clinic IDs.
-  $clinicQuery = new EntityFieldQuery();
-  $clinicResult = $clinicQuery
+  $clinic_query = new EntityFieldQuery();
+  $clinic_result = $clinic_query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'clinic')
     ->propertyCondition('status', NODE_PUBLISHED)
     ->range(0, 200)
     ->execute();
 
-  if (!$clinicResult['node']) {
+  if (!$clinic_result['node']) {
     // No clinics, so just bail.
     return;
   }
 
   // Pick out the IDs.
-  $clinicIds = array_keys($clinicResult['node']);
+  $clinic_ids = array_keys($clinic_result['node']);
 
   $today = date("Y-m-d");
 
   // Get all the existing sessions that start today already. We only
   // store the date, rather than a time, so the "=" should work.
-  $sessionQuery = new EntityFieldQuery();
-  $sessionResult = $sessionQuery
+  $session_query = new EntityFieldQuery();
+  $session_result = $session_query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'session')
     ->propertyCondition('status', NODE_PUBLISHED)
@@ -69,22 +69,22 @@ function hedley_create_sessions_today() {
 
   // Now, remove all the clinicIds that already have a session today.
   // There is probably a more efficient way to do this.
-  if ($sessionResult['node']) {
-    foreach (node_load_multiple(array_keys($sessionResult['node'])) as $session) {
+  if ($session_result['node']) {
+    foreach (node_load_multiple(array_keys($session_result['node'])) as $session) {
       $wrapper = entity_metadata_wrapper('node', $session);
-      $clinicIds = array_diff($clinicIds, [$wrapper->field_clinic->getIdentifier()]);
+      $clinic_ids = array_diff($clinic_ids, [$wrapper->field_clinic->getIdentifier()]);
     }
   }
 
   // Finally, actually create the new Session for each clinic that didn't
   // already have one for today.
-  foreach ($clinicIds as $clinicId) {
+  foreach ($clinic_ids as $clinic_id) {
     $node = entity_create('node', [
       'type' => "session",
     ]);
 
     $wrapper = entity_metadata_wrapper('node', $node);
-    $wrapper->field_clinic->set($clinicId);
+    $wrapper->field_clinic->set($clinic_id);
 
     // For now, just permit data entry today.
     $wrapper->field_scheduled_date->set([

@@ -9,6 +9,7 @@ import Config.Model exposing (BackendUrl)
 import EveryDictList exposing (EveryDictList)
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (Decoder, list, map, field, map2, index)
+import Maybe.Extra
 import Http exposing (Error, expectJson)
 import HttpBuilder exposing (..)
 import StorageKey exposing (StorageKey(..))
@@ -78,6 +79,16 @@ type alias EntityDictList key value =
     EveryDictList (StorageKey key) value
 
 
+{-| Appends left-to-right, joining with a "/" if needed.
+-}
+(</>) : String -> String -> String
+(</>) left right =
+    if String.endsWith "/" left || String.startsWith "/" right then
+        left ++ right
+    else
+        left ++ "/" ++ right
+
+
 {-| Get entities from an endpoint.
 
 What we hand you is a `Result` with a list of entities, since that is the most
@@ -92,12 +103,19 @@ structures and idioms that Drupal uses in its JSON. One could imagine making thi
 more general if necessary at some point.
 
 -}
-get : BackendUrl -> String -> EndPoint error params key value -> params -> (Result error (List (Entity key value)) -> msg) -> Cmd msg
+get : BackendUrl -> Maybe String -> EndPoint error params key value -> params -> (Result error (List (Entity key value)) -> msg) -> Cmd msg
 get backendUrl accessToken endpoint params tagger =
-    HttpBuilder.get (backendUrl ++ "/api/" ++ endpoint.path)
-        |> withQueryParams (( "access_token", accessToken ) :: endpoint.params params)
-        |> withExpect (expectJson (decodeData (list (decodeStorageTuple (decodeId endpoint.tag) endpoint.decoder))))
-        |> send (Result.mapError endpoint.error >> tagger)
+    let
+        queryParams =
+            accessToken
+                |> Maybe.Extra.toList
+                |> List.map (\token -> ( "access_token", token ))
+                |> List.append (endpoint.params params)
+    in
+        HttpBuilder.get (backendUrl </> endpoint.path)
+            |> withQueryParams queryParams
+            |> withExpect (expectJson (decodeData (list (decodeStorageTuple (decodeId endpoint.tag) endpoint.decoder))))
+            |> send (Result.mapError endpoint.error >> tagger)
 
 
 {-| Convenience for the pattern where you have a field called "id",

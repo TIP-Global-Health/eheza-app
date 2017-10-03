@@ -1,13 +1,13 @@
 <?php
 /**
  * @file
- * hedley_scheduling.features.field_instance.inc
+ * hedley_schedule.features.field_instance.inc
  */
 
 /**
  * Implements hook_field_default_field_instances().
  */
-function hedley_scheduling_field_default_field_instances() {
+function hedley_schedule_field_default_field_instances() {
   $field_instances = array();
 
   // Exported field_instance: 'node-session-field_clinic'.

@@ -1,4 +1,4 @@
-name = Hedley Scheduling
+name = Hedley Schedule
 description = Entities related to scheduling data-entry at clinics
 core = 7.x
 package = Hedley

@@ -1,13 +1,13 @@
 <?php
 /**
  * @file
- * hedley_scheduling.strongarm.inc
+ * hedley_schedule.strongarm.inc
  */
 
 /**
  * Implements hook_strongarm().
  */
-function hedley_scheduling_strongarm() {
+function hedley_schedule_strongarm() {
   $export = array();
 
   $strongarm = new stdClass();

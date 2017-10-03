@@ -1,8 +1,0 @@
-<?php
-
-/**
- * @file
- * Code for the Hedley Scheduling feature.
- */
-
-include_once 'hedley_scheduling.features.inc';

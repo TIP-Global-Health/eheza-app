@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import App.Fetch
 import App.Model exposing (Flags, Model, Msg)
 import App.Update exposing (init, update, subscriptions)
 import App.Router exposing (..)
@@ -37,7 +38,7 @@ updateAndThenFetchWhatTheViewNeeds msg model =
             -- one the `view` function will be getting. Now, we could actually
             -- integrate this with `animationFrame`, since we don't really need
             -- to check faster than the `view` method will actually be called.
-            App.View.fetch (Tuple.first initialResult)
+            App.Fetch.fetch (Tuple.first initialResult)
     in
         -- Note that we call ourselves recursively. So, it's vitally important
         -- that the `fetch` implementations use a `WebData`-like strategy to
