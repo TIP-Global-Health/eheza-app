@@ -5,12 +5,10 @@ import Activity.Utils exposing (getActivityList)
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Dict
-import Examination.Model exposing (Examination(..), emptyExaminationChild, emptyExaminationMother)
 import Examination.Utils exposing (toMeasurements)
 import FilePicker.Model
 import FilePicker.Update
 import Maybe.Extra exposing (isJust)
-import Measurement.Model
 import Measurement.Update
 import Pages.Participant.Model exposing (Model, Msg(..), emptyModel)
 import Pages.Participant.Utils exposing (sequenceExtra)

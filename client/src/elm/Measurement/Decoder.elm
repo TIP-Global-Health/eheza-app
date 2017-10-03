@@ -11,12 +11,14 @@ module Measurement.Decoder
         )
 
 import Activity.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..))
+import Drupal.Restful exposing (decodeId, decodeSingleDrupalEntity, decodeStorageTuple)
 import EverySet exposing (EverySet)
+import Gizra.Json exposing (decodeFloat, decodeInt)
 import Json.Decode exposing (Decoder, andThen, at, dict, fail, field, int, list, map, map2, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
 import Measurement.Model exposing (FamilyPlanningId(..), Photo, PhotoId, HeightId(..), MuacId(..), NutritionId(..), WeightId(..))
 import StorageKey exposing (StorageKey(..))
-import Utils.Json exposing (decodeFloat, decodeInt)
+import Utils.Json exposing (decodeEverySet)
 
 
 decodePhoto : Decoder Photo
@@ -35,7 +37,7 @@ decodePhotoTuple =
 
 decodePhotoFromResponse : Decoder ( PhotoId, Photo )
 decodePhotoFromResponse =
-    at [ "data", "0" ] decodePhotoTuple
+    decodeSingleDrupalEntity decodePhotoTuple
 
 
 decodeHeight : Decoder ( StorageKey HeightId, Float )
@@ -61,14 +63,6 @@ decodeFamilyPlanning =
 decodeNutrition : Decoder ( StorageKey NutritionId, EverySet ChildNutritionSign )
 decodeNutrition =
     decodeStorageTuple (decodeId NutritionId) (field "nutrition_signs" (decodeEverySet decodeChildNutritionSign))
-
-
-{-| Given a decoder, decodes a JSON list of that type, and then
-turns it into an `EverySet`.
--}
-decodeEverySet : Decoder a -> Decoder (EverySet a)
-decodeEverySet =
-    map EverySet.fromList << list
 
 
 decodeChildNutritionSign : Decoder ChildNutritionSign
@@ -134,23 +128,3 @@ decodeFamilyPlanningSign =
                             sign
                                 ++ " is not a recognized FamilyPlanningSign"
             )
-
-
-{-| Convenience for the pattern where you have a field called "id",
-and you want to wrap the result in a type (e.g. PersonId Int). You can
-just use `decodeId PersonId`.
--}
-decodeId : (Int -> a) -> Decoder a
-decodeId wrapper =
-    map wrapper (field "id" decodeInt)
-
-
-{-| Convenience for the case where you have a decoder for the ID,
-a decoder for the value, and you want to decode a tuple of StorageKey and
-value.
--}
-decodeStorageTuple : Decoder key -> Decoder value -> Decoder ( StorageKey key, value )
-decodeStorageTuple keyDecoder valueDecoder =
-    map2 (,)
-        (map Existing keyDecoder)
-        valueDecoder

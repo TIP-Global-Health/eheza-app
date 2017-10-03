@@ -18,6 +18,7 @@ type Page
     | MyAccount
     | PageNotFound
     | Participant ParticipantId
+    | OpenSessions
 
 
 type DashboardPage

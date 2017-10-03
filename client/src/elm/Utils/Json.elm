@@ -3,47 +3,20 @@ module Utils.Json
         ( decodeDate
         , decodeEmptyArrayAsEmptyDict
         , decodeError
-        , decodeFloat
-        , decodeInt
-        , decodeIntAsString
+        , decodeEverySet
         , decodeListAsDict
         , decodeListAsDictByProperty
         , decodeListAsIntDict
         , decodeListAsIntDictByProperty
         , decodeNullAsEmptyArray
-        , decodeSingleDrupalEntity
         )
 
 import Date exposing (Date)
 import Dict exposing (Dict)
+import Gizra.Json exposing (decodeInt)
+import EverySet exposing (EverySet)
 import Json.Decode exposing (Decoder, andThen, dict, fail, field, float, index, int, list, map, map2, nullable, oneOf, string, succeed, value)
 import Json.Decode.Extra exposing (date)
-import String
-
-
-{-| Given a decoder for a Drupal entity, applies it to the kind of response Drupal
-sends when you do a PUT, POST, or PATCH.
-
-For instance, if you POST an entity, Drupal will send back the JSON for that entity,
-as the single element of an array, then wrapped in a `data` field, e.g.:
-
-    { data :
-        [
-            {
-                id: 27,
-                label: "The label",
-                ...
-            }
-        ]
-    }
-
-To decode this, write a decoder for the "inner" part (the actual entity), and then
-supply that as a parameter to `decodeSingleDrupalEntity`.
-
--}
-decodeSingleDrupalEntity : Decoder a -> Decoder a
-decodeSingleDrupalEntity =
-    field "data" << index 0
 
 
 decodeDate : Decoder Date
@@ -71,52 +44,6 @@ decodeEmptyArrayAsEmptyDict =
 decodeError : Decoder String
 decodeError =
     field "title" string
-
-
-decodeFloat : Decoder Float
-decodeFloat =
-    oneOf
-        [ float
-        , string
-            |> andThen
-                (\val ->
-                    case String.toFloat val of
-                        Ok int ->
-                            succeed int
-
-                        Err _ ->
-                            fail "Cannot convert string to float"
-                )
-        ]
-
-
-{-| Cast String to Int.
--}
-decodeInt : Decoder Int
-decodeInt =
-    oneOf
-        [ int
-        , string
-            |> andThen
-                (\val ->
-                    case String.toInt val of
-                        Ok int ->
-                            succeed int
-
-                        Err _ ->
-                            fail "Cannot convert string to integer"
-                )
-        ]
-
-
-{-| Cast Int to String.
--}
-decodeIntAsString : Decoder String
-decodeIntAsString =
-    oneOf
-        [ string
-        , int |> andThen (\val -> succeed <| toString val)
-        ]
 
 
 decodeListAsDict : Decoder a -> Decoder (Dict String a)
@@ -163,3 +90,11 @@ decodeNullAsEmptyArray =
                     Just res ->
                         fail <| "Expected Null, not an array with length: " ++ (toString <| List.length res)
             )
+
+
+{-| Given a decoder, decodes a JSON list of that type, and then
+turns it into an `EverySet`.
+-}
+decodeEverySet : Decoder a -> Decoder (EverySet a)
+decodeEverySet =
+    map EverySet.fromList << list

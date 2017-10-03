@@ -4,7 +4,7 @@ import App.Model exposing (..)
 import App.PageType exposing (..)
 import Navigation exposing (Location)
 import RouteUrl exposing (HistoryEntry(..), UrlChange)
-import UrlParser exposing (Parser, map, parseHash, s, oneOf, (</>), int, string)
+import UrlParser exposing (Parser, map, parseHash, s, oneOf, (</>), int, string, top)
 
 
 delta2url : Model -> Model -> Maybe UrlChange
@@ -25,6 +25,9 @@ delta2url previous current =
         MyAccount ->
             Just <| UrlChange NewEntry "#my-account"
 
+        OpenSessions ->
+            Just <| UrlChange NewEntry "#open-sessions"
+
         PageNotFound ->
             Just <| UrlChange NewEntry "#404"
 
@@ -32,7 +35,7 @@ delta2url previous current =
             Just <| UrlChange NewEntry ("#participant/" ++ (toString id))
 
         Dashboard _ ->
-            Just <| UrlChange NewEntry "#"
+            Just <| UrlChange NewEntry "#dashboard"
 
 
 location2messages : Location -> List Msg
@@ -48,10 +51,12 @@ location2messages location =
 parseUrl : Parser (Msg -> c) c
 parseUrl =
     oneOf
-        [ map (SetActivePage <| Dashboard []) (s "")
+        [ map (SetActivePage <| Dashboard []) (s "dashboard")
         , map (SetActivePage Activities) (s "activities")
         , map (SetActivePage <| Activity Nothing) (s "activity")
         , map (\id -> SetActivePage <| Participant id) (s "participant" </> int)
         , map (SetActivePage Login) (s "login")
+        , map (SetActivePage OpenSessions) (s "open-sessions")
         , map (SetActivePage MyAccount) (s "my-account")
+        , map (SetActivePage OpenSessions) top
         ]

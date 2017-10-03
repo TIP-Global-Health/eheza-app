@@ -3,17 +3,18 @@ module App.View exposing (..)
 import App.Model exposing (..)
 import App.PageType exposing (Page(..))
 import Config.View
+import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList, href, id, src, style, target)
 import Html.Events exposing (onClick)
-import Pages.Login.View exposing (..)
-import Pages.MyAccount.View exposing (..)
-import Pages.PageNotFound.View exposing (..)
-import ParticipantManager.View exposing (..)
+import Pages.Login.View
+import Pages.MyAccount.View
+import Pages.OpenSessions.View
+import Pages.PageNotFound.View
+import ParticipantManager.View
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
 import User.Model exposing (..)
-import Utils.Html exposing (emptyNode)
 
 
 view : Model -> Html Msg
@@ -47,6 +48,14 @@ view model =
                         Success user ->
                             Html.map MsgParticipantManager <|
                                 ParticipantManager.View.viewParticipants model.language model.pageParticipant
+
+                        _ ->
+                            div [] [ i [ class "notched circle loading icon" ] [] ]
+
+                OpenSessions ->
+                    case model.user of
+                        Success user ->
+                            Pages.OpenSessions.View.view model.language model.currentDate model.clinics model.openSessions
 
                         _ ->
                             div [] [ i [ class "notched circle loading icon" ] [] ]

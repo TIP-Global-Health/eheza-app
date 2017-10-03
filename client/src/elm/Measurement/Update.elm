@@ -10,6 +10,7 @@ import Activity.Model
         )
 import Child.Model exposing (ChildId)
 import Config.Model exposing (BackendUrl)
+import Drupal.Restful exposing (decodeSingleDrupalEntity)
 import EverySet exposing (EverySet)
 import Examination.Model exposing (Examination(..))
 import Examination.Utils exposing (mapExaminationChild, mapExaminationMother, supplyMeasurement, toExaminationChild, toExaminationMother)
@@ -23,7 +24,6 @@ import Measurement.Model exposing (..)
 import Participant.Model exposing (Participant, ParticipantId)
 import RemoteData exposing (RemoteData(..))
 import StorageKey exposing (StorageKey(..))
-import Utils.Json exposing (decodeSingleDrupalEntity)
 import Utils.WebData exposing (sendWithHandler)
 
 

@@ -5,6 +5,7 @@ import Activity.Utils exposing (getActivityIdentity, hasPendingChildActivity, ha
 import Date exposing (Date)
 import Dict
 import Examination.Utils exposing (getLastExaminationFromChild)
+import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -15,7 +16,7 @@ import Pages.Activity.Utils
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (getParticipantName, getParticipantAvatarThumb)
 import Translate as Trans exposing (translate, Language)
-import Utils.Html exposing (emptyNode, tabItem, thumbnailImage)
+import Utils.Html exposing (tabItem, thumbnailImage)
 
 
 view : Language -> Date -> ParticipantsDict -> Model -> List (Html Msg)

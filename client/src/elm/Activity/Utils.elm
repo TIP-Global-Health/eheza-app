@@ -14,7 +14,6 @@ module Activity.Utils
 import Activity.Model exposing (ActivityIdentity, ActivityListItem, ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Child.Model exposing (Child)
 import Dict exposing (Dict)
-import EverySet
 import Examination.Model exposing (ExaminationChild, ExaminationMother, emptyExaminationChild, emptyExaminationMother)
 import Maybe.Extra exposing (isNothing)
 import Mother.Model exposing (Mother)

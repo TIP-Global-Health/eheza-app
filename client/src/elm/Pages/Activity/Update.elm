@@ -3,7 +3,6 @@ module Pages.Activity.Update exposing (nextParticipant, update, subscriptions)
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
-import Date exposing (Date)
 import Dict
 import Examination.Utils exposing (toMeasurements)
 import FilePicker.Model

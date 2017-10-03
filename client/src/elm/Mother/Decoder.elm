@@ -7,7 +7,7 @@ import Examination.Decoder exposing (decodeExaminationMother)
 import Json.Decode exposing (Decoder, andThen, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required)
 import Mother.Model exposing (..)
-import Utils.Json exposing (decodeDate, decodeIntAsString, decodeNullAsEmptyArray)
+import Utils.Json exposing (decodeDate, decodeNullAsEmptyArray)
 
 
 decodeMother : Decoder Mother

@@ -9,6 +9,7 @@ import Activity.Utils exposing (getActivityList)
 import Child.Model exposing (Child, ChildId, Gender(..))
 import Date exposing (Date)
 import Examination.Utils exposing (getLastExaminationFromChild)
+import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
@@ -21,7 +22,7 @@ import Participant.Utils exposing (renderParticipantAge, renderParticipantDateOf
 import ProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
-import Utils.Html exposing (emptyNode, tabItem, thumbnailImage)
+import Utils.Html exposing (tabItem, thumbnailImage)
 
 
 {-| This one needs the `currentDate` in order to calculate ages from dates of birth.

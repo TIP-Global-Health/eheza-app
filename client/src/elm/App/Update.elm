@@ -3,11 +3,17 @@ port module App.Update exposing (init, update, subscriptions)
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import App.Model exposing (..)
 import App.PageType exposing (Page(..))
+import Clinic.Decoder exposing (decodeClinic)
+import Clinic.Model exposing (ClinicId(..), Clinic)
 import Config
 import Date
 import Dict
-import Http
+import Drupal.Restful exposing (EndPoint)
+import EveryDictList
+import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
+import Http exposing (Error)
 import FilePicker.Model
+import Maybe.Extra
 import Pages.Activity.Model
 import Pages.Participant.Model
 import ParticipantManager.Model
@@ -18,6 +24,8 @@ import Json.Decode exposing (decodeValue, bool)
 import Json.Encode exposing (Value)
 import Pages.Login.Update
 import RemoteData exposing (RemoteData(..), WebData)
+import Session.Decoder exposing (decodeSession)
+import Session.Model exposing (SessionId(..), Session)
 import Task
 import Time exposing (minute)
 import Update.Extra exposing (sequence)
@@ -78,6 +86,40 @@ init flags =
         )
 
 
+clinicEndpoint : EndPoint Error () ClinicId Clinic
+clinicEndpoint =
+    { path = "clinics"
+    , tag = ClinicId
+    , decoder = decodeClinic
+    , error = identity
+    , params = always []
+    }
+
+
+{-| Type-safe params ... how nice!
+-}
+type alias SessionParams =
+    { openOn : Maybe NominalDate
+    }
+
+
+encodeSessionParams : SessionParams -> List ( String, String )
+encodeSessionParams params =
+    params.openOn
+        |> Maybe.map (\open -> ( "open_on", Gizra.NominalDate.formatYYYYMMDD open ))
+        |> Maybe.Extra.toList
+
+
+sessionEndpoint : EndPoint Error SessionParams SessionId Session
+sessionEndpoint =
+    { path = "sessions"
+    , tag = SessionId
+    , decoder = decodeSession
+    , error = identity
+    , params = encodeSessionParams
+    }
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
@@ -88,8 +130,39 @@ update msg model =
 
                 _ ->
                     ""
+
+        get =
+            -- Partially apply the backendUrl and accessToken, just for fun
+            Drupal.Restful.get backendUrl model.accessToken
     in
         case msg of
+            FetchClinics ->
+                -- Ultimately, it would be nice to preserve any existing value of clnics
+                -- if we're reloading ... will need an `UpdateableWebData` for that.
+                ( { model | clinics = Loading }
+                , get clinicEndpoint () <|
+                    (RemoteData.fromResult >> RemoteData.map EveryDictList.fromList >> HandleFetchedClinics)
+                )
+
+            HandleFetchedClinics clinics ->
+                ( { model | clinics = clinics }
+                , Cmd.none
+                )
+
+            FetchSessionsOpenOn date ->
+                ( { model | openSessions = Loading }
+                , get sessionEndpoint (SessionParams (Just date)) <|
+                    (RemoteData.fromResult >> RemoteData.map EveryDictList.fromList >> HandleFetchedSessions date)
+                )
+
+            HandleFetchedSessions date result ->
+                -- We remember the date as well as the result, so that we can
+                -- know whether we need to reload (i.e. when the date changes,
+                -- due to the passage of time)
+                ( { model | openSessions = RemoteData.map (\sessions -> ( date, sessions )) result }
+                , Cmd.none
+                )
+
             HandleOfflineEvent (Ok offline) ->
                 { model | offline = offline } ! []
 
@@ -309,6 +382,9 @@ getBackButtonTarget activePage =
             activePage
 
         MyAccount ->
+            activePage
+
+        OpenSessions ->
             activePage
 
         PageNotFound ->
