@@ -14,12 +14,15 @@ import App.Model exposing (Msg(..))
 import Clinic.Model exposing (ClinicId, Clinic)
 import Date exposing (Date)
 import Drupal.Restful exposing (EntityDictList)
+import EveryDictList
+import Gizra.NominalDate exposing (formatYYYYMMDD)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
 import Session.Model exposing (SessionId, Session)
+import StorageKey exposing (StorageKey(..))
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import Utils.Html exposing (spinner)
 import Utils.WebData exposing (viewError)
@@ -180,5 +183,33 @@ viewWrapper language currentDate clinicData sessionData =
 {-| This is the "inner" view function ... we get here if all the data was actually available.
 -}
 viewWithData : Language -> EntityDictList ClinicId Clinic -> ( NominalDate, EntityDictList SessionId Session ) -> Html Msg
-viewWithData language clinics sessions =
-    div [] [ text "We've got data" ]
+viewWithData language clinics ( sessionDate, sessions ) =
+    -- Start with something simplistic. We'll add a `download` button soon.
+    -- TODO: Run text snippets through the "translate" mechanism.
+    div []
+        [ h4 []
+            [ text "Available sessions for: "
+            , text <| Gizra.NominalDate.formatYYYYMMDD sessionDate
+            ]
+        , sessions
+            |> EveryDictList.toList
+            |> List.map (viewSession clinics)
+            |> ul []
+        ]
+
+
+viewSession : EntityDictList ClinicId Clinic -> ( StorageKey SessionId, Session ) -> Html Msg
+viewSession clinics ( sessionId, session ) =
+    let
+        clinicName =
+            EveryDictList.get (Existing session.clinicId) clinics
+                |> Maybe.map .name
+                |> Maybe.withDefault "Unknown clinic"
+    in
+        li []
+            [ text clinicName
+            , text " "
+            , text (formatYYYYMMDD session.scheduledDate.start)
+            , text " - "
+            , text (formatYYYYMMDD session.scheduledDate.end)
+            ]

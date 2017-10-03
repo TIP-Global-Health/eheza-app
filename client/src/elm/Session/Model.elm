@@ -13,7 +13,6 @@ type SessionId
 
 
 type alias Session =
-    { name : String
-    , scheduledDate : NominalDateRange
-    , clnicId : ClinicId
+    { scheduledDate : NominalDateRange
+    , clinicId : ClinicId
     }
