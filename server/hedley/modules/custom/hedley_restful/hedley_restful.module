@@ -53,3 +53,46 @@ function hedley_restful_timestamp_only_date($value) {
 function hedley_restful_extract_ids(array $result) {
   return empty($result['node']) ? [] : array_keys($result['node']);
 }
+
+/**
+ * Get restful output programmatically.
+ *
+ * @return array
+ *   The restful output.
+ */
+function hedley_restful_output_from_handler($handler_name, array $nids, $account) {
+  $output = [];
+  node_load_multiple($nids);
+
+  $handler = restful_get_restful_handler($handler_name);
+  $handler->setAccount($account);
+
+  foreach ($nids as $nid) {
+    $response = $handler->get($nid);
+    $output[] = $response[0];
+  }
+
+  return $output;
+}
+
+/**
+ * Get restful output for multiple bundles.
+ *
+ * @return array
+ *   The restful output
+ */
+function hedley_restful_output_for_bundles($bundleHandlers, array $nids, $account) {
+  $output = [];
+
+  foreach ($nids as $nid) {
+    $wrapper = entity_metadata_wrapper('node', $nid);
+
+    $handler = restful_get_restful_handler($bundleHandlers[$wrapper->getBundle()]);
+    $handler->setAccount($account);
+    $response = $handler->get($nid);
+
+    $output[] = $response[0];
+  }
+
+  return $output;
+}

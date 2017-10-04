@@ -82,6 +82,8 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
    *   Array with the RESTful output.
    */
   public function getParticipantData($nid) {
+    $account = $this->getAccount();
+
     $clinic_id = entity_metadata_wrapper('node', $nid)->field_clinic->getIdentifier();
 
     // First, let us get all the mothers assigned to this clinic.
@@ -142,53 +144,11 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
 
     // Now, provide the usual output, since that's easiest. We'll
     // stitch together the structures we want on the client.
-    $mother_output = [];
-    node_load_multiple($mother_ids);
+    $mother_output = hedley_restful_output_from_handler('mothers', $mother_ids, $account);
+    $child_output = hedley_restful_output_from_handler('children', $child_ids, $account);
 
-    foreach ($mother_ids as $nid) {
-      $handler = restful_get_restful_handler('mothers');
-      $handler->setAccount($this->getAccount());
-      $response = $handler->get($nid);
-
-      $mother_output[] = $response[0];
-    }
-
-    $mother_activity_output = [];
-    node_load_multiple($mother_activity_ids);
-
-    foreach ($mother_activity_ids as $nid) {
-      $wrapper = entity_metadata_wrapper('node', $nid);
-
-      $handler = restful_get_restful_handler($mother_bundles[$wrapper->getBundle()]);
-      $handler->setAccount($this->getAccount());
-      $response = $handler->get($nid);
-
-      $mother_activity_output[] = $response[0];
-    }
-
-    $child_output = [];
-    node_load_multiple($child_ids);
-
-    foreach ($child_ids as $nid) {
-      $handler = restful_get_restful_handler('children');
-      $handler->setAccount($this->getAccount());
-      $response = $handler->get($nid);
-
-      $child_output[] = $response[0];
-    }
-
-    $child_activity_output = [];
-    node_load_multiple($child_activity_ids);
-
-    foreach ($child_activity_ids as $nid) {
-      $wrapper = entity_metadata_wrapper('node', $nid);
-
-      $handler = restful_get_restful_handler($child_bundles[$wrapper->getBundle()]);
-      $handler->setAccount($this->getAccount());
-      $response = $handler->get($nid);
-
-      $child_activity_output[] = $response[0];
-    }
+    $mother_activity_output = hedley_restful_output_for_bundles($mother_bundles, $mother_activity_ids, $account);
+    $child_activity_output = hedley_restful_output_for_bundles($child_bundles, $child_activity_ids, $account);
 
     return [
       "mothers" => $mother_output,
