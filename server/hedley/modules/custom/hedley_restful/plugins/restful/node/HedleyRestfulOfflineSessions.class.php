@@ -107,6 +107,39 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
 
     $child_ids = empty($children['node']) ? [] : array_keys($children['node']);
 
+    // Now, let's get all the child measurements.
+    $child_bundles = [
+      "height" => "heights",
+      "muac" => "muacs",
+      "nutrition" => "nutritions",
+      "photo" => "photos",
+      "weight" => "weights",
+    ];
+
+    $child_activities = (new EntityFieldQuery())
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', array_keys($child_bundles))
+      ->fieldCondition('field_child', 'target_id', $child_ids, "IN")
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->range(0, 10000)
+      ->execute();
+
+    $child_activity_ids = empty($child_activities['node']) ? [] : array_keys($child_activities['node']);
+
+    $mother_bundles = [
+      "family-planning" => "family-plannings",
+    ];
+
+    $mother_activities = (new EntityFieldQuery())
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', array_keys($mother_bundles))
+      ->fieldCondition('field_mother', 'target_id', $mother_ids, "IN")
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->range(0, 10000)
+      ->execute();
+
+    $mother_activity_ids = empty($mother_activities['node']) ? [] : array_keys($mother_activities['node']);
+
     // Now, provide the usual output, since that's easiest. We'll
     // stitch together the structures we want on the client.
     $mother_output = [];
@@ -120,6 +153,19 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       $mother_output[] = $response[0];
     }
 
+    $mother_activity_output = [];
+    node_load_multiple($mother_activity_ids);
+
+    foreach ($mother_activity_ids as $nid) {
+      $wrapper = entity_metadata_wrapper('node', $nid);
+
+      $handler = restful_get_restful_handler($mother_bundles[$wrapper->getBundle()]);
+      $handler->setAccount($this->getAccount());
+      $response = $handler->get($nid);
+
+      $mother_activity_output[] = $response[0];
+    }
+
     $child_output = [];
     node_load_multiple($child_ids);
 
@@ -131,9 +177,24 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       $child_output[] = $response[0];
     }
 
+    $child_activity_output = [];
+    node_load_multiple($child_activity_ids);
+
+    foreach ($child_activity_ids as $nid) {
+      $wrapper = entity_metadata_wrapper('node', $nid);
+
+      $handler = restful_get_restful_handler($child_bundles[$wrapper->getBundle()]);
+      $handler->setAccount($this->getAccount());
+      $response = $handler->get($nid);
+
+      $child_activity_output[] = $response[0];
+    }
+
     return [
       "mothers" => $mother_output,
       "children" => $child_output,
+      "mother_activity" => $mother_activity_output,
+      "child_activity" => $child_activity_output,
     ];
   }
 
