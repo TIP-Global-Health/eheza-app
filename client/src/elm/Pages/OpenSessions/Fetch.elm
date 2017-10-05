@@ -1,13 +1,14 @@
 module Pages.OpenSessions.Fetch exposing (fetch)
 
 import App.Model exposing (Msg(..))
-import Clinic.Model exposing (ClinicId, Clinic)
+import Backend.Entities exposing (..)
+import Backend.Clinic.Model exposing (Clinic)
+import Backend.Session.Model exposing (Session)
 import Date exposing (Date)
 import Drupal.Restful exposing (EntityDictList)
 import Gizra.NominalDate exposing (formatYYYYMMDD)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
-import Session.Model exposing (SessionId, Session)
 
 
 {-| The `fetch` function is an innovation in how to manage the "lazy" loading

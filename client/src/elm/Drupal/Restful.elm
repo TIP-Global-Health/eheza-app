@@ -1,4 +1,4 @@
-module Drupal.Restful exposing (EndPoint, Entity, EntityDictList, get, decodeSingleDrupalEntity, decodeId, decodeStorageTuple)
+module Drupal.Restful exposing (EndPoint, Entity, EntityDictList, get, decodeSingleDrupalEntity, decodeId, decodeStorageTuple, NodeId, toNodeId, fromNodeId, decodeNodeId, encodeNodeId)
 
 {-| This is the beginnings of some general code, eventually to be published
 as `Gizra/elm-drupal`. But it's easier to start working with it here --
@@ -9,6 +9,7 @@ import Config.Model exposing (BackendUrl)
 import EveryDictList exposing (EveryDictList)
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (Decoder, list, map, field, map2, index)
+import Json.Encode exposing (Value)
 import Maybe.Extra
 import Http exposing (Error, expectJson)
 import HttpBuilder exposing (..)
@@ -166,3 +167,58 @@ supply that as a parameter to `decodeSingleDrupalEntity`.
 decodeSingleDrupalEntity : Decoder a -> Decoder a
 decodeSingleDrupalEntity =
     decodeData << index 0
+
+
+{-| This is a wrapper for an `Int` id. It takes a "phantom" type variable
+in order to gain type-safety about what kind of entity it is an ID for.
+So, to specify that you have an id for a clinic, you would say:
+
+    clinidId : NodeId ClinicId
+
+-}
+type NodeId a
+    = NodeId Int
+
+
+{-| This is how you create a NodeId, if you have an `Int`. You can create
+any kind of `NodeId` this way ... so you would normally only do this in
+situations that are fundamentally untyped, such as when you are decoding
+JSON data. Except in those kind of "boundary" situations, you should be
+working with the typed NodeIds.
+-}
+toNodeId : Int -> NodeId a
+toNodeId =
+    NodeId
+
+
+{-| This is how you get an `Int` back from a `NodeId`. You should only use
+this in boundary situations, where you need to send the id out in an untyped
+way. Normally, you should just pass around the `NodeId` itself, to retain
+type-safety.
+-}
+fromNodeId : NodeId a -> Int
+fromNodeId (NodeId a) =
+    a
+
+
+{-| Decodes a NodeId.
+
+This just turns JSON int (or string that is an int) to a NodeId. You need
+to supply the `field "id"` yourself, if necessary, since id's could be present
+in other fields as well.
+
+This decodes any kind of NodeId you like (since there is fundamentally no type
+information in the JSON iself, of course). So, you need to verify that the type
+is correct yourself.
+
+-}
+decodeNodeId : Decoder (NodeId a)
+decodeNodeId =
+    Json.Decode.map toNodeId decodeInt
+
+
+{-| Encodes any kind of `NodeId` as a JSON int.
+-}
+encodeNodeId : NodeId a -> Value
+encodeNodeId =
+    Json.Encode.int << fromNodeId

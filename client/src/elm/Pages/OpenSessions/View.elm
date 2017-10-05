@@ -11,7 +11,9 @@ For now, we just show the list.
 
 import Html exposing (..)
 import App.Model exposing (Msg(..))
-import Clinic.Model exposing (ClinicId, Clinic)
+import Backend.Clinic.Model exposing (Clinic)
+import Backend.Entities exposing (ClinicId, SessionId)
+import Backend.Session.Model exposing (Session)
 import Date exposing (Date)
 import Drupal.Restful exposing (EntityDictList)
 import EveryDictList
@@ -21,7 +23,6 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
-import Session.Model exposing (SessionId, Session)
 import StorageKey exposing (StorageKey(..))
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import Utils.Html exposing (spinner)

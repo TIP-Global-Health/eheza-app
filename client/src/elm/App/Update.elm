@@ -3,12 +3,15 @@ port module App.Update exposing (init, update, subscriptions)
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import App.Model exposing (..)
 import App.PageType exposing (Page(..))
-import Clinic.Decoder exposing (decodeClinic)
-import Clinic.Model exposing (ClinicId(..), Clinic)
+import Backend.Entities exposing (ClinicId, SessionId)
+import Backend.Session.Decoder exposing (decodeSession)
+import Backend.Session.Model exposing (Session)
+import Backend.Clinic.Decoder exposing (decodeClinic)
+import Backend.Clinic.Model exposing (Clinic)
 import Config
 import Date
 import Dict
-import Drupal.Restful exposing (EndPoint)
+import Drupal.Restful exposing (EndPoint, toNodeId)
 import EveryDictList
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Http exposing (Error)
@@ -24,8 +27,6 @@ import Json.Decode exposing (decodeValue, bool)
 import Json.Encode exposing (Value)
 import Pages.Login.Update
 import RemoteData exposing (RemoteData(..), WebData)
-import Session.Decoder exposing (decodeSession)
-import Session.Model exposing (SessionId(..), Session)
 import Task
 import Time exposing (minute)
 import Update.Extra exposing (sequence)
@@ -89,7 +90,7 @@ init flags =
 clinicEndpoint : EndPoint Error () ClinicId Clinic
 clinicEndpoint =
     { path = "api/clinics"
-    , tag = ClinicId
+    , tag = toNodeId
     , decoder = decodeClinic
     , error = identity
     , params = always []
@@ -113,7 +114,7 @@ encodeSessionParams params =
 sessionEndpoint : EndPoint Error SessionParams SessionId Session
 sessionEndpoint =
     { path = "api/sessions"
-    , tag = SessionId
+    , tag = toNodeId
     , decoder = decodeSession
     , error = identity
     , params = encodeSessionParams

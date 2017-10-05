@@ -1,7 +1,9 @@
 module App.Model exposing (emptyModel, FileId(..), Flags, Msg(..), Model, Theme(..), ThemeConfig)
 
 import App.PageType exposing (Page(..))
-import Clinic.Model exposing (ClinicId, Clinic)
+import Backend.Clinic.Model exposing (Clinic)
+import Backend.Entities exposing (ClinicId, SessionId)
+import Backend.Session.Model exposing (Session)
 import Config.Model
 import Date exposing (Date)
 import Drupal.Restful exposing (EntityDictList)
@@ -9,7 +11,6 @@ import Gizra.NominalDate exposing (NominalDate)
 import Pages.Login.Model exposing (emptyModel, Model)
 import RemoteData exposing (RemoteData(..), WebData)
 import ParticipantManager.Model exposing (emptyModel, Model)
-import Session.Model exposing (SessionId, Session)
 import Time exposing (Time)
 import Translate exposing (Language(..))
 import User.Model exposing (..)
