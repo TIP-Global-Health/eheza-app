@@ -3,6 +3,7 @@ module Pages.OpenSessions.Fetch exposing (fetch)
 import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
 import Backend.Clinic.Model exposing (Clinic)
+import Backend.Model
 import Backend.Session.Model exposing (Session)
 import Date exposing (Date)
 import Drupal.Restful exposing (EntityDictList)
@@ -65,7 +66,7 @@ fetch currentDate clinics sessions =
         fetchSessions =
             case sessions of
                 NotAsked ->
-                    Just (FetchSessionsOpenOn nominalDate)
+                    Just (MsgBackend <| Backend.Model.FetchSessionsOpenOn nominalDate)
 
                 Loading ->
                     Nothing
@@ -77,12 +78,12 @@ fetch currentDate clinics sessions =
                     if sessionDate == nominalDate then
                         Nothing
                     else
-                        Just (FetchSessionsOpenOn nominalDate)
+                        Just (MsgBackend <| Backend.Model.FetchSessionsOpenOn nominalDate)
 
         fetchClinics =
             case clinics of
                 NotAsked ->
-                    Just FetchClinics
+                    Just (MsgBackend Backend.Model.FetchClinics)
 
                 _ ->
                     Nothing

@@ -13,6 +13,7 @@ import Html exposing (..)
 import App.Model exposing (Msg(..))
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (ClinicId, SessionId)
+import Backend.Model
 import Backend.Session.Model exposing (Session)
 import Date exposing (Date)
 import Drupal.Restful exposing (EntityDictList)
@@ -69,7 +70,7 @@ viewWrapper language currentDate clinicData sessionData =
                 [ viewError language err
                 , div
                     [ class "ui button"
-                    , onClick FetchClinics
+                    , onClick (MsgBackend Backend.Model.FetchClinics)
                     ]
                     [ text <| translate language Trans.Retry ]
                 ]
@@ -88,9 +89,10 @@ viewWrapper language currentDate clinicData sessionData =
                         [ viewError language err
                         , div
                             [ class "ui button"
-                            , onClick <|
-                                FetchSessionsOpenOn <|
-                                    Gizra.NominalDate.fromLocalDateTime currentDate
+                            , Gizra.NominalDate.fromLocalDateTime currentDate
+                                |> Backend.Model.FetchSessionsOpenOn
+                                |> MsgBackend
+                                |> onClick
                             ]
                             [ text <| translate language Trans.Retry ]
                         ]

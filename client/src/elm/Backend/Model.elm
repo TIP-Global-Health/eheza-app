@@ -17,10 +17,42 @@ in the UI.
 
 -}
 
-import Drupal.Restful exposing (NodeId(..))
+import Backend.Clinic.Model exposing (Clinic)
+import Backend.Entities exposing (..)
+import Backend.Session.Model exposing (Session)
+import Gizra.NominalDate exposing (NominalDate)
+import Drupal.Restful exposing (EntityDictList)
+import RemoteData exposing (RemoteData(..), WebData)
 
 
-{-| This will eventually define the data we get from the backend.
+{-| This model basically represents things we have locally which also belong
+on the backend. So, conceptually it is a kind of a local cache of some of the
+things on the backend.
 -}
 type alias Model =
-    {}
+    { clinics : WebData (EntityDictList ClinicId Clinic)
+
+    -- This tracks which sessions are currently available for data-entry,
+    -- given the scheduled date range for each session. We remember which
+    -- date we asked about, so that if the date changes (i.e. it becomes
+    -- tomorrow, due to the passage of time), we can know that we ought to
+    -- ask again.
+    , openSessions : WebData ( NominalDate, EntityDictList SessionId Session )
+    }
+
+
+emptyModel : Model
+emptyModel =
+    { clinics = NotAsked
+    , openSessions = NotAsked
+    }
+
+
+{-| These are all the messages related to getting things from the backend and
+putting things back into the backend.
+-}
+type Msg
+    = FetchClinics
+    | FetchSessionsOpenOn NominalDate
+    | HandleFetchedClinics (WebData (EntityDictList ClinicId Clinic))
+    | HandleFetchedSessions NominalDate (WebData (EntityDictList SessionId Session))

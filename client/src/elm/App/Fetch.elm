@@ -30,7 +30,7 @@ fetch model =
         Success user ->
             case model.activePage of
                 OpenSessions ->
-                    Pages.OpenSessions.Fetch.fetch model.currentDate model.clinics model.openSessions
+                    Pages.OpenSessions.Fetch.fetch model.currentDate model.backend.clinics model.backend.openSessions
 
                 _ ->
                     -- For now, we've only implemented this pattern for OpenSessions.

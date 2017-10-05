@@ -1,28 +1,21 @@
 module App.Model exposing (emptyModel, FileId(..), Flags, Msg(..), Model, Theme(..), ThemeConfig)
 
 import App.PageType exposing (Page(..))
-import Backend.Clinic.Model exposing (Clinic)
-import Backend.Entities exposing (ClinicId, SessionId)
-import Backend.Session.Model exposing (Session)
+import Backend.Model exposing (Model)
 import Config.Model
 import Date exposing (Date)
-import Drupal.Restful exposing (EntityDictList)
-import Gizra.NominalDate exposing (NominalDate)
-import Pages.Login.Model exposing (emptyModel, Model)
+import Pages.Login.Model exposing (Model)
 import RemoteData exposing (RemoteData(..), WebData)
-import ParticipantManager.Model exposing (emptyModel, Model)
+import ParticipantManager.Model exposing (Model)
 import Time exposing (Time)
 import Translate exposing (Language(..))
 import User.Model exposing (..)
 
 
 type Msg
-    = FetchClinics
-    | FetchSessionsOpenOn NominalDate
-    | HandleFetchedClinics (WebData (EntityDictList ClinicId Clinic))
-    | HandleFetchedSessions NominalDate (WebData (EntityDictList SessionId Session))
-    | HandleOfflineEvent (Result String Bool)
+    = HandleOfflineEvent (Result String Bool)
     | Logout
+    | MsgBackend Backend.Model.Msg
     | MsgParticipantManager ParticipantManager.Model.Msg
     | PageLogin Pages.Login.Model.Msg
     | RedirectByActivePage
@@ -35,21 +28,14 @@ type Msg
 type alias Model =
     { accessToken : String
     , activePage : Page
+    , backend : Backend.Model.Model
     , config : RemoteData String Config.Model.Model
-    , clinics : WebData (EntityDictList ClinicId Clinic)
     , currentDate : Date
     , dropzoneFile : Maybe FileId
     , language : Language
     , offline : Bool
     , pageLogin : Pages.Login.Model.Model
     , pageParticipant : ParticipantManager.Model.Model
-
-    -- This tracks which sessions are currently available for data-entry,
-    -- given the scheduled date range for each session. We remember which
-    -- date we asked about, so that if the date changes (i.e. it becomes
-    -- tomorrow, due to the passage of time), we can know that we ought to
-    -- ask again.
-    , openSessions : WebData ( NominalDate, EntityDictList SessionId Session )
     , theme : Theme
     , user : WebData User
     }
@@ -80,13 +66,12 @@ emptyModel : Model
 emptyModel =
     { accessToken = ""
     , activePage = Login
-    , clinics = NotAsked
+    , backend = Backend.Model.emptyModel
     , config = NotAsked
     , currentDate = Date.fromTime 0
     , dropzoneFile = Nothing
     , language = English
     , offline = False
-    , openSessions = NotAsked
     , pageLogin = Pages.Login.Model.emptyModel
     , pageParticipant = ParticipantManager.Model.emptyModel
     , theme = Light

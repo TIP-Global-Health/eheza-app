@@ -3,20 +3,12 @@ port module App.Update exposing (init, update, subscriptions)
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import App.Model exposing (..)
 import App.PageType exposing (Page(..))
-import Backend.Entities exposing (ClinicId, SessionId)
-import Backend.Session.Decoder exposing (decodeSession)
-import Backend.Session.Model exposing (Session)
-import Backend.Clinic.Decoder exposing (decodeClinic)
-import Backend.Clinic.Model exposing (Clinic)
+import Backend.Update
 import Config
 import Date
 import Dict
-import Drupal.Restful exposing (EndPoint, toNodeId)
-import EveryDictList
-import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Http exposing (Error)
 import FilePicker.Model
-import Maybe.Extra
 import Pages.Activity.Model
 import Pages.Participant.Model
 import ParticipantManager.Model
@@ -87,40 +79,6 @@ init flags =
         )
 
 
-clinicEndpoint : EndPoint Error () ClinicId Clinic
-clinicEndpoint =
-    { path = "api/clinics"
-    , tag = toNodeId
-    , decoder = decodeClinic
-    , error = identity
-    , params = always []
-    }
-
-
-{-| Type-safe params ... how nice!
--}
-type alias SessionParams =
-    { openOn : Maybe NominalDate
-    }
-
-
-encodeSessionParams : SessionParams -> List ( String, String )
-encodeSessionParams params =
-    params.openOn
-        |> Maybe.map (\open -> ( "open_on", Gizra.NominalDate.formatYYYYMMDD open ))
-        |> Maybe.Extra.toList
-
-
-sessionEndpoint : EndPoint Error SessionParams SessionId Session
-sessionEndpoint =
-    { path = "api/sessions"
-    , tag = toNodeId
-    , decoder = decodeSession
-    , error = identity
-    , params = encodeSessionParams
-    }
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
@@ -131,39 +89,8 @@ update msg model =
 
                 _ ->
                     ""
-
-        getFromBackend =
-            -- Partially apply the backendUrl and accessToken, just for fun
-            Drupal.Restful.get backendUrl (Just model.accessToken)
     in
         case msg of
-            FetchClinics ->
-                -- Ultimately, it would be nice to preserve any existing value of clnics
-                -- if we're reloading ... will need an `UpdateableWebData` for that.
-                ( { model | clinics = Loading }
-                , getFromBackend clinicEndpoint () <|
-                    (RemoteData.fromResult >> RemoteData.map EveryDictList.fromList >> HandleFetchedClinics)
-                )
-
-            HandleFetchedClinics clinics ->
-                ( { model | clinics = clinics }
-                , Cmd.none
-                )
-
-            FetchSessionsOpenOn date ->
-                ( { model | openSessions = Loading }
-                , getFromBackend sessionEndpoint (SessionParams (Just date)) <|
-                    (RemoteData.fromResult >> RemoteData.map EveryDictList.fromList >> HandleFetchedSessions date)
-                )
-
-            HandleFetchedSessions date result ->
-                -- We remember the date as well as the result, so that we can
-                -- know whether we need to reload (i.e. when the date changes,
-                -- due to the passage of time)
-                ( { model | openSessions = RemoteData.map (\sessions -> ( date, sessions )) result }
-                , Cmd.none
-                )
-
             HandleOfflineEvent (Ok offline) ->
                 { model | offline = offline } ! []
 
@@ -178,6 +105,15 @@ update msg model =
                   }
                 , accessTokenPort ""
                 )
+
+            MsgBackend subMsg ->
+                let
+                    ( backend, cmd ) =
+                        Backend.Update.update backendUrl model.accessToken subMsg model.backend
+                in
+                    ( { model | backend = backend }
+                    , Cmd.map MsgBackend cmd
+                    )
 
             MsgParticipantManager subMsg ->
                 case model.user of

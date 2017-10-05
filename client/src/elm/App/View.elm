@@ -265,7 +265,7 @@ viewMainContent model =
                     Pages.MyAccount.View.view language model.user
 
                 OpenSessions ->
-                    Pages.OpenSessions.View.view language model.currentDate model.clinics model.openSessions
+                    Pages.OpenSessions.View.view language model.currentDate model.backend.clinics model.backend.openSessions
 
                 PageNotFound ->
                     -- We don't need to pass any cmds, so we can call the view directly
