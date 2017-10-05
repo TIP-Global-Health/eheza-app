@@ -12,11 +12,11 @@ module Activity.Utils
         )
 
 import Activity.Model exposing (ActivityIdentity, ActivityListItem, ActivityType(..), ChildActivityType(..), MotherActivityType(..))
-import Child.Model exposing (Child)
+import Backend.Child.Model exposing (Child)
+import Backend.Mother.Model exposing (Mother)
 import Dict exposing (Dict)
 import Examination.Model exposing (ExaminationChild, ExaminationMother, emptyExaminationChild, emptyExaminationMother)
 import Maybe.Extra exposing (isNothing)
-import Mother.Model exposing (Mother)
 import Participant.Model exposing (Participant, ParticipantsDict, ParticipantTypeFilter(..), ParticipantType(..))
 import StorageKey exposing (StorageKey, isNew)
 

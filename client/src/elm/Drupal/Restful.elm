@@ -5,7 +5,6 @@ as `Gizra/elm-drupal`. But it's easier to start working with it here --
 I'll publish it separately once it gels a little.
 -}
 
-import Config.Model exposing (BackendUrl)
 import EveryDictList exposing (EveryDictList)
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (Decoder, list, map, field, map2, index)
@@ -14,6 +13,10 @@ import Maybe.Extra
 import Http exposing (Error, expectJson)
 import HttpBuilder exposing (..)
 import StorageKey exposing (StorageKey(..))
+
+
+type alias BackendUrl =
+    String
 
 
 {-| This is a start at a nicer idiom for dealing with Drupal JSON endpoints.

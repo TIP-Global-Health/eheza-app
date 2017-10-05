@@ -8,9 +8,9 @@ import Activity.Model
         , FamilyPlanningSign(..)
         , MotherActivityType(FamilyPlanning)
         )
-import Child.Model exposing (ChildId)
+import Backend.Entities exposing (ChildId, MotherId)
 import Config.Model exposing (BackendUrl)
-import Drupal.Restful exposing (decodeSingleDrupalEntity)
+import Drupal.Restful exposing (decodeSingleDrupalEntity, toNodeId)
 import EverySet exposing (EverySet)
 import Examination.Model exposing (Examination(..))
 import Examination.Utils exposing (mapExaminationChild, mapExaminationMother, supplyMeasurement, toExaminationChild, toExaminationMother)
@@ -66,7 +66,8 @@ update backendUrl accessToken participantId msg model examination =
                                         Cmd.none
                                     else
                                         upsert
-                                            (upsertFamilyPlanning participantId)
+                                            -- TODO: Fix up types to avoid `toNodeId`
+                                            (upsertFamilyPlanning (toNodeId participantId))
                                             backendUrl
                                             accessToken
                                             (supplyMeasurement model.familyPlanningSigns (Just exam.familyPlanning))
@@ -251,7 +252,7 @@ update backendUrl accessToken participantId msg model examination =
                         Maybe.map2
                             (\muac exam ->
                                 upsert
-                                    (upsertMuac participantId)
+                                    (upsertMuac (toNodeId participantId))
                                     backendUrl
                                     accessToken
                                     (supplyMeasurement (getFloatInputValue muac) exam.muac)
@@ -283,7 +284,7 @@ update backendUrl accessToken participantId msg model examination =
                                         Cmd.none
                                     else
                                         upsert
-                                            (upsertNutrition participantId)
+                                            (upsertNutrition (toNodeId participantId))
                                             backendUrl
                                             accessToken
                                             (supplyMeasurement model.nutritionSigns (Just exam.nutrition))
@@ -340,7 +341,7 @@ update backendUrl accessToken participantId msg model examination =
                         Maybe.map2
                             (\weight exam ->
                                 upsert
-                                    (upsertWeight participantId)
+                                    (upsertWeight (toNodeId participantId))
                                     backendUrl
                                     accessToken
                                     (supplyMeasurement (getFloatInputValue weight) exam.weight)
@@ -368,7 +369,8 @@ update backendUrl accessToken participantId msg model examination =
                         Maybe.map2
                             (\height exam ->
                                 upsert
-                                    (upsertHeight participantId)
+                                    -- TODO: Fix up types to avoid `toNodeId`
+                                    (upsertHeight (toNodeId participantId))
                                     backendUrl
                                     accessToken
                                     (supplyMeasurement (getFloatInputValue height) exam.height)
@@ -443,11 +445,11 @@ upsertMuac childId =
     }
 
 
-upsertFamilyPlanning : ChildId -> UpsertConfig FamilyPlanningId (EverySet FamilyPlanningSign) Msg
-upsertFamilyPlanning childId =
+upsertFamilyPlanning : MotherId -> UpsertConfig FamilyPlanningId (EverySet FamilyPlanningSign) Msg
+upsertFamilyPlanning motherId =
     { decodeStorage = decodeFamilyPlanning
     , encodeId = \(FamilyPlanningId id) -> toString id
-    , encodeStorage = encodeFamilyPlanning childId
+    , encodeStorage = encodeFamilyPlanning motherId
     , handler = HandleFamilyPlanningSave
     , path = "family-plannings"
     }
@@ -501,7 +503,8 @@ postPhoto backendUrl accessToken childId model =
                 command =
                     HttpBuilder.post (backendUrl ++ "/api/photos")
                         |> withQueryParams [ ( "access_token", accessToken ) ]
-                        |> withJsonBody (encodePhoto childId fileId)
+                        -- TODO: Fix up types to avoid `toNodeId`
+                        |> withJsonBody (encodePhoto (toNodeId childId) fileId)
                         |> sendWithHandler decodePhotoFromResponse HandlePhotoSave
             in
                 ( { model | status = Loading }

@@ -1,6 +1,6 @@
 module Examination.Utils exposing (getLastExaminationFromChild, mapExaminationChild, mapExaminationMother, supplyMeasurement, toMeasurements, toExaminationChild, toExaminationMother)
 
-import Child.Model exposing (Child)
+import Backend.Child.Model exposing (Child)
 import EverySet
 import Examination.Model exposing (ExaminationChild, ExaminationMother, Examination(..), emptyExaminationChild, emptyExaminationMother)
 import Measurement.Model

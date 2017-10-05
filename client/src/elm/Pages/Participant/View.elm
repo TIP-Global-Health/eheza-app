@@ -6,7 +6,9 @@ module Pages.Participant.View
 
 import Activity.Model exposing (ActivityListItem, ActivityType(..))
 import Activity.Utils exposing (getActivityList)
-import Child.Model exposing (Child, ChildId, Gender(..))
+import Backend.Child.Model exposing (Child, Gender(..))
+import Backend.Entities exposing (..)
+import Backend.Mother.Model exposing (Mother)
 import Date exposing (Date)
 import Examination.Utils exposing (getLastExaminationFromChild)
 import Gizra.Html exposing (emptyNode)
@@ -14,7 +16,6 @@ import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
 import Measurement.View
-import Mother.Model exposing (Mother, MotherId)
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
 import Pages.Participant.Utils exposing (makeLoneMotherDict, makeLoneChildDict)
 import Participant.Model exposing (Participant, ParticipantId, ParticipantType(ParticipantChild, ParticipantMother), ParticipantTypeFilter(..), ParticipantsDict)

@@ -1,10 +1,10 @@
-module Child.Decoder
+module Backend.Child.Decoder
     exposing
         ( decodeChild
         )
 
-import Child.Model exposing (..)
-import Examination.Decoder exposing (decodeExaminationChild)
+import Backend.Child.Model exposing (..)
+import Drupal.Restful exposing (decodeNodeId)
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (Decoder, andThen, dict, fail, field, int, list, map, map2, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required)
@@ -17,9 +17,9 @@ decodeChild =
         |> required "label" string
         -- The default avatar comes from SASS , not from the Model.
         |> optionalAt [ "avatar", "styles", "patient-photo" ] string ""
-        |> required "mother" (nullable decodeInt)
-        |> required "sibling" (nullable decodeInt)
-        |> required "examinations" (list decodeExaminationChild)
+        |> required "mother" (nullable decodeNodeId)
+        |> required "sibling" (nullable decodeNodeId)
+        |> hardcoded []
         |> required "date_birth" decodeDate
         |> required "gender" decodeGender
 

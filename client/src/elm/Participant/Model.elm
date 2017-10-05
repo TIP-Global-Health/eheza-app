@@ -9,8 +9,8 @@ module Participant.Model
         )
 
 import Dict exposing (Dict)
-import Child.Model exposing (Child)
-import Mother.Model exposing (Mother)
+import Backend.Child.Model exposing (Child)
+import Backend.Mother.Model exposing (Mother)
 
 
 type AgeDay

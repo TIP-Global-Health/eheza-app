@@ -4,10 +4,10 @@ module Participant.Decoder
         , decodeParticipantsDict
         )
 
-import Child.Decoder exposing (decodeChild)
+import Backend.Child.Decoder exposing (decodeChild)
+import Backend.Mother.Decoder exposing (decodeMother)
 import Json.Decode exposing (Decoder, andThen, dict, fail, field, int, list, map, map2, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required)
-import Mother.Decoder exposing (decodeMother)
 import Participant.Model exposing (..)
 import Utils.Json exposing (decodeListAsIntDict)
 

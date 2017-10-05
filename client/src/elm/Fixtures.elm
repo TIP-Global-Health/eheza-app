@@ -1,8 +1,8 @@
 module Fixtures exposing (..)
 
-import Child.Model exposing (Child, Gender(..))
+import Backend.Mother.Model exposing (Mother)
+import Backend.Child.Model exposing (Child, Gender(..))
 import Date
-import Mother.Model exposing (Mother)
 import User.Model exposing (User)
 
 

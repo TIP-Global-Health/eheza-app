@@ -1,20 +1,24 @@
 module Pages.Participant.Utils exposing (..)
 
+import Backend.Child.Model exposing (Child)
+import Backend.Entities exposing (..)
+import Backend.Mother.Model exposing (Mother)
 import Dict
+import Drupal.Restful exposing (fromNodeId)
 import List
-import Child.Model exposing (ChildId, Child)
-import Mother.Model exposing (MotherId, Mother)
 import Participant.Model exposing (ParticipantsDict)
 
 
-makeLoneMotherDict : MotherId -> Mother.Model.Mother -> ParticipantsDict
+makeLoneMotherDict : MotherId -> Mother -> ParticipantsDict
 makeLoneMotherDict motherId mother =
-    Dict.insert motherId ({ info = Participant.Model.ParticipantMother mother }) Dict.empty
+    -- TODO: Fix up types to avoid `fromNodeId`
+    Dict.insert (fromNodeId motherId) ({ info = Participant.Model.ParticipantMother mother }) Dict.empty
 
 
-makeLoneChildDict : ChildId -> Child.Model.Child -> ParticipantsDict
+makeLoneChildDict : ChildId -> Child -> ParticipantsDict
 makeLoneChildDict childId child =
-    Dict.insert childId ({ info = Participant.Model.ParticipantChild child }) Dict.empty
+    -- TODO: Fix up types to avoid `fromNodeId`
+    Dict.insert (fromNodeId childId) ({ info = Participant.Model.ParticipantChild child }) Dict.empty
 
 
 {-| Like `Update.Extra.sequence`, but for `update` signatures that also

@@ -4,7 +4,8 @@ module ProgressReport.View
         )
 
 import Pages.Participant.Model exposing (Msg)
-import Child.Model exposing (Child, ChildId)
+import Backend.Child.Model exposing (Child)
+import Backend.Entities exposing (..)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Translate as Trans exposing (Language(..), TranslationId, translate)

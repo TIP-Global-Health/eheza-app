@@ -4,13 +4,13 @@ module Backend.Session.Model exposing (..)
 including the time and the place.
 -}
 
+import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Child.Model exposing (Child)
+import Backend.Mother.Model exposing (Mother)
 import Dict exposing (Dict)
 import DictList exposing (DictList)
 import Gizra.NominalDate exposing (NominalDateRange)
-import Mother.Model exposing (Mother)
 
 
 {-| This is the basic `Session` data that we get when we're

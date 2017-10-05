@@ -7,9 +7,11 @@ module ParticipantManager.Utils
         , unwrapParticipantsDict
         )
 
-import Child.Model exposing (Child, ChildId)
+import Backend.Entities exposing (..)
+import Backend.Child.Model exposing (Child)
+import Backend.Mother.Model exposing (Mother)
 import Dict exposing (Dict)
-import Mother.Model exposing (Mother, MotherId)
+import Drupal.Restful exposing (fromNodeId, toNodeId)
 import Participant.Model exposing (Participant, ParticipantsDict, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..))
 import ParticipantManager.Model as ParticipantManager
 import RemoteData exposing (RemoteData(..), WebData)
@@ -19,7 +21,8 @@ getChildren : Mother -> ParticipantManager.Model -> List (WebData ( ChildId, Chi
 getChildren mother model =
     List.map
         (\childId ->
-            getParticipant childId model
+            -- TODO: Fix up types to avoid `fromNodeId`
+            getParticipant (fromNodeId childId) model
                 |> getChild childId
         )
         mother.children
@@ -44,7 +47,8 @@ getMother : Maybe MotherId -> ParticipantManager.Model -> WebData Mother
 getMother maybeMotherId model =
     Maybe.map
         (\motherId ->
-            case getParticipant motherId model of
+            -- TODO: Fix up types so we don't need the `fromNodeId`
+            case getParticipant (fromNodeId motherId) model of
                 Success participant ->
                     case participant.info of
                         ParticipantMother mother ->

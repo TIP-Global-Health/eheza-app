@@ -12,7 +12,7 @@ module ZScore.Utils
 algorithm described at <https://github.com/Gizra/ihangane/issues/303>.
 -}
 
-import Child.Model exposing (Gender(..))
+import Backend.Child.Model exposing (Gender(..))
 import IntDict exposing (IntDict)
 import Participant.Model exposing (AgeDay)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore(..))

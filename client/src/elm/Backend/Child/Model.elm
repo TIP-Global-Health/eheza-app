@@ -1,19 +1,8 @@
-module Child.Model exposing (..)
+module Backend.Child.Model exposing (..)
 
+import Backend.Entities exposing (..)
 import Date exposing (Date)
 import Examination.Model exposing (ExaminationChild, ExaminationId)
-
-
-type alias ChildId =
-    Int
-
-
-type alias ExaminationId =
-    Int
-
-
-type alias MotherId =
-    Int
 
 
 type Gender
@@ -32,6 +21,8 @@ type alias Child =
     , image : String
     , motherId : Maybe MotherId
     , siblingId : Maybe ChildId
+
+    -- TODO: Remove examinations
     , examinations : List ExaminationChild
     , birthDate : Date
     , gender : Gender

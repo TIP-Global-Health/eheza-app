@@ -11,6 +11,7 @@ import Activity.Utils exposing (getActivityIdentity)
 import App.PageType
 import Date exposing (Date)
 import Dict
+import Drupal.Restful exposing (fromNodeId, toNodeId)
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
@@ -133,7 +134,7 @@ viewPageParticipant language currentDate id model =
                                             getMother child.motherId model
                                     in
                                         List.map (Html.map (MsgPagesParticipant id)) <|
-                                            Pages.Participant.View.viewChild language currentDate motherWebData ( id, child ) participantModel
+                                            Pages.Participant.View.viewChild language currentDate motherWebData ( toNodeId id, child ) participantModel
 
                                 ParticipantMother mother ->
                                     let
@@ -141,7 +142,7 @@ viewPageParticipant language currentDate id model =
                                             getChildren mother model
                                     in
                                         List.map (Html.map (MsgPagesParticipant id)) <|
-                                            Pages.Participant.View.viewMother language id mother childrenWebData participantModel
+                                            Pages.Participant.View.viewMother language (toNodeId id) mother childrenWebData participantModel
                            )
 
 
@@ -176,8 +177,8 @@ viewPageParticipantHeader language ( participantId, participant ) =
                     ( case child.motherId of
                         Just motherId ->
                             [ onClick <|
-                                MsgPagesParticipant motherId <|
-                                    Pages.Participant.Model.SetRedirectPage (App.PageType.Participant motherId)
+                                MsgPagesParticipant (fromNodeId motherId) <|
+                                    Pages.Participant.Model.SetRedirectPage (App.PageType.Participant (fromNodeId motherId))
                             ]
 
                         Nothing ->
@@ -187,7 +188,7 @@ viewPageParticipantHeader language ( participantId, participant ) =
                             participantId
                                 :: case child.siblingId of
                                     Just siblingId ->
-                                        [ siblingId ]
+                                        [ fromNodeId siblingId ]
 
                                     Nothing ->
                                         []
@@ -195,7 +196,7 @@ viewPageParticipantHeader language ( participantId, participant ) =
 
                 ParticipantMother mother ->
                     ( [ class "active" ]
-                    , List.indexedMap (\index childId -> viewChild childId (Just index) False) mother.children
+                    , List.indexedMap (\index childId -> viewChild (fromNodeId childId) (Just index) False) mother.children
                     )
     in
         div
