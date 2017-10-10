@@ -1,10 +1,11 @@
 module Backend.Session.Decoder exposing (..)
 
+import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Child.Model exposing (Child)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Entities exposing (..)
-import Backend.Mother.Model exposing (Mother)
 import Backend.Mother.Decoder exposing (decodeMother)
+import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (..)
 import Drupal.Restful exposing (decodeEntityId)
 import EveryDict exposing (EveryDict)
@@ -51,4 +52,6 @@ decodeMothers =
 
 decodeChildren : Decoder (EveryDict ChildId Child)
 decodeChildren =
-    Debug.crash "unimplemented"
+    map2 (,) (field "id" decodeEntityId) decodeChild
+        |> list
+        |> map EveryDict.fromList

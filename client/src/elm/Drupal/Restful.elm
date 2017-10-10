@@ -1,4 +1,4 @@
-module Drupal.Restful exposing (EndPoint, Entity, EntityDictList, select, decodeSingleEntity, decodeId, decodeStorageTuple, EntityId, toEntityId, fromEntityId, decodeEntityId, encodeEntityId)
+module Drupal.Restful exposing (EndPoint, Entity, EntityDictList, select, get, get404, decodeSingleEntity, decodeId, decodeStorageTuple, EntityId, toEntityId, fromEntityId, decodeEntityId, encodeEntityId)
 
 {-| This is the beginnings of some general code, eventually to be published
 as `Gizra/elm-drupal`. But it's easier to start working with it here --
@@ -10,7 +10,7 @@ import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (Decoder, list, map, field, map2, index)
 import Json.Encode exposing (Value)
 import Maybe.Extra
-import Http exposing (Error, expectJson)
+import Http exposing (Error(..), expectJson)
 import HttpBuilder exposing (..)
 import StorageKey exposing (StorageKey(..))
 
@@ -47,6 +47,14 @@ type alias EndPoint error params key value =
     -- The tag which wraps the integer node ID. (This assumes an integer node
     -- ID ... we could make it more general someday if needed).
     , tag : Int -> key
+
+    -- Does the reverse of `tag` -- given a key, produces an `Int`
+    --
+    -- TODO: If we insisted on using an `EntityId ...` as the key, we could
+    -- get rid of tag and untag (since they would always be `toEntityId` and
+    -- `fromEntityId`). This is probably desirable, but making the types work
+    -- will take a bit of effort.
+    , untag : key -> Int
 
     -- A decoder for the values
     , decoder : Decoder value
@@ -120,6 +128,45 @@ select backendUrl accessToken endpoint params tagger =
             |> withQueryParams queryParams
             |> withExpect (expectJson (decodeData (list (decodeStorageTuple (decodeId endpoint.tag) endpoint.decoder))))
             |> send (Result.mapError endpoint.error >> tagger)
+
+
+{-| Gets a entity from the backend via its ID.
+
+If we get a 404 error, we'll give you an `Ok Nothing`, rather than an error,
+since the request essentially succeeded ...  there merely was no entity with
+that ID.
+-}
+get : BackendUrl -> Maybe String -> EndPoint error params key value -> key -> (Result error (Maybe (Entity key value)) -> msg) -> Cmd msg
+get backendUrl accessToken endpoint key tagger =
+    HttpBuilder.get (backendUrl </> endpoint.path </> toString (endpoint.untag key))
+        |> withExpect (expectJson (decodeSingleEntity (decodeStorageTuple (decodeId endpoint.tag) endpoint.decoder)))
+        |> send
+            (\result ->
+                let
+                    recover =
+                        case result of
+                            Err (BadStatus response) ->
+                                if response.status.code == 404 then
+                                    Ok Nothing
+                                else
+                                    Result.map Just result
+
+                            _ ->
+                                Result.map Just result
+                in
+                    recover
+                        |> Result.mapError endpoint.error
+                        |> tagger
+            )
+
+
+{-| Let `get`, but treats a 404 response as an error in the `Result`, rather than a `Nothing` response.
+-}
+get404 : BackendUrl -> Maybe String -> EndPoint error params key value -> key -> (Result error (Entity key value) -> msg) -> Cmd msg
+get404 backendUrl accessToken endpoint key tagger =
+    HttpBuilder.get (backendUrl </> endpoint.path </> toString (endpoint.untag key))
+        |> withExpect (expectJson (decodeSingleEntity (decodeStorageTuple (decodeId endpoint.tag) endpoint.decoder)))
+        |> send (Result.mapError endpoint.error >> tagger)
 
 
 {-| Convenience for the pattern where you have a field called "id",

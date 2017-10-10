@@ -9,10 +9,10 @@ import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (..)
-import Backend.Session.Decoder exposing (decodeSession)
-import Backend.Session.Model exposing (Session)
+import Backend.Session.Decoder exposing (decodeSession, decodeOfflineSession)
+import Backend.Session.Model exposing (Session, OfflineSession)
 import Config.Model exposing (BackendUrl)
-import Drupal.Restful exposing (EndPoint, toEntityId)
+import Drupal.Restful exposing (EndPoint, toEntityId, fromEntityId)
 import EveryDictList
 import Gizra.NominalDate exposing (NominalDate)
 import Http exposing (Error)
@@ -24,6 +24,7 @@ clinicEndpoint : EndPoint Error () ClinicId Clinic
 clinicEndpoint =
     { path = "api/clinics"
     , tag = toEntityId
+    , untag = fromEntityId
     , decoder = decodeClinic
     , error = identity
     , params = always []
@@ -48,18 +49,33 @@ sessionEndpoint : EndPoint Error SessionParams SessionId Session
 sessionEndpoint =
     { path = "api/sessions"
     , tag = toEntityId
+    , untag = fromEntityId
     , decoder = decodeSession
     , error = identity
     , params = encodeSessionParams
     }
 
 
+offlineSessionEndpoint : EndPoint Error () SessionId OfflineSession
+offlineSessionEndpoint =
+    { path = "api/offline-sessions"
+    , tag = toEntityId
+    , untag = fromEntityId
+    , decoder = decodeOfflineSession
+    , error = identity
+    , params = always []
+    }
+
+
 update : BackendUrl -> String -> Msg -> Model -> ( Model, Cmd Msg )
 update backendUrl accessToken msg model =
     let
+        -- Partially apply the backendUrl and accessToken, just for fun
         selectFromBackend =
-            -- Partially apply the backendUrl and accessToken, just for fun
             Drupal.Restful.select backendUrl (Just accessToken)
+
+        getFromBackend =
+            Drupal.Restful.get backendUrl (Just accessToken)
     in
         case msg of
             FetchClinics ->
@@ -86,5 +102,16 @@ update backendUrl accessToken msg model =
                 -- know whether we need to reload (i.e. when the date changes,
                 -- due to the passage of time)
                 ( { model | openSessions = RemoteData.map (\sessions -> ( date, sessions )) result }
+                , Cmd.none
+                )
+
+            FetchOfflineSession sessionId ->
+                ( { model | offlineSession = Loading }
+                , getFromBackend offlineSessionEndpoint sessionId <|
+                    (RemoteData.fromResult >> HandleFetchedOfflineSession)
+                )
+
+            HandleFetchedOfflineSession data ->
+                ( { model | offlineSession = data }
                 , Cmd.none
                 )

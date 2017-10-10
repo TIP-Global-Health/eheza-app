@@ -80,6 +80,10 @@ putting things back into the backend.
 -}
 type Msg
     = FetchClinics
+      -- For now, fetches the offline session from the backend ... will need to
+      -- integrate caching, obviously!
+    | FetchOfflineSession SessionId
     | FetchSessionsOpenOn NominalDate
     | HandleFetchedClinics (WebData (EntityDictList ClinicId Clinic))
+    | HandleFetchedOfflineSession (WebData (Maybe (Entity SessionId OfflineSession)))
     | HandleFetchedSessions NominalDate (WebData (EntityDictList SessionId Session))
