@@ -1,4 +1,4 @@
-module Drupal.Restful exposing (EndPoint, Entity, EntityDictList, get, decodeSingleEntity, decodeId, decodeStorageTuple, EntityId, toEntityId, fromEntityId, decodeEntityId, encodeEntityId)
+module Drupal.Restful exposing (EndPoint, Entity, EntityDictList, select, decodeSingleEntity, decodeId, decodeStorageTuple, EntityId, toEntityId, fromEntityId, decodeEntityId, encodeEntityId)
 
 {-| This is the beginnings of some general code, eventually to be published
 as `Gizra/elm-drupal`. But it's easier to start working with it here --
@@ -93,7 +93,7 @@ type alias EntityDictList key value =
         left ++ "/" ++ right
 
 
-{-| Get entities from an endpoint.
+{-| Select entities from an endpoint.
 
 What we hand you is a `Result` with a list of entities, since that is the most
 "natural" thing to hand back. You can convert it to a `RemoteData` easily with
@@ -107,8 +107,8 @@ structures and idioms that Drupal uses in its JSON. One could imagine making thi
 more general if necessary at some point.
 
 -}
-get : BackendUrl -> Maybe String -> EndPoint error params key value -> params -> (Result error (List (Entity key value)) -> msg) -> Cmd msg
-get backendUrl accessToken endpoint params tagger =
+select : BackendUrl -> Maybe String -> EndPoint error params key value -> params -> (Result error (List (Entity key value)) -> msg) -> Cmd msg
+select backendUrl accessToken endpoint params tagger =
     let
         queryParams =
             accessToken

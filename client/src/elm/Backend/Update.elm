@@ -57,16 +57,16 @@ sessionEndpoint =
 update : BackendUrl -> String -> Msg -> Model -> ( Model, Cmd Msg )
 update backendUrl accessToken msg model =
     let
-        getFromBackend =
+        selectFromBackend =
             -- Partially apply the backendUrl and accessToken, just for fun
-            Drupal.Restful.get backendUrl (Just accessToken)
+            Drupal.Restful.select backendUrl (Just accessToken)
     in
         case msg of
             FetchClinics ->
                 -- Ultimately, it would be nice to preserve any existing value of clnics
                 -- if we're reloading ... will need an `UpdateableWebData` for that.
                 ( { model | clinics = Loading }
-                , getFromBackend clinicEndpoint () <|
+                , selectFromBackend clinicEndpoint () <|
                     (RemoteData.fromResult >> RemoteData.map EveryDictList.fromList >> HandleFetchedClinics)
                 )
 
@@ -77,7 +77,7 @@ update backendUrl accessToken msg model =
 
             FetchSessionsOpenOn date ->
                 ( { model | openSessions = Loading }
-                , getFromBackend sessionEndpoint (SessionParams (Just date)) <|
+                , selectFromBackend sessionEndpoint (SessionParams (Just date)) <|
                     (RemoteData.fromResult >> RemoteData.map EveryDictList.fromList >> HandleFetchedSessions date)
                 )
 
