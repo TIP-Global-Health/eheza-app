@@ -1,12 +1,13 @@
 module App.Model exposing (emptyModel, FileId(..), Flags, Msg(..), Model, Theme(..), ThemeConfig)
 
 import App.PageType exposing (Page(..))
-import Backend.Model exposing (Model)
+import Backend.Model
 import Config.Model
 import Date exposing (Date)
-import Pages.Login.Model exposing (Model)
+import Pages.Login.Model
+import Pages.OfflineSession.Model
 import RemoteData exposing (RemoteData(..), WebData)
-import ParticipantManager.Model exposing (Model)
+import ParticipantManager.Model
 import Time exposing (Time)
 import Translate exposing (Language(..))
 import User.Model exposing (..)
@@ -16,6 +17,7 @@ type Msg
     = HandleOfflineEvent (Result String Bool)
     | Logout
     | MsgBackend Backend.Model.Msg
+    | MsgPagesOfflineSession Pages.OfflineSession.Model.Msg
     | MsgParticipantManager ParticipantManager.Model.Msg
     | PageLogin Pages.Login.Model.Msg
     | RedirectByActivePage
@@ -35,6 +37,7 @@ type alias Model =
     , language : Language
     , offline : Bool
     , pageLogin : Pages.Login.Model.Model
+    , pageOfflineSession : Pages.OfflineSession.Model.Model
     , pageParticipant : ParticipantManager.Model.Model
     , theme : Theme
     , user : WebData User
@@ -73,6 +76,7 @@ emptyModel =
     , language = English
     , offline = False
     , pageLogin = Pages.Login.Model.emptyModel
+    , pageOfflineSession = Pages.OfflineSession.Model.emptyModel
     , pageParticipant = ParticipantManager.Model.emptyModel
     , theme = Light
     , user = NotAsked

@@ -93,6 +93,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
           ->entityCondition('bundle', 'mother')
           ->fieldCondition('field_clinic', 'target_id', $clinic_id)
           ->propertyCondition('status', NODE_PUBLISHED)
+          ->propertyOrderBy('title', 'ASC')
           ->range(0, 1000)
           ->execute()
     );
@@ -118,11 +119,14 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       "weight" => "weights",
     ];
 
+    // We order the measurements by date_measured descending, since it is
+    // convenient for the client to have the most recent measurements first.
     $child_activity_ids = hedley_restful_extract_ids(
         (new EntityFieldQuery())
           ->entityCondition('entity_type', 'node')
           ->entityCondition('bundle', array_keys($child_bundles))
           ->fieldCondition('field_child', 'target_id', $child_ids, "IN")
+          ->fieldOrderBy('field_date_measured', 'value', 'DESC')
           ->propertyCondition('status', NODE_PUBLISHED)
           ->range(0, 10000)
           ->execute()
@@ -137,6 +141,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
           ->entityCondition('entity_type', 'node')
           ->entityCondition('bundle', array_keys($mother_bundles))
           ->fieldCondition('field_mother', 'target_id', $mother_ids, "IN")
+          ->fieldOrderBy('field_date_measured', 'value', 'DESC')
           ->propertyCondition('status', NODE_PUBLISHED)
           ->range(0, 10000)
           ->execute()

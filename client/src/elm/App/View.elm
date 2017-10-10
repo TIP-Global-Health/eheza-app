@@ -9,6 +9,7 @@ import Html.Attributes exposing (class, classList, href, id, src, style, target)
 import Html.Events exposing (onClick)
 import Pages.Login.View
 import Pages.MyAccount.View
+import Pages.OfflineSession.View
 import Pages.OpenSessions.View
 import Pages.PageNotFound.View
 import ParticipantManager.View
@@ -86,6 +87,9 @@ viewHeader language model =
                     emptyNode
 
                 Participant _ ->
+                    emptyNode
+
+                OfflineSession ->
                     emptyNode
 
                 OpenSessions ->
@@ -263,6 +267,10 @@ viewMainContent model =
 
                 MyAccount ->
                     Pages.MyAccount.View.view language model.user
+
+                OfflineSession ->
+                    Pages.OfflineSession.View.view language model.backend.offlineSession
+                        |> Html.map MsgPagesOfflineSession
 
                 OpenSessions ->
                     Pages.OpenSessions.View.view language model.currentDate model.backend.clinics model.backend.openSessions

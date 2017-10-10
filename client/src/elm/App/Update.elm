@@ -10,6 +10,7 @@ import Dict
 import Http exposing (Error)
 import FilePicker.Model
 import Pages.Activity.Model
+import Pages.OfflineSession.Update
 import Pages.Participant.Model
 import ParticipantManager.Model
 import ParticipantManager.Update
@@ -113,6 +114,15 @@ update msg model =
                 in
                     ( { model | backend = backend }
                     , Cmd.map MsgBackend cmd
+                    )
+
+            MsgPagesOfflineSession subMsg ->
+                let
+                    ( subModel, subCmd ) =
+                        Pages.OfflineSession.Update.update subMsg model.pageOfflineSession
+                in
+                    ( { model | pageOfflineSession = subModel }
+                    , Cmd.map MsgPagesOfflineSession subCmd
                     )
 
             MsgParticipantManager subMsg ->
@@ -319,6 +329,9 @@ getBackButtonTarget activePage =
             activePage
 
         MyAccount ->
+            activePage
+
+        OfflineSession ->
             activePage
 
         OpenSessions ->

@@ -5,11 +5,13 @@ including the time and the place.
 -}
 
 import Backend.Child.Model exposing (Child)
+import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Mother.Model exposing (Mother)
 import Dict exposing (Dict)
-import DictList exposing (DictList)
+import EveryDictList exposing (EveryDictList)
+import EveryDict exposing (EveryDict)
 import Gizra.NominalDate exposing (NominalDateRange)
 
 
@@ -28,24 +30,31 @@ data-entry.
 -}
 type alias OfflineSession =
     { session : Session
-    , mothers : DictList MotherId Mother
-    , children : DictList ChildId Child
-    , motherMeasurements : Dict MotherId MotherMeasurements
-    , childMeasurements : Dict ChildId ChildMeasurements
+    , clinic : Clinic
+
+    -- We'll sort by mother's name
+    , mothers : EveryDictList MotherId Mother
+    , children : EveryDict ChildId Child
+    , motherMeasurements : EveryDict MotherId MotherMeasurements
+    , childMeasurements : EveryDict ChildId ChildMeasurements
     }
 
 
 {-| Represents the different kind of measurements we can have for a mother.
 -}
 type alias MotherMeasurements =
-    { familyPlannings : DictList FamilyPlanningId FamilyPlanning
+    { familyPlannings : EveryDictList FamilyPlanningId FamilyPlanning
     }
 
 
+{-| We'll sort these by the date measured, with the most recent first, since
+we're particularly interested in the most recent one, and it is faster to
+access if it is first.
+-}
 type alias ChildMeasurements =
-    { heights : DictList HeightId Height
-    , muacs : DictList MuacId Muac
-    , nutritions : DictList ChildNutritionId ChildNutrition
-    , photos : DictList PhotoId Photo
-    , weights : DictList WeightId Weight
+    { heights : EveryDictList HeightId Height
+    , muacs : EveryDictList MuacId Muac
+    , nutritions : EveryDictList ChildNutritionId ChildNutrition
+    , photos : EveryDictList PhotoId Photo
+    , weights : EveryDictList WeightId Weight
     }

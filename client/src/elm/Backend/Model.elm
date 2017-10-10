@@ -19,9 +19,9 @@ in the UI.
 
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
-import Backend.Session.Model exposing (Session)
+import Backend.Session.Model exposing (OfflineSession, Session)
 import Gizra.NominalDate exposing (NominalDate)
-import Drupal.Restful exposing (EntityDictList)
+import Drupal.Restful exposing (Entity, EntityDictList)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
@@ -31,6 +31,32 @@ things on the backend.
 -}
 type alias Model =
     { clinics : WebData (EntityDictList ClinicId Clinic)
+
+    -- This tracks, if we have one, the OfflineSession which we're currently
+    -- doing data entry for. This the only piece of data from the backend which
+    -- we're guaranteed to be able to access while offline (because we cache
+    -- it locally). So, it needs to contain everything we need for offline
+    -- data entry.
+    --
+    -- The `WebData` wrapper represents whether we've tried to fetch it from
+    -- our local cache (and any error that may have occurred). The inner
+    -- `Maybe` represents whether it was actually found. That is, if we
+    -- successfully query our local cache, and find it's not there, then the
+    -- `WebData` layer is a `Success`, and the `Maybe` is a `Nothing`.
+    --
+    -- At least at first, we'll track our "mode" by whether we have an offline
+    -- session in local storage. So:
+    --
+    -- * We'll automatically try to load an offline session from local storage
+    --   when the app starts up.
+    --
+    -- * If we get one, we'll automatically show that in the UI, and prevent
+    --   other things from showing.
+    --
+    -- * If we don't, then we'll show other things.
+    --
+    -- That may need to become more sophisticated at some point.
+    , offlineSession : WebData (Maybe (Entity SessionId OfflineSession))
 
     -- This tracks which sessions are currently available for data-entry,
     -- given the scheduled date range for each session. We remember which
@@ -44,6 +70,7 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { clinics = NotAsked
+    , offlineSession = NotAsked
     , openSessions = NotAsked
     }
 

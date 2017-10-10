@@ -16,9 +16,10 @@ type Page
     | Dashboard (List ActivityType)
     | Login
     | MyAccount
+    | OfflineSession
+    | OpenSessions
     | PageNotFound
     | Participant ParticipantId
-    | OpenSessions
 
 
 type DashboardPage

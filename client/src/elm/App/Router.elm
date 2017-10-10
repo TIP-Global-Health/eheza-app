@@ -25,6 +25,9 @@ delta2url previous current =
         MyAccount ->
             Just <| UrlChange NewEntry "#my-account"
 
+        OfflineSession ->
+            Just <| UrlChange NewEntry "#offline-session"
+
         OpenSessions ->
             Just <| UrlChange NewEntry "#open-sessions"
 
@@ -56,6 +59,7 @@ parseUrl =
         , map (SetActivePage <| Activity Nothing) (s "activity")
         , map (\id -> SetActivePage <| Participant id) (s "participant" </> int)
         , map (SetActivePage Login) (s "login")
+        , map (SetActivePage OfflineSession) (s "offline-session")
         , map (SetActivePage OpenSessions) (s "open-sessions")
         , map (SetActivePage MyAccount) (s "my-account")
         , map (SetActivePage OpenSessions) top
