@@ -11,7 +11,7 @@ module Measurement.Decoder
         )
 
 import Activity.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..))
-import Drupal.Restful exposing (decodeId, decodeSingleDrupalEntity, decodeStorageTuple)
+import Drupal.Restful exposing (decodeId, decodeSingleEntity, decodeStorageTuple)
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeFloat, decodeInt)
 import Json.Decode exposing (Decoder, andThen, at, dict, fail, field, int, list, map, map2, nullable, string, succeed)
@@ -37,7 +37,7 @@ decodePhotoTuple =
 
 decodePhotoFromResponse : Decoder ( PhotoId, Photo )
 decodePhotoFromResponse =
-    decodeSingleDrupalEntity decodePhotoTuple
+    decodeSingleEntity decodePhotoTuple
 
 
 decodeHeight : Decoder ( StorageKey HeightId, Float )

@@ -10,7 +10,7 @@ import Activity.Model
         )
 import Backend.Entities exposing (ChildId, MotherId)
 import Config.Model exposing (BackendUrl)
-import Drupal.Restful exposing (decodeSingleDrupalEntity, toEntityId)
+import Drupal.Restful exposing (decodeSingleEntity, toEntityId)
 import EverySet exposing (EverySet)
 import Examination.Model exposing (Examination(..))
 import Examination.Utils exposing (mapExaminationChild, mapExaminationMother, supplyMeasurement, toExaminationChild, toExaminationMother)
@@ -472,19 +472,20 @@ If we have a `New` storage key, insert it in the backend via `post`.
 -}
 upsert : UpsertConfig key value msg -> BackendUrl -> String -> ( StorageKey key, value ) -> Cmd msg
 upsert config backendUrl accessToken ( key, value ) =
+    -- TODO: Integrate into Drupal.Restful
     case key of
         Existing id ->
             HttpBuilder.patch (backendUrl ++ "/api/" ++ config.path ++ "/" ++ config.encodeId id)
                 |> withQueryParams [ ( "access_token", accessToken ) ]
                 |> withJsonBody (config.encodeStorage ( key, value ))
-                |> withExpect (Http.expectJson (decodeSingleDrupalEntity config.decodeStorage))
+                |> withExpect (Http.expectJson (decodeSingleEntity config.decodeStorage))
                 |> send config.handler
 
         New ->
             HttpBuilder.post (backendUrl ++ "/api/" ++ config.path)
                 |> withQueryParams [ ( "access_token", accessToken ) ]
                 |> withJsonBody (config.encodeStorage ( key, value ))
-                |> withExpect (Http.expectJson (decodeSingleDrupalEntity config.decodeStorage))
+                |> withExpect (Http.expectJson (decodeSingleEntity config.decodeStorage))
                 |> send config.handler
 
 

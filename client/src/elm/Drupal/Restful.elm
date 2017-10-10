@@ -1,4 +1,4 @@
-module Drupal.Restful exposing (EndPoint, Entity, EntityDictList, get, decodeSingleDrupalEntity, decodeId, decodeStorageTuple, EntityId, toEntityId, fromEntityId, decodeEntityId, encodeEntityId)
+module Drupal.Restful exposing (EndPoint, Entity, EntityDictList, get, decodeSingleEntity, decodeId, decodeStorageTuple, EntityId, toEntityId, fromEntityId, decodeEntityId, encodeEntityId)
 
 {-| This is the beginnings of some general code, eventually to be published
 as `Gizra/elm-drupal`. But it's easier to start working with it here --
@@ -167,8 +167,8 @@ To decode this, write a decoder for the "inner" part (the actual entity), and th
 supply that as a parameter to `decodeSingleDrupalEntity`.
 
 -}
-decodeSingleDrupalEntity : Decoder a -> Decoder a
-decodeSingleDrupalEntity =
+decodeSingleEntity : Decoder a -> Decoder a
+decodeSingleEntity =
     decodeData << index 0
 
 
