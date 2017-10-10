@@ -3,7 +3,7 @@ module Pages.Participants.View exposing (view)
 import Activity.Utils exposing (getTotalsNumberPerActivity, participantHasPendingActivity)
 import App.PageType exposing (Page(..))
 import Dict
-import Drupal.Restful exposing (fromNodeId)
+import Drupal.Restful exposing (fromEntityId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
@@ -25,7 +25,7 @@ view language participantsDict model =
                 ParticipantMother mother ->
                     let
                         children =
-                            List.filterMap (\childId -> Dict.get (fromNodeId childId) participantsDict) mother.children
+                            List.filterMap (\childId -> Dict.get (fromEntityId childId) participantsDict) mother.children
 
                         gotPendingActivity =
                             participantHasPendingActivity participant || List.any participantHasPendingActivity children

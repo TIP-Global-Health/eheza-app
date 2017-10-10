@@ -6,7 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Mother.Decoder exposing (decodeMother)
 import Backend.Session.Model exposing (..)
-import Drupal.Restful exposing (decodeNodeId)
+import Drupal.Restful exposing (decodeEntityId)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (decodeDrupalRange, decodeYYYYMMDD)
@@ -23,8 +23,8 @@ decodeSession =
         |> custom
             (oneOf
                 -- Work with "full_view" true or false
-                [ field "clinic" decodeNodeId
-                , at [ "clinic", "id" ] decodeNodeId
+                [ field "clinic" decodeEntityId
+                , at [ "clinic", "id" ] decodeEntityId
                 ]
             )
 
@@ -46,7 +46,7 @@ decodeOfflineSession =
 
 decodeMothers : Decoder (EveryDictList MotherId Mother)
 decodeMothers =
-    EveryDictList.decodeArray2 (field "id" decodeNodeId) decodeMother
+    EveryDictList.decodeArray2 (field "id" decodeEntityId) decodeMother
 
 
 decodeChildren : Decoder (EveryDict ChildId Child)

@@ -2,7 +2,7 @@ module Pusher.Test exposing (all)
 
 import Date
 import Backend.Child.Model exposing (Gender(..))
-import Drupal.Restful exposing (toNodeId)
+import Drupal.Restful exposing (toEntityId)
 import Expect
 import Json.Decode exposing (decodeString)
 import Participant.Model exposing (ParticipantType(..))
@@ -44,8 +44,8 @@ decodeTest =
                                     ParticipantChild
                                         { name = "new-patient"
                                         , image = ""
-                                        , motherId = Just (toNodeId 7)
-                                        , siblingId = Just (toNodeId 22)
+                                        , motherId = Just (toEntityId 7)
+                                        , siblingId = Just (toEntityId 22)
                                         , examinations = []
                                         , birthDate = Date.fromTime 1472373589000
                                         , gender = Female

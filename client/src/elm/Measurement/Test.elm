@@ -2,7 +2,7 @@ module Measurement.Test exposing (all)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Date
-import Drupal.Restful exposing (toNodeId)
+import Drupal.Restful exposing (toEntityId)
 import Expect
 import Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildA, exampleUser)
 import Html
@@ -20,7 +20,7 @@ viewChildFormsTest =
     let
         viewChildWithActivity selectedActivity model =
             Html.div [ Attr.class "test-container" ]
-                [ viewChild English (Date.fromTime 1504858608000) ( toNodeId 5, exampleChildA ) Nothing selectedActivity model
+                [ viewChild English (Date.fromTime 1504858608000) ( toEntityId 5, exampleChildA ) Nothing selectedActivity model
                 ]
     in
         describe "A nurse visits the assesment of a Child" <|

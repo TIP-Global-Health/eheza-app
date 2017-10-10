@@ -1,7 +1,7 @@
 module ProgressReport.Test exposing (all)
 
 import Date
-import Drupal.Restful exposing (toNodeId)
+import Drupal.Restful exposing (toEntityId)
 import Expect
 import Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildB, exampleMother, exampleUser)
 import Html exposing (div)
@@ -24,7 +24,7 @@ viewChildProgressReportTest =
                     English
                     (Date.fromTime 1504185446000)
                     NotAsked
-                    ( toNodeId 5, exampleChildB )
+                    ( toEntityId 5, exampleChildB )
                     { emptyModel | selectedTab = selectedTab }
                 )
     in
@@ -51,7 +51,7 @@ viewMotherProgressReportTest =
             div []
                 (viewMother
                     English
-                    (toNodeId 5)
+                    (toEntityId 5)
                     exampleMother
                     []
                     { emptyModel | selectedTab = selectedTab }

@@ -41,7 +41,7 @@ But then the type-checker doesn't actually know that these two types are related
 in some way -- for instance, that both are IDs. For instance, to extract the
 `Int` you have to do two different things.
 
-What we do instead is have a "unityfing" `NodeId` type (from `Drupal.Restful`),
+What we do instead is have a "unityfing" `EntityId` type (from `Drupal.Restful`),
 which takes what we call a "phantom" type variable -- a type variable that
 isn't actually used for any data. This gives us all the type-safety we need at
 compile time, but lets us have a single way of actually getting the `Int` when
@@ -49,56 +49,75 @@ we need it.
 
 -}
 
-import Drupal.Restful exposing (NodeId(..))
+import Drupal.Restful exposing (EntityId(..))
 
 
 {-
-   The rest of this are the phantom types for each entity we're using.
-   This would benefit from some kind of code-generation step, since you
-   could generate the code below easily from a list of base types.
+    The rest of this are the phantom types for each entity we're using.
+    This would benefit from some kind of code-generation step, since you
+    could generate the code below easily from a list of base types.
 
-   We create the type aliases so that we can just say
+    We create the type aliases so that we can just say
 
-       ChildId
+        ChildId
 
-   most of the time, rather than the more verbose
+    most of the time, rather than the more verbose
 
-       NodeId ChildId
+        EntityId ChildId
 
-   In fact, here's a simple code-generation process which you can adapt
-   to your preferred code-editor. Here's the list of base types:
+    In fact, here's a simple code-generation process which you can adapt
+    to your preferred code-editor. Here's the list of base types:
 
-       Child
-       ChildNutrition
-       Clinic
-       FamilyPlanning
-       Height
-       Mother
-       Muac
-       Photo
-       Session
-       Weight
+        Child
+        ChildNutrition
+        Clinic
+        FamilyPlanning
+        Height
+        Mother
+        Muac
+        Photo
+        Session
+        Weight
 
-   Now, to create a new one, use the following process:
+    Now, to create a new one, use the following process:
 
-   1. Add it to the list above.
-   2. Delete everything below this comment.
-   3. Copy the list above below this comment.
-   4. Use search-and-replace to generate the code.
+    1. Add it to the list above.
+    2. Delete everything below this comment.
+    3. Copy the list above below this comment.
+    4. Use search-and-replace to generate the code.
 
-   For vim, here's the pattern I use:
+    For vim, here's the pattern I use:
 
-   s/ *\(.*\)/type alias \1Id = NodeId \1IdType\rtype \1IdType=\1IdType/
+    s/ *\(.*\)/type alias \1Id = EntityId \1IdType\rtype \1IdType=\1IdType/
 
-   Then, just save it and let elm-format make it pretty.
+    Then, just save it and let elm-format make it pretty.
 
-   Eventually, you could imagine just having a file with a list
-   of our entity types, and a little script to generate the code below.
+    Eventually, you could imagine just having a file with a list
+    of our entity types, and a little script to generate the code below.
+
+    There are some possibly-attractive variations on this.
+
+    - In a way, it would be nice to do something like Yesod does, with
+      a `Key Child` and `Value Child` ... that is, it would be nice if
+     `Child` itself would be the phantom type, rather than `ChildIdType`.
+     But then our circular import problem would be much worse -- we'd have
+     to keep all the actual definitions of the various entity records in
+     a single file, which doesn't seem desirable. (It is, in effect, what
+     Yesod does, seeing as you define all the entities in one file, typically).
+
+   - Another alternative would be to also explicitly tie the `Child` type in
+     `Backend.Child.Model` to the phantom type here, so that we have a kind of
+     association between the `ChildId` type and the `Child` type ... that
+     is, both refer to the same phantom type. That is probably desirable,
+     since it helps enforce that we're using the right kind of key with
+     the right kind of value -- I'll play with that at some point and see
+     how it can be made to work.
+
 -}
 
 
 type alias ChildId =
-    NodeId ChildIdType
+    EntityId ChildIdType
 
 
 type ChildIdType
@@ -106,7 +125,7 @@ type ChildIdType
 
 
 type alias ChildNutritionId =
-    NodeId ChildNutritionIdType
+    EntityId ChildNutritionIdType
 
 
 type ChildNutritionIdType
@@ -114,7 +133,7 @@ type ChildNutritionIdType
 
 
 type alias ClinicId =
-    NodeId ClinicIdType
+    EntityId ClinicIdType
 
 
 type ClinicIdType
@@ -122,7 +141,7 @@ type ClinicIdType
 
 
 type alias FamilyPlanningId =
-    NodeId FamilyPlanningIdType
+    EntityId FamilyPlanningIdType
 
 
 type FamilyPlanningIdType
@@ -130,7 +149,7 @@ type FamilyPlanningIdType
 
 
 type alias HeightId =
-    NodeId HeightIdType
+    EntityId HeightIdType
 
 
 type HeightIdType
@@ -138,7 +157,7 @@ type HeightIdType
 
 
 type alias MotherId =
-    NodeId MotherIdType
+    EntityId MotherIdType
 
 
 type MotherIdType
@@ -146,7 +165,7 @@ type MotherIdType
 
 
 type alias MuacId =
-    NodeId MuacIdType
+    EntityId MuacIdType
 
 
 type MuacIdType
@@ -154,7 +173,7 @@ type MuacIdType
 
 
 type alias PhotoId =
-    NodeId PhotoIdType
+    EntityId PhotoIdType
 
 
 type PhotoIdType
@@ -162,7 +181,7 @@ type PhotoIdType
 
 
 type alias SessionId =
-    NodeId SessionIdType
+    EntityId SessionIdType
 
 
 type SessionIdType
@@ -170,7 +189,7 @@ type SessionIdType
 
 
 type alias WeightId =
-    NodeId WeightIdType
+    EntityId WeightIdType
 
 
 type WeightIdType

@@ -4,7 +4,7 @@ import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherA
 import Activity.Utils exposing (getActivityIdentity, hasPendingChildActivity, hasPendingMotherActivity)
 import Date exposing (Date)
 import Dict
-import Drupal.Restful exposing (toNodeId)
+import Drupal.Restful exposing (toEntityId)
 import Examination.Utils exposing (getLastExaminationFromChild)
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
@@ -165,7 +165,7 @@ view language currentDate participantsDict model =
                     case participant.info of
                         ParticipantChild child ->
                             Html.map (MsgMeasurement ( participantId, participant )) <|
-                                Measurement.View.viewChild language currentDate ( toNodeId participantId, child ) (getLastExaminationFromChild child) (Just model.selectedActivity) model.measurements
+                                Measurement.View.viewChild language currentDate ( toEntityId participantId, child ) (getLastExaminationFromChild child) (Just model.selectedActivity) model.measurements
 
                         ParticipantMother mother ->
                             Html.map (MsgMeasurement ( participantId, participant )) <|

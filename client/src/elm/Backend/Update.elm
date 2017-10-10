@@ -12,7 +12,7 @@ import Backend.Model exposing (..)
 import Backend.Session.Decoder exposing (decodeSession)
 import Backend.Session.Model exposing (Session)
 import Config.Model exposing (BackendUrl)
-import Drupal.Restful exposing (EndPoint, toNodeId)
+import Drupal.Restful exposing (EndPoint, toEntityId)
 import EveryDictList
 import Gizra.NominalDate exposing (NominalDate)
 import Http exposing (Error)
@@ -23,7 +23,7 @@ import RemoteData exposing (RemoteData(..))
 clinicEndpoint : EndPoint Error () ClinicId Clinic
 clinicEndpoint =
     { path = "api/clinics"
-    , tag = toNodeId
+    , tag = toEntityId
     , decoder = decodeClinic
     , error = identity
     , params = always []
@@ -47,7 +47,7 @@ encodeSessionParams params =
 sessionEndpoint : EndPoint Error SessionParams SessionId Session
 sessionEndpoint =
     { path = "api/sessions"
-    , tag = toNodeId
+    , tag = toEntityId
     , decoder = decodeSession
     , error = identity
     , params = encodeSessionParams

@@ -2,7 +2,7 @@ module Measurement.Encoder exposing (..)
 
 import Activity.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..))
 import Backend.Entities exposing (ChildId, MotherId)
-import Drupal.Restful exposing (encodeNodeId)
+import Drupal.Restful exposing (encodeEntityId)
 import EverySet exposing (EverySet)
 import Json.Encode as Encoder exposing (Value, float, int, list, string)
 import Measurement.Model exposing (..)
@@ -53,7 +53,7 @@ encodeWeight childId ( key, value ) =
 
 childField : ChildId -> ( String, Value )
 childField childId =
-    ( "child", encodeNodeId childId )
+    ( "child", encodeEntityId childId )
 
 
 encodeNutritionSign : ChildNutritionSign -> Value
@@ -93,7 +93,7 @@ encodeNutritionSigns childId ( key, value ) =
         case key of
             New ->
                 Encoder.object
-                    [ ( "child", encodeNodeId childId )
+                    [ ( "child", encodeEntityId childId )
                     , ( "nutrition_signs", signsList )
                     ]
 
@@ -136,7 +136,7 @@ encodeFamilyPlanning motherId ( key, value ) =
         case key of
             New ->
                 Encoder.object
-                    [ ( "mother", encodeNodeId motherId )
+                    [ ( "mother", encodeEntityId motherId )
                     , ( "family_planning_signs", familyPlanning )
                     ]
 

@@ -5,7 +5,7 @@ import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import Date exposing (Date)
 import Dict exposing (Dict)
-import Drupal.Restful exposing (fromNodeId)
+import Drupal.Restful exposing (fromEntityId)
 import Json.Decode exposing (decodeValue)
 import Json.Encode exposing (Value)
 import HttpBuilder exposing (get, withJsonBody, withQueryParams)
@@ -192,7 +192,7 @@ update currentDate backendUrl accessToken user language msg model =
                         -- Lazy load the Mother if they are already connected.
                         Maybe.map
                             (\motherId ->
-                                update currentDate backendUrl accessToken user language (Subscribe (fromNodeId motherId)) updatedModel
+                                update currentDate backendUrl accessToken user language (Subscribe (fromEntityId motherId)) updatedModel
                             )
                             child.motherId
                             |> Maybe.withDefault ( updatedModel, Cmd.none, Nothing )
@@ -212,7 +212,7 @@ update currentDate backendUrl accessToken user language msg model =
                                                 Tuple.second accum
 
                                             ( newModel, newCmds, _ ) =
-                                                update currentDate backendUrl accessToken user language (Subscribe (fromNodeId childId)) model
+                                                update currentDate backendUrl accessToken user language (Subscribe (fromEntityId childId)) model
                                         in
                                             ( newModel, [ newCmds ] ++ cmds )
                                     )

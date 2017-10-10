@@ -2,7 +2,7 @@ module Pages.Activity.Test exposing (all)
 
 import Date
 import Dict
-import Drupal.Restful exposing (toNodeId)
+import Drupal.Restful exposing (toEntityId)
 import Expect
 import Pages.Activity.Model exposing (emptyModel)
 import Pages.Activity.Update exposing (nextParticipant)
@@ -23,7 +23,7 @@ nextParticipantTest =
     let
         -- Here, we're just finishing exampleChildA.
         noPendingDict =
-            makeLoneChildDict (toNodeId 1) exampleChildA
+            makeLoneChildDict (toEntityId 1) exampleChildA
     in
         describe "A nurse visits the Weight activity" <|
             [ test "Then after completing all the participants, the process is completed" <|
