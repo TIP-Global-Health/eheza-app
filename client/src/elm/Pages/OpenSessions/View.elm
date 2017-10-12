@@ -18,6 +18,7 @@ import Backend.Session.Model exposing (Session)
 import Date exposing (Date)
 import Drupal.Restful exposing (EntityDictList)
 import EveryDictList
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (formatYYYYMMDD)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -126,6 +127,19 @@ viewSession clinics ( sessionId, session ) =
             EveryDictList.get (Existing session.clinicId) clinics
                 |> Maybe.map .name
                 |> Maybe.withDefault "Unknown clinic"
+
+        downloadLink =
+            case sessionId of
+                Existing id ->
+                    span
+                        [ Backend.Model.FetchOfflineSession id
+                            |> MsgBackend
+                            |> onClick
+                        ]
+                        [ text "Download" ]
+
+                New ->
+                    emptyNode
     in
         li []
             [ text clinicName
@@ -133,4 +147,6 @@ viewSession clinics ( sessionId, session ) =
             , text (formatYYYYMMDD session.scheduledDate.start)
             , text " - "
             , text (formatYYYYMMDD session.scheduledDate.end)
+            , text " "
+            , downloadLink
             ]

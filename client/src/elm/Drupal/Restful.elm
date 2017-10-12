@@ -138,26 +138,33 @@ that ID.
 -}
 get : BackendUrl -> Maybe String -> EndPoint error params key value -> key -> (Result error (Maybe (Entity key value)) -> msg) -> Cmd msg
 get backendUrl accessToken endpoint key tagger =
-    HttpBuilder.get (backendUrl </> endpoint.path </> toString (endpoint.untag key))
-        |> withExpect (expectJson (decodeSingleEntity (decodeStorageTuple (decodeId endpoint.tag) endpoint.decoder)))
-        |> send
-            (\result ->
-                let
-                    recover =
-                        case result of
-                            Err (BadStatus response) ->
-                                if response.status.code == 404 then
-                                    Ok Nothing
-                                else
-                                    Result.map Just result
+    let
+        queryParams =
+            accessToken
+                |> Maybe.Extra.toList
+                |> List.map (\token -> ( "access_token", token ))
+    in
+        HttpBuilder.get (backendUrl </> endpoint.path </> toString (endpoint.untag key))
+            |> withQueryParams queryParams
+            |> withExpect (expectJson (decodeSingleEntity (decodeStorageTuple (decodeId endpoint.tag) endpoint.decoder)))
+            |> send
+                (\result ->
+                    let
+                        recover =
+                            case result of
+                                Err (BadStatus response) ->
+                                    if response.status.code == 404 then
+                                        Ok Nothing
+                                    else
+                                        Result.map Just result
 
-                            _ ->
-                                Result.map Just result
-                in
-                    recover
-                        |> Result.mapError endpoint.error
-                        |> tagger
-            )
+                                _ ->
+                                    Result.map Just result
+                    in
+                        recover
+                            |> Result.mapError endpoint.error
+                            |> tagger
+                )
 
 
 {-| Let `get`, but treats a 404 response as an error in the `Result`, rather than a `Nothing` response.

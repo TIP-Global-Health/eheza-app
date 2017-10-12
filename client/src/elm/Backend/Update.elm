@@ -58,7 +58,7 @@ sessionEndpoint =
 
 offlineSessionEndpoint : EndPoint Error () SessionId OfflineSession
 offlineSessionEndpoint =
-    { path = "api/offline-sessions"
+    { path = "api/offline_sessions"
     , tag = toEntityId
     , untag = fromEntityId
     , decoder = decodeOfflineSession
