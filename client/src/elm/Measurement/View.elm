@@ -6,7 +6,6 @@ module Measurement.View
         , viewMuacIndication
         )
 
-import Activity.Encoder exposing (encodeChildNutritionSign)
 import Activity.Model
     exposing
         ( ActivityType(..)
@@ -594,6 +593,32 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
             , label [ for attributeValue ]
                 [ text <| translate language body ]
             ]
+
+
+encodeChildNutritionSign : ChildNutritionSign -> String
+encodeChildNutritionSign nutritionSign =
+    -- TODO: Check whether this function is needed
+    case nutritionSign of
+        AbdominalDisortion ->
+            "abdominal-disortion"
+
+        Apathy ->
+            "apathy"
+
+        BrittleHair ->
+            "brittle-hair"
+
+        DrySkin ->
+            "dry-skin"
+
+        Edema ->
+            "edema"
+
+        None ->
+            "none"
+
+        PoorAppetite ->
+            "poor-appetite"
 
 
 viewMother : Language -> Maybe ActivityType -> Model -> Html Msg
