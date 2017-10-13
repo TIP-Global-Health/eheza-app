@@ -19,25 +19,6 @@ type MotherActivityType
     = FamilyPlanning
 
 
-type FamilyPlanningSign
-    = Condoms
-    | IUD
-    | Injection
-    | Necklace
-    | NoFamilyPlanning
-    | Pill
-
-
-type ChildNutritionSign
-    = AbdominalDisortion
-    | Apathy
-    | BrittleHair
-    | DrySkin
-    | Edema
-    | None
-    | PoorAppetite
-
-
 type alias ActivityIdentity =
     { name : String
     , icon : String

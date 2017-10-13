@@ -60,7 +60,7 @@ type alias Weight =
     Measurement ChildId WeightValue
 
 
-type FamilyPlanningValue
+type FamilyPlanningSign
     = Condoms
     | IUD
     | Injection
@@ -70,10 +70,10 @@ type FamilyPlanningValue
 
 
 type alias FamilyPlanning =
-    Measurement MotherId (EverySet FamilyPlanningValue)
+    Measurement MotherId (EverySet FamilyPlanningSign)
 
 
-type ChildNutritionValue
+type ChildNutritionSign
     = AbdominalDisortion
     | Apathy
     | BrittleHair
@@ -84,4 +84,4 @@ type ChildNutritionValue
 
 
 type alias ChildNutrition =
-    Measurement ChildId (EverySet ChildNutritionValue)
+    Measurement ChildId (EverySet ChildNutritionSign)

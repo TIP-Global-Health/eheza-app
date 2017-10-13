@@ -4,7 +4,8 @@ module Measurement.Model exposing (..)
 form an examination for a participant.
 -}
 
-import Activity.Model exposing (ActivityType, ChildNutritionSign, FamilyPlanningSign)
+import Activity.Model exposing (ActivityType)
+import Backend.Measurement.Model exposing (ChildNutritionSign, FamilyPlanningSign)
 import EverySet exposing (EverySet)
 import Http
 import RemoteData exposing (RemoteData(..), WebData)

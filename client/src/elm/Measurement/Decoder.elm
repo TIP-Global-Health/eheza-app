@@ -10,7 +10,7 @@ module Measurement.Decoder
         , decodeWeight
         )
 
-import Activity.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..))
+import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..))
 import Drupal.Restful exposing (decodeId, decodeSingleEntity, decodeStorageTuple)
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeFloat, decodeInt)

@@ -1,6 +1,6 @@
 module Examination.Model exposing (..)
 
-import Activity.Model exposing (FamilyPlanningSign, ChildNutritionSign)
+import Backend.Measurement.Model exposing (FamilyPlanningSign, ChildNutritionSign)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (HeightId, MuacId, WeightId, FamilyPlanningId, NutritionId)
 import StorageKey exposing (StorageKey(..))

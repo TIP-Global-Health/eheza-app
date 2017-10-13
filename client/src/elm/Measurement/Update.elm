@@ -4,11 +4,10 @@ import Activity.Model
     exposing
         ( ActivityType(..)
         , ChildActivityType(..)
-        , ChildNutritionSign(..)
-        , FamilyPlanningSign(..)
         , MotherActivityType(FamilyPlanning)
         )
 import Backend.Entities exposing (ChildId, MotherId)
+import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..))
 import Config.Model exposing (BackendUrl)
 import Drupal.Restful exposing (decodeSingleEntity, toEntityId)
 import EverySet exposing (EverySet)

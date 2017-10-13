@@ -1,7 +1,7 @@
 module Measurement.Encoder exposing (..)
 
-import Activity.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..))
 import Backend.Entities exposing (ChildId, MotherId)
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..))
 import Drupal.Restful exposing (encodeEntityId)
 import EverySet exposing (EverySet)
 import Json.Encode as Encoder exposing (Value, float, int, list, string)
