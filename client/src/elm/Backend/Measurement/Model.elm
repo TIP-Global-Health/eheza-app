@@ -8,6 +8,7 @@ in the data layer.
 
 import Backend.Entities exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
+import EverySet exposing (EverySet)
 
 
 {-| A base that expresses some things all the measurements
@@ -69,7 +70,7 @@ type FamilyPlanningValue
 
 
 type alias FamilyPlanning =
-    Measurement MotherId FamilyPlanningValue
+    Measurement MotherId (EverySet FamilyPlanningValue)
 
 
 type ChildNutritionValue
@@ -83,4 +84,4 @@ type ChildNutritionValue
 
 
 type alias ChildNutrition =
-    Measurement ChildId ChildNutritionValue
+    Measurement ChildId (EverySet ChildNutritionValue)
