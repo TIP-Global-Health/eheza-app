@@ -12,7 +12,7 @@ import EverySet exposing (EverySet)
 
 
 {-| A base that expresses some things all the measurements
-have in common, plus two things whose type varis:
+have in common, plus two things whose type varies:
 
   - the type if the ID for the participant
   - the type of the value for this measurement
