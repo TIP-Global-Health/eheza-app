@@ -1,8 +1,6 @@
 module Measurement.Decoder
     exposing
-        ( decodeChildNutritionSign
-        , decodeFamilyPlanning
-        , decodeFamilyPlanningSign
+        ( decodeFamilyPlanning
         , decodeHeight
         , decodeMuac
         , decodeNutrition
@@ -10,6 +8,7 @@ module Measurement.Decoder
         , decodeWeight
         )
 
+import Backend.Measurement.Decoder exposing (decodeFamilyPlanningSign, decodeChildNutritionSign)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..))
 import Drupal.Restful exposing (decodeId, decodeSingleEntity, decodeStorageTuple)
 import EverySet exposing (EverySet)
@@ -63,68 +62,3 @@ decodeFamilyPlanning =
 decodeNutrition : Decoder ( StorageKey NutritionId, EverySet ChildNutritionSign )
 decodeNutrition =
     decodeStorageTuple (decodeId NutritionId) (field "nutrition_signs" (decodeEverySet decodeChildNutritionSign))
-
-
-decodeChildNutritionSign : Decoder ChildNutritionSign
-decodeChildNutritionSign =
-    string
-        |> andThen
-            (\sign ->
-                case sign of
-                    "abdominal-disortion" ->
-                        succeed AbdominalDisortion
-
-                    "apathy" ->
-                        succeed Apathy
-
-                    "brittle-hair" ->
-                        succeed BrittleHair
-
-                    "dry-skin" ->
-                        succeed DrySkin
-
-                    "edema" ->
-                        succeed Edema
-
-                    "none" ->
-                        succeed None
-
-                    "poor-appetite" ->
-                        succeed PoorAppetite
-
-                    _ ->
-                        fail <|
-                            sign
-                                ++ " is not a recognized ChildNutritionSign"
-            )
-
-
-decodeFamilyPlanningSign : Decoder FamilyPlanningSign
-decodeFamilyPlanningSign =
-    string
-        |> andThen
-            (\sign ->
-                case sign of
-                    "pill" ->
-                        succeed Pill
-
-                    "condoms" ->
-                        succeed Condoms
-
-                    "iud" ->
-                        succeed IUD
-
-                    "injection" ->
-                        succeed Injection
-
-                    "necklace" ->
-                        succeed Necklace
-
-                    "none" ->
-                        succeed NoFamilyPlanning
-
-                    _ ->
-                        fail <|
-                            sign
-                                ++ " is not a recognized FamilyPlanningSign"
-            )
