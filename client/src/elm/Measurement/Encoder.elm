@@ -1,6 +1,7 @@
 module Measurement.Encoder exposing (..)
 
 import Backend.Entities exposing (ChildId, MotherId)
+import Backend.Measurement.Encoder exposing (encodeNutritionSign, encodeFamilyPlanningSign)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..))
 import Drupal.Restful exposing (encodeEntityId)
 import EverySet exposing (EverySet)
@@ -56,31 +57,6 @@ childField childId =
     ( "child", encodeEntityId childId )
 
 
-encodeNutritionSign : ChildNutritionSign -> Value
-encodeNutritionSign sign =
-    case sign of
-        AbdominalDisortion ->
-            string "abdominal-disortion"
-
-        Apathy ->
-            string "apathy"
-
-        BrittleHair ->
-            string "brittle-hair"
-
-        DrySkin ->
-            string "dry-skin"
-
-        Edema ->
-            string "edema"
-
-        None ->
-            string "none"
-
-        PoorAppetite ->
-            string "poor-appetite"
-
-
 encodeNutritionSigns : ChildId -> ( StorageKey NutritionId, EverySet ChildNutritionSign ) -> Value
 encodeNutritionSigns childId ( key, value ) =
     let
@@ -100,28 +76,6 @@ encodeNutritionSigns childId ( key, value ) =
             Existing _ ->
                 Encoder.object
                     [ ( "nutrition_signs", signsList ) ]
-
-
-encodeFamilyPlanningSign : FamilyPlanningSign -> Value
-encodeFamilyPlanningSign sign =
-    case sign of
-        Condoms ->
-            string "condoms"
-
-        IUD ->
-            string "iud"
-
-        Injection ->
-            string "injection"
-
-        Necklace ->
-            string "necklace"
-
-        NoFamilyPlanning ->
-            string "none"
-
-        Pill ->
-            string "pill"
 
 
 encodeFamilyPlanning : MotherId -> ( StorageKey FamilyPlanningId, EverySet FamilyPlanningSign ) -> Value
