@@ -1,17 +1,45 @@
-module Drupal.Restful exposing (EndPoint, Entity, EntityDictList, select, get, get404, decodeSingleEntity, decodeId, decodeStorageTuple, EntityId, toEntityId, fromEntityId, decodeEntityId, encodeEntityId)
+module Drupal.Restful
+    exposing
+        ( EndPoint
+        , Entity
+        , EntityDictList
+        , EntityId
+        , decodeEntityId
+        , decodeId
+        , decodeSingleEntity
+        , decodeStorageTuple
+        , encodeEntityId
+        , fromEntityId
+        , get
+        , get404
+        , select
+        , toEntityId
+        )
 
-{-| This is the beginnings of some general code, eventually to be published
-as `Gizra/elm-drupal`. But it's easier to start working with it here --
-I'll publish it separately once it gels a little.
+{-| These functions facilitate CRUD operations upon Drupal entities
+exposed through the Restful API.
+
+## Types
+
+@docs EndPoint, Entity, EntityDictList, EntityId
+
+## CRUD Operations
+
+@docs get, get404, select
+
+## JSON
+
+@docs decodeEntityId, decodeId, decodeSingleEntity, decodeStorageTuple, encodeEntityId, fromEntityId, toEntityId
+
 -}
 
 import EveryDictList exposing (EveryDictList)
 import Gizra.Json exposing (decodeInt)
+import Http exposing (Error(..), expectJson)
+import HttpBuilder exposing (..)
 import Json.Decode exposing (Decoder, list, map, field, map2, index)
 import Json.Encode exposing (Value)
 import Maybe.Extra
-import Http exposing (Error(..), expectJson)
-import HttpBuilder exposing (..)
 import StorageKey exposing (StorageKey(..))
 
 
@@ -19,12 +47,11 @@ type alias BackendUrl =
     String
 
 
-{-| This is a start at a nicer idiom for dealing with Drupal JSON endpoints.
-It's similar in prinicple to the `UpsertConfig` in `Measurement.Update`, and
-the concepts ought to be merged eventually. (I'm focusing on `get` for the
-moment, but eventually this is meant to handle all the CRUD operations, plus
-specialities like `upsert`.)
+type alias AccessToken =
+    String
 
+
+{-| This is a start at a nicer idiom for dealing with Drupal JSON endpoints.
 The basic idea is to include in this type all those things about an endpoint
 which don't change. For instance, we know the path of the endpoint, what kind
 of JSON it emits, etc. -- that never varies.
@@ -115,7 +142,7 @@ structures and idioms that Drupal uses in its JSON. One could imagine making thi
 more general if necessary at some point.
 
 -}
-select : BackendUrl -> Maybe String -> EndPoint error params key value -> params -> (Result error (List (Entity key value)) -> msg) -> Cmd msg
+select : BackendUrl -> Maybe AccessToken -> EndPoint error params key value -> params -> (Result error (List (Entity key value)) -> msg) -> Cmd msg
 select backendUrl accessToken endpoint params tagger =
     let
         queryParams =
@@ -136,7 +163,7 @@ If we get a 404 error, we'll give you an `Ok Nothing`, rather than an error,
 since the request essentially succeeded ...  there merely was no entity with
 that ID.
 -}
-get : BackendUrl -> Maybe String -> EndPoint error params key value -> key -> (Result error (Maybe (Entity key value)) -> msg) -> Cmd msg
+get : BackendUrl -> Maybe AccessToken -> EndPoint error params key value -> key -> (Result error (Maybe (Entity key value)) -> msg) -> Cmd msg
 get backendUrl accessToken endpoint key tagger =
     let
         queryParams =
@@ -169,7 +196,7 @@ get backendUrl accessToken endpoint key tagger =
 
 {-| Let `get`, but treats a 404 response as an error in the `Result`, rather than a `Nothing` response.
 -}
-get404 : BackendUrl -> Maybe String -> EndPoint error params key value -> key -> (Result error (Entity key value) -> msg) -> Cmd msg
+get404 : BackendUrl -> Maybe AccessToken -> EndPoint error params key value -> key -> (Result error (Entity key value) -> msg) -> Cmd msg
 get404 backendUrl accessToken endpoint key tagger =
     HttpBuilder.get (backendUrl </> endpoint.path </> toString (endpoint.untag key))
         |> withExpect (expectJson (decodeSingleEntity (decodeStorageTuple (decodeId endpoint.tag) endpoint.decoder)))
