@@ -41,9 +41,6 @@ decodeOfflineSession =
         |> required "clinic" decodeClinic
         |> requiredAt [ "participants", "mothers" ] decodeMothers
         |> requiredAt [ "participants", "children" ] decodeChildren
-        -- TODO: Decode the measurements!
-        |> hardcoded EveryDict.empty
-        |> hardcoded EveryDict.empty
 
 
 decodeMothers : Decoder (EveryDictList MotherId Mother)

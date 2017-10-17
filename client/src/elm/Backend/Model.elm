@@ -30,6 +30,9 @@ on the backend. So, conceptually it is a kind of a local cache of some of the
 things on the backend.
 -}
 type alias Model =
+    -- For now, we fetch all the clinics from the backend at once when we need
+    -- any. So, the `WebData` tracks that request, and the `EntityDictList`
+    -- tracks its result.
     { clinics : WebData (EntityDictList ClinicId Clinic)
 
     -- This tracks, if we have one, the OfflineSession which we're currently
@@ -55,14 +58,45 @@ type alias Model =
     --
     -- * If we don't, then we'll show other things.
     --
-    -- That may need to become more sophisticated at some point.
+    -- Note that this assumes that:
+    --
+    -- * We're only allowing a single offline session at a time to be stored
+    --   locally.
+    --
+    -- * If we have one, we're definitely using it, not doing something else.
     , offlineSession : WebData (Maybe (Entity SessionId OfflineSession))
+
+    -- This tracks mesaurements which we've edited, but haven't uploaded to
+    -- the backend yet. These are immediately cached locally, which is what
+    -- the `WebData` is for ... it wraps our effort to fetch from local
+    -- strorage the measurements we've taken but not uploaded yet.
+    --
+    -- It's nice to track this separately, rather than integrating into
+    -- the offlineSession with `EditableWebData`, because we upload these
+    -- in a batch, all at once, rather than individually. So, we don't need
+    -- to track the status of each measurement separately ... we deal with
+    -- them together.
+    --
+    -- Note that we're assuming here that we'll save all of these before
+    -- switching to another session ... that is, we can't have two sessions
+    -- in progress at once. (We could change that down the road if necessary).
+    --
+    -- The inner `Maybe` represents whether we found any editable measurements
+    -- in our local storage ... we'll delete the whole thing once we successfully
+    -- save it to the backend.
+    , editableMeasurements : WebData (Maybe EditableMeasurements)
 
     -- This tracks which sessions are currently available for data-entry,
     -- given the scheduled date range for each session. We remember which
     -- date we asked about, so that if the date changes (i.e. it becomes
     -- tomorrow, due to the passage of time), we can know that we ought to
     -- ask again.
+    --
+    -- TODO: Drupal.Restful should eventually have a `QueryResult` type which
+    -- remembers the params we supplied and a WebData for the result ...
+    -- since one would really always want to remember what query the results
+    -- represent. (And, eventually, one would want to remember the `count`
+    -- and which pages you have etc.).
     , openSessions : WebData ( NominalDate, EntityDictList SessionId Session )
     }
 
@@ -71,6 +105,7 @@ emptyModel : Model
 emptyModel =
     { clinics = NotAsked
     , offlineSession = NotAsked
+    , editableMeasurements = NotAsked
     , openSessions = NotAsked
     }
 

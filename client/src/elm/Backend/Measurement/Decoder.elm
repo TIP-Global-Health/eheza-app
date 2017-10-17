@@ -2,10 +2,12 @@ module Backend.Measurement.Decoder exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Drupal.Restful exposing (decodeEntityId, decodeSingleEntity, decodeStorageTuple)
+import Drupal.Restful exposing (decodeEntityId, decodeSingleEntity, decodeStorageTuple, decodeEntity)
+import EveryDict exposing (EveryDict)
 import Gizra.Json exposing (decodeFloat, decodeInt)
 import Gizra.NominalDate
-import Json.Decode exposing (Decoder, andThen, at, dict, fail, field, int, list, map, map2, nullable, string, succeed)
+import Json.Decode exposing (Decoder, andThen, at, dict, fail, field, int, list, map, map2, nullable, string, succeed, value, decodeValue)
+import Json.Decode.Extra exposing (fromResult)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
 import Utils.Json exposing (decodeEverySet)
 
@@ -31,6 +33,25 @@ decodeMeasurement participantDecoder valueDecoder =
         |> required "session" (nullable decodeEntityId)
         |> required "date_measured" Gizra.NominalDate.decodeYYYYMMDD
         |> custom valueDecoder
+
+
+{-| Decodes `Measurments` as sent by /api/offline_sessions/
+-}
+decodeMeasurements : Decoder Measurements
+decodeMeasurements =
+    decode Measurements
+        |> requiredAt [ "participants", "mother_activity" ] decodeMotherMeasurements
+        |> requiredAt [ "participants", "child_activity" ] decodeChildMeasurements
+
+
+decodeMotherMeasurements : Decoder (EveryDict MotherId MotherMeasurements)
+decodeMotherMeasurements =
+    Debug.crash "implement"
+
+
+decodeChildMeasurements : Decoder (EveryDict ChildId ChildMeasurements)
+decodeChildMeasurements =
+    Debug.crash "implement"
 
 
 decodePhoto : Decoder Photo

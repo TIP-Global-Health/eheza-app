@@ -17,5 +17,4 @@ decodeMother =
         -- The default avatar comes from SASS , not from the Model.
         |> optionalAt [ "avatar", "styles", "patient-photo" ] string ""
         |> required "children" (oneOf [ list decodeEntityId, decodeNullAsEmptyArray ])
-        |> hardcoded []
         |> required "date_birth" decodeDate

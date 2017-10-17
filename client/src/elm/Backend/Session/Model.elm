@@ -34,26 +34,5 @@ type alias OfflineSession =
     -- We'll sort by mother's name
     , mothers : EveryDictList MotherId Mother
     , children : EveryDict ChildId Child
-    , motherMeasurements : EveryDict MotherId MotherMeasurements
-    , childMeasurements : EveryDict ChildId ChildMeasurements
-    }
-
-
-{-| Represents the different kind of measurements we can have for a mother.
--}
-type alias MotherMeasurements =
-    { familyPlannings : EveryDictList FamilyPlanningId FamilyPlanning
-    }
-
-
-{-| We'll sort these by the date measured, with the most recent first, since
-we're particularly interested in the most recent one, and it is faster to
-access if it is first.
--}
-type alias ChildMeasurements =
-    { heights : EveryDictList HeightId Height
-    , muacs : EveryDictList MuacId Muac
-    , nutritions : EveryDictList ChildNutritionId ChildNutrition
-    , photos : EveryDictList PhotoId Photo
-    , weights : EveryDictList WeightId Weight
+    , measurements : Measurements
     }

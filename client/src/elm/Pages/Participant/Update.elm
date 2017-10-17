@@ -4,15 +4,14 @@ import Activity.Model exposing (ActivityType(Child), ChildActivityType(..))
 import Activity.Utils exposing (getActivityList)
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
-import Dict
-import Examination.Utils exposing (toMeasurements)
+import EveryDict
 import FilePicker.Model
 import FilePicker.Update
 import Maybe.Extra exposing (isJust)
 import Measurement.Update
 import Pages.Participant.Model exposing (Model, Msg(..), emptyModel)
 import Pages.Participant.Utils exposing (sequenceExtra)
-import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
+import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (getExamination, setExamination)
 import Pusher.Model exposing (PusherEventData(..))
 import Translate as Trans exposing (Language, translate)
@@ -42,19 +41,6 @@ update :
     -> ( Participant, Model, Cmd Pages.Participant.Model.Msg, Maybe Page )
 update backendUrl accessToken user language ( participantId, participant ) msg model =
     case msg of
-        HandlePusherEventData event ->
-            case event of
-                ParticipantUpdate newParticipant ->
-                    -- So, the idea is that we have a new or updated participant,
-                    -- which has already been saved at the server. Note that
-                    -- we may have just pushed this change ourselves, so it's
-                    -- already reflected here.
-                    ( newParticipant
-                    , model
-                    , Cmd.none
-                    , Nothing
-                    )
-
         MsgFilePicker subMsg ->
             let
                 ( subModel, cmd ) =
@@ -118,7 +104,7 @@ nextActivity : ( ParticipantId, Participant ) -> Model -> Maybe ActivityType
 nextActivity ( participantId, participant ) model =
     let
         participants =
-            Dict.insert participantId participant Dict.empty
+            EveryDict.insert participantId participant EveryDict.empty
 
         allActivityList =
             getActivityList Children participants
@@ -143,4 +129,5 @@ nextActivity ( participantId, participant ) model =
 
 subscriptions : Model -> Sub Pages.Participant.Model.Msg
 subscriptions model =
-    Sub.map MsgMeasurement <| Measurement.Update.subscriptions model.measurements
+    Measurement.Update.subscriptions model.measurements
+        |> Sub.map MsgMeasurement

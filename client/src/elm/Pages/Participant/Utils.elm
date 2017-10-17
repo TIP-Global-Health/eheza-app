@@ -6,19 +6,7 @@ import Backend.Mother.Model exposing (Mother)
 import Dict
 import Drupal.Restful exposing (fromEntityId)
 import List
-import Participant.Model exposing (ParticipantsDict)
-
-
-makeLoneMotherDict : MotherId -> Mother -> ParticipantsDict
-makeLoneMotherDict motherId mother =
-    -- TODO: Fix up types to avoid `fromEntityId`
-    Dict.insert (fromEntityId motherId) ({ info = Participant.Model.ParticipantMother mother }) Dict.empty
-
-
-makeLoneChildDict : ChildId -> Child -> ParticipantsDict
-makeLoneChildDict childId child =
-    -- TODO: Fix up types to avoid `fromEntityId`
-    Dict.insert (fromEntityId childId) ({ info = Participant.Model.ParticipantChild child }) Dict.empty
+import Participant.Model
 
 
 {-| Like `Update.Extra.sequence`, but for `update` signatures that also

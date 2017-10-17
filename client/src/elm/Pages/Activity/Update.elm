@@ -3,8 +3,7 @@ module Pages.Activity.Update exposing (nextParticipant, update, subscriptions)
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
-import Dict
-import Examination.Utils exposing (toMeasurements)
+import EveryDict
 import FilePicker.Model
 import FilePicker.Update
 import Maybe.Extra exposing (isNothing)
@@ -15,7 +14,7 @@ import Participant.Utils exposing (getParticipantName)
 import User.Model exposing (..)
 import Pages.Activity.Model exposing (Model, Msg(..))
 import Pages.Participant.Utils exposing (sequenceExtra)
-import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
+import Participant.Model exposing (Participant(..), ParticipantId, ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (getExamination, setExamination)
 import Translate as Trans exposing (Language)
 
@@ -141,15 +140,10 @@ nextParticipant : ParticipantsDict -> Model -> Maybe ( ParticipantId, Participan
 nextParticipant participants model =
     let
         pendingParticipants =
-            List.filter (\participant -> (Just <| participant) /= model.selectedParticipant)
-                (List.sortBy
-                    (\( _, participant ) ->
-                        getParticipantName participant
-                    )
-                 <|
-                    Dict.toList <|
-                        participantsWithPendingActivity participants model
-                )
+            participantsWithPendingActivity participants model
+                |> EveryDict.toList
+                |> List.filter (\participant -> (Just <| participant) /= model.selectedParticipant)
+                |> List.sortBy (\( _, participant ) -> getParticipantName participant)
     in
         -- At this point, the just completed form is still in pendingActivities.
         List.head pendingParticipants

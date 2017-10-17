@@ -10,15 +10,14 @@ import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
 import Date exposing (Date)
-import Examination.Utils exposing (getLastExaminationFromChild)
+import EveryDict
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
 import Measurement.View
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
-import Pages.Participant.Utils exposing (makeLoneMotherDict, makeLoneChildDict)
-import Participant.Model exposing (Participant, ParticipantId, ParticipantType(ParticipantChild, ParticipantMother), ParticipantTypeFilter(..), ParticipantsDict)
+import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (renderParticipantAge, renderParticipantDateOfBirth)
 import ProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -32,10 +31,10 @@ viewChild : Language -> Date -> WebData Mother -> ( ChildId, Child ) -> Model ->
 viewChild language currentDate motherWebData ( childId, child ) model =
     let
         childParticipant =
-            { info = Participant.Model.ParticipantChild child }
+            ParticipantChild child
 
         participants =
-            makeLoneChildDict childId child
+            EveryDict.insert (ParticipantChildId childId) childParticipant EveryDict.empty
 
         childName =
             translate language <| Trans.BabyName child.name
@@ -116,7 +115,7 @@ viewMother language motherId mother children model =
                     children
 
         participants =
-            makeLoneMotherDict motherId mother
+            EveryDict.insert (ParticipantMotherId motherId) (ParticipantMother mother) EveryDict.empty
     in
         div [ class "ui unstackable items participant-page mother" ]
             [ div [ class "item" ]

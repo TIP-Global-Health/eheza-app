@@ -3,9 +3,8 @@ module Pages.Activity.View exposing (view)
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Activity.Utils exposing (getActivityIdentity, hasPendingChildActivity, hasPendingMotherActivity)
 import Date exposing (Date)
-import Dict
 import Drupal.Restful exposing (toEntityId)
-import Examination.Utils exposing (getLastExaminationFromChild)
+import EveryDict
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -14,7 +13,7 @@ import List as List
 import Measurement.View
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
 import Pages.Activity.Utils
-import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
+import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (getParticipantName, getParticipantAvatarThumb)
 import Translate as Trans exposing (translate, Language)
 import Utils.Html exposing (tabItem, thumbnailImage)
@@ -31,9 +30,9 @@ view language currentDate participantsDict model =
 
         participantsWithCompletedActivity =
             participantsDict
-                |> Dict.filter
+                |> EveryDict.filter
                     (\participantId participant ->
-                        case participant.info of
+                        case participant of
                             ParticipantChild child ->
                                 case selectedActivityIdentity.activityType of
                                     Child activityType ->
@@ -89,10 +88,10 @@ view language currentDate participantsDict model =
         tabs =
             let
                 pendingTabTitle =
-                    translate language <| Trans.ActivitiesToComplete <| Dict.size participantsWithPendingActivity
+                    translate language <| Trans.ActivitiesToComplete <| EveryDict.size participantsWithPendingActivity
 
                 completedTabTitle =
-                    translate language <| Trans.ActivitiesCompleted <| Dict.size participantsWithCompletedActivity
+                    translate language <| Trans.ActivitiesCompleted <| EveryDict.size participantsWithCompletedActivity
             in
                 div [ class "ui tabular menu" ]
                     [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
@@ -118,7 +117,7 @@ view language currentDate participantsDict model =
                             getParticipantAvatarThumb participant
 
                         imageView =
-                            thumbnailImage participant.info imageSrc name thumbnailDimensions.height thumbnailDimensions.width
+                            thumbnailImage participant imageSrc name thumbnailDimensions.height thumbnailDimensions.width
                     in
                         div
                             [ classList
@@ -142,16 +141,13 @@ view language currentDate participantsDict model =
                             ]
 
                 participantsCards =
-                    if Dict.size selectedParticipants == 0 then
+                    if EveryDict.size selectedParticipants == 0 then
                         [ span [] [ text emptySectionMessage ] ]
                     else
-                        List.map (viewParticipantCard model.selectedParticipant) <|
-                            List.sortBy
-                                (\( _, participant ) ->
-                                    getParticipantName participant
-                                )
-                            <|
-                                Dict.toList selectedParticipants
+                        selectedParticipants
+                            |> EveryDict.toList
+                            |> List.sortBy (\( _, participant ) -> getParticipantName participant)
+                            |> List.map (viewParticipantCard model.selectedParticipant)
             in
                 div
                     [ class "ui participant segment" ]
@@ -160,18 +156,22 @@ view language currentDate participantsDict model =
                     ]
 
         measurementsForm =
-            case model.selectedParticipant of
-                Just ( participantId, participant ) ->
-                    case participant.info of
-                        ParticipantChild child ->
-                            Html.map (MsgMeasurement ( participantId, participant )) <|
-                                Measurement.View.viewChild language currentDate ( toEntityId participantId, child ) (getLastExaminationFromChild child) (Just model.selectedActivity) model.measurements
+            Debug.crash "redo"
 
-                        ParticipantMother mother ->
-                            Html.map (MsgMeasurement ( participantId, participant )) <|
-                                Measurement.View.viewMother language (Just model.selectedActivity) model.measurements
+        {-
+           case model.selectedParticipant of
+               Just ( participantId, participant ) ->
+                   case participant of
+                       ParticipantChild child ->
+                           Html.map (MsgMeasurement ( participantId, participant )) <|
+                               Measurement.View.viewChild language currentDate ( participantId, child ) (getLastExaminationFromChild child) (Just model.selectedActivity) model.measurements
 
-                Nothing ->
-                    emptyNode
+                       ParticipantMother mother ->
+                           Html.map (MsgMeasurement ( participantId, participant )) <|
+                               Measurement.View.viewMother language (Just model.selectedActivity) model.measurements
+
+               Nothing ->
+                   emptyNode
+        -}
     in
         [ activityDescription, tabs, participants, measurementsForm ]

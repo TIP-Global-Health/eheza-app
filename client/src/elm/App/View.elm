@@ -57,7 +57,7 @@ view model =
                     case model.user of
                         Success user ->
                             Html.map MsgParticipantManager <|
-                                ParticipantManager.View.viewPageParticipant model.language model.currentDate id model.pageParticipant
+                                ParticipantManager.View.viewPageParticipant model.language model.currentDate (Debug.crash " id") model.pageParticipant
 
                         _ ->
                             div [] [ i [ class "notched circle loading icon" ] [] ]

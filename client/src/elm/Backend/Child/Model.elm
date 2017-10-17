@@ -2,7 +2,6 @@ module Backend.Child.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Date exposing (Date)
-import Examination.Model exposing (ExaminationChild, ExaminationId)
 
 
 type Gender
@@ -21,9 +20,6 @@ type alias Child =
     , image : String
     , motherId : Maybe MotherId
     , siblingId : Maybe ChildId
-
-    -- TODO: Remove examinations
-    , examinations : List ExaminationChild
     , birthDate : Date
     , gender : Gender
     }

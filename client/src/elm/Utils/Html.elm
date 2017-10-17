@@ -12,7 +12,7 @@ import Gizra.Html exposing (showIf)
 import Html exposing (Html, a, div, h5, img, span, text, i)
 import Html.Attributes exposing (attribute, class, classList, id, src, style)
 import Html.Events exposing (onClick)
-import Participant.Model exposing (ParticipantType(..))
+import Participant.Model exposing (Participant(..))
 
 
 {-| Displays a debugging segment if debugging is enabled, otherwise renders
@@ -49,11 +49,11 @@ tabItem title active taId action =
         [ text title ]
 
 
-thumbnailImage : ParticipantType -> String -> String -> Int -> Int -> Html any
-thumbnailImage participantType source label height width =
+thumbnailImage : Participant -> String -> String -> Int -> Int -> Html any
+thumbnailImage participant source label height width =
     let
         subClass =
-            case participantType of
+            case participant of
                 ParticipantMother _ ->
                     "mother"
 

@@ -15,8 +15,7 @@ import Pusher.Model exposing (PusherEventData)
 
 
 type Msg
-    = HandlePusherEventData PusherEventData
-    | MsgFilePicker FilePicker.Model.Msg
+    = MsgFilePicker FilePicker.Model.Msg
     | MsgMeasurement Measurement.Model.Msg
     | SetRedirectPage Page
     | SetSelectedActivity (Maybe ActivityType)

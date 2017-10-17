@@ -12,8 +12,7 @@ module Participant.Utils
 
 import Date exposing (Date, Day)
 import Date.Extra.Duration
-import Examination.Model exposing (Examination(..), emptyExaminationMother, emptyExaminationChild)
-import Participant.Model exposing (AgeDay, Participant, ParticipantType(..))
+import Participant.Model exposing (AgeDay, Participant(..))
 import Translate as Trans exposing (translate, Language)
 
 
@@ -23,7 +22,7 @@ examinations.
 -}
 getExamination : Participant -> Examination
 getExamination participant =
-    case participant.info of
+    case participant of
         ParticipantChild child ->
             List.head child.examinations
                 |> Maybe.withDefault emptyExaminationChild
@@ -46,14 +45,14 @@ examinations.
 -}
 setExamination : Examination -> Participant -> Participant
 setExamination examination participant =
-    case ( examination, participant.info ) of
+    case ( examination, participant ) of
         ( MotherExamination motherExamination, ParticipantMother mother ) ->
             -- We just store the single examination in the list ...
             -- this is **very** temporary code!
-            { info = ParticipantMother { mother | examinations = [ motherExamination ] } }
+            ParticipantMother { mother | examinations = [ motherExamination ] }
 
         ( ChildExamination childExamination, ParticipantChild child ) ->
-            { info = ParticipantChild { child | examinations = [ childExamination ] } }
+            ParticipantChild { child | examinations = [ childExamination ] }
 
         _ ->
             -- A mismatch here, which could possibly be avoided if we thought
@@ -63,7 +62,7 @@ setExamination examination participant =
 
 getParticipantAvatarThumb : Participant -> String
 getParticipantAvatarThumb participant =
-    case participant.info of
+    case participant of
         ParticipantChild child ->
             .image child
 
@@ -73,7 +72,7 @@ getParticipantAvatarThumb participant =
 
 getParticipantName : Participant -> String
 getParticipantName participant =
-    case participant.info of
+    case participant of
         ParticipantChild child ->
             .name child
 
@@ -83,7 +82,7 @@ getParticipantName participant =
 
 getParticipantTypeAsString : Participant -> String
 getParticipantTypeAsString participant =
-    case participant.info of
+    case participant of
         ParticipantChild child ->
             "child"
 
@@ -98,21 +97,22 @@ getParticipantAge : Participant -> Date -> AgeDay
 getParticipantAge participant now =
     let
         birthDate =
-            case participant.info of
+            case participant of
                 ParticipantChild child ->
                     child.birthDate
 
                 ParticipantMother mother ->
                     mother.birthDate
     in
-        Participant.Model.AgeDay <| Date.Extra.Duration.diffDays now birthDate
+        Participant.Model.AgeDay <|
+            Date.Extra.Duration.diffDays now birthDate
 
 
 renderParticipantAge : Language -> Participant -> Date -> String
 renderParticipantAge language participant now =
     let
         birthDate =
-            case participant.info of
+            case participant of
                 ParticipantChild child ->
                     child.birthDate
 
@@ -150,7 +150,7 @@ renderParticipantDateOfBirth : Language -> Participant -> String
 renderParticipantDateOfBirth language participant =
     let
         birthDate =
-            case participant.info of
+            case participant of
                 ParticipantChild child ->
                     child.birthDate
 

@@ -4,11 +4,12 @@ import App.PageType exposing (Page(..))
 import Config.Model exposing (BackendUrl)
 import User.Model exposing (..)
 import Pages.Activities.Model exposing (Model, Msg(..))
-import Participant.Model exposing (ParticipantTypeFilter(..), ParticipantsDict)
+import Participant.Model exposing (ParticipantTypeFilter(..))
+import Backend.Session.Model exposing (OfflineSession)
 
 
-update : BackendUrl -> String -> User -> Msg -> ParticipantsDict -> Model -> ( Model, Cmd Msg, Maybe Page )
-update backendUrl accessToken user msg participants model =
+update : BackendUrl -> String -> User -> Msg -> OfflineSession -> Model -> ( Model, Cmd Msg, Maybe Page )
+update backendUrl accessToken user msg session model =
     case msg of
         SetSelectedTab tab ->
             ( { model | selectedTab = tab }, Cmd.none, Nothing )

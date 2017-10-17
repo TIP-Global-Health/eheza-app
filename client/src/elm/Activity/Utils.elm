@@ -14,10 +14,11 @@ module Activity.Utils
 import Activity.Model exposing (ActivityIdentity, ActivityListItem, ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Backend.Child.Model exposing (Child)
 import Backend.Mother.Model exposing (Mother)
+import Backend.Session.Model exposing (OfflineSession)
 import Dict exposing (Dict)
-import Examination.Model exposing (ExaminationChild, ExaminationMother, emptyExaminationChild, emptyExaminationMother)
+import EveryDict
 import Maybe.Extra exposing (isNothing)
-import Participant.Model exposing (Participant, ParticipantsDict, ParticipantTypeFilter(..), ParticipantType(..))
+import Participant.Model exposing (Participant(..), ParticipantTypeFilter(..), ParticipantsDict)
 import StorageKey exposing (StorageKey, isNew)
 
 
@@ -48,10 +49,6 @@ getActivityTypeList participantTypeFilter =
 
 
 {-| Get the pending and completed activities.
-
-At the moment, this just looks at the single, mocked examination. Eventually,
-this will need to be paramterized in some way to deal with multiple
-examinations.
 
 -}
 getActivityList : ParticipantTypeFilter -> ParticipantsDict -> List ActivityListItem
@@ -113,9 +110,9 @@ This will need to change once we can have more than one.
 -}
 getTotalsNumberPerActivity : ActivityType -> ParticipantsDict -> ( Int, Int )
 getTotalsNumberPerActivity activityType participants =
-    Dict.foldl
+    EveryDict.foldl
         (\_ participant ( pending, total ) ->
-            case participant.info of
+            case participant of
                 ParticipantChild child ->
                     case activityType of
                         Child childActivityType ->
@@ -230,7 +227,7 @@ Will need to parameterize when we have more than one.
 -}
 participantHasPendingActivity : Participant -> Bool
 participantHasPendingActivity participant =
-    case participant.info of
+    case participant of
         ParticipantChild child ->
             child.examinations
                 |> List.head

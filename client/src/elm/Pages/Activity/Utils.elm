@@ -2,9 +2,9 @@ module Pages.Activity.Utils exposing (participantsWithPendingActivity)
 
 import Activity.Model exposing (ActivityType(Child, Mother))
 import Activity.Utils exposing (getActivityIdentity, hasPendingChildActivity, hasPendingMotherActivity)
-import Dict
+import EveryDict
 import Pages.Activity.Model exposing (Model)
-import Participant.Model exposing (ParticipantType(ParticipantChild, ParticipantMother), ParticipantsDict)
+import Participant.Model exposing (Participant(..), ParticipantsDict)
 
 
 {-| This will eventually need to be parameterized to focus on a particular
@@ -17,9 +17,9 @@ participantsWithPendingActivity participantsDict model =
             getActivityIdentity model.selectedActivity
     in
         participantsDict
-            |> Dict.filter
+            |> EveryDict.filter
                 (\participantId participant ->
-                    case participant.info of
+                    case participant of
                         ParticipantChild child ->
                             case selectedActivityIdentity.activityType of
                                 Child activityType ->

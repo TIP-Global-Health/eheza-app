@@ -18,7 +18,6 @@ import Backend.Entities exposing (ChildId, MotherId)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..))
 import Date exposing (Date)
 import EverySet exposing (EverySet)
-import Examination.Model exposing (ExaminationChild)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
@@ -127,7 +126,7 @@ viewFloatForm language currentDate floatMeasurement ( childId, child ) maybePrev
                     )
 
         childParticipant =
-            { info = Participant.Model.ParticipantChild child }
+            Participant.Model.ParticipantChild child
 
         viewDiff =
             case ( floatMeasurement, measurementValue ) of

@@ -1,38 +1,38 @@
 module Participant.Model
     exposing
         ( AgeDay(..)
-        , Participant
-        , ParticipantId
+        , Participant(..)
+        , ParticipantId(..)
         , ParticipantTypeFilter(..)
-        , ParticipantType(..)
         , ParticipantsDict
         )
 
-import Dict exposing (Dict)
+{-| This module provides a type which is either a child or a mother.
+-}
+
+import Backend.Entities exposing (..)
 import Backend.Child.Model exposing (Child)
 import Backend.Mother.Model exposing (Mother)
+import Dict exposing (Dict)
+import EveryDict exposing (EveryDict)
 
 
 type AgeDay
     = AgeDay Int
 
 
-type alias ParticipantId =
-    Int
-
-
-type ParticipantType
+type Participant
     = ParticipantChild Child
     | ParticipantMother Mother
 
 
-type alias Participant =
-    { info : ParticipantType
-    }
+type ParticipantId
+    = ParticipantChildId ChildId
+    | ParticipantMotherId MotherId
 
 
 type alias ParticipantsDict =
-    Dict ParticipantId Participant
+    EveryDict ParticipantId Participant
 
 
 type ParticipantTypeFilter

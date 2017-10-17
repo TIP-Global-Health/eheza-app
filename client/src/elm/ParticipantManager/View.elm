@@ -24,9 +24,8 @@ import Pages.Participant.Update
 import Pages.Participant.View
 import Pages.Participants.Model
 import Pages.Participants.View
-import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
+import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..), ParticipantsDict)
 import ParticipantManager.Model exposing (..)
-import ParticipantManager.Utils exposing (getChildren, getMother, getParticipant, unwrapParticipantsDict)
 import RemoteData exposing (RemoteData(..))
 import Translate as Trans exposing (Language, translate)
 import Utils.WebData exposing (viewError)
@@ -36,15 +35,17 @@ import Utils.WebData exposing (viewError)
 -}
 viewParticipants : Language -> Model -> Html Msg
 viewParticipants language model =
-    let
-        participants =
-            unwrapParticipantsDict model.participants
-    in
-        div [ class "wrap wrap-alt page-participants" ] <|
-            viewDashboardPageHeader language App.PageType.ParticipantsDashboard
-                :: (List.map (Html.map MsgPagesParticipants) <|
-                        Pages.Participants.View.view language participants model.participantsPage
-                   )
+    Debug.crash "redo"
+
+
+
+{-
+   div [ class "wrap wrap-alt page-participants" ] <|
+       viewDashboardPageHeader language App.PageType.ParticipantsDashboard
+           :: (List.map (Html.map MsgPagesParticipants) <|
+                   Pages.Participants.View.view language participants model.participantsPage
+               )
+-}
 
 
 viewDashboardPageHeader : Language -> App.PageType.DashboardPage -> Html Msg
@@ -96,15 +97,11 @@ This one needs the `currentDate` to calculate ages.
 -}
 viewPageParticipant : Language -> Date -> ParticipantId -> Model -> Html Msg
 viewPageParticipant language currentDate id model =
-    case getParticipant id model of
+    case Debug.crash "redo" {- getParticipant id model -} of
         NotAsked ->
             -- This shouldn't happen, but if it does, we provide
             -- a button to load the editor
-            div
-                [ class "ui button"
-                , onClick <| Subscribe id
-                ]
-                [ text <| translate language Trans.ReloadParticipant ]
+            div [] [ text "NOt found" ]
 
         Loading ->
             div [] []
@@ -112,37 +109,40 @@ viewPageParticipant language currentDate id model =
         Failure error ->
             div []
                 [ viewError language error
-                , div
-                    [ class "ui button"
-                    , onClick <| Subscribe id
-                    ]
-                    [ text <| translate language Trans.Retry ]
                 ]
 
         Success participant ->
             let
                 participantModel =
-                    Maybe.map identity (Dict.get id model.participantPage)
-                        |> Maybe.withDefault (Pages.Participant.Update.init participant)
+                    Debug.crash "redo"
+
+                {-
+                   Maybe.map identity (Dict.get (Debug.crash "id") model.participantPage)
+                       |> Maybe.withDefault (Pages.Participant.Update.init participant)
+                -}
             in
                 div [ class "wrap" ] <|
                     viewPageParticipantHeader language ( id, participant )
-                        :: (case participant.info of
+                        :: (case participant of
                                 ParticipantChild child ->
                                     let
                                         motherWebData =
-                                            getMother child.motherId model
+                                            Debug.crash "redo"
+
+                                        -- getMother child.motherId model
                                     in
                                         List.map (Html.map (MsgPagesParticipant id)) <|
-                                            Pages.Participant.View.viewChild language currentDate motherWebData ( toEntityId id, child ) participantModel
+                                            Pages.Participant.View.viewChild language currentDate motherWebData ( Debug.crash "id", child ) participantModel
 
                                 ParticipantMother mother ->
                                     let
                                         childrenWebData =
-                                            getChildren mother model
+                                            Debug.crash "redo"
+
+                                        -- getChildren mother model
                                     in
                                         List.map (Html.map (MsgPagesParticipant id)) <|
-                                            Pages.Participant.View.viewMother language (toEntityId id) mother childrenWebData participantModel
+                                            Pages.Participant.View.viewMother language (Debug.crash "id") mother childrenWebData participantModel
                            )
 
 
@@ -156,8 +156,9 @@ viewPageParticipantHeader language ( participantId, participant ) =
                         [ class "active" ]
                     else
                         [ onClick <|
-                            MsgPagesParticipant id <|
-                                Pages.Participant.Model.SetRedirectPage (App.PageType.Participant id)
+                            MsgPagesParticipant (Debug.crash "id") <|
+                                Pages.Participant.Model.SetRedirectPage
+                                    (App.PageType.Participant (Debug.crash "id"))
                         ]
             in
                 li attributes
@@ -172,26 +173,28 @@ viewPageParticipantHeader language ( participantId, participant ) =
                     ]
 
         ( motherAttributes, children ) =
-            case participant.info of
+            case participant of
                 ParticipantChild child ->
                     ( case child.motherId of
                         Just motherId ->
                             [ onClick <|
-                                MsgPagesParticipant (fromEntityId motherId) <|
+                                MsgPagesParticipant (Debug.crash "motherId") <|
                                     Pages.Participant.Model.SetRedirectPage (App.PageType.Participant (fromEntityId motherId))
                             ]
 
                         Nothing ->
                             []
-                    , List.indexedMap (\index childId -> viewChild childId (Just index) (childId == participantId)) <|
-                        List.sort <|
-                            participantId
-                                :: case child.siblingId of
-                                    Just siblingId ->
-                                        [ fromEntityId siblingId ]
+                    , Debug.crash "redo"
+                      {- List.indexedMap (\index childId -> viewChild childId (Just index) (childId == participantId)) <|
+                         List.sort <|
+                             participantId
+                                 :: case child.siblingId of
+                                     Just siblingId ->
+                                         [ Debug.crash " siblingId " ]
 
-                                    Nothing ->
-                                        []
+                                     Nothing ->
+                                         []
+                      -}
                     )
 
                 ParticipantMother mother ->
@@ -228,7 +231,9 @@ viewActivities : Language -> Model -> Html Msg
 viewActivities language model =
     let
         participants =
-            unwrapParticipantsDict model.participants
+            Debug.crash "redo"
+
+        -- unwrapParticipantsDict model.participants
     in
         div [ class "wrap wrap-alt" ] <|
             viewDashboardPageHeader language App.PageType.ActivitiesDashboard
@@ -253,7 +258,9 @@ viewPageActivity language currentDate maybeActivityType model =
                     model.activityPage
 
         participants =
-            unwrapParticipantsDict model.participants
+            Debug.crash "redo"
+
+        -- unwrapParticipantsDict model.participants
     in
         div [ class "wrap" ] <|
             viewPageActivityHeader activitytModel

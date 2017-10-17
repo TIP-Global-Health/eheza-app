@@ -216,21 +216,20 @@ update msg model =
                                 ]
 
                             Participant participantId ->
-                                [ MsgParticipantManager <|
-                                    ParticipantManager.Model.MsgPagesParticipant participantId <|
-                                        Pages.Participant.Model.MsgFilePicker FilePicker.Model.Unbind
-                                ]
+                                Debug.crash "redo"
 
+                            {-
+                               [ MsgParticipantManager <|
+                                   ParticipantManager.Model.MsgPagesParticipant participantId <|
+                                       Pages.Participant.Model.MsgFilePicker FilePicker.Model.Unbind
+                               ]
+                            -}
                             _ ->
                                 []
 
                     ( modelUpdated, command ) =
                         -- For a few, we also delegate some initialization
                         case activePageUpdated of
-                            Activities ->
-                                -- If we're showing a `Activities` page, make sure we `Subscribe`
-                                update (MsgParticipantManager ParticipantManager.Model.FetchAll) model
-
                             Activity maybeActivityType ->
                                 let
                                     currentActivityPage =
@@ -259,16 +258,9 @@ update msg model =
                                     updatedParticipanstManagerPage =
                                         { currentParticipanstManagerPage | activityPage = updatedActivityPage }
                                 in
-                                    -- If we're showing a `Activities` page, make sure we `Subscribe`
-                                    update (MsgParticipantManager ParticipantManager.Model.FetchAll)
-                                        { model | pageParticipant = updatedParticipanstManagerPage }
-
-                            Dashboard activityTypes ->
-                                update (MsgParticipantManager ParticipantManager.Model.FetchAll) model
-
-                            Participant id ->
-                                -- If we're showing a `Participant`, make sure we `Subscribe`
-                                update (MsgParticipantManager (ParticipantManager.Model.Subscribe id)) model
+                                    ( { model | pageParticipant = updatedParticipanstManagerPage }
+                                    , Cmd.none
+                                    )
 
                             _ ->
                                 ( model, Cmd.none )

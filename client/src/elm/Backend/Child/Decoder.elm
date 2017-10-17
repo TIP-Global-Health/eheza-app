@@ -18,7 +18,6 @@ decodeChild =
         |> optionalAt [ "avatar", "styles", "patient-photo" ] string ""
         |> required "mother" (nullable decodeEntityId)
         |> required "sibling" (nullable decodeEntityId)
-        |> hardcoded []
         |> required "date_birth" decodeDate
         |> required "gender" decodeGender
 
