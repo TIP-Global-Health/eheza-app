@@ -7,6 +7,7 @@ module Drupal.Restful
         , decodeEntityId
         , decodeId
         , decodeSingleEntity
+        , decodeEntity
         , decodeStorageTuple
         , encodeEntityId
         , fromEntityId
@@ -29,7 +30,7 @@ exposed through the Restful API.
 
 ## JSON
 
-@docs decodeEntityId, decodeId, decodeSingleEntity, decodeStorageTuple, encodeEntityId, fromEntityId, toEntityId
+@docs decodeEntityId, decodeId, decodeSingleEntity, decodeEntity, decodeStorageTuple, encodeEntityId, fromEntityId, toEntityId
 
 -}
 
@@ -221,6 +222,13 @@ decodeStorageTuple keyDecoder valueDecoder =
     map2 (,)
         (map Existing keyDecoder)
         valueDecoder
+
+
+{-| Like `decodeStorageTuple`, but assumes that your key is some kind of `EntityId`.
+-}
+decodeEntity : Decoder value -> Decoder (Entity (EntityId a) value)
+decodeEntity =
+    decodeStorageTuple (field "id" decodeEntityId)
 
 
 decodeData : Decoder a -> Decoder a
