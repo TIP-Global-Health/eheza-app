@@ -199,9 +199,16 @@ get backendUrl accessToken endpoint key tagger =
 -}
 get404 : BackendUrl -> Maybe AccessToken -> EndPoint error params key value -> key -> (Result error (Entity key value) -> msg) -> Cmd msg
 get404 backendUrl accessToken endpoint key tagger =
-    HttpBuilder.get (backendUrl </> endpoint.path </> toString (endpoint.untag key))
-        |> withExpect (expectJson (decodeSingleEntity (decodeStorageTuple (decodeId endpoint.tag) endpoint.decoder)))
-        |> send (Result.mapError endpoint.error >> tagger)
+    let
+        queryParams =
+            accessToken
+                |> Maybe.Extra.toList
+                |> List.map (\token -> ( "access_token", token ))
+    in
+        HttpBuilder.get (backendUrl </> endpoint.path </> toString (endpoint.untag key))
+            |> withQueryParams queryParams
+            |> withExpect (expectJson (decodeSingleEntity (decodeStorageTuple (decodeId endpoint.tag) endpoint.decoder)))
+            |> send (Result.mapError endpoint.error >> tagger)
 
 
 {-| Convenience for the pattern where you have a field called "id",
