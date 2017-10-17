@@ -155,11 +155,22 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     $mother_activity_output = hedley_restful_output_for_bundles($mother_bundles, $mother_activity_ids, $account);
     $child_activity_output = hedley_restful_output_for_bundles($child_bundles, $child_activity_ids, $account);
 
+    $grouped_mother_activity = [];
+    $grouped_child_activity = [];
+
+    foreach ($mother_activity_output as $activity) {
+        $grouped_mother_activity[$activity['mother']][$activity['type']][] = $activity;
+    }
+
+    foreach ($child_activity_output as $activity) {
+        $grouped_child_activity[$activity['child']][$activity['type']][] = $activity;
+    }
+
     return [
       "mothers" => $mother_output,
       "children" => $child_output,
-      "mother_activity" => $mother_activity_output,
-      "child_activity" => $child_activity_output,
+      "mother_activity" => $grouped_mother_activity,
+      "child_activity" => $grouped_child_activity,
     ];
   }
 
