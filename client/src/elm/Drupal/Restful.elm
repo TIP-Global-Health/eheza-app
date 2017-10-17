@@ -87,6 +87,11 @@ type alias EndPoint error params key value =
     -- A decoder for the values
     , decoder : Decoder value
 
+    -- An encoder for the value. The ID will be added automatically ... you
+    -- just need to supply the key-value pairs to encode the value itself.
+    --
+    -- , encoder : value -> List ( String, Value )
+    --
     -- You may want to use your own error type. If so, provided something
     -- that maps from the kind of `Http.Error` this endpoint produces to
     -- your local error type. If you just want to use `Http.Error` dirdctly
@@ -209,6 +214,43 @@ get404 backendUrl accessToken endpoint key tagger =
             |> withQueryParams queryParams
             |> withExpect (expectJson (decodeSingleEntity (decodeStorageTuple (decodeId endpoint.tag) endpoint.decoder)))
             |> send (Result.mapError endpoint.error >> tagger)
+
+
+
+{- If we have an `Existing` storage key, then update the backend via `patch`.
+
+   If we have a `New` storage key, insert it in the backend via `post`.
+
+   TODO: At the moment, we "patch" everything we would normally "post".l
+
+-}
+{-
+   upsert : BackendUrl -> Maybe AccessToken -> EndPoint error params key value -> Entity key value -> (Result error (Entity key value) -> msg) -> Cmd msg
+   upsert backendUrl accessToken endpoint (key, value) tagger =
+       let
+           queryParams =
+               accessToken
+                   |> Maybe.Extra.toList
+                   |> List.map (\token -> ( "access_token", token ))
+
+           encodedValue =
+               endpoint.encoder value
+       in
+           case key of
+               Existing id ->
+                   HttpBuilder.patch (backendUrl </> endpoint.path </> toString (endpoint.untag id)
+                       |> withQueryParams queryParams
+                       |> withJsonBody
+                       |> withExpect (expectJson (decodeSingleEntity (decodeStorageTuple (decodeId endpoint.tag) endpoint.decoder)))
+                       |> send (Result.mapError endpoint.error >> tagger)
+
+               New ->
+                   HttpBuilder.post (backendUrl </> endpoint.path)
+                       |> withQueryParams queryParams
+                       |> withJsonBody (config.encodeStorage ( key, value ))
+                       |> withExpect (Http.expectJson (decodeSingleEntity config.decodeStorage))
+                       |> send config.handler
+-}
 
 
 {-| Convenience for the pattern where you have a field called "id",
