@@ -1,4 +1,4 @@
-module Backend.Session.Model exposing (..)
+module Backend.Session.Model exposing (Session, OfflineSession, EditableSession)
 
 {-| Represents an occasion on which measurements may be taken,
 including the time and the place.
@@ -35,4 +35,19 @@ type alias OfflineSession =
     , mothers : EveryDictList MotherId Mother
     , children : EveryDict ChildId Child
     , measurements : Measurements
+    }
+
+
+{-| This combines an OfflineSession with a set of EditableMeasurements we're
+currently working with for that Session, which haven't yet been saved to
+the backend.
+
+Note that we'll need a function to construct this from what we get from the
+backend, since the current session may already have some measurements in the
+historical data. So, you can't necessarily just start with
+`emptyEditableMeasurements`.
+-}
+type alias EditableSession =
+    { offlineSession : OfflineSession
+    , editableMeasurements : EditableMeasurements
     }

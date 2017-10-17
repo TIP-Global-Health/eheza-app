@@ -138,6 +138,12 @@ type alias EditableMotherMeasurements =
     }
 
 
+emptyEditableMotherMeasurements : EditableMotherMeasurements
+emptyEditableMotherMeasurements =
+    { familyPlanning = NotFound
+    }
+
+
 {-| This represents the status of a measurement within a session. It functions
 something like a `Maybe (Editable (Entity (StorageKey a) b))`, but collapsed in a single
 type to make it easier to reason about, and to have more descriptive names
@@ -263,12 +269,29 @@ type alias EditableChildMeasurements =
     }
 
 
+emptyEditableChildMeasurements : EditableChildMeasurements
+emptyEditableChildMeasurements =
+    { height = NotFound
+    , muac = NotFound
+    , nutrition = NotFound
+    , photo = NotFound
+    , weight = NotFound
+    }
+
+
 {-| This tracks editable measurements for a whole batch of mothers and
 children.
 -}
 type alias EditableMeasurements =
     { mothers : EveryDict MotherId EditableMotherMeasurements
     , children : EveryDict ChildId EditableChildMeasurements
+    }
+
+
+emptyEditableMeasurements : EditableMeasurements
+emptyEditableMeasurements =
+    { mothers = EveryDict.empty
+    , children = EveryDict.empty
     }
 
 

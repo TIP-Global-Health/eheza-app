@@ -7,18 +7,21 @@ module Activity.Utils
         , participantHasPendingActivity
         , hasAnyPendingChildActivity
         , hasAnyPendingMotherActivity
-        , hasPendingChildActivity
-        , hasPendingMotherActivity
+        , hasCompletedChildActivity
+        , hasCompletedMotherActivity
         )
 
 import Activity.Model exposing (ActivityIdentity, ActivityListItem, ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Backend.Child.Model exposing (Child)
+import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (getEditableChildMeasurements, getEditableMotherMeasurements)
 import Backend.Mother.Model exposing (Mother)
-import Backend.Session.Model exposing (OfflineSession)
+import Backend.Session.Model exposing (..)
 import Dict exposing (Dict)
 import EveryDict
+import EveryDictList
 import Maybe.Extra exposing (isNothing)
-import Participant.Model exposing (Participant(..), ParticipantTypeFilter(..), ParticipantsDict)
+import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
 import StorageKey exposing (StorageKey, isNew)
 
 
@@ -51,12 +54,12 @@ getActivityTypeList participantTypeFilter =
 {-| Get the pending and completed activities.
 
 -}
-getActivityList : ParticipantTypeFilter -> ParticipantsDict -> List ActivityListItem
-getActivityList participantTypeFilter participants =
+getActivityList : ParticipantTypeFilter -> EditableSession -> List ActivityListItem
+getActivityList participantTypeFilter session =
     List.map
         (\activityType ->
             { activity = getActivityIdentity activityType
-            , totals = getTotalsNumberPerActivity activityType participants
+            , totals = getTotalsNumberPerActivity activityType session
             }
         )
         (getActivityTypeList participantTypeFilter)
@@ -105,137 +108,132 @@ getAllMotherActivities =
     [ FamilyPlanning ]
 
 
-{-| For the moment, we just look at each participant's single, mocked examination.
-This will need to change once we can have more than one.
+{-| Given an activity, how many of those measurements should we expect, and how
+many are still pending?
+
+TODO: We'll need to modify this to take into account which people are actually present,
+once we've got that in the data model.
 -}
-getTotalsNumberPerActivity : ActivityType -> ParticipantsDict -> ( Int, Int )
-getTotalsNumberPerActivity activityType participants =
-    EveryDict.foldl
-        (\_ participant ( pending, total ) ->
-            case participant of
-                ParticipantChild child ->
-                    case activityType of
-                        Child childActivityType ->
-                            List.head child.examinations
-                                |> Maybe.withDefault emptyExaminationChild
-                                |> examinationHasPendingChildActivity childActivityType
-                                |> (\result ->
-                                        if result then
-                                            ( pending + 1, total + 1 )
-                                        else
-                                            ( pending, total + 1 )
-                                   )
+getTotalsNumberPerActivity : ActivityType -> EditableSession -> { pending : Int, total : Int }
+getTotalsNumberPerActivity activityType session =
+    case activityType of
+        Child childType ->
+            let
+                -- Until we have data about who is actually present, the total would be
+                -- everyone who is in the session. (Eventually, we may filter this).
+                total =
+                    EveryDict.size session.offlineSession.children
 
-                        _ ->
-                            ( pending, total )
+                -- It's actually eaiser to count the completed ones, so we do that and
+                -- just subtract to get pending.
+                completed =
+                    session.editableMeasurements.children
+                        |> EveryDict.filter (always (hasCompletedChildActivity childType))
+                        |> EveryDict.size
+            in
+                { pending = total - completed
+                , total = total
+                }
 
-                ParticipantMother mother ->
-                    case activityType of
-                        Mother motherActivityType ->
-                            List.head mother.examinations
-                                |> Maybe.withDefault emptyExaminationMother
-                                |> examinationHasPendingMotherActivity motherActivityType
-                                |> (\result ->
-                                        if result then
-                                            ( pending + 1, total + 1 )
-                                        else
-                                            ( pending, total + 1 )
-                                   )
+        Mother motherType ->
+            let
+                -- Until we have data about who is actually present, the total would be
+                -- everyone who is in the session. (Eventually, we may filter this).
+                total =
+                    EveryDictList.size session.offlineSession.mothers
 
-                        _ ->
-                            ( pending, total )
-        )
-        ( 0, 0 )
-        participants
-
-
-{-| This is using a single examination for the child, so will need to change
-and become parameterized in some way.
--}
-hasPendingChildActivity : Child -> ChildActivityType -> Bool
-hasPendingChildActivity child activityType =
-    child.examinations
-        |> List.head
-        |> Maybe.withDefault emptyExaminationChild
-        |> examinationHasPendingChildActivity activityType
+                -- It's actually eaiser to count the completed ones, so we do that and
+                -- just subtract to get pending.
+                completed =
+                    session.editableMeasurements.mothers
+                        |> EveryDict.filter (always (hasCompletedMotherActivity motherType))
+                        |> EveryDict.size
+            in
+                { pending = total - completed
+                , total = total
+                }
 
 
-maybeStorageIsPending : Maybe ( StorageKey a, b ) -> Bool
-maybeStorageIsPending =
-    -- Basically, we're pending if we're `Nothing`, or if we haven't been
-    -- saved yet.
-    Maybe.map (Tuple.first >> isNew) >> Maybe.withDefault True
-
-
-examinationHasPendingChildActivity : ChildActivityType -> ExaminationChild -> Bool
-examinationHasPendingChildActivity childActivityType ex =
-    case childActivityType of
+hasCompletedChildActivity : ChildActivityType -> EditableChildMeasurements -> Bool
+hasCompletedChildActivity activityType measurements =
+    case activityType of
         ChildPicture ->
-            isNothing ex.photo
+            isCompleted measurements.photo
 
         Height ->
-            maybeStorageIsPending ex.height
+            isCompleted measurements.height
 
         Weight ->
-            maybeStorageIsPending ex.weight
+            isCompleted measurements.weight
 
         Muac ->
-            maybeStorageIsPending ex.muac
+            isCompleted measurements.muac
 
         NutritionSigns ->
-            -- No `Maybe` here, so just see if it's been saved
-            isNew (Tuple.first ex.nutrition)
+            isCompleted measurements.nutrition
 
         ProgressReport ->
-            -- We don't have this in `ExaminationChild` yet, so it's
-            -- necessarily pending.
+            -- Hmm. This isn't really a measurement, so if we get it, we'll say
+            -- it's not "completed".
+            --
+            -- TODO: I suppose that if we're tracking "activities" for UI purposes,
+            -- perhaps the activity here is just looking at the progress report?
+            -- So, that would imply some local data that tracks whether we've looked
+            -- at the progress report?
+            False
+
+
+hasCompletedMotherActivity : MotherActivityType -> EditableMotherMeasurements -> Bool
+hasCompletedMotherActivity activityType measurements =
+    case activityType of
+        FamilyPlanning ->
+            isCompleted measurements.familyPlanning
+
+
+{-| Should some measurement be considered completed? Note that this means that it has
+been entered locally, not that it has been saved to the backend.
+-}
+isCompleted : EditableEntity key value -> Bool
+isCompleted entity =
+    case entity of
+        NotFound ->
+            False
+
+        New _ ->
             True
 
+        Unedited _ _ ->
+            True
 
-{-| This is using a single examination for the child, so will need to change
-and become parameterized in some way.
--}
-hasPendingMotherActivity : Mother -> MotherActivityType -> Bool
-hasPendingMotherActivity mother activityType =
-    mother.examinations
-        |> List.head
-        |> Maybe.withDefault emptyExaminationMother
-        |> examinationHasPendingMotherActivity activityType
+        Edited _ _ _ ->
+            True
+
+        Deleted _ _ ->
+            False
 
 
-examinationHasPendingMotherActivity : MotherActivityType -> ExaminationMother -> Bool
-examinationHasPendingMotherActivity motherActivityType ex =
-    case motherActivityType of
-        FamilyPlanning ->
-            isNew (Tuple.first ex.familyPlanning)
-
-
-hasAnyPendingMotherActivity : ExaminationMother -> Bool
-hasAnyPendingMotherActivity ex =
+hasAnyPendingMotherActivity : EditableMotherMeasurements -> Bool
+hasAnyPendingMotherActivity measurements =
     getAllMotherActivities
-        |> List.any ((flip examinationHasPendingMotherActivity) ex)
+        |> List.any ((flip hasCompletedMotherActivity) measurements >> not)
 
 
-hasAnyPendingChildActivity : ExaminationChild -> Bool
-hasAnyPendingChildActivity ex =
+hasAnyPendingChildActivity : EditableChildMeasurements -> Bool
+hasAnyPendingChildActivity measurements =
     getAllChildActivities
-        |> List.any ((flip examinationHasPendingChildActivity) ex)
+        |> List.any ((flip hasCompletedChildActivity) measurements >> not)
 
 
 {-| Just looking at the single examination for the moment
 Will need to parameterize when we have more than one.
 -}
-participantHasPendingActivity : Participant -> Bool
-participantHasPendingActivity participant =
-    case participant of
-        ParticipantChild child ->
-            child.examinations
-                |> List.head
-                |> Maybe.withDefault emptyExaminationChild
+participantHasPendingActivity : ParticipantId -> EditableMeasurements -> Bool
+participantHasPendingActivity participantId measurements =
+    case participantId of
+        ParticipantChildId childId ->
+            getEditableChildMeasurements childId measurements
                 |> hasAnyPendingChildActivity
 
-        ParticipantMother mother ->
-            mother.examinations
-                |> List.head
-                |> Maybe.withDefault emptyExaminationMother
+        ParticipantMotherId motherId ->
+            getEditableMotherMeasurements motherId measurements
                 |> hasAnyPendingMotherActivity
