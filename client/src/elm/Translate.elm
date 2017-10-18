@@ -115,7 +115,7 @@ type TranslationId
     | ReportDOB String
     | ReportRemaining Int
     | ReloadParticipant
-    | ReportCompleted ( Int, Int )
+    | ReportCompleted { pending : Int, total : Int }
     | ResolveMonth Month
     | Retry
     | Save
@@ -428,7 +428,7 @@ translate lang trans =
                 ReloadParticipant ->
                     { english = "Re-load Participant" }
 
-                ReportCompleted ( pending, total ) ->
+                ReportCompleted { pending, total } ->
                     { english = (toString (total - pending)) ++ "/" ++ (toString total) ++ " Completed" }
 
                 ResolveMonth month ->

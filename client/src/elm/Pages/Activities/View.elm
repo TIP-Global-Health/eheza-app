@@ -2,27 +2,28 @@ module Pages.Activities.View exposing (view)
 
 import Activity.Utils exposing (getActivityList)
 import App.PageType exposing (Page(..))
+import Backend.Session.Model exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List as List
 import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
-import Participant.Model exposing (ParticipantTypeFilter(..), ParticipantsDict)
+import Participant.Model exposing (ParticipantTypeFilter(..))
 import Translate as Trans exposing (translate, Language)
 import Utils.Html exposing (tabItem)
 
 
-view : Language -> ParticipantsDict -> Model -> List (Html Msg)
-view language participants model =
+view : Language -> EditableSession -> Model -> List (Html Msg)
+view language session model =
     let
         allActivityList =
-            getActivityList model.participantTypeFilter participants
+            getActivityList model.participantTypeFilter session
 
         pendingActivities =
-            List.filter (\activity -> (Tuple.first activity.totals > 0)) allActivityList
+            List.filter (\activity -> (activity.totals.pending > 0)) allActivityList
 
         noPendingActivities =
-            List.filter (\activity -> (Tuple.first activity.totals == 0)) allActivityList
+            List.filter (\activity -> (activity.totals.pending == 0)) allActivityList
 
         pendingTabTitle =
             translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities
@@ -56,7 +57,7 @@ view language participants model =
                     ]
                 ]
 
-        ( selectedActivies, emptySectionMessage ) =
+        ( selectedActivities, emptySectionMessage ) =
             case model.selectedTab of
                 Pending ->
                     ( pendingActivities, translate language Trans.PendingSectionEmpty )
@@ -69,10 +70,10 @@ view language participants model =
             [ class "ui full segment" ]
             [ div [ class "content" ]
                 [ div [ class "ui four cards" ] <|
-                    if List.isEmpty selectedActivies then
+                    if List.isEmpty selectedActivities then
                         [ span [] [ text emptySectionMessage ] ]
                     else
-                        List.map (viewCard language) selectedActivies
+                        List.map (viewCard language) selectedActivities
                 ]
             , div [ class "actions" ]
                 [ button
