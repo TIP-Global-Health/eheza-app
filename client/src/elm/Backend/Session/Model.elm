@@ -15,7 +15,7 @@ import Gizra.NominalDate exposing (NominalDateRange)
 
 
 {-| This is the basic `Session` data that we get when we're
-online.
+online, from /api/sessions.
 -}
 type alias Session =
     { scheduledDate : NominalDateRange
@@ -25,7 +25,7 @@ type alias Session =
 
 {-| This adds the additional information we get when we take
 a Session offline for data-entry. It includes everything we need for
-data-entry.
+data-entry. We get it from /api/offline_sessions.
 -}
 type alias OfflineSession =
     { session : Session

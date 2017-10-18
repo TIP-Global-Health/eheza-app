@@ -4,19 +4,22 @@ module Activity.Utils
         , getActivityTypeList
         , getActivityIdentity
         , getTotalsNumberPerActivity
-        , participantHasPendingActivity
         , hasAnyPendingChildActivity
         , hasAnyPendingMotherActivity
         , hasCompletedChildActivity
         , hasCompletedMotherActivity
+        , motherOrAnyChildHasAnyPendingActivity
+        , participantHasPendingActivity
         )
 
 import Activity.Model exposing (ActivityIdentity, ActivityListItem, ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Backend.Child.Model exposing (Child)
+import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getEditableChildMeasurements, getEditableMotherMeasurements)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (..)
+import Backend.Session.Utils exposing (getMother)
 import Dict exposing (Dict)
 import EveryDict
 import EveryDictList
@@ -224,16 +227,49 @@ hasAnyPendingChildActivity measurements =
         |> List.any ((flip hasCompletedChildActivity) measurements >> not)
 
 
-{-| Just looking at the single examination for the moment
-Will need to parameterize when we have more than one.
+{-| See whether either the mother, or any of her children, has a pending activity.
+
+If we can't find the mother, we return False.
 -}
+motherOrAnyChildHasAnyPendingActivity : MotherId -> EditableSession -> Bool
+motherOrAnyChildHasAnyPendingActivity motherId session =
+    let
+        motherHasOne =
+            motherHasAnyPendingActivity motherId session.editableMeasurements
+
+        anyChildHasOne =
+            getMother motherId session.offlineSession
+                |> Maybe.map
+                    (\mother ->
+                        mother.children
+                            |> List.any (\childId -> childHasAnyPendingActivity childId session.editableMeasurements)
+                    )
+                |> Maybe.withDefault False
+    in
+        motherHasOne || anyChildHasOne
+
+
+{-| Does the mother herself have any pending activity?
+-}
+motherHasAnyPendingActivity : MotherId -> EditableMeasurements -> Bool
+motherHasAnyPendingActivity motherId measurements =
+    getEditableMotherMeasurements motherId measurements
+        |> hasAnyPendingMotherActivity
+
+
+{-| Does the child have any pending activity?
+-}
+childHasAnyPendingActivity : ChildId -> EditableMeasurements -> Bool
+childHasAnyPendingActivity childId measurements =
+    getEditableChildMeasurements childId measurements
+        |> hasAnyPendingChildActivity
+
+
 participantHasPendingActivity : ParticipantId -> EditableMeasurements -> Bool
-participantHasPendingActivity participantId measurements =
+participantHasPendingActivity participantId =
     case participantId of
         ParticipantChildId childId ->
-            getEditableChildMeasurements childId measurements
-                |> hasAnyPendingChildActivity
+            childHasAnyPendingActivity childId
 
         ParticipantMotherId motherId ->
-            getEditableMotherMeasurements motherId measurements
-                |> hasAnyPendingMotherActivity
+            motherHasAnyPendingActivity motherId
