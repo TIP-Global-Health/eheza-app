@@ -19,6 +19,7 @@ in the UI.
 
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (EditableMeasurements)
 import Backend.Session.Model exposing (OfflineSession, Session)
 import Gizra.NominalDate exposing (NominalDate)
 import Drupal.Restful exposing (Entity, EntityDictList)
