@@ -3,15 +3,16 @@ module ProgressReport.View
         ( viewProgressReport
         )
 
-import Pages.Participant.Model exposing (Msg)
 import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (..)
+import Backend.Session.Model exposing (EditableSession)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
+import Pages.Participant.Model exposing (Msg)
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 
 
-viewProgressReport : Language -> ( ChildId, Child ) -> Html Msg
-viewProgressReport language ( childId, child ) =
+viewProgressReport : Language -> ChildId -> EditableSession -> Html Msg
+viewProgressReport language childId session =
     div [ class "ui full segment progress-report" ]
-        [ text <| toString child.examinations ]
+        [ text "The progress report will go here." ]
