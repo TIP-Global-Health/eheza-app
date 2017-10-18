@@ -1,63 +1,17 @@
 module Participant.Utils
     exposing
-        ( getExamination
-        , getParticipantAge
+        ( getParticipantAge
         , getParticipantAvatarThumb
         , getParticipantName
         , getParticipantTypeAsString
         , renderParticipantAge
         , renderParticipantDateOfBirth
-        , setExamination
         )
 
 import Date exposing (Date, Day)
 import Date.Extra.Duration
 import Participant.Model exposing (AgeDay, Participant(..))
 import Translate as Trans exposing (translate, Language)
-
-
-{-| This is a temporary convenience to get the examination for a participant.
-This will need to be replaced and parameterized to deal with multiple
-examinations.
--}
-getExamination : Participant -> Examination
-getExamination participant =
-    case participant of
-        ParticipantChild child ->
-            List.head child.examinations
-                |> Maybe.withDefault emptyExaminationChild
-                |> ChildExamination
-
-        ParticipantMother mother ->
-            List.head mother.examinations
-                |> Maybe.withDefault emptyExaminationMother
-                |> MotherExamination
-
-
-{-| Again, a temporary convenience to store an updated examination in a
-participant. Note that some combinations of `Examination` and `Participant`
-don't make sense, which suggests that our data model could be a bit more
-sophisticated.
-
-Eventually, this will need to be parameterized to deal with multiple
-examinations.
-
--}
-setExamination : Examination -> Participant -> Participant
-setExamination examination participant =
-    case ( examination, participant ) of
-        ( MotherExamination motherExamination, ParticipantMother mother ) ->
-            -- We just store the single examination in the list ...
-            -- this is **very** temporary code!
-            ParticipantMother { mother | examinations = [ motherExamination ] }
-
-        ( ChildExamination childExamination, ParticipantChild child ) ->
-            ParticipantChild { child | examinations = [ childExamination ] }
-
-        _ ->
-            -- A mismatch here, which could possibly be avoided if we thought
-            -- through the types a bit more.
-            participant
 
 
 getParticipantAvatarThumb : Participant -> String

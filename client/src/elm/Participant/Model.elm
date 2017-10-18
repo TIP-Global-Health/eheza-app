@@ -4,7 +4,6 @@ module Participant.Model
         , Participant(..)
         , ParticipantId(..)
         , ParticipantTypeFilter(..)
-        , ParticipantsDict
         )
 
 {-| This module provides a type which is either a child or a mother.
@@ -29,10 +28,6 @@ type Participant
 type ParticipantId
     = ParticipantChildId ChildId
     | ParticipantMotherId MotherId
-
-
-type alias ParticipantsDict =
-    EveryDict ParticipantId Participant
 
 
 type ParticipantTypeFilter
