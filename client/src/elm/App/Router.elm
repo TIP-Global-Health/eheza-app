@@ -2,6 +2,7 @@ module App.Router exposing (delta2url, location2messages)
 
 import App.Model exposing (..)
 import App.PageType exposing (..)
+import Drupal.Restful exposing (toEntityId, fromEntityId)
 import Navigation exposing (Location)
 import RouteUrl exposing (HistoryEntry(..), UrlChange)
 import UrlParser exposing (Parser, map, parseHash, s, oneOf, (</>), int, string, top)
@@ -34,8 +35,11 @@ delta2url previous current =
         PageNotFound ->
             Just <| UrlChange NewEntry "#404"
 
-        Participant id ->
-            Just <| UrlChange NewEntry ("#participant/" ++ (toString id))
+        PageChild id ->
+            Just <| UrlChange NewEntry ("#child/" ++ toString (fromEntityId id))
+
+        PageMother id ->
+            Just <| UrlChange NewEntry ("#mother/" ++ toString (fromEntityId id))
 
         Dashboard _ ->
             Just <| UrlChange NewEntry "#dashboard"
@@ -57,7 +61,8 @@ parseUrl =
         [ map (SetActivePage <| Dashboard []) (s "dashboard")
         , map (SetActivePage Activities) (s "activities")
         , map (SetActivePage <| Activity Nothing) (s "activity")
-        , map (\id -> SetActivePage <| Participant id) (s "participant" </> int)
+        , map (\id -> SetActivePage <| PageChild (toEntityId id)) (s "child" </> int)
+        , map (\id -> SetActivePage <| PageMother (toEntityId id)) (s "mother" </> int)
         , map (SetActivePage Login) (s "login")
         , map (SetActivePage OfflineSession) (s "offline-session")
         , map (SetActivePage OpenSessions) (s "open-sessions")

@@ -54,7 +54,7 @@ view language editableSession model =
                 viewMotherCard ( motherId, mother ) =
                     div
                         [ class "card"
-                        , App.PageType.Participant (Debug.crash "redo" motherId)
+                        , App.PageType.PageMother motherId
                             |> SetRedirectPage
                             |> onClick
                         ]

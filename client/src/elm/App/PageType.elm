@@ -1,12 +1,7 @@
 module App.PageType exposing (DashboardPage(..), Page(..))
 
 import Activity.Model exposing (ActivityType)
-
-
-{-| Prevent circular dependency.
--}
-type alias ParticipantId =
-    Int
+import Backend.Entities exposing (..)
 
 
 type Page
@@ -19,7 +14,8 @@ type Page
     | OfflineSession
     | OpenSessions
     | PageNotFound
-    | Participant ParticipantId
+    | PageChild ChildId
+    | PageMother MotherId
 
 
 type DashboardPage
