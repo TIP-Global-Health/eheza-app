@@ -158,6 +158,9 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     $grouped_mother_activity = [];
     $grouped_child_activity = [];
 
+    // We group the mother mesaurements and child measurements by the mother or
+    // child, and the type of the measurement, because it's really easy to do
+    // that here, and it makes the decoder on the client side simpler.
     foreach ($mother_activity_output as $activity) {
         $grouped_mother_activity[$activity['mother']][$activity['type']][] = $activity;
     }
