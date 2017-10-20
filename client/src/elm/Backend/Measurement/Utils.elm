@@ -21,3 +21,16 @@ getEditableChildMeasurements : ChildId -> EditableMeasurements -> EditableChildM
 getEditableChildMeasurements childId measurements =
     EveryDict.get childId measurements.children
         |> Maybe.withDefault emptyEditableChildMeasurements
+
+
+{-| Given a MUAC in cm, classify according to the measurement tool shown
+at <https://github.com/Gizra/ihangane/issues/282>
+-}
+muacIndication : MuacValue -> MuacIndication
+muacIndication (MuacValue value) =
+    if value <= 11.5 then
+        MuacRed
+    else if value <= 12.5 then
+        MuacYellow
+    else
+        MuacGreen

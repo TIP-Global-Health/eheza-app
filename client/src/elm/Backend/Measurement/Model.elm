@@ -313,6 +313,15 @@ type alias Muac =
     Measurement ChildId MuacValue
 
 
+{-| An interpretation of a MUAC, according to the measurement
+tool referenced at <https://github.com/Gizra/ihangane/issues/282>
+-}
+type MuacIndication
+    = MuacGreen
+    | MuacRed
+    | MuacYellow
+
+
 type HeightValue
     = HeightValue Float
 
