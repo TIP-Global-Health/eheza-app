@@ -2,9 +2,10 @@ module Backend.Measurement.Decoder exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Drupal.Restful exposing (decodeEntityId, decodeSingleEntity, decodeStorageTuple, decodeEntity)
+import Dict exposing (Dict)
+import Drupal.Restful exposing (decodeEntityId, decodeSingleEntity, decodeStorageTuple, decodeEntity, toEntityId)
 import EveryDict exposing (EveryDict)
-import Gizra.Json exposing (decodeFloat, decodeInt)
+import Gizra.Json exposing (decodeFloat, decodeInt, decodeIntDict)
 import Gizra.NominalDate
 import Json.Decode exposing (Decoder, andThen, at, dict, fail, field, int, list, map, map2, nullable, string, succeed, value, decodeValue)
 import Json.Decode.Extra exposing (fromResult)
@@ -40,18 +41,31 @@ decodeMeasurement participantDecoder valueDecoder =
 decodeMeasurements : Decoder Measurements
 decodeMeasurements =
     decode Measurements
-        |> requiredAt [ "participants", "mother_activity" ] decodeMotherMeasurements
-        |> requiredAt [ "participants", "child_activity" ] decodeChildMeasurements
+        |> requiredAt [ "participants", "mother_activity" ] (map (toEveryDict toEntityId) (decodeIntDict decodeMotherMeasurements))
+        |> requiredAt [ "participants", "child_activity" ] (map (toEveryDict toEntityId) (decodeIntDict decodeChildMeasurements))
 
 
-decodeMotherMeasurements : Decoder (EveryDict MotherId MotherMeasurements)
+{-| TODO: Put in elm-essentials.
+-}
+toEveryDict : (comparable -> a) -> Dict comparable b -> EveryDict a b
+toEveryDict func =
+    Dict.foldl (\key value acc -> EveryDict.insert (func key) value acc) EveryDict.empty
+
+
+decodeMotherMeasurements : Decoder MotherMeasurements
 decodeMotherMeasurements =
-    Debug.crash "implement"
+    decode MotherMeasurements
+        |> optional "family-planning" (list (decodeEntity decodeFamilyPlanning)) []
 
 
-decodeChildMeasurements : Decoder (EveryDict ChildId ChildMeasurements)
+decodeChildMeasurements : Decoder ChildMeasurements
 decodeChildMeasurements =
-    Debug.crash "implement"
+    decode ChildMeasurements
+        |> optional "height" (list (decodeEntity decodeHeight)) []
+        |> optional "muac" (list (decodeEntity decodeMuac)) []
+        |> optional "nutrition" (list (decodeEntity decodeNutrition)) []
+        |> optional "photo" (list (decodeEntity decodePhoto)) []
+        |> optional "weight" (list (decodeEntity decodeWeight)) []
 
 
 decodePhoto : Decoder Photo

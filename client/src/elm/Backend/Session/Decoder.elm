@@ -4,6 +4,7 @@ import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Child.Model exposing (Child)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Entities exposing (..)
+import Backend.Measurement.Decoder exposing (decodeMeasurements)
 import Backend.Mother.Decoder exposing (decodeMother)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (..)
@@ -41,6 +42,7 @@ decodeOfflineSession =
         |> required "clinic" decodeClinic
         |> requiredAt [ "participants", "mothers" ] decodeMothers
         |> requiredAt [ "participants", "children" ] decodeChildren
+        |> custom decodeMeasurements
 
 
 decodeMothers : Decoder (EveryDictList MotherId Mother)
