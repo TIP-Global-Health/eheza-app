@@ -1,7 +1,7 @@
 module Translate exposing (..)
 
+import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..), MuacIndication(..))
 import Date exposing (Month(..))
-import Measurement.Model exposing (MuacIndication(..))
 
 
 type Language
@@ -23,15 +23,9 @@ type TranslationId
     = AccessDenied
     | Activities
     | ActivitiesCompleted Int
-    | ActivitiesFamilyPlanningSignsCondomsLabel
     | ActivitiesFamilyPlanningSignsHelp
-    | ActivitiesFamilyPlanningSignsIUDLabel
-    | ActivitiesFamilyPlanningSignsInjectionLabel
     | ActivitiesFamilyPlanningSignsLabel
-    | ActivitiesFamilyPlanningSignsNecklaceLabel
-    | ActivitiesFamilyPlanningSignsNoneLabel
     | ActivitiesFamilyPlanningSignsTitle
-    | ActivitiesFamilyPlanningSignsPillLabel
     | ActivitiesHeightHelp
     | ActivitiesHeightLabel
     | ActivitiesHeightTitle
@@ -39,15 +33,8 @@ type TranslationId
     | ActivitiesMuacLabel
     | ActivitiesMuacTitle
     | ActivitiesToComplete Int
-    | ActivitiesNutritionSignsAbdominalDisortionLabel
-    | ActivitiesNutritionSignsApathyLabel
-    | ActivitiesNutritionSignsBrittleHairLabel
-    | ActivitiesNutritionSignsDrySkinLabel
-    | ActivitiesNutritionSignsEdemaLabel
     | ActivitiesNutritionSignsHelp
     | ActivitiesNutritionSignsLabel
-    | ActivitiesNutritionSignsNoneLabel
-    | ActivitiesNutritionSignsPoorAppetiteLabel
     | ActivitiesNutritionSignsTitle
     | ActivitiesPhotoHelp
     | ActivitiesPhotoTitle
@@ -68,6 +55,7 @@ type TranslationId
     | Baby
     | BabyName String
     | CentimeterShorthand
+    | ChildNutritionSignLabel ChildNutritionSign
     | Children
     | CompletedSectionEmpty
     | Connected
@@ -81,6 +69,7 @@ type TranslationId
     | ErrorConfigurationError
     | ErrorNetworkError
     | ErrorTimeout
+    | FamilyPlanningSignLabel FamilyPlanningSign
     | Female
     | KilogramShorthand
     | LinkToMother
@@ -144,32 +133,14 @@ translate lang trans =
                 ActivitiesCompleted count ->
                     { english = "Completed (" ++ toString count ++ ")" }
 
-                ActivitiesFamilyPlanningSignsCondomsLabel ->
-                    { english = "Condoms" }
-
                 ActivitiesFamilyPlanningSignsHelp ->
                     { english = "Every mother should be asked about her family planing method(s) each month. If a mother needs family planning, refer her to a clinic." }
-
-                ActivitiesFamilyPlanningSignsIUDLabel ->
-                    { english = "IUD" }
-
-                ActivitiesFamilyPlanningSignsInjectionLabel ->
-                    { english = "Injection" }
 
                 ActivitiesFamilyPlanningSignsLabel ->
                     { english = "Which, if any, of the following methods do you use?" }
 
-                ActivitiesFamilyPlanningSignsNecklaceLabel ->
-                    { english = "Necklace" }
-
-                ActivitiesFamilyPlanningSignsNoneLabel ->
-                    { english = "None of these" }
-
                 ActivitiesFamilyPlanningSignsTitle ->
                     { english = "Planning:" }
-
-                ActivitiesFamilyPlanningSignsPillLabel ->
-                    { english = "Pill" }
 
                 ActivitiesHeightHelp ->
                     { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight." }
@@ -189,32 +160,11 @@ translate lang trans =
                 ActivitiesMuacTitle ->
                     { english = "Mid Upper Arm Circumference (MUAC):" }
 
-                ActivitiesNutritionSignsAbdominalDisortionLabel ->
-                    { english = "Abdominal Disortion" }
-
-                ActivitiesNutritionSignsApathyLabel ->
-                    { english = "Apathy" }
-
-                ActivitiesNutritionSignsBrittleHairLabel ->
-                    { english = "Brittle Hair" }
-
-                ActivitiesNutritionSignsDrySkinLabel ->
-                    { english = "Dry Skin" }
-
-                ActivitiesNutritionSignsEdemaLabel ->
-                    { english = "Edema" }
-
                 ActivitiesNutritionSignsHelp ->
                     { english = "Explain to the mother how to check the malnutrition signs for their own child." }
 
                 ActivitiesNutritionSignsLabel ->
                     { english = "Select all signs that are present:" }
-
-                ActivitiesNutritionSignsNoneLabel ->
-                    { english = "None of these" }
-
-                ActivitiesNutritionSignsPoorAppetiteLabel ->
-                    { english = "Poor Appetite" }
 
                 ActivitiesNutritionSignsTitle ->
                     { english = "Nutrition:" }
@@ -279,6 +229,29 @@ translate lang trans =
                 CentimeterShorthand ->
                     { english = "cm" }
 
+                ChildNutritionSignLabel sign ->
+                    case sign of
+                        AbdominalDisortion ->
+                            { english = "Abdominal Disortion" }
+
+                        Apathy ->
+                            { english = "Apathy" }
+
+                        BrittleHair ->
+                            { english = "Brittle Hair" }
+
+                        DrySkin ->
+                            { english = "Dry Skin" }
+
+                        Edema ->
+                            { english = "Edema" }
+
+                        None ->
+                            { english = "None of these" }
+
+                        PoorAppetite ->
+                            { english = "Poor Appetite" }
+
                 Children ->
                     { english = "Children" }
 
@@ -317,6 +290,26 @@ translate lang trans =
 
                 ErrorTimeout ->
                     { english = "The network request timed out." }
+
+                FamilyPlanningSignLabel sign ->
+                    case sign of
+                        Condoms ->
+                            { english = "Condoms" }
+
+                        IUD ->
+                            { english = "IUD" }
+
+                        Injection ->
+                            { english = "Injection" }
+
+                        Necklace ->
+                            { english = "Necklace" }
+
+                        Pill ->
+                            { english = "Pill" }
+
+                        NoFamilyPlanning ->
+                            { english = "None of these" }
 
                 Female ->
                     { english = "Female" }
