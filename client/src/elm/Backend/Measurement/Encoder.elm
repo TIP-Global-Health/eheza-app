@@ -67,47 +67,57 @@ encodeMeasurement participantField encoder measurement =
 
 
 encodeNutritionSign : ChildNutritionSign -> Value
-encodeNutritionSign sign =
+encodeNutritionSign =
+    encodeNutritionSignAsString >> string
+
+
+encodeNutritionSignAsString : ChildNutritionSign -> Value
+encodeNutritionSignAsString sign =
     case sign of
         AbdominalDisortion ->
-            string "abdominal-disortion"
+            "abdominal-disortion"
 
         Apathy ->
-            string "apathy"
+            "apathy"
 
         BrittleHair ->
-            string "brittle-hair"
+            "brittle-hair"
 
         DrySkin ->
-            string "dry-skin"
+            "dry-skin"
 
         Edema ->
-            string "edema"
+            "edema"
 
         None ->
-            string "none"
+            "none"
 
         PoorAppetite ->
-            string "poor-appetite"
+            "poor-appetite"
 
 
 encodeFamilyPlanningSign : FamilyPlanningSign -> Value
-encodeFamilyPlanningSign sign =
+encodeFamilyPlanningSign =
+    encodeFamilyPlanningSignAsString >> string
+
+
+encodeFamilyPlanningSignAsString : FamilyPlanningSign -> String
+encodeFamilyPlanningSignAsString sign =
     case sign of
         Condoms ->
-            string "condoms"
+            "condoms"
 
         IUD ->
-            string "iud"
+            "iud"
 
         Injection ->
-            string "injection"
+            "injection"
 
         Necklace ->
-            string "necklace"
+            "necklace"
 
         NoFamilyPlanning ->
-            string "none"
+            "none"
 
         Pill ->
-            string "pill"
+            "pill"

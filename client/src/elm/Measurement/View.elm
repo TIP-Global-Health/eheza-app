@@ -13,9 +13,9 @@ import Activity.Model
         , ChildActivityType(..)
         , MotherActivityType(..)
         )
-import Backend.Child.Model exposing (Child)
-import Backend.Entities exposing (ChildId, MotherId)
-import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..))
+import Backend.Entities exposing (PhotoId)
+import Backend.Measurement.Encoder exposing (encodeNutritionSignAsString)
+import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..), Photo)
 import Date exposing (Date)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
@@ -23,21 +23,7 @@ import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Maybe.Extra exposing (isJust)
-import Measurement.Model
-    exposing
-        ( FileId
-        , FloatInput
-        , FloatMeasurements(..)
-        , Model
-        , MuacIndication(..)
-        , Msg(..)
-        , Photo
-        , PhotoId
-        , getFloatInputValue
-        , getInputConstraintsHeight
-        , getInputConstraintsMuac
-        , getInputConstraintsWeight
-        )
+import Measurement.Model exposing (..)
 import Participant.Model
 import Participant.Utils exposing (getParticipantAge)
 import RemoteData exposing (RemoteData(..), isFailure, isLoading)
@@ -308,18 +294,17 @@ viewMuacIndication language muac =
         ]
 
 
-{-| Show a photo thumbnail, if it exists.
+{-| Show a photo thumbnail.
 -}
-viewPhotoThumb : ( Maybe FileId, Maybe ( PhotoId, Photo ) ) -> Html Msg
-viewPhotoThumb maybePhoto =
-    showMaybe <|
-        Maybe.map
-            (\( _, photo ) ->
-                div []
-                    [ img [ src photo.url, class "ui small image" ] []
-                    ]
-            )
-            (Tuple.second maybePhoto)
+viewPhotoThumb : PhotoValue -> Html any
+viewPhotoThumb (PhotoValue url) =
+    div []
+        [ img
+            [ src url
+            , class "ui small image"
+            ]
+            []
+        ]
 
 
 viewPreviousMeasurement : Language -> FloatMeasurements -> Maybe ExaminationChild -> TranslationId -> Html Msg
@@ -421,8 +406,8 @@ viewFloatDiff language floatMeasurement maybePreviousExamination measurementType
                 emptyNode
 
 
-viewPhoto : Language -> ( ChildId, Child ) -> Model -> Html Msg
-viewPhoto language ( childId, child ) model =
+viewPhoto : Language -> Model -> Html Msg
+viewPhoto language model =
     let
         hasFileId =
             isJust <| Tuple.first model.photo
@@ -488,8 +473,8 @@ saveButton language msg model hasInput maybeDivClass =
         ]
 
 
-viewNutritionSigns : Language -> ( ChildId, Child ) -> Model -> Html Msg
-viewNutritionSigns language ( childId, child ) model =
+viewNutritionSigns : Language -> Model -> Html Msg
+viewNutritionSigns language model =
     div
         [ class "ui full segment nutrition"
         , id "nutritionSignsEntryForm"
@@ -523,16 +508,12 @@ viewNutritionSignsSelector language nutritionSigns =
             [ Apathy, PoorAppetite, BrittleHair ]
     in
         [ div [ class "ui grid" ]
-            [ div [ class "eight wide column" ]
-                (List.map
-                    (viewNutritionSignsSelectorItem language nutritionSigns)
-                    nutrionSignsAndTranslationIdsFirst
-                )
-            , div [ class "eight wide column" ]
-                (List.map
-                    (viewNutritionSignsSelectorItem language nutritionSigns)
-                    nutrionSignsAndTranslationIdsSecond
-                )
+            [ nutrionSignsAndTranslationIdsFirst
+                |> List.map (viewNutritionSignsSelectorItem language nutritionSigns)
+                |> div [ class "eight wide column" ]
+            , nutrionSignsAndTranslationIdsSecond
+                |> List.map (viewNutritionSignsSelectorItem language nutritionSigns)
+                |> div [ class "eight wide column" ]
             ]
         , div [ class "ui divider" ] []
         , viewNutritionSignsSelectorItem language nutritionSigns None
@@ -548,28 +529,8 @@ checkbox and a value for the id and for attributes.
 viewNutritionSignsSelectorItem : Language -> EverySet ChildNutritionSign -> ChildNutritionSign -> Html Msg
 viewNutritionSignsSelectorItem language nutritionSigns sign =
     let
-        ( body, attributeValue ) =
-            case sign of
-                Edema ->
-                    ( Trans.ActivitiesNutritionSignsEdemaLabel, "edema" )
-
-                AbdominalDisortion ->
-                    ( Trans.ActivitiesNutritionSignsAbdominalDisortionLabel, "abdominal-distrortion" )
-
-                DrySkin ->
-                    ( Trans.ActivitiesNutritionSignsDrySkinLabel, "dry-skin" )
-
-                PoorAppetite ->
-                    ( Trans.ActivitiesNutritionSignsPoorAppetiteLabel, "poor-appetites" )
-
-                Apathy ->
-                    ( Trans.ActivitiesNutritionSignsApathyLabel, "apathy" )
-
-                BrittleHair ->
-                    ( Trans.ActivitiesNutritionSignsBrittleHairLabel, "brittle-hair" )
-
-                None ->
-                    ( Trans.ActivitiesNutritionSignsNoneLabel, "none-of-these" )
+        inputId =
+            encodeChildNutritionAsString sign
 
         isChecked =
             EverySet.member sign nutritionSigns
@@ -577,9 +538,9 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
         div [ class "ui checkbox" ]
             [ input
                 ([ type_ "checkbox"
-                 , id attributeValue
-                 , name <| encodeChildNutritionSign sign
-                 , onClick <| NutritionSignsToggle sign
+                 , id inputId
+                 , name inputId
+                 , onClick <| SelectNutritionSign (not isChecked) sign
                  , checked isChecked
                  ]
                     ++ if isChecked then
@@ -588,8 +549,8 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
                         []
                 )
                 []
-            , label [ for attributeValue ]
-                [ text <| translate language body ]
+            , label [ for inputId ]
+                [ text <| translate language (Trans.FamilyPlanningSignLabel sign) ]
             ]
 
 
@@ -667,14 +628,12 @@ viewFamilyPlanningSelector language familyPlanningSigns =
             [ Injection, Necklace ]
     in
         [ div [ class "ui grid" ]
-            [ div [ class "eight wide column" ] <|
-                List.map
-                    (viewFamilyPlanningSelectorItem language familyPlanningSigns)
-                    familyPlanningSignFirst
-            , div [ class "eight wide column" ] <|
-                List.map
-                    (viewFamilyPlanningSelectorItem language familyPlanningSigns)
-                    familyPlanningSignSecond
+            [ familyPlanningSignFirst
+                |> List.map (viewFamilyPlanningSelectorItem language familyPlanningSigns)
+                |> div [ class "eight wide column" ]
+            , familyPlanningSignSecond
+                |> List.map (viewFamilyPlanningSelectorItem language familyPlanningSigns)
+                |> div [ class "eight wide column" ]
             ]
         , div [ class "ui divider" ] []
         , viewFamilyPlanningSelectorItem language familyPlanningSigns NoFamilyPlanning
@@ -684,25 +643,8 @@ viewFamilyPlanningSelector language familyPlanningSigns =
 viewFamilyPlanningSelectorItem : Language -> EverySet FamilyPlanningSign -> FamilyPlanningSign -> Html Msg
 viewFamilyPlanningSelectorItem language familyPlanningSigns sign =
     let
-        ( body, attributeValue ) =
-            case sign of
-                Condoms ->
-                    ( Trans.ActivitiesFamilyPlanningSignsCondomsLabel, "condoms" )
-
-                IUD ->
-                    ( Trans.ActivitiesFamilyPlanningSignsIUDLabel, "iud" )
-
-                Injection ->
-                    ( Trans.ActivitiesFamilyPlanningSignsInjectionLabel, "injection" )
-
-                Necklace ->
-                    ( Trans.ActivitiesFamilyPlanningSignsNecklaceLabel, "necklace" )
-
-                NoFamilyPlanning ->
-                    ( Trans.ActivitiesFamilyPlanningSignsNoneLabel, "no-family-planning-sign" )
-
-                Pill ->
-                    ( Trans.ActivitiesFamilyPlanningSignsPillLabel, "pill" )
+        inpuId =
+            encodeFamilyPlanningAsString sign
 
         isChecked =
             EverySet.member sign familyPlanningSigns
@@ -710,8 +652,9 @@ viewFamilyPlanningSelectorItem language familyPlanningSigns sign =
         div [ class "ui checkbox" ]
             [ input
                 ([ type_ "checkbox"
-                 , id attributeValue
-                 , onClick <| FamilyPlanningSignsToggle sign
+                 , id inputId
+                 , name inputId
+                 , onClick <| SelectFamilyPlanningSigns (not isChecked) sign
                  , checked isChecked
                  ]
                     ++ if isChecked then
