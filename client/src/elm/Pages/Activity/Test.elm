@@ -2,13 +2,13 @@ module Pages.Activity.Test exposing (all)
 
 import Date
 import Dict
-import Drupal.Restful exposing (toEntityId)
 import Expect
 import Pages.Activity.Model exposing (emptyModel)
 import Pages.Activity.Update exposing (nextParticipant)
 import Fixtures exposing (..)
 import Pages.Participant.Utils exposing (makeLoneChildDict)
 import Participant.Model
+import Restful.Endpoint exposing (toEntityId)
 import Test exposing (Test, describe, test)
 
 

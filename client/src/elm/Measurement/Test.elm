@@ -2,13 +2,13 @@ module Measurement.Test exposing (all)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Date
-import Drupal.Restful exposing (toEntityId)
 import Expect
 import Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildA, exampleUser)
 import Html
 import Html.Attributes as Attr
 import Measurement.Model exposing (..)
 import Measurement.View exposing (..)
+import Restful.Endpoint exposing (toEntityId)
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
 import Test.Html.Selector as Selector exposing (class, classes, id, tag, text, className)

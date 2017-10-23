@@ -8,12 +8,12 @@ import Backend.Measurement.Decoder exposing (decodeMeasurements)
 import Backend.Mother.Decoder exposing (decodeMother)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (..)
-import Drupal.Restful exposing (decodeEntityId)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (decodeDrupalRange, decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, dict, fail, field, int, list, map, map2, nullable, string, succeed, at, oneOf)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
+import Restful.Endpoint exposing (decodeEntityId)
 
 
 {-| Decodes the JSON sent by /api/sessions

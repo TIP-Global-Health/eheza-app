@@ -4,9 +4,9 @@ module Backend.Child.Decoder
         )
 
 import Backend.Child.Model exposing (..)
-import Drupal.Restful exposing (decodeEntityId)
 import Json.Decode exposing (Decoder, andThen, dict, fail, field, int, list, map, map2, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required)
+import Restful.Endpoint exposing (decodeEntityId)
 import Utils.Json exposing (decodeDate)
 
 

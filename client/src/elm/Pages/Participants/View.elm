@@ -4,13 +4,13 @@ import Activity.Utils exposing (getTotalsNumberPerActivity, motherOrAnyChildHasA
 import App.PageType exposing (Page(..))
 import Backend.Session.Model exposing (OfflineSession, EditableSession)
 import EveryDictList
-import Drupal.Restful exposing (fromEntityId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Pages.Participants.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
 import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
 import Participant.Utils exposing (getParticipantAvatarThumb, getParticipantName, getParticipantTypeAsString)
+import Restful.Endpoint exposing (fromEntityId)
 import Translate as Trans exposing (translate, Language)
 import Utils.Html exposing (tabItem, thumbnailImage)
 

@@ -12,7 +12,7 @@ import Backend.Model exposing (..)
 import Backend.Session.Decoder exposing (decodeSession, decodeOfflineSession)
 import Backend.Session.Model exposing (Session, OfflineSession)
 import Config.Model exposing (BackendUrl)
-import Drupal.Restful exposing (EndPoint, toEntityId, fromEntityId)
+import Restful.Endpoint exposing (EndPoint, toEntityId, fromEntityId)
 import EveryDictList
 import Gizra.NominalDate exposing (NominalDate)
 import Http exposing (Error)
@@ -72,10 +72,10 @@ update backendUrl accessToken msg model =
     let
         -- Partially apply the backendUrl and accessToken, just for fun
         selectFromBackend =
-            Drupal.Restful.select backendUrl (Just accessToken)
+            Restful.Endpoint.select backendUrl (Just accessToken)
 
         getFromBackend =
-            Drupal.Restful.get backendUrl (Just accessToken)
+            Restful.Endpoint.get backendUrl (Just accessToken)
     in
         case msg of
             FetchClinics ->

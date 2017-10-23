@@ -6,11 +6,11 @@ data-entry while offline.
 
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (OfflineSession)
-import Drupal.Restful exposing (Entity)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Pages.OfflineSession.Model exposing (..)
 import RemoteData exposing (WebData, RemoteData(..))
+import Restful.Endpoint exposing (Entity)
 import Translate exposing (Language)
 import Utils.Html exposing (spinner)
 import Utils.WebData exposing (viewError)

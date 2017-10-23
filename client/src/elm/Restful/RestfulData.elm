@@ -1,4 +1,4 @@
-module Drupal.RestfulData exposing (..)
+module Restful.RestfulData exposing (..)
 
 {-| When dealing wih values that are edited and persisted to a backend, (or
 values derived from such values), there is a cluster of concerns that one has.
@@ -22,6 +22,16 @@ suitable for "update" and "delete".
 Another related package is Gizra/editable-webdata. This module addresses similar
 concerns, but adds additional state-tracking and the possibly distinct type
 used for editing in the UI.
+
+TODO: This is a work-in-progress ... I'm not actually using it yet, but I
+clearly conceived of part of it one day and wanted to get that down. I like how
+it's going so far, but the validation part needs some more thinking ... I
+should try integrating with an existing validation library and see how that
+goes. Also, we'll need something like `RemoteData.map` to split things up, and
+then possibly to combine things together -- I think that's a problem which the
+validator libraries will already have a structure for, since they will also
+need to "pick apart" structures to validate them, and then put them back
+together.
 
 -}
 

@@ -6,10 +6,10 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Model
 import Backend.Session.Model exposing (Session)
 import Date exposing (Date)
-import Drupal.Restful exposing (EntityDictList)
 import Gizra.NominalDate exposing (formatYYYYMMDD)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
+import Restful.Endpoint exposing (EntityDictList)
 
 
 {-| The `fetch` function is an innovation in how to manage the "lazy" loading

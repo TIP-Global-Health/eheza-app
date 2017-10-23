@@ -2,8 +2,8 @@ module App.Router exposing (delta2url, location2messages)
 
 import App.Model exposing (..)
 import App.PageType exposing (..)
-import Drupal.Restful exposing (toEntityId, fromEntityId)
 import Navigation exposing (Location)
+import Restful.Endpoint exposing (toEntityId, fromEntityId)
 import RouteUrl exposing (HistoryEntry(..), UrlChange)
 import UrlParser exposing (Parser, map, parseHash, s, oneOf, (</>), int, string, top)
 

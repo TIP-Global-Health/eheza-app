@@ -3,7 +3,6 @@ module Pages.Activity.View exposing (view)
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Activity.Utils exposing (getActivityIdentity, hasPendingChildActivity, hasPendingMotherActivity)
 import Date exposing (Date)
-import Drupal.Restful exposing (toEntityId)
 import EveryDict
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
@@ -15,6 +14,7 @@ import Pages.Activity.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensio
 import Pages.Activity.Utils
 import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..), ParticipantsDict)
 import Participant.Utils exposing (getParticipantName, getParticipantAvatarThumb)
+import Restful.Endpoint exposing (toEntityId)
 import Translate as Trans exposing (translate, Language)
 import Utils.Html exposing (tabItem, thumbnailImage)
 

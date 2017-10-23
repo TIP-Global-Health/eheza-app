@@ -4,9 +4,9 @@ import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
 import Dict
-import Drupal.Restful exposing (fromEntityId)
 import List
 import Participant.Model
+import Restful.Endpoint exposing (fromEntityId)
 
 
 {-| Like `Update.Extra.sequence`, but for `update` signatures that also

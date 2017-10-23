@@ -21,9 +21,9 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (MeasurementEdits)
 import Backend.Session.Model exposing (OfflineSession, Session)
-import Drupal.Restful exposing (Entity, EntityDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
+import Restful.Endpoint exposing (Entity, EntityDictList)
 
 
 {-| This model basically represents things we have locally which also belong
@@ -93,7 +93,7 @@ type alias Model =
     -- tomorrow, due to the passage of time), we can know that we ought to
     -- ask again.
     --
-    -- TODO: Drupal.Restful should eventually have a `QueryResult` type which
+    -- TODO: Restful.Endpoint should eventually have a `QueryResult` type which
     -- remembers the params we supplied and a WebData for the result ...
     -- since one would really always want to remember what query the results
     -- represent. (And, eventually, one would want to remember the `count`

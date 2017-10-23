@@ -1,11 +1,11 @@
 module Backend.Measurement.Encoder exposing (..)
 
 import Backend.Measurement.Model exposing (..)
-import Drupal.Restful exposing (EntityId(..), encodeEntityId)
 import EverySet
 import Gizra.NominalDate
 import Json.Encode as Encoder exposing (Value, float, int, list, string)
 import Json.Encode.Extra exposing (maybe)
+import Restful.Endpoint exposing (EntityId(..), encodeEntityId)
 
 
 encodeHeight : Height -> List ( String, Value )

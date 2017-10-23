@@ -1,7 +1,6 @@
 module ProgressReport.Test exposing (all)
 
 import Date
-import Drupal.Restful exposing (toEntityId)
 import Expect
 import Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildB, exampleMother, exampleUser)
 import Html exposing (div)
@@ -9,6 +8,7 @@ import Html.Attributes as Attr
 import Pages.Participant.Model exposing (Tab(..), emptyModel)
 import Pages.Participant.View exposing (viewChild, viewMother)
 import RemoteData exposing (RemoteData(NotAsked))
+import Restful.Endpoint exposing (toEntityId)
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
 import Test.Html.Selector as Selector exposing (class, classes, id, tag, text, className)

@@ -1,13 +1,13 @@
-module Drupal.Restful
+module Restful.Endpoint
     exposing
         ( EndPoint
         , Entity
         , EntityDictList
         , EntityId
+        , decodeEntity
         , decodeEntityId
         , decodeId
         , decodeSingleEntity
-        , decodeEntity
         , decodeStorageTuple
         , encodeEntityId
         , fromEntityId
@@ -17,16 +17,20 @@ module Drupal.Restful
         , toEntityId
         )
 
-{-| These functions facilitate CRUD operations upon Drupal entities
-exposed through the Restful API.
+{-| These functions facilitate CRUD operations upon entities exposed through a
+Restful API. It is oriented towards a Drupal backend, but could be used (or
+modified to use) with other backends that produce similar JSON.
+
 
 ## Types
 
 @docs EndPoint, Entity, EntityDictList, EntityId
 
+
 ## CRUD Operations
 
 @docs get, get404, select
+
 
 ## JSON
 
@@ -38,7 +42,7 @@ import EveryDictList exposing (EveryDictList)
 import Gizra.Json exposing (decodeInt)
 import Http exposing (Error(..), expectJson)
 import HttpBuilder exposing (..)
-import Json.Decode exposing (Decoder, list, map, field, map2, index)
+import Json.Decode exposing (Decoder, field, index, list, map, map2)
 import Json.Encode exposing (Value)
 import Maybe.Extra
 import StorageKey exposing (StorageKey(..))
@@ -52,7 +56,7 @@ type alias AccessToken =
     String
 
 
-{-| This is a start at a nicer idiom for dealing with Drupal JSON endpoints.
+{-| This is a start at a nicer idiom for dealing with Restful JSON endpoints.
 The basic idea is to include in this type all those things about an endpoint
 which don't change. For instance, we know the path of the endpoint, what kind
 of JSON it emits, etc. -- that never varies.
@@ -143,10 +147,6 @@ a `RemoteData.fromResult` if you like.
 The `error` type parameter allows the endpoint to have locally-typed errors. You
 can just use `Http.Error`, though, if you want to.
 
-Note that the code is basically Drupal-specific ... that is, it assumes various
-structures and idioms that Drupal uses in its JSON. One could imagine making this
-more general if necessary at some point.
-
 -}
 select : BackendUrl -> Maybe AccessToken -> EndPoint error params key value -> params -> (Result error (List (Entity key value)) -> msg) -> Cmd msg
 select backendUrl accessToken endpoint params tagger =
@@ -166,8 +166,9 @@ select backendUrl accessToken endpoint params tagger =
 {-| Gets a entity from the backend via its ID.
 
 If we get a 404 error, we'll give you an `Ok Nothing`, rather than an error,
-since the request essentially succeeded ...  there merely was no entity with
+since the request essentially succeeded ... there merely was no entity with
 that ID.
+
 -}
 get : BackendUrl -> Maybe AccessToken -> EndPoint error params key value -> key -> (Result error (Maybe (Entity key value)) -> msg) -> Cmd msg
 get backendUrl accessToken endpoint key tagger =
@@ -285,8 +286,9 @@ decodeData =
     field "data"
 
 
-{-| Given a decoder for a Drupal entity, applies it to the kind of response Drupal
-sends when you do a PUT, POST, or PATCH.
+{-| Given a decoder for an entity, applies it to a JSON response that consists
+of a `data` field with a array of length 1, containing the entity. (This is
+what Drupal sends when you do a PUT, POST, or PATCH.)
 
 For instance, if you POST an entity, Drupal will send back the JSON for that entity,
 as the single element of an array, then wrapped in a `data` field, e.g.:
@@ -302,7 +304,7 @@ as the single element of an array, then wrapped in a `data` field, e.g.:
     }
 
 To decode this, write a decoder for the "inner" part (the actual entity), and then
-supply that as a parameter to `decodeSingleDrupalEntity`.
+supply that as a parameter to `decodeSingleEntity`.
 
 -}
 decodeSingleEntity : Decoder a -> Decoder a

@@ -11,7 +11,6 @@ import Activity.Utils exposing (getActivityIdentity)
 import App.PageType
 import Date exposing (Date)
 import Dict
-import Drupal.Restful exposing (fromEntityId, toEntityId)
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
@@ -27,6 +26,7 @@ import Pages.Participants.View
 import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..), ParticipantsDict)
 import ParticipantManager.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
+import Restful.Endpoint exposing (fromEntityId, toEntityId)
 import Translate as Trans exposing (Language, translate)
 import Utils.WebData exposing (viewError)
 

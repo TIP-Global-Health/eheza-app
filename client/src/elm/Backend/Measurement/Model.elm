@@ -5,11 +5,11 @@ and cached in local storage.
 -}
 
 import Backend.Entities exposing (..)
-import Drupal.Restful exposing (Entity)
 import EveryDict exposing (EveryDict)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
+import Restful.Endpoint exposing (Entity)
 
 
 -- GENERAL CASE

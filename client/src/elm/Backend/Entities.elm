@@ -41,7 +41,7 @@ But then the type-checker doesn't actually know that these two types are related
 in some way -- for instance, that both are IDs. For instance, to extract the
 `Int` you have to do two different things.
 
-What we do instead is have a "unityfing" `EntityId` type (from `Drupal.Restful`),
+What we do instead is have a "unityfing" `EntityId` type (from `Restful.Endpoint`),
 which takes what we call a "phantom" type variable -- a type variable that
 isn't actually used for any data. This gives us all the type-safety we need at
 compile time, but lets us have a single way of actually getting the `Int` when
@@ -49,7 +49,7 @@ we need it.
 
 -}
 
-import Drupal.Restful exposing (EntityId(..))
+import Restful.Endpoint exposing (EntityId(..))
 
 
 {-

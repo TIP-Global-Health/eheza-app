@@ -2,13 +2,13 @@ module Pusher.Test exposing (all)
 
 import Date
 import Backend.Child.Model exposing (Gender(..))
-import Drupal.Restful exposing (toEntityId)
 import Expect
 import Json.Decode exposing (decodeString)
 import Participant.Model exposing (ParticipantType(..))
 import Pusher.Decoder exposing (..)
 import Pusher.Model exposing (..)
 import RemoteData exposing (RemoteData(NotAsked))
+import Restful.Endpoint exposing (toEntityId)
 import Test exposing (Test, describe, test)
 
 
