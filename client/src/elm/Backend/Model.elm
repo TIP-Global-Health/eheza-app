@@ -19,10 +19,10 @@ in the UI.
 
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (EditableMeasurements)
+import Backend.Measurement.Model exposing (MeasurementEdits)
 import Backend.Session.Model exposing (OfflineSession, Session)
-import Gizra.NominalDate exposing (NominalDate)
 import Drupal.Restful exposing (Entity, EntityDictList)
+import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
@@ -85,7 +85,7 @@ type alias Model =
     -- The inner `Maybe` represents whether we found any editable measurements
     -- in our local storage ... we'll delete the whole thing once we successfully
     -- save it to the backend.
-    , editableMeasurements : WebData (Maybe EditableMeasurements)
+    , edits : WebData (Maybe MeasurementEdits)
 
     -- This tracks which sessions are currently available for data-entry,
     -- given the scheduled date range for each session. We remember which
@@ -106,7 +106,7 @@ emptyModel : Model
 emptyModel =
     { clinics = NotAsked
     , offlineSession = NotAsked
-    , editableMeasurements = NotAsked
+    , edits = NotAsked
     , openSessions = NotAsked
     }
 

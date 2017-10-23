@@ -10,17 +10,17 @@ import Json.Encode.Extra exposing (maybe)
 
 encodeHeight : Height -> List ( String, Value )
 encodeHeight =
-    encodeChildMeasurement (\(HeightValue height) -> ( "height", float height ))
+    encodeChildMeasurement (\(HeightInCm height) -> ( "height", float height ))
 
 
 encodeMuac : Muac -> List ( String, Value )
 encodeMuac =
-    encodeChildMeasurement (\(MuacValue muac) -> ( "muac", float muac ))
+    encodeChildMeasurement (\(MuacInCm muac) -> ( "muac", float muac ))
 
 
 encodeWeight : Weight -> List ( String, Value )
 encodeWeight =
-    encodeChildMeasurement (\(WeightValue weight) -> ( "weight", float weight ))
+    encodeChildMeasurement (\(WeightInKg weight) -> ( "weight", float weight ))
 
 
 encodeNutrition : ChildNutrition -> List ( String, Value )
@@ -71,7 +71,7 @@ encodeNutritionSign =
     encodeNutritionSignAsString >> string
 
 
-encodeNutritionSignAsString : ChildNutritionSign -> Value
+encodeNutritionSignAsString : ChildNutritionSign -> String
 encodeNutritionSignAsString sign =
     case sign of
         AbdominalDisortion ->

@@ -1,4 +1,4 @@
-module Backend.Session.Model exposing (Session, OfflineSession, EditableSession)
+module Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 
 {-| Represents an occasion on which measurements may be taken,
 including the time and the place.
@@ -9,8 +9,8 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Mother.Model exposing (Mother)
-import EveryDictList exposing (EveryDictList)
 import EveryDict exposing (EveryDict)
+import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDateRange)
 
 
@@ -46,8 +46,9 @@ Note that we'll need a function to construct this from what we get from the
 backend, since the current session may already have some measurements in the
 historical data. So, you can't necessarily just start with
 `emptyEditableMeasurements`.
+
 -}
 type alias EditableSession =
     { offlineSession : OfflineSession
-    , editableMeasurements : EditableMeasurements
+    , edits : MeasurementEdits
     }

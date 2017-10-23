@@ -5,29 +5,29 @@ import Backend.Measurement.Model exposing (..)
 import EveryDict
 
 
-{-| Picks out a particular mother's `EditableMeasurements`. If not found, makes
+{-| Picks out a particular mother's `MotherEdits`. If not found, makes
 an empty one.
 -}
-getEditableMotherMeasurements : MotherId -> EditableMeasurements -> EditableMotherMeasurements
-getEditableMotherMeasurements motherId measurements =
+getMotherEdits : MotherId -> MeasurementEdits -> MotherEdits
+getMotherEdits motherId measurements =
     EveryDict.get motherId measurements.mothers
-        |> Maybe.withDefault emptyEditableMotherMeasurements
+        |> Maybe.withDefault emptyMotherEdits
 
 
-{-| Picks out a particular child's `EditableMeasurements`. If not found, makes
+{-| Picks out a particular child's `ChildEdits`. If not found, makes
 an empty one.
 -}
-getEditableChildMeasurements : ChildId -> EditableMeasurements -> EditableChildMeasurements
-getEditableChildMeasurements childId measurements =
+getChildEdits : ChildId -> MeasurementEdits -> ChildEdits
+getChildEdits childId measurements =
     EveryDict.get childId measurements.children
-        |> Maybe.withDefault emptyEditableChildMeasurements
+        |> Maybe.withDefault emptyChildEdits
 
 
 {-| Given a MUAC in cm, classify according to the measurement tool shown
 at <https://github.com/Gizra/ihangane/issues/282>
 -}
-muacIndication : MuacValue -> MuacIndication
-muacIndication (MuacValue value) =
+muacIndication : MuacInCm -> MuacIndication
+muacIndication (MuacInCm value) =
     if value <= 11.5 then
         MuacRed
     else if value <= 12.5 then

@@ -3,11 +3,11 @@ module Backend.Measurement.Decoder exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Dict exposing (Dict)
-import Drupal.Restful exposing (decodeEntityId, decodeSingleEntity, decodeStorageTuple, decodeEntity, toEntityId)
+import Drupal.Restful exposing (decodeEntity, decodeEntityId, decodeSingleEntity, decodeStorageTuple, toEntityId)
 import EveryDict exposing (EveryDict)
 import Gizra.Json exposing (decodeFloat, decodeInt, decodeIntDict)
 import Gizra.NominalDate
-import Json.Decode exposing (Decoder, andThen, at, dict, fail, field, int, list, map, map2, nullable, string, succeed, value, decodeValue)
+import Json.Decode exposing (Decoder, andThen, at, decodeValue, dict, fail, field, int, list, map, map2, nullable, string, succeed, value)
 import Json.Decode.Extra exposing (fromResult)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
 import Utils.Json exposing (decodeEverySet)
@@ -41,8 +41,8 @@ decodeMeasurement participantDecoder valueDecoder =
 decodeMeasurements : Decoder Measurements
 decodeMeasurements =
     decode Measurements
-        |> requiredAt [ "participants", "mother_activity" ] (map (toEveryDict toEntityId) (decodeIntDict decodeMotherMeasurements))
-        |> requiredAt [ "participants", "child_activity" ] (map (toEveryDict toEntityId) (decodeIntDict decodeChildMeasurements))
+        |> requiredAt [ "participants", "mother_activity" ] (map (toEveryDict toEntityId) (decodeIntDict decodeMotherMeasurementList))
+        |> requiredAt [ "participants", "child_activity" ] (map (toEveryDict toEntityId) (decodeIntDict decodeChildMeasurementList))
 
 
 {-| TODO: Put in elm-essentials.
@@ -52,15 +52,15 @@ toEveryDict func =
     Dict.foldl (\key value acc -> EveryDict.insert (func key) value acc) EveryDict.empty
 
 
-decodeMotherMeasurements : Decoder MotherMeasurements
-decodeMotherMeasurements =
-    decode MotherMeasurements
+decodeMotherMeasurementList : Decoder MotherMeasurementList
+decodeMotherMeasurementList =
+    decode MotherMeasurementList
         |> optional "family-planning" (list (decodeEntity decodeFamilyPlanning)) []
 
 
-decodeChildMeasurements : Decoder ChildMeasurements
-decodeChildMeasurements =
-    decode ChildMeasurements
+decodeChildMeasurementList : Decoder ChildMeasurementList
+decodeChildMeasurementList =
+    decode ChildMeasurementList
         |> optional "height" (list (decodeEntity decodeHeight)) []
         |> optional "muac" (list (decodeEntity decodeMuac)) []
         |> optional "nutrition" (list (decodeEntity decodeNutrition)) []
@@ -78,21 +78,21 @@ decodePhoto =
 decodeHeight : Decoder Height
 decodeHeight =
     field "height" decodeFloat
-        |> map HeightValue
+        |> map HeightInCm
         |> decodeChildMeasurement
 
 
 decodeWeight : Decoder Weight
 decodeWeight =
     field "weight" decodeFloat
-        |> map WeightValue
+        |> map WeightInKg
         |> decodeChildMeasurement
 
 
 decodeMuac : Decoder Muac
 decodeMuac =
     field "muac" decodeFloat
-        |> map MuacValue
+        |> map MuacInCm
         |> decodeChildMeasurement
 
 
