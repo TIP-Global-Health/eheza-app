@@ -1,4 +1,4 @@
-port module Measurement.Update exposing (update, subscriptions)
+port module Measurement.Update exposing (updateChild, updateMother, subscriptions)
 
 import Activity.Model
     exposing
@@ -9,492 +9,142 @@ import Activity.Model
 import Backend.Entities exposing (ChildId, MotherId)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..))
 import Config.Model exposing (BackendUrl)
-import Drupal.Restful exposing (decodeSingleEntity, toEntityId)
 import EverySet exposing (EverySet)
 import Http
 import HttpBuilder exposing (get, send, withJsonBody, withQueryParams, withExpect)
 import Json.Encode exposing (Value)
 import Json.Decode exposing (Decoder)
-import Measurement.Decoder exposing (decodePhotoFromResponse, decodeWeight, decodeHeight, decodeMuac, decodeFamilyPlanning, decodeNutrition)
-import Measurement.Encoder exposing (encodeFamilyPlanning, encodeHeight, encodeMuac, encodeNutritionSigns, encodePhoto, encodeWeight)
 import Measurement.Model exposing (..)
 import Participant.Model exposing (Participant, ParticipantId)
 import RemoteData exposing (RemoteData(..))
+import Restful.Endpoint exposing (decodeSingleEntity, toEntityId)
 import StorageKey exposing (StorageKey(..))
 import Utils.WebData exposing (sendWithHandler)
 
 
-{-| Optionally, we bubble up an activity type which should now be considered to
-be completed.
-
-The strategy used here, for the moment, is that the `model` tracks the UI,
-whereas the `examination` tracks the underlying data from the backend. So,
-we'll update the `examination` only after data has actually been successfully
-saved to the backend. (Ultimately, it will probably be better to use an
-`EditableWebData` in the examination for each measurement, but this is
-easier to implement for the moment). It is the caller's rsponsibility to
-provided the relevant examination, and store it in the relevant structure
-when it is returned.
-
-It's possible that we ought to split this up into an `updateMother` and
-`updateChild` (so we can specialize the examination), but perhaps not.
-
+{-| The strategy used here, for the moment, is that the `model` tracks the UI,
+(so, for instance, strings instead of floats, and changing on every kepress),
+whereas the `editableMeasurements` tracks the underlying data. The only thing
+which we can change **directly** here is our own model. If we want to change
+the "real" data, we have to return an `OutMsg` to be processed elsehwere (for
+instance, by actually writing the data to local storage).
 -}
-update : BackendUrl -> String -> ParticipantId -> Msg -> Model -> Examination -> ( Model, Examination, Cmd Msg, Maybe ActivityType )
-update backendUrl accessToken participantId msg model examination =
-    Debug.crash "todo"
+updateChild : MsgChild -> ModelChild -> ( ModelChild, Cmd MsgChild, Maybe OutMsgChild )
+updateChild msg model =
+    case msg of
+        HandleDropzoneUploadedFile fileId ->
+            ( { model | photo = ( Just fileId, Nothing ) }
+            , Cmd.none
+            , Nothing
+            )
+
+        UpdateHeight val ->
+            ( { model | height = val }
+            , Cmd.none
+            , Nothing
+            )
+
+        UpdateMuac val ->
+            ( { model | muac = val }
+            , Cmd.none
+            , Nothing
+            )
+
+        SelectNutritionSign selected sign ->
+            let
+                nutritionSignsUpdated =
+                    if selected then
+                        case sign of
+                            None ->
+                                -- If the user checks `None`, then we want that
+                                -- to be the only sign.
+                                EverySet.singleton sign
+
+                            _ ->
+                                -- If the user checks something else, then also
+                                -- make sure that `None` is unchecekd
+                                model.nutritionSigns
+                                    |> EverySet.insert sign
+                                    |> EverySet.remove None
+                    else
+                        -- We're allowing `NoFamilyPanning` itself to be
+                        -- un-checked here.  That probably makes sense ...  it
+                        -- would mean that we haven't actually answered this
+                        -- question ... that is, that we don't know the answer,
+                        -- whereas `NoFamilyPlanning` being checked means that
+                        -- we do know the answer, and it's that there aren't
+                        -- any signs.
+                        EverySet.remove sign model.nutritionSigns
+            in
+                ( { model | nutritionSigns = nutritionSignsUpdated }
+                , Cmd.none
+                , Nothing
+                )
+
+        ResetDropZone ->
+            ( model
+            , dropzoneReset ()
+            , Nothing
+            )
+
+        SendOutMsgChild outMsg ->
+            ( model
+            , Cmd.none
+            , Just outMsg
+            )
+
+        UpdateWeight val ->
+            ( { model | weight = val }
+            , Cmd.none
+            , Nothing
+            )
 
 
+updateMother : MsgMother -> ModelMother -> ( ModelMother, Cmd MsgMother, Maybe OutMsgMother )
+updateMother msg model =
+    case msg of
+        SelectFamilyPlanningSign selected sign ->
+            let
+                signsUpdated =
+                    if selected then
+                        case sign of
+                            NoFamilyPlanning ->
+                                -- If the user checks `NoFamilyPlanning`, then
+                                -- we want that to be the only sign.
+                                EverySet.singleton sign
 
-{-
-   let
-       -- This processes a common case below, to supply an unchanged
-       -- examination and no redirection
-       unchangedExaminationNoRedirect ( updatedModel, cmd ) =
-           ( updatedModel, examination, cmd, Nothing )
-   in
-       case msg of
-           FamilyPlanningSignsSave ->
-              let
-                  -- We apply the value from the UI to the value stored in
-                  -- the examination in order to send it to the backend.
-                  -- But, we only update the examination itself when we get
-                  -- the successful response from the backend.
-                  cmd =
-                      toExaminationMother examination
-                          |> Maybe.map
-                              (\exam ->
-                                  if EverySet.isEmpty model.familyPlanningSigns then
-                                      Cmd.none
-                                  else
-                                      upsert
-                                          -- TODO: Fix up types to avoid `toEntityId`
-                                          (upsertFamilyPlanning (toEntityId participantId))
-                                          backendUrl
-                                          accessToken
-                                          (supplyMeasurement model.familyPlanningSigns (Just exam.familyPlanning))
-                              )
-                          |> Maybe.withDefault Cmd.none
-              in
-                  -- In principle, we shouldn't have a separate `status` ...
-                  -- instead, the measurement itself ought to be an
-                  -- `StorageEditableWebData` or something of the kind ...
-                  -- but leaving it like this for now.
-                  ( { model | status = Loading }
-                  , cmd
-                  )
-                      |> unchangedExaminationNoRedirect
+                            _ ->
+                                -- If the user checks something else, then also
+                                -- make sure that `NoFamilyPlanning` is
+                                -- unchecekd
+                                model.familyPlanningSigns
+                                    |> EverySet.insert sign
+                                    |> EverySet.remove NoFamilyPlanning
+                    else
+                        -- We're allowing `NoFamilyPanning` itself to be
+                        -- un-checked here.  That probably makes sense ...  it
+                        -- would mean that we haven't actually answered this
+                        -- question ... that is, that we don't know the answer,
+                        -- whereas `NoFamilyPlanning` being checked means that
+                        -- we do know the answer, and it's that there aren't
+                        -- any signs.
+                        EverySet.remove sign model.familyPlanningSigns
+            in
+                ( { model | familyPlanningSigns = signsUpdated }
+                , Cmd.none
+                , Nothing
+                )
 
-           FamilyPlanningSignsToggle sign ->
-               let
-                   signsUpdated =
-                       if EverySet.member sign model.familyPlanningSigns then
-                           EverySet.remove sign model.familyPlanningSigns
-                       else
-                           case sign of
-                               -- 'None of these' checked. Need to empty all selected signs.
-                               NoFamilyPlanning ->
-                                   EverySet.insert sign EverySet.empty
-
-                               -- Another option checked checked. Need to uncheck 'None of these', if it's checked.
-                               _ ->
-                                   EverySet.insert sign <|
-                                       EverySet.remove NoFamilyPlanning model.familyPlanningSigns
-               in
-                   ( { model | familyPlanningSigns = signsUpdated }
-                   , Cmd.none
-                   )
-                       |> unchangedExaminationNoRedirect
-
-           HandleDropzoneUploadedFile fileId ->
-               ( { model | photo = ( Just fileId, Nothing ) }
-               , Cmd.none
-               )
-                   |> unchangedExaminationNoRedirect
-
-           HandleFamilyPlanningSave (Ok value) ->
-               ( { model
-                   | status = Success ()
-                   , familyPlanningSigns = Tuple.second value
-                 }
-               , mapExaminationMother (\exam -> { exam | familyPlanning = value }) examination
-               , Cmd.none
-               , Just <| Mother FamilyPlanning
-               )
-
-           HandleFamilyPlanningSave (Err err) ->
-               let
-                   _ =
-                       Debug.log "HandleFamilyPlanningSave (Err)" False
-               in
-                   ( { model | status = Failure err }
-                   , Cmd.none
-                   )
-                       |> unchangedExaminationNoRedirect
-
-           HandleHeightSave (Ok value) ->
-               ( { model
-                   | status = Success ()
-                   , height = Just (toString (Tuple.second value))
-                 }
-               , mapExaminationChild (\exam -> { exam | height = Just value }) examination
-               , Cmd.none
-               , Just <| Child Height
-               )
-
-           HandleHeightSave (Err err) ->
-               let
-                   _ =
-                       Debug.log "HandleHeightSave (Err)" False
-               in
-                   ( { model | status = Failure err }
-                   , Cmd.none
-                   )
-                       |> unchangedExaminationNoRedirect
-
-           HandleNutritionSignsSave (Ok value) ->
-               ( { model
-                   | status = Success ()
-                   , nutritionSigns = Tuple.second value
-                 }
-               , mapExaminationChild (\exam -> { exam | nutrition = value }) examination
-               , Cmd.none
-               , Just <| Child NutritionSigns
-               )
-
-           HandleNutritionSignsSave (Err err) ->
-               let
-                   _ =
-                       Debug.log "HandleNutritionSignsSave (Err)" False
-               in
-                   ( { model | status = Failure err }
-                   , Cmd.none
-                   )
-                       |> unchangedExaminationNoRedirect
-
-           HandleMuacSave (Ok value) ->
-               ( { model
-                   | status = Success ()
-                   , muac = Just (toString (Tuple.second value))
-                 }
-               , mapExaminationChild (\exam -> { exam | muac = Just value }) examination
-               , Cmd.none
-               , Just <| Child Muac
-               )
-
-           HandleMuacSave (Err err) ->
-               let
-                   _ =
-                       Debug.log "HandleMuacSave (Err)" False
-               in
-                   ( { model | status = Failure err }
-                   , Cmd.none
-                   )
-                       |> unchangedExaminationNoRedirect
-
-           HandlePhotoSave (Ok ( photoId, photo )) ->
-               ( { model
-                   | status = Success ()
-                   , photo = ( Tuple.first model.photo, Just ( photoId, photo ) )
-                 }
-               , examination
-               , Cmd.none
-               , Just <| Child ChildPicture
-               )
-
-           HandlePhotoSave (Err err) ->
-               let
-                   _ =
-                       Debug.log "HandlePhotoSave (Err)" False
-               in
-                   ( { model | status = Failure err }
-                   , Cmd.none
-                   )
-                       |> unchangedExaminationNoRedirect
-
-           HandleWeightSave (Ok value) ->
-               ( { model
-                   | status = Success ()
-                   , weight = Just (toString (Tuple.second value))
-                 }
-               , mapExaminationChild (\exam -> { exam | weight = Just value }) examination
-               , Cmd.none
-               , Just <| Child Weight
-               )
-
-           HandleWeightSave (Err err) ->
-               let
-                   _ =
-                       Debug.log "HandleWeightSave (Err)" False
-               in
-                   ( { model | status = Failure err }
-                   , Cmd.none
-                   )
-                       |> unchangedExaminationNoRedirect
-
-           HeightUpdate val ->
-               ( { model | height = Just (normalizeFloatFormInput val) }
-               , Cmd.none
-               )
-                   |> unchangedExaminationNoRedirect
-
-           MuacUpdate val ->
-               ( { model | muac = Just (normalizeFloatFormInput val) }
-               , Cmd.none
-               )
-                   |> unchangedExaminationNoRedirect
-
-           MuacSave ->
-               let
-                   -- We apply the value from the UI to the value stored in
-                   -- the examination in order to send it to the backend.
-                   -- But, we only update the examination itself when we get
-                   -- the successful response from the backend.
-                   cmd =
-                       Maybe.map2
-                           (\muac exam ->
-                               upsert
-                                   (upsertMuac (toEntityId participantId))
-                                   backendUrl
-                                   accessToken
-                                   (supplyMeasurement (getFloatInputValue muac) exam.muac)
-                           )
-                           model.muac
-                           (toExaminationChild examination)
-                           |> Maybe.withDefault Cmd.none
-               in
-                   -- In principle, we shouldn't have a separate `status` ...
-                   -- instead, the measurement itself ought to be an
-                   -- `StorageEditableWebData` or something of the kind ...
-                   -- but leaving it like this for now.
-                   ( { model | status = Loading }
-                   , cmd
-                   )
-                       |> unchangedExaminationNoRedirect
-
-           NutritionSignsSave ->
-               let
-                   -- We apply the value from the UI to the value stored in
-                   -- the examination in order to send it to the backend.
-                   -- But, we only update the examination itself when we get
-                   -- the successful response from the backend.
-                   cmd =
-                       toExaminationChild examination
-                           |> Maybe.map
-                               (\exam ->
-                                   if EverySet.isEmpty model.nutritionSigns then
-                                       Cmd.none
-                                   else
-                                       upsert
-                                           (upsertNutrition (toEntityId participantId))
-                                           backendUrl
-                                           accessToken
-                                           (supplyMeasurement model.nutritionSigns (Just exam.nutrition))
-                               )
-                           |> Maybe.withDefault Cmd.none
-               in
-                   -- In principle, we shouldn't have a separate `status` ...
-                   -- instead, the measurement itself ought to be an
-                   -- `StorageEditableWebData` or something of the kind ...
-                   -- but leaving it like this for now.
-                   ( { model | status = Loading }
-                   , cmd
-                   )
-                       |> unchangedExaminationNoRedirect
-
-           NutritionSignsToggle sign ->
-               let
-                   nutritionSignsUpdated =
-                       if EverySet.member sign model.nutritionSigns then
-                           EverySet.remove sign model.nutritionSigns
-                       else
-                           case sign of
-                               -- 'None of these' checked. Need to empty all selected signs.
-                               None ->
-                                   EverySet.insert sign EverySet.empty
-
-                               -- Another option checked checked. Need to uncheck 'None of these', if it's checked.
-                               _ ->
-                                   EverySet.insert sign <|
-                                       EverySet.remove None model.nutritionSigns
-               in
-                   ( { model | nutritionSigns = nutritionSignsUpdated }
-                   , Cmd.none
-                   )
-                       |> unchangedExaminationNoRedirect
-
-           PhotoSave ->
-               postPhoto backendUrl accessToken participantId model
-                   |> unchangedExaminationNoRedirect
-
-           ResetDropZone ->
-               ( model
-               , dropzoneReset ()
-               )
-                   |> unchangedExaminationNoRedirect
-
-           WeightSave ->
-               let
-                   -- We apply the value from the UI to the value stored in
-                   -- the examination in order to send it to the backend.
-                   -- But, we only update the examination itself when we get
-                   -- the successful response from the backend.
-                   cmd =
-                       Maybe.map2
-                           (\weight exam ->
-                               upsert
-                                   (upsertWeight (toEntityId participantId))
-                                   backendUrl
-                                   accessToken
-                                   (supplyMeasurement (getFloatInputValue weight) exam.weight)
-                           )
-                           model.weight
-                           (toExaminationChild examination)
-                           |> Maybe.withDefault Cmd.none
-               in
-                   -- In principle, we shouldn't have a separate `status` ...
-                   -- instead, the measurement itself ought to be an
-                   -- `StorageEditableWebData` or something of the kind ...
-                   -- but leaving it like this for now.
-                   ( { model | status = Loading }
-                   , cmd
-                   )
-                       |> unchangedExaminationNoRedirect
-
-           HeightSave ->
-               let
-                   -- We apply the value from the UI to the value stored in
-                   -- the examination in order to send it to the backend.
-                   -- But, we only update the examination itself when we get
-                   -- the successful response from the backend.
-                   cmd =
-                       Maybe.map2
-                           (\height exam ->
-                               upsert
-                                   -- TODO: Fix up types to avoid `toEntityId`
-                                   (upsertHeight (toEntityId participantId))
-                                   backendUrl
-                                   accessToken
-                                   (supplyMeasurement (getFloatInputValue height) exam.height)
-                           )
-                           model.height
-                           (toExaminationChild examination)
-                           |> Maybe.withDefault Cmd.none
-               in
-                   -- In principle, we shouldn't have a separate `status` ...
-                   -- instead, the measurement itself ought to be an
-                   -- `StorageEditableWebData` or something of the kind ...
-                   -- but leaving it like this for now.
-                   ( { model | status = Loading }
-                   , cmd
-                   )
-                       |> unchangedExaminationNoRedirect
-
-           WeightUpdate val ->
-               ( { model | weight = Just (normalizeFloatFormInput val) }
-               , Cmd.none
-               )
-                   |> unchangedExaminationNoRedirect
--}
-
-
-{-| Some things that `upsert` needs to know.
-
-The pattern here is that we try to isolate those parameters which are purely
-dependennt on the types ... that is, which are static and will not vary. That
-way, we can pre-construct a configuration for each combination of types we're
-interested in. So, the moral equivalent of a type-class.
-
-The `encodeStorage` function should check whether the record is `New` or
-`Existing` and encode whatever is relevant.
-
--}
-type alias UpsertConfig key value msg =
-    { decodeStorage : Decoder ( StorageKey key, value )
-    , encodeId : key -> String
-    , encodeStorage : ( StorageKey key, value ) -> Value
-    , handler : Result Http.Error ( StorageKey key, value ) -> msg
-    , path : String
-    }
-
-
-upsertWeight : ChildId -> UpsertConfig WeightId Float Msg
-upsertWeight childId =
-    { decodeStorage = decodeWeight
-    , encodeId = \(WeightId id) -> toString id
-    , encodeStorage = encodeWeight childId
-    , handler = HandleWeightSave
-    , path = "weights"
-    }
-
-
-upsertHeight : ChildId -> UpsertConfig HeightId Float Msg
-upsertHeight childId =
-    { decodeStorage = decodeHeight
-    , encodeId = \(HeightId id) -> toString id
-    , encodeStorage = encodeHeight childId
-    , handler = HandleHeightSave
-    , path = "heights"
-    }
-
-
-upsertMuac : ChildId -> UpsertConfig MuacId Float Msg
-upsertMuac childId =
-    { decodeStorage = decodeMuac
-    , encodeId = \(MuacId id) -> toString id
-    , encodeStorage = encodeMuac childId
-    , handler = HandleMuacSave
-    , path = "muacs"
-    }
-
-
-upsertFamilyPlanning : MotherId -> UpsertConfig FamilyPlanningId (EverySet FamilyPlanningSign) Msg
-upsertFamilyPlanning motherId =
-    { decodeStorage = decodeFamilyPlanning
-    , encodeId = \(FamilyPlanningId id) -> toString id
-    , encodeStorage = encodeFamilyPlanning motherId
-    , handler = HandleFamilyPlanningSave
-    , path = "family-plannings"
-    }
-
-
-upsertNutrition : ChildId -> UpsertConfig NutritionId (EverySet ChildNutritionSign) Msg
-upsertNutrition childId =
-    { decodeStorage = decodeNutrition
-    , encodeId = \(NutritionId id) -> toString id
-    , encodeStorage = encodeNutritionSigns childId
-    , handler = HandleNutritionSignsSave
-    , path = "nutritions"
-    }
-
-
-{-| If we have an `Existing` storage key, then update the backend via `patch`.
-
-If we have a `New` storage key, insert it in the backend via `post`.
-
--}
-upsert : UpsertConfig key value msg -> BackendUrl -> String -> ( StorageKey key, value ) -> Cmd msg
-upsert config backendUrl accessToken ( key, value ) =
-    -- TODO: Integrate into Drupal.Restful
-    case key of
-        Existing id ->
-            HttpBuilder.patch (backendUrl ++ "/api/" ++ config.path ++ "/" ++ config.encodeId id)
-                |> withQueryParams [ ( "access_token", accessToken ) ]
-                |> withJsonBody (config.encodeStorage ( key, value ))
-                |> withExpect (Http.expectJson (decodeSingleEntity config.decodeStorage))
-                |> send config.handler
-
-        New ->
-            HttpBuilder.post (backendUrl ++ "/api/" ++ config.path)
-                |> withQueryParams [ ( "access_token", accessToken ) ]
-                |> withJsonBody (config.encodeStorage ( key, value ))
-                |> withExpect (Http.expectJson (decodeSingleEntity config.decodeStorage))
-                |> send config.handler
+        SendOutMsgMother outMsg ->
+            ( model
+            , Cmd.none
+            , Just outMsg
+            )
 
 
 {-| Send new photo of a child to the backend.
 -}
-postPhoto : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg )
+postPhoto : BackendUrl -> String -> ChildId -> ModelChild -> ( ModelChild, Cmd MsgChild )
 postPhoto backendUrl accessToken childId model =
     Debug.crash "re-implement"
 
@@ -522,16 +172,16 @@ postPhoto backendUrl accessToken childId model =
 -}
 
 
-subscriptions : Model -> Sub Msg
+subscriptions : ModelChild -> Sub MsgChild
 subscriptions model =
     dropzoneUploadedFile HandleDropzoneUploadedFile
 
 
-{-| Get a singal if a file has been uploaded via the Dropzone.
+{-| Get a msg if a file has been uploaded via the Dropzone.
 -}
 port dropzoneUploadedFile : (Int -> msg) -> Sub msg
 
 
-{-| Cause the drop zone widget to clear it's image
+{-| Cause the drop zone widget to clear its image
 -}
 port dropzoneReset : () -> Cmd msg

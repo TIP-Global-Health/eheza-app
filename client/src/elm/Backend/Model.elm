@@ -24,6 +24,7 @@ import Backend.Session.Model exposing (OfflineSession, Session)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (Entity, EntityDictList)
+import Restful.UpdatableData exposing (UpdatableWebData)
 
 
 {-| This model basically represents things we have locally which also belong
@@ -69,8 +70,9 @@ type alias Model =
 
     -- This tracks mesaurements which we've edited, but haven't uploaded to
     -- the backend yet. These are immediately cached locally, which is what
-    -- the `WebData` is for ... it wraps our effort to fetch from local
-    -- strorage the measurements we've taken but not uploaded yet.
+    -- the `UpdatableData` is for ... it wraps our effort to fetch from local
+    -- strorage the measurements we've taken but not uploaded yet, as well
+    -- as our efforts to cache the edits in local storage.
     --
     -- It's nice to track this separately, rather than integrating into
     -- the offlineSession with `EditableWebData`, because we upload these
@@ -85,7 +87,7 @@ type alias Model =
     -- The inner `Maybe` represents whether we found any editable measurements
     -- in our local storage ... we'll delete the whole thing once we successfully
     -- save it to the backend.
-    , edits : WebData (Maybe MeasurementEdits)
+    , edits : UpdatableWebData (Maybe MeasurementEdits)
 
     -- This tracks which sessions are currently available for data-entry,
     -- given the scheduled date range for each session. We remember which
@@ -106,7 +108,7 @@ emptyModel : Model
 emptyModel =
     { clinics = NotAsked
     , offlineSession = NotAsked
-    , edits = NotAsked
+    , edits = Restful.UpdatableData.notAsked
     , openSessions = NotAsked
     }
 

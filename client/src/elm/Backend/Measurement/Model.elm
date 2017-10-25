@@ -242,7 +242,7 @@ emptyMotherMeasurements =
 so that eventually we can perform those edits on the backend. So, we define
 a type which represents a possible edit.
 -}
-type EditMeasurement value
+type Edit value
     = Unedited
       -- We've created a new measurement, which we didn't think was on the backend
       -- when the user created it. It has no key, since that will be supplied when
@@ -263,7 +263,7 @@ type EditMeasurement value
 {-| This represents a set of edits to Mother measurements.
 -}
 type alias MotherEdits =
-    { familyPlanning : EditMeasurement FamilyPlanning
+    { familyPlanning : Edit FamilyPlanning
     }
 
 
@@ -274,11 +274,11 @@ emptyMotherEdits =
 
 
 type alias ChildEdits =
-    { height : EditMeasurement Height
-    , muac : EditMeasurement Muac
-    , nutrition : EditMeasurement ChildNutrition
-    , photo : EditMeasurement Photo
-    , weight : EditMeasurement Weight
+    { height : Edit Height
+    , muac : Edit Muac
+    , nutrition : Edit ChildNutrition
+    , photo : Edit Photo
+    , weight : Edit Weight
     }
 
 

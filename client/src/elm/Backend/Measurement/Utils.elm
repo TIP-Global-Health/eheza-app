@@ -34,3 +34,21 @@ muacIndication (MuacInCm value) =
         MuacYellow
     else
         MuacGreen
+
+
+{-| Apply an edit to an underlying value.
+-}
+applyEdit : Edit value -> Maybe value -> Maybe value
+applyEdit edit value =
+    case edit of
+        Unedited ->
+            value
+
+        Created new ->
+            Just new
+
+        Edited { edited } ->
+            Just edited
+
+        Deleted _ ->
+            Nothing

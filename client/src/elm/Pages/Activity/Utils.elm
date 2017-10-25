@@ -3,13 +3,10 @@ module Pages.Activity.Utils exposing (participantsWithPendingActivity)
 import Activity.Model exposing (ActivityType(Child, Mother))
 import Activity.Utils exposing (getActivityIdentity, hasPendingChildActivity, hasPendingMotherActivity)
 import EveryDict
-import Pages.Activity.Model exposing (Model)
-import Participant.Model exposing (Participant(..), ParticipantsDict)
+import Pages.Activity.Model exposing (..)
+import Participant.Model exposing (Participant(..))
 
 
-{-| This will eventually need to be parameterized to focus on a particular
-date ... for now, we just consult the single examination for each participant.
--}
 participantsWithPendingActivity : ParticipantsDict -> Model -> ParticipantsDict
 participantsWithPendingActivity participantsDict model =
     let

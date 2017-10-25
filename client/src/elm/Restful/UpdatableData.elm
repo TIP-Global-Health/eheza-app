@@ -22,3 +22,12 @@ type alias UpdatableData e a =
 
 type alias UpdatableWebData a =
     UpdatableData Error a
+
+
+{-| Start with both the value and its update as `NotAsked`.
+-}
+notAsked : UpdatableData e a
+notAsked =
+    { value = NotAsked
+    , update = NotAsked
+    }
