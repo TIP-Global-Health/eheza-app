@@ -52,3 +52,12 @@ applyEdit edit value =
 
         Deleted _ ->
             Nothing
+
+
+mapMeasurementData : (d1 -> d2) -> (e1 -> e2) -> MeasurementData d1 e1 -> MeasurementData d2 e2
+mapMeasurementData dataFunc editFunc measurements =
+    { previous = dataFunc measurements.previous
+    , current = dataFunc measurements.current
+    , edits = editFunc measurements.edits
+    , status = measurements.status
+    }

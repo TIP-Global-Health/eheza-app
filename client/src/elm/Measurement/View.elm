@@ -18,7 +18,7 @@ import Backend.Child.Model exposing (Child, Gender)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeNutritionSignAsString, encodeFamilyPlanningSignAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (applyEdit, muacIndication)
+import Backend.Measurement.Utils exposing (applyEdit, muacIndication, mapMeasurementData)
 import Backend.Mother.Model exposing (Mother)
 import Date exposing (Date)
 import EverySet exposing (EverySet)
@@ -38,33 +38,6 @@ import Translate as Trans exposing (Language(..), TranslationId, translate)
 import Utils.NominalDate exposing (diffDays)
 import ZScore.Model exposing (AgeInDays(..), Centimetres(..), Kilograms(..), ZScore)
 import ZScore.Utils exposing (viewZScore, zScoreForHeight, zScoreForMuac, zScoreForWeight, zScoreWeightForHeight)
-
-
-{-| This is just a convenience for the function below ... otherwise we need
-rather a lot of parameters! Basically, we ask the caller to assemble this data,
-so we can focus on other things here.
-
-The `status` indicates whether we're currently saving measurements, or any
-error from the last save. We don't ask for a `WebData` for the
-ChildMeasurements or the ChildEdits, because if we don't have them then some
-caller should show something else -- we'll insist on having those.
-
--}
-type alias MeasurementData data edits =
-    { previous : data
-    , current : data
-    , edits : edits
-    , status : WebData ()
-    }
-
-
-mapMeasurementData : (d1 -> d2) -> (e1 -> e2) -> MeasurementData d1 e1 -> MeasurementData d2 e2
-mapMeasurementData dataFunc editFunc measurements =
-    { previous = dataFunc measurements.previous
-    , current = dataFunc measurements.current
-    , edits = editFunc measurements.edits
-    , status = measurements.status
-    }
 
 
 {-| We need the current date in order to immediately construct a ZScore for the

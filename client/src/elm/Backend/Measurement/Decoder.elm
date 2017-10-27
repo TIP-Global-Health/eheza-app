@@ -36,11 +36,11 @@ decodeMeasurement participantDecoder valueDecoder =
         |> custom valueDecoder
 
 
-{-| Decodes `Measurments` as sent by /api/offline_sessions/
+{-| Decodes `HistoricalMeasurements` as sent by /api/offline_sessions/
 -}
-decodeMeasurements : Decoder Measurements
-decodeMeasurements =
-    decode Measurements
+decodeHistoricalMeasurements : Decoder HistoricalMeasurements
+decodeHistoricalMeasurements =
+    decode HistoricalMeasurements
         |> requiredAt [ "participants", "mother_activity" ] (map (toEveryDict toEntityId) (decodeIntDict decodeMotherMeasurementList))
         |> requiredAt [ "participants", "child_activity" ] (map (toEveryDict toEntityId) (decodeIntDict decodeChildMeasurementList))
 

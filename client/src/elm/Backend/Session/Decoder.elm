@@ -4,7 +4,8 @@ import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Child.Model exposing (Child)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Decoder exposing (decodeMeasurements)
+import Backend.Measurement.Decoder exposing (decodeHistoricalMeasurements)
+import Backend.Measurement.Model exposing (emptyMeasurements)
 import Backend.Mother.Decoder exposing (decodeMother)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (..)
@@ -42,7 +43,21 @@ decodeOfflineSession =
         |> required "clinic" decodeClinic
         |> requiredAt [ "participants", "mothers" ] decodeMothers
         |> requiredAt [ "participants", "children" ] decodeChildren
-        |> custom decodeMeasurements
+        |> custom decodeHistoricalMeasurements
+        -- We start with empty stuff for the `previousMeasurements`
+        -- and `currentMeasurements` ... then we map to fill them in.
+        |> hardcoded emptyMeasurements
+        |> hardcoded emptyMeasurements
+        |> map splitHistoricalMeasurements
+
+
+{-| Takes the historical measurements and populates `previousMeasurements`
+and `currentMeasurements` as appropriate. Anything which goes in `currentMeasurements`
+is removed from `historicalMeasurments`.
+-}
+splitHistoricalMeasurements : OfflineSession -> OfflineSession
+splitHistoricalMeasurements session =
+    Debug.crash "implement"
 
 
 decodeMothers : Decoder (EveryDictList MotherId Mother)

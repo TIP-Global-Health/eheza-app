@@ -1,7 +1,7 @@
 module Backend.Mother.Model exposing (..)
 
 import Backend.Entities exposing (..)
-import Date exposing (Date)
+import Gizra.NominalDate exposing (NominalDate)
 
 
 {-| `examinations` is a simple list for now ... will likely need to be more
@@ -11,5 +11,5 @@ type alias Mother =
     { name : String
     , image : String
     , children : List ChildId
-    , birthDate : Date
+    , birthDate : NominalDate
     }

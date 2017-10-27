@@ -9,7 +9,6 @@ import FilePicker.Update
 import Maybe.Extra exposing (isNothing)
 import Measurement.Model exposing (saveMeasurementMessage)
 import Measurement.Update
-import Pages.Activity.Utils exposing (participantsWithPendingActivity)
 import Participant.Utils exposing (getParticipantName)
 import User.Model exposing (..)
 import Pages.Activity.Model exposing (Model, Msg(..))

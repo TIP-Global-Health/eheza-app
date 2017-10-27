@@ -16,14 +16,14 @@ import Activity.Model exposing (ActivityIdentity, ActivityListItem, ActivityType
 import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getEditableChildMeasurements, getEditableMotherMeasurements)
+import Backend.Measurement.Utils exposing (applyEdit)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (..)
-import Backend.Session.Utils exposing (getMother)
+import Backend.Session.Utils exposing (getMother, getMotherMeasurementData, getChildMeasurementData)
 import Dict exposing (Dict)
 import EveryDict
 import EveryDictList
-import Maybe.Extra exposing (isNothing)
+import Maybe.Extra exposing (isJust, isNothing)
 import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
 import StorageKey exposing (StorageKey, isNew)
 
@@ -55,7 +55,6 @@ getActivityTypeList participantTypeFilter =
 
 
 {-| Get the pending and completed activities.
-
 -}
 getActivityList : ParticipantTypeFilter -> EditableSession -> List ActivityListItem
 getActivityList participantTypeFilter session =
@@ -116,6 +115,7 @@ many are still pending?
 
 TODO: We'll need to modify this to take into account which people are actually present,
 once we've got that in the data model.
+
 -}
 getTotalsNumberPerActivity : ActivityType -> EditableSession -> { pending : Int, total : Int }
 getTotalsNumberPerActivity activityType session =
@@ -127,11 +127,9 @@ getTotalsNumberPerActivity activityType session =
                 total =
                     EveryDict.size session.offlineSession.children
 
-                -- It's actually eaiser to count the completed ones, so we do that and
-                -- just subtract to get pending.
                 completed =
-                    session.editableMeasurements.children
-                        |> EveryDict.filter (always (hasCompletedChildActivity childType))
+                    session.offlineSession.children
+                        |> EveryDict.filter (\childId _ -> hasCompletedChildActivity childType (getChildMeasurementData childId session))
                         |> EveryDict.size
             in
                 { pending = total - completed
@@ -148,32 +146,32 @@ getTotalsNumberPerActivity activityType session =
                 -- It's actually eaiser to count the completed ones, so we do that and
                 -- just subtract to get pending.
                 completed =
-                    session.editableMeasurements.mothers
-                        |> EveryDict.filter (always (hasCompletedMotherActivity motherType))
-                        |> EveryDict.size
+                    session.offlineSession.mothers
+                        |> EveryDictList.filter (\motherId _ -> hasCompletedMotherActivity motherType (getMotherMeasurementData motherId session))
+                        |> EveryDictList.size
             in
                 { pending = total - completed
                 , total = total
                 }
 
 
-hasCompletedChildActivity : ChildActivityType -> EditableChildMeasurements -> Bool
+hasCompletedChildActivity : ChildActivityType -> MeasurementData ChildMeasurements ChildEdits -> Bool
 hasCompletedChildActivity activityType measurements =
     case activityType of
         ChildPicture ->
-            isCompleted measurements.photo
+            isCompleted measurements.edits.photo (Maybe.map Tuple.second measurements.current.photo)
 
         Height ->
-            isCompleted measurements.height
+            isCompleted measurements.edits.height (Maybe.map Tuple.second measurements.current.height)
 
         Weight ->
-            isCompleted measurements.weight
+            isCompleted measurements.edits.weight (Maybe.map Tuple.second measurements.current.weight)
 
         Muac ->
-            isCompleted measurements.muac
+            isCompleted measurements.edits.muac (Maybe.map Tuple.second measurements.current.muac)
 
         NutritionSigns ->
-            isCompleted measurements.nutrition
+            isCompleted measurements.edits.nutrition (Maybe.map Tuple.second measurements.current.nutrition)
 
         ProgressReport ->
             -- Hmm. This isn't really a measurement, so if we get it, we'll say
@@ -186,42 +184,33 @@ hasCompletedChildActivity activityType measurements =
             False
 
 
-hasCompletedMotherActivity : MotherActivityType -> EditableMotherMeasurements -> Bool
+hasCompletedMotherActivity : MotherActivityType -> MeasurementData MotherMeasurements MotherEdits -> Bool
 hasCompletedMotherActivity activityType measurements =
     case activityType of
         FamilyPlanning ->
-            isCompleted measurements.familyPlanning
+            isCompleted measurements.edits.familyPlanning (Maybe.map Tuple.second measurements.current.familyPlanning)
 
 
 {-| Should some measurement be considered completed? Note that this means that it has
 been entered locally, not that it has been saved to the backend.
 -}
-isCompleted : EditableEntity key value -> Bool
-isCompleted entity =
-    case entity of
-        NotFound ->
-            False
-
-        New _ ->
-            True
-
-        Unedited _ _ ->
-            True
-
-        Edited _ _ _ ->
-            True
-
-        Deleted _ _ ->
-            False
+isCompleted : Edit value -> Maybe value -> Bool
+isCompleted edit =
+    applyEdit edit >> isJust
 
 
-hasAnyPendingMotherActivity : EditableMotherMeasurements -> Bool
+isPending : Edit value -> Maybe value -> Bool
+isPending edit =
+    applyEdit edit >> isNothing
+
+
+hasAnyPendingMotherActivity : MeasurementData MotherMeasurements MotherEdits -> Bool
 hasAnyPendingMotherActivity measurements =
     getAllMotherActivities
         |> List.any ((flip hasCompletedMotherActivity) measurements >> not)
 
 
-hasAnyPendingChildActivity : EditableChildMeasurements -> Bool
+hasAnyPendingChildActivity : MeasurementData ChildMeasurements ChildEdits -> Bool
 hasAnyPendingChildActivity measurements =
     getAllChildActivities
         |> List.any ((flip hasCompletedChildActivity) measurements >> not)
@@ -230,19 +219,20 @@ hasAnyPendingChildActivity measurements =
 {-| See whether either the mother, or any of her children, has a pending activity.
 
 If we can't find the mother, we return False.
+
 -}
 motherOrAnyChildHasAnyPendingActivity : MotherId -> EditableSession -> Bool
 motherOrAnyChildHasAnyPendingActivity motherId session =
     let
         motherHasOne =
-            motherHasAnyPendingActivity motherId session.editableMeasurements
+            motherHasAnyPendingActivity motherId session
 
         anyChildHasOne =
             getMother motherId session.offlineSession
                 |> Maybe.map
                     (\mother ->
                         mother.children
-                            |> List.any (\childId -> childHasAnyPendingActivity childId session.editableMeasurements)
+                            |> List.any (\childId -> childHasAnyPendingActivity childId session)
                     )
                 |> Maybe.withDefault False
     in
@@ -251,21 +241,21 @@ motherOrAnyChildHasAnyPendingActivity motherId session =
 
 {-| Does the mother herself have any pending activity?
 -}
-motherHasAnyPendingActivity : MotherId -> EditableMeasurements -> Bool
-motherHasAnyPendingActivity motherId measurements =
-    getEditableMotherMeasurements motherId measurements
+motherHasAnyPendingActivity : MotherId -> EditableSession -> Bool
+motherHasAnyPendingActivity motherId session =
+    getMotherMeasurementData motherId session
         |> hasAnyPendingMotherActivity
 
 
 {-| Does the child have any pending activity?
 -}
-childHasAnyPendingActivity : ChildId -> EditableMeasurements -> Bool
-childHasAnyPendingActivity childId measurements =
-    getEditableChildMeasurements childId measurements
+childHasAnyPendingActivity : ChildId -> EditableSession -> Bool
+childHasAnyPendingActivity childId session =
+    getChildMeasurementData childId session
         |> hasAnyPendingChildActivity
 
 
-participantHasPendingActivity : ParticipantId -> EditableMeasurements -> Bool
+participantHasPendingActivity : ParticipantId -> EditableSession -> Bool
 participantHasPendingActivity participantId =
     case participantId of
         ParticipantChildId childId ->

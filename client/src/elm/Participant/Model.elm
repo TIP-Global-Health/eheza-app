@@ -7,6 +7,8 @@ module Participant.Model
         )
 
 {-| This module provides a type which is either a child or a mother.
+Basically, it's sometimes useful to put children and mothers together
+in lists etc., so this gives us a way to do that.
 -}
 
 import Backend.Entities exposing (..)
@@ -16,6 +18,8 @@ import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
 
 
+{-| TODO: Move this somewhere else.
+-}
 type AgeDay
     = AgeDay Int
 

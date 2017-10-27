@@ -1,17 +1,21 @@
 module Participant.Utils
     exposing
-        ( getParticipantAge
+        ( getParticipantAgeDays
+        , getParticipantBirthDate
         , getParticipantAvatarThumb
         , getParticipantName
         , getParticipantTypeAsString
-        , renderParticipantAge
+        , renderAgeMonthsDays
         , renderParticipantDateOfBirth
         )
 
 import Date exposing (Date, Day)
-import Date.Extra.Duration
+import Date.Extra.Facts exposing (monthFromMonthNumber)
+import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Participant.Model exposing (AgeDay, Participant(..))
 import Translate as Trans exposing (translate, Language)
+import Time.Date
+import Utils.NominalDate exposing (diffDays, diffCalendarMonthsAndDays)
 
 
 getParticipantAvatarThumb : Participant -> String
@@ -44,43 +48,40 @@ getParticipantTypeAsString participant =
             "mother"
 
 
+getParticipantBirthDate : Participant -> NominalDate
+getParticipantBirthDate participant =
+    case participant of
+        ParticipantChild child ->
+            child.birthDate
+
+        ParticipantMother mother ->
+            mother.birthDate
+
+
 {-| Calculates the age of a participant.
-To get current time, see App/Model.currentDate
+To get current time, see App/Model.currentDate and
+Gizra.NominalDate.fromLocalDateTime
 -}
-getParticipantAge : Participant -> Date -> AgeDay
-getParticipantAge participant now =
+getParticipantAgeDays : Participant -> NominalDate -> AgeDay
+getParticipantAgeDays participant now =
+    Participant.Model.AgeDay <|
+        diffDays (getParticipantBirthDate participant) now
+
+
+{-| Shows the difference between the first date (the birthdate)
+and the second date, formatted in months and days.
+-}
+renderAgeMonthsDays : Language -> NominalDate -> NominalDate -> String
+renderAgeMonthsDays language birthDate now =
     let
-        birthDate =
-            case participant of
-                ParticipantChild child ->
-                    child.birthDate
-
-                ParticipantMother mother ->
-                    mother.birthDate
-    in
-        Participant.Model.AgeDay <|
-            Date.Extra.Duration.diffDays now birthDate
-
-
-renderParticipantAge : Language -> Participant -> Date -> String
-renderParticipantAge language participant now =
-    let
-        birthDate =
-            case participant of
-                ParticipantChild child ->
-                    child.birthDate
-
-                ParticipantMother mother ->
-                    mother.birthDate
-
         diff =
-            Date.Extra.Duration.diff now birthDate
+            diffCalendarMonthsAndDays birthDate now
 
         days =
-            diff.day
+            diff.days
 
         months =
-            diff.month + (diff.year * 12)
+            diff.months
     in
         if (days == 1 && months == 0) then
             translate language <| Trans.AgeSingleDayWithoutMonth months days
@@ -104,21 +105,19 @@ renderParticipantDateOfBirth : Language -> Participant -> String
 renderParticipantDateOfBirth language participant =
     let
         birthDate =
-            case participant of
-                ParticipantChild child ->
-                    child.birthDate
-
-                ParticipantMother mother ->
-                    mother.birthDate
+            getParticipantBirthDate participant
 
         day =
-            Date.day birthDate
+            Time.Date.day birthDate
 
         month =
-            translate language <| Trans.ResolveMonth <| Date.month birthDate
+            Time.Date.month birthDate
+                |> monthFromMonthNumber
+                |> Trans.ResolveMonth
+                |> translate language
 
         year =
-            Date.year birthDate
+            Time.Date.year birthDate
     in
         (if day < 10 then
             "0" ++ toString day

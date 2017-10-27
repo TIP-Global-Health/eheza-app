@@ -180,14 +180,14 @@ emptyChildMeasurementList =
 {-| This type just organizes historical measurements by mother or child, for
 our convenience.
 -}
-type alias Measurements =
+type alias HistoricalMeasurements =
     { mothers : EveryDict MotherId MotherMeasurementList
     , children : EveryDict ChildId ChildMeasurementList
     }
 
 
-emptyMeasurements : Measurements
-emptyMeasurements =
+emptyHistoricalMeasurements : HistoricalMeasurements
+emptyHistoricalMeasurements =
     { mothers = EveryDict.empty
     , children = EveryDict.empty
     }
@@ -231,6 +231,19 @@ type alias MotherMeasurements =
 emptyMotherMeasurements : MotherMeasurements
 emptyMotherMeasurements =
     { familyPlanning = Nothing
+    }
+
+
+type alias Measurements =
+    { mothers : EveryDict MotherId MotherMeasurements
+    , children : EveryDict ChildId ChildMeasurements
+    }
+
+
+emptyMeasurements : Measurements
+emptyMeasurements =
+    { mothers = EveryDict.empty
+    , children = EveryDict.empty
     }
 
 
@@ -301,8 +314,26 @@ type alias MeasurementEdits =
     }
 
 
-emptyEditableMeasurements : MeasurementEdits
-emptyEditableMeasurements =
+emptyMeasurementEdits : MeasurementEdits
+emptyMeasurementEdits =
     { mothers = EveryDict.empty
     , children = EveryDict.empty
+    }
+
+
+{-| This a convenience for functions which want to take values wrapped
+in the given way.
+
+The `status` indicates whether we're currently saving the edits, or any
+error from the last save.
+
+TODO: There is probably a slightly better way to do this, but this will
+do for now.
+
+-}
+type alias MeasurementData data edits =
+    { previous : data
+    , current : data
+    , edits : edits
+    , status : WebData ()
     }
