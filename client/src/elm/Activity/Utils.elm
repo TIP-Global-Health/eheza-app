@@ -1,6 +1,9 @@
 module Activity.Utils
     exposing
-        ( getActivityList
+        ( childHasAnyPendingActivity
+        , childHasCompletedActivity
+        , childHasPendingActivity
+        , getActivityList
         , getActivityTypeList
         , getActivityIdentity
         , getTotalsNumberPerActivity
@@ -8,8 +11,10 @@ module Activity.Utils
         , hasAnyPendingMotherActivity
         , hasCompletedChildActivity
         , hasCompletedMotherActivity
+        , motherHasCompletedActivity
+        , motherHasAnyPendingActivity
+        , motherHasPendingActivity
         , motherOrAnyChildHasAnyPendingActivity
-        , participantHasPendingActivity
         )
 
 import Activity.Model exposing (ActivityIdentity, ActivityListItem, ActivityType(..), ChildActivityType(..), MotherActivityType(..))
@@ -32,15 +37,15 @@ getActivityTypeList : ParticipantTypeFilter -> List ActivityType
 getActivityTypeList participantTypeFilter =
     let
         childrenActivities =
-            [ Activity.Model.Child ChildPicture
-            , Activity.Model.Child Weight
-            , Activity.Model.Child Height
-            , Activity.Model.Child Muac
-            , Activity.Model.Child NutritionSigns
+            [ ChildActivity ChildPicture
+            , ChildActivity Weight
+            , ChildActivity Height
+            , ChildActivity Muac
+            , ChildActivity NutritionSigns
             ]
 
         mothersActivities =
-            [ Activity.Model.Mother FamilyPlanning
+            [ MotherActivity FamilyPlanning
             ]
     in
         case participantTypeFilter of
@@ -72,7 +77,7 @@ getActivityIdentity activityType =
     let
         identityVal =
             case activityType of
-                Child childActivityType ->
+                ChildActivity childActivityType ->
                     case childActivityType of
                         ChildPicture ->
                             ActivityIdentity "Photo" "photo"
@@ -92,7 +97,7 @@ getActivityIdentity activityType =
                         ProgressReport ->
                             ActivityIdentity "Progress reports" "bar chart"
 
-                Mother motherActivityType ->
+                MotherActivity motherActivityType ->
                     case motherActivityType of
                         FamilyPlanning ->
                             ActivityIdentity "Family planning" "planning"
@@ -120,7 +125,7 @@ once we've got that in the data model.
 getTotalsNumberPerActivity : ActivityType -> EditableSession -> { pending : Int, total : Int }
 getTotalsNumberPerActivity activityType session =
     case activityType of
-        Child childType ->
+        ChildActivity childType ->
             let
                 -- Until we have data about who is actually present, the total would be
                 -- everyone who is in the session. (Eventually, we may filter this).
@@ -136,7 +141,7 @@ getTotalsNumberPerActivity activityType session =
                 , total = total
                 }
 
-        Mother motherType ->
+        MotherActivity motherType ->
             let
                 -- Until we have data about who is actually present, the total would be
                 -- everyone who is in the session. (Eventually, we may filter this).
@@ -184,11 +189,35 @@ hasCompletedChildActivity activityType measurements =
             False
 
 
+childHasCompletedActivity : ChildId -> ChildActivityType -> EditableSession -> Bool
+childHasCompletedActivity childId activityType session =
+    getChildMeasurementData childId session
+        |> hasCompletedChildActivity activityType
+
+
+childHasPendingActivity : ChildId -> ChildActivityType -> EditableSession -> Bool
+childHasPendingActivity childId activityType session =
+    childHasCompletedActivity childId activityType session
+        |> not
+
+
 hasCompletedMotherActivity : MotherActivityType -> MeasurementData MotherMeasurements MotherEdits -> Bool
 hasCompletedMotherActivity activityType measurements =
     case activityType of
         FamilyPlanning ->
             isCompleted measurements.edits.familyPlanning (Maybe.map Tuple.second measurements.current.familyPlanning)
+
+
+motherHasCompletedActivity : MotherId -> MotherActivityType -> EditableSession -> Bool
+motherHasCompletedActivity motherId activityType session =
+    getMotherMeasurementData motherId session
+        |> hasCompletedMotherActivity activityType
+
+
+motherHasPendingActivity : MotherId -> MotherActivityType -> EditableSession -> Bool
+motherHasPendingActivity motherId activityType session =
+    motherHasCompletedActivity motherId activityType session
+        |> not
 
 
 {-| Should some measurement be considered completed? Note that this means that it has
@@ -253,13 +282,3 @@ childHasAnyPendingActivity : ChildId -> EditableSession -> Bool
 childHasAnyPendingActivity childId session =
     getChildMeasurementData childId session
         |> hasAnyPendingChildActivity
-
-
-participantHasPendingActivity : ParticipantId -> EditableSession -> Bool
-participantHasPendingActivity participantId =
-    case participantId of
-        ParticipantChildId childId ->
-            childHasAnyPendingActivity childId
-
-        ParticipantMotherId motherId ->
-            motherHasAnyPendingActivity motherId

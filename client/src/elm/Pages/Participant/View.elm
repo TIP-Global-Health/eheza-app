@@ -25,6 +25,13 @@ import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage)
 
 
+thumbnailDimensions : { width : Int, height : Int }
+thumbnailDimensions =
+    { width = 222
+    , height = 222
+    }
+
+
 {-| This one needs the `currentDate` in order to calculate ages from dates of birth.
 -}
 viewChild : Language -> Date -> WebData Mother -> ( ChildId, Child ) -> Model -> List (Html Msg)

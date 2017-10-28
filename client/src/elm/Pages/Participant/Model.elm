@@ -4,20 +4,19 @@ module Pages.Participant.Model
         , Model
         , Tab(..)
         , emptyModel
-        , thumbnailDimensions
         )
 
 import Activity.Model exposing (ActivityType)
 import App.PageType exposing (Page(..))
+import Backend.Entities exposing (..)
 import FilePicker.Model
 import Measurement.Model
 import Pusher.Model exposing (PusherEventData)
 
 
 type Msg
-    = MsgFilePicker FilePicker.Model.Msg
-    | MsgMeasurement Measurement.Model.Msg
-    | SetRedirectPage Page
+    = MsgMeasurementChild ChildId Measurement.Model.MsgChild
+    | MsgMeasurementMother MotherId Measurement.Model.MsgMother
     | SetSelectedActivity (Maybe ActivityType)
     | SetSelectedTab Tab
 
@@ -29,24 +28,13 @@ type Tab
 
 
 type alias Model =
-    { measurements : Measurement.Model.Model
-    , selectedActivity : Maybe ActivityType
+    { selectedActivity : Maybe ActivityType
     , selectedTab : Tab
-    , filePicker : FilePicker.Model.Model
     }
 
 
 emptyModel : Model
 emptyModel =
-    { measurements = Measurement.Model.emptyModel
-    , selectedActivity = Nothing
+    { selectedActivity = Nothing
     , selectedTab = Pending
-    , filePicker = FilePicker.Model.emptyModel
-    }
-
-
-thumbnailDimensions : { width : Int, height : Int }
-thumbnailDimensions =
-    { width = 222
-    , height = 222
     }

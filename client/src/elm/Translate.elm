@@ -1,5 +1,6 @@
 module Translate exposing (..)
 
+import Activity.Model exposing (ActivityType(..), MotherActivityType(..), ChildActivityType(..))
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..), MuacIndication(..))
 import Date exposing (Month(..))
 
@@ -23,26 +24,10 @@ type TranslationId
     = AccessDenied
     | Activities
     | ActivitiesCompleted Int
-    | ActivitiesFamilyPlanningSignsHelp
-    | ActivitiesFamilyPlanningSignsLabel
-    | ActivitiesFamilyPlanningSignsTitle
-    | ActivitiesHeightHelp
-    | ActivitiesHeightLabel
-    | ActivitiesHeightTitle
-    | ActivitiesMuacHelp
-    | ActivitiesMuacLabel
-    | ActivitiesMuacTitle
+    | ActivitiesHelp ActivityType
+    | ActivitiesLabel ActivityType
+    | ActivitiesTitle ActivityType
     | ActivitiesToComplete Int
-    | ActivitiesNutritionSignsHelp
-    | ActivitiesNutritionSignsLabel
-    | ActivitiesNutritionSignsTitle
-    | ActivitiesPhotoHelp
-    | ActivitiesPhotoTitle
-    | ActivitiesProgressReport
-    | ActivitiesProgressReportHelp
-    | ActivitiesWeightHelp
-    | ActivitiesWeightLabel
-    | ActivitiesWeightTitle
     | Age Int Int
     | AgeDays Int
     | AgeMonthsWithoutDay Int
@@ -133,65 +118,77 @@ translate lang trans =
                 ActivitiesCompleted count ->
                     { english = "Completed (" ++ toString count ++ ")" }
 
-                ActivitiesFamilyPlanningSignsHelp ->
-                    { english = "Every mother should be asked about her family planing method(s) each month. If a mother needs family planning, refer her to a clinic." }
+                ActivitiesHelp activity ->
+                    case activity of
+                        MotherActivity FamilyPlanning ->
+                            { english = "Every mother should be asked about her family planing method(s) each month. If a mother needs family planning, refer her to a clinic." }
 
-                ActivitiesFamilyPlanningSignsLabel ->
-                    { english = "Which, if any, of the following methods do you use?" }
+                        ChildActivity Height ->
+                            { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight." }
 
-                ActivitiesFamilyPlanningSignsTitle ->
-                    { english = "Planning:" }
+                        ChildActivity Muac ->
+                            { english = "Make sure to measure at the center of the baby’s upper arm." }
 
-                ActivitiesHeightHelp ->
-                    { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight." }
+                        ChildActivity NutritionSigns ->
+                            { english = "Explain to the mother how to check the malnutrition signs for their own child." }
 
-                ActivitiesHeightLabel ->
-                    { english = "Height:" }
+                        ChildActivity ChildPicture ->
+                            { english = "Take each baby’s photo at each health assessment. Photos should show the entire body of each child." }
 
-                ActivitiesHeightTitle ->
-                    { english = "Height:" }
+                        ChildActivity ProgressReport ->
+                            { english = "" }
 
-                ActivitiesMuacHelp ->
-                    { english = "Make sure to measure at the center of the baby’s upper arm." }
+                        ChildActivity Weight ->
+                            { english = "Weight:" }
 
-                ActivitiesMuacLabel ->
-                    { english = "MUAC:" }
+                ActivitiesLabel activity ->
+                    case activity of
+                        MotherActivity FamilyPlanning ->
+                            { english = "Which, if any, of the following methods do you use?" }
 
-                ActivitiesMuacTitle ->
-                    { english = "Mid Upper Arm Circumference (MUAC):" }
+                        ChildActivity Height ->
+                            { english = "Height:" }
 
-                ActivitiesNutritionSignsHelp ->
-                    { english = "Explain to the mother how to check the malnutrition signs for their own child." }
+                        ChildActivity Muac ->
+                            { english = "MUAC:" }
 
-                ActivitiesNutritionSignsLabel ->
-                    { english = "Select all signs that are present:" }
+                        ChildActivity NutritionSigns ->
+                            { english = "Select all signs that are present:" }
 
-                ActivitiesNutritionSignsTitle ->
-                    { english = "Nutrition:" }
+                        ChildActivity ChildPicture ->
+                            { english = "Photo:" }
 
-                ActivitiesPhotoHelp ->
-                    { english = "Take each baby’s photo at each health assessment. Photos should show the entire body of each child." }
+                        ChildActivity ProgressReport ->
+                            { english = "Progress Report" }
 
-                ActivitiesPhotoTitle ->
-                    { english = "Photo:" }
+                        ChildActivity Weight ->
+                            { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on." }
 
-                ActivitiesProgressReport ->
-                    { english = "Progress Report" }
+                ActivitiesTitle activity ->
+                    case activity of
+                        MotherActivity FamilyPlanning ->
+                            { english = "Planning:" }
 
-                ActivitiesProgressReportHelp ->
-                    { english = "" }
+                        ChildActivity Height ->
+                            { english = "Height:" }
 
-                ActivitiesWeightHelp ->
-                    { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on." }
+                        ChildActivity Muac ->
+                            { english = "Mid Upper Arm Circumference (MUAC):" }
+
+                        ChildActivity NutritionSigns ->
+                            { english = "Nutrition:" }
+
+                        ChildActivity ChildPicture ->
+                            { english = "Photo:" }
+
+                        ChildActivity ProgressReport ->
+                            { english = "Progress Report" }
+
+                        ChildActivity Weight ->
+                            { english = "Weight:" }
 
                 ActivitiesToComplete count ->
                     { english = "To Do (" ++ toString count ++ ")" }
-
-                ActivitiesWeightLabel ->
-                    { english = "Weight:" }
-
-                ActivitiesWeightTitle ->
-                    { english = "Weight:" }
 
                 Age months days ->
                     { english = toString months ++ " months and " ++ toString days ++ " days" }

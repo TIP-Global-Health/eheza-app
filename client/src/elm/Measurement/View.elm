@@ -72,9 +72,7 @@ different types of `Float` inputs.
 -}
 type alias FloatFormConfig value =
     { blockName : String
-    , headerText : TranslationId
-    , helpText : TranslationId
-    , labelText : TranslationId
+    , activity : ActivityType
     , placeholderText : TranslationId
     , zScoreLabelForAge : TranslationId
     , zScoreForAge : AgeInDays -> Gender -> Float -> Maybe ZScore
@@ -93,9 +91,7 @@ type alias FloatFormConfig value =
 heightFormConfig : FloatFormConfig Height
 heightFormConfig =
     { blockName = "height"
-    , headerText = Trans.ActivitiesHeightTitle
-    , helpText = Trans.ActivitiesHeightHelp
-    , labelText = Trans.ActivitiesHeightLabel
+    , activity = ChildActivity Height
     , placeholderText = Trans.PlaceholderEnterHeight
     , zScoreLabelForAge = Trans.ZScoreHeightForAge
     , zScoreForAge = \age gender height -> zScoreForHeight age gender (Centimetres height)
@@ -114,9 +110,7 @@ heightFormConfig =
 muacFormConfig : FloatFormConfig Muac
 muacFormConfig =
     { blockName = "muac"
-    , headerText = Trans.ActivitiesMuacTitle
-    , helpText = Trans.ActivitiesMuacHelp
-    , labelText = Trans.ActivitiesMuacLabel
+    , activity = ChildActivity Muac
     , placeholderText = Trans.PlaceholderEnterMUAC
     , zScoreLabelForAge = Trans.ZScoreMuacForAge
     , zScoreForAge = \age gender muac -> zScoreForMuac age gender (Centimetres muac)
@@ -135,9 +129,7 @@ muacFormConfig =
 weightFormConfig : FloatFormConfig Weight
 weightFormConfig =
     { blockName = "weight"
-    , headerText = Trans.ActivitiesWeightTitle
-    , helpText = Trans.ActivitiesWeightHelp
-    , labelText = Trans.ActivitiesWeightLabel
+    , activity = ChildActivity Weight
     , placeholderText = Trans.PlaceholderEnterWeight
     , zScoreLabelForAge = Trans.ZScoreWeightForAge
     , zScoreForAge = \age gender weight -> zScoreForWeight age gender (Kilograms weight)
@@ -289,11 +281,11 @@ viewFloatForm config language currentDate child measurements model =
             [ div [ class "content" ]
                 [ h3
                     [ class "ui header" ]
-                    [ text <| translate language config.headerText
+                    [ text <| translate language (Trans.ActivitiesTitle config.activity)
                     ]
                 , p
                     []
-                    [ text <| translate language config.helpText ]
+                    [ text <| translate language (Trans.ActivitiesLabel config.activity) ]
                 , div
                     [ class "ui form" ]
                     [ div [ class "ui grid" ]
@@ -431,13 +423,16 @@ viewPhoto language saveStatus ( fileId, photoValue ) =
                 [ onClick ResetDropZone ]
             else
                 []
+
+        activity =
+            ChildActivity ChildPicture
     in
         div
             [ class "ui full segment photo" ]
             [ div [ class "content" ]
                 [ h3 [ class "ui header" ]
-                    [ text <| translate language Trans.ActivitiesPhotoTitle ]
-                , p [] [ text <| translate language Trans.ActivitiesPhotoHelp ]
+                    [ text <| translate language (Trans.ActivitiesTitle activity) ]
+                , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
                 , Maybe.map viewPhotoThumb photoValue
                     |> showMaybe
                 , div [ class "dropzone" ] []
@@ -493,27 +488,31 @@ saveButton language msg hasInput saveStatus maybeDivClass =
 
 viewNutritionSigns : Language -> WebData () -> EverySet ChildNutritionSign -> Html MsgChild
 viewNutritionSigns language saveStatus signs =
-    div
-        [ class "ui full segment nutrition"
-        , id "nutritionSignsEntryForm"
-        ]
-        [ div [ class "content" ]
-            [ h3 [ class "ui header" ]
-                [ text <| translate language Trans.ActivitiesNutritionSignsTitle
-                ]
-            , p [] [ text <| translate language Trans.ActivitiesNutritionSignsHelp ]
-            , div [ class "ui form" ] <|
-                p [] [ text <| translate language Trans.ActivitiesNutritionSignsLabel ]
-                    :: viewNutritionSignsSelector language signs
+    let
+        activity =
+            ChildActivity NutritionSigns
+    in
+        div
+            [ class "ui full segment nutrition"
+            , id "nutritionSignsEntryForm"
             ]
-        , div [ class "actions" ] <|
-            saveButton
-                language
-                (SendOutMsgChild SaveChildNutritionSigns)
-                (not (EverySet.isEmpty signs))
-                saveStatus
-                Nothing
-        ]
+            [ div [ class "content" ]
+                [ h3 [ class "ui header" ]
+                    [ text <| translate language (Trans.ActivitiesTitle activity)
+                    ]
+                , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+                , div [ class "ui form" ] <|
+                    p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
+                        :: viewNutritionSignsSelector language signs
+                ]
+            , div [ class "actions" ] <|
+                saveButton
+                    language
+                    (SendOutMsgChild SaveChildNutritionSigns)
+                    (not (EverySet.isEmpty signs))
+                    saveStatus
+                    Nothing
+            ]
 
 
 viewNutritionSignsSelector : Language -> EverySet ChildNutritionSign -> List (Html MsgChild)
@@ -590,27 +589,31 @@ viewMother language activity measurements model =
 
 viewFamilyPlanning : Language -> WebData () -> EverySet FamilyPlanningSign -> Html MsgMother
 viewFamilyPlanning language saveStatus signs =
-    div
-        [ class "ui full segment family-planning"
-        , id "familyPlanningEntryForm"
-        ]
-        [ div [ class "content" ]
-            [ h3
-                [ class "ui header" ]
-                [ text <| translate language Trans.ActivitiesFamilyPlanningSignsTitle
-                ]
-            , p [] [ text <| translate language Trans.ActivitiesFamilyPlanningSignsHelp ]
-            , div [ class "ui form" ] <|
-                p [] [ text <| translate language Trans.ActivitiesFamilyPlanningSignsLabel ]
-                    :: viewFamilyPlanningSelector language signs
+    let
+        activity =
+            MotherActivity FamilyPlanning
+    in
+        div
+            [ class "ui full segment family-planning"
+            , id "familyPlanningEntryForm"
             ]
-        , div [ class "actions" ] <|
-            saveButton language
-                (SendOutMsgMother SaveFamilyPlanningSigns)
-                (not (EverySet.isEmpty signs))
-                saveStatus
-                Nothing
-        ]
+            [ div [ class "content" ]
+                [ h3
+                    [ class "ui header" ]
+                    [ text <| translate language (Trans.ActivitiesTitle activity)
+                    ]
+                , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+                , div [ class "ui form" ] <|
+                    p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
+                        :: viewFamilyPlanningSelector language signs
+                ]
+            , div [ class "actions" ] <|
+                saveButton language
+                    (SendOutMsgMother SaveFamilyPlanningSigns)
+                    (not (EverySet.isEmpty signs))
+                    saveStatus
+                    Nothing
+            ]
 
 
 viewFamilyPlanningSelector : Language -> EverySet FamilyPlanningSign -> List (Html MsgMother)

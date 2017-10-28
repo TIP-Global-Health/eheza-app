@@ -54,7 +54,7 @@ type Tab
 
 emptyModel : Model
 emptyModel =
-    { selectedActivity = Child Height
+    { selectedActivity = ChildActivity Height
     , selectedParticipant = Nothing
     , selectedTab = Pending
     }

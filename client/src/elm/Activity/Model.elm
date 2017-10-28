@@ -8,15 +8,16 @@ these more or less represent a data-level proxy for the various types in
 
 (Though not entirely, since not all activities necessarily result in
 measuremnets ... for instance, `ProgressReport` might relate to whether the
-nurse has reviewed the progress report with the mother.  I suppose one could
+nurse has reviewed the progress report with the mother. I suppose one could
 conceive of that as a "measurement" ... especially if it ultimately needs to be
 saved to the backend).
+
 -}
 
 
 type ActivityType
-    = Child ChildActivityType
-    | Mother MotherActivityType
+    = ChildActivity ChildActivityType
+    | MotherActivity MotherActivityType
 
 
 type ChildActivityType

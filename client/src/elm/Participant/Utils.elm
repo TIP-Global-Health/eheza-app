@@ -1,18 +1,14 @@
-module Participant.Utils
-    exposing
-        ( getParticipantAgeDays
-        , getParticipantBirthDate
-        , getParticipantAvatarThumb
-        , getParticipantName
-        , getParticipantTypeAsString
-        , renderAgeMonthsDays
-        , renderParticipantDateOfBirth
-        )
+module Participant.Utils exposing (..)
 
+import Activity.Model exposing (ActivityType(..))
+import Activity.Utils exposing (childHasPendingActivity, motherHasPendingActivity, motherHasAnyPendingActivity, childHasAnyPendingActivity)
+import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Date exposing (Date, Day)
 import Date.Extra.Facts exposing (monthFromMonthNumber)
+import EveryDict exposing (EveryDict)
+import EveryDictList
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
-import Participant.Model exposing (AgeDay, Participant(..))
+import Participant.Model exposing (AgeDay, Participant(..), ParticipantId(..))
 import Translate as Trans exposing (translate, Language)
 import Time.Date
 import Utils.NominalDate exposing (diffDays, diffCalendarMonthsAndDays)
@@ -128,3 +124,39 @@ renderParticipantDateOfBirth language participant =
             ++ month
             ++ " "
             ++ toString year
+
+
+participantHasAnyPendingActivity : ParticipantId -> EditableSession -> Bool
+participantHasAnyPendingActivity participantId =
+    case participantId of
+        ParticipantChildId childId ->
+            childHasAnyPendingActivity childId
+
+        ParticipantMotherId motherId ->
+            motherHasAnyPendingActivity motherId
+
+
+participantHasPendingActivity : ParticipantId -> ActivityType -> EditableSession -> Bool
+participantHasPendingActivity participantId activityType =
+    case participantId of
+        ParticipantChildId childId ->
+            case activityType of
+                ChildActivity childActivity ->
+                    childHasPendingActivity childId childActivity
+
+                MotherActivity _ ->
+                    always False
+
+        ParticipantMotherId motherId ->
+            case activityType of
+                ChildActivity _ ->
+                    always False
+
+                MotherActivity motherActivity ->
+                    motherHasPendingActivity motherId motherActivity
+
+
+getParticipants : OfflineSession -> EveryDict ParticipantId Participant
+getParticipants session =
+    EveryDictList.foldl (\k v -> EveryDict.insert (ParticipantMotherId k) (ParticipantMother v)) EveryDict.empty session.mothers
+        |> (\mothers -> EveryDict.foldl (\k v -> EveryDict.insert (ParticipantChildId k) (ParticipantChild v)) mothers session.children)
