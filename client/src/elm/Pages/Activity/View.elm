@@ -26,7 +26,7 @@ thumbnailDimensions =
     }
 
 
-view : Language -> Date -> EditableSession -> Model -> List (Html Msg)
+view : Language -> Date -> EditableSession -> Model -> Html Msg
 view language currentDate session model =
     let
         selectedActivityIdentity =
@@ -126,9 +126,31 @@ view language currentDate session model =
 
                 Nothing ->
                     emptyNode
+
+        header =
+            div
+                [ class "ui basic head segment" ]
+                [ h1 [ class "ui header" ]
+                    [ text identity.name ]
+                , a
+                    [ class "link-back"
+                    , Debug.crash "redo"
+
+                    {-
+                       , onClick <|
+                           MsgPagesActivity <|
+                               Pages.Activity.Model.SetRedirectPage <|
+                                   App.PageType.Activities
+                    -}
+                    ]
+                    [ span [ class "icon-back" ] [] ]
+                ]
     in
-        [ activityDescription
-        , tabs
-        , participants
-        , measurementsForm
-        ]
+        div
+            [ class "wrap" ]
+            [ header
+            , activityDescription
+            , tabs
+            , participants
+            , measurementsForm
+            ]

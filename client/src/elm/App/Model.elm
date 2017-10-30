@@ -5,6 +5,7 @@ import Backend.Model
 import Config.Model
 import Date exposing (Date)
 import Pages.Login.Model
+import Pages.Model
 import Pages.OfflineSession.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import ParticipantManager.Model

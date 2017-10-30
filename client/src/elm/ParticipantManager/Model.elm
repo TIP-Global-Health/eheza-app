@@ -13,7 +13,6 @@ import RemoteData exposing (RemoteData(..), WebData)
 
 type alias Model =
     { activitiesPage : Pages.Activities.Model.Model
-    , activityPage : Pages.Activity.Model.Model
     , participantsPage : Pages.Participants.Model.Model
     , participantPage : Dict ParticipantId Pages.Participant.Model.Model
     }
@@ -21,7 +20,6 @@ type alias Model =
 
 type Msg
     = MsgPagesActivities Pages.Activities.Model.Msg
-    | MsgPagesActivity Pages.Activity.Model.Msg
     | MsgPagesParticipant ParticipantId Pages.Participant.Model.Msg
     | MsgPagesParticipants Pages.Participants.Model.Msg
 
@@ -29,7 +27,6 @@ type Msg
 emptyModel : Model
 emptyModel =
     { activitiesPage = Pages.Activities.Model.emptyModel
-    , activityPage = Pages.Activity.Model.emptyModel
     , participantsPage = Pages.Participants.Model.emptyModel
     , participantPage = Dict.empty
     }

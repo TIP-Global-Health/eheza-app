@@ -12,6 +12,7 @@ import Pages.MyAccount.View
 import Pages.OfflineSession.View
 import Pages.OpenSessions.View
 import Pages.PageNotFound.View
+import Pages.View
 import ParticipantManager.View
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)

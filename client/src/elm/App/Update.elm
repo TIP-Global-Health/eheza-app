@@ -12,6 +12,7 @@ import FilePicker.Model
 import Pages.Activity.Model
 import Pages.OfflineSession.Update
 import Pages.Participant.Model
+import Pages.Update
 import ParticipantManager.Model
 import ParticipantManager.Update
 import Pusher.Model
