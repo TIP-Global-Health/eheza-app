@@ -139,7 +139,7 @@ translate lang trans =
                             { english = "" }
 
                         ChildActivity Weight ->
-                            { english = "Weight:" }
+                            { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on." }
 
                 ActivitiesLabel activity ->
                     case activity of
@@ -162,7 +162,7 @@ translate lang trans =
                             { english = "Progress Report" }
 
                         ChildActivity Weight ->
-                            { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on." }
+                            { english = "Weight:" }
 
                 ActivitiesTitle activity ->
                     case activity of
