@@ -30,6 +30,14 @@ state is reflected in the `Page` type itself, and how much in the various
 itself pretty simple, on the prinicple of locating the structure of things
 near their implementation.
 
+That is, we should only really use a `UserAttention` (or `Page`) type in cases
+where some more specific representation of the user's attention isn't possible.
+For instance, in our `Activity` page, we model a `selectedActivity` ... it
+probably makes more sense to do this specifically than to include the
+`ActivityType` in a `UserAttention` type. (This does mean that our URL
+routing will need to be delegated, in part, but that is also probably
+sensible).
+
 The various things under `Pages` may well use "widgets" that are defined at
 the top-level (or, we may put them in a "Widgets" folder eventually). This
 is especially useful for re-usable widgets that may be used on more than
