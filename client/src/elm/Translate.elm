@@ -167,25 +167,25 @@ translate lang trans =
                 ActivitiesTitle activity ->
                     case activity of
                         MotherActivity FamilyPlanning ->
-                            { english = "Planning:" }
+                            { english = "Planning" }
 
                         ChildActivity Height ->
-                            { english = "Height:" }
+                            { english = "Height" }
 
                         ChildActivity Muac ->
-                            { english = "Mid Upper Arm Circumference (MUAC):" }
+                            { english = "Mid Upper Arm Circumference (MUAC)" }
 
                         ChildActivity NutritionSigns ->
-                            { english = "Nutrition:" }
+                            { english = "Nutrition" }
 
                         ChildActivity ChildPicture ->
-                            { english = "Photo:" }
+                            { english = "Photo" }
 
                         ChildActivity ProgressReport ->
                             { english = "Progress Report" }
 
                         ChildActivity Weight ->
-                            { english = "Weight:" }
+                            { english = "Weight" }
 
                 ActivitiesToComplete count ->
                     { english = "To Do (" ++ toString count ++ ")" }
