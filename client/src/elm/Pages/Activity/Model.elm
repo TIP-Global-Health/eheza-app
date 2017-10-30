@@ -8,11 +8,11 @@ import Measurement.Model
 import Participant.Model exposing (ParticipantId)
 
 
-{-| This models the UI state for the page which is oriented around
+{-| This models (part of) the UI state for the page which is oriented around
 the following flow:
 
-  - The user sees a list of activities
-  - The user selects an activity
+  - The user sees a list of activities (in `Pages.Activities`)
+  - The user selects an activity (in `Pages.Activities)
   - The user sees the participants for whom the activity is pending
     (or for whom the activity is complete)
   - The user can select a participant in order to perform (or re-perform)
@@ -31,10 +31,14 @@ handled above and below us ... we just specialize based on user selections,
 possibly ask the `Masurement` moules to show a UI, and pass what they tell
 us back up the chain. Isn't division of labour fun?
 
+Also note that we don't manage the selection of activities here (that is,
+the first two steps in flow above). That's done by `Pages.Activities`, which
+just supplies an activity to us ... we can't change it in this part of the UI.
+We can only change the `selectedParticipant` and `selectedTab`.
+
 -}
 type alias Model =
-    { selectedActivity : ActivityType
-    , selectedParticipant : Maybe ParticipantId
+    { selectedParticipant : Maybe ParticipantId
     , selectedTab : Tab
     }
 
@@ -43,10 +47,20 @@ type Msg
     = MsgMeasurementChild ChildId Measurement.Model.MsgChild
     | MsgMeasurementMother MotherId Measurement.Model.MsgMother
     | SetSelectedParticipant (Maybe ParticipantId)
-    | SetSelectedActivity ActivityType
     | SetSelectedTab Tab
 
 
+{-| This bears a kind of resemblance to the `Tab` type in `Pages.Activites.Model`.
+
+Now, they don't play quite the same role ... here it controls which paricipants
+we see for a given activity (the participants for whom the activity is
+completed or pending), whereas there it controls which activities we see (those
+which are entirely completed, or those which have at least one participant
+pending).
+
+Nevertheless, there may be something we might do to relate them.
+
+-}
 type Tab
     = Completed
     | Pending
@@ -54,7 +68,6 @@ type Tab
 
 emptyModel : Model
 emptyModel =
-    { selectedActivity = ChildActivity Height
-    , selectedParticipant = Nothing
+    { selectedParticipant = Nothing
     , selectedTab = Pending
     }

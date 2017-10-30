@@ -31,11 +31,6 @@ update msg model =
             , Cmd.none
             )
 
-        SetSelectedActivity activity ->
-            ( { model | selectedActivity = activity }
-            , Cmd.none
-            )
-
         SetSelectedTab val ->
             ( { model | selectedTab = val }
             , Cmd.none

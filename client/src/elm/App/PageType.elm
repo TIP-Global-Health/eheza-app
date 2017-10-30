@@ -1,4 +1,4 @@
-module App.PageType exposing (DashboardPage(..), Page(..))
+module App.PageType exposing (Page(..))
 
 import Activity.Model exposing (ActivityType)
 import Backend.Entities exposing (..)
@@ -16,8 +16,3 @@ type Page
     | PageNotFound
     | PageChild ChildId
     | PageMother MotherId
-
-
-type DashboardPage
-    = ActivitiesDashboard
-    | ParticipantsDashboard

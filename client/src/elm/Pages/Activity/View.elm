@@ -26,21 +26,24 @@ thumbnailDimensions =
     }
 
 
-view : Language -> Date -> EditableSession -> Model -> Html Msg
-view language currentDate session model =
+{-| Note that we don't "own" the activityType ... it just gets provided to us,
+and is managed elsewhere.
+-}
+view : Language -> Date -> ActivityType -> EditableSession -> Model -> Html Msg
+view language currentDate selectedActivity session model =
     let
         ( pendingParticipants, completedParticipants ) =
             getParticipants session.offlineSession
-                |> EveryDict.partition (\id _ -> participantHasPendingActivity id model.selectedActivity session)
+                |> EveryDict.partition (\id _ -> participantHasPendingActivity id selectedActivity session)
 
         activityDescription =
             div
                 [ class "ui unstackable items" ]
                 [ div [ class "item" ]
                     [ div [ class "ui image" ]
-                        [ span [ class <| "icon-item icon-item-" ++ getActivityIcon model.selectedActivity ] [] ]
+                        [ span [ class <| "icon-item icon-item-" ++ getActivityIcon selectedActivity ] [] ]
                     , div [ class "content" ]
-                        [ p [] [ text <| translate language (Translate.ActivitiesHelp model.selectedActivity) ] ]
+                        [ p [] [ text <| translate language (Translate.ActivitiesHelp selectedActivity) ] ]
                     ]
                 ]
 
@@ -128,7 +131,7 @@ view language currentDate session model =
             div
                 [ class "ui basic head segment" ]
                 [ h1 [ class "ui header" ]
-                    [ text <| translate language (Translate.ActivitiesTitle model.selectedActivity) ]
+                    [ text <| translate language (Translate.ActivitiesTitle selectedActivity) ]
                 , a
                     [ class "link-back"
                     , Debug.crash "redo"

@@ -28,15 +28,8 @@ mostly the `Page` type, but one actually has choices as to how much of the UI
 state is reflected in the `Page` type itself, and how much in the various
 `Model` files under `Pages`. It's probably best to keep the `Page` type
 itself pretty simple, on the prinicple of locating the structure of things
-near their implementation.
-
-That is, we should only really use a `UserAttention` (or `Page`) type in cases
-where some more specific representation of the user's attention isn't possible.
-For instance, in our `Activity` page, we model a `selectedActivity` ... it
-probably makes more sense to do this specifically than to include the
-`ActivityType` in a `UserAttention` type. (This does mean that our URL
-routing will need to be delegated, in part, but that is also probably
-sensible).
+near their implementation, but (as noted below) we don't always do it that
+way ... there are advantages and disadvantage.
 
 The various things under `Pages` may well use "widgets" that are defined at
 the top-level (or, we may put them in a "Widgets" folder eventually). This
@@ -47,26 +40,35 @@ choices about what to show the user, rather than the details).
 
 -}
 
+import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
+import EveryDict exposing (EveryDict)
+import Pages.Activities.Model
 import Pages.Activity.Model
-
-
-type UserAttention
-    = ActivityPage
+import Pages.Page exposing (Page(..))
 
 
 type alias Model =
-    { activityPage : Pages.Activity.Model.Model
-    , userAttention : UserAttention
+    -- Shows a list of activities ... user can select one.
+    { activitiesPage : Pages.Activities.Model.Model
+
+    -- Shows a page for a single activity. We keep separate UI state for
+    -- each activity.
+    , activityPages : EveryDict ActivityType Pages.Activity.Model.Model
+
+    -- What does the user want to see?
+    , userAttention : Page
     }
 
 
 emptyModel : Model
 emptyModel =
-    { activityPage = Pages.Activity.Model.emptyModel
-    , userAttention = ActivityPage
+    { activitiesPage = Pages.Activities.Model.emptyModel
+    , activityPages = EveryDict.empty
+    , userAttention = ActivityPage (ChildActivity Height)
     }
 
 
 type Msg
-    = MsgActivity Pages.Activity.Model.Msg
-    | SetUserAttention UserAttention
+    = MsgActivity ActivityType Pages.Activity.Model.Msg
+    | MsgActivities Pages.Activities.Model.Msg
+    | SetUserAttention Page

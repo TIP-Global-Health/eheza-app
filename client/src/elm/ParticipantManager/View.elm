@@ -48,48 +48,6 @@ viewParticipants language model =
 -}
 
 
-viewDashboardPageHeader : Language -> App.PageType.DashboardPage -> Html Msg
-viewDashboardPageHeader language dashboardPage =
-    let
-        ( header, activitiesLinkAttributes, participantsLinkAttributes ) =
-            case dashboardPage of
-                App.PageType.ActivitiesDashboard ->
-                    ( Trans.Activities
-                    , [ class "active" ]
-                    , [ onClick <|
-                            MsgPagesActivities <|
-                                Pages.Activities.Model.SetRedirectPage <|
-                                    App.PageType.Dashboard []
-                      ]
-                    )
-
-                App.PageType.ParticipantsDashboard ->
-                    ( Trans.Participants
-                    , [ onClick <|
-                            MsgPagesParticipants <|
-                                Pages.Participants.Model.SetRedirectPage App.PageType.Activities
-                      ]
-                    , [ class "active" ]
-                    )
-    in
-        div
-            [ class "ui basic head segment" ]
-            [ h1
-                [ class "ui header" ]
-                [ text <| translate language header ]
-            , a
-                [ class "link-back" ]
-                [ span [ class "icon-back" ] [] ]
-            , ul
-                [ class "links-head" ]
-                [ li participantsLinkAttributes
-                    [ a [] [ span [ class "icon-mother" ] [] ] ]
-                , li activitiesLinkAttributes
-                    [ a [] [ span [ class "icon-activity" ] [] ] ]
-                ]
-            ]
-
-
 {-| Show the Participant page.
 
 This one needs the `currentDate` to calculate ages.
@@ -225,18 +183,3 @@ viewPageParticipantHeader language ( participantId, participant ) =
                     ]
                     :: children
             ]
-
-
-viewActivities : Language -> Model -> Html Msg
-viewActivities language model =
-    let
-        participants =
-            Debug.crash "redo"
-
-        -- unwrapParticipantsDict model.participants
-    in
-        div [ class "wrap wrap-alt" ] <|
-            viewDashboardPageHeader language App.PageType.ActivitiesDashboard
-                :: (List.map (Html.map MsgPagesActivities) <|
-                        Pages.Activities.View.view language participants model.activitiesPage
-                   )

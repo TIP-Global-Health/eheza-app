@@ -1,19 +1,20 @@
 module Pages.Activities.View exposing (view)
 
 import Activity.Utils exposing (getActivityList, getActivityIcon)
-import App.PageType exposing (Page(..))
 import Backend.Session.Model exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List as List
 import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
+import Pages.Page exposing (Page(..))
+import Pages.Utils exposing (DashboardPage(..), viewDashboardPageHeader)
 import Participant.Model exposing (ParticipantTypeFilter(..))
 import Translate as Trans exposing (translate, Language)
 import Utils.Html exposing (tabItem)
 
 
-view : Language -> EditableSession -> Model -> List (Html Msg)
+view : Language -> EditableSession -> Model -> Html Msg
 view language session model =
     let
         allActivityList =
@@ -42,7 +43,7 @@ view language session model =
                 [ class "card" ]
                 [ div
                     [ class "image"
-                    , onClick <| SetRedirectPage <| Activity <| Just item.activityType
+                    , onClick <| SetRedirectPage <| ActivityPage item.activityType
                     ]
                     [ span [ class <| "icon-task icon-task-" ++ getActivityIcon item.activityType ] [] ]
                 , div
@@ -65,20 +66,23 @@ view language session model =
                 Completed ->
                     ( noPendingActivities, translate language Trans.CompletedSectionEmpty )
     in
-        [ tabs
-        , div
-            [ class "ui full segment" ]
-            [ div [ class "content" ]
-                [ div [ class "ui four cards" ] <|
-                    if List.isEmpty selectedActivities then
-                        [ span [] [ text emptySectionMessage ] ]
-                    else
-                        List.map (viewCard language) selectedActivities
-                ]
-            , div [ class "actions" ]
-                [ button
-                    [ class "ui fluid button" ]
-                    [ text <| translate language Trans.EndSession ]
+        div
+            [ class "wrap wrap-alt" ]
+            [ viewDashboardPageHeader SetRedirectPage language ActivitiesDashboard
+            , tabs
+            , div
+                [ class "ui full segment" ]
+                [ div [ class "content" ]
+                    [ div [ class "ui four cards" ] <|
+                        if List.isEmpty selectedActivities then
+                            [ span [] [ text emptySectionMessage ] ]
+                        else
+                            List.map (viewCard language) selectedActivities
+                    ]
+                , div [ class "actions" ]
+                    [ button
+                        [ class "ui fluid button" ]
+                        [ text <| translate language Trans.EndSession ]
+                    ]
                 ]
             ]
-        ]
