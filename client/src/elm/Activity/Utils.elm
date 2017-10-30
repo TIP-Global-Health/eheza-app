@@ -5,7 +5,7 @@ module Activity.Utils
         , childHasPendingActivity
         , getActivityList
         , getActivityTypeList
-        , getActivityIdentity
+        , getActivityIcon
         , getTotalsNumberPerActivity
         , hasAnyPendingChildActivity
         , hasAnyPendingMotherActivity
@@ -17,7 +17,7 @@ module Activity.Utils
         , motherOrAnyChildHasAnyPendingActivity
         )
 
-import Activity.Model exposing (ActivityIdentity, ActivityListItem, ActivityType(..), ChildActivityType(..), MotherActivityType(..))
+import Activity.Model exposing (ActivityListItem, ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -28,6 +28,8 @@ import Backend.Session.Utils exposing (getMother, getMotherMeasurementData, getC
 import Dict exposing (Dict)
 import EveryDict
 import EveryDictList
+import Html exposing (Attribute)
+import Html.Attributes exposing (class)
 import Maybe.Extra exposing (isJust, isNothing)
 import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
 import StorageKey exposing (StorageKey, isNew)
@@ -65,44 +67,42 @@ getActivityList : ParticipantTypeFilter -> EditableSession -> List ActivityListI
 getActivityList participantTypeFilter session =
     List.map
         (\activityType ->
-            { activity = getActivityIdentity activityType
+            { activityType = activityType
             , totals = getTotalsNumberPerActivity activityType session
             }
         )
         (getActivityTypeList participantTypeFilter)
 
 
-getActivityIdentity : ActivityType -> ActivityIdentity
-getActivityIdentity activityType =
-    let
-        identityVal =
-            case activityType of
-                ChildActivity childActivityType ->
-                    case childActivityType of
-                        ChildPicture ->
-                            ActivityIdentity "Photo" "photo"
+{-| Returns a string representing an icon for the activity, for use in a "class" attribute.
+-}
+getActivityIcon : ActivityType -> String
+getActivityIcon activityType =
+    case activityType of
+        ChildActivity childActivityType ->
+            case childActivityType of
+                ChildPicture ->
+                    "photo"
 
-                        Height ->
-                            ActivityIdentity "Height" "height"
+                Height ->
+                    "height"
 
-                        Weight ->
-                            ActivityIdentity "Weight" "weight"
+                Weight ->
+                    "weight"
 
-                        Muac ->
-                            ActivityIdentity "MUAC" "muac"
+                Muac ->
+                    "muac"
 
-                        NutritionSigns ->
-                            ActivityIdentity "Nutrition" "nutrition"
+                NutritionSigns ->
+                    "nutrition"
 
-                        ProgressReport ->
-                            ActivityIdentity "Progress reports" "bar chart"
+                ProgressReport ->
+                    "bar chart"
 
-                MotherActivity motherActivityType ->
-                    case motherActivityType of
-                        FamilyPlanning ->
-                            ActivityIdentity "Family planning" "planning"
-    in
-        identityVal activityType
+        MotherActivity motherActivityType ->
+            case motherActivityType of
+                FamilyPlanning ->
+                    "planning"
 
 
 getAllChildActivities : List ChildActivityType

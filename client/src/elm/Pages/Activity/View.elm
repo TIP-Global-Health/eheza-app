@@ -1,7 +1,7 @@
 module Pages.Activity.View exposing (view)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
-import Activity.Utils exposing (getActivityIdentity)
+import Activity.Utils exposing (getActivityIcon)
 import Backend.Session.Model exposing (EditableSession)
 import Date exposing (Date)
 import EveryDict
@@ -15,7 +15,7 @@ import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
 import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
 import Participant.Utils exposing (getParticipants, participantHasPendingActivity, getParticipantName, getParticipantAvatarThumb)
 import Restful.Endpoint exposing (toEntityId)
-import Translate as Trans exposing (translate, Language)
+import Translate exposing (translate, Language)
 import Utils.Html exposing (tabItem, thumbnailImage)
 
 
@@ -29,9 +29,6 @@ thumbnailDimensions =
 view : Language -> Date -> EditableSession -> Model -> Html Msg
 view language currentDate session model =
     let
-        selectedActivityIdentity =
-            getActivityIdentity model.selectedActivity
-
         ( pendingParticipants, completedParticipants ) =
             getParticipants session.offlineSession
                 |> EveryDict.partition (\id _ -> participantHasPendingActivity id model.selectedActivity session)
@@ -41,9 +38,9 @@ view language currentDate session model =
                 [ class "ui unstackable items" ]
                 [ div [ class "item" ]
                     [ div [ class "ui image" ]
-                        [ span [ class <| "icon-item icon-item-" ++ selectedActivityIdentity.icon ] [] ]
+                        [ span [ class <| "icon-item icon-item-" ++ getActivityIcon model.selectedActivity ] [] ]
                     , div [ class "content" ]
-                        [ p [] [ text <| translate language (Trans.ActivitiesHelp model.selectedActivity) ] ]
+                        [ p [] [ text <| translate language (Translate.ActivitiesHelp model.selectedActivity) ] ]
                     ]
                 ]
 
@@ -51,12 +48,12 @@ view language currentDate session model =
             let
                 pendingTabTitle =
                     EveryDict.size pendingParticipants
-                        |> Trans.ActivitiesToComplete
+                        |> Translate.ActivitiesToComplete
                         |> translate language
 
                 completedTabTitle =
                     EveryDict.size completedParticipants
-                        |> Trans.ActivitiesCompleted
+                        |> Translate.ActivitiesCompleted
                         |> translate language
             in
                 div [ class "ui tabular menu" ]
@@ -69,10 +66,10 @@ view language currentDate session model =
                 ( selectedParticipants, emptySectionMessage ) =
                     case model.selectedTab of
                         Pending ->
-                            ( pendingParticipants, translate language Trans.PendingSectionEmpty )
+                            ( pendingParticipants, translate language Translate.PendingSectionEmpty )
 
                         Completed ->
-                            ( completedParticipants, translate language Trans.CompletedSectionEmpty )
+                            ( completedParticipants, translate language Translate.CompletedSectionEmpty )
 
                 viewParticipantCard ( participantId, participant ) =
                     let
@@ -131,7 +128,7 @@ view language currentDate session model =
             div
                 [ class "ui basic head segment" ]
                 [ h1 [ class "ui header" ]
-                    [ text identity.name ]
+                    [ text <| translate language (Translate.ActivitiesTitle model.selectedActivity) ]
                 , a
                     [ class "link-back"
                     , Debug.crash "redo"

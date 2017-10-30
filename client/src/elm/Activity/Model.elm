@@ -33,14 +33,7 @@ type MotherActivityType
     = FamilyPlanning
 
 
-type alias ActivityIdentity =
-    { name : String
-    , icon : String
-    , activityType : ActivityType
-    }
-
-
 type alias ActivityListItem =
-    { activity : ActivityIdentity
+    { activityType : ActivityType
     , totals : { pending : Int, total : Int }
     }
