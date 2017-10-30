@@ -1,6 +1,6 @@
 module Pages.Activities.View exposing (view)
 
-import Activity.Utils exposing (getActivityList)
+import Activity.Utils exposing (getActivityList, getActivityIcon)
 import App.PageType exposing (Page(..))
 import Backend.Session.Model exposing (..)
 import Html exposing (..)
@@ -37,22 +37,22 @@ view language session model =
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
                 ]
 
-        viewCard language identity =
+        viewCard language item =
             div
                 [ class "card" ]
                 [ div
                     [ class "image"
-                    , onClick <| SetRedirectPage <| Activity <| Just identity.activity.activityType
+                    , onClick <| SetRedirectPage <| Activity <| Just item.activityType
                     ]
-                    [ span [ class <| "icon-task icon-task-" ++ identity.activity.icon ] [] ]
+                    [ span [ class <| "icon-task icon-task-" ++ getActivityIcon item.activityType ] [] ]
                 , div
                     [ class "content" ]
-                    [ p [] [ text <| String.toUpper identity.activity.name ]
+                    [ p [] [ text <| String.toUpper <| translate language (Trans.ActivitiesTitle item.activityType) ]
                     , div
                         [ class "ui tiny progress" ]
                         [ div
                             [ class "label" ]
-                            [ text <| translate language <| Trans.ReportCompleted identity.totals ]
+                            [ text <| translate language <| Trans.ReportCompleted item.totals ]
                         ]
                     ]
                 ]
