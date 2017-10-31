@@ -34,8 +34,8 @@ thumbnailDimensions =
 
 {-| This one needs the `currentDate` in order to calculate ages from dates of birth.
 -}
-viewChild : Language -> Date -> WebData Mother -> ( ChildId, Child ) -> Model -> List (Html Msg)
-viewChild language currentDate motherWebData ( childId, child ) model =
+viewChild : Language -> Date -> ChildId -> EditableSession -> Model -> Html Msg
+viewChild language currentDate childId session model =
     let
         childParticipant =
             ParticipantChild child
@@ -102,8 +102,8 @@ viewChild language currentDate motherWebData ( childId, child ) model =
                )
 
 
-viewMother : Language -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Model -> List (Html Msg)
-viewMother language motherId mother children model =
+viewMother : Language -> MotherId -> EditableSession -> Model -> List (Html Msg)
+viewMother language motherId session model =
     let
         break =
             br [] []
@@ -142,8 +142,8 @@ viewMother language motherId mother children model =
                )
 
 
-viewActivityCards : Language -> ParticipantsDict -> ParticipantTypeFilter -> Tab -> Maybe ActivityType -> List (Html Msg)
-viewActivityCards language participants participantTypeFilter selectedTab selectedActivity =
+viewActivityCards : Language -> ParticipantTypeFilter -> Tab -> Maybe ActivityType -> EditableSession -> Html Msg
+viewActivityCards language participantTypeFilter selectedTab selectedActivity session =
     let
         allActivityList =
             getActivityList participantTypeFilter participants
