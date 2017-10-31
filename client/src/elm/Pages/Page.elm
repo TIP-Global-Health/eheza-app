@@ -26,5 +26,6 @@ way for now and see how it goes.
 
 -}
 type Page
-    = ActivitiesPage
-    | ActivityPage ActivityType
+    = ActivitiesPage -- page that shows list of activities
+    | ActivityPage ActivityType -- page that focuses on a single activity
+    | ParticipantsPage -- page that shows a list of participants

@@ -1,6 +1,6 @@
 module Pages.Participants.Update exposing (update)
 
-import App.PageType exposing (Page(..))
+import Pages.Page exposing (Page)
 import Pages.Participants.Model exposing (Model, Msg(..))
 
 

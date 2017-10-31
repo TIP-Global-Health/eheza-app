@@ -44,6 +44,7 @@ import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import EveryDict exposing (EveryDict)
 import Pages.Activities.Model
 import Pages.Activity.Model
+import Pages.Participants.Model
 import Pages.Page exposing (Page(..))
 
 
@@ -55,6 +56,9 @@ type alias Model =
     -- each activity.
     , activityPages : EveryDict ActivityType Pages.Activity.Model.Model
 
+    -- Shows a list of participants ... user can select one.
+    , participantsPage : Pages.Participants.Model.Model
+
     -- What does the user want to see?
     , userAttention : Page
     }
@@ -64,11 +68,13 @@ emptyModel : Model
 emptyModel =
     { activitiesPage = Pages.Activities.Model.emptyModel
     , activityPages = EveryDict.empty
+    , participantsPage = Pages.Participants.Model.emptyModel
     , userAttention = ActivityPage (ChildActivity Height)
     }
 
 
 type Msg
-    = MsgActivity ActivityType Pages.Activity.Model.Msg
-    | MsgActivities Pages.Activities.Model.Msg
+    = MsgActivities Pages.Activities.Model.Msg
+    | MsgActivity ActivityType Pages.Activity.Model.Msg
+    | MsgParticipants Pages.Participants.Model.Msg
     | SetUserAttention Page

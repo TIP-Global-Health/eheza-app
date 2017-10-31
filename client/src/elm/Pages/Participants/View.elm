@@ -7,7 +7,8 @@ import EveryDictList
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
-import Pages.Participants.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
+import Pages.Participants.Model exposing (Model, Msg(..), Tab(..))
+import Pages.Utils exposing (viewDashboardPageHeader, DashboardPage(..))
 import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
 import Participant.Utils exposing (getParticipantAvatarThumb, getParticipantName, getParticipantTypeAsString)
 import Restful.Endpoint exposing (fromEntityId)
@@ -15,7 +16,14 @@ import Translate as Trans exposing (translate, Language)
 import Utils.Html exposing (tabItem, thumbnailImage)
 
 
-view : Language -> EditableSession -> Model -> List (Html Msg)
+thumbnailDimensions : { width : Int, height : Int }
+thumbnailDimensions =
+    { width = 122
+    , height = 122
+    }
+
+
+view : Language -> EditableSession -> Model -> Html Msg
 view language editableSession model =
     let
         allMothers =
@@ -54,9 +62,13 @@ view language editableSession model =
                 viewMotherCard ( motherId, mother ) =
                     div
                         [ class "card"
-                        , App.PageType.PageMother motherId
-                            |> SetRedirectPage
-                            |> onClick
+                        , Debug.crash "redo"
+
+                        {-
+                           , App.PageType.PageMother motherId
+                               |> SetRedirectPage
+                               |> onClick
+                        -}
                         ]
                         [ div
                             [ class "image" ]
@@ -94,4 +106,9 @@ view language editableSession model =
                 [ class "ui full segment" ]
                 [ mothers, endSessionButton ]
     in
-        [ tabs, content ]
+        div
+            [ class "wrap wrap-alt page-participants" ]
+            [ viewDashboardPageHeader SetRedirectPage language ParticipantsDashboard
+            , tabs
+            , content
+            ]

@@ -8,6 +8,7 @@ import Pages.Activity.Update
 import Pages.Activities.Update
 import Pages.Model exposing (..)
 import Pages.Page exposing (Page)
+import Pages.Participants.Update
 import Update.Extra exposing (sequence)
 
 
@@ -34,6 +35,16 @@ update msg model =
                 ( { model | activityPages = EveryDict.insert activityType subModel model.activityPages }
                 , Cmd.map (MsgActivity activityType) subCmd
                 )
+
+        MsgParticipants subMsg ->
+            let
+                ( subModel, subCmd, subPage ) =
+                    Pages.Participants.Update.update subMsg model.participantsPage
+            in
+                ( { model | participantsPage = subModel }
+                , Cmd.map MsgParticipants subCmd
+                )
+                    |> sequence update (List.map SetUserAttention (Maybe.Extra.toList subPage))
 
         SetUserAttention val ->
             ( { model | userAttention = val }

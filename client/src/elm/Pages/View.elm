@@ -9,6 +9,7 @@ import Pages.Activities.View
 import Pages.Activity.Model
 import Pages.Activity.View
 import Pages.Page exposing (Page(..))
+import Pages.Participants.View
 import Translate exposing (Language)
 
 
@@ -25,3 +26,8 @@ view language currentDate session model =
                 |> Maybe.withDefault Pages.Activity.Model.emptyModel
                 |> Pages.Activity.View.view language currentDate activityType session
                 |> Html.map (MsgActivity activityType)
+
+        ParticipantsPage ->
+            model.participantsPage
+                |> Pages.Participants.View.view language session
+                |> Html.map MsgParticipants

@@ -31,23 +31,6 @@ import Translate as Trans exposing (Language, translate)
 import Utils.WebData exposing (viewError)
 
 
-{-| Show all Participants page.
--}
-viewParticipants : Language -> Model -> Html Msg
-viewParticipants language model =
-    Debug.crash "redo"
-
-
-
-{-
-   div [ class "wrap wrap-alt page-participants" ] <|
-       viewDashboardPageHeader language App.PageType.ParticipantsDashboard
-           :: (List.map (Html.map MsgPagesParticipants) <|
-                   Pages.Participants.View.view language participants model.participantsPage
-               )
--}
-
-
 {-| Show the Participant page.
 
 This one needs the `currentDate` to calculate ages.
