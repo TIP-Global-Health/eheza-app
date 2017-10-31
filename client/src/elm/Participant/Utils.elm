@@ -3,7 +3,6 @@ module Participant.Utils exposing (..)
 import Activity.Model exposing (ActivityType(..))
 import Activity.Utils exposing (childHasPendingActivity, motherHasPendingActivity, motherHasAnyPendingActivity, childHasAnyPendingActivity)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
-import Date exposing (Date, Day)
 import Date.Extra.Facts exposing (monthFromMonthNumber)
 import EveryDict exposing (EveryDict)
 import EveryDictList

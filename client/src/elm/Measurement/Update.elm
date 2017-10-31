@@ -1,25 +1,10 @@
 port module Measurement.Update exposing (updateChild, updateMother, subscriptions)
 
-import Activity.Model
-    exposing
-        ( ActivityType(..)
-        , ChildActivityType(..)
-        , MotherActivityType(FamilyPlanning)
-        )
 import Backend.Entities exposing (ChildId, MotherId)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..))
 import Config.Model exposing (BackendUrl)
 import EverySet exposing (EverySet)
-import Http
-import HttpBuilder exposing (get, send, withJsonBody, withQueryParams, withExpect)
-import Json.Encode exposing (Value)
-import Json.Decode exposing (Decoder)
 import Measurement.Model exposing (..)
-import Participant.Model exposing (Participant, ParticipantId)
-import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (decodeSingleEntity, toEntityId)
-import StorageKey exposing (StorageKey(..))
-import Utils.WebData exposing (sendWithHandler)
 
 
 {-| The strategy used here, for the moment, is that the `model` tracks the UI,

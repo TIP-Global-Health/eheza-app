@@ -1,17 +1,13 @@
 module Pages.Participants.View exposing (view)
 
 import Activity.Utils exposing (getTotalsNumberPerActivity, motherOrAnyChildHasAnyPendingActivity)
-import App.PageType exposing (Page(..))
 import Backend.Session.Model exposing (OfflineSession, EditableSession)
 import EveryDictList
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Pages.Participants.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Utils exposing (viewDashboardPageHeader, DashboardPage(..))
 import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
-import Participant.Utils exposing (getParticipantAvatarThumb, getParticipantName, getParticipantTypeAsString)
-import Restful.Endpoint exposing (fromEntityId)
 import Translate as Trans exposing (translate, Language)
 import Utils.Html exposing (tabItem, thumbnailImage)
 

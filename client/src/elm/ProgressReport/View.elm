@@ -3,7 +3,6 @@ module ProgressReport.View
         ( viewProgressReport
         )
 
-import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
 import Html exposing (..)

@@ -1,13 +1,11 @@
 module Pages.Update exposing (..)
 
-import Activity.Model exposing (ActivityType(..))
 import EveryDict
 import Maybe.Extra
 import Pages.Activity.Model
 import Pages.Activity.Update
 import Pages.Activities.Update
 import Pages.Model exposing (..)
-import Pages.Page exposing (Page)
 import Pages.Participants.Update
 import Update.Extra exposing (sequence)
 

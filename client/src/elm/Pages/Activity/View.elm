@@ -10,11 +10,9 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List as List
-import Measurement.View
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
 import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
 import Participant.Utils exposing (getParticipants, participantHasPendingActivity, getParticipantName, getParticipantAvatarThumb)
-import Restful.Endpoint exposing (toEntityId)
 import Translate exposing (translate, Language)
 import Utils.Html exposing (tabItem, thumbnailImage)
 

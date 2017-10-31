@@ -15,7 +15,6 @@ algorithm described at <https://github.com/Gizra/ihangane/issues/303>.
 import Backend.Child.Model exposing (Gender(..))
 import IntDict exposing (IntDict)
 import ZScore.Model exposing (AgeInDays(..), Centimetres(..), Kilograms(..), ZScore(..))
-import Participant.Model exposing (AgeDay(..))
 import ZScore.Internal.HeightBoys as HeightBoys
 import ZScore.Internal.HeightGirls as HeightGirls
 import ZScore.Internal.MuacBoys as MuacBoys

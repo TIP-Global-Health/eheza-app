@@ -9,7 +9,6 @@ import List as List
 import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Page exposing (Page(..))
 import Pages.Utils exposing (DashboardPage(..), viewDashboardPageHeader)
-import Participant.Model exposing (ParticipantTypeFilter(..))
 import Translate as Trans exposing (translate, Language)
 import Utils.Html exposing (tabItem)
 

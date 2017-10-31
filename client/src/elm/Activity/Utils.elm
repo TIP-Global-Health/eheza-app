@@ -18,21 +18,15 @@ module Activity.Utils
         )
 
 import Activity.Model exposing (ActivityListItem, ActivityType(..), ChildActivityType(..), MotherActivityType(..))
-import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (applyEdit)
-import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (..)
 import Backend.Session.Utils exposing (getMother, getMotherMeasurementData, getChildMeasurementData)
-import Dict exposing (Dict)
 import EveryDict
 import EveryDictList
-import Html exposing (Attribute)
-import Html.Attributes exposing (class)
 import Maybe.Extra exposing (isJust, isNothing)
 import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
-import StorageKey exposing (StorageKey, isNew)
 
 
 getActivityTypeList : ParticipantTypeFilter -> List ActivityType

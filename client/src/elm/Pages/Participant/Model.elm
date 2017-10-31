@@ -16,13 +16,6 @@ mother and child with the appropriate types.
 
 -}
 
-import Activity.Model exposing (ActivityType)
-import App.PageType exposing (Page(..))
-import Backend.Entities exposing (..)
-import FilePicker.Model
-import Measurement.Model
-import Pusher.Model exposing (PusherEventData)
-
 
 type Msg activity measurement
     = MsgMeasurement measurement

@@ -4,12 +4,8 @@ module Measurement.Model exposing (..)
 participant.
 -}
 
-import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
-import Http
-import RemoteData exposing (RemoteData(..), WebData)
-import StorageKey exposing (StorageKey(..))
 
 
 {-| The strategy here, at least for now, is this:

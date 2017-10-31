@@ -1,9 +1,6 @@
 module Pages.Activity.Model exposing (..)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
-import App.PageType exposing (Page)
 import Backend.Entities exposing (..)
-import FilePicker.Model
 import Measurement.Model
 import Participant.Model exposing (ParticipantId)
 

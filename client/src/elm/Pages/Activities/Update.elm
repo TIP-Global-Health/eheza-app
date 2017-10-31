@@ -1,11 +1,7 @@
 module Pages.Activities.Update exposing (update)
 
 import Pages.Page exposing (Page(..))
-import Config.Model exposing (BackendUrl)
-import User.Model exposing (..)
 import Pages.Activities.Model exposing (Model, Msg(..))
-import Participant.Model exposing (ParticipantTypeFilter(..))
-import Backend.Session.Model exposing (OfflineSession)
 
 
 {-| The extra return parameter indicates our desire to change the `activePage`.
