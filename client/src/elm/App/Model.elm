@@ -8,7 +8,6 @@ import Pages.Login.Model
 import Pages.Model
 import Pages.OfflineSession.Model
 import RemoteData exposing (RemoteData(..), WebData)
-import ParticipantManager.Model
 import Time exposing (Time)
 import Translate exposing (Language(..))
 import User.Model exposing (..)
@@ -19,7 +18,6 @@ type Msg
     | Logout
     | MsgBackend Backend.Model.Msg
     | MsgPagesOfflineSession Pages.OfflineSession.Model.Msg
-    | MsgParticipantManager ParticipantManager.Model.Msg
     | PageLogin Pages.Login.Model.Msg
     | RedirectByActivePage
     | SetActivePage Page
@@ -39,7 +37,6 @@ type alias Model =
     , offline : Bool
     , pageLogin : Pages.Login.Model.Model
     , pageOfflineSession : Pages.OfflineSession.Model.Model
-    , pageParticipant : ParticipantManager.Model.Model
     , theme : Theme
     , user : WebData User
     }
@@ -78,7 +75,6 @@ emptyModel =
     , offline = False
     , pageLogin = Pages.Login.Model.emptyModel
     , pageOfflineSession = Pages.OfflineSession.Model.emptyModel
-    , pageParticipant = ParticipantManager.Model.emptyModel
     , theme = Light
     , user = NotAsked
     }

@@ -6,6 +6,8 @@ module Activity.Utils
         , getActivityList
         , getActivityTypeList
         , getActivityIcon
+        , getAllChildActivities
+        , getAllMotherActivities
         , getTotalsNumberPerActivity
         , hasAnyPendingChildActivity
         , hasAnyPendingMotherActivity
@@ -29,20 +31,17 @@ import Maybe.Extra exposing (isJust, isNothing)
 import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
 
 
+{-| Note that `ProgressReport` isn't included for now, as it is
+handled specially in the UI.
+-}
 getActivityTypeList : ParticipantTypeFilter -> List ActivityType
 getActivityTypeList participantTypeFilter =
     let
         childrenActivities =
-            [ ChildActivity ChildPicture
-            , ChildActivity Weight
-            , ChildActivity Height
-            , ChildActivity Muac
-            , ChildActivity NutritionSigns
-            ]
+            List.map ChildActivity getAllChildActivities
 
         mothersActivities =
-            [ MotherActivity FamilyPlanning
-            ]
+            List.map MotherActivity getAllMotherActivities
     in
         case participantTypeFilter of
             All ->
@@ -99,9 +98,12 @@ getActivityIcon activityType =
                     "planning"
 
 
+{-| Note that, for now, we're leaving out `ProgressReport` because that is handled
+specially in the UI at the moment ... that may change in future.
+-}
 getAllChildActivities : List ChildActivityType
 getAllChildActivities =
-    [ ChildPicture, Height, Muac, NutritionSigns, ProgressReport, Weight ]
+    [ ChildPicture, Height, Muac, NutritionSigns, Weight ]
 
 
 getAllMotherActivities : List MotherActivityType

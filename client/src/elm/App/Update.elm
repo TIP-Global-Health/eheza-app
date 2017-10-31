@@ -13,8 +13,6 @@ import Pages.Activity.Model
 import Pages.OfflineSession.Update
 import Pages.Participant.Model
 import Pages.Update
-import ParticipantManager.Model
-import ParticipantManager.Update
 import Pusher.Model
 import Pusher.Utils exposing (getClusterName)
 import Json.Decode exposing (decodeValue, bool)
@@ -126,35 +124,6 @@ update msg model =
                     , Cmd.map MsgPagesOfflineSession subCmd
                     )
 
-            MsgParticipantManager subMsg ->
-                case model.user of
-                    Success user ->
-                        let
-                            ( val, cmds, redirectPage ) =
-                                ParticipantManager.Update.update model.currentDate backendUrl model.accessToken user model.language subMsg model.pageParticipant
-
-                            modelUpdated =
-                                { model | pageParticipant = val }
-
-                            ( modelUpdatedWithSetPage, setPageCmds ) =
-                                Maybe.map
-                                    (\page ->
-                                        update (SetActivePage page) modelUpdated
-                                    )
-                                    redirectPage
-                                    |> Maybe.withDefault ( modelUpdated, Cmd.none )
-                        in
-                            ( modelUpdatedWithSetPage
-                            , Cmd.batch
-                                [ Cmd.map MsgParticipantManager cmds
-                                , setPageCmds
-                                ]
-                            )
-
-                    _ ->
-                        -- If we don't have a user, we have nothing to do.
-                        model ! []
-
             PageLogin msg ->
                 let
                     ( val, cmds, ( webDataUser, accessToken ) ) =
@@ -204,77 +173,76 @@ update msg model =
                 update (SetActivePage <| getBackButtonTarget model.activePage) model
 
             SetActivePage page ->
-                let
-                    activePageUpdated =
-                        setActivePageAccess model.user page
+                Debug.crash "redo"
 
-                    unbindFilePickerMsg =
-                        case model.activePage of
-                            Activity (Just (Child ChildPicture)) ->
-                                [ MsgParticipantManager <|
-                                    ParticipantManager.Model.MsgPagesActivity <|
-                                        Pages.Activity.Model.MsgFilePicker FilePicker.Model.Unbind
-                                ]
+            {-
+               let
+                   activePageUpdated =
+                       setActivePageAccess model.user page
 
-                            Participant participantId ->
-                                Debug.crash "redo"
+                   unbindFilePickerMsg =
+                      case model.activePage of
+                          Activity (Just (ChildActivity ChildPicture)) ->
+                             [ MsgParticipantManager <|
+                                 ParticipantManager.Model.MsgPagesActivity <|
+                                     Pages.Activity.Model.MsgFilePicker FilePicker.Model.Unbind
+                             ]
+                          Participant participantId ->
+                              Debug.crash "redo"
 
-                            {-
-                               [ MsgParticipantManager <|
-                                   ParticipantManager.Model.MsgPagesParticipant participantId <|
-                                       Pages.Participant.Model.MsgFilePicker FilePicker.Model.Unbind
-                               ]
-                            -}
-                            _ ->
-                                []
+                             [ MsgParticipantManager <|
+                                 ParticipantManager.Model.MsgPagesParticipant participantId <|
+                                     Pages.Participant.Model.MsgFilePicker FilePicker.Model.Unbind
+                             ]
+                          _ ->
+                              []
+                   ( modelUpdated, command ) =
+                       -- For a few, we also delegate some initialization
+                       case activePageUpdated of
+                           Activity maybeActivityType ->
+                               let
+                                   currentActivityPage =
+                                       model.pageParticipant.activityPage
 
-                    ( modelUpdated, command ) =
-                        -- For a few, we also delegate some initialization
-                        case activePageUpdated of
-                            Activity maybeActivityType ->
-                                let
-                                    currentActivityPage =
-                                        model.pageParticipant.activityPage
+                                   updatedActivityPage =
+                                       case maybeActivityType of
+                                           Just activityType ->
+                                               let
+                                                   isActive =
+                                                       case activityType of
+                                                           Child ChildPicture ->
+                                                               True
 
-                                    updatedActivityPage =
-                                        case maybeActivityType of
-                                            Just activityType ->
-                                                let
-                                                    isActive =
-                                                        case activityType of
-                                                            Child ChildPicture ->
-                                                                True
+                                                           _ ->
+                                                               False
+                                               in
+                                                   { currentActivityPage | selectedActivity = activityType }
 
-                                                            _ ->
-                                                                False
-                                                in
-                                                    { currentActivityPage | selectedActivity = activityType }
+                                           _ ->
+                                               currentActivityPage
 
-                                            _ ->
-                                                currentActivityPage
+                                   currentParticipanstManagerPage =
+                                       model.pageParticipant
 
-                                    currentParticipanstManagerPage =
-                                        model.pageParticipant
+                                   updatedParticipanstManagerPage =
+                                       { currentParticipanstManagerPage | activityPage = updatedActivityPage }
+                               in
+                                   ( { model | pageParticipant = updatedParticipanstManagerPage }
+                                   , Cmd.none
+                                   )
 
-                                    updatedParticipanstManagerPage =
-                                        { currentParticipanstManagerPage | activityPage = updatedActivityPage }
-                                in
-                                    ( { model | pageParticipant = updatedParticipanstManagerPage }
-                                    , Cmd.none
-                                    )
-
-                            _ ->
-                                ( model, Cmd.none )
-                in
-                    sequence update
-                        unbindFilePickerMsg
-                        ( { modelUpdated | activePage = setActivePageAccess model.user activePageUpdated }
-                        , Cmd.batch
-                            [ activePage [ (toString activePageUpdated), backendUrl ]
-                            , command
-                            ]
-                        )
-
+                           _ ->
+                               ( model, Cmd.none )
+               in
+                   sequence update
+                       unbindFilePickerMsg
+                       ( { modelUpdated | activePage = setActivePageAccess model.user activePageUpdated }
+                       , Cmd.batch
+                           [ activePage [ (toString activePageUpdated), backendUrl ]
+                           , command
+                           ]
+                       )
+            -}
             SetCurrentDate date ->
                 { model | currentDate = date } ! []
 
@@ -333,8 +301,8 @@ getBackButtonTarget activePage =
         PageNotFound ->
             activePage
 
-        Participant participantId ->
-            Dashboard []
+        _ ->
+            Debug.crash "implement"
 
 
 {-| Determine is a page can be accessed by a user (anonymous or authenticated),
@@ -368,7 +336,7 @@ setActivePageAccess user page =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Sub.map MsgParticipantManager <| ParticipantManager.Update.subscriptions model.pageParticipant model.activePage
+        [ Debug.crash "redo" -- Sub.map MsgParticipantManager <| ParticipantManager.Update.subscriptions model.pageParticipant model.activePage
         , Time.every minute Tick
         , offline (decodeValue bool >> HandleOfflineEvent)
         ]

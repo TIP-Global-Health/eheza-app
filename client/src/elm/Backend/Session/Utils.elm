@@ -36,9 +36,25 @@ getChildren motherId session =
         |> Maybe.withDefault []
 
 
+getChild : ChildId -> OfflineSession -> Maybe Child
+getChild childId session =
+    EveryDict.get childId session.children
+
+
 getMother : MotherId -> OfflineSession -> Maybe Mother
 getMother motherId session =
     EveryDictList.get motherId session.mothers
+
+
+getMyMother : ChildId -> OfflineSession -> Maybe ( MotherId, Mother )
+getMyMother childId session =
+    getChild childId session
+        |> Maybe.andThen .motherId
+        |> Maybe.andThen
+            (\motherId ->
+                getMother motherId session
+                    |> Maybe.map (\mother -> ( motherId, mother ))
+            )
 
 
 {-| Gets the data in the form that `Measurement.View` (and others) will want.

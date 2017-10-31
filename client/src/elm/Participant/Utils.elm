@@ -96,12 +96,9 @@ renderAgeMonthsDays language birthDate now =
             translate language <| Trans.Age months days
 
 
-renderParticipantDateOfBirth : Language -> Participant -> String
-renderParticipantDateOfBirth language participant =
+renderDateOfBirth : Language -> NominalDate -> String
+renderDateOfBirth language birthDate =
     let
-        birthDate =
-            getParticipantBirthDate participant
-
         day =
             Time.Date.day birthDate
 

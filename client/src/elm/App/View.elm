@@ -13,7 +13,6 @@ import Pages.OfflineSession.View
 import Pages.OpenSessions.View
 import Pages.PageNotFound.View
 import Pages.View
-import ParticipantManager.View
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
 import User.Model exposing (..)
@@ -29,37 +28,16 @@ view model =
             case model.activePage of
                 Activities ->
                     case model.user of
-                        Success user ->
-                            Html.map MsgParticipantManager <|
-                                ParticipantManager.View.viewActivities model.language model.pageParticipant
-
                         _ ->
                             div [] [ i [ class "notched circle loading icon" ] [] ]
 
                 Activity maybeSelectedActivity ->
                     case model.user of
-                        Success user ->
-                            Html.map MsgParticipantManager <|
-                                ParticipantManager.View.viewPageActivity model.language model.currentDate maybeSelectedActivity model.pageParticipant
-
                         _ ->
                             div [] [ i [ class "notched circle loading icon" ] [] ]
 
                 Dashboard _ ->
                     case model.user of
-                        Success user ->
-                            Html.map MsgParticipantManager <|
-                                ParticipantManager.View.viewParticipants model.language model.pageParticipant
-
-                        _ ->
-                            div [] [ i [ class "notched circle loading icon" ] [] ]
-
-                Participant id ->
-                    case model.user of
-                        Success user ->
-                            Html.map MsgParticipantManager <|
-                                ParticipantManager.View.viewPageParticipant model.language model.currentDate (Debug.crash " id") model.pageParticipant
-
                         _ ->
                             div [] [ i [ class "notched circle loading icon" ] [] ]
 
@@ -85,9 +63,6 @@ viewHeader language model =
                     emptyNode
 
                 Dashboard _ ->
-                    emptyNode
-
-                Participant _ ->
                     emptyNode
 
                 OfflineSession ->

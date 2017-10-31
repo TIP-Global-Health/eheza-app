@@ -2,6 +2,7 @@ module Translate exposing (..)
 
 import Activity.Model exposing (ActivityType(..), MotherActivityType(..), ChildActivityType(..))
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..), MuacIndication(..))
+import Backend.Child.Model exposing (Gender(..))
 import Date exposing (Month(..))
 
 
@@ -55,12 +56,11 @@ type TranslationId
     | ErrorNetworkError
     | ErrorTimeout
     | FamilyPlanningSignLabel FamilyPlanningSign
-    | Female
+    | Gender Gender
     | KilogramShorthand
     | LinkToMother
     | Login
     | Logout
-    | Male
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
@@ -308,8 +308,13 @@ translate lang trans =
                         NoFamilyPlanning ->
                             { english = "None of these" }
 
-                Female ->
-                    { english = "Female" }
+                Gender gender ->
+                    case gender of
+                        Male ->
+                            { english = "Male" }
+
+                        Female ->
+                            { english = "Female" }
 
                 KilogramShorthand ->
                     { english = "kg" }
@@ -322,9 +327,6 @@ translate lang trans =
 
                 Logout ->
                     { english = "Logout" }
-
-                Male ->
-                    { english = "Male" }
 
                 MeasurementNoChange ->
                     { english = "No Change" }
