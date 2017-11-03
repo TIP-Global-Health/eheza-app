@@ -1,6 +1,8 @@
 module Restful.Endpoint
     exposing
-        ( EndPoint
+        ( AccessToken
+        , BackendUrl
+        , EndPoint
         , Entity
         , EntityDictList
         , EntityId
@@ -15,6 +17,7 @@ module Restful.Endpoint
         , get404
         , select
         , toEntityId
+        , (</>)
         )
 
 {-| These functions facilitate CRUD operations upon entities exposed through a
