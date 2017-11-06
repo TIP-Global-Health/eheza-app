@@ -25,7 +25,7 @@ having selected one. Whether you're looking at the `Completed` or
 Note we're "middle management" here ... we don't model the state that
 the measurement UI needs, and we don't know how to change it. That gets
 handled above and below us ... we just specialize based on user selections,
-possibly ask the `Masurement` moules to show a UI, and pass what they tell
+possibly ask the `Measurement` moules to show a UI, and pass what they tell
 us back up the chain. Isn't division of labour fun?
 
 Also note that we don't manage the selection of activities here (that is,

@@ -6,6 +6,7 @@ import Backend.Session.Model exposing (EditableSession)
 import Date exposing (Date)
 import EveryDict
 import Gizra.Html exposing (emptyNode)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -27,8 +28,8 @@ thumbnailDimensions =
 {-| Note that we don't "own" the activityType ... it just gets provided to us,
 and is managed elsewhere.
 -}
-view : Language -> Date -> ActivityType -> EditableSession -> Model -> Html Msg
-view language currentDate selectedActivity session model =
+view : Language -> ActivityType -> EditableSession -> Model -> Html Msg
+view language selectedActivity session model =
     let
         ( pendingParticipants, completedParticipants ) =
             getParticipants session.offlineSession

@@ -1,9 +1,10 @@
 module App.Fetch exposing (..)
 
 import App.Model exposing (..)
-import App.PageType exposing (Page(..))
 import Pages.OpenSessions.Fetch
+import Pages.Page exposing (Page(..))
 import RemoteData exposing (RemoteData(..), WebData)
+import Restful.Login exposing (maybeData)
 
 
 {-| See the comment in Pages.OpenSessions.Fetch for an explanatio of this.
@@ -24,17 +25,20 @@ views. more often than that.
 -}
 fetch : Model -> List Msg
 fetch model =
-    -- For now, wait until we have a user to fetch anything else.
-    -- This may or may not be the most elegant way to handle that.
-    case model.user of
-        Success user ->
-            case model.activePage of
-                OpenSessions ->
-                    Pages.OpenSessions.Fetch.fetch model.currentDate model.backend.clinics model.backend.openSessions
+    []
 
-                _ ->
-                    -- For now, we've only implemented this pattern for OpenSessions.
-                    []
 
-        _ ->
-            []
+
+-- Will re-implement for this part of the new UI
+{-
+   case model.activePage of
+       OpenSessionsPage ->
+           model.configured.login
+               |> maybeData
+               |> Maybe.map (\data -> Pages.OpenSessions.Fetch.fetch model.currentDate data.backend.clinics data.backend.openSessions)
+               |> Maybe.withDefault []
+
+       _ ->
+           -- For now, we've only implemented this pattern for OpenSessions.
+           []
+-}

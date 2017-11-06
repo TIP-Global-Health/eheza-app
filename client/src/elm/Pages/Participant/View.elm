@@ -37,10 +37,30 @@ thumbnailDimensions =
     }
 
 
+viewChild : Language -> NominalDate -> ChildId -> EditableSession -> Model ChildActivityType -> Html (Msg ChildActivityType Measurement.Model.MsgChild)
+viewChild language currentDate childId session model =
+    -- It's nice to just pass in the childId. If the session is consistent, we
+    -- should always be able to get the child.  But it would be hard to
+    -- convince the compiler of that, so we put in a pro-forma error message.
+    case getChild childId session.offlineSession of
+        Just child ->
+            viewFoundChild language currentDate ( childId, child ) session model
+
+        Nothing ->
+            -- TODO: Make this error a little nicer, and translatable ... it
+            -- could occur for real if an invalid or out-of-date URL is
+            -- entered, for instance. It shouldn't occur through normal
+            -- navigation if the session is consistent (i.e. absent bugs).
+            div [ class "wrap" ]
+                [ h3 [] [ text "Internal error" ]
+                , p [] [ text "Error in Pages.Participant.View.viewChild -- child could not be found." ]
+                ]
+
+
 {-| This one needs the `currentDate` in order to calculate ages from dates of birth.
 -}
-viewChild : Language -> NominalDate -> ( ChildId, Child ) -> EditableSession -> Model ChildActivityType -> Html (Msg ChildActivityType Measurement.Model.MsgChild)
-viewChild language currentDate ( childId, child ) session model =
+viewFoundChild : Language -> NominalDate -> ( ChildId, Child ) -> EditableSession -> Model ChildActivityType -> Html (Msg ChildActivityType Measurement.Model.MsgChild)
+viewFoundChild language currentDate ( childId, child ) session model =
     let
         childName =
             translate language <|
@@ -82,8 +102,6 @@ viewChild language currentDate ( childId, child ) session model =
             else
                 [ Html.map MsgMeasurement <|
                     Debug.crash "implement"
-
-                --                   Measurement.View.viewChild language currentDate ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
                 ]
     in
         div [ class "wrap" ] <|
@@ -106,8 +124,28 @@ viewChild language currentDate ( childId, child ) session model =
                 ++ content
 
 
-viewMother : Language -> ( MotherId, Mother ) -> EditableSession -> Model MotherActivityType -> Html (Msg MotherActivityType Measurement.Model.MsgMother)
-viewMother language ( motherId, mother ) session model =
+viewMother : Language -> MotherId -> EditableSession -> Model MotherActivityType -> Html (Msg MotherActivityType Measurement.Model.MsgMother)
+viewMother language motherId session model =
+    -- It's nice to just pass in the motherId. If the session is consistent, we
+    -- should always be able to get the mother.  But it would be hard to
+    -- convince the compiler of that, so we put in a pro-forma error message.
+    case getMother motherId session.offlineSession of
+        Just mother ->
+            viewFoundMother language ( motherId, mother ) session model
+
+        Nothing ->
+            -- TODO: Make this error a little nicer, and translatable ... it
+            -- could occur for real if an invalid or out-of-date URL is
+            -- entered, for instance. It shouldn't occur through normal
+            -- navigation if the session is consistent (i.e. absent bugs).
+            div [ class "wrap" ]
+                [ h3 [] [ text "Internal error" ]
+                , p [] [ text "Error in Pages.Participant.View.viewMother -- mother could not be found." ]
+                ]
+
+
+viewFoundMother : Language -> ( MotherId, Mother ) -> EditableSession -> Model MotherActivityType -> Html (Msg MotherActivityType Measurement.Model.MsgMother)
+viewFoundMother language ( motherId, mother ) session model =
     let
         break =
             br [] []
@@ -138,8 +176,6 @@ viewMother language ( motherId, mother ) session model =
                 ++ (viewActivityCards motherConfig language motherId model.selectedTab model.selectedActivity session)
                 ++ [ Html.map MsgMeasurement <|
                         Debug.crash "implement"
-
-                   --                            Measurement.View.viewMother language model.selectedActivity model.measurements
                    ]
 
 

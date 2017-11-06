@@ -6,7 +6,7 @@ module Pages.Utils exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Pages.Page exposing (Page(..))
+import Pages.Page exposing (SessionPage(..))
 import Translate exposing (translate, Language)
 
 
@@ -15,7 +15,7 @@ type DashboardPage
     | ParticipantsDashboard
 
 
-viewDashboardPageHeader : (Page -> msg) -> Language -> DashboardPage -> Html msg
+viewDashboardPageHeader : (SessionPage -> msg) -> Language -> DashboardPage -> Html msg
 viewDashboardPageHeader redirect language dashboardPage =
     let
         ( header, activitiesLinkAttributes, participantsLinkAttributes ) =
@@ -23,7 +23,7 @@ viewDashboardPageHeader redirect language dashboardPage =
                 ActivitiesDashboard ->
                     ( Translate.Activities
                     , [ class "active" ]
-                    , [ onClick (redirect (Debug.crash "where to"))
+                    , [ onClick (redirect ParticipantsPage)
                       ]
                     )
 

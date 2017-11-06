@@ -1,91 +1,36 @@
-module Pages.Login.Update exposing (fetchUserFromBackend, update)
+module Pages.Login.Update exposing (update)
 
-import Config.Model exposing (BackendUrl)
-import HttpBuilder exposing (..)
-import User.Model exposing (..)
-import Pages.Login.Model as Login exposing (..)
-import Pages.Login.Decoder exposing (..)
-import RemoteData exposing (RemoteData(..), WebData)
-import Utils.WebData exposing (sendWithHandler)
+import Pages.Login.Model exposing (..)
 
 
-update : BackendUrl -> Msg -> Model -> ( Model, Cmd Msg, ( WebData User, AccessToken ) )
-update backendUrl msg model =
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe OutMsg )
+update msg model =
     case msg of
-        HandleFetchedAccessToken (Ok accessToken) ->
-            ( model
-            , fetchUserFromBackend backendUrl accessToken
-            , ( Loading, accessToken )
-            )
-
-        HandleFetchedAccessToken (Err err) ->
-            ( model
-            , Cmd.none
-            , ( Failure err, "" )
-            )
-
-        HandleFetchedUser accessToken (Ok user) ->
-            ( model
-            , Cmd.none
-            , ( Success user, accessToken )
-            )
-
-        HandleFetchedUser accessToken (Err err) ->
-            ( model
-            , Cmd.none
-            , ( Failure err, accessToken )
-            )
+        Clear ->
+            ( emptyModel, Cmd.none, Nothing )
 
         SetName name ->
             let
                 loginForm =
                     model.loginForm
-
-                loginForm_ =
-                    { loginForm | name = name }
             in
-                ( { model | loginForm = loginForm_ }
+                ( { model | loginForm = { loginForm | name = name } }
                 , Cmd.none
-                , ( NotAsked, "" )
+                , Nothing
                 )
 
         SetPassword pass ->
             let
                 loginForm =
                     model.loginForm
-
-                loginForm_ =
-                    { loginForm | pass = pass }
             in
-                ( { model | loginForm = loginForm_ }
+                ( { model | loginForm = { loginForm | pass = pass } }
                 , Cmd.none
-                , ( NotAsked, "" )
+                , Nothing
                 )
 
-        TryLogin ->
+        HandleLoginClicked ->
             ( model
-            , fetchAccessTokenFromBackend backendUrl model.loginForm
-            , ( Loading, "" )
+            , Cmd.none
+            , Just (TryLogin model.loginForm.name model.loginForm.pass)
             )
-
-
-{-| Get access token from backend.
--}
-fetchAccessTokenFromBackend : BackendUrl -> LoginForm -> Cmd Msg
-fetchAccessTokenFromBackend backendUrl loginForm =
-    let
-        credentials =
-            encodeCredentials ( loginForm.name, loginForm.pass )
-    in
-        HttpBuilder.get (backendUrl ++ "/api/login-token")
-            |> withHeader "Authorization" ("Basic " ++ credentials)
-            |> sendWithHandler decodeAccessToken HandleFetchedAccessToken
-
-
-{-| Get user data from backend.
--}
-fetchUserFromBackend : BackendUrl -> String -> Cmd Msg
-fetchUserFromBackend backendUrl accessToken =
-    HttpBuilder.get (backendUrl ++ "/api/me")
-        |> withQueryParams [ ( "access_token", accessToken ) ]
-        |> sendWithHandler decodeUser (HandleFetchedUser accessToken)

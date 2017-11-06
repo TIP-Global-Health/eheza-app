@@ -1,17 +1,24 @@
 module Pages.Update exposing (..)
 
 import EveryDict
-import Maybe.Extra
 import Pages.Activity.Model
 import Pages.Activity.Update
 import Pages.Activities.Update
 import Pages.Model exposing (..)
+import Pages.Page exposing (SessionPage)
+import Pages.Participant.Model
+import Pages.Participant.Update
 import Pages.Participants.Update
-import Update.Extra exposing (sequence)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+{-| The third return parameter, if `Just`, indicates our desire
+to redirect the user's attention to the given page.
+
+This is specialized to our `SessionPages` model.
+
+-}
+updateSession : MsgSession -> SessionPages -> ( SessionPages, Cmd MsgSession, Maybe SessionPage )
+updateSession msg model =
     case msg of
         MsgActivities subMsg ->
             let
@@ -20,8 +27,8 @@ update msg model =
             in
                 ( { model | activitiesPage = subModel }
                 , Cmd.map MsgActivities subCmd
+                , subPage
                 )
-                    |> sequence update (List.map SetUserAttention (Maybe.Extra.toList subPage))
 
         MsgActivity activityType subMsg ->
             let
@@ -32,6 +39,31 @@ update msg model =
             in
                 ( { model | activityPages = EveryDict.insert activityType subModel model.activityPages }
                 , Cmd.map (MsgActivity activityType) subCmd
+                , Nothing
+                )
+
+        MsgChild childId subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    EveryDict.get childId model.childPages
+                        |> Maybe.withDefault Pages.Participant.Model.emptyModel
+                        |> Pages.Participant.Update.updateChild subMsg
+            in
+                ( { model | childPages = EveryDict.insert childId subModel model.childPages }
+                , Cmd.map (MsgChild childId) subCmd
+                , Nothing
+                )
+
+        MsgMother motherId subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    EveryDict.get motherId model.motherPages
+                        |> Maybe.withDefault Pages.Participant.Model.emptyModel
+                        |> Pages.Participant.Update.updateMother subMsg
+            in
+                ( { model | motherPages = EveryDict.insert motherId subModel model.motherPages }
+                , Cmd.map (MsgMother motherId) subCmd
+                , Nothing
                 )
 
         MsgParticipants subMsg ->
@@ -41,10 +73,5 @@ update msg model =
             in
                 ( { model | participantsPage = subModel }
                 , Cmd.map MsgParticipants subCmd
+                , subPage
                 )
-                    |> sequence update (List.map SetUserAttention (Maybe.Extra.toList subPage))
-
-        SetUserAttention val ->
-            ( { model | userAttention = val }
-            , Cmd.none
-            )

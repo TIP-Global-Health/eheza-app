@@ -5,13 +5,17 @@ module Restful.Login
         , Credentials
         , Login
         , LoginProgress(..)
-        , Model(..)
+        , LoginStatus(..)
         , Msg
         , accessTokenRejected
         , checkCachedCredentials
         , drupalConfig
+        , isProgressing
+        , getError
         , loggedOut
         , logout
+        , maybeData
+        , mapData
         , tryLogin
         , update
         )
@@ -27,7 +31,7 @@ can be handled here.
 
 ## Types
 
-@docs Model, Credentials, Login, LoginProgress
+@docs LoginStatus, Credentials, Login, LoginProgress
 
 
 ## Initialization
@@ -43,6 +47,11 @@ can be handled here.
 ## Integration with your app
 
 @docs Config, AppConfig, drupalConfig, Msg, update
+
+
+## Accessing the data associated with the login
+
+@socs maybeData, mapData
 
 -}
 
@@ -115,10 +124,104 @@ type alias Credentials user =
     thrown away upon logout).
 
 -}
-type Model user data
+type LoginStatus user data
     = Anonymous LoginProgress
     | CheckingCachedCredentials
     | LoggedIn (Login user data)
+
+
+{-| Is there currently something in progress to advance the
+login process, or are we at rest?
+-}
+isProgressing : LoginStatus user data -> Bool
+isProgressing model =
+    case model of
+        Anonymous progress ->
+            loginProgressIsProgressing progress
+
+        CheckingCachedCredentials ->
+            True
+
+        LoggedIn login ->
+            Maybe.map loginProgressIsProgressing login.relogin
+                |> Maybe.withDefault False
+
+
+loginProgressIsProgressing : LoginProgress -> Bool
+loginProgressIsProgressing loginProgress =
+    case loginProgress of
+        FailedAccessToken _ ->
+            False
+
+        FailedPassword _ ->
+            False
+
+        LoginRequired ->
+            False
+
+        TryingPassword ->
+            True
+
+
+{-| Do we have an error to report?
+-}
+getError : LoginStatus user data -> Maybe Error
+getError model =
+    case model of
+        Anonymous progress ->
+            loginProgressToError progress
+
+        CheckingCachedCredentials ->
+            Nothing
+
+        LoggedIn login ->
+            Maybe.andThen loginProgressToError login.relogin
+
+
+loginProgressToError : LoginProgress -> Maybe Error
+loginProgressToError loginProgress =
+    case loginProgress of
+        FailedAccessToken err ->
+            Just err
+
+        FailedPassword err ->
+            Just err
+
+        LoginRequired ->
+            Nothing
+
+        TryingPassword ->
+            Nothing
+
+
+{-| Extract the data as a Maybe, which will be `Just` if the user is logged in.
+-}
+maybeData : LoginStatus user data -> Maybe data
+maybeData model =
+    case model of
+        Anonymous _ ->
+            Nothing
+
+        CheckingCachedCredentials ->
+            Nothing
+
+        LoggedIn login ->
+            Just login.data
+
+
+{-| Map over the data, if the user is logged in.
+-}
+mapData : (data -> data) -> LoginStatus user data -> LoginStatus user data
+mapData func model =
+    case model of
+        Anonymous _ ->
+            model
+
+        CheckingCachedCredentials ->
+            model
+
+        LoggedIn login ->
+            LoggedIn { login | data = func login.data }
 
 
 {-| If we have no credentials, are we currently doing anything to get them?
@@ -194,7 +297,7 @@ However, if you are `LoggedIn`, this will make `relogin` a `Just` ...
 that is, it will record that relogin is necessary.
 
 -}
-setProgress : LoginProgress -> Model user data -> Model user data
+setProgress : LoginProgress -> LoginStatus user data -> LoginStatus user data
 setProgress progress model =
     case model of
         Anonymous _ ->
@@ -212,7 +315,7 @@ setProgress progress model =
 to generate initial data if we didn't have some already (i.e. if this isn't
 a re-login). If it is a re-login, we just keep the data.
 -}
-setCredentials : Config user data msg -> Credentials user -> Model user data -> Model user data
+setCredentials : Config user data msg -> Credentials user -> LoginStatus user data -> LoginStatus user data
 setCredentials config credentials model =
     case model of
         Anonymous _ ->
@@ -240,19 +343,19 @@ setCredentials config credentials model =
 {-| A constant which represents the state in which the user is logged out, and
 no progress is currently being made towards login.
 
-This is one possible "starting point" for initializing the Model. The other
+This is one possible "starting point" for initializing the LoginStatus. The other
 main starting point would be `checkCachedCredentials`.
 
 Note that you should use `logout` to actually perform the action of logging
 out, since that will also clear the cached credentials.
 
 -}
-loggedOut : Model user data
+loggedOut : LoginStatus user data
 loggedOut =
     Anonymous LoginRequired
 
 
-{-| Initializes a model by indicating that we're checking the cache for
+{-| Initializes a LoginStatus by indicating that we're checking the cache for
 credentials, and return a `Cmd` that will do that.
 
   - BackendUrl is the backend to check the cached credentials against.
@@ -262,7 +365,7 @@ credentials, and return a `Cmd` that will do that.
     flags at startup, or via ports. If you've cached credentials for multiple backends,
     it's up to you to match your backendURL and your credentials.
 
-The model will start as `CheckingCachedCredentials`. At this point, your UI
+The LoginStatus will start as `CheckingCachedCredentials`. At this point, your UI
 should treat the login process as unresolved ... it will soon resolve one way
 or another. So, you might show a "checking for cached login" message, or just
 nothing.
@@ -276,7 +379,7 @@ nothing.
     state.
 
 -}
-checkCachedCredentials : Config user data msg -> BackendUrl -> Value -> ( Model user data, Cmd msg )
+checkCachedCredentials : Config user data msg -> BackendUrl -> Value -> ( LoginStatus user data, Cmd msg )
 checkCachedCredentials config backendUrl value =
     update config (CheckCachedCredentials backendUrl value) CheckingCachedCredentials
 
@@ -417,7 +520,7 @@ as follows:
     ...
 
 -}
-update : Config user data msg -> Msg user -> Model user data -> ( Model user data, Cmd msg )
+update : Config user data msg -> Msg user -> LoginStatus user data -> ( LoginStatus user data, Cmd msg )
 update config msg model =
     -- Ultimately, it might be easier to work in the **caller's** `Msg` type,
     -- and have a "mapper" in the `Config` so we can do some internal messages.
@@ -601,7 +704,7 @@ If we're in a `LoggedIn` state, we'll stay in that state ... we'll
 merely record that re-login is required.
 
 -}
-accessTokenRejected : Error -> Model user data -> Model user data
+accessTokenRejected : Error -> LoginStatus user data -> LoginStatus user data
 accessTokenRejected error model =
     case model of
         Anonymous _ ->

@@ -14,7 +14,7 @@ show the participant.
 
 -}
 
-import Pages.Page exposing (Page(..))
+import Pages.Page exposing (SessionPage(..))
 
 
 type alias Model =
@@ -23,7 +23,7 @@ type alias Model =
 
 
 type Msg
-    = SetRedirectPage Page
+    = SetRedirectPage SessionPage
     | SetSelectedTab Tab
 
 

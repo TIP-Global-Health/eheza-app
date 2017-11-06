@@ -1,6 +1,5 @@
 module Pages.OpenSessions.Fetch exposing (fetch)
 
-import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Model
@@ -22,8 +21,8 @@ putting the fundmental data from the backend in the `Pages` hierarchy, it can
 become awkward to maintain a single source of truth. Ideally, we would keep all
 contact with the backend out of the UI code, and manage the data more
 "centrally." (In fact, we should probably have a `Data` module prefix something
-like our `Pages` prefix). Then, each view can be provided with whatever data
-it needs, from the centrally managed store.
+like our `Pages` prefix). Then, each view can be provided with whatever data it
+needs, from the centrally managed store.
 
 Now, that would be straight-forward if we always had all our data. But we don't
 -- we load it lazily from the backend as needed. And, it is the `Manager` modules
@@ -41,32 +40,36 @@ Instead, what one would want is to switch on the `activePage` -- that is,
 to follow the same hierarchy as the `view` function, but instead of asking for
 some HTML, ask whether any data needs to be loaded.
 
-So, the idea for the `fetch` function is that it would ordinarily take the
-same parameters as `view`, and it would sort of follow the `view` function,
-by assembling a List of messages which need to be sent in order to load data.
-Of course, it's important not to load the data over and over again, so this
-needs to be tied up with a kind of `WebData` wrapper for the data, so we know
-not to trigger a fetch when one is in progress. ONe would also not want to
-triggr a fetch in case of error (at least, not without a delay), since you
-wouldn't want to just automatically retry errors constantly.
+So, the idea for the `fetch` function is that it would ordinarily take the same
+parameters as `view`, and it would sort of follow the `view` function, by
+assembling a List of messages which need to be sent in order to load data. Of
+course, it's important not to load the data over and over again, so this needs
+to be tied up with a kind of `WebData` wrapper for the data, so we know not to
+trigger a fetch when one is in progress. ONe would also not want to triggr a
+fetch in case of error (at least, not without a delay), since you wouldn't want
+to just automatically retry errors constantly.
 
 -}
-fetch : Date -> WebData (EntityDictList ClinicId Clinic) -> WebData ( NominalDate, EntityDictList SessionId Session ) -> List Msg
+fetch : NominalDate -> WebData (EntityDictList ClinicId Clinic) -> WebData ( NominalDate, EntityDictList SessionId Session ) -> List Backend.Model.Msg
 fetch currentDate clinics sessions =
-    -- So, to recap, this is called by the parent's `fetch` function, to see whether
-    -- any data needs to be fetched. We can return messages that will fetch needed
-    -- data. The function is located here because it is kind of a companion to the
-    -- `view` function ... it needs to stay in sync with the view function, so that
-    -- the things the `view` function needs are in fact loaded. So, the signature for
-    -- the two functions would generally be related.
+    -- So, to recap, this is called by the parent's `fetch` function, to see
+    -- whether any data needs to be fetched. We can return messages that will
+    -- fetch needed data. The function is located here because it is kind of a
+    -- companion to the `view` function ... it needs to stay in sync with the
+    -- view function, so that the things the `view` function needs are in fact
+    -- loaded. So, the signature for the two functions would generally be
+    -- related.
+    --
+    -- For now, at least, we're returning a list of messages intended for the
+    -- backend ... i.e. `Backend.Model.Msg` ... since that's the kind of
+    -- message we send to fetch things. But, we could make it an
+    -- `App.Model.Msg` instead, if there were a need to send other kinds of
+    -- messages.
     let
-        nominalDate =
-            Gizra.NominalDate.fromLocalDateTime currentDate
-
         fetchSessions =
             case sessions of
                 NotAsked ->
-                    Just (MsgBackend <| Backend.Model.FetchSessionsOpenOn nominalDate)
+                    Just (Backend.Model.FetchSessionsOpenOn currentDate)
 
                 Loading ->
                     Nothing
@@ -75,15 +78,15 @@ fetch currentDate clinics sessions =
                     Nothing
 
                 Success ( sessionDate, _ ) ->
-                    if sessionDate == nominalDate then
+                    if sessionDate == currentDate then
                         Nothing
                     else
-                        Just (MsgBackend <| Backend.Model.FetchSessionsOpenOn nominalDate)
+                        Just (Backend.Model.FetchSessionsOpenOn currentDate)
 
         fetchClinics =
             case clinics of
                 NotAsked ->
-                    Just (MsgBackend Backend.Model.FetchClinics)
+                    Just Backend.Model.FetchClinics
 
                 _ ->
                     Nothing

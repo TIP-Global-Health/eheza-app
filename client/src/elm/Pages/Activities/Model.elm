@@ -1,7 +1,7 @@
 module Pages.Activities.Model exposing (..)
 
 import Participant.Model exposing (ParticipantTypeFilter(..))
-import Pages.Page exposing (Page)
+import Pages.Page exposing (SessionPage)
 
 
 {-| This module manages the state for the first part of the UI
@@ -32,7 +32,7 @@ type alias Model =
 
 type Msg
     = SetParticipantTypeFilter ParticipantTypeFilter
-    | SetRedirectPage Page
+    | SetRedirectPage SessionPage
     | SetSelectedTab Tab
 
 

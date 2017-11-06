@@ -1,60 +1,67 @@
 module Pages.Login.View exposing (view)
 
+import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Pages.Login.Model exposing (..)
+import Pages.Page exposing (Page)
 import RemoteData exposing (RemoteData(..), WebData)
+import Restful.Login exposing (LoginStatus(..))
 import Translate as Trans exposing (translate, Language)
 import User.Model exposing (..)
 import Utils.WebData exposing (viewError)
 
 
-view : Language -> WebData User -> Model -> Html Msg
-view language user model =
+{-| TODO: The `activePage` indicates what page the user really wanted ... we
+may have shown this instead of that page, and we might indicate something
+about that in the UI (e.g. "You must log in before view the ...").
+
+Also, note that we're not taking `relogin` into account here yet, and we
+should probably show something different if the user is logged in
+(perhaps an opportunity to log out).
+
+-}
+view : Language -> Page -> LoginStatus user data -> Model -> Html Msg
+view language activePage status model =
     div [ class "login-container" ]
-        [ viewHeader language model
-        , viewMain language user model
+        [ viewHeader
+        , viewMain language activePage status model
         ]
 
 
-viewHeader : Language -> Model -> Html Msg
-viewHeader language model =
+viewHeader : Html Msg
+viewHeader =
     Html.header []
-        [ a [ id "logo", href "/" ]
+        [ a [ id "logo" ]
             [ img [ src "assets/images/logo.png", alt "Logo" ] []
             ]
         ]
 
 
-viewMain : Language -> WebData User -> Model -> Html Msg
-viewMain language user model =
+viewMain : Language -> Page -> LoginStatus user data -> Model -> Html Msg
+viewMain language activePage loginStatus model =
     let
         spinner =
             i [ class "notched circle loading icon" ] []
 
-        ( isLoading, isError ) =
-            case user of
-                Loading ->
-                    ( True, False )
-
-                Failure _ ->
-                    ( False, True )
-
-                _ ->
-                    ( False, False )
+        isLoading =
+            Restful.Login.isProgressing loginStatus
 
         error =
-            case user of
-                Failure err ->
-                    div [ class "ui error message" ] [ viewError language err ]
-
-                _ ->
-                    div [] []
+            -- TODO: Should have more specific, translated error messages.
+            Restful.Login.getError loginStatus
+                |> Maybe.map
+                    (\err ->
+                        div
+                            [ class "ui error message" ]
+                            [ viewError language err ]
+                    )
+                |> Maybe.withDefault emptyNode
     in
         Html.main_ []
             [ Html.form
-                [ onSubmit TryLogin
+                [ onSubmit HandleLoginClicked
                 , action "javascript:void(0);"
                 , class "ui large form narrow-form login-form"
                 ]

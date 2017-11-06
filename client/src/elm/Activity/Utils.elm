@@ -3,6 +3,9 @@ module Activity.Utils
         ( childHasAnyPendingActivity
         , childHasCompletedActivity
         , childHasPendingActivity
+        , decodeActivityTypeFromString
+        , defaultActivityType
+        , encodeActivityTypeAsString
         , getActivityList
         , getActivityTypeList
         , getActivityIcon
@@ -29,6 +32,75 @@ import EveryDict
 import EveryDictList
 import Maybe.Extra exposing (isJust, isNothing)
 import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
+
+
+{-| Used for URL etc., not for display in the normal UI
+(since we'd translate for that).
+-}
+encodeActivityTypeAsString : ActivityType -> String
+encodeActivityTypeAsString activityType =
+    case activityType of
+        ChildActivity activity ->
+            case activity of
+                ChildPicture ->
+                    "picture"
+
+                Height ->
+                    "height"
+
+                Muac ->
+                    "muac"
+
+                NutritionSigns ->
+                    "nutrition"
+
+                ProgressReport ->
+                    "progress"
+
+                Weight ->
+                    "weight"
+
+        MotherActivity activity ->
+            case activity of
+                FamilyPlanning ->
+                    "family-planning"
+
+
+{-| The inverse of encodeActivityTypeAsString
+-}
+decodeActivityTypeFromString : String -> Maybe ActivityType
+decodeActivityTypeFromString s =
+    case s of
+        "picture" ->
+            Just <| ChildActivity ChildPicture
+
+        "height" ->
+            Just <| ChildActivity Height
+
+        "muac" ->
+            Just <| ChildActivity Muac
+
+        "nutrition" ->
+            Just <| ChildActivity NutritionSigns
+
+        "progress" ->
+            Just <| ChildActivity ProgressReport
+
+        "weight" ->
+            Just <| ChildActivity Weight
+
+        "family-planning" ->
+            Just <| MotherActivity FamilyPlanning
+
+        _ ->
+            Nothing
+
+
+{-| An activity type to use if we need to start somewhere.
+-}
+defaultActivityType : ActivityType
+defaultActivityType =
+    ChildActivity Height
 
 
 {-| Note that `ProgressReport` isn't included for now, as it is

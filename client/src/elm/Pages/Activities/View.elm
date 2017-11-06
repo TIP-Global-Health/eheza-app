@@ -7,7 +7,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List as List
 import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
-import Pages.Page exposing (Page(..))
+import Pages.Page exposing (SessionPage(..))
 import Pages.Utils exposing (DashboardPage(..), viewDashboardPageHeader)
 import Translate as Trans exposing (translate, Language)
 import Utils.Html exposing (tabItem)

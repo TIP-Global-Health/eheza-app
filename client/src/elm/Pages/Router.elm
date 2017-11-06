@@ -1,0 +1,79 @@
+module Pages.Router exposing (delta2url, parseUrl)
+
+import Activity.Utils exposing (encodeActivityTypeAsString, decodeActivityTypeFromString, defaultActivityType)
+import Pages.Model exposing (..)
+import Pages.Page exposing (..)
+import Restful.Endpoint exposing (toEntityId, fromEntityId)
+import RouteUrl exposing (HistoryEntry(..), UrlChange)
+import UrlParser exposing (Parser, map, parseHash, s, oneOf, (</>), int, string, top)
+
+
+{-| For now, we're given just the previous and current page ...if
+we need any additional information for routing at some point, the
+caller could provide it.
+-}
+delta2url : Page -> Page -> Maybe UrlChange
+delta2url previous current =
+    case current of
+        SessionPage sessionPage ->
+            case sessionPage of
+                ActivitiesPage ->
+                    Just <| UrlChange NewEntry "#activities"
+
+                ActivityPage activityType ->
+                    Just <| UrlChange NewEntry ("#activity/" ++ encodeActivityTypeAsString activityType)
+
+                ChildPage id ->
+                    Just <| UrlChange NewEntry ("#child/" ++ toString (fromEntityId id))
+
+                MotherPage id ->
+                    Just <| UrlChange NewEntry ("#mother/" ++ toString (fromEntityId id))
+
+                ParticipantsPage ->
+                    Just <| UrlChange NewEntry "#participants"
+
+        LoginPage ->
+            Just <| UrlChange NewEntry "#login"
+
+        MyAccountPage ->
+            Just <| UrlChange NewEntry "#my-account"
+
+        PageNotFound url ->
+            -- If we couldn't interpret the URL, we don't try to change it.
+            Nothing
+
+
+{-| For now, the only messages we're generating from the URL are messages
+to set the active page. So, we just return a `Page`, and the caller can
+map it to a msg. If we eventually needed to send different kinds of messages,
+we could change that here.
+-}
+parseUrl : Parser (Page -> c) c
+parseUrl =
+    oneOf
+        [ map (SessionPage ActivitiesPage) (s "activities")
+
+        -- TODO: Should probably fail with an unrecongized activity type,
+        -- rather than use the default
+        , map
+            (SessionPage << ActivityPage << Maybe.withDefault defaultActivityType << decodeActivityTypeFromString)
+            (s "activity" </> string)
+        , map (SessionPage << ChildPage << toEntityId) (s "child" </> int)
+        , map LoginPage (s "login")
+        , map MyAccountPage (s "my-account")
+        , map (SessionPage << MotherPage << toEntityId) (s "mother" </> int)
+        , map (SessionPage ParticipantsPage) (s "participants")
+
+        -- TODO: `top` represents the page without any segements ... i.e. the
+        -- root page.  Should figure out how to handle this best. Possibly a
+        -- special Page called `Root`?  Or, we could eventually redirect to an
+        -- appropriate page. But it might be simpler to record the user's
+        -- intention to be at the "root" page.
+        , map LoginPage top
+
+        -- Finally, if we don't map anything, show PageNotFound. It would be nice
+        -- to capture the entire URL here (rather than just the first segment),
+        -- but it's not clear how to do that. We could do it one level up, where
+        -- we actually have the full URL.
+        , map PageNotFound string
+        ]

@@ -1,22 +1,10 @@
 module Pages.Login.Model exposing (..)
 
-import Http
-import User.Model exposing (User)
-
-
-type alias AccessToken =
-    String
-
 
 type alias LoginForm =
     { name : String
     , pass : String
     }
-
-
-type UserMessage
-    = None
-    | Error String
 
 
 type alias Model =
@@ -25,14 +13,20 @@ type alias Model =
 
 
 type Msg
-    = HandleFetchedAccessToken (Result Http.Error AccessToken)
-    | HandleFetchedUser AccessToken (Result Http.Error User)
+    = Clear
     | SetName String
     | SetPassword String
-    | TryLogin
+    | HandleLoginClicked
+
+
+{-| The message we return when we want to actually attempt
+a login.
+-}
+type OutMsg
+    = TryLogin String String
 
 
 emptyModel : Model
 emptyModel =
-    { loginForm = LoginForm "admin" "admin"
+    { loginForm = LoginForm "" ""
     }

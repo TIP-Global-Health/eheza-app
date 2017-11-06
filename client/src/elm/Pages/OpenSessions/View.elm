@@ -10,7 +10,7 @@ For now, we just show the list.
 -}
 
 import Html exposing (..)
-import App.Model exposing (Msg(..))
+import App.Model exposing (Msg(..), MsgLoggedIn(..))
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (ClinicId, SessionId)
 import Backend.Model
@@ -71,7 +71,7 @@ viewWrapper language currentDate clinicData sessionData =
                 [ viewError language err
                 , div
                     [ class "ui button"
-                    , onClick (MsgBackend Backend.Model.FetchClinics)
+                    , onClick (MsgLoggedIn <| MsgBackend Backend.Model.FetchClinics)
                     ]
                     [ text <| translate language Trans.Retry ]
                 ]
@@ -93,6 +93,7 @@ viewWrapper language currentDate clinicData sessionData =
                             , Gizra.NominalDate.fromLocalDateTime currentDate
                                 |> Backend.Model.FetchSessionsOpenOn
                                 |> MsgBackend
+                                |> MsgLoggedIn
                                 |> onClick
                             ]
                             [ text <| translate language Trans.Retry ]
@@ -134,6 +135,7 @@ viewSession clinics ( sessionId, session ) =
                     span
                         [ Backend.Model.FetchOfflineSession id
                             |> MsgBackend
+                            |> MsgLoggedIn
                             |> onClick
                         ]
                         [ text "Download" ]

@@ -2,349 +2,219 @@ port module App.Update exposing (init, update, subscriptions)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import App.Model exposing (..)
-import App.PageType exposing (Page(..))
 import Backend.Update
 import Config
 import Date
 import Dict
-import Http exposing (Error)
 import FilePicker.Model
+import Gizra.NominalDate exposing (fromLocalDateTime)
+import Http exposing (Error)
+import Json.Decode exposing (decodeValue, bool)
+import Json.Decode exposing (oneOf)
+import Json.Encode exposing (Value)
 import Pages.Activity.Model
+import Pages.Login.Model
+import Pages.Login.Update
 import Pages.OfflineSession.Update
+import Pages.Page
+import Pages.Page exposing (Page(..))
 import Pages.Participant.Model
+import Pages.Update
 import Pages.Update
 import Pusher.Model
 import Pusher.Utils exposing (getClusterName)
-import Json.Decode exposing (decodeValue, bool)
-import Json.Encode exposing (Value)
-import Pages.Login.Update
 import RemoteData exposing (RemoteData(..), WebData)
+import Restful.Endpoint exposing (decodeSingleEntity)
+import Restful.Login exposing (LoginStatus(..), Login, Credentials, checkCachedCredentials)
 import Task
 import Time exposing (minute)
 import Update.Extra exposing (sequence)
+import User.Decoder exposing (decodeUser)
+import User.Encoder exposing (encodeUser)
 import User.Model exposing (..)
+
+
+loginConfig : Restful.Login.Config User LoggedInModel Msg
+loginConfig =
+    -- TODO: The `oneOf` below is necessary because how the backend sends
+    -- the user is a little different from how we encode it for local
+    -- storage ... this could possibly be solved another way.
+    Restful.Login.drupalConfig
+        { decodeUser = oneOf [ decodeSingleEntity decodeUser, decodeUser ]
+        , encodeUser = encodeUser
+        , initialData = \_ -> emptyLoggedInModel
+        , cacheCredentials = curry cacheCredentials
+        , tag = MsgLogin
+        }
 
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    let
-        user =
-            if (String.isEmpty flags.accessToken) then
-                -- This isn't really a netowrk error, but we mark the user as
-                -- Failure, so we know we have an anonymous user at hand.
-                Failure <| Http.NetworkError
-            else
-                NotAsked
+    case Dict.get flags.hostname Config.configs of
+        Just config ->
+            let
+                ( loginStatus, loginCmd ) =
+                    -- We kick off the process of checking the cached credentials which
+                    -- we were provided.
+                    checkCachedCredentials loginConfig config.backendUrl flags.credentials
 
-        ( config, cmds, activePage ) =
-            case (Dict.get flags.hostname Config.configs) of
-                Just config ->
-                    let
-                        defaultCmds =
-                            [ pusherKey
-                                ( config.pusherKey.key
-                                , getClusterName config.pusherKey.cluster
-                                , Pusher.Model.eventNames
-                                )
-                            , Task.perform SetCurrentDate Date.now
-                            ]
+                cmd =
+                    Cmd.batch
+                        [ pusherKey
+                            ( config.pusherKey.key
+                            , getClusterName config.pusherKey.cluster
+                            , Pusher.Model.eventNames
+                            )
+                        , Task.perform Tick Time.now
+                        , loginCmd
+                        ]
 
-                        ( cmds, activePage_ ) =
-                            if (String.isEmpty flags.accessToken) then
-                                -- Check if we have already an access token.
-                                ( defaultCmds, Login )
-                            else
-                                ( [ Cmd.map PageLogin <| Pages.Login.Update.fetchUserFromBackend config.backendUrl flags.accessToken ] ++ defaultCmds
-                                , emptyModel.activePage
-                                )
-                    in
-                        ( Success config
-                        , cmds
-                        , activePage_
-                        )
+                configuredModel =
+                    { config = config
+                    , loginPage = Pages.Login.Model.emptyModel
+                    , login = loginStatus
+                    }
+            in
+                ( { emptyModel | configuration = Success configuredModel }
+                , cmd
+                )
 
-                Nothing ->
-                    ( Failure "No config found"
-                    , [ Cmd.none ]
-                    , emptyModel.activePage
-                    )
-    in
-        ( { emptyModel
-            | accessToken = flags.accessToken
-            , activePage = activePage
-            , config = config
-            , user = user
-          }
-        , Cmd.batch cmds
-        )
+        Nothing ->
+            ( { emptyModel | configuration = Failure <| "No config found for: " ++ flags.hostname }
+            , Cmd.none
+            )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    let
-        backendUrl =
-            case model.config of
-                Success config ->
-                    config.backendUrl
+    case msg of
+        MsgLoggedIn loggedInMsg ->
+            updateLoggedIn
+                (\credentials data ->
+                    case loggedInMsg of
+                        MsgBackend subMsg ->
+                            let
+                                ( backend, cmd ) =
+                                    Backend.Update.update credentials.backendUrl credentials.accessToken subMsg data.backend
+                            in
+                                ( { data | backend = backend }
+                                , Cmd.map (MsgLoggedIn << MsgBackend) cmd
+                                )
 
-                _ ->
-                    ""
-    in
-        case msg of
-            HandleOfflineEvent (Ok offline) ->
-                { model | offline = offline } ! []
-
-            HandleOfflineEvent (Err err) ->
-                model ! []
-
-            Logout ->
-                ( { emptyModel
-                    | accessToken = ""
-                    , activePage = Login
-                    , config = model.config
-                  }
-                , accessTokenPort ""
+                        MsgSession subMsg ->
+                            let
+                                -- TODO: Implement redirect
+                                ( subModel, subCmd, redirect ) =
+                                    Pages.Update.updateSession subMsg data.pages
+                            in
+                                ( { data | pages = subModel }
+                                , Cmd.map (MsgLoggedIn << MsgSession) subCmd
+                                )
                 )
+                model
 
-            MsgBackend subMsg ->
-                let
-                    ( backend, cmd ) =
-                        Backend.Update.update backendUrl model.accessToken subMsg model.backend
-                in
-                    ( { model | backend = backend }
-                    , Cmd.map MsgBackend cmd
+        MsgLogin subMsg ->
+            updateConfigured
+                (\configured ->
+                    Restful.Login.update loginConfig subMsg configured.login
+                        |> Tuple.mapFirst (\login -> { configured | login = login })
+                )
+                model
+
+        MsgPageLogin subMsg ->
+            updateConfigured
+                (\configured ->
+                    let
+                        ( subModel, subCmd, outMsg ) =
+                            Pages.Login.Update.update subMsg configured.loginPage
+
+                        _ =
+                            Debug.crash "deal with outMsg"
+                    in
+                        ( { configured | loginPage = subModel }
+                        , Cmd.map MsgPageLogin subCmd
+                        )
+                )
+                model
+
+        SetActivePage page ->
+            -- TODO: There may be some additinoal logic needed here ... we'll see.
+            ( { model | activePage = page }
+            , Cmd.none
+            )
+
+        SetLanguage language ->
+            ( { model | language = language }
+            , Cmd.none
+            )
+
+        SetOffline offline ->
+            ( { model | offline = offline }
+            , Cmd.none
+            )
+
+        Tick time ->
+            let
+                nominalDate =
+                    fromLocalDateTime (Date.fromTime time)
+            in
+                -- We don't update the model at all if the date hasn't
+                -- changed ...  this should be a small optimization, since
+                -- the new model will be referentially equal to the
+                -- previous one.
+                if nominalDate == model.currentDate then
+                    ( model, Cmd.none )
+                else
+                    ( { model | currentDate = nominalDate }
+                    , Cmd.none
                     )
 
-            MsgPagesOfflineSession subMsg ->
-                let
-                    ( subModel, subCmd ) =
-                        Pages.OfflineSession.Update.update subMsg model.pageOfflineSession
-                in
-                    ( { model | pageOfflineSession = subModel }
-                    , Cmd.map MsgPagesOfflineSession subCmd
-                    )
 
-            PageLogin msg ->
-                let
-                    ( val, cmds, ( webDataUser, accessToken ) ) =
-                        Pages.Login.Update.update backendUrl msg model.pageLogin
-
-                    modelUpdated =
-                        { model
-                            | pageLogin = val
-                            , accessToken = accessToken
-                            , user = webDataUser
-                        }
-
-                    ( modelWithRedirect, setActivePageCmds ) =
-                        case webDataUser of
-                            -- If user was successfuly fetched, reditect to my
-                            -- account page.
-                            Success _ ->
-                                let
-                                    nextPage =
-                                        case modelUpdated.activePage of
-                                            Login ->
-                                                -- Redirect to the dashboard.
-                                                Dashboard []
-
-                                            _ ->
-                                                -- Keep the active page.
-                                                modelUpdated.activePage
-                                in
-                                    update (SetActivePage nextPage) modelUpdated
-
-                            Failure _ ->
-                                -- Unset the wrong access token.
-                                update (SetActivePage Login) { modelUpdated | accessToken = "" }
-
-                            _ ->
-                                modelUpdated ! []
-                in
-                    ( modelWithRedirect
-                    , Cmd.batch
-                        [ Cmd.map PageLogin cmds
-                        , accessTokenPort accessToken
-                        , setActivePageCmds
-                        ]
-                    )
-
-            RedirectByActivePage ->
-                update (SetActivePage <| getBackButtonTarget model.activePage) model
-
-            SetActivePage page ->
-                Debug.crash "redo"
-
-            {-
-               let
-                   activePageUpdated =
-                       setActivePageAccess model.user page
-
-                   unbindFilePickerMsg =
-                      case model.activePage of
-                          Activity (Just (ChildActivity ChildPicture)) ->
-                             [ MsgParticipantManager <|
-                                 ParticipantManager.Model.MsgPagesActivity <|
-                                     Pages.Activity.Model.MsgFilePicker FilePicker.Model.Unbind
-                             ]
-                          Participant participantId ->
-                              Debug.crash "redo"
-
-                             [ MsgParticipantManager <|
-                                 ParticipantManager.Model.MsgPagesParticipant participantId <|
-                                     Pages.Participant.Model.MsgFilePicker FilePicker.Model.Unbind
-                             ]
-                          _ ->
-                              []
-                   ( modelUpdated, command ) =
-                       -- For a few, we also delegate some initialization
-                       case activePageUpdated of
-                           Activity maybeActivityType ->
-                               let
-                                   currentActivityPage =
-                                       model.pageParticipant.activityPage
-
-                                   updatedActivityPage =
-                                       case maybeActivityType of
-                                           Just activityType ->
-                                               let
-                                                   isActive =
-                                                       case activityType of
-                                                           Child ChildPicture ->
-                                                               True
-
-                                                           _ ->
-                                                               False
-                                               in
-                                                   { currentActivityPage | selectedActivity = activityType }
-
-                                           _ ->
-                                               currentActivityPage
-
-                                   currentParticipanstManagerPage =
-                                       model.pageParticipant
-
-                                   updatedParticipanstManagerPage =
-                                       { currentParticipanstManagerPage | activityPage = updatedActivityPage }
-                               in
-                                   ( { model | pageParticipant = updatedParticipanstManagerPage }
-                                   , Cmd.none
-                                   )
-
-                           _ ->
-                               ( model, Cmd.none )
-               in
-                   sequence update
-                       unbindFilePickerMsg
-                       ( { modelUpdated | activePage = setActivePageAccess model.user activePageUpdated }
-                       , Cmd.batch
-                           [ activePage [ (toString activePageUpdated), backendUrl ]
-                           , command
-                           ]
-                       )
-            -}
-            SetCurrentDate date ->
-                { model | currentDate = date } ! []
-
-            ThemeSwitch currentTheme ->
-                let
-                    newTheme =
-                        case currentTheme of
-                            Dark ->
-                                Light
-
-                            Light ->
-                                Dark
-
-                    config =
-                        { from = String.toLower <| toString <| currentTheme
-                        , to = String.toLower <| toString <| newTheme
-                        }
-                in
-                    ( { model | theme = newTheme }
-                    , themeSwitcher config
-                    )
-
-            Tick _ ->
-                model ! [ Task.perform SetCurrentDate Date.now ]
-
-
-{-| Determine the target page of the back button based on the active page.
+{-| Convenience function to process a msg which depends on having a configuration.
 -}
-getBackButtonTarget : Page -> Page
-getBackButtonTarget activePage =
-    case activePage of
-        AccessDenied ->
-            activePage
-
-        Activities ->
-            Dashboard []
-
-        Activity _ ->
-            Activities
-
-        Dashboard activity ->
-            Activities
-
-        Login ->
-            activePage
-
-        MyAccount ->
-            activePage
-
-        OfflineSession ->
-            activePage
-
-        OpenSessions ->
-            activePage
-
-        PageNotFound ->
-            activePage
-
-        _ ->
-            Debug.crash "implement"
+updateConfigured : (ConfiguredModel -> ( ConfiguredModel, Cmd Msg )) -> Model -> ( Model, Cmd Msg )
+updateConfigured func model =
+    model.configuration
+        |> RemoteData.map (func >> Tuple.mapFirst (\config -> { model | configuration = Success config }))
+        |> RemoteData.withDefault ( model, Cmd.none )
 
 
-{-| Determine is a page can be accessed by a user (anonymous or authenticated),
-and if not return a access denied page.
+{-| Convenience function to process a msg which depends on being logged in.
 
-If the user is authenticated, don't allow them to revisit Login page. Do the
-opposite for anonymous user - don't allow them to visit the MyAccount page.
+TODO: Put a version of this in `Restful.Login`.
 
 -}
-setActivePageAccess : WebData User -> Page -> Page
-setActivePageAccess user page =
-    case user of
-        Success _ ->
-            if page == Login then
-                AccessDenied
-            else
-                page
+updateLoggedIn : (Credentials User -> LoggedInModel -> ( LoggedInModel, Cmd Msg )) -> Model -> ( Model, Cmd Msg )
+updateLoggedIn func model =
+    updateConfigured
+        (\configured ->
+            -- TODO: Perhaps we should Debug.log some errors in cases where we get
+            -- messages we can't handle ...
+            case configured.login of
+                Anonymous _ ->
+                    ( configured, Cmd.none )
 
-        Failure _ ->
-            if page == Login then
-                page
-            else if page == PageNotFound then
-                page
-            else
-                AccessDenied
+                CheckingCachedCredentials ->
+                    ( configured, Cmd.none )
 
-        _ ->
-            page
+                LoggedIn login ->
+                    func login.credentials login.data
+                        |> Tuple.mapFirst (\data -> { configured | login = LoggedIn { login | data = data } })
+        )
+        model
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Debug.crash "redo" -- Sub.map MsgParticipantManager <| ParticipantManager.Update.subscriptions model.pageParticipant model.activePage
-        , Time.every minute Tick
-        , offline (decodeValue bool >> HandleOfflineEvent)
+        [ Time.every minute Tick
+        , offline SetOffline
         ]
 
 
-{-| Send access token to JS.
+{-| Saves credentials provided by `Restful.Login`.
 -}
-port accessTokenPort : String -> Cmd msg
+port cacheCredentials : ( String, Value ) -> Cmd msg
 
 
 {-| Send Pusher key and cluster to JS.
@@ -352,16 +222,6 @@ port accessTokenPort : String -> Cmd msg
 port pusherKey : ( String, String, List String ) -> Cmd msg
 
 
-{-| Get a singal if internet connection is lost.
+{-| Get a signal if internet connection is lost or regained.
 -}
-port offline : (Value -> msg) -> Sub msg
-
-
-{-| Send active page to JS.
--}
-port activePage : List String -> Cmd msg
-
-
-{-| Send the new theme configurations to JS.
--}
-port themeSwitcher : ThemeConfig -> Cmd msg
+port offline : (Bool -> msg) -> Sub msg

@@ -38,17 +38,29 @@ one page -- but may be useful in other cases just for clarity. (In the sense
 that the things under `Pages` most clearly need to implement just the top-level
 choices about what to show the user, rather than the details).
 
+In fact, you will see below that this is actually specialized to `SessionPages`
+... that is, those pages which we can show if we have an `EditableSession`.
+Eventually, we may want to make this more general, and put the `SessionPages`
+in their own folder. But leaving it here for the moment is convenient.
+
 -}
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
+import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType)
+import Backend.Entities exposing (..)
 import EveryDict exposing (EveryDict)
+import Measurement.Model
 import Pages.Activities.Model
 import Pages.Activity.Model
+import Pages.Participant.Model
 import Pages.Participants.Model
 import Pages.Page exposing (Page(..))
 
 
-type alias Model =
+{-| This is where we track all the UI state that relates to an EditableSession
+... that is, UI pages which will need an EditableSession to be supplied in
+order to view or update them.
+-}
+type alias SessionPages =
     -- Shows a list of activities ... user can select one.
     { activitiesPage : Pages.Activities.Model.Model
 
@@ -59,22 +71,32 @@ type alias Model =
     -- Shows a list of participants ... user can select one.
     , participantsPage : Pages.Participants.Model.Model
 
-    -- What does the user want to see?
-    , userAttention : Page
+    -- We keep separate page state per mother and child ... just models the
+    -- selectedActivity and selectedTab, so it's not expensive. This means that
+    -- we keep a separate selectedTab and selectedActivity per mother or child
+    -- ... we could just keep a single state here if we wanted the selectedTab
+    -- and selectedActivity to stay the same when you switch from one
+    -- participant to another.
+    , childPages : EveryDict ChildId (Pages.Participant.Model.Model ChildActivityType)
+    , motherPages : EveryDict MotherId (Pages.Participant.Model.Model MotherActivityType)
     }
 
 
-emptyModel : Model
-emptyModel =
+emptySessionPages : SessionPages
+emptySessionPages =
     { activitiesPage = Pages.Activities.Model.emptyModel
     , activityPages = EveryDict.empty
+    , childPages = EveryDict.empty
+    , motherPages = EveryDict.empty
     , participantsPage = Pages.Participants.Model.emptyModel
-    , userAttention = ActivityPage (ChildActivity Height)
     }
 
 
-type Msg
+{-| All the messages which relate to session pages.
+-}
+type MsgSession
     = MsgActivities Pages.Activities.Model.Msg
     | MsgActivity ActivityType Pages.Activity.Model.Msg
+    | MsgChild ChildId (Pages.Participant.Model.Msg ChildActivityType Measurement.Model.MsgChild)
+    | MsgMother MotherId (Pages.Participant.Model.Msg MotherActivityType Measurement.Model.MsgMother)
     | MsgParticipants Pages.Participants.Model.Msg
-    | SetUserAttention Page
