@@ -37,6 +37,7 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int Int
+    | AppName
     | Assessment
     | Baby
     | BabyName String
@@ -59,8 +60,7 @@ type TranslationId
     | Gender Gender
     | KilogramShorthand
     | LinkToMother
-    | Login
-    | Logout
+    | LoginPhrase LoginPhrase
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
@@ -76,7 +76,6 @@ type TranslationId
     | NotConnected
     | Page404
     | PageNotFoundMsg
-    | Password
     | Participants
     | PendingSectionEmpty
     | PlaceholderEnterHeight
@@ -96,12 +95,22 @@ type TranslationId
     | SaveError
     | SearchByName
     | TitleHealthAssessment
-    | Username
     | WelcomeUser String
     | ZScoreHeightForAge
     | ZScoreMuacForAge
     | ZScoreWeightForAge
     | ZScoreWeightForHeight
+
+
+type LoginPhrase
+    = CheckingCachedCredentials
+    | ForgotPassword1
+    | ForgotPassword2
+    | LoggedInAs
+    | Logout
+    | Password
+    | SignIn
+    | Username
 
 
 translate : Language -> TranslationId -> String
@@ -214,6 +223,9 @@ translate lang trans =
                 AgeSingleMonthWithoutDay month ->
                     { english = toString month ++ " month" }
 
+                AppName ->
+                    { english = "E-Heza System" }
+
                 Assessment ->
                     { english = "Assessment" }
 
@@ -322,11 +334,31 @@ translate lang trans =
                 LinkToMother ->
                     { english = "Link to mother" }
 
-                Login ->
-                    { english = "Login" }
+                LoginPhrase phrase ->
+                    case phrase of
+                        CheckingCachedCredentials ->
+                            { english = "Checking cached credentials" }
 
-                Logout ->
-                    { english = "Logout" }
+                        ForgotPassword1 ->
+                            { english = "Forgot your password?" }
+
+                        ForgotPassword2 ->
+                            { english = "Call The Ihangane Project at +250 788 817 542" }
+
+                        LoggedInAs ->
+                            { english = "Logged in as" }
+
+                        Logout ->
+                            { english = "Logout" }
+
+                        Password ->
+                            { english = "Password" }
+
+                        SignIn ->
+                            { english = "Sign In" }
+
+                        Username ->
+                            { english = "Username" }
 
                 MeasurementNoChange ->
                     { english = "No Change" }
@@ -380,9 +412,6 @@ translate lang trans =
 
                 PageNotFoundMsg ->
                     { english = "Sorry, nothing found in this URL." }
-
-                Password ->
-                    { english = "Password" }
 
                 Participants ->
                     { english = "Participants" }
@@ -475,9 +504,6 @@ translate lang trans =
 
                 TitleHealthAssessment ->
                     { english = "2017 July Health Assessment" }
-
-                Username ->
-                    { english = "Username" }
 
                 WelcomeUser name ->
                     { english = "Welcome " ++ name }

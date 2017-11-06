@@ -58,8 +58,8 @@ can be handled here.
 import Base64
 import Http exposing (Error, expectJson)
 import HttpBuilder exposing (withExpect, withHeader, withExpect, withQueryParams)
-import Json.Decode exposing (Decoder, field, Value)
-import Json.Encode
+import Json.Decode exposing (Decoder, field)
+import Json.Encode exposing (Value)
 import Restful.Endpoint exposing (BackendUrl, AccessToken, (</>))
 import Task
 
@@ -360,7 +360,7 @@ credentials, and return a `Cmd` that will do that.
 
   - BackendUrl is the backend to check the cached credentials against.
 
-  - Value is the JSON value which your `cacheCredentials` function (from Config)
+  - Value is the JSON string which your `cacheCredentials` function (from Config)
     has cached. So, it's up to you to fetch that value somehow, either via
     flags at startup, or via ports. If you've cached credentials for multiple backends,
     it's up to you to match your backendURL and your credentials.
@@ -379,7 +379,7 @@ nothing.
     state.
 
 -}
-checkCachedCredentials : Config user data msg -> BackendUrl -> Value -> ( LoginStatus user data, Cmd msg )
+checkCachedCredentials : Config user data msg -> BackendUrl -> String -> ( LoginStatus user data, Cmd msg )
 checkCachedCredentials config backendUrl value =
     update config (CheckCachedCredentials backendUrl value) CheckingCachedCredentials
 
@@ -430,15 +430,15 @@ where needed.
 
   - cacheCredentials
 
-    A function which, when given a backendURL and a JSON value, will return a
-    command that caches that value. Exactly how you do that is up to you ... it
+    A function which, when given a backendURL and a JSON string, will return a
+    command that caches that string. Exactly how you do that is up to you ... it
     will probably be via ports.
 
     We provide the backendUrl in case you want to store the credentials for multiple
     backends and pick amongst them when needed. But you can ignore it if you like ...
-    the important part for us is the `Value`.
+    the important part for us is the JSON string.
 
-    However you store the `Value`, you can provide it to `checkCachedCredentials`
+    However you store the JSON string, you can provide it to `checkCachedCredentials`
     and we'll use it.
 
   - tag
@@ -455,7 +455,7 @@ type alias Config user data msg =
     , decodeUser : Decoder user
     , encodeUser : user -> Value
     , initialData : user -> data
-    , cacheCredentials : BackendUrl -> Value -> Cmd msg
+    , cacheCredentials : BackendUrl -> String -> Cmd msg
     , tag : Msg user -> msg
     }
 
@@ -466,7 +466,7 @@ type alias AppConfig user data msg =
     { decodeUser : Decoder user
     , encodeUser : user -> Value
     , initialData : user -> data
-    , cacheCredentials : BackendUrl -> Value -> Cmd msg
+    , cacheCredentials : BackendUrl -> String -> Cmd msg
     , tag : Msg user -> msg
     }
 
@@ -492,7 +492,7 @@ these messages with various functions (e.g. `tryLogin`, `logout`) and handle
 them with the `update` function.
 -}
 type Msg user
-    = CheckCachedCredentials BackendUrl Value
+    = CheckCachedCredentials BackendUrl String
     | HandleAccessTokenCheck (Credentials user) (Result Error user)
     | HandleLoginAttempt (Result Error (Credentials user))
     | Logout
@@ -617,7 +617,7 @@ update config msg model =
                     )
 
         CheckCachedCredentials backendUrl cachedValue ->
-            case Json.Decode.decodeValue (decodeCredentials config backendUrl) cachedValue of
+            case Json.Decode.decodeString (decodeCredentials config backendUrl) cachedValue of
                 Err _ ->
                     -- If we can't decode the cached credentials, we just
                     -- give up and say that login is needed. This will, for
@@ -666,19 +666,20 @@ update config msg model =
                     -- We tell the app to cache credentials consisting of an empty object.
                     -- This is simpler than telling the app to delete credentials.
                     ( loggedOut
-                    , config.cacheCredentials login.credentials.backendUrl (Json.Encode.object [])
+                    , config.cacheCredentials login.credentials.backendUrl "{}"
                     )
 
 
-encodeCredentials : Config user data msg -> Credentials user -> Value
+encodeCredentials : Config user data msg -> Credentials user -> String
 encodeCredentials config credentials =
     -- We only encode the accessToken and the user ... we provide the
     -- backendURL separately, so the app can decide whether to record
     -- this separately for different configured backends etc.
-    Json.Encode.object
-        [ ( "access_token", Json.Encode.string credentials.accessToken )
-        , ( "user", config.encodeUser credentials.user )
-        ]
+    Json.Encode.encode 0 <|
+        Json.Encode.object
+            [ ( "access_token", Json.Encode.string credentials.accessToken )
+            , ( "user", config.encodeUser credentials.user )
+            ]
 
 
 decodeCredentials : Config user data msg -> BackendUrl -> Decoder (Credentials user)

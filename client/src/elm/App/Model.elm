@@ -137,7 +137,7 @@ type MsgLoggedIn
 
 
 type alias Flags =
-    { credentials : Value
+    { credentials : String
     , hostname : String
     }
 

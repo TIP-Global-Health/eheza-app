@@ -1,24 +1,15 @@
 port module App.Update exposing (init, update, subscriptions)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import App.Model exposing (..)
 import Backend.Update
 import Config
 import Date
 import Dict
-import FilePicker.Model
 import Gizra.NominalDate exposing (fromLocalDateTime)
-import Http exposing (Error)
 import Json.Decode exposing (decodeValue, bool)
 import Json.Decode exposing (oneOf)
-import Json.Encode exposing (Value)
-import Pages.Activity.Model
 import Pages.Login.Model
 import Pages.Login.Update
-import Pages.OfflineSession.Update
-import Pages.Page
-import Pages.Page exposing (Page(..))
-import Pages.Participant.Model
 import Pages.Update
 import Pages.Update
 import Pusher.Model
@@ -28,7 +19,6 @@ import Restful.Endpoint exposing (decodeSingleEntity)
 import Restful.Login exposing (LoginStatus(..), Login, Credentials, checkCachedCredentials)
 import Task
 import Time exposing (minute)
-import Update.Extra exposing (sequence)
 import User.Decoder exposing (decodeUser)
 import User.Encoder exposing (encodeUser)
 import User.Model exposing (..)
@@ -36,9 +26,9 @@ import User.Model exposing (..)
 
 loginConfig : Restful.Login.Config User LoggedInModel Msg
 loginConfig =
-    -- TODO: The `oneOf` below is necessary because how the backend sends
-    -- the user is a little different from how we encode it for local
-    -- storage ... this could possibly be solved another way.
+    -- The `oneOf` below is necessary because how the backend sends the user is
+    -- a little different from how we encode it for local storage ... this
+    -- could possibly be solved another way.
     Restful.Login.drupalConfig
         { decodeUser = oneOf [ decodeSingleEntity decodeUser, decodeUser ]
         , encodeUser = encodeUser
@@ -128,11 +118,38 @@ update msg model =
                         ( subModel, subCmd, outMsg ) =
                             Pages.Login.Update.update subMsg configured.loginPage
 
-                        _ =
-                            Debug.crash "deal with outMsg"
+                        -- Normally I'd do this with `sequence`, but getting
+                        -- that to work in this context is a bit hairy with the
+                        -- types ... I should see how to make this pattern work
+                        -- even better at some point. Probably, what this needs
+                        -- is a `MsgConfigured` pattern and a speciliazed update
+                        -- function, but we'll see.
+                        --
+                        -- In the meantime, the outMsg may be telling us to do
+                        -- something ... if so, we just do it right here! Why
+                        -- wait?
+                        ( loginStatus, loginCmd ) =
+                            outMsg
+                                |> Maybe.map
+                                    (\out ->
+                                        case out of
+                                            Pages.Login.Model.TryLogin name pass ->
+                                                Restful.Login.tryLogin configured.config.backendUrl name pass
+
+                                            Pages.Login.Model.Logout ->
+                                                Restful.Login.logout
+                                    )
+                                |> Maybe.map (\loginMsg -> Restful.Login.update loginConfig loginMsg configured.login)
+                                |> Maybe.withDefault ( configured.login, Cmd.none )
                     in
-                        ( { configured | loginPage = subModel }
-                        , Cmd.map MsgPageLogin subCmd
+                        ( { configured
+                            | loginPage = subModel
+                            , login = loginStatus
+                          }
+                        , Cmd.batch
+                            [ Cmd.map MsgPageLogin subCmd
+                            , loginCmd
+                            ]
                         )
                 )
                 model
@@ -214,7 +231,7 @@ subscriptions model =
 
 {-| Saves credentials provided by `Restful.Login`.
 -}
-port cacheCredentials : ( String, Value ) -> Cmd msg
+port cacheCredentials : ( String, String ) -> Cmd msg
 
 
 {-| Send Pusher key and cluster to JS.
