@@ -4,10 +4,8 @@ import Backend.Model
 import Config.Model
 import Date
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
-import Json.Encode exposing (Value)
 import Pages.Login.Model
 import Pages.Model
-import Pages.OfflineSession.Model
 import Pages.Page exposing (Page(LoginPage))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Login exposing (LoginStatus)

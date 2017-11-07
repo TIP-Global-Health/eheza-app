@@ -46,6 +46,7 @@ type TranslationId
     | CentimeterShorthand
     | ChildNutritionSignLabel ChildNutritionSign
     | Children
+    | Clinics
     | CompletedSectionEmpty
     | Connected
     | Dashboard
@@ -97,6 +98,7 @@ type TranslationId
     | Save
     | SaveError
     | SearchByName
+    | SelectYourClinic
     | TitleHealthAssessment
     | WelcomeUser String
     | ZScoreHeightForAge
@@ -298,6 +300,9 @@ translate lang trans =
 
                 Children ->
                     { english = "Children" }
+
+                Clinics ->
+                    { english = "Clinics" }
 
                 CompletedSectionEmpty ->
                     { english = "This section has not yet been completed." }
@@ -542,6 +547,9 @@ translate lang trans =
 
                 SearchByName ->
                     { english = "Search by Name" }
+
+                SelectYourClinic ->
+                    { english = "Select your clinic:" }
 
                 TitleHealthAssessment ->
                     { english = "2017 July Health Assessment" }

@@ -9,3 +9,8 @@
 input::placeholder {
   line-height: 1.0;
 }
+
+// So we don't need a href to get the pointer cursor
+a {
+  cursor: pointer;
+}

@@ -3,12 +3,8 @@ module Pages.Clinics.Fetch exposing (fetch)
 import Backend.Entities exposing (..)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Model
-import Backend.Session.Model exposing (Session)
-import Date exposing (Date)
-import Gizra.NominalDate exposing (formatYYYYMMDD)
-import Gizra.NominalDate exposing (NominalDate)
+import EveryDictList exposing (EveryDictList)
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (EntityDictList)
 
 
 {-| The `fetch` function is an innovation in how to manage the "lazy" loading
@@ -50,8 +46,8 @@ fetch in case of error (at least, not without a delay), since you wouldn't want
 to just automatically retry errors constantly.
 
 -}
-fetch : NominalDate -> WebData (EntityDictList ClinicId Clinic) -> WebData ( NominalDate, EntityDictList SessionId Session ) -> List Backend.Model.Msg
-fetch currentDate clinics sessions =
+fetch : WebData (EveryDictList ClinicId Clinic) -> List Backend.Model.Msg
+fetch clinics =
     -- So, to recap, this is called by the parent's `fetch` function, to see
     -- whether any data needs to be fetched. We can return messages that will
     -- fetch needed data. The function is located here because it is kind of a
@@ -65,33 +61,9 @@ fetch currentDate clinics sessions =
     -- message we send to fetch things. But, we could make it an
     -- `App.Model.Msg` instead, if there were a need to send other kinds of
     -- messages.
-    let
-        fetchSessions =
-            case sessions of
-                NotAsked ->
-                    Just (Backend.Model.FetchFutureSessions currentDate)
+    case clinics of
+        NotAsked ->
+            [ Backend.Model.FetchClinics ]
 
-                Loading ->
-                    Nothing
-
-                Failure _ ->
-                    Nothing
-
-                Success ( sessionDate, _ ) ->
-                    if sessionDate == currentDate then
-                        Nothing
-                    else
-                        Just (Backend.Model.FetchFutureSessions currentDate)
-
-        fetchClinics =
-            case clinics of
-                NotAsked ->
-                    Just Backend.Model.FetchClinics
-
-                _ ->
-                    Nothing
-    in
-        List.filterMap identity
-            [ fetchSessions
-            , fetchClinics
-            ]
+        _ ->
+            []

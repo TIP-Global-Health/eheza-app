@@ -10,45 +10,51 @@ import App.Model exposing (Msg(..), MsgLoggedIn(..))
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (ClinicId, SessionId)
 import Backend.Model
-import Backend.Session.Model exposing (Session)
-import EveryDictList
-import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (formatYYYYMMDD)
+import EveryDictList exposing (EveryDictList)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Gizra.NominalDate exposing (NominalDate)
+import Pages.Page exposing (Page(..))
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (EntityDictList)
-import StorageKey exposing (StorageKey(..))
-import Translate as Trans exposing (Language(..), TranslationId, translate)
+import Translate exposing (Language(..), TranslationId, translate)
 import User.Model exposing (User)
+import User.Utils exposing (assignedToClinic)
 import Utils.Html exposing (spinner)
 import Utils.WebData exposing (viewError)
 
 
-{-| In principle, one could just supply the "big" model, but it's nice to avoid
-that, where possible ... we only need the Clinics and the open sessions.
-
-We need both because the sessions just have a reference to the ID of the
-clinic. The assumption here is that it's reasonable to fetch all the clinics,
-but not reasonable to fetch all the sessions (including past sessions).
+{-| In principle, one could just supply the LoggedInModel, but it's nice to avoid
+that, where possible ... we only need the Clinics and the user.
 
 For now, at least, we don't really need our own `Msg` type, so we're just using
 the big one.
 
 -}
-view : Language -> NominalDate -> User -> WebData (EntityDictList ClinicId Clinic) -> WebData ( NominalDate, EntityDictList SessionId Session ) -> Html Msg
-view language currentDate user clinicData sessionData =
-    div
-        [ class "ui full segment" ]
-        [ viewWrapper language currentDate clinicData sessionData
+view : Language -> User -> WebData (EveryDictList ClinicId Clinic) -> Html Msg
+view language user clinicData =
+    div [ class "wrap wrap-alt-2" ]
+        [ div [ class "ui basic head segment" ]
+            [ h1 [ class "ui header" ]
+                [ text <| translate language Translate.Clinics ]
+            , a
+                [ class "link-back"
+                , onClick <| SetActivePage LoginPage
+                ]
+                [ span [ class "icon-back" ]
+                    []
+                , span []
+                    []
+                ]
+            ]
+        , div
+            [ class "ui basic segment" ]
+            (viewWrapper language user clinicData)
         ]
 
 
-viewWrapper : Language -> NominalDate -> WebData (EntityDictList ClinicId Clinic) -> WebData ( NominalDate, EntityDictList SessionId Session ) -> Html Msg
-viewWrapper language currentDate clinicData sessionData =
-    -- Note that we should get through to the `viewSucessfully` case, since we'll
+viewWrapper : Language -> User -> WebData (EveryDictList ClinicId Clinic) -> List (Html Msg)
+viewWrapper language user clinicData =
+    -- Note that we should get through to the `viewWithData` case, since we'll
     -- automatically trigger the necessary fetches. Of course, I suppose an error
     -- is always possible ...
     --
@@ -57,93 +63,51 @@ viewWrapper language currentDate clinicData sessionData =
     case clinicData of
         NotAsked ->
             -- since it will be automatic
-            spinner
+            [ spinner ]
 
         Loading ->
-            spinner
+            [ spinner ]
 
         Failure err ->
-            div []
-                [ viewError language err
-                , div
-                    [ class "ui button"
-                    , onClick (MsgLoggedIn <| MsgBackend Backend.Model.FetchClinics)
-                    ]
-                    [ text <| translate language Trans.Retry ]
+            [ viewError language err
+            , div
+                [ class "ui button"
+                , onClick (MsgLoggedIn <| MsgBackend Backend.Model.FetchClinics)
                 ]
+                [ text <| translate language Translate.Retry ]
+            ]
 
         Success clinics ->
-            case sessionData of
-                NotAsked ->
-                    -- again, will be automatic
-                    spinner
-
-                Loading ->
-                    spinner
-
-                Failure err ->
-                    div []
-                        [ viewError language err
-                        , div
-                            [ class "ui button"
-                            , Backend.Model.FetchFutureSessions currentDate
-                                |> MsgBackend
-                                |> MsgLoggedIn
-                                |> onClick
-                            ]
-                            [ text <| translate language Trans.Retry ]
-                        ]
-
-                Success sessions ->
-                    viewWithData language clinics sessions
+            viewWithData language user clinics
 
 
 {-| This is the "inner" view function ... we get here if all the data was actually available.
 -}
-viewWithData : Language -> EntityDictList ClinicId Clinic -> ( NominalDate, EntityDictList SessionId Session ) -> Html Msg
-viewWithData language clinics ( sessionDate, sessions ) =
-    -- Start with something simplistic. We'll add a `download` button soon.
-    -- TODO: Run text snippets through the "translate" mechanism.
-    div []
-        [ h4 []
-            [ text "Available sessions for: "
-            , text <| Gizra.NominalDate.formatYYYYMMDD sessionDate
-            ]
-        , sessions
-            |> EveryDictList.toList
-            |> List.map (viewSession clinics)
-            |> ul []
-        ]
-
-
-viewSession : EntityDictList ClinicId Clinic -> ( StorageKey SessionId, Session ) -> Html Msg
-viewSession clinics ( sessionId, session ) =
+viewWithData : Language -> User -> EveryDictList ClinicId Clinic -> List (Html Msg)
+viewWithData language user clinics =
     let
-        clinicName =
-            EveryDictList.get (Existing session.clinicId) clinics
-                |> Maybe.map .name
-                |> Maybe.withDefault "Unknown clinic"
+        title =
+            p
+                [ class "centered" ]
+                [ text <| translate language Translate.SelectYourClinic ]
 
-        downloadLink =
-            case sessionId of
-                Existing id ->
-                    span
-                        [ Backend.Model.FetchOfflineSession id
-                            |> MsgBackend
-                            |> MsgLoggedIn
-                            |> onClick
-                        ]
-                        [ text "Download" ]
-
-                New ->
-                    emptyNode
+        clinicView =
+            clinics
+                |> EveryDictList.toList
+                |> List.map (viewClinic user)
     in
-        li []
-            [ text clinicName
-            , text " "
-            , text (formatYYYYMMDD session.scheduledDate.start)
-            , text " - "
-            , text (formatYYYYMMDD session.scheduledDate.end)
-            , text " "
-            , downloadLink
-            ]
+        title :: clinicView
+
+
+viewClinic : User -> ( ClinicId, Clinic ) -> Html Msg
+viewClinic user ( clinicId, clinic ) =
+    let
+        classAttr =
+            if assignedToClinic clinicId user then
+                class "ui fluid primary button"
+            else
+                class "ui fluid primary dark disabled button"
+    in
+        button
+            [ classAttr ]
+            [ text clinic.name ]

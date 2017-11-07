@@ -29,7 +29,7 @@ fetch model =
             getLoggedInModel model
                 |> Maybe.map
                     (\loggedIn ->
-                        Pages.Clinics.Fetch.fetch model.currentDate loggedIn.backend.clinics loggedIn.backend.futureSessions
+                        Pages.Clinics.Fetch.fetch loggedIn.backend.clinics
                             |> List.map (MsgLoggedIn << MsgBackend)
                     )
                 |> Maybe.withDefault []
