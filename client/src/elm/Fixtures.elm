@@ -3,6 +3,7 @@ module Fixtures exposing (..)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Child.Model exposing (Child, Gender(..))
 import Date
+import Time.Date exposing (date)
 import User.Model exposing (User)
 
 
@@ -38,8 +39,7 @@ exampleChildA =
     , image = "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , motherId = Nothing
     , siblingId = Nothing
-    , examinations = []
-    , birthDate = Date.fromTime 1472373589000
+    , birthDate = date 2016 8 28
     , gender = Male
     }
 
@@ -52,8 +52,7 @@ exampleChildB =
     , image = "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , motherId = Nothing
     , siblingId = Nothing
-    , examinations = []
-    , birthDate = Date.fromTime 1479373589000
+    , birthDate = date 2016 11 17
     , gender = Female
     }
 
@@ -65,6 +64,5 @@ exampleMother =
     { name = "Sebabive Gahiji"
     , image = "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , children = []
-    , examinations = []
-    , birthDate = Date.fromTime 1472373589000
+    , birthDate = date 2016 8 28
     }
