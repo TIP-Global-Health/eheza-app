@@ -1,10 +1,9 @@
 module App.Fetch exposing (..)
 
 import App.Model exposing (..)
-import Pages.OpenSessions.Fetch
-import Pages.Page exposing (Page(..))
-import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Login exposing (maybeData)
+import App.Utils exposing (getLoggedInModel)
+import Pages.Clinics.Fetch
+import Pages.Page exposing (Page(..), UserPage(..))
 
 
 {-| See the comment in Pages.OpenSessions.Fetch for an explanatio of this.
@@ -25,20 +24,16 @@ views. more often than that.
 -}
 fetch : Model -> List Msg
 fetch model =
-    []
+    case model.activePage of
+        UserPage ClinicsPage ->
+            getLoggedInModel model
+                |> Maybe.map
+                    (\loggedIn ->
+                        Pages.Clinics.Fetch.fetch model.currentDate loggedIn.backend.clinics loggedIn.backend.futureSessions
+                            |> List.map (MsgLoggedIn << MsgBackend)
+                    )
+                |> Maybe.withDefault []
 
-
-
--- Will re-implement for this part of the new UI
-{-
-   case model.activePage of
-       OpenSessionsPage ->
-           model.configured.login
-               |> maybeData
-               |> Maybe.map (\data -> Pages.OpenSessions.Fetch.fetch model.currentDate data.backend.clinics data.backend.openSessions)
-               |> Maybe.withDefault []
-
-       _ ->
-           -- For now, we've only implemented this pattern for OpenSessions.
-           []
--}
+        _ ->
+            -- For now, we've only implemented this pattern for ClinicsPage.
+            []

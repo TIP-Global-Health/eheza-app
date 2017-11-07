@@ -1,12 +1,8 @@
-module Pages.OpenSessions.View exposing (view)
+module Pages.Clinics.View exposing (view)
 
-{-| The purpose of this page is to show a list of the sessions which
-are available for data-entry.
-
-Soon, it will have buttons to download the data needed to
-do the data-entry for a session, even if you end up being offline.
-For now, we just show the list.
-
+{-| The purpose of this page is to show a list of clinics, allowing the
+user to click on clinics the user is assigned to, to see the sessions which are
+available for data-entry.
 -}
 
 import Html exposing (..)
@@ -15,7 +11,6 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (ClinicId, SessionId)
 import Backend.Model
 import Backend.Session.Model exposing (Session)
-import Date exposing (Date)
 import EveryDictList
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (formatYYYYMMDD)
@@ -27,6 +22,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityDictList)
 import StorageKey exposing (StorageKey(..))
 import Translate as Trans exposing (Language(..), TranslationId, translate)
+import User.Model exposing (User)
 import Utils.Html exposing (spinner)
 import Utils.WebData exposing (viewError)
 
@@ -42,15 +38,15 @@ For now, at least, we don't really need our own `Msg` type, so we're just using
 the big one.
 
 -}
-view : Language -> Date -> WebData (EntityDictList ClinicId Clinic) -> WebData ( NominalDate, EntityDictList SessionId Session ) -> Html Msg
-view language currentDate clinicData sessionData =
+view : Language -> NominalDate -> User -> WebData (EntityDictList ClinicId Clinic) -> WebData ( NominalDate, EntityDictList SessionId Session ) -> Html Msg
+view language currentDate user clinicData sessionData =
     div
         [ class "ui full segment" ]
         [ viewWrapper language currentDate clinicData sessionData
         ]
 
 
-viewWrapper : Language -> Date -> WebData (EntityDictList ClinicId Clinic) -> WebData ( NominalDate, EntityDictList SessionId Session ) -> Html Msg
+viewWrapper : Language -> NominalDate -> WebData (EntityDictList ClinicId Clinic) -> WebData ( NominalDate, EntityDictList SessionId Session ) -> Html Msg
 viewWrapper language currentDate clinicData sessionData =
     -- Note that we should get through to the `viewSucessfully` case, since we'll
     -- automatically trigger the necessary fetches. Of course, I suppose an error
@@ -90,8 +86,7 @@ viewWrapper language currentDate clinicData sessionData =
                         [ viewError language err
                         , div
                             [ class "ui button"
-                            , Gizra.NominalDate.fromLocalDateTime currentDate
-                                |> Backend.Model.FetchSessionsOpenOn
+                            , Backend.Model.FetchFutureSessions currentDate
                                 |> MsgBackend
                                 |> MsgLoggedIn
                                 |> onClick

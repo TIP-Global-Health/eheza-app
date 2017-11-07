@@ -89,8 +89,8 @@ type alias Model =
     -- save it to the backend.
     , edits : UpdatableWebData (Maybe MeasurementEdits)
 
-    -- This tracks which sessions are currently available for data-entry,
-    -- given the scheduled date range for each session. We remember which
+    -- This tracks future sessions ... that is, sessions which are either
+    -- available now, or will be in the future. We remember which
     -- date we asked about, so that if the date changes (i.e. it becomes
     -- tomorrow, due to the passage of time), we can know that we ought to
     -- ask again.
@@ -100,7 +100,7 @@ type alias Model =
     -- since one would really always want to remember what query the results
     -- represent. (And, eventually, one would want to remember the `count`
     -- and which pages you have etc.).
-    , openSessions : WebData ( NominalDate, EntityDictList SessionId Session )
+    , futureSessions : WebData ( NominalDate, EntityDictList SessionId Session )
     }
 
 
@@ -109,7 +109,7 @@ emptyModel =
     { clinics = NotAsked
     , offlineSession = NotAsked
     , edits = Restful.UpdatableData.notAsked
-    , openSessions = NotAsked
+    , futureSessions = NotAsked
     }
 
 
@@ -121,7 +121,7 @@ type Msg
       -- For now, fetches the offline session from the backend ... will need to
       -- integrate caching, obviously!
     | FetchOfflineSession SessionId
-    | FetchSessionsOpenOn NominalDate
+    | FetchFutureSessions NominalDate
     | HandleFetchedClinics (WebData (EntityDictList ClinicId Clinic))
     | HandleFetchedOfflineSession (WebData (Maybe (Entity SessionId OfflineSession)))
     | HandleFetchedSessions NominalDate (WebData (EntityDictList SessionId Session))

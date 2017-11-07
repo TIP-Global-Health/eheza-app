@@ -1,4 +1,4 @@
-module Pages.OpenSessions.Fetch exposing (fetch)
+module Pages.Clinics.Fetch exposing (fetch)
 
 import Backend.Entities exposing (..)
 import Backend.Clinic.Model exposing (Clinic)
@@ -69,7 +69,7 @@ fetch currentDate clinics sessions =
         fetchSessions =
             case sessions of
                 NotAsked ->
-                    Just (Backend.Model.FetchSessionsOpenOn currentDate)
+                    Just (Backend.Model.FetchFutureSessions currentDate)
 
                 Loading ->
                     Nothing
@@ -81,7 +81,7 @@ fetch currentDate clinics sessions =
                     if sessionDate == currentDate then
                         Nothing
                     else
-                        Just (Backend.Model.FetchSessionsOpenOn currentDate)
+                        Just (Backend.Model.FetchFutureSessions currentDate)
 
         fetchClinics =
             case clinics of

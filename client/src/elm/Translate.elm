@@ -4,6 +4,7 @@ import Activity.Model exposing (ActivityType(..), MotherActivityType(..), ChildA
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..), MuacIndication(..))
 import Backend.Child.Model exposing (Gender(..))
 import Date exposing (Month(..))
+import Pages.Page exposing (..)
 
 
 type Language
@@ -29,6 +30,7 @@ type TranslationId
     | ActivitiesLabel ActivityType
     | ActivitiesTitle ActivityType
     | ActivitiesToComplete Int
+    | ActivePage Page
     | Age Int Int
     | AgeDays Int
     | AgeMonthsWithoutDay Int
@@ -74,6 +76,7 @@ type TranslationId
     | NoParticipantsFound
     | NotAvailable
     | NotConnected
+    | Page
     | Page404
     | PageNotFoundMsg
     | Participants
@@ -111,6 +114,7 @@ type LoginPhrase
     | Password
     | SignIn
     | Username
+    | YouMustLoginBefore
 
 
 translate : Language -> TranslationId -> String
@@ -198,6 +202,37 @@ translate lang trans =
 
                 ActivitiesToComplete count ->
                     { english = "To Do (" ++ toString count ++ ")" }
+
+                ActivePage page ->
+                    case page of
+                        LoginPage ->
+                            { english = "Login" }
+
+                        PageNotFound url ->
+                            { english = "Missing" }
+
+                        SessionPage sessionPage ->
+                            case sessionPage of
+                                ActivitiesPage ->
+                                    { english = "Activities" }
+
+                                ActivityPage activityType ->
+                                    { english = "Activity" }
+
+                                ParticipantsPage ->
+                                    { english = "Participants" }
+
+                                ChildPage childId ->
+                                    { english = "Child" }
+
+                                MotherPage motherId ->
+                                    { english = "Mother" }
+
+                        UserPage ClinicsPage ->
+                            { english = "Clinics" }
+
+                        UserPage MyAccountPage ->
+                            { english = "'My Account'" }
 
                 Age months days ->
                     { english = toString months ++ " months and " ++ toString days ++ " days" }
@@ -360,6 +395,9 @@ translate lang trans =
                         Username ->
                             { english = "Username" }
 
+                        YouMustLoginBefore ->
+                            { english = "You must sign in before you can access the" }
+
                 MeasurementNoChange ->
                     { english = "No Change" }
 
@@ -406,6 +444,9 @@ translate lang trans =
 
                 NotConnected ->
                     { english = "Not Connected" }
+
+                Page ->
+                    { english = "Page" }
 
                 Page404 ->
                     { english = "404 page" }
