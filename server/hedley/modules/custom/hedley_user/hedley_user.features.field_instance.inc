@@ -54,6 +54,40 @@ function hedley_user_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'user-user-field_clinics'.
+  $field_instances['user-user-field_clinics'] = array(
+    'bundle' => 'user',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 2,
+      ),
+    ),
+    'entity_type' => 'user',
+    'field_name' => 'field_clinics',
+    'label' => 'Clinics',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => 0,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
+    ),
+  );
+
   // Exported field_instance: 'user-user-field_phone'.
   $field_instances['user-user-field_phone'] = array(
     'bundle' => 'user',
@@ -91,6 +125,7 @@ function hedley_user_field_default_field_instances() {
   // Translatables
   // Included for use with string extractors like potx.
   t('Avatar');
+  t('Clinics');
   t('Phone');
 
   return $field_instances;

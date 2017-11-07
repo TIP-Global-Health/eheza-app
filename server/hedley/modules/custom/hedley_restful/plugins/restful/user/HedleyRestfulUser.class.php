@@ -24,6 +24,16 @@ class HedleyRestfulUser extends \RestfulEntityBaseUser {
       'image_styles' => ['large'],
     ];
 
+    $public_fields['clinics'] = [
+      'property' => 'field_clinics',
+      'resource' => [
+        'clinic' => [
+          'name' => 'clinics',
+          'full_view' => FALSE,
+        ],
+      ],
+    ];
+
     return $public_fields;
   }
 
