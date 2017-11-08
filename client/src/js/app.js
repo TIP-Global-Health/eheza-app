@@ -82,6 +82,7 @@ Offline.on('up', function() {
 // Dropzone.
 var dropZone = undefined;
 
+/*
 elmApp.ports.dropzoneConfig.subscribe(function(config) {
     waitForElement('.dropzone', attachDropzone, config);
 });
@@ -163,3 +164,4 @@ function attachDropzone(selector, config) {
         elmApp.ports.dropzoneUploadedFile.send(id);
     });
 }
+*/

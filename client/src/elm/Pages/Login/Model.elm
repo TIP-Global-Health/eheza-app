@@ -3,6 +3,8 @@ module Pages.Login.Model exposing (..)
 {-| This models the username and password entered in the UI.
 -}
 
+import Pages.Page exposing (Page)
+
 
 type alias Model =
     { name : String
@@ -12,6 +14,7 @@ type alias Model =
 
 type Msg
     = ClearNameAndPassword
+    | SendOutMsg OutMsg
     | SetName String
     | SetPassword String
     | HandleLoginClicked
@@ -29,8 +32,9 @@ to know that sort of thing.
 
 -}
 type OutMsg
-    = TryLogin String String
-    | Logout
+    = Logout
+    | TryLogin String String
+    | SetActivePage Page
 
 
 emptyModel : Model

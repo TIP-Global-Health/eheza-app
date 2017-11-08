@@ -1,6 +1,6 @@
 module Pages.Login.View exposing (view)
 
-import Gizra.Html exposing (emptyNode)
+import Gizra.Html exposing (emptyNode, showIf)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
@@ -13,11 +13,7 @@ import Utils.Html exposing (spinner)
 import Utils.WebData exposing (viewError)
 
 
-{-| TODO: The `activePage` indicates what page the user really wanted ... we
-may have shown this instead of that page, and we might indicate something
-about that in the UI (e.g. "You must log in before viewing the ...").
-
-We should also have translated error messages specific to the login scenario.
+{-| TODO: We should have translated error messages specific to the login scenario.
 I suppose the three real possible errors are:
 
   - credentials rejected ...
@@ -52,7 +48,7 @@ viewContent language activePage loginStatus model =
             -- If we're here and we're anonymous, then we'll show the login
             -- form ... so, we'll see the fields and the form will take into
             -- account progress and error conditions.
-            viewLoginForm language loginStatus model
+            viewLoginForm language activePage loginStatus model
 
         LoggedIn login ->
             case login.relogin of
@@ -66,7 +62,7 @@ viewContent language activePage loginStatus model =
                     -- "cold" login. Also, we might "fix" the username ...
                     -- that is, not allow the user to enter a different username
                     -- unless they actually logout first.
-                    viewLoginForm language loginStatus model
+                    viewLoginForm language activePage loginStatus model
 
                 Nothing ->
                     -- We're logged in, and, as far as we know, our access token
@@ -90,13 +86,9 @@ viewCheckingCachedCredentials language =
 
 
 {-| Show some HTML when we're actually logged in. Basically, allowing the
-opportunity to logout.
-
-TODO: Make this look nicer. Also, we should show some links to things you can
-do ... i.e. the next stage of the app. (And, we could automatically transition
-to the next stage, but that's not our job here, of course, since we're the
-`view`).
-
+opportunity to logout, or do something else. Note that you won't get here
+usually, because if your active page was elsewhere, you'll transition
+there automatically once you login.
 -}
 viewLogout : Language -> User -> Html Msg
 viewLogout language user =
@@ -107,8 +99,18 @@ viewLogout language user =
                 |> text
             , text <| ": " ++ user.name
             ]
+
+        -- At the moment of successful login, we'll actually transition somewhere.
+        -- But, if the user **deliberately** comes back here while logged in, we
+        -- should give the user some userful options ... we may want to compute
+        -- which of these options are actually the most likely at some point
         , button
             [ class "ui fluid primary button"
+            , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage Pages.Page.ClinicsPage
+            ]
+            [ text <| translate language Translate.SelectYourClinic ]
+        , button
+            [ class "ui fluid button"
             , onClick HandleLogoutClicked
             ]
             [ Translate.LoginPhrase Translate.Logout
@@ -120,8 +122,8 @@ viewLogout language user =
 
 {-| Shows the login form itself, i.e. with inputs for username and password.
 -}
-viewLoginForm : Language -> LoginStatus User data -> Model -> List (Html Msg)
-viewLoginForm language loginStatus model =
+viewLoginForm : Language -> Page -> LoginStatus User data -> Model -> List (Html Msg)
+viewLoginForm language activePage loginStatus model =
     let
         -- A convenience for translating a `LoginPhrase`
         translateLogin =
@@ -133,6 +135,18 @@ viewLoginForm language loginStatus model =
         disableSubmitButton =
             isLoading || model.name == "" || model.pass == ""
 
+        activePageMsg =
+            -- Show a little message if the user wanted to view a different page,
+            -- but got sent here instead ...
+            showIf (activePage /= Pages.Page.LoginPage) <|
+                p []
+                    [ text <| translateLogin Translate.YouMustLoginBefore
+                    , text " "
+                    , text <| translate language <| Translate.ActivePage activePage
+                    , text " "
+                    , text <| translate language Translate.Page
+                    ]
+
         error =
             Restful.Login.getError loginStatus
                 |> Maybe.map
@@ -143,7 +157,8 @@ viewLoginForm language loginStatus model =
                     )
                 |> Maybe.withDefault emptyNode
     in
-        [ Html.form
+        [ activePageMsg
+        , Html.form
             [ onSubmit HandleLoginClicked
             , action "javascript:void(0);"
             ]

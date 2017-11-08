@@ -21,6 +21,7 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (MeasurementEdits)
 import Backend.Session.Model exposing (OfflineSession, Session)
+import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (Entity, EntityDictList)
@@ -33,9 +34,9 @@ things on the backend.
 -}
 type alias Model =
     -- For now, we fetch all the clinics from the backend at once when we need
-    -- any. So, the `WebData` tracks that request, and the `EntityDictList`
-    -- tracks its result.
-    { clinics : WebData (EntityDictList ClinicId Clinic)
+    -- any. So, the `WebData` tracks that request, and the `DictList` tracks
+    -- its result.
+    { clinics : WebData (EveryDictList ClinicId Clinic)
 
     -- This tracks, if we have one, the OfflineSession which we're currently
     -- doing data entry for. This the only piece of data from the backend which
@@ -88,19 +89,6 @@ type alias Model =
     -- in our local storage ... we'll delete the whole thing once we successfully
     -- save it to the backend.
     , edits : UpdatableWebData (Maybe MeasurementEdits)
-
-    -- This tracks which sessions are currently available for data-entry,
-    -- given the scheduled date range for each session. We remember which
-    -- date we asked about, so that if the date changes (i.e. it becomes
-    -- tomorrow, due to the passage of time), we can know that we ought to
-    -- ask again.
-    --
-    -- TODO: Restful.Endpoint should eventually have a `QueryResult` type which
-    -- remembers the params we supplied and a WebData for the result ...
-    -- since one would really always want to remember what query the results
-    -- represent. (And, eventually, one would want to remember the `count`
-    -- and which pages you have etc.).
-    , openSessions : WebData ( NominalDate, EntityDictList SessionId Session )
     }
 
 
@@ -109,7 +97,6 @@ emptyModel =
     { clinics = NotAsked
     , offlineSession = NotAsked
     , edits = Restful.UpdatableData.notAsked
-    , openSessions = NotAsked
     }
 
 
@@ -121,7 +108,5 @@ type Msg
       -- For now, fetches the offline session from the backend ... will need to
       -- integrate caching, obviously!
     | FetchOfflineSession SessionId
-    | FetchSessionsOpenOn NominalDate
-    | HandleFetchedClinics (WebData (EntityDictList ClinicId Clinic))
+    | HandleFetchedClinics (WebData (EveryDictList ClinicId Clinic))
     | HandleFetchedOfflineSession (WebData (Maybe (Entity SessionId OfflineSession)))
-    | HandleFetchedSessions NominalDate (WebData (EntityDictList SessionId Session))

@@ -4,10 +4,11 @@ import App.Model exposing (..)
 import Config.View
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
+import Pages.Clinics.View
 import Pages.Login.View
 import Pages.MyAccount.View
 import Pages.PageNotFound.View
-import Pages.Page exposing (Page(..))
+import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.View exposing (viewSessionPage)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Login
@@ -43,10 +44,10 @@ viewConfiguredModel model configured =
     -- "access control".
     case configured.login of
         Restful.Login.CheckingCachedCredentials ->
-            -- If we're checking cached credentials, let's just show nothing
-            -- for the moment ... it should resolve soon ... or we could show
-            -- some kind of progress message, I suppose.
-            emptyNode
+            -- If we're checking cached credentials, show the login page ...
+            -- that's the logical place for some UI related to this.
+            Pages.Login.View.view model.language model.activePage configured.login configured.loginPage
+                |> Html.map MsgPageLogin
 
         Restful.Login.Anonymous progress ->
             -- At the moment, the only thing an anonymous person can do is log
@@ -90,8 +91,13 @@ viewConfiguredModel model configured =
                     Pages.Login.View.view model.language model.activePage configured.login configured.loginPage
                         |> Html.map MsgPageLogin
 
-                MyAccountPage ->
-                    Pages.MyAccount.View.view model.language login.credentials.user
+                UserPage userPage ->
+                    case userPage of
+                        MyAccountPage ->
+                            Pages.MyAccount.View.view model.language login.credentials.user
+
+                        ClinicsPage ->
+                            Pages.Clinics.View.view model.language login.credentials.user login.data.backend.clinics
 
                 PageNotFound url ->
                     Pages.PageNotFound.View.view model.language url
