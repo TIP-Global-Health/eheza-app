@@ -5,6 +5,7 @@ import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritio
 import Backend.Child.Model exposing (Gender(..))
 import Date exposing (Month(..))
 import Pages.Page exposing (..)
+import Restful.Login exposing (LoginError(..))
 
 
 type Language
@@ -112,6 +113,7 @@ type LoginPhrase
     | ForgotPassword1
     | ForgotPassword2
     | LoggedInAs
+    | LoginError LoginError
     | Logout
     | Password
     | SignIn
@@ -387,6 +389,23 @@ translate lang trans =
 
                         LoggedInAs ->
                             { english = "Logged in as" }
+
+                        LoginError error ->
+                            case error of
+                                AccessTokenRejected ->
+                                    { english = "Your access token has expired. You will need to sign in again." }
+
+                                InternalError _ ->
+                                    { english = "An internal error occurred contacting the server." }
+
+                                NetworkError ->
+                                    { english = "A network error occurred contacting the server. Are you connected to the Internet?" }
+
+                                PasswordRejected ->
+                                    { english = "The server rejected your username or password." }
+
+                                Timeout ->
+                                    { english = "The request to the server timed out." }
 
                         Logout ->
                             { english = "Logout" }

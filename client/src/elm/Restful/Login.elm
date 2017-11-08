@@ -4,9 +4,11 @@ module Restful.Login
         , Config
         , Credentials
         , Login
+        , LoginError(..)
         , LoginProgress(..)
         , LoginStatus(..)
         , Msg
+        , accessTokenAccepted
         , accessTokenRejected
         , checkCachedCredentials
         , drupalConfig
@@ -31,7 +33,7 @@ can be handled here.
 
 ## Types
 
-@docs LoginStatus, Credentials, Login, LoginProgress
+@docs LoginStatus, Credentials, Login, LoginProgress, LoginError
 
 
 ## Initialization
@@ -41,7 +43,7 @@ can be handled here.
 
 ## Actions
 
-@docs tryLogin, logout, accessTokenRejected
+@docs tryLogin, logout, accessTokenRejected, accessTokenAccepted
 
 
 ## Integration with your app
@@ -150,10 +152,7 @@ isProgressing model =
 loginProgressIsProgressing : LoginProgress -> Bool
 loginProgressIsProgressing loginProgress =
     case loginProgress of
-        FailedAccessToken _ ->
-            False
-
-        FailedPassword _ ->
+        LoginFailed _ ->
             False
 
         LoginRequired ->
@@ -165,7 +164,7 @@ loginProgressIsProgressing loginProgress =
 
 {-| Do we have an error to report?
 -}
-getError : LoginStatus user data -> Maybe Error
+getError : LoginStatus user data -> Maybe LoginError
 getError model =
     case model of
         Anonymous progress ->
@@ -178,13 +177,10 @@ getError model =
             Maybe.andThen loginProgressToError login.relogin
 
 
-loginProgressToError : LoginProgress -> Maybe Error
+loginProgressToError : LoginProgress -> Maybe LoginError
 loginProgressToError loginProgress =
     case loginProgress of
-        FailedAccessToken err ->
-            Just err
-
-        FailedPassword err ->
+        LoginFailed err ->
             Just err
 
         LoginRequired ->
@@ -250,10 +246,43 @@ mapData func model =
 
 -}
 type LoginProgress
-    = FailedAccessToken Error
-    | FailedPassword Error
+    = LoginFailed LoginError
     | LoginRequired
     | TryingPassword
+
+
+{-| Represents an error which occured while trying to login.
+
+  - PasswordRejected
+
+    We successfully contacted the server, and it indicated that our username/password
+    combination was rejected.
+
+  - AccessTokenRejected
+
+    We successfully contacted the server, but it rejected our access token.
+
+  - Timeout
+
+    The login request timed out.
+
+  - NetworkError
+
+    There was some other kind of network error.
+
+  - InternalError
+
+    Some other kind of problem occurred, which probably represents a bug in the logic
+    of the app or the backend. We include the original `Http.Error` for further
+    diagnosis.
+
+-}
+type LoginError
+    = AccessTokenRejected
+    | InternalError Error
+    | NetworkError
+    | PasswordRejected
+    | Timeout
 
 
 {-| Represents the data we have if we're logged in.
@@ -519,6 +548,37 @@ logout =
     Logout
 
 
+{-| Specializes an HTTP error to our `LoginError` type.
+
+The first parameter is the `LoginError` we ought to use if the attempt to
+authenticate reached the server, and we got a response, but the response was a
+rejection. So, typically `PasswordRejected` or `AccessTokenRejected`, depending
+on which we were trying.
+
+-}
+classifyHttpError : LoginError -> Error -> LoginProgress
+classifyHttpError rejected error =
+    LoginFailed <|
+        case error of
+            Http.BadUrl _ ->
+                InternalError error
+
+            Http.Timeout ->
+                Timeout
+
+            Http.NetworkError ->
+                NetworkError
+
+            Http.BadStatus response ->
+                if response.status.code == 401 then
+                    rejected
+                else
+                    InternalError error
+
+            Http.BadPayload _ _ ->
+                InternalError error
+
+
 {-| Our update function. Note that the `Cmd` we return is in terms of
 your own msg type. So, you can integrate it into your app roughly
 as follows:
@@ -540,7 +600,7 @@ update config msg model =
         HandleLoginAttempt result ->
             case result of
                 Err err ->
-                    ( setProgress (FailedPassword err) model
+                    ( setProgress (classifyHttpError PasswordRejected err) model
                     , Cmd.none
                     , False
                     )
@@ -688,22 +748,41 @@ decodeCredentials config backendUrl =
 
 {-| Record the fact that our access token was rejected.
 
-Note that this is specific to the rejection of an access token we
-already have, in cases where it was definitely rejected as being
-invalid (not just a possibly transient network error).
-
 If we're in a `LoggedIn` state, we'll stay in that state ... we'll
 merely record that re-login is required.
 
 -}
 accessTokenRejected : Error -> LoginStatus user data -> LoginStatus user data
-accessTokenRejected error model =
-    case model of
+accessTokenRejected =
+    setProgress << classifyHttpError AccessTokenRejected
+
+
+{-| If you previously recorded `accessTokenRejected` but it was a transient
+problem, and now it has been accepted, you can record that with this function.
+
+You don't need to call this every time the access token is accepted (though
+it won't do any harm, either).
+
+Note that this doesn't switch our state from `Anonymous` to `LoggedIn` ...
+it only resets `LoggedIn` (if that's what we are) to show that `relogin`
+is not required.
+
+-}
+accessTokenAccepted : LoginStatus user data -> LoginStatus user data
+accessTokenAccepted status =
+    -- We return `status` unchanged as often as possible, for the sake of
+    -- preserving referential equality where we can.
+    case status of
         Anonymous _ ->
-            Anonymous (FailedAccessToken error)
+            status
 
         CheckingCachedCredentials ->
-            Anonymous (FailedAccessToken error)
+            status
 
         LoggedIn login ->
-            LoggedIn { login | relogin = Just (FailedAccessToken error) }
+            case login.relogin of
+                Just _ ->
+                    LoggedIn { login | relogin = Nothing }
+
+                Nothing ->
+                    status

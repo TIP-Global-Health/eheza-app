@@ -6,24 +6,12 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Pages.Login.Model exposing (..)
 import Pages.Page exposing (Page)
-import Restful.Login exposing (LoginStatus(..))
+import Restful.Login exposing (LoginStatus(..), LoginError)
 import Translate exposing (translate, Language)
 import User.Model exposing (..)
 import Utils.Html exposing (spinner)
-import Utils.WebData exposing (viewError)
 
 
-{-| TODO: We should have translated error messages specific to the login scenario.
-I suppose the three real possible errors are:
-
-  - credentials rejected ...
-  - network error ...
-  - internal error ...
-
-Actually, I suppose this ought to be something that `Restful.Login` manages
-(that is, converting `Http.Error` to more specific errors.
-
--}
 view : Language -> Page -> LoginStatus User data -> Model -> Html Msg
 view language activePage loginStatus model =
     -- We always show the wrapper and the logo. Then, we call `viewContent`
@@ -149,12 +137,7 @@ viewLoginForm language activePage loginStatus model =
 
         error =
             Restful.Login.getError loginStatus
-                |> Maybe.map
-                    (\err ->
-                        div
-                            [ class "ui error message" ]
-                            [ viewError language err ]
-                    )
+                |> Maybe.map (viewLoginError language)
                 |> Maybe.withDefault emptyNode
     in
         [ activePageMsg
@@ -209,6 +192,13 @@ viewLoginForm language activePage loginStatus model =
             , text <| translateLogin Translate.ForgotPassword2
             ]
         ]
+
+
+viewLoginError : Language -> LoginError -> Html any
+viewLoginError language error =
+    div
+        [ class "ui error message" ]
+        [ text <| translate language <| Translate.LoginPhrase <| Translate.LoginError error ]
 
 
 {-| Show the logo and name of the app.
