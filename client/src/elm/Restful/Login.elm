@@ -381,7 +381,13 @@ nothing.
 -}
 checkCachedCredentials : Config user data msg -> BackendUrl -> String -> ( LoginStatus user data, Cmd msg )
 checkCachedCredentials config backendUrl value =
-    update config (CheckCachedCredentials backendUrl value) CheckingCachedCredentials
+    let
+        -- The third return parameter will necessarily be false, since we're
+        -- just kicking off the credential check here.
+        ( loginStatus, cmd, _ ) =
+            update config (CheckCachedCredentials backendUrl value) CheckingCachedCredentials
+    in
+        ( loginStatus, cmd )
 
 
 {-| Some static configuration which we need to integrate with your app.
@@ -519,8 +525,13 @@ as follows:
 
     ...
 
+The third return parameter will be `True` at the very moment at which
+a successful login has been made. But only at that very moment ... it's
+not reflecting state, but instead a kind of notification that we've
+just logged in.
+
 -}
-update : Config user data msg -> Msg user -> LoginStatus user data -> ( LoginStatus user data, Cmd msg )
+update : Config user data msg -> Msg user -> LoginStatus user data -> ( LoginStatus user data, Cmd msg, Bool )
 update config msg model =
     -- Ultimately, it might be easier to work in the **caller's** `Msg` type,
     -- and have a "mapper" in the `Config` so we can do some internal messages.
@@ -531,37 +542,13 @@ update config msg model =
                 Err err ->
                     ( setProgress (FailedPassword err) model
                     , Cmd.none
+                    , False
                     )
 
                 Ok credentials ->
-                    -- TODO: The caller may want to do something at the moment
-                    -- of successful login ... perhaps we should have a third
-                    -- return parameter that signals the moment at which login
-                    -- success occurs? Or, the caller can just listen for this
-                    -- message, but then we couldn't make it opaque. I suppose
-                    -- another option would be to take a `Maybe msg` in the
-                    -- `Config` and execute that message when a successful
-                    -- login occurs. That might be easiest, depending on what
-                    -- else we might want to trigger.
-                    --
-                    -- One **really** common pattern would be to redirect the
-                    -- user's attention when login succeeds ... for instance,
-                    -- where the user has attempted to access a page that
-                    -- requires login, we redirect to the login page, and then
-                    -- want to redirect to the page they actually wanted once
-                    -- login succeeds. So, we should cater for that
-                    -- particularly, if possible. Perhaps `TryLogin` and
-                    -- `CheckCachedCredentials` ought to take an extra parameter
-                    -- to indicate a message to be sent when that particular
-                    -- login succeeds?
-                    --
-                    -- Or, even better, perhaps we should **store** such a message
-                    -- in our model ... so, when you start off `Anonymous` or
-                    -- whatever, you can already indicate something you'd like
-                    -- done when you succeed? (Which would, of course, vary from
-                    -- case to case).
                     ( setCredentials config credentials model
                     , config.cacheCredentials credentials.backendUrl (encodeCredentials config credentials)
+                    , True
                     )
 
         TryLogin backendUrl name password ->
@@ -597,6 +584,7 @@ update config msg model =
             in
                 ( setProgress TryingPassword model
                 , Cmd.map config.tag cmd
+                , False
                 )
 
         HandleAccessTokenCheck credentials result ->
@@ -607,13 +595,13 @@ update config msg model =
                     ( setCredentials config credentials model
                         |> accessTokenRejected err
                     , Cmd.none
+                    , True
                     )
 
                 Ok user ->
-                    -- This is the other point of successful login ... see comment about
-                    -- that in `HandleLoginAttempt`.
                     ( setCredentials config { credentials | user = user } model
                     , Cmd.none
+                    , True
                     )
 
         CheckCachedCredentials backendUrl cachedValue ->
@@ -629,7 +617,7 @@ update config msg model =
                     -- either handle that in the user decoder itself (i.e. by
                     -- using `oneOf` and detecting versions), or just failing
                     -- here isn't so bad, as it just means we have to log in.
-                    ( loggedOut, Cmd.none )
+                    ( loggedOut, Cmd.none, False )
 
                 Ok credentials ->
                     -- If we have credentials, then we will check the access
@@ -645,13 +633,14 @@ update config msg model =
                                 |> Task.attempt (HandleAccessTokenCheck credentials)
                                 |> Cmd.map config.tag
                     in
-                        ( CheckingCachedCredentials, cmd )
+                        ( CheckingCachedCredentials, cmd, False )
 
         Logout ->
             case model of
                 Anonymous _ ->
                     ( loggedOut
                     , Cmd.none
+                    , False
                     )
 
                 CheckingCachedCredentials ->
@@ -660,6 +649,7 @@ update config msg model =
                     -- logout while we're checking credentials...
                     ( model
                     , Cmd.none
+                    , False
                     )
 
                 LoggedIn login ->
@@ -667,6 +657,7 @@ update config msg model =
                     -- This is simpler than telling the app to delete credentials.
                     ( loggedOut
                     , config.cacheCredentials login.credentials.backendUrl "{}"
+                    , False
                     )
 
 

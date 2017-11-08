@@ -11,7 +11,7 @@ import Json.Decode exposing (oneOf)
 import Maybe.Extra
 import Pages.Login.Model
 import Pages.Login.Update
-import Pages.Page exposing (Page(..))
+import Pages.Page exposing (Page(..), UserPage(ClinicsPage))
 import Pages.Update
 import Pages.Update
 import Pusher.Model
@@ -116,12 +116,38 @@ update msg model =
             updateConfigured
                 (\configured ->
                     let
-                        ( subModel, cmd ) =
+                        ( subModel, cmd, loggedIn ) =
                             Restful.Login.update loginConfig subMsg configured.login
+
+                        extraMsgs =
+                            if loggedIn then
+                                -- This will be true only at the very moment of
+                                -- successful login.  We use it to transition
+                                -- away from the `LoginPage` if that's where we
+                                -- are. We don't want to **prohibit** being on
+                                -- the LoginPage if you're already logged in,
+                                -- so we can't just detect the state of being
+                                -- logged in ... we have to get a message at
+                                -- the moment of login.
+                                case model.activePage of
+                                    LoginPage ->
+                                        -- For now, just tranition to the
+                                        -- clinics page ... we'll need to
+                                        -- make more choices eventually.
+                                        [ SetActivePage <| UserPage ClinicsPage ]
+
+                                    _ ->
+                                        -- If we were showing the LoginPage
+                                        -- **instead of** the activePage, we
+                                        -- can just actually show the activePage
+                                        -- now
+                                        []
+                            else
+                                []
                     in
                         ( { configured | login = subModel }
                         , cmd
-                        , []
+                        , extraMsgs
                         )
                 )
                 model
