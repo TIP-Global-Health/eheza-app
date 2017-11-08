@@ -1,6 +1,6 @@
 var assert = require('assert');
 
-describe('measurement module', function() {
+describe.skip('measurement module', function() {
   it('should save the weight via the Save button', () => {
     const tab = 'Weight';
 
