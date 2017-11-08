@@ -1,6 +1,6 @@
 var assert = require('assert');
 
-describe('assesment pages', () => {
+describe.skip('assesment pages', () => {
 
     before(() => {
         browser.loginAndViewParticipantsPage('aya');
