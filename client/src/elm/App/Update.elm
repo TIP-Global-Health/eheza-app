@@ -1,24 +1,17 @@
 port module App.Update exposing (init, update, subscriptions)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import App.Model exposing (..)
 import Backend.Update
 import Config
 import Date
 import Dict
-import FilePicker.Model
 import Gizra.NominalDate exposing (fromLocalDateTime)
-import Http exposing (Error)
 import Json.Decode exposing (decodeValue, bool)
 import Json.Decode exposing (oneOf)
-import Json.Encode exposing (Value)
-import Pages.Activity.Model
+import Maybe.Extra
 import Pages.Login.Model
 import Pages.Login.Update
-import Pages.OfflineSession.Update
-import Pages.Page
-import Pages.Page exposing (Page(..))
-import Pages.Participant.Model
+import Pages.Page exposing (Page(..), UserPage(ClinicsPage))
 import Pages.Update
 import Pages.Update
 import Pusher.Model
@@ -36,9 +29,9 @@ import User.Model exposing (..)
 
 loginConfig : Restful.Login.Config User LoggedInModel Msg
 loginConfig =
-    -- TODO: The `oneOf` below is necessary because how the backend sends
-    -- the user is a little different from how we encode it for local
-    -- storage ... this could possibly be solved another way.
+    -- The `oneOf` below is necessary because how the backend sends the user is
+    -- a little different from how we encode it for local storage ... this
+    -- could possibly be solved another way.
     Restful.Login.drupalConfig
         { decodeUser = oneOf [ decodeSingleEntity decodeUser, decodeUser ]
         , encodeUser = encodeUser
@@ -99,16 +92,22 @@ update msg model =
                             in
                                 ( { data | backend = backend }
                                 , Cmd.map (MsgLoggedIn << MsgBackend) cmd
+                                , []
                                 )
 
                         MsgSession subMsg ->
                             let
-                                -- TODO: Implement redirect
                                 ( subModel, subCmd, redirect ) =
                                     Pages.Update.updateSession subMsg data.pages
+
+                                extraMsgs =
+                                    redirect
+                                        |> Maybe.Extra.toList
+                                        |> List.map (SetActivePage << SessionPage)
                             in
                                 ( { data | pages = subModel }
                                 , Cmd.map (MsgLoggedIn << MsgSession) subCmd
+                                , extraMsgs
                                 )
                 )
                 model
@@ -116,8 +115,40 @@ update msg model =
         MsgLogin subMsg ->
             updateConfigured
                 (\configured ->
-                    Restful.Login.update loginConfig subMsg configured.login
-                        |> Tuple.mapFirst (\login -> { configured | login = login })
+                    let
+                        ( subModel, cmd, loggedIn ) =
+                            Restful.Login.update loginConfig subMsg configured.login
+
+                        extraMsgs =
+                            if loggedIn then
+                                -- This will be true only at the very moment of
+                                -- successful login.  We use it to transition
+                                -- away from the `LoginPage` if that's where we
+                                -- are. We don't want to **prohibit** being on
+                                -- the LoginPage if you're already logged in,
+                                -- so we can't just detect the state of being
+                                -- logged in ... we have to get a message at
+                                -- the moment of login.
+                                case model.activePage of
+                                    LoginPage ->
+                                        -- For now, just tranition to the
+                                        -- clinics page ... we'll need to
+                                        -- make more choices eventually.
+                                        [ SetActivePage <| UserPage ClinicsPage ]
+
+                                    _ ->
+                                        -- If we were showing the LoginPage
+                                        -- **instead of** the activePage, we
+                                        -- can just actually show the activePage
+                                        -- now
+                                        []
+                            else
+                                []
+                    in
+                        ( { configured | login = subModel }
+                        , cmd
+                        , extraMsgs
+                        )
                 )
                 model
 
@@ -128,11 +159,26 @@ update msg model =
                         ( subModel, subCmd, outMsg ) =
                             Pages.Login.Update.update subMsg configured.loginPage
 
-                        _ =
-                            Debug.crash "deal with outMsg"
+                        extraMsgs =
+                            outMsg
+                                |> Maybe.Extra.toList
+                                |> List.map
+                                    (\out ->
+                                        case out of
+                                            Pages.Login.Model.TryLogin name pass ->
+                                                Restful.Login.tryLogin configured.config.backendUrl name pass
+                                                    |> MsgLogin
+
+                                            Pages.Login.Model.Logout ->
+                                                MsgLogin Restful.Login.logout
+
+                                            Pages.Login.Model.SetActivePage page ->
+                                                SetActivePage page
+                                    )
                     in
                         ( { configured | loginPage = subModel }
                         , Cmd.map MsgPageLogin subCmd
+                        , extraMsgs
                         )
                 )
                 model
@@ -171,11 +217,25 @@ update msg model =
 
 
 {-| Convenience function to process a msg which depends on having a configuration.
+
+The function you supply returns a third parameter, which is a list of additional messages to process.
+
 -}
-updateConfigured : (ConfiguredModel -> ( ConfiguredModel, Cmd Msg )) -> Model -> ( Model, Cmd Msg )
+updateConfigured : (ConfiguredModel -> ( ConfiguredModel, Cmd Msg, List Msg )) -> Model -> ( Model, Cmd Msg )
 updateConfigured func model =
     model.configuration
-        |> RemoteData.map (func >> Tuple.mapFirst (\config -> { model | configuration = Success config }))
+        |> RemoteData.map
+            (\configured ->
+                let
+                    ( subModel, cmd, extraMsgs ) =
+                        func configured
+                in
+                    sequence update
+                        extraMsgs
+                        ( { model | configuration = Success subModel }
+                        , cmd
+                        )
+            )
         |> RemoteData.withDefault ( model, Cmd.none )
 
 
@@ -184,7 +244,7 @@ updateConfigured func model =
 TODO: Put a version of this in `Restful.Login`.
 
 -}
-updateLoggedIn : (Credentials User -> LoggedInModel -> ( LoggedInModel, Cmd Msg )) -> Model -> ( Model, Cmd Msg )
+updateLoggedIn : (Credentials User -> LoggedInModel -> ( LoggedInModel, Cmd Msg, List Msg )) -> Model -> ( Model, Cmd Msg )
 updateLoggedIn func model =
     updateConfigured
         (\configured ->
@@ -192,14 +252,20 @@ updateLoggedIn func model =
             -- messages we can't handle ...
             case configured.login of
                 Anonymous _ ->
-                    ( configured, Cmd.none )
+                    ( configured, Cmd.none, [] )
 
                 CheckingCachedCredentials ->
-                    ( configured, Cmd.none )
+                    ( configured, Cmd.none, [] )
 
                 LoggedIn login ->
-                    func login.credentials login.data
-                        |> Tuple.mapFirst (\data -> { configured | login = LoggedIn { login | data = data } })
+                    let
+                        ( subModel, cmd, extraMsgs ) =
+                            func login.credentials login.data
+                    in
+                        ( { configured | login = LoggedIn { login | data = subModel } }
+                        , cmd
+                        , extraMsgs
+                        )
         )
         model
 
@@ -214,7 +280,7 @@ subscriptions model =
 
 {-| Saves credentials provided by `Restful.Login`.
 -}
-port cacheCredentials : ( String, Value ) -> Cmd msg
+port cacheCredentials : ( String, String ) -> Cmd msg
 
 
 {-| Send Pusher key and cluster to JS.

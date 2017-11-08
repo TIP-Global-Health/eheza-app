@@ -74,9 +74,17 @@ a URL, we could end up with a URL we don't understand.
 -}
 type Page
     = LoginPage -- page that allows for login (or re-login, if a token has expired)
-    | MyAccountPage -- page that shows information about the logged-in user
+    | UserPage UserPage -- page that requires a logged-in user
     | PageNotFound String -- we couldn't interpret the URL ... the parameter is the URL
     | SessionPage SessionPage -- pages that require an `EditableSession`
+
+
+{-| A page which you must be logged in to view. If you're not logged in, we'll show you
+the login page instead.
+-}
+type UserPage
+    = ClinicsPage -- shows a list of clinics, allows you to choose session to download
+    | MyAccountPage -- shows information about the logged-in user
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it

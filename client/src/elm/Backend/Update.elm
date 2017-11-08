@@ -34,14 +34,14 @@ clinicEndpoint =
 {-| Type-safe params ... how nice!
 -}
 type alias SessionParams =
-    { openOn : Maybe NominalDate
+    { openAfter : Maybe NominalDate
     }
 
 
 encodeSessionParams : SessionParams -> List ( String, String )
 encodeSessionParams params =
-    params.openOn
-        |> Maybe.map (\open -> ( "open_on", Gizra.NominalDate.formatYYYYMMDD open ))
+    params.openAfter
+        |> Maybe.map (\open -> ( "open_after", Gizra.NominalDate.formatYYYYMMDD open ))
         |> Maybe.Extra.toList
 
 
@@ -88,20 +88,6 @@ update backendUrl accessToken msg model =
 
             HandleFetchedClinics clinics ->
                 ( { model | clinics = clinics }
-                , Cmd.none
-                )
-
-            FetchSessionsOpenOn date ->
-                ( { model | openSessions = Loading }
-                , selectFromBackend sessionEndpoint (SessionParams (Just date)) <|
-                    (RemoteData.fromResult >> RemoteData.map EveryDictList.fromList >> HandleFetchedSessions date)
-                )
-
-            HandleFetchedSessions date result ->
-                -- We remember the date as well as the result, so that we can
-                -- know whether we need to reload (i.e. when the date changes,
-                -- due to the passage of time)
-                ( { model | openSessions = RemoteData.map (\sessions -> ( date, sessions )) result }
                 , Cmd.none
                 )
 

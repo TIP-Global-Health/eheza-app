@@ -4,6 +4,8 @@ import Activity.Model exposing (ActivityType(..), MotherActivityType(..), ChildA
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..), MuacIndication(..))
 import Backend.Child.Model exposing (Gender(..))
 import Date exposing (Month(..))
+import Pages.Page exposing (..)
+import Restful.Login exposing (LoginError(..))
 
 
 type Language
@@ -29,6 +31,7 @@ type TranslationId
     | ActivitiesLabel ActivityType
     | ActivitiesTitle ActivityType
     | ActivitiesToComplete Int
+    | ActivePage Page
     | Age Int Int
     | AgeDays Int
     | AgeMonthsWithoutDay Int
@@ -37,12 +40,14 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int Int
+    | AppName
     | Assessment
     | Baby
     | BabyName String
     | CentimeterShorthand
     | ChildNutritionSignLabel ChildNutritionSign
     | Children
+    | Clinics
     | CompletedSectionEmpty
     | Connected
     | Dashboard
@@ -59,8 +64,7 @@ type TranslationId
     | Gender Gender
     | KilogramShorthand
     | LinkToMother
-    | Login
-    | Logout
+    | LoginPhrase LoginPhrase
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
@@ -74,9 +78,9 @@ type TranslationId
     | NoParticipantsFound
     | NotAvailable
     | NotConnected
+    | Page
     | Page404
     | PageNotFoundMsg
-    | Password
     | Participants
     | PendingSectionEmpty
     | PlaceholderEnterHeight
@@ -95,13 +99,26 @@ type TranslationId
     | Save
     | SaveError
     | SearchByName
+    | SelectYourClinic
     | TitleHealthAssessment
-    | Username
     | WelcomeUser String
     | ZScoreHeightForAge
     | ZScoreMuacForAge
     | ZScoreWeightForAge
     | ZScoreWeightForHeight
+
+
+type LoginPhrase
+    = CheckingCachedCredentials
+    | ForgotPassword1
+    | ForgotPassword2
+    | LoggedInAs
+    | LoginError LoginError
+    | Logout
+    | Password
+    | SignIn
+    | Username
+    | YouMustLoginBefore
 
 
 translate : Language -> TranslationId -> String
@@ -190,6 +207,37 @@ translate lang trans =
                 ActivitiesToComplete count ->
                     { english = "To Do (" ++ toString count ++ ")" }
 
+                ActivePage page ->
+                    case page of
+                        LoginPage ->
+                            { english = "Login" }
+
+                        PageNotFound url ->
+                            { english = "Missing" }
+
+                        SessionPage sessionPage ->
+                            case sessionPage of
+                                ActivitiesPage ->
+                                    { english = "Activities" }
+
+                                ActivityPage activityType ->
+                                    { english = "Activity" }
+
+                                ParticipantsPage ->
+                                    { english = "Participants" }
+
+                                ChildPage childId ->
+                                    { english = "Child" }
+
+                                MotherPage motherId ->
+                                    { english = "Mother" }
+
+                        UserPage ClinicsPage ->
+                            { english = "Clinics" }
+
+                        UserPage MyAccountPage ->
+                            { english = "'My Account'" }
+
                 Age months days ->
                     { english = toString months ++ " months and " ++ toString days ++ " days" }
 
@@ -213,6 +261,9 @@ translate lang trans =
 
                 AgeSingleMonthWithoutDay month ->
                     { english = toString month ++ " month" }
+
+                AppName ->
+                    { english = "E-Heza System" }
 
                 Assessment ->
                     { english = "Assessment" }
@@ -251,6 +302,9 @@ translate lang trans =
 
                 Children ->
                     { english = "Children" }
+
+                Clinics ->
+                    { english = "Clinics" }
 
                 CompletedSectionEmpty ->
                     { english = "This section has not yet been completed." }
@@ -322,11 +376,51 @@ translate lang trans =
                 LinkToMother ->
                     { english = "Link to mother" }
 
-                Login ->
-                    { english = "Login" }
+                LoginPhrase phrase ->
+                    case phrase of
+                        CheckingCachedCredentials ->
+                            { english = "Checking cached credentials" }
 
-                Logout ->
-                    { english = "Logout" }
+                        ForgotPassword1 ->
+                            { english = "Forgot your password?" }
+
+                        ForgotPassword2 ->
+                            { english = "Call The Ihangane Project at +250 788 817 542" }
+
+                        LoggedInAs ->
+                            { english = "Logged in as" }
+
+                        LoginError error ->
+                            case error of
+                                AccessTokenRejected ->
+                                    { english = "Your access token has expired. You will need to sign in again." }
+
+                                InternalError _ ->
+                                    { english = "An internal error occurred contacting the server." }
+
+                                NetworkError ->
+                                    { english = "A network error occurred contacting the server. Are you connected to the Internet?" }
+
+                                PasswordRejected ->
+                                    { english = "The server rejected your username or password." }
+
+                                Timeout ->
+                                    { english = "The request to the server timed out." }
+
+                        Logout ->
+                            { english = "Logout" }
+
+                        Password ->
+                            { english = "Password" }
+
+                        SignIn ->
+                            { english = "Sign In" }
+
+                        Username ->
+                            { english = "Username" }
+
+                        YouMustLoginBefore ->
+                            { english = "You must sign in before you can access the" }
 
                 MeasurementNoChange ->
                     { english = "No Change" }
@@ -375,14 +469,14 @@ translate lang trans =
                 NotConnected ->
                     { english = "Not Connected" }
 
+                Page ->
+                    { english = "Page" }
+
                 Page404 ->
                     { english = "404 page" }
 
                 PageNotFoundMsg ->
                     { english = "Sorry, nothing found in this URL." }
-
-                Password ->
-                    { english = "Password" }
 
                 Participants ->
                     { english = "Participants" }
@@ -473,11 +567,11 @@ translate lang trans =
                 SearchByName ->
                     { english = "Search by Name" }
 
+                SelectYourClinic ->
+                    { english = "Select your clinic" }
+
                 TitleHealthAssessment ->
                     { english = "2017 July Health Assessment" }
-
-                Username ->
-                    { english = "Username" }
 
                 WelcomeUser name ->
                     { english = "Welcome " ++ name }

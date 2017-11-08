@@ -25,7 +25,6 @@ import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
 import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
 import Participant.Utils exposing (renderAgeMonthsDays, renderDateOfBirth)
 import ProgressReport.View exposing (viewProgressReport)
-import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage)
 

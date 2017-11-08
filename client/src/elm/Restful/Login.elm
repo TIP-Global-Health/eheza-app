@@ -4,9 +4,11 @@ module Restful.Login
         , Config
         , Credentials
         , Login
+        , LoginError(..)
         , LoginProgress(..)
         , LoginStatus(..)
         , Msg
+        , accessTokenAccepted
         , accessTokenRejected
         , checkCachedCredentials
         , drupalConfig
@@ -31,7 +33,7 @@ can be handled here.
 
 ## Types
 
-@docs LoginStatus, Credentials, Login, LoginProgress
+@docs LoginStatus, Credentials, Login, LoginProgress, LoginError
 
 
 ## Initialization
@@ -41,7 +43,7 @@ can be handled here.
 
 ## Actions
 
-@docs tryLogin, logout, accessTokenRejected
+@docs tryLogin, logout, accessTokenRejected, accessTokenAccepted
 
 
 ## Integration with your app
@@ -58,8 +60,8 @@ can be handled here.
 import Base64
 import Http exposing (Error, expectJson)
 import HttpBuilder exposing (withExpect, withHeader, withExpect, withQueryParams)
-import Json.Decode exposing (Decoder, field, Value)
-import Json.Encode
+import Json.Decode exposing (Decoder, field)
+import Json.Encode exposing (Value)
 import Restful.Endpoint exposing (BackendUrl, AccessToken, (</>))
 import Task
 
@@ -150,10 +152,7 @@ isProgressing model =
 loginProgressIsProgressing : LoginProgress -> Bool
 loginProgressIsProgressing loginProgress =
     case loginProgress of
-        FailedAccessToken _ ->
-            False
-
-        FailedPassword _ ->
+        LoginFailed _ ->
             False
 
         LoginRequired ->
@@ -165,7 +164,7 @@ loginProgressIsProgressing loginProgress =
 
 {-| Do we have an error to report?
 -}
-getError : LoginStatus user data -> Maybe Error
+getError : LoginStatus user data -> Maybe LoginError
 getError model =
     case model of
         Anonymous progress ->
@@ -178,13 +177,10 @@ getError model =
             Maybe.andThen loginProgressToError login.relogin
 
 
-loginProgressToError : LoginProgress -> Maybe Error
+loginProgressToError : LoginProgress -> Maybe LoginError
 loginProgressToError loginProgress =
     case loginProgress of
-        FailedAccessToken err ->
-            Just err
-
-        FailedPassword err ->
+        LoginFailed err ->
             Just err
 
         LoginRequired ->
@@ -250,10 +246,43 @@ mapData func model =
 
 -}
 type LoginProgress
-    = FailedAccessToken Error
-    | FailedPassword Error
+    = LoginFailed LoginError
     | LoginRequired
     | TryingPassword
+
+
+{-| Represents an error which occured while trying to login.
+
+  - PasswordRejected
+
+    We successfully contacted the server, and it indicated that our username/password
+    combination was rejected.
+
+  - AccessTokenRejected
+
+    We successfully contacted the server, but it rejected our access token.
+
+  - Timeout
+
+    The login request timed out.
+
+  - NetworkError
+
+    There was some other kind of network error.
+
+  - InternalError
+
+    Some other kind of problem occurred, which probably represents a bug in the logic
+    of the app or the backend. We include the original `Http.Error` for further
+    diagnosis.
+
+-}
+type LoginError
+    = AccessTokenRejected
+    | InternalError Error
+    | NetworkError
+    | PasswordRejected
+    | Timeout
 
 
 {-| Represents the data we have if we're logged in.
@@ -360,7 +389,7 @@ credentials, and return a `Cmd` that will do that.
 
   - BackendUrl is the backend to check the cached credentials against.
 
-  - Value is the JSON value which your `cacheCredentials` function (from Config)
+  - Value is the JSON string which your `cacheCredentials` function (from Config)
     has cached. So, it's up to you to fetch that value somehow, either via
     flags at startup, or via ports. If you've cached credentials for multiple backends,
     it's up to you to match your backendURL and your credentials.
@@ -379,9 +408,15 @@ nothing.
     state.
 
 -}
-checkCachedCredentials : Config user data msg -> BackendUrl -> Value -> ( LoginStatus user data, Cmd msg )
+checkCachedCredentials : Config user data msg -> BackendUrl -> String -> ( LoginStatus user data, Cmd msg )
 checkCachedCredentials config backendUrl value =
-    update config (CheckCachedCredentials backendUrl value) CheckingCachedCredentials
+    let
+        -- The third return parameter will necessarily be false, since we're
+        -- just kicking off the credential check here.
+        ( loginStatus, cmd, _ ) =
+            update config (CheckCachedCredentials backendUrl value) CheckingCachedCredentials
+    in
+        ( loginStatus, cmd )
 
 
 {-| Some static configuration which we need to integrate with your app.
@@ -430,15 +465,15 @@ where needed.
 
   - cacheCredentials
 
-    A function which, when given a backendURL and a JSON value, will return a
-    command that caches that value. Exactly how you do that is up to you ... it
+    A function which, when given a backendURL and a JSON string, will return a
+    command that caches that string. Exactly how you do that is up to you ... it
     will probably be via ports.
 
     We provide the backendUrl in case you want to store the credentials for multiple
     backends and pick amongst them when needed. But you can ignore it if you like ...
-    the important part for us is the `Value`.
+    the important part for us is the JSON string.
 
-    However you store the `Value`, you can provide it to `checkCachedCredentials`
+    However you store the JSON string, you can provide it to `checkCachedCredentials`
     and we'll use it.
 
   - tag
@@ -455,7 +490,7 @@ type alias Config user data msg =
     , decodeUser : Decoder user
     , encodeUser : user -> Value
     , initialData : user -> data
-    , cacheCredentials : BackendUrl -> Value -> Cmd msg
+    , cacheCredentials : BackendUrl -> String -> Cmd msg
     , tag : Msg user -> msg
     }
 
@@ -466,7 +501,7 @@ type alias AppConfig user data msg =
     { decodeUser : Decoder user
     , encodeUser : user -> Value
     , initialData : user -> data
-    , cacheCredentials : BackendUrl -> Value -> Cmd msg
+    , cacheCredentials : BackendUrl -> String -> Cmd msg
     , tag : Msg user -> msg
     }
 
@@ -492,7 +527,7 @@ these messages with various functions (e.g. `tryLogin`, `logout`) and handle
 them with the `update` function.
 -}
 type Msg user
-    = CheckCachedCredentials BackendUrl Value
+    = CheckCachedCredentials BackendUrl String
     | HandleAccessTokenCheck (Credentials user) (Result Error user)
     | HandleLoginAttempt (Result Error (Credentials user))
     | Logout
@@ -513,14 +548,50 @@ logout =
     Logout
 
 
+{-| Specializes an HTTP error to our `LoginError` type.
+
+The first parameter is the `LoginError` we ought to use if the attempt to
+authenticate reached the server, and we got a response, but the response was a
+rejection. So, typically `PasswordRejected` or `AccessTokenRejected`, depending
+on which we were trying.
+
+-}
+classifyHttpError : LoginError -> Error -> LoginProgress
+classifyHttpError rejected error =
+    LoginFailed <|
+        case error of
+            Http.BadUrl _ ->
+                InternalError error
+
+            Http.Timeout ->
+                Timeout
+
+            Http.NetworkError ->
+                NetworkError
+
+            Http.BadStatus response ->
+                if response.status.code == 401 then
+                    rejected
+                else
+                    InternalError error
+
+            Http.BadPayload _ _ ->
+                InternalError error
+
+
 {-| Our update function. Note that the `Cmd` we return is in terms of
 your own msg type. So, you can integrate it into your app roughly
 as follows:
 
     ...
 
+The third return parameter will be `True` at the very moment at which
+a successful login has been made. But only at that very moment ... it's
+not reflecting state, but instead a kind of notification that we've
+just logged in.
+
 -}
-update : Config user data msg -> Msg user -> LoginStatus user data -> ( LoginStatus user data, Cmd msg )
+update : Config user data msg -> Msg user -> LoginStatus user data -> ( LoginStatus user data, Cmd msg, Bool )
 update config msg model =
     -- Ultimately, it might be easier to work in the **caller's** `Msg` type,
     -- and have a "mapper" in the `Config` so we can do some internal messages.
@@ -529,39 +600,15 @@ update config msg model =
         HandleLoginAttempt result ->
             case result of
                 Err err ->
-                    ( setProgress (FailedPassword err) model
+                    ( setProgress (classifyHttpError PasswordRejected err) model
                     , Cmd.none
+                    , False
                     )
 
                 Ok credentials ->
-                    -- TODO: The caller may want to do something at the moment
-                    -- of successful login ... perhaps we should have a third
-                    -- return parameter that signals the moment at which login
-                    -- success occurs? Or, the caller can just listen for this
-                    -- message, but then we couldn't make it opaque. I suppose
-                    -- another option would be to take a `Maybe msg` in the
-                    -- `Config` and execute that message when a successful
-                    -- login occurs. That might be easiest, depending on what
-                    -- else we might want to trigger.
-                    --
-                    -- One **really** common pattern would be to redirect the
-                    -- user's attention when login succeeds ... for instance,
-                    -- where the user has attempted to access a page that
-                    -- requires login, we redirect to the login page, and then
-                    -- want to redirect to the page they actually wanted once
-                    -- login succeeds. So, we should cater for that
-                    -- particularly, if possible. Perhaps `TryLogin` and
-                    -- `CheckCachedCredentials` ought to take an extra parameter
-                    -- to indicate a message to be sent when that particular
-                    -- login succeeds?
-                    --
-                    -- Or, even better, perhaps we should **store** such a message
-                    -- in our model ... so, when you start off `Anonymous` or
-                    -- whatever, you can already indicate something you'd like
-                    -- done when you succeed? (Which would, of course, vary from
-                    -- case to case).
                     ( setCredentials config credentials model
                     , config.cacheCredentials credentials.backendUrl (encodeCredentials config credentials)
+                    , True
                     )
 
         TryLogin backendUrl name password ->
@@ -597,6 +644,7 @@ update config msg model =
             in
                 ( setProgress TryingPassword model
                 , Cmd.map config.tag cmd
+                , False
                 )
 
         HandleAccessTokenCheck credentials result ->
@@ -607,17 +655,17 @@ update config msg model =
                     ( setCredentials config credentials model
                         |> accessTokenRejected err
                     , Cmd.none
+                    , True
                     )
 
                 Ok user ->
-                    -- This is the other point of successful login ... see comment about
-                    -- that in `HandleLoginAttempt`.
                     ( setCredentials config { credentials | user = user } model
                     , Cmd.none
+                    , True
                     )
 
         CheckCachedCredentials backendUrl cachedValue ->
-            case Json.Decode.decodeValue (decodeCredentials config backendUrl) cachedValue of
+            case Json.Decode.decodeString (decodeCredentials config backendUrl) cachedValue of
                 Err _ ->
                     -- If we can't decode the cached credentials, we just
                     -- give up and say that login is needed. This will, for
@@ -629,7 +677,7 @@ update config msg model =
                     -- either handle that in the user decoder itself (i.e. by
                     -- using `oneOf` and detecting versions), or just failing
                     -- here isn't so bad, as it just means we have to log in.
-                    ( loggedOut, Cmd.none )
+                    ( loggedOut, Cmd.none, False )
 
                 Ok credentials ->
                     -- If we have credentials, then we will check the access
@@ -645,13 +693,14 @@ update config msg model =
                                 |> Task.attempt (HandleAccessTokenCheck credentials)
                                 |> Cmd.map config.tag
                     in
-                        ( CheckingCachedCredentials, cmd )
+                        ( CheckingCachedCredentials, cmd, False )
 
         Logout ->
             case model of
                 Anonymous _ ->
                     ( loggedOut
                     , Cmd.none
+                    , False
                     )
 
                 CheckingCachedCredentials ->
@@ -660,25 +709,28 @@ update config msg model =
                     -- logout while we're checking credentials...
                     ( model
                     , Cmd.none
+                    , False
                     )
 
                 LoggedIn login ->
                     -- We tell the app to cache credentials consisting of an empty object.
                     -- This is simpler than telling the app to delete credentials.
                     ( loggedOut
-                    , config.cacheCredentials login.credentials.backendUrl (Json.Encode.object [])
+                    , config.cacheCredentials login.credentials.backendUrl "{}"
+                    , False
                     )
 
 
-encodeCredentials : Config user data msg -> Credentials user -> Value
+encodeCredentials : Config user data msg -> Credentials user -> String
 encodeCredentials config credentials =
     -- We only encode the accessToken and the user ... we provide the
     -- backendURL separately, so the app can decide whether to record
     -- this separately for different configured backends etc.
-    Json.Encode.object
-        [ ( "access_token", Json.Encode.string credentials.accessToken )
-        , ( "user", config.encodeUser credentials.user )
-        ]
+    Json.Encode.encode 0 <|
+        Json.Encode.object
+            [ ( "access_token", Json.Encode.string credentials.accessToken )
+            , ( "user", config.encodeUser credentials.user )
+            ]
 
 
 decodeCredentials : Config user data msg -> BackendUrl -> Decoder (Credentials user)
@@ -696,22 +748,41 @@ decodeCredentials config backendUrl =
 
 {-| Record the fact that our access token was rejected.
 
-Note that this is specific to the rejection of an access token we
-already have, in cases where it was definitely rejected as being
-invalid (not just a possibly transient network error).
-
 If we're in a `LoggedIn` state, we'll stay in that state ... we'll
 merely record that re-login is required.
 
 -}
 accessTokenRejected : Error -> LoginStatus user data -> LoginStatus user data
-accessTokenRejected error model =
-    case model of
+accessTokenRejected =
+    setProgress << classifyHttpError AccessTokenRejected
+
+
+{-| If you previously recorded `accessTokenRejected` but it was a transient
+problem, and now it has been accepted, you can record that with this function.
+
+You don't need to call this every time the access token is accepted (though
+it won't do any harm, either).
+
+Note that this doesn't switch our state from `Anonymous` to `LoggedIn` ...
+it only resets `LoggedIn` (if that's what we are) to show that `relogin`
+is not required.
+
+-}
+accessTokenAccepted : LoginStatus user data -> LoginStatus user data
+accessTokenAccepted status =
+    -- We return `status` unchanged as often as possible, for the sake of
+    -- preserving referential equality where we can.
+    case status of
         Anonymous _ ->
-            Anonymous (FailedAccessToken error)
+            status
 
         CheckingCachedCredentials ->
-            Anonymous (FailedAccessToken error)
+            status
 
         LoggedIn login ->
-            LoggedIn { login | relogin = Just (FailedAccessToken error) }
+            case login.relogin of
+                Just _ ->
+                    LoggedIn { login | relogin = Nothing }
+
+                Nothing ->
+                    status

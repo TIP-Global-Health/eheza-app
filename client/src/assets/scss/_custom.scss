@@ -11,6 +11,10 @@ body {
   color: $color-text;
   background: #0393db url(#{$img-path}bg.svg) no-repeat center 12px;
   background-size: 1193px 818px;
+
+  &.no-bg {
+    background-image: none;
+  }
 }
 
 a {
@@ -43,9 +47,22 @@ a {
   }
 }
 
-.wrap-alt {
+.wrap-alt,
+.wrap-alt-2 {
   height: 100%;
 
+  .ui.full.segment {
+    > .full.content {
+      position: relative;
+      overflow: hidden;
+      margin: -2.5rem -3rem;
+      padding: 0;
+      overflow: auto !important;
+    }
+  }
+}
+
+.wrap-alt {
   .ui.full.segment {
     &:after {
       content: " ";
@@ -57,19 +74,15 @@ a {
       height: 60px;
       background: linear-gradient(to bottom, rgba(255,255,255,0) 0%,rgba(255,255,255,1) 100%);
     }
-
-    > .full.content {
-      position: relative;
-      overflow: hidden;
-      margin: -2.5rem -3rem;
-      padding: 0;
-      overflow: auto !important;
-    }
   }
 }
 
 .wrap-cards {
   padding: 2.5rem 3rem;
+}
+
+.wrap-list {
+  padding: 2.5rem 3rem 3rem 3rem;
 }
 
 
@@ -103,6 +116,27 @@ a {
   .actions {
     margin: 2.5rem -3rem -2.5rem -3rem;
   }
+
+  &.blue:not(.inverted) {
+    border-top: 9px solid $color-primary;
+  }
+
+  &.basic {
+    color: #fff;
+    font-weight: 500;
+    font-size: 2.15rem; // 30px
+  }
+
+  &.basic.login {
+    padding-top: 140px;
+    font-size: 1.72rem; //24px;
+    text-align: center;
+  }
+
+  &.wide {
+    padding-left: 0;
+    padding-right: 0;
+  }
 }
 
 
@@ -126,7 +160,7 @@ a {
   background: #fff;
   border: 0;
   padding: 0.6em 1.8em;
-  height: 48px;
+  height: 48px; 
   position: relative;
   margin-right: 20px;
   box-shadow: -2px -2px 5px 0 rgba(0,0,0,0.12);
@@ -237,10 +271,27 @@ h3.ui.header {
     color: #fff !important;
     opacity: 1 !important;
   }
+
+  &.dark.disabled {
+    background: #0273b2 !important;
+    color: #03648e !important;
+  }
+
+  &.basic {
+    color: $color-primary !important;
+  }
+
+  .basic.segment & {
+    margin-bottom: 0.8em;
+  }
 }
 
 .ui.primary.buttons .ui.button {
   background: $color-primary;
+}
+
+.ui.basic.buttons .ui.button {
+  color: $color-primary !important;
 }
 
 .ui.buttons .ui.button {
@@ -386,34 +437,17 @@ h3.ui.header {
   border-radius: 50%;
   width: 100%;
   height: 100%;
-  &.child {
-    background: url(#{$img-path}icon-baby-grey.svg) no-repeat center;
-  }
-  &.mother {
-    background: url(#{$img-path}icon-mother-grey.svg) no-repeat center;
-  }
+  background: url(#{$img-path}icon-baby-grey.svg) no-repeat center;
   background-size: 37px 55px;
   background-color: $color-background;
 
   .active & {
     background-color: $color-primary;
-    &.child {
-      background-image: url(#{$img-path}icon-baby-white.svg);
-    }
-    &.mother {
-      background-image: url(#{$img-path}icon-mother-white.svg);
-    }
+    background-image: url(#{$img-path}icon-baby-white.svg);
     background-size: 37px 55px;
   }
 }
 
-.participant-page {
-  .icon-participant {
-    background-color: white;
-    border-radius: 0;
-    box-shadow: 0 0 10px rgba(0,0,0,0.35);
-  }
-}
 
 // Progress Bar
 
@@ -530,6 +564,11 @@ h3.ui.header {
   font-size: 1.57rem;
   font-weight: normal;
   color: $color-text;
+
+  &.login {
+    margin-bottom: 30px;
+    padding: 17px 15px;
+  }
 }
 
 .ui.input {
@@ -573,6 +612,23 @@ input::placeholder {
   color: #999;
   opacity: 1;
   font-size: 1.57rem; //22px;
+}
+
+.ui.login.form input[type=text],
+.ui.login.form input[type=text]:focus,
+.ui.login.form input[type=password],
+.ui.login.form input[type=password]:focus {
+  text-align: left;
+  color: #808080;
+  width: 100%;
+  height: auto;
+  font-size: 1.715rem; //24px;
+  height: 70px;
+}
+
+.ui.login.form input::placeholder {
+  color: #808080;
+  font-size: 1.715rem; //24px;
 }
 
 .ui.checkbox {
@@ -676,6 +732,12 @@ input::placeholder {
   border-bottom: 1px solid $color-background;
 }
 
+.ui.fitted.divider:not(.vertical):not(.horizontal) {
+  margin: 15px 0;
+  border-top: 1px solid $color-text;
+  border-bottom: 1px solid $color-text;
+}
+
 
 // Modal
 
@@ -720,10 +782,27 @@ input::placeholder {
     margin: 0;
     padding: 0;
   }
+
+  &.inverted {
+    > .header,
+    > .content {
+      color: #fff;
+      background: $color-primary;
+    }
+  }
 }
 
 .ui.dimmer {
   background-color: rgba(2,55,79,.3);
+}
+
+.icon-success {
+  display: block;
+  width: 128px;
+  height: 128px;
+  margin: 10px auto 20px auto;
+  background: url(#{$img-path}icon-success.svg);
+  background-size: 128px 128px;
 }
 
 
@@ -794,7 +873,8 @@ input::placeholder {
 
 .icon-mother,
 .icon-baby,
-.icon-activity {
+.icon-completed,
+.icon-measurements {
   width: 54px;
   height: 54px;
   display: block;
@@ -810,9 +890,14 @@ input::placeholder {
   background-size: 25px 34px;
 }
 
-.icon-activity {
-  background: url(#{$img-path}activities.svg) no-repeat center;
-  background-size: 40px 40px;
+.icon-completed {
+  background: url(#{$img-path}icon-completed.svg) no-repeat center;
+  background-size: 26px 24px;
+}
+
+.icon-measurements {
+  background: url(#{$img-path}icon-measurements.svg) no-repeat center;
+  background-size: 30px 33px;
 }
 
 
@@ -928,5 +1013,160 @@ input::placeholder {
   &:after {
     background-image: url(#{$img-path}icon-planning.svg);
     background-size: 64px 60px;
+  }
+}
+
+
+// Lists 
+
+.ui.list {
+  margin-top: 1.5em;
+  margin-left: -0.5em;
+  margin-right: -0.5em;
+}
+
+.ui.list>.item {
+  padding: 1em 0.5em; // 10px horizontal
+  position: relative;
+}
+
+.ui.divided.list>.item {
+  border-top: 1px solid #bfbfbf;
+}
+
+.ui.list>.item>.image+.content {
+  padding: 0 0 0 1.5em;
+}
+
+.ui.list .content {
+  font-size:  1.715rem;  //24px
+  //position: relative;
+}
+
+
+// Check-in Icons
+
+.link-check-in,
+.link-checked-in {
+  display: block;
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  margin-top: -27px;
+}
+
+.ui.list>.item {
+  &:first-child {
+    .link-check-in,
+    .link-checked-in {
+      margin-top: -37px;
+    }
+  }
+  &:last-child {
+    .link-check-in,
+    .link-checked-in {
+      margin-top: -17px;
+    }
+  }
+}
+
+.icon-check-in,
+.icon-checked-in {
+  display: block;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 2px solid #0393db;
+}
+
+.icon-check-in {
+  background: url(#{$img-path}icon-completed.svg) no-repeat 13px 12px;
+  background-size: 26px 24px;
+}
+
+.icon-checked-in {
+  background: #25d625 url(#{$img-path}icon-checked-in.svg) no-repeat 13px 12px;
+  background-size: 26px 24px;
+  border-color: #25d625;
+}
+
+
+// Txt
+
+.ui.info {
+  text-align: center;
+  margin: 1em auto 2.2em auto;
+  max-width: 550px;
+}
+
+.centered {
+  text-align: center;
+}
+
+
+// Loader
+
+.ui.massive.loader {
+  width: 128px;
+  height: 128px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.ui.massive.loader:after,
+.ui.massive.loader:before {
+  width: 128px;
+  height: 128px;
+  margin: 0 0 0 -64px;
+  border-width: 6px;
+}
+
+.ui.massive.loader:before {
+  border-color: rgba(255,255,255,0.5) !important;
+}
+
+
+// Login Form
+
+.ui.transparent[class*="left icon"].input>input {
+  padding-left: 75px !important;
+}
+
+.ui.icon.input>i.icon {
+  opacity: 1;
+  width: 75px !important;
+  height: 75px;
+  vertical-align: middle;
+}
+
+.icon-username {
+  background: url(#{$img-path}icon-username.svg) no-repeat center center;
+  background-size: 31px 32px;
+}
+
+.icon-password {
+  background: url(#{$img-path}icon-password.svg) no-repeat center center;
+  background-size: 24px 34px;
+}
+
+.logo {
+  font-size: 3.93rem; //s55px;
+  text-transform: uppercase;
+  font-weight: 800;
+  margin-bottom: 80px;
+}
+
+.img-logo {
+  margin-bottom: 50px;
+  display: inline-block;
+}
+
+.ui.login.form {
+  background: #fff;
+}
+
+.ui.login.segment {
+  .button {
+    margin-bottom: 30px;
   }
 }

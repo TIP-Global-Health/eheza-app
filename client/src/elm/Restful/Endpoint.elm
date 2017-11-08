@@ -151,7 +151,7 @@ The `error` type parameter allows the endpoint to have locally-typed errors. You
 can just use `Http.Error`, though, if you want to.
 
 -}
-select : BackendUrl -> Maybe AccessToken -> EndPoint error params key value -> params -> (Result error (List (Entity key value)) -> msg) -> Cmd msg
+select : BackendUrl -> Maybe AccessToken -> EndPoint error params key value -> params -> (Result error (List ( key, value )) -> msg) -> Cmd msg
 select backendUrl accessToken endpoint params tagger =
     let
         queryParams =
@@ -162,7 +162,7 @@ select backendUrl accessToken endpoint params tagger =
     in
         HttpBuilder.get (backendUrl </> endpoint.path)
             |> withQueryParams queryParams
-            |> withExpect (expectJson (decodeData (list (decodeStorageTuple (decodeId endpoint.tag) endpoint.decoder))))
+            |> withExpect (expectJson (decodeData (list (map2 (,) (decodeId endpoint.tag) endpoint.decoder))))
             |> send (Result.mapError endpoint.error >> tagger)
 
 

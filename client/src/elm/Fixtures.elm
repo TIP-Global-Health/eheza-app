@@ -28,6 +28,7 @@ exampleUser =
     { id = 35
     , name = "aya"
     , avatarUrl = "http://example.com/avatar.jpg"
+    , clinics = []
     }
 
 

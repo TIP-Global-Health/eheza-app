@@ -15,6 +15,14 @@ caller could provide it.
 delta2url : Page -> Page -> Maybe UrlChange
 delta2url previous current =
     case current of
+        LoginPage ->
+            Just <| UrlChange NewEntry "#login"
+
+        PageNotFound url ->
+            -- If we couldn't interpret the URL, we don't try to change it.
+            Nothing
+
+        -- These are pages which depend on having a downloaded session
         SessionPage sessionPage ->
             case sessionPage of
                 ActivitiesPage ->
@@ -32,15 +40,14 @@ delta2url previous current =
                 ParticipantsPage ->
                     Just <| UrlChange NewEntry "#participants"
 
-        LoginPage ->
-            Just <| UrlChange NewEntry "#login"
+        -- These are pages that required a logged-in user
+        UserPage userPage ->
+            case userPage of
+                ClinicsPage ->
+                    Just <| UrlChange NewEntry "#clinics"
 
-        MyAccountPage ->
-            Just <| UrlChange NewEntry "#my-account"
-
-        PageNotFound url ->
-            -- If we couldn't interpret the URL, we don't try to change it.
-            Nothing
+                MyAccountPage ->
+                    Just <| UrlChange NewEntry "#my-account"
 
 
 {-| For now, the only messages we're generating from the URL are messages
@@ -59,8 +66,9 @@ parseUrl =
             (SessionPage << ActivityPage << Maybe.withDefault defaultActivityType << decodeActivityTypeFromString)
             (s "activity" </> string)
         , map (SessionPage << ChildPage << toEntityId) (s "child" </> int)
+        , map (UserPage ClinicsPage) (s "clinics")
         , map LoginPage (s "login")
-        , map MyAccountPage (s "my-account")
+        , map (UserPage MyAccountPage) (s "my-account")
         , map (SessionPage << MotherPage << toEntityId) (s "mother" </> int)
         , map (SessionPage ParticipantsPage) (s "participants")
 
@@ -70,10 +78,4 @@ parseUrl =
         -- appropriate page. But it might be simpler to record the user's
         -- intention to be at the "root" page.
         , map LoginPage top
-
-        -- Finally, if we don't map anything, show PageNotFound. It would be nice
-        -- to capture the entire URL here (rather than just the first segment),
-        -- but it's not clear how to do that. We could do it one level up, where
-        -- we actually have the full URL.
-        , map PageNotFound string
         ]

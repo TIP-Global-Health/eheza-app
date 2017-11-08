@@ -54,12 +54,13 @@ class HedleyRestfulSessions extends HedleyRestfulEntityBaseNode {
     // interpreting what day it is).  The security aspect of this (i.e.
     // preventing data entry after a certain day) will be handled elsewhere.
     //
-    // Note that the open_on param should be specified as YYYY-MM-DD.
-    if (!empty($request['open_on'])) {
-      $openOn = $request['open_on'];
+    // Note that the open_after param should be specified as YYYY-MM-DD.
+    if (!empty($request['open_after'])) {
+      // We want to include all sessions either open now or which will be
+      // open in the future.
+      $openAfter = $request['open_after'];
 
-      $query->fieldCondition('field_scheduled_date', 'value', $openOn, '>=');
-      $query->fieldCondition('field_scheduled_date', 'value2', $openOn, '<=');
+      $query->fieldCondition('field_scheduled_date', 'value2', $openAfter, '<=');
     }
 
     return $query;
@@ -72,11 +73,10 @@ class HedleyRestfulSessions extends HedleyRestfulEntityBaseNode {
     $request = $this->getRequest();
     $query = parent::getQueryCount();
 
-    if (!empty($request['open_on'])) {
-      $openOn = $request['open_on'];
+    if (!empty($request['open_after'])) {
+      $openAfter = $request['open_after'];
 
-      $query->fieldCondition('field_scheduled_date', 'value', $openOn, '>=');
-      $query->fieldCondition('field_scheduled_date', 'value2', $openOn, '<=');
+      $query->fieldCondition('field_scheduled_date', 'value2', $openAfter, '<=');
     }
 
     return $query;

@@ -1,0 +1,16 @@
+// This is SCSS not provided by the designer ... it's here so
+// that we can leave what the designer provided unchanged,
+// making it easier to integrate designer changes.
+//
+// This is pulled in by `style.scss`
+
+// Without this, the placeholder seems to be pulled up, relative
+// to where you'd think it should be. For instance, in the login form.
+input::placeholder {
+  line-height: 1.0;
+}
+
+// So we don't need a href to get the pointer cursor
+a {
+  cursor: pointer;
+}

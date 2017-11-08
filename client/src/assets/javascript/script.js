@@ -1,1 +1,0 @@
-$(".ui.modal").modal("show"),$(".progress").progress();
