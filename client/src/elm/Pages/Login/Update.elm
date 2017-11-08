@@ -30,6 +30,12 @@ update msg model =
             , Just Logout
             )
 
+        SendOutMsg outMsg ->
+            ( model
+            , Cmd.none
+            , Just outMsg
+            )
+
         SetName name ->
             ( { model | name = name }
             , Cmd.none

@@ -40,10 +40,8 @@ view language user clinicData =
                 [ class "link-back"
                 , onClick <| SetActivePage LoginPage
                 ]
-                [ span [ class "icon-back" ]
-                    []
-                , span []
-                    []
+                [ span [ class "icon-back" ] []
+                , span [] []
                 ]
             ]
         , div
@@ -89,7 +87,9 @@ viewWithData language user clinics =
         title =
             p
                 [ class "centered" ]
-                [ text <| translate language Translate.SelectYourClinic ]
+                [ text <| translate language Translate.SelectYourClinic
+                , text ":"
+                ]
 
         clinicView =
             clinics

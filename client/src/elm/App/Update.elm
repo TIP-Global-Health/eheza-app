@@ -8,8 +8,10 @@ import Dict
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Json.Decode exposing (decodeValue, bool)
 import Json.Decode exposing (oneOf)
+import Maybe.Extra
 import Pages.Login.Model
 import Pages.Login.Update
+import Pages.Page exposing (Page(..))
 import Pages.Update
 import Pages.Update
 import Pusher.Model
@@ -19,6 +21,7 @@ import Restful.Endpoint exposing (decodeSingleEntity)
 import Restful.Login exposing (LoginStatus(..), Login, Credentials, checkCachedCredentials)
 import Task
 import Time exposing (minute)
+import Update.Extra exposing (sequence)
 import User.Decoder exposing (decodeUser)
 import User.Encoder exposing (encodeUser)
 import User.Model exposing (..)
@@ -89,16 +92,22 @@ update msg model =
                             in
                                 ( { data | backend = backend }
                                 , Cmd.map (MsgLoggedIn << MsgBackend) cmd
+                                , []
                                 )
 
                         MsgSession subMsg ->
                             let
-                                -- TODO: Implement redirect
                                 ( subModel, subCmd, redirect ) =
                                     Pages.Update.updateSession subMsg data.pages
+
+                                extraMsgs =
+                                    redirect
+                                        |> Maybe.Extra.toList
+                                        |> List.map (SetActivePage << SessionPage)
                             in
                                 ( { data | pages = subModel }
                                 , Cmd.map (MsgLoggedIn << MsgSession) subCmd
+                                , extraMsgs
                                 )
                 )
                 model
@@ -106,8 +115,14 @@ update msg model =
         MsgLogin subMsg ->
             updateConfigured
                 (\configured ->
-                    Restful.Login.update loginConfig subMsg configured.login
-                        |> Tuple.mapFirst (\login -> { configured | login = login })
+                    let
+                        ( subModel, cmd ) =
+                            Restful.Login.update loginConfig subMsg configured.login
+                    in
+                        ( { configured | login = subModel }
+                        , cmd
+                        , []
+                        )
                 )
                 model
 
@@ -118,38 +133,26 @@ update msg model =
                         ( subModel, subCmd, outMsg ) =
                             Pages.Login.Update.update subMsg configured.loginPage
 
-                        -- Normally I'd do this with `sequence`, but getting
-                        -- that to work in this context is a bit hairy with the
-                        -- types ... I should see how to make this pattern work
-                        -- even better at some point. Probably, what this needs
-                        -- is a `MsgConfigured` pattern and a speciliazed update
-                        -- function, but we'll see.
-                        --
-                        -- In the meantime, the outMsg may be telling us to do
-                        -- something ... if so, we just do it right here! Why
-                        -- wait?
-                        ( loginStatus, loginCmd ) =
+                        extraMsgs =
                             outMsg
-                                |> Maybe.map
+                                |> Maybe.Extra.toList
+                                |> List.map
                                     (\out ->
                                         case out of
                                             Pages.Login.Model.TryLogin name pass ->
                                                 Restful.Login.tryLogin configured.config.backendUrl name pass
+                                                    |> MsgLogin
 
                                             Pages.Login.Model.Logout ->
-                                                Restful.Login.logout
+                                                MsgLogin Restful.Login.logout
+
+                                            Pages.Login.Model.SetActivePage page ->
+                                                SetActivePage page
                                     )
-                                |> Maybe.map (\loginMsg -> Restful.Login.update loginConfig loginMsg configured.login)
-                                |> Maybe.withDefault ( configured.login, Cmd.none )
                     in
-                        ( { configured
-                            | loginPage = subModel
-                            , login = loginStatus
-                          }
-                        , Cmd.batch
-                            [ Cmd.map MsgPageLogin subCmd
-                            , loginCmd
-                            ]
+                        ( { configured | loginPage = subModel }
+                        , Cmd.map MsgPageLogin subCmd
+                        , extraMsgs
                         )
                 )
                 model
@@ -188,11 +191,25 @@ update msg model =
 
 
 {-| Convenience function to process a msg which depends on having a configuration.
+
+The function you supply returns a third parameter, which is a list of additional messages to process.
+
 -}
-updateConfigured : (ConfiguredModel -> ( ConfiguredModel, Cmd Msg )) -> Model -> ( Model, Cmd Msg )
+updateConfigured : (ConfiguredModel -> ( ConfiguredModel, Cmd Msg, List Msg )) -> Model -> ( Model, Cmd Msg )
 updateConfigured func model =
     model.configuration
-        |> RemoteData.map (func >> Tuple.mapFirst (\config -> { model | configuration = Success config }))
+        |> RemoteData.map
+            (\configured ->
+                let
+                    ( subModel, cmd, extraMsgs ) =
+                        func configured
+                in
+                    sequence update
+                        extraMsgs
+                        ( { model | configuration = Success subModel }
+                        , cmd
+                        )
+            )
         |> RemoteData.withDefault ( model, Cmd.none )
 
 
@@ -201,7 +218,7 @@ updateConfigured func model =
 TODO: Put a version of this in `Restful.Login`.
 
 -}
-updateLoggedIn : (Credentials User -> LoggedInModel -> ( LoggedInModel, Cmd Msg )) -> Model -> ( Model, Cmd Msg )
+updateLoggedIn : (Credentials User -> LoggedInModel -> ( LoggedInModel, Cmd Msg, List Msg )) -> Model -> ( Model, Cmd Msg )
 updateLoggedIn func model =
     updateConfigured
         (\configured ->
@@ -209,14 +226,20 @@ updateLoggedIn func model =
             -- messages we can't handle ...
             case configured.login of
                 Anonymous _ ->
-                    ( configured, Cmd.none )
+                    ( configured, Cmd.none, [] )
 
                 CheckingCachedCredentials ->
-                    ( configured, Cmd.none )
+                    ( configured, Cmd.none, [] )
 
                 LoggedIn login ->
-                    func login.credentials login.data
-                        |> Tuple.mapFirst (\data -> { configured | login = LoggedIn { login | data = data } })
+                    let
+                        ( subModel, cmd, extraMsgs ) =
+                            func login.credentials login.data
+                    in
+                        ( { configured | login = LoggedIn { login | data = subModel } }
+                        , cmd
+                        , extraMsgs
+                        )
         )
         model
 

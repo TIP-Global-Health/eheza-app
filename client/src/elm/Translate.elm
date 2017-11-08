@@ -549,7 +549,7 @@ translate lang trans =
                     { english = "Search by Name" }
 
                 SelectYourClinic ->
-                    { english = "Select your clinic:" }
+                    { english = "Select your clinic" }
 
                 TitleHealthAssessment ->
                     { english = "2017 July Health Assessment" }

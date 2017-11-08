@@ -86,13 +86,9 @@ viewCheckingCachedCredentials language =
 
 
 {-| Show some HTML when we're actually logged in. Basically, allowing the
-opportunity to logout.
-
-TODO: Make this look nicer. Also, we should show some links to things you can
-do ... i.e. the next stage of the app. (And, we could automatically transition
-to the next stage, but that's not our job here, of course, since we're the
-`view`).
-
+opportunity to logout, or do something else. Note that you won't get here
+usually, because if your active page was elsewhere, you'll transition
+there automatically once you login.
 -}
 viewLogout : Language -> User -> Html Msg
 viewLogout language user =
@@ -103,8 +99,18 @@ viewLogout language user =
                 |> text
             , text <| ": " ++ user.name
             ]
+
+        -- At the moment of successful login, we'll actually transition somewhere.
+        -- But, if the user **deliberately** comes back here while logged in, we
+        -- should give the user some userful options ... we may want to compute
+        -- which of these options are actually the most likely at some point
         , button
             [ class "ui fluid primary button"
+            , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage Pages.Page.ClinicsPage
+            ]
+            [ text <| translate language Translate.SelectYourClinic ]
+        , button
+            [ class "ui fluid button"
             , onClick HandleLogoutClicked
             ]
             [ Translate.LoginPhrase Translate.Logout
