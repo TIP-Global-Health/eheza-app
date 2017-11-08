@@ -152,6 +152,7 @@ viewLoginForm language activePage loginStatus model =
                     [ input
                         [ placeholder <| translateLogin Translate.Username
                         , type_ "text"
+                        , name "username"
                         , onInput SetName
                         , value model.name
                         , autofocus True
@@ -165,6 +166,7 @@ viewLoginForm language activePage loginStatus model =
                     [ input
                         [ placeholder <| translateLogin Translate.Password
                         , type_ "password"
+                        , name "password"
                         , onInput SetPassword
                         , value model.pass
                         ]
