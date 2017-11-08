@@ -8,12 +8,12 @@ import Test.Runner.Node exposing (TestProgram, run)
 -- Register Test Stubs Here
 
 import App.Test
+import Backend.Measurement.Test
 import Measurement.Test
 import Pages.Activity.Test
 import Pages.Participant.Test
 import Participant.Test
 import ProgressReport.Test
-import Pusher.Test
 import ZScore.Test
 
 
@@ -21,12 +21,12 @@ allTests : Test
 allTests =
     describe "All tests"
         [ App.Test.all
+        , Backend.Measurement.Test.all
         , Measurement.Test.all
         , Pages.Activity.Test.all
         , Pages.Participant.Test.all
         , Participant.Test.all
         , ProgressReport.Test.all
-        , Pusher.Test.all
         , ZScore.Test.all
         ]
 

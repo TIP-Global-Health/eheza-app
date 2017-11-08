@@ -1,17 +1,47 @@
 module Measurement.Model exposing (..)
 
-import Activity.Model exposing (ActivityType, ChildNutritionSign, FamilyPlanningSign)
-import EveryDict exposing (EveryDict)
-import Http
-import RemoteData exposing (RemoteData(..), WebData)
+{-| These modules manage the UI for the various measurements relating to a
+participant.
+-}
+
+import Backend.Measurement.Model exposing (..)
+import EverySet exposing (EverySet)
 
 
-type alias EveryDictChildNutritionSign =
-    EveryDict ChildNutritionSign ()
+{-| The strategy here, at least for now, is this:
+
+  - The values in the `Model` here reflect what is entered in the UI. So, they
+    are updated on every key-press etc.
+
+  - The `update` function takes a parameter which represents the actual data.
+    It updates that parameter only when the value has actually been saved.
+
+So, basically we're doing pure UI here ... all other concerns are handled via
+the `OutMsg` returned to the caller, which the caller is expected to do something
+useful with.
+
+This means that we need to be able to initialize our UI state here from some
+backend state in order to perform an edit -- it's the caller's job to handle
+that.
+
+Ideally, we'll eventually use `Restful.RestfulData` to track underlying
+data, UI edits, validation, and update status all in one type. If we had that,
+we'd wouldn't really need our own model here (and we'd avoid some synchronization
+issues) since the data itself would encapsulate an editor state.
+
+-}
+type alias ModelChild =
+    { height : String
+    , muac : String
+    , nutritionSigns : EverySet ChildNutritionSign
+    , photo : ( Maybe FileId, Maybe PhotoValue )
+    , weight : String
+    }
 
 
-type alias EveryDictFamilyPlanningSigns =
-    EveryDict FamilyPlanningSign ()
+type alias ModelMother =
+    { familyPlanningSigns : EverySet FamilyPlanningSign
+    }
 
 
 type alias FloatInputConstraints =
@@ -20,175 +50,52 @@ type alias FloatInputConstraints =
     }
 
 
-type alias FloatInput =
-    Maybe String
-
-
 type alias FileId =
     Int
 
 
-type alias PhotoId =
-    Int
-
-
-type alias Photo =
-    { url : String }
-
-
-type Msg
-    = FamilyPlanningSignsSave
-    | FamilyPlanningSignsToggle FamilyPlanningSign
-    | HandleDropzoneUploadedFile Int
-    | HandleFamilyPlanningSave (Result Http.Error ())
-    | HandleHeightSave (Result Http.Error ())
-    | HandleNutritionSignsSave (Result Http.Error ())
-    | HandleMuacSave (Result Http.Error ())
-    | HandlePhotoSave (Result Http.Error ( PhotoId, Photo ))
-    | HandleWeightSave (Result Http.Error ())
-    | HeightSave
-    | HeightUpdate String
-    | MuacUpdate String
-    | MuacSave
-    | NutritionSignsToggle ChildNutritionSign
-    | NutritionSignsSave
-    | PhotoSave
+type MsgChild
+    = HandleDropzoneUploadedFile Int
     | ResetDropZone
-    | WeightSave
-    | WeightUpdate String
+    | SelectNutritionSign Bool ChildNutritionSign
+    | SendOutMsgChild OutMsgChild
+    | UpdateHeight String
+    | UpdateMuac String
+    | UpdateWeight String
 
 
-type alias Model =
-    { status : WebData ()
-    , height : FloatInput
-    , muac : FloatInput
-
-    -- We use EveryDict instead of Set, as we want the key to be a typed value
-    -- and not have to cast it to string.
-    , nutritionSigns : EveryDictChildNutritionSign
-    , familyPlanningSigns : EveryDictFamilyPlanningSigns
-    , photo : ( Maybe FileId, Maybe ( PhotoId, Photo ) )
-    , weight : FloatInput
-    }
+type MsgMother
+    = SelectFamilyPlanningSign Bool FamilyPlanningSign
+    | SendOutMsgMother OutMsgMother
 
 
-{-| An interpretation of a MUAC, according to the measurement
-tool referenced at <https://github.com/Gizra/ihangane/issues/282>
+{-| This is sort of the "opposite" of `Msg`. Instead of representing messages
+which we can handle, it represents messages we **can't** handle, and would
+like the caller to take care of.
 -}
-type MuacIndication
-    = MuacGreen
-    | MuacRed
-    | MuacYellow
+type OutMsgChild
+    = SaveHeight
+    | SaveWeight
+    | SaveMuac
+    | SaveChildNutritionSigns
+    | SavePhoto
 
 
-type FloatMeasurements
-    = HeightFloat
-    | MuacFloat
-    | WeightFloat
+type OutMsgMother
+    = SaveFamilyPlanningSigns
 
 
-getInputConstraintsHeight : FloatInputConstraints
-getInputConstraintsHeight =
-    { minVal = 0.5
-    , maxVal = 100
-    }
-
-
-getInputConstraintsMuac : FloatInputConstraints
-getInputConstraintsMuac =
-    { minVal = 0.5
-    , maxVal = 40
-    }
-
-
-getInputConstraintsWeight : FloatInputConstraints
-getInputConstraintsWeight =
-    { minVal = 0.5
-    , maxVal = 60
-    }
-
-
-emptyModel : Model
-emptyModel =
-    { status = NotAsked
-    , height = Nothing
-    , muac = Nothing
-    , nutritionSigns = EveryDict.empty
-    , familyPlanningSigns = EveryDict.empty
+emptyModelChild : ModelChild
+emptyModelChild =
+    { height = ""
+    , muac = ""
+    , nutritionSigns = EverySet.empty
     , photo = ( Nothing, Nothing )
-    , weight = Nothing
+    , weight = ""
     }
 
 
-saveMeasurementMessage : Msg -> Bool
-saveMeasurementMessage msg =
-    case msg of
-        FamilyPlanningSignsSave ->
-            True
-
-        HeightSave ->
-            True
-
-        MuacSave ->
-            True
-
-        NutritionSignsSave ->
-            True
-
-        PhotoSave ->
-            True
-
-        WeightSave ->
-            True
-
-        _ ->
-            False
-
-
-getFloatInputValue : String -> Float
-getFloatInputValue input =
-    let
-        normilizedInput =
-            if String.endsWith "." input && (List.length <| String.indexes "." input) == 1 then
-                String.dropRight 1 input
-            else
-                input
-    in
-        case String.toFloat normilizedInput of
-            Ok value ->
-                value
-
-            Err error ->
-                0.0
-
-
-normalizeFloatFormInput : String -> String
-normalizeFloatFormInput input =
-    let
-        normilizedInput =
-            if String.endsWith "." input && (List.length <| String.indexes "." input) == 1 then
-                String.dropRight 1 input
-            else
-                input
-    in
-        case String.toFloat normilizedInput of
-            Ok value ->
-                input
-
-            Err error ->
-                if input == "." then
-                    "0."
-                else
-                    String.dropRight 1 input
-
-
-normalizeFloatInput : FloatInput -> FloatInput
-normalizeFloatInput floatInput =
-    let
-        input =
-            floatInput |> Maybe.withDefault "0.0"
-    in
-        if String.endsWith "." input && (List.length <| String.indexes "." input) == 1 then
-            Just <| String.dropRight 1 input
-        else
-            Just input
+emptyModelMother : ModelMother
+emptyModelMother =
+    { familyPlanningSigns = EverySet.empty
+    }

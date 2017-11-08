@@ -2,14 +2,17 @@ name = Hedley user
 description = User related code
 core = 7.x
 package = Hedley
+dependencies[] = entityreference
 dependencies[] = features
 dependencies[] = image
+dependencies[] = options
+dependencies[] = text
 features[features_api][] = api:2
 features[field_base][] = field_avatar
+features[field_base][] = field_clinics
 features[field_base][] = field_phone
 features[field_instance][] = user-user-field_avatar
+features[field_instance][] = user-user-field_clinics
 features[field_instance][] = user-user-field_phone
-
-; Simpletests.
 files[] = tests/HedleyUserTestPermission.test
 files[] = tests/HedleyUserAccess.test

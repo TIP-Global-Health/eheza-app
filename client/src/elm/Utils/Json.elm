@@ -3,9 +3,7 @@ module Utils.Json
         ( decodeDate
         , decodeEmptyArrayAsEmptyDict
         , decodeError
-        , decodeFloat
-        , decodeInt
-        , decodeIntAsString
+        , decodeEverySet
         , decodeListAsDict
         , decodeListAsDictByProperty
         , decodeListAsIntDict
@@ -15,9 +13,10 @@ module Utils.Json
 
 import Date exposing (Date)
 import Dict exposing (Dict)
-import Json.Decode exposing (Decoder, andThen, dict, fail, field, float, int, list, map, map2, nullable, oneOf, string, succeed, value)
+import Gizra.Json exposing (decodeInt)
+import EverySet exposing (EverySet)
+import Json.Decode exposing (Decoder, andThen, dict, fail, field, float, index, int, list, map, map2, nullable, oneOf, string, succeed, value)
 import Json.Decode.Extra exposing (date)
-import String
 
 
 decodeDate : Decoder Date
@@ -45,52 +44,6 @@ decodeEmptyArrayAsEmptyDict =
 decodeError : Decoder String
 decodeError =
     field "title" string
-
-
-decodeFloat : Decoder Float
-decodeFloat =
-    oneOf
-        [ float
-        , string
-            |> andThen
-                (\val ->
-                    case String.toFloat val of
-                        Ok int ->
-                            succeed int
-
-                        Err _ ->
-                            fail "Cannot convert string to float"
-                )
-        ]
-
-
-{-| Cast String to Int.
--}
-decodeInt : Decoder Int
-decodeInt =
-    oneOf
-        [ int
-        , string
-            |> andThen
-                (\val ->
-                    case String.toInt val of
-                        Ok int ->
-                            succeed int
-
-                        Err _ ->
-                            fail "Cannot convert string to integer"
-                )
-        ]
-
-
-{-| Cast Int to String.
--}
-decodeIntAsString : Decoder String
-decodeIntAsString =
-    oneOf
-        [ string
-        , int |> andThen (\val -> succeed <| toString val)
-        ]
 
 
 decodeListAsDict : Decoder a -> Decoder (Dict String a)
@@ -137,3 +90,11 @@ decodeNullAsEmptyArray =
                     Just res ->
                         fail <| "Expected Null, not an array with length: " ++ (toString <| List.length res)
             )
+
+
+{-| Given a decoder, decodes a JSON list of that type, and then
+turns it into an `EverySet`.
+-}
+decodeEverySet : Decoder a -> Decoder (EverySet a)
+decodeEverySet =
+    map EverySet.fromList << list

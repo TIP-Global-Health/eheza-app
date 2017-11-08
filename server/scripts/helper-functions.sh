@@ -314,6 +314,9 @@ function generate_demo_content {
     drush generate-content 20 0 --types="$TYPE"
   done
 
+  # Add some sessions for today
+  drush create-sessions-today
+
   cd "$ROOT"
   echo
 }

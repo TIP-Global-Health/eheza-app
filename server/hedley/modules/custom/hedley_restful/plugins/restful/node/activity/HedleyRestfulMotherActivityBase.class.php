@@ -23,7 +23,7 @@ abstract class HedleyRestfulMotherActivityBase extends HedleyRestfulActivityBase
         'child' => [
           // Resource name.
           'name' => 'mothers',
-          'full_view' => TRUE,
+          'full_view' => FALSE,
         ],
       ],
     ];

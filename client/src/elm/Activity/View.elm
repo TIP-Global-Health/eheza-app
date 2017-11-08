@@ -4,44 +4,41 @@ module Activity.View
         )
 
 import Activity.Model exposing (ActivityType)
-import Activity.Utils exposing (getActivityIdentity, getActivityTypeList)
+import Activity.Utils exposing (getActivityIcon, getActivityTypeList)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onCheck, onClick, onInput, onWithOptions)
 import Participant.Model exposing (ParticipantTypeFilter(..))
+import Translate exposing (Language, translate)
 
 
-viewActivityTypeFilter : (ActivityType -> Bool -> msg) -> ParticipantTypeFilter -> List ActivityType -> Html msg
-viewActivityTypeFilter msg participantTypeFilter activityTypeFilter =
+viewActivityTypeFilter : Language -> (ActivityType -> Bool -> msg) -> ParticipantTypeFilter -> List ActivityType -> Html msg
+viewActivityTypeFilter language msg participantTypeFilter activityTypeFilter =
     div []
         (List.map
             (\activityType ->
-                checkbox msg activityType activityTypeFilter
+                checkbox language msg activityType activityTypeFilter
             )
             (getActivityTypeList participantTypeFilter)
         )
 
 
-checkbox : (ActivityType -> Bool -> msg) -> ActivityType -> List ActivityType -> Html msg
-checkbox msg activityType activityTypeFilter =
-    let
-        activityIdentity =
-            getActivityIdentity activityType
-    in
-        -- Adding a wrapping div, so checkbox are below each other.
-        div []
-            [ div
-                [ class "ui checkbox" ]
-                [ input
-                    [ type_ "checkbox"
-                    , onCheck (msg activityType)
-                    , checked <| List.member activityType activityTypeFilter
-                    ]
-                    []
-                , label
-                    []
-                    [ i [ class <| activityIdentity.icon ++ " icon" ] []
-                    , text activityIdentity.name
-                    ]
+checkbox : Language -> (ActivityType -> Bool -> msg) -> ActivityType -> List ActivityType -> Html msg
+checkbox language msg activityType activityTypeFilter =
+    -- Adding a wrapping div, so checkbox are below each other.
+    div []
+        [ div
+            [ class "ui checkbox" ]
+            [ input
+                [ type_ "checkbox"
+                , onCheck (msg activityType)
+                , checked <| List.member activityType activityTypeFilter
+                ]
+                []
+            , label
+                []
+                [ i [ getActivityIcon activityType ] []
+                , text <| translate language (Translate.ActivitiesTitle activityType)
                 ]
             ]
+        ]

@@ -1,6 +1,6 @@
 var assert = require('assert');
 
-describe('when updating a measurement form', function() {
+describe.skip('when updating a measurement form', function() {
 
   /**
    * Adjust the input of the current form.

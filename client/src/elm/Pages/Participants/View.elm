@@ -1,64 +1,44 @@
 module Pages.Participants.View exposing (view)
 
-import Activity.Model exposing (ActivityType)
-import Activity.Utils exposing (getTotalsNumberPerActivity, participantGotPendingActivity)
-import Activity.View exposing (viewActivityTypeFilter)
-import App.PageType exposing (Page(..))
-import Date exposing (Date)
-import Dict
+import Activity.Utils exposing (getTotalsNumberPerActivity, motherOrAnyChildHasAnyPendingActivity)
+import Backend.Session.Model exposing (OfflineSession, EditableSession)
+import EveryDictList
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (on, onClick, onInput, onWithOptions)
-import Maybe.Extra exposing (isJust)
-import Pages.Participants.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
-import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
-import Participant.Utils exposing (getParticipantAvatarThumb, getParticipantName, getParticipantTypeAsString)
-import Participant.View exposing (viewParticipantTypeFilter)
-import Table exposing (..)
+import Pages.Participants.Model exposing (Model, Msg(..), Tab(..))
+import Pages.Utils exposing (viewDashboardPageHeader, DashboardPage(..))
+import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
 import Translate as Trans exposing (translate, Language)
-import User.Model exposing (User)
 import Utils.Html exposing (tabItem, thumbnailImage)
 
 
-view : Language -> Date -> User -> ParticipantsDict -> Model -> List (Html Msg)
-view language currentDate currentUser participantsDict model =
+thumbnailDimensions : { width : Int, height : Int }
+thumbnailDimensions =
+    { width = 122
+    , height = 122
+    }
+
+
+view : Language -> EditableSession -> Model -> Html Msg
+view language editableSession model =
     let
-        filterMothersByPendingActivity withPending participantId participant =
-            case participant.info of
-                ParticipantChild child ->
-                    False
+        allMothers =
+            editableSession.offlineSession.mothers
 
-                ParticipantMother mother ->
-                    let
-                        motherGotPendingActivity =
-                            participantGotPendingActivity currentDate participant
-
-                        children =
-                            List.filterMap (\childId -> Dict.get childId participantsDict) mother.children
-
-                        gotPendingActivity =
-                            motherGotPendingActivity || List.any (participantGotPendingActivity currentDate) children
-                    in
-                        if withPending then
-                            gotPendingActivity
-                        else
-                            not <| gotPendingActivity
-
-        mothersWithPendingActivity =
-            participantsDict
-                |> Dict.filter (filterMothersByPendingActivity True)
-
-        mothersWithoutPendingActivity =
-            participantsDict
-                |> Dict.filter (filterMothersByPendingActivity False)
+        ( mothersWithPendingActivity, mothersWithoutPendingActivity ) =
+            EveryDictList.partition (\motherId _ -> motherOrAnyChildHasAnyPendingActivity motherId editableSession) allMothers
 
         tabs =
             let
                 pendingTabTitle =
-                    translate language <| Trans.ActivitiesToComplete <| Dict.size mothersWithPendingActivity
+                    EveryDictList.size mothersWithPendingActivity
+                        |> Trans.ActivitiesToComplete
+                        |> translate language
 
                 completedTabTitle =
-                    translate language <| Trans.ActivitiesCompleted <| Dict.size mothersWithoutPendingActivity
+                    EveryDictList.size mothersWithoutPendingActivity
+                        |> Trans.ActivitiesCompleted
+                        |> translate language
             in
                 div [ class "ui tabular menu" ]
                     [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
@@ -76,37 +56,32 @@ view language currentDate currentUser participantsDict model =
                             ( mothersWithoutPendingActivity, translate language Trans.CompletedSectionEmpty )
 
                 viewMotherCard ( motherId, mother ) =
-                    let
-                        name =
-                            getParticipantName mother
+                    div
+                        [ class "card"
+                        , Debug.crash "redo"
 
-                        imageSrc =
-                            getParticipantAvatarThumb mother
-
-                        imageView =
-                            thumbnailImage mother.info imageSrc name thumbnailDimensions.height thumbnailDimensions.width
-                    in
-                        div
-                            [ class "card"
-                            , onClick <| SetRedirectPage <| App.PageType.Participant motherId
-                            ]
-                            [ div [ class "image" ]
-                                [ imageView ]
-                            , div [ class "content" ]
-                                [ p [] [ text name ] ]
-                            ]
+                        {-
+                           , App.PageType.PageMother motherId
+                               |> SetRedirectPage
+                               |> onClick
+                        -}
+                        ]
+                        [ div
+                            [ class "image" ]
+                            [ thumbnailImage (ParticipantMother mother) mother.image mother.name thumbnailDimensions.height thumbnailDimensions.width ]
+                        , div
+                            [ class "content" ]
+                            [ p [] [ text mother.name ] ]
+                        ]
 
                 mothersCards =
-                    if Dict.size selectedMothers == 0 then
+                    if EveryDictList.size selectedMothers == 0 then
                         [ span [] [ text emptySectionMessage ] ]
                     else
-                        List.map viewMotherCard <|
-                            List.sortBy
-                                (\( _, mother ) ->
-                                    getParticipantName mother
-                                )
-                            <|
-                                Dict.toList selectedMothers
+                        selectedMothers
+                            |> EveryDictList.toList
+                            |> List.sortBy (\( _, mother ) -> mother.name)
+                            |> List.map viewMotherCard
             in
                 div [ class "full content" ]
                     [ div [ class "wrap-cards" ]
@@ -127,4 +102,9 @@ view language currentDate currentUser participantsDict model =
                 [ class "ui full segment" ]
                 [ mothers, endSessionButton ]
     in
-        [ tabs, content ]
+        div
+            [ class "wrap wrap-alt page-participants" ]
+            [ viewDashboardPageHeader SetRedirectPage language ParticipantsDashboard
+            , tabs
+            , content
+            ]

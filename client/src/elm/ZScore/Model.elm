@@ -1,6 +1,7 @@
 module ZScore.Model
     exposing
-        ( Centimetres(..)
+        ( AgeInDays(..)
+        , Centimetres(..)
         , Kilograms(..)
         , ZScore(..)
         )
@@ -16,6 +17,10 @@ module ZScore.Model
 
    ... so that the caller has to think about what units are being provided.
 -}
+
+
+type AgeInDays
+    = AgeInDays Int
 
 
 type Centimetres

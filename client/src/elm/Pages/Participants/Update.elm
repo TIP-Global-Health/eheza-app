@@ -1,15 +1,11 @@
 module Pages.Participants.Update exposing (update)
 
-import Activity.Encoder exposing (encodeActivityType)
-import App.PageType exposing (Page(..))
-import Config.Model exposing (BackendUrl)
+import Pages.Page exposing (SessionPage)
 import Pages.Participants.Model exposing (Model, Msg(..))
-import Participant.Model exposing (ParticipantTypeFilter(..), ParticipantsDict)
-import User.Model exposing (..)
 
 
-update : BackendUrl -> String -> User -> Msg -> ParticipantsDict -> Model -> ( Model, Cmd Msg, Maybe Page )
-update backendUrl accessToken user msg participants model =
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe SessionPage )
+update msg model =
     case msg of
         SetRedirectPage page ->
             ( model, Cmd.none, Just page )

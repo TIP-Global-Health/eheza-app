@@ -21,13 +21,25 @@ function waitForElement(selector, fn, model, tryCount) {
     }, 200);
 }
 
+// The Elm side of the "credentials" mechanism allows us to distinguish between
+// credentials for multiple backends. However, we can't really make much use of
+// that at the "flags" stage, because on the JS side we don't know what the
+// backendUrl is. So, that' probably fine for the moment ... we can think of
+// something if we really need it. In any event, using local storage will
+// automatically distinguish based on the frontend URL, so that is probably
+// enough.
 var elmApp = Elm.Main.fullscreen({
-    accessToken: localStorage.getItem('accessToken') || '',
+    credentials: localStorage.getItem('credentials') || '{}',
     hostname: window.location.hostname
 });
 
-elmApp.ports.accessTokenPort.subscribe(function(accessToken) {
-    localStorage.setItem('accessToken', accessToken);
+elmApp.ports.cacheCredentials.subscribe(function(params) {
+    // The `backendUrl` isn't actually used, for the moment ... we just save
+    // the credentials without trying to distinguish amongst backends.
+    var backendUrl = params[0];
+    var credentials = params[1];
+    
+    localStorage.setItem('credentials', credentials);
 });
 
 /**
@@ -70,6 +82,7 @@ Offline.on('up', function() {
 // Dropzone.
 var dropZone = undefined;
 
+/*
 elmApp.ports.dropzoneConfig.subscribe(function(config) {
     waitForElement('.dropzone', attachDropzone, config);
 });
@@ -151,3 +164,4 @@ function attachDropzone(selector, config) {
         elmApp.ports.dropzoneUploadedFile.send(id);
     });
 }
+*/

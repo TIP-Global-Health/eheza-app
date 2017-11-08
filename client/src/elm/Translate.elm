@@ -1,7 +1,11 @@
 module Translate exposing (..)
 
+import Activity.Model exposing (ActivityType(..), MotherActivityType(..), ChildActivityType(..))
+import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..), MuacIndication(..))
+import Backend.Child.Model exposing (Gender(..))
 import Date exposing (Month(..))
-import Measurement.Model exposing (MuacIndication(..))
+import Pages.Page exposing (..)
+import Restful.Login exposing (LoginError(..))
 
 
 type Language
@@ -23,39 +27,11 @@ type TranslationId
     = AccessDenied
     | Activities
     | ActivitiesCompleted Int
-    | ActivitiesFamilyPlanningSignsCondomsLabel
-    | ActivitiesFamilyPlanningSignsHelp
-    | ActivitiesFamilyPlanningSignsIUDLabel
-    | ActivitiesFamilyPlanningSignsInjectionLabel
-    | ActivitiesFamilyPlanningSignsLabel
-    | ActivitiesFamilyPlanningSignsNecklaceLabel
-    | ActivitiesFamilyPlanningSignsNoneLabel
-    | ActivitiesFamilyPlanningSignsTitle
-    | ActivitiesFamilyPlanningSignsPillLabel
-    | ActivitiesHeightHelp
-    | ActivitiesHeightLabel
-    | ActivitiesHeightTitle
-    | ActivitiesMuacHelp
-    | ActivitiesMuacLabel
-    | ActivitiesMuacTitle
+    | ActivitiesHelp ActivityType
+    | ActivitiesLabel ActivityType
+    | ActivitiesTitle ActivityType
     | ActivitiesToComplete Int
-    | ActivitiesNutritionSignsAbdominalDisortionLabel
-    | ActivitiesNutritionSignsApathyLabel
-    | ActivitiesNutritionSignsBrittleHairLabel
-    | ActivitiesNutritionSignsDrySkinLabel
-    | ActivitiesNutritionSignsEdemaLabel
-    | ActivitiesNutritionSignsHelp
-    | ActivitiesNutritionSignsLabel
-    | ActivitiesNutritionSignsNoneLabel
-    | ActivitiesNutritionSignsPoorAppetiteLabel
-    | ActivitiesNutritionSignsTitle
-    | ActivitiesPhotoHelp
-    | ActivitiesPhotoTitle
-    | ActivitiesProgressReport
-    | ActivitiesProgressReportHelp
-    | ActivitiesWeightHelp
-    | ActivitiesWeightLabel
-    | ActivitiesWeightTitle
+    | ActivePage Page
     | Age Int Int
     | AgeDays Int
     | AgeMonthsWithoutDay Int
@@ -64,11 +40,14 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int Int
+    | AppName
     | Assessment
     | Baby
     | BabyName String
     | CentimeterShorthand
+    | ChildNutritionSignLabel ChildNutritionSign
     | Children
+    | Clinics
     | CompletedSectionEmpty
     | Connected
     | Dashboard
@@ -81,12 +60,11 @@ type TranslationId
     | ErrorConfigurationError
     | ErrorNetworkError
     | ErrorTimeout
-    | Female
+    | FamilyPlanningSignLabel FamilyPlanningSign
+    | Gender Gender
     | KilogramShorthand
     | LinkToMother
-    | Login
-    | Logout
-    | Male
+    | LoginPhrase LoginPhrase
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
@@ -100,9 +78,9 @@ type TranslationId
     | NoParticipantsFound
     | NotAvailable
     | NotConnected
+    | Page
     | Page404
     | PageNotFoundMsg
-    | Password
     | Participants
     | PendingSectionEmpty
     | PlaceholderEnterHeight
@@ -115,19 +93,32 @@ type TranslationId
     | ReportDOB String
     | ReportRemaining Int
     | ReloadParticipant
-    | ReportCompleted ( Int, Int )
+    | ReportCompleted { pending : Int, total : Int }
     | ResolveMonth Month
     | Retry
     | Save
     | SaveError
     | SearchByName
+    | SelectYourClinic
     | TitleHealthAssessment
-    | Username
     | WelcomeUser String
     | ZScoreHeightForAge
     | ZScoreMuacForAge
     | ZScoreWeightForAge
     | ZScoreWeightForHeight
+
+
+type LoginPhrase
+    = CheckingCachedCredentials
+    | ForgotPassword1
+    | ForgotPassword2
+    | LoggedInAs
+    | LoginError LoginError
+    | Logout
+    | Password
+    | SignIn
+    | Username
+    | YouMustLoginBefore
 
 
 translate : Language -> TranslationId -> String
@@ -144,104 +135,108 @@ translate lang trans =
                 ActivitiesCompleted count ->
                     { english = "Completed (" ++ toString count ++ ")" }
 
-                ActivitiesFamilyPlanningSignsCondomsLabel ->
-                    { english = "Condoms" }
+                ActivitiesHelp activity ->
+                    case activity of
+                        MotherActivity FamilyPlanning ->
+                            { english = "Every mother should be asked about her family planing method(s) each month. If a mother needs family planning, refer her to a clinic." }
 
-                ActivitiesFamilyPlanningSignsHelp ->
-                    { english = "Every mother should be asked about her family planing method(s) each month. If a mother needs family planning, refer her to a clinic." }
+                        ChildActivity Height ->
+                            { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight." }
 
-                ActivitiesFamilyPlanningSignsIUDLabel ->
-                    { english = "IUD" }
+                        ChildActivity Muac ->
+                            { english = "Make sure to measure at the center of the baby’s upper arm." }
 
-                ActivitiesFamilyPlanningSignsInjectionLabel ->
-                    { english = "Injection" }
+                        ChildActivity NutritionSigns ->
+                            { english = "Explain to the mother how to check the malnutrition signs for their own child." }
 
-                ActivitiesFamilyPlanningSignsLabel ->
-                    { english = "Which, if any, of the following methods do you use?" }
+                        ChildActivity ChildPicture ->
+                            { english = "Take each baby’s photo at each health assessment. Photos should show the entire body of each child." }
 
-                ActivitiesFamilyPlanningSignsNecklaceLabel ->
-                    { english = "Necklace" }
+                        ChildActivity ProgressReport ->
+                            { english = "" }
 
-                ActivitiesFamilyPlanningSignsNoneLabel ->
-                    { english = "None of these" }
+                        ChildActivity Weight ->
+                            { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on." }
 
-                ActivitiesFamilyPlanningSignsTitle ->
-                    { english = "Planning:" }
+                ActivitiesLabel activity ->
+                    case activity of
+                        MotherActivity FamilyPlanning ->
+                            { english = "Which, if any, of the following methods do you use?" }
 
-                ActivitiesFamilyPlanningSignsPillLabel ->
-                    { english = "Pill" }
+                        ChildActivity Height ->
+                            { english = "Height:" }
 
-                ActivitiesHeightHelp ->
-                    { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight." }
+                        ChildActivity Muac ->
+                            { english = "MUAC:" }
 
-                ActivitiesHeightLabel ->
-                    { english = "Height:" }
+                        ChildActivity NutritionSigns ->
+                            { english = "Select all signs that are present:" }
 
-                ActivitiesHeightTitle ->
-                    { english = "Height:" }
+                        ChildActivity ChildPicture ->
+                            { english = "Photo:" }
 
-                ActivitiesMuacHelp ->
-                    { english = "Make sure to measure at the center of the baby’s upper arm." }
+                        ChildActivity ProgressReport ->
+                            { english = "Progress Report" }
 
-                ActivitiesMuacLabel ->
-                    { english = "MUAC:" }
+                        ChildActivity Weight ->
+                            { english = "Weight:" }
 
-                ActivitiesMuacTitle ->
-                    { english = "Mid Upper Arm Circumference (MUAC):" }
+                ActivitiesTitle activity ->
+                    case activity of
+                        MotherActivity FamilyPlanning ->
+                            { english = "Planning" }
 
-                ActivitiesNutritionSignsAbdominalDisortionLabel ->
-                    { english = "Abdominal Disortion" }
+                        ChildActivity Height ->
+                            { english = "Height" }
 
-                ActivitiesNutritionSignsApathyLabel ->
-                    { english = "Apathy" }
+                        ChildActivity Muac ->
+                            { english = "Mid Upper Arm Circumference (MUAC)" }
 
-                ActivitiesNutritionSignsBrittleHairLabel ->
-                    { english = "Brittle Hair" }
+                        ChildActivity NutritionSigns ->
+                            { english = "Nutrition" }
 
-                ActivitiesNutritionSignsDrySkinLabel ->
-                    { english = "Dry Skin" }
+                        ChildActivity ChildPicture ->
+                            { english = "Photo" }
 
-                ActivitiesNutritionSignsEdemaLabel ->
-                    { english = "Edema" }
+                        ChildActivity ProgressReport ->
+                            { english = "Progress Report" }
 
-                ActivitiesNutritionSignsHelp ->
-                    { english = "Explain to the mother how to check the malnutrition signs for their own child." }
-
-                ActivitiesNutritionSignsLabel ->
-                    { english = "Select all signs that are present:" }
-
-                ActivitiesNutritionSignsNoneLabel ->
-                    { english = "None of these" }
-
-                ActivitiesNutritionSignsPoorAppetiteLabel ->
-                    { english = "Poor Appetite" }
-
-                ActivitiesNutritionSignsTitle ->
-                    { english = "Nutrition:" }
-
-                ActivitiesPhotoHelp ->
-                    { english = "Take each baby’s photo at each health assessment. Photos should show the entire body of each child." }
-
-                ActivitiesPhotoTitle ->
-                    { english = "Photo:" }
-
-                ActivitiesProgressReport ->
-                    { english = "Progress Report" }
-
-                ActivitiesProgressReportHelp ->
-                    { english = "" }
-
-                ActivitiesWeightHelp ->
-                    { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on." }
+                        ChildActivity Weight ->
+                            { english = "Weight" }
 
                 ActivitiesToComplete count ->
                     { english = "To Do (" ++ toString count ++ ")" }
 
-                ActivitiesWeightLabel ->
-                    { english = "Weight:" }
+                ActivePage page ->
+                    case page of
+                        LoginPage ->
+                            { english = "Login" }
 
-                ActivitiesWeightTitle ->
-                    { english = "Weight:" }
+                        PageNotFound url ->
+                            { english = "Missing" }
+
+                        SessionPage sessionPage ->
+                            case sessionPage of
+                                ActivitiesPage ->
+                                    { english = "Activities" }
+
+                                ActivityPage activityType ->
+                                    { english = "Activity" }
+
+                                ParticipantsPage ->
+                                    { english = "Participants" }
+
+                                ChildPage childId ->
+                                    { english = "Child" }
+
+                                MotherPage motherId ->
+                                    { english = "Mother" }
+
+                        UserPage ClinicsPage ->
+                            { english = "Clinics" }
+
+                        UserPage MyAccountPage ->
+                            { english = "'My Account'" }
 
                 Age months days ->
                     { english = toString months ++ " months and " ++ toString days ++ " days" }
@@ -267,6 +262,9 @@ translate lang trans =
                 AgeSingleMonthWithoutDay month ->
                     { english = toString month ++ " month" }
 
+                AppName ->
+                    { english = "E-Heza System" }
+
                 Assessment ->
                     { english = "Assessment" }
 
@@ -279,8 +277,34 @@ translate lang trans =
                 CentimeterShorthand ->
                     { english = "cm" }
 
+                ChildNutritionSignLabel sign ->
+                    case sign of
+                        AbdominalDisortion ->
+                            { english = "Abdominal Disortion" }
+
+                        Apathy ->
+                            { english = "Apathy" }
+
+                        BrittleHair ->
+                            { english = "Brittle Hair" }
+
+                        DrySkin ->
+                            { english = "Dry Skin" }
+
+                        Edema ->
+                            { english = "Edema" }
+
+                        None ->
+                            { english = "None of these" }
+
+                        PoorAppetite ->
+                            { english = "Poor Appetite" }
+
                 Children ->
                     { english = "Children" }
+
+                Clinics ->
+                    { english = "Clinics" }
 
                 CompletedSectionEmpty ->
                     { english = "This section has not yet been completed." }
@@ -318,8 +342,33 @@ translate lang trans =
                 ErrorTimeout ->
                     { english = "The network request timed out." }
 
-                Female ->
-                    { english = "Female" }
+                FamilyPlanningSignLabel sign ->
+                    case sign of
+                        Condoms ->
+                            { english = "Condoms" }
+
+                        IUD ->
+                            { english = "IUD" }
+
+                        Injection ->
+                            { english = "Injection" }
+
+                        Necklace ->
+                            { english = "Necklace" }
+
+                        Pill ->
+                            { english = "Pill" }
+
+                        NoFamilyPlanning ->
+                            { english = "None of these" }
+
+                Gender gender ->
+                    case gender of
+                        Male ->
+                            { english = "Male" }
+
+                        Female ->
+                            { english = "Female" }
 
                 KilogramShorthand ->
                     { english = "kg" }
@@ -327,14 +376,51 @@ translate lang trans =
                 LinkToMother ->
                     { english = "Link to mother" }
 
-                Login ->
-                    { english = "Login" }
+                LoginPhrase phrase ->
+                    case phrase of
+                        CheckingCachedCredentials ->
+                            { english = "Checking cached credentials" }
 
-                Logout ->
-                    { english = "Logout" }
+                        ForgotPassword1 ->
+                            { english = "Forgot your password?" }
 
-                Male ->
-                    { english = "Male" }
+                        ForgotPassword2 ->
+                            { english = "Call The Ihangane Project at +250 788 817 542" }
+
+                        LoggedInAs ->
+                            { english = "Logged in as" }
+
+                        LoginError error ->
+                            case error of
+                                AccessTokenRejected ->
+                                    { english = "Your access token has expired. You will need to sign in again." }
+
+                                InternalError _ ->
+                                    { english = "An internal error occurred contacting the server." }
+
+                                NetworkError ->
+                                    { english = "A network error occurred contacting the server. Are you connected to the Internet?" }
+
+                                PasswordRejected ->
+                                    { english = "The server rejected your username or password." }
+
+                                Timeout ->
+                                    { english = "The request to the server timed out." }
+
+                        Logout ->
+                            { english = "Logout" }
+
+                        Password ->
+                            { english = "Password" }
+
+                        SignIn ->
+                            { english = "Sign In" }
+
+                        Username ->
+                            { english = "Username" }
+
+                        YouMustLoginBefore ->
+                            { english = "You must sign in before you can access the" }
 
                 MeasurementNoChange ->
                     { english = "No Change" }
@@ -383,14 +469,14 @@ translate lang trans =
                 NotConnected ->
                     { english = "Not Connected" }
 
+                Page ->
+                    { english = "Page" }
+
                 Page404 ->
                     { english = "404 page" }
 
                 PageNotFoundMsg ->
                     { english = "Sorry, nothing found in this URL." }
-
-                Password ->
-                    { english = "Password" }
 
                 Participants ->
                     { english = "Participants" }
@@ -428,7 +514,7 @@ translate lang trans =
                 ReloadParticipant ->
                     { english = "Re-load Participant" }
 
-                ReportCompleted ( pending, total ) ->
+                ReportCompleted { pending, total } ->
                     { english = (toString (total - pending)) ++ "/" ++ (toString total) ++ " Completed" }
 
                 ResolveMonth month ->
@@ -481,11 +567,11 @@ translate lang trans =
                 SearchByName ->
                     { english = "Search by Name" }
 
+                SelectYourClinic ->
+                    { english = "Select your clinic" }
+
                 TitleHealthAssessment ->
                     { english = "2017 July Health Assessment" }
-
-                Username ->
-                    { english = "Username" }
 
                 WelcomeUser name ->
                     { english = "Welcome " ++ name }

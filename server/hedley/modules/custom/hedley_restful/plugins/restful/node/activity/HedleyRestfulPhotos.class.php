@@ -26,18 +26,6 @@ class HedleyRestfulPhotos extends HedleyRestfulChildActivityBase {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $public_fields['examination'] = [
-      'property' => 'field_examination',
-      'resource' => [
-        // Bundle name.
-        'examination' => [
-          // Resource name.
-          'name' => 'examinations',
-          'full_view' => TRUE,
-        ],
-      ],
-    ];
-
     $public_fields['photo'] = [
       'property' => 'field_photo',
       'process_callbacks' => [

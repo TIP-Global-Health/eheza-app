@@ -4,159 +4,232 @@ module Pages.Participant.View
         , viewMother
         )
 
-import Activity.Model exposing (ActivityListItem, ActivityType(..))
-import Activity.Utils exposing (getActivityList)
-import Child.Model exposing (Child, ChildId, Gender(..))
-import Config.Model exposing (BackendUrl)
+import Activity.Model exposing (ActivityListItem, ActivityType(..), ChildActivityType, MotherActivityType(..))
+import Activity.Utils exposing (getActivityList, getActivityIcon, getAllChildActivities, getAllMotherActivities, motherHasPendingActivity, childHasPendingActivity)
+import Backend.Child.Model exposing (Child, Gender(..))
+import Backend.Entities exposing (..)
+import Backend.Mother.Model exposing (Mother)
+import Backend.Session.Model exposing (EditableSession)
+import Backend.Session.Utils exposing (getChild, getMother, getMyMother, getChildren)
 import Date exposing (Date)
-import Examination.Utils exposing (getLastExaminationFromChild)
+import EveryDict
+import Gizra.Html exposing (emptyNode)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
+import Maybe.Extra
+import Measurement.Model
 import Measurement.View
-import Mother.Model exposing (Mother, MotherId)
-import Pages.Participant.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
-import Pages.Participant.Utils exposing (makeLoneMotherDict, makeLoneChildDict)
-import Participant.Model exposing (Participant, ParticipantId, ParticipantType(ParticipantChild, ParticipantMother), ParticipantTypeFilter(..), ParticipantsDict)
-import Participant.Utils exposing (renderParticipantAge, renderParticipantDateOfBirth)
+import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
+import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
+import Participant.Utils exposing (renderAgeMonthsDays, renderDateOfBirth)
 import ProgressReport.View exposing (viewProgressReport)
-import RemoteData exposing (RemoteData(..), WebData)
 import Translate as Trans exposing (Language, translate)
-import User.Model exposing (User)
-import Utils.Html exposing (emptyNode, tabItem, thumbnailImage)
+import Utils.Html exposing (tabItem, thumbnailImage)
 
 
-viewChild : BackendUrl -> String -> User -> Language -> Date -> WebData Mother -> ( ChildId, Child ) -> Model -> List (Html Msg)
-viewChild backendUrl accessToken currentUser language currentDate motherWebData ( childId, child ) model =
+thumbnailDimensions : { width : Int, height : Int }
+thumbnailDimensions =
+    { width = 222
+    , height = 222
+    }
+
+
+viewChild : Language -> NominalDate -> ChildId -> EditableSession -> Model ChildActivityType -> Html (Msg ChildActivityType Measurement.Model.MsgChild)
+viewChild language currentDate childId session model =
+    -- It's nice to just pass in the childId. If the session is consistent, we
+    -- should always be able to get the child.  But it would be hard to
+    -- convince the compiler of that, so we put in a pro-forma error message.
+    case getChild childId session.offlineSession of
+        Just child ->
+            viewFoundChild language currentDate ( childId, child ) session model
+
+        Nothing ->
+            -- TODO: Make this error a little nicer, and translatable ... it
+            -- could occur for real if an invalid or out-of-date URL is
+            -- entered, for instance. It shouldn't occur through normal
+            -- navigation if the session is consistent (i.e. absent bugs).
+            div [ class "wrap" ]
+                [ h3 [] [ text "Internal error" ]
+                , p [] [ text "Error in Pages.Participant.View.viewChild -- child could not be found." ]
+                ]
+
+
+{-| This one needs the `currentDate` in order to calculate ages from dates of birth.
+-}
+viewFoundChild : Language -> NominalDate -> ( ChildId, Child ) -> EditableSession -> Model ChildActivityType -> Html (Msg ChildActivityType Measurement.Model.MsgChild)
+viewFoundChild language currentDate ( childId, child ) session model =
     let
-        childParticipant =
-            { info = Participant.Model.ParticipantChild child }
-
-        participants =
-            makeLoneChildDict childId child
-
         childName =
-            translate language <| Trans.BabyName child.name
+            translate language <|
+                Trans.BabyName child.name
+
+        maybeMother =
+            child.motherId
+                |> Maybe.andThen (\motherId -> getMother motherId session.offlineSession)
 
         motherInfo =
-            case child.motherId of
-                Nothing ->
-                    []
-
-                Just motherId ->
-                    case motherWebData of
-                        Success mother ->
-                            [ text <| translate language <| Trans.MotherName mother.name ]
-
-                        _ ->
-                            []
+            maybeMother
+                |> Maybe.map (\mother -> text <| translate language <| Trans.MotherName mother.name)
+                |> Maybe.Extra.toList
 
         dateOfBirth =
-            text <| translate language <| Trans.ReportDOB <| renderParticipantDateOfBirth language childParticipant
+            renderDateOfBirth language child.birthDate
+                |> Trans.ReportDOB
+                |> translate language
+                |> text
 
         age =
-            text <| translate language <| Trans.ReportAge <| renderParticipantAge language childParticipant currentDate
+            renderAgeMonthsDays language child.birthDate currentDate
+                |> Trans.ReportAge
+                |> translate language
+                |> text
 
         gender =
-            case child.gender of
-                Male ->
-                    text <| translate language <| Trans.Male
-
-                Female ->
-                    text <| translate language <| Trans.Female
+            child.gender
+                |> Trans.Gender
+                |> translate language
+                |> text
 
         break =
             br [] []
 
         content =
             if model.selectedTab == ProgressReport then
-                [ viewProgressReport backendUrl accessToken currentUser language ( childId, child ) ]
+                [ viewProgressReport language childId session ]
             else
                 [ Html.map MsgMeasurement <|
-                    Measurement.View.viewChild backendUrl accessToken currentUser language currentDate ( childId, child ) (getLastExaminationFromChild child) model.selectedActivity model.measurements
+                    Debug.crash "implement"
                 ]
     in
-        div [ class "ui unstackable items participant-page child" ]
-            [ div [ class "item" ]
-                [ div [ class "ui image" ]
-                    [ thumbnailImage (ParticipantChild child) child.image childName thumbnailDimensions.height thumbnailDimensions.width ]
-                , div [ class "content" ]
-                    [ h2 [ class "ui header" ]
-                        [ text childName ]
-                    , p [] <|
-                        motherInfo
-                            ++ [ break, dateOfBirth, break, age, break, gender ]
+        div [ class "wrap" ] <|
+            [ viewHeader childConfig language childId session
+            , div [ class "ui unstackable items participant-page child" ]
+                [ div [ class "item" ]
+                    [ div [ class "ui image" ]
+                        [ thumbnailImage (ParticipantChild child) child.image childName thumbnailDimensions.height thumbnailDimensions.width ]
+                    , div [ class "content" ]
+                        [ h2 [ class "ui header" ]
+                            [ text childName ]
+                        , p [] <|
+                            motherInfo
+                                ++ [ break, dateOfBirth, break, age, break, gender ]
+                        ]
                     ]
                 ]
             ]
-            :: ((viewActivityCards language currentDate currentUser participants Children model.selectedTab model.selectedActivity)
-                    ++ content
-               )
+                ++ (viewActivityCards childConfig language childId model.selectedTab model.selectedActivity session)
+                ++ content
 
 
-viewMother : BackendUrl -> String -> Language -> Date -> User -> MotherId -> Mother -> List (WebData ( ChildId, Child )) -> Model -> List (Html Msg)
-viewMother backendUrl accessToken language currentDate currentUser motherId mother children model =
+viewMother : Language -> MotherId -> EditableSession -> Model MotherActivityType -> Html (Msg MotherActivityType Measurement.Model.MsgMother)
+viewMother language motherId session model =
+    -- It's nice to just pass in the motherId. If the session is consistent, we
+    -- should always be able to get the mother.  But it would be hard to
+    -- convince the compiler of that, so we put in a pro-forma error message.
+    case getMother motherId session.offlineSession of
+        Just mother ->
+            viewFoundMother language ( motherId, mother ) session model
+
+        Nothing ->
+            -- TODO: Make this error a little nicer, and translatable ... it
+            -- could occur for real if an invalid or out-of-date URL is
+            -- entered, for instance. It shouldn't occur through normal
+            -- navigation if the session is consistent (i.e. absent bugs).
+            div [ class "wrap" ]
+                [ h3 [] [ text "Internal error" ]
+                , p [] [ text "Error in Pages.Participant.View.viewMother -- mother could not be found." ]
+                ]
+
+
+viewFoundMother : Language -> ( MotherId, Mother ) -> EditableSession -> Model MotherActivityType -> Html (Msg MotherActivityType Measurement.Model.MsgMother)
+viewFoundMother language ( motherId, mother ) session model =
     let
         break =
             br [] []
 
         childrenList =
-            List.intersperse break <|
-                List.indexedMap
-                    (\index childWebData ->
-                        case childWebData of
-                            Success ( childId, child ) ->
-                                text <| (translate language Trans.Baby) ++ " " ++ toString (index + 1) ++ ": " ++ child.name
-
-                            _ ->
-                                text ""
+            getChildren motherId session.offlineSession
+                |> List.indexedMap
+                    (\index ( _, child ) ->
+                        text <| (translate language Trans.Baby) ++ " " ++ toString (index + 1) ++ ": " ++ child.name
                     )
-                    children
-
-        participants =
-            makeLoneMotherDict motherId mother
+                |> List.intersperse break
     in
-        div [ class "ui unstackable items participant-page mother" ]
-            [ div [ class "item" ]
-                [ div [ class "ui image" ]
-                    [ thumbnailImage (ParticipantMother mother) mother.image mother.name thumbnailDimensions.height thumbnailDimensions.width ]
-                , div [ class "content" ]
-                    [ h2 [ class "ui header" ]
-                        [ text mother.name ]
-                    , p [] childrenList
+        div [ class "wrap" ] <|
+            [ viewHeader motherConfig language motherId session
+            , div
+                [ class "ui unstackable items participant-page mother" ]
+                [ div [ class "item" ]
+                    [ div [ class "ui image" ]
+                        [ thumbnailImage (ParticipantMother mother) mother.image mother.name thumbnailDimensions.height thumbnailDimensions.width ]
+                    , div [ class "content" ]
+                        [ h2 [ class "ui header" ]
+                            [ text mother.name ]
+                        , p [] childrenList
+                        ]
                     ]
                 ]
             ]
-            :: ((viewActivityCards language currentDate currentUser participants Mothers model.selectedTab model.selectedActivity)
-                    ++ [ Html.map MsgMeasurement <|
-                            Measurement.View.viewMother backendUrl accessToken currentUser language model.selectedActivity model.measurements
-                       ]
-               )
+                ++ (viewActivityCards motherConfig language motherId model.selectedTab model.selectedActivity session)
+                ++ [ Html.map MsgMeasurement <|
+                        Debug.crash "implement"
+                   ]
 
 
-viewActivityCards : Language -> Date -> User -> ParticipantsDict -> ParticipantTypeFilter -> Tab -> Maybe ActivityType -> List (Html Msg)
-viewActivityCards language currentDate user participants participantTypeFilter selectedTab selectedActivity =
+{-| Several functions below work with either mothers or children. To support that,
+we provide a typeclass-like config which are specialized to the relevant types.
+-}
+type alias ParticipantConfig participantId activityType =
+    { activities : List activityType
+    , getMotherId : participantId -> EditableSession -> Maybe MotherId
+    , hasPendingActivity : participantId -> activityType -> EditableSession -> Bool
+    , showProgressReportTab : Bool
+    , wrapActivityType : activityType -> ActivityType
+    , wrapParticipantId : participantId -> ParticipantId
+    }
+
+
+childConfig : ParticipantConfig ChildId ChildActivityType
+childConfig =
+    { activities = getAllChildActivities
+    , getMotherId = \childId session -> getMyMother childId session.offlineSession |> Maybe.map Tuple.first
+    , hasPendingActivity = childHasPendingActivity
+    , showProgressReportTab = True
+    , wrapActivityType = ChildActivity
+    , wrapParticipantId = ParticipantChildId
+    }
+
+
+motherConfig : ParticipantConfig MotherId MotherActivityType
+motherConfig =
+    { activities = getAllMotherActivities
+    , getMotherId = \motherId session -> Just motherId
+    , hasPendingActivity = motherHasPendingActivity
+    , showProgressReportTab = False
+    , wrapActivityType = MotherActivity
+    , wrapParticipantId = ParticipantMotherId
+    }
+
+
+viewActivityCards : ParticipantConfig participantId activityType -> Language -> participantId -> Tab -> Maybe activityType -> EditableSession -> List (Html (Msg activityType any))
+viewActivityCards config language participantId selectedTab selectedActivity session =
     let
-        allActivityList =
-            getActivityList currentDate participantTypeFilter participants
-
-        pendingActivities =
-            List.filter (\activity -> (Tuple.first activity.totals) > 0) allActivityList
-
-        noPendingActivities =
-            List.filter (\activity -> (Tuple.first activity.totals) == 0) allActivityList
+        ( pendingActivities, completedActivities ) =
+            List.partition (\activity -> config.hasPendingActivity participantId activity session) config.activities
 
         pendingActivitiesView =
             if List.isEmpty pendingActivities then
                 [ span [] [ text <| translate language Trans.PendingSectionEmpty ] ]
             else
-                List.map (viewActivityListItem language selectedActivity) pendingActivities
+                List.map (viewActivityListItem config language selectedActivity) pendingActivities
 
-        noPendingActivitiesView =
-            if List.isEmpty noPendingActivities then
+        completedActivitiesView =
+            if List.isEmpty completedActivities then
                 [ span [] [ text <| translate language Trans.CompletedSectionEmpty ] ]
             else
-                List.map (viewActivityListItem language selectedActivity) noPendingActivities
+                List.map (viewActivityListItem config language selectedActivity) completedActivities
 
         activeView =
             if selectedTab == ProgressReport then
@@ -167,20 +240,20 @@ viewActivityCards language currentDate user participants participantTypeFilter s
                         if selectedTab == Pending then
                             pendingActivitiesView
                         else
-                            noPendingActivitiesView
+                            completedActivitiesView
                     ]
 
         pendingTabTitle =
             translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities
 
         completedTabTitle =
-            translate language <| Trans.ActivitiesCompleted <| List.length noPendingActivities
+            translate language <| Trans.ActivitiesCompleted <| List.length completedActivities
 
         progressTabTitle =
-            translate language Trans.ActivitiesProgressReport
+            translate language <| Trans.ActivitiesTitle <| ChildActivity Activity.Model.ProgressReport
 
         extraTabs =
-            if participantTypeFilter == Children then
+            if config.showProgressReportTab then
                 [ tabItem progressTabTitle (selectedTab == ProgressReport) "progressreport" (SetSelectedTab ProgressReport) ]
             else
                 []
@@ -195,18 +268,124 @@ viewActivityCards language currentDate user participants participantTypeFilter s
         [ tabs, activeView ]
 
 
-viewActivityListItem : Language -> Maybe ActivityType -> ActivityListItem -> Html Msg
-viewActivityListItem language selectedActivity report =
+viewActivityListItem : ParticipantConfig participantId activityType -> Language -> Maybe activityType -> activityType -> Html (Msg activityType any)
+viewActivityListItem config language selectedActivity activityItem =
+    div [ class "column" ]
+        [ a
+            [ onClick <| SetSelectedActivity activityItem
+            , classList
+                [ ( "link-section", True )
+                , ( "active", selectedActivity == Just activityItem )
+                ]
+            ]
+            [ span [ class ("icon-section icon-" ++ getActivityIcon (config.wrapActivityType activityItem)) ] []
+            , text <| translate language <| Trans.ActivitiesTitle <| config.wrapActivityType activityItem
+            ]
+        ]
+
+
+{-| Given a mother or a child, this figures out who the whole family is, and shows a header allowing
+you to switch between any family member.
+-}
+viewHeader : ParticipantConfig participantId activityType -> Language -> participantId -> EditableSession -> Html (Msg activityType any)
+viewHeader config language participantId session =
     let
-        clickHandler =
-            onClick <| SetSelectedActivity (Just <| report.activity.activityType)
+        -- Whether we've looking at a child or a mother, we figure out who the
+        -- mother is. This will never be `Nothing` so long as the
+        -- `EditableSession` is consistent, but it would be difficult to
+        -- convince the compiler of that.
+        maybeMotherId =
+            config.getMotherId participantId session
+
+        -- Whether we're originally given a mother or a child, we figure out who all the
+        -- children are, by looking at the motherId we got.
+        children =
+            maybeMotherId
+                |> Maybe.map (\motherId -> getChildren motherId session.offlineSession)
+                |> Maybe.withDefault []
+                |> List.map Tuple.first
+
+        -- Generate markup for each child
+        childrenMarkup =
+            List.indexedMap viewChild children
+
+        viewChild index childId =
+            let
+                -- This determines whether this child is the one we were given
+                active =
+                    config.wrapParticipantId participantId == ParticipantChildId childId
+
+                attributes =
+                    if active then
+                        [ class "active" ]
+                    else
+                        [ onClick <|
+                            Debug.crash "redo"
+
+                        {-
+                           MsgPagesParticipant (Debug.crash "id") <|
+                               Pages.Participant.Model.SetRedirectPage
+                                   (App.PageType.Participant (Debug.crash "id"))
+                        -}
+                        ]
+            in
+                li attributes
+                    [ a []
+                        [ span [ class "icon-baby" ] []
+                        , span
+                            [ class "count" ]
+                            [ text <| toString (index + 1) ]
+                        ]
+                    ]
+
+        motherMarkup =
+            Maybe.map viewMother maybeMotherId
+                |> Maybe.Extra.toList
+
+        -- Generate the markup for the mother, given a definite motherId
+        viewMother motherId =
+            let
+                -- Figures out whether we're actually looking at this mother
+                active =
+                    config.wrapParticipantId participantId == ParticipantMotherId motherId
+
+                attributes =
+                    if active then
+                        [ class "active" ]
+                    else
+                        [ onClick <|
+                            Debug.crash "redo"
+
+                        {-
+                           MsgPagesParticipant (Debug.crash "motherId") <|
+                               Pages.Participant.Model.SetRedirectPage (App.PageType.Participant (fromEntityId motherId))
+                        -}
+                        ]
+            in
+                li attributes
+                    [ a []
+                        [ span [ class "icon-mother" ] []
+                        ]
+                    ]
     in
-        div [ class "column" ]
-            [ a
-                [ clickHandler
-                , classList [ ( "link-section", True ), ( "active", selectedActivity == (Just <| report.activity.activityType) ) ]
+        div
+            [ class "ui basic head segment" ]
+            [ h1
+                [ class "ui header" ]
+                [ text <| translate language Trans.Assessment ]
+            , a
+                [ class "link-back"
+                , onClick <|
+                    Debug.crash "redo"
+
+                {-
+                   MsgPagesParticipant participantId <|
+                       Pages.Participant.Model.SetRedirectPage <|
+                           App.PageType.Dashboard []
+                -}
                 ]
-                [ span [ class ("icon-section icon-" ++ report.activity.icon) ] []
-                , text report.activity.name
-                ]
+                [ span [ class "icon-back" ] [] ]
+            , ul
+                [ class "links-head" ]
+                (motherMarkup ++ childrenMarkup)
             ]

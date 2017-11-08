@@ -12,8 +12,8 @@ use Faker\Generator;
  */
 function hedley_migrate_migrate_api() {
   $migrations = array(
-    // Users.
     'HedleyMigrateUsers',
+    'HedleyMigrateClinics',
   );
 
   $api['api'] = 2;
@@ -174,22 +174,6 @@ function _hedley_migrate_preprocess_child($node, Generator $faker) {
     return;
   }
   $_hedley_devel_generate = TRUE;
-
-  // For the firsh Child, setting dates in the past, making sure that the
-  // activity is pending.
-  $date_fields = [
-    'birth',
-    'height',
-    'muac',
-    'nutrition_signs',
-    'picture',
-    'weight',
-  ];
-
-  $dt = new DateTime('30 days ago');
-  foreach ($date_fields as $field) {
-    $wrapper->{'field_date_' . $field}->set($dt->getTimestamp());
-  }
 
 }
 

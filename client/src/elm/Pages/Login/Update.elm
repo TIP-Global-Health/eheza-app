@@ -1,91 +1,49 @@
-module Pages.Login.Update exposing (fetchUserFromBackend, update)
+module Pages.Login.Update exposing (update)
 
-import Config.Model exposing (BackendUrl)
-import HttpBuilder exposing (..)
-import User.Model exposing (..)
-import Pages.Login.Model as Login exposing (..)
-import Pages.Login.Decoder exposing (..)
-import RemoteData exposing (RemoteData(..), WebData)
-import Utils.WebData exposing (sendWithHandler)
+import Pages.Login.Model exposing (..)
 
 
-update : BackendUrl -> Msg -> Model -> ( Model, Cmd Msg, ( WebData User, AccessToken ) )
-update backendUrl msg model =
+{-| TODO: We could ask for a `LoginStatus` as well, and prevent certain
+actions depending on the status. However, the UI should take care of that ...
+i.e. the UI shouldn't let the user do invalid things. So, it's not critical.
+-}
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe OutMsg )
+update msg model =
     case msg of
-        HandleFetchedAccessToken (Ok accessToken) ->
-            ( model
-            , fetchUserFromBackend backendUrl accessToken
-            , ( Loading, accessToken )
+        ClearNameAndPassword ->
+            ( emptyModel, Cmd.none, Nothing )
+
+        HandleLoginClicked ->
+            -- Once "login" is clicked, we immediaately forget the password.
+            -- But we hang on to the username, so the user doesn't have to
+            -- re-type that if an error occurs.
+            ( { model | pass = "" }
+            , Cmd.none
+            , Just (TryLogin model.name model.pass)
             )
 
-        HandleFetchedAccessToken (Err err) ->
-            ( model
+        HandleLogoutClicked ->
+            -- We clear the password from the UI if logout is clicked. We
+            -- leave the username, as that might be a convenience.
+            ( { model | pass = "" }
             , Cmd.none
-            , ( Failure err, "" )
+            , Just Logout
             )
 
-        HandleFetchedUser accessToken (Ok user) ->
+        SendOutMsg outMsg ->
             ( model
             , Cmd.none
-            , ( Success user, accessToken )
-            )
-
-        HandleFetchedUser accessToken (Err err) ->
-            ( model
-            , Cmd.none
-            , ( Failure err, accessToken )
+            , Just outMsg
             )
 
         SetName name ->
-            let
-                loginForm =
-                    model.loginForm
-
-                loginForm_ =
-                    { loginForm | name = name }
-            in
-                ( { model | loginForm = loginForm_ }
-                , Cmd.none
-                , ( NotAsked, "" )
-                )
-
-        SetPassword pass ->
-            let
-                loginForm =
-                    model.loginForm
-
-                loginForm_ =
-                    { loginForm | pass = pass }
-            in
-                ( { model | loginForm = loginForm_ }
-                , Cmd.none
-                , ( NotAsked, "" )
-                )
-
-        TryLogin ->
-            ( model
-            , fetchAccessTokenFromBackend backendUrl model.loginForm
-            , ( Loading, "" )
+            ( { model | name = name }
+            , Cmd.none
+            , Nothing
             )
 
-
-{-| Get access token from backend.
--}
-fetchAccessTokenFromBackend : BackendUrl -> LoginForm -> Cmd Msg
-fetchAccessTokenFromBackend backendUrl loginForm =
-    let
-        credentials =
-            encodeCredentials ( loginForm.name, loginForm.pass )
-    in
-        HttpBuilder.get (backendUrl ++ "/api/login-token")
-            |> withHeader "Authorization" ("Basic " ++ credentials)
-            |> sendWithHandler decodeAccessToken HandleFetchedAccessToken
-
-
-{-| Get user data from backend.
--}
-fetchUserFromBackend : BackendUrl -> String -> Cmd Msg
-fetchUserFromBackend backendUrl accessToken =
-    HttpBuilder.get (backendUrl ++ "/api/me")
-        |> withQueryParams [ ( "access_token", accessToken ) ]
-        |> sendWithHandler decodeUser (HandleFetchedUser accessToken)
+        SetPassword pass ->
+            ( { model | pass = pass }
+            , Cmd.none
+            , Nothing
+            )

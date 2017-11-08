@@ -1,8 +1,8 @@
 module Utils.WebData exposing (sendWithHandler, viewError)
 
-import Json.Decode exposing (Decoder)
+import Json.Decode exposing (Decoder, list)
 import Html exposing (..)
-import Http
+import Http exposing (Error, expectJson)
 import HttpBuilder exposing (..)
 import Translate as Trans exposing (Language, translate)
 

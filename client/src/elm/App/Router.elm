@@ -1,57 +1,31 @@
 module App.Router exposing (delta2url, location2messages)
 
 import App.Model exposing (..)
-import App.PageType exposing (..)
 import Navigation exposing (Location)
+import Pages.Page exposing (Page(PageNotFound))
+import Pages.Router
 import RouteUrl exposing (HistoryEntry(..), UrlChange)
-import UrlParser exposing (Parser, map, parseHash, s, oneOf, (</>), int, string)
+import UrlParser exposing (Parser, map, parseHash, s, oneOf, (</>), int, string, top)
 
 
+{-| For now, we just pass the current `activePage` and previous `activePage`
+down to `Pages.Router` ... if we wanted to route based on additional
+information, we could pass that as well.
+-}
 delta2url : Model -> Model -> Maybe UrlChange
 delta2url previous current =
-    case current.activePage of
-        AccessDenied ->
-            Nothing
-
-        Activities ->
-            Just <| UrlChange NewEntry "#activities"
-
-        Activity _ ->
-            Just <| UrlChange NewEntry "#activity"
-
-        Login ->
-            Just <| UrlChange NewEntry "#login"
-
-        MyAccount ->
-            Just <| UrlChange NewEntry "#my-account"
-
-        PageNotFound ->
-            Just <| UrlChange NewEntry "#404"
-
-        Participant id ->
-            Just <| UrlChange NewEntry ("#participant/" ++ (toString id))
-
-        Dashboard _ ->
-            Just <| UrlChange NewEntry "#"
+    Pages.Router.delta2url previous.activePage current.activePage
 
 
+{-| For now, Pages.Router.parseUrl just returns an `ActivePage`, so we
+map that to a message. We could return other things from `parseUrl` if
+necessary (such as messages themselves).
+-}
 location2messages : Location -> List Msg
 location2messages location =
-    case UrlParser.parseHash parseUrl location of
-        Just msgs ->
-            [ msgs ]
-
-        Nothing ->
-            []
-
-
-parseUrl : Parser (Msg -> c) c
-parseUrl =
-    oneOf
-        [ map (SetActivePage <| Dashboard []) (s "")
-        , map (SetActivePage Activities) (s "activities")
-        , map (SetActivePage <| Activity Nothing) (s "activity")
-        , map (\id -> SetActivePage <| Participant id) (s "participant" </> int)
-        , map (SetActivePage Login) (s "login")
-        , map (SetActivePage MyAccount) (s "my-account")
-        ]
+    -- We fall back to PageNotFound here, rather than in `parseUrl`, because
+    -- here we have access to the whole hash, not just a segment.
+    UrlParser.parseHash Pages.Router.parseUrl location
+        |> Maybe.withDefault (PageNotFound location.hash)
+        |> SetActivePage
+        |> List.singleton

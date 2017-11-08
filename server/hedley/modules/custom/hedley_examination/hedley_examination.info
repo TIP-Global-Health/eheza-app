@@ -12,10 +12,8 @@ features[ctools][] = strongarm:strongarm:1
 features[features_api][] = api:2
 features[field_base][] = body
 features[field_base][] = field_last_assessment
-features[field_base][] = field_group
 features[field_instance][] = node-examination-body
 features[field_instance][] = node-examination-field_last_assessment
-features[field_instance][] = node-examination-field_group
 features[node][] = examination
 features[variable][] = field_bundle_settings_node__examination
 features[variable][] = menu_options_examination
@@ -23,6 +21,3 @@ features[variable][] = menu_parent_examination
 features[variable][] = node_options_examination
 features[variable][] = node_preview_examination
 features[variable][] = node_submitted_examination
-
-; Simpletest
-files[] = tests/HedleyExaminationEndpoints.test

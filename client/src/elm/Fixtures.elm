@@ -1,11 +1,9 @@
 module Fixtures exposing (..)
 
-import Activity.Model exposing (emptyChildActivityDates, emptyMotherActivityDates)
-import Child.Model exposing (Child, Gender(..))
+import Backend.Mother.Model exposing (Mother)
+import Backend.Child.Model exposing (Child, Gender(..))
 import Date
-import Mother.Model exposing (Mother)
-import Activity.Model exposing (emptyChildActivityDates)
-import RemoteData exposing (RemoteData(NotAsked))
+import Time.Date exposing (date)
 import User.Model exposing (User)
 
 
@@ -30,6 +28,7 @@ exampleUser =
     { id = 35
     , name = "aya"
     , avatarUrl = "http://example.com/avatar.jpg"
+    , clinics = []
     }
 
 
@@ -41,9 +40,7 @@ exampleChildA =
     , image = "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , motherId = Nothing
     , siblingId = Nothing
-    , examinations = NotAsked
-    , activityDates = emptyChildActivityDates
-    , birthDate = Date.fromTime 1472373589000
+    , birthDate = date 2016 8 28
     , gender = Male
     }
 
@@ -56,9 +53,7 @@ exampleChildB =
     , image = "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , motherId = Nothing
     , siblingId = Nothing
-    , examinations = NotAsked
-    , activityDates = emptyChildActivityDates
-    , birthDate = Date.fromTime 1479373589000
+    , birthDate = date 2016 11 17
     , gender = Female
     }
 
@@ -70,7 +65,5 @@ exampleMother =
     { name = "Sebabive Gahiji"
     , image = "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , children = []
-    , examinations = NotAsked
-    , activityDates = emptyMotherActivityDates
-    , birthDate = Date.fromTime 1472373589000
+    , birthDate = date 2016 8 28
     }

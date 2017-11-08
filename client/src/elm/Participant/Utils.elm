@@ -1,23 +1,21 @@
-module Participant.Utils
-    exposing
-        ( getParticipantAge
-        , getParticipantAvatarThumb
-        , getParticipantName
-        , getParticipantTypeAsString
-        , renderParticipantAge
-        , renderParticipantDateOfBirth
-        )
+module Participant.Utils exposing (..)
 
-import Date exposing (Date, Day)
-import Date.Extra.Duration
-import Date.Extra.Period
-import Participant.Model exposing (AgeDay, Participant, ParticipantType(..))
+import Activity.Model exposing (ActivityType(..))
+import Activity.Utils exposing (childHasPendingActivity, motherHasPendingActivity, motherHasAnyPendingActivity, childHasAnyPendingActivity)
+import Backend.Session.Model exposing (EditableSession, OfflineSession)
+import Date.Extra.Facts exposing (monthFromMonthNumber)
+import EveryDict exposing (EveryDict)
+import EveryDictList
+import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
+import Participant.Model exposing (AgeDay, Participant(..), ParticipantId(..))
 import Translate as Trans exposing (translate, Language)
+import Time.Date
+import Utils.NominalDate exposing (diffDays, diffCalendarMonthsAndDays)
 
 
 getParticipantAvatarThumb : Participant -> String
 getParticipantAvatarThumb participant =
-    case participant.info of
+    case participant of
         ParticipantChild child ->
             .image child
 
@@ -27,7 +25,7 @@ getParticipantAvatarThumb participant =
 
 getParticipantName : Participant -> String
 getParticipantName participant =
-    case participant.info of
+    case participant of
         ParticipantChild child ->
             .name child
 
@@ -37,7 +35,7 @@ getParticipantName participant =
 
 getParticipantTypeAsString : Participant -> String
 getParticipantTypeAsString participant =
-    case participant.info of
+    case participant of
         ParticipantChild child ->
             "child"
 
@@ -45,42 +43,40 @@ getParticipantTypeAsString participant =
             "mother"
 
 
+getParticipantBirthDate : Participant -> NominalDate
+getParticipantBirthDate participant =
+    case participant of
+        ParticipantChild child ->
+            child.birthDate
+
+        ParticipantMother mother ->
+            mother.birthDate
+
+
 {-| Calculates the age of a participant.
-To get current time, see App/Model.currentDate
+To get current time, see App/Model.currentDate and
+Gizra.NominalDate.fromLocalDateTime
 -}
-getParticipantAge : Participant -> Date -> AgeDay
-getParticipantAge participant now =
+getParticipantAgeDays : Participant -> NominalDate -> AgeDay
+getParticipantAgeDays participant now =
+    Participant.Model.AgeDay <|
+        diffDays (getParticipantBirthDate participant) now
+
+
+{-| Shows the difference between the first date (the birthdate)
+and the second date, formatted in months and days.
+-}
+renderAgeMonthsDays : Language -> NominalDate -> NominalDate -> String
+renderAgeMonthsDays language birthDate now =
     let
-        birthDate =
-            case participant.info of
-                ParticipantChild child ->
-                    child.birthDate
-
-                ParticipantMother mother ->
-                    mother.birthDate
-    in
-        Participant.Model.AgeDay <| Date.Extra.Duration.diffDays now birthDate
-
-
-renderParticipantAge : Language -> Participant -> Date -> String
-renderParticipantAge language participant now =
-    let
-        birthDate =
-            case participant.info of
-                ParticipantChild child ->
-                    child.birthDate
-
-                ParticipantMother mother ->
-                    mother.birthDate
-
         diff =
-            Date.Extra.Duration.diff now birthDate
+            diffCalendarMonthsAndDays birthDate now
 
         days =
-            diff.day
+            diff.days
 
         months =
-            diff.month + (diff.year * 12)
+            diff.months
     in
         if (days == 1 && months == 0) then
             translate language <| Trans.AgeSingleDayWithoutMonth months days
@@ -100,25 +96,20 @@ renderParticipantAge language participant now =
             translate language <| Trans.Age months days
 
 
-renderParticipantDateOfBirth : Language -> Participant -> String
-renderParticipantDateOfBirth language participant =
+renderDateOfBirth : Language -> NominalDate -> String
+renderDateOfBirth language birthDate =
     let
-        birthDate =
-            case participant.info of
-                ParticipantChild child ->
-                    child.birthDate
-
-                ParticipantMother mother ->
-                    mother.birthDate
-
         day =
-            Date.day birthDate
+            Time.Date.day birthDate
 
         month =
-            translate language <| Trans.ResolveMonth <| Date.month birthDate
+            Time.Date.month birthDate
+                |> monthFromMonthNumber
+                |> Trans.ResolveMonth
+                |> translate language
 
         year =
-            Date.year birthDate
+            Time.Date.year birthDate
     in
         (if day < 10 then
             "0" ++ toString day
@@ -129,3 +120,39 @@ renderParticipantDateOfBirth language participant =
             ++ month
             ++ " "
             ++ toString year
+
+
+participantHasAnyPendingActivity : ParticipantId -> EditableSession -> Bool
+participantHasAnyPendingActivity participantId =
+    case participantId of
+        ParticipantChildId childId ->
+            childHasAnyPendingActivity childId
+
+        ParticipantMotherId motherId ->
+            motherHasAnyPendingActivity motherId
+
+
+participantHasPendingActivity : ParticipantId -> ActivityType -> EditableSession -> Bool
+participantHasPendingActivity participantId activityType =
+    case participantId of
+        ParticipantChildId childId ->
+            case activityType of
+                ChildActivity childActivity ->
+                    childHasPendingActivity childId childActivity
+
+                MotherActivity _ ->
+                    always False
+
+        ParticipantMotherId motherId ->
+            case activityType of
+                ChildActivity _ ->
+                    always False
+
+                MotherActivity motherActivity ->
+                    motherHasPendingActivity motherId motherActivity
+
+
+getParticipants : OfflineSession -> EveryDict ParticipantId Participant
+getParticipants session =
+    EveryDictList.foldl (\k v -> EveryDict.insert (ParticipantMotherId k) (ParticipantMother v)) EveryDict.empty session.mothers
+        |> (\mothers -> EveryDict.foldl (\k v -> EveryDict.insert (ParticipantChildId k) (ParticipantChild v)) mothers session.children)

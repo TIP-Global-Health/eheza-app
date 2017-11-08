@@ -1,357 +1,172 @@
-port module Measurement.Update exposing (update, subscriptions)
+port module Measurement.Update exposing (updateChild, updateMother, subscriptions)
 
-import Activity.Model
-    exposing
-        ( ActivityType(..)
-        , ChildActivityType(..)
-        , ChildNutritionSign(..)
-        , FamilyPlanningSign(..)
-        , MotherActivityType(FamilyPlanning)
-        )
+import Backend.Entities exposing (ChildId, MotherId)
+import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..))
 import Config.Model exposing (BackendUrl)
-import EveryDict exposing (EveryDict)
-import Http
-import HttpBuilder exposing (get, send, withJsonBody, withQueryParams)
-import Json.Encode exposing (Value)
-import Measurement.Decoder exposing (decodePhotoFromResponse)
-import Measurement.Encoder exposing (encodeFamilyPlanning, encodeHeight, encodeMuac, encodeNutritionSigns, encodePhoto, encodeWeight)
-import Measurement.Model
-    exposing
-        ( Model
-        , Msg(..)
-        , getFloatInputValue
-        , normalizeFloatFormInput
-        , normalizeFloatInput
-        )
-import Participant.Model exposing (Participant, ParticipantId)
-import RemoteData exposing (RemoteData(..))
-import User.Model exposing (..)
-import Utils.WebData exposing (sendWithHandler)
+import EverySet exposing (EverySet)
+import Measurement.Model exposing (..)
 
 
-{-| Optionally, we bubble up an activity type which should now be considered to be completed.
+{-| The strategy used here, for the moment, is that the `model` tracks the UI,
+(so, for instance, strings instead of floats, and changing on every kepress),
+whereas the `editableMeasurements` tracks the underlying data. The only thing
+which we can change **directly** here is our own model. If we want to change
+the "real" data, we have to return an `OutMsg` to be processed elsehwere (for
+instance, by actually writing the data to local storage).
 -}
-update : BackendUrl -> String -> User -> ( ParticipantId, Participant ) -> Msg -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
-update backendUrl accessToken user ( participantId, participant ) msg model =
+updateChild : MsgChild -> ModelChild -> ( ModelChild, Cmd MsgChild, Maybe OutMsgChild )
+updateChild msg model =
     case msg of
-        FamilyPlanningSignsSave ->
-            postFamilyPlanning backendUrl accessToken participantId model
-
-        FamilyPlanningSignsToggle sign ->
-            let
-                signsUpdated =
-                    if EveryDict.member sign model.familyPlanningSigns then
-                        EveryDict.remove sign model.familyPlanningSigns
-                    else
-                        case sign of
-                            -- 'None of these' checked. Need to empty all selected signs.
-                            NoFamilyPlanning ->
-                                EveryDict.insert sign () EveryDict.empty
-
-                            -- Another option checked checked. Need to uncheck 'None of these', if it's checked.
-                            _ ->
-                                EveryDict.insert sign () <| EveryDict.remove NoFamilyPlanning model.familyPlanningSigns
-            in
-                ( { model | familyPlanningSigns = signsUpdated }
-                , Cmd.none
-                , Nothing
-                )
-
         HandleDropzoneUploadedFile fileId ->
             ( { model | photo = ( Just fileId, Nothing ) }
             , Cmd.none
             , Nothing
             )
 
-        HandleFamilyPlanningSave (Ok ()) ->
-            ( { model | status = Success () }
+        UpdateHeight val ->
+            ( { model | height = val }
             , Cmd.none
-            , Just <| Mother FamilyPlanning
+            , Nothing
             )
 
-        HandleFamilyPlanningSave (Err err) ->
-            let
-                _ =
-                    Debug.log "HandleFamilyPlanningSave (Err)" False
-            in
-                ( { model | status = Failure err }
-                , Cmd.none
-                , Nothing
-                )
-
-        HandleHeightSave (Ok ()) ->
-            ( { model | status = Success (), height = (normalizeFloatInput model.height) }
+        UpdateMuac val ->
+            ( { model | muac = val }
             , Cmd.none
-            , Just <| Child Height
+            , Nothing
             )
 
-        HandleHeightSave (Err err) ->
-            let
-                _ =
-                    Debug.log "HandleHeightSave (Err)" False
-            in
-                ( { model | status = Failure err }
-                , Cmd.none
-                , Nothing
-                )
-
-        HandleNutritionSignsSave (Ok ()) ->
-            ( { model | status = Success () }
-            , Cmd.none
-            , Just <| Child NutritionSigns
-            )
-
-        HandleNutritionSignsSave (Err err) ->
-            let
-                _ =
-                    Debug.log "HandleNutritionSignsSave (Err)" False
-            in
-                ( { model | status = Failure err }
-                , Cmd.none
-                , Nothing
-                )
-
-        HandleMuacSave (Ok ()) ->
-            ( { model | status = Success (), muac = (normalizeFloatInput model.muac) }
-            , Cmd.none
-            , Just <| Child Muac
-            )
-
-        HandleMuacSave (Err err) ->
-            let
-                _ =
-                    Debug.log "HandleMuacSave (Err)" False
-            in
-                ( { model | status = Failure err }
-                , Cmd.none
-                , Nothing
-                )
-
-        HandlePhotoSave (Ok ( photoId, photo )) ->
-            ( { model
-                | status = Success ()
-                , photo = ( Tuple.first model.photo, Just ( photoId, photo ) )
-              }
-            , Cmd.none
-            , Just <| Child ChildPicture
-            )
-
-        HandlePhotoSave (Err err) ->
-            let
-                _ =
-                    Debug.log "HandlePhotoSave (Err)" False
-            in
-                ( { model | status = Failure err }
-                , Cmd.none
-                , Nothing
-                )
-
-        HandleWeightSave (Ok ()) ->
-            ( { model | status = Success (), weight = (normalizeFloatInput model.weight) }
-            , Cmd.none
-            , Just <| Child Weight
-            )
-
-        HandleWeightSave (Err err) ->
-            let
-                _ =
-                    Debug.log "HandleWeightSave (Err)" False
-            in
-                ( { model | status = Failure err }
-                , Cmd.none
-                , Nothing
-                )
-
-        HeightUpdate val ->
-            ( { model | height = Just (normalizeFloatFormInput val) }, Cmd.none, Nothing )
-
-        MuacUpdate val ->
-            ( { model | muac = Just (normalizeFloatFormInput val) }, Cmd.none, Nothing )
-
-        MuacSave ->
-            postMuac backendUrl accessToken participantId model
-
-        NutritionSignsSave ->
-            postNutritionSigns backendUrl accessToken participantId model
-
-        NutritionSignsToggle sign ->
+        SelectNutritionSign selected sign ->
             let
                 nutritionSignsUpdated =
-                    if EveryDict.member sign model.nutritionSigns then
-                        EveryDict.remove sign model.nutritionSigns
-                    else
+                    if selected then
                         case sign of
-                            -- 'None of these' checked. Need to empty all selected signs.
                             None ->
-                                EveryDict.insert sign () EveryDict.empty
+                                -- If the user checks `None`, then we want that
+                                -- to be the only sign.
+                                EverySet.singleton sign
 
-                            -- Another option checked checked. Need to uncheck 'None of these', if it's checked.
                             _ ->
-                                EveryDict.insert sign () <| EveryDict.remove None model.nutritionSigns
+                                -- If the user checks something else, then also
+                                -- make sure that `None` is unchecekd
+                                model.nutritionSigns
+                                    |> EverySet.insert sign
+                                    |> EverySet.remove None
+                    else
+                        -- We're allowing `NoFamilyPanning` itself to be
+                        -- un-checked here.  That probably makes sense ...  it
+                        -- would mean that we haven't actually answered this
+                        -- question ... that is, that we don't know the answer,
+                        -- whereas `NoFamilyPlanning` being checked means that
+                        -- we do know the answer, and it's that there aren't
+                        -- any signs.
+                        EverySet.remove sign model.nutritionSigns
             in
                 ( { model | nutritionSigns = nutritionSignsUpdated }
                 , Cmd.none
                 , Nothing
                 )
 
-        PhotoSave ->
-            postPhoto backendUrl accessToken participantId model
-
         ResetDropZone ->
-            ( model, dropzoneReset (), Nothing )
+            ( model
+            , dropzoneReset ()
+            , Nothing
+            )
 
-        WeightSave ->
-            postWeight backendUrl accessToken participantId model
+        SendOutMsgChild outMsg ->
+            ( model
+            , Cmd.none
+            , Just outMsg
+            )
 
-        HeightSave ->
-            postHeight backendUrl accessToken participantId model
-
-        WeightUpdate val ->
-            ( { model | weight = Just (normalizeFloatFormInput val) }, Cmd.none, Nothing )
-
-
-{-| Send new family planning of a mother to the backend.
--}
-postFamilyPlanning : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
-postFamilyPlanning backendUrl accessToken motherId model =
-    if EveryDict.isEmpty model.familyPlanningSigns then
-        ( model, Cmd.none, Nothing )
-    else
-        postData
-            backendUrl
-            accessToken
-            model
-            "family-plannings"
-            model.familyPlanningSigns
-            (encodeFamilyPlanning motherId)
-            HandleFamilyPlanningSave
+        UpdateWeight val ->
+            ( { model | weight = val }
+            , Cmd.none
+            , Nothing
+            )
 
 
-{-| Send new nutrition signs of a child to the backend.
--}
-postNutritionSigns : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
-postNutritionSigns backendUrl accessToken childId model =
-    if EveryDict.isEmpty model.nutritionSigns then
-        ( model, Cmd.none, Nothing )
-    else
-        postData
-            backendUrl
-            accessToken
-            model
-            "nutritions"
-            model.nutritionSigns
-            (encodeNutritionSigns childId)
-            HandleNutritionSignsSave
+updateMother : MsgMother -> ModelMother -> ( ModelMother, Cmd MsgMother, Maybe OutMsgMother )
+updateMother msg model =
+    case msg of
+        SelectFamilyPlanningSign selected sign ->
+            let
+                signsUpdated =
+                    if selected then
+                        case sign of
+                            NoFamilyPlanning ->
+                                -- If the user checks `NoFamilyPlanning`, then
+                                -- we want that to be the only sign.
+                                EverySet.singleton sign
 
+                            _ ->
+                                -- If the user checks something else, then also
+                                -- make sure that `NoFamilyPlanning` is
+                                -- unchecekd
+                                model.familyPlanningSigns
+                                    |> EverySet.insert sign
+                                    |> EverySet.remove NoFamilyPlanning
+                    else
+                        -- We're allowing `NoFamilyPanning` itself to be
+                        -- un-checked here.  That probably makes sense ...  it
+                        -- would mean that we haven't actually answered this
+                        -- question ... that is, that we don't know the answer,
+                        -- whereas `NoFamilyPlanning` being checked means that
+                        -- we do know the answer, and it's that there aren't
+                        -- any signs.
+                        EverySet.remove sign model.familyPlanningSigns
+            in
+                ( { model | familyPlanningSigns = signsUpdated }
+                , Cmd.none
+                , Nothing
+                )
 
-{-| Enables posting of arbitrary values to the provided back end so long as the encoder matches the desired type
--}
-postData : BackendUrl -> String -> Model -> String -> value -> (value -> Value) -> (Result Http.Error () -> Msg) -> ( Model, Cmd Msg, Maybe ActivityType )
-postData backendUrl accessToken model path value encoder handler =
-    let
-        command =
-            HttpBuilder.post (backendUrl ++ "/api/" ++ path)
-                |> withQueryParams [ ( "access_token", accessToken ) ]
-                |> withJsonBody (encoder value)
-                |> send handler
-    in
-        ( { model | status = Loading }
-        , command
-        , Nothing
-        )
+        SendOutMsgMother outMsg ->
+            ( model
+            , Cmd.none
+            , Just outMsg
+            )
 
 
 {-| Send new photo of a child to the backend.
 -}
-postPhoto : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
+postPhoto : BackendUrl -> String -> ChildId -> ModelChild -> ( ModelChild, Cmd MsgChild )
 postPhoto backendUrl accessToken childId model =
-    case model.photo of
-        ( Nothing, _ ) ->
-            -- This shouldn't happen, but in case we don't have a file ID, we won't issue
-            -- a POST request.
-            ( model, Cmd.none, Nothing )
-
-        ( Just fileId, _ ) ->
-            let
-                command =
-                    HttpBuilder.post (backendUrl ++ "/api/photos")
-                        |> withQueryParams [ ( "access_token", accessToken ) ]
-                        |> withJsonBody (encodePhoto childId fileId)
-                        |> sendWithHandler decodePhotoFromResponse HandlePhotoSave
-            in
-                ( { model | status = Loading }
-                , command
-                , Nothing
-                )
+    Debug.crash "re-implement"
 
 
-{-| Send new weight of a child to the backend.
+
+{-
+   case model.photo of
+       ( Nothing, _ ) ->
+           -- This shouldn't happen, but in case we don't have a file ID, we won't issue
+           -- a POST request.
+           ( model, Cmd.none )
+
+       ( Just fileId, _ ) ->
+           let
+               command =
+                   HttpBuilder.post (backendUrl ++ "/api/photos")
+                       |> withQueryParams [ ( "access_token", accessToken ) ]
+                       -- TODO: Fix up types to avoid `toEntityId`
+                       |> withJsonBody (encodePhoto (toEntityId childId) fileId)
+                       |> sendWithHandler decodePhotoFromResponse HandlePhotoSave
+           in
+               ( { model | status = Loading }
+               , command
+               )
 -}
-postWeight : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
-postWeight backendUrl accessToken childId model =
-    Maybe.map
-        (\weight ->
-            postData
-                backendUrl
-                accessToken
-                model
-                "weights"
-                (getFloatInputValue weight)
-                (encodeWeight childId)
-                HandleWeightSave
-        )
-        model.weight
-        |> Maybe.withDefault ( model, Cmd.none, Nothing )
 
 
-{-| Send new height of a child to the backend.
--}
-postHeight : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
-postHeight backendUrl accessToken childId model =
-    Maybe.map
-        (\height ->
-            postData
-                backendUrl
-                accessToken
-                model
-                "heights"
-                (getFloatInputValue height)
-                (encodeHeight childId)
-                HandleHeightSave
-        )
-        model.height
-        |> Maybe.withDefault ( model, Cmd.none, Nothing )
-
-
-{-| Send new MUAC of a child to the backend.
--}
-postMuac : BackendUrl -> String -> ParticipantId -> Model -> ( Model, Cmd Msg, Maybe ActivityType )
-postMuac backendUrl accessToken childId model =
-    Maybe.map
-        (\muac ->
-            postData
-                backendUrl
-                accessToken
-                model
-                "muacs"
-                (getFloatInputValue muac)
-                (encodeMuac childId)
-                HandleMuacSave
-        )
-        model.muac
-        |> Maybe.withDefault ( model, Cmd.none, Nothing )
-
-
-subscriptions : Model -> Sub Msg
+subscriptions : ModelChild -> Sub MsgChild
 subscriptions model =
     dropzoneUploadedFile HandleDropzoneUploadedFile
 
 
-{-| Get a singal if a file has been uploaded via the Dropzone.
+{-| Get a msg if a file has been uploaded via the Dropzone.
 -}
 port dropzoneUploadedFile : (Int -> msg) -> Sub msg
 
 
-{-| Cause the drop zone widget to clear it's image
+{-| Cause the drop zone widget to clear its image
 -}
 port dropzoneReset : () -> Cmd msg

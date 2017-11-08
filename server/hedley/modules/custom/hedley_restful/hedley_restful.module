@@ -19,3 +19,80 @@ function hedley_restful_ctools_plugin_directory($module, $plugin) {
     return 'plugins/' . $plugin;
   }
 }
+
+/**
+ * Convert strings to short form dates.
+ *
+ * From form "2014-11-13 18:00:00" to
+ * preserve just the date part, i.e. "2014-11-13".
+ *
+ * This is suitable only for values which do not have
+ * interesting time zone information ... that is, only
+ * for values that represent nominal dates without times.
+ *
+ * @param string $value
+ *   The date string, e.g. "2014-11-13 18:00:00".
+ *
+ * @return false|string
+ *   The date portion only, e.g. "2014-11-13".
+ */
+function hedley_restful_timestamp_only_date($value) {
+  $date = explode(' ', $value);
+  return $date[0];
+}
+
+/**
+ * Given an EntityFieldQuery result, extract the ids, or an empty array.
+ *
+ * @param array $result
+ *   The result of EntityFieldQuery->execute()
+ *
+ * @return array
+ *   An array of node IDs
+ */
+function hedley_restful_extract_ids(array $result) {
+  return empty($result['node']) ? [] : array_keys($result['node']);
+}
+
+/**
+ * Get restful output programmatically.
+ *
+ * @return array
+ *   The restful output.
+ */
+function hedley_restful_output_from_handler($handler_name, array $nids, $account) {
+  $output = [];
+  node_load_multiple($nids);
+
+  $handler = restful_get_restful_handler($handler_name);
+  $handler->setAccount($account);
+
+  foreach ($nids as $nid) {
+    $response = $handler->get($nid);
+    $output[] = $response[0];
+  }
+
+  return $output;
+}
+
+/**
+ * Get restful output for multiple bundles.
+ *
+ * @return array
+ *   The restful output
+ */
+function hedley_restful_output_for_bundles($bundleHandlers, array $nids, $account) {
+  $output = [];
+
+  foreach ($nids as $nid) {
+    $wrapper = entity_metadata_wrapper('node', $nid);
+
+    $handler = restful_get_restful_handler($bundleHandlers[$wrapper->getBundle()]);
+    $handler->setAccount($account);
+    $response = $handler->get($nid);
+
+    $output[] = $response[0];
+  }
+
+  return $output;
+}

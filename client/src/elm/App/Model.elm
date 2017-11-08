@@ -1,75 +1,157 @@
-module App.Model exposing (emptyModel, FileId(..), Flags, Msg(..), Model, Theme(..), ThemeConfig)
+module App.Model exposing (emptyModel, emptyLoggedInModel, Flags, Msg(..), LoggedInModel, MsgLoggedIn(..), Model, ConfiguredModel)
 
-import App.PageType exposing (Page(..))
+import Backend.Model
 import Config.Model
-import Date exposing (Date)
-import Pages.Login.Model exposing (emptyModel, Model)
+import Date
+import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
+import Pages.Login.Model
+import Pages.Model
+import Pages.Page exposing (Page(LoginPage))
 import RemoteData exposing (RemoteData(..), WebData)
-import ParticipantManager.Model exposing (emptyModel, Model)
+import Restful.Login exposing (LoginStatus)
 import Time exposing (Time)
 import Translate exposing (Language(..))
-import User.Model exposing (..)
+import User.Model exposing (User)
 
 
+{-| We're now doing our model in layers, corresponding to the logic
+of the startup process.
+
+The first thing we need is a configuration, but there are a few things that
+make sense to have even without a configuration. So, they are here also.
+
+We have the `activePage` here because it really models what the user **wants**
+to be seeing, and we may need to remember that whether or not we're configured
+yet.
+
+`language` is here because we always need some kind of language, if just a
+default.
+
+-}
+type alias Model =
+    { activePage : Page
+    , configuration : RemoteData String ConfiguredModel
+    , currentDate : NominalDate
+    , language : Language
+    , offline : Bool
+    }
+
+
+{-| Yay, we're configured!
+
+  - We'll definitely have a config
+  - We have a login UI
+  - We have the data showing whether we're logged in or not, and, if we're
+    logged in, some data that we only keep for people who are logged in.
+
+We could put additional fields here if there is some state that
+is common to people who are logged in or logged out.
+
+Note that our `Backend` and `Pages` aren't in here, becuase they are only
+for people who are logged in. But, `Pages.Login.Model` is here, of course,
+since we need a UI for logging in.
+
+-}
+type alias ConfiguredModel =
+    { config : Config.Model.Model
+    , loginPage : Pages.Login.Model.Model
+    , login : LoginStatus User LoggedInModel
+    }
+
+
+{-| So, this is all the stuff we'll have only if we're logged in.
+
+Part of what's nice about this is that if a function asks for this type, then
+it definitely can't be called unless we're logged in ... we don't have to
+do access control for that function separately. Or, to put it another way,
+we've baked the access control into the types, so we're forced to deal with
+it at the appropriate moment.
+
+-}
+type alias LoggedInModel =
+    { backend : Backend.Model.Model
+    , pages : Pages.Model.SessionPages
+    }
+
+
+emptyLoggedInModel : LoggedInModel
+emptyLoggedInModel =
+    { backend = Backend.Model.emptyModel
+    , pages = Pages.Model.emptySessionPages
+    }
+
+
+{-| We'll subdivide the `Msg` type to roughly correspond to our `Model`
+subdivisions. In principle, that allows us to specify in function signatures
+what kind of msg can be generated from certain states. We'll see how helpful
+that is.
+
+The three `Login` related messages handle:
+
+  - Messages for the Login UI (MsgPageLogin)
+  - Messages for the login process (MsgLogin)
+  - Messages we can only handle once we've logged in (MsgLoggedIn)
+
+In this app, there isn't much you can do unless you're logged in, so most of
+the action is in `MsgLoggedIn`.
+
+TODO: We remember our login information even if we're offline, by caching it
+locally, so you can continue to work offline and be considered logged-in by the
+app. However, we'll need to be careful about logout while you're offline, since
+there won't be any way to log back in until you're online again.
+
+  - Perhaps we'll have to prohibit logout while offline? Or, while an offline
+    session is in progress (since you could then go offline **after** logging
+    out)?
+
+  - Or, we could implement a special "partial logout" which forgets the access
+    token but still lets you work offline? Then, you could at least continue to
+    interact with the offline data, but you'd have to log in again to upload it.
+
+  - Or, we could somehow allow you do login and logout while offline ...
+    presumably that would mean generating a salt, obtaining a password hashed
+    with that salt, storing it (and the salt) locally, and then authenticating
+    against the salted password while offline. (The purpose of the salt would be
+    to avoid storing the actual password locally).
+
+In any event, that will need some thought at some point.
+
+-}
 type Msg
-    = HandleOfflineEvent (Result String Bool)
-    | Logout
-    | MsgParticipantManager ParticipantManager.Model.Msg
-    | PageLogin Pages.Login.Model.Msg
-    | RedirectByActivePage
+    = MsgLoggedIn MsgLoggedIn
+    | MsgLogin (Restful.Login.Msg User)
+    | MsgPageLogin Pages.Login.Model.Msg
     | SetActivePage Page
-    | SetCurrentDate Date
-    | ThemeSwitch Theme
+    | SetLanguage Language
+    | SetOffline Bool
     | Tick Time
 
 
-type alias Model =
-    { accessToken : String
-    , activePage : Page
-    , config : RemoteData String Config.Model.Model
-    , currentDate : Date
-    , dropzoneFile : Maybe FileId
-    , language : Language
-    , offline : Bool
-    , pageLogin : Pages.Login.Model.Model
-    , pageParticipant : ParticipantManager.Model.Model
-    , theme : Theme
-    , user : WebData User
-    }
-
-
-type FileId
-    = FileId Int
+{-| Messages we can only handle if we're logged in.
+-}
+type MsgLoggedIn
+    = MsgBackend Backend.Model.Msg
+    | MsgSession Pages.Model.MsgSession
 
 
 type alias Flags =
-    { accessToken : String
+    { credentials : String
     , hostname : String
-    }
-
-
-type Theme
-    = Dark
-    | Light
-
-
-type alias ThemeConfig =
-    { from : String
-    , to : String
     }
 
 
 emptyModel : Model
 emptyModel =
-    { accessToken = ""
-    , activePage = Login
-    , config = NotAsked
-    , currentDate = Date.fromTime 0
-    , dropzoneFile = Nothing
+    -- I suppose the login page is as logical as any.
+    -- if we auto-login, we'll transition to something
+    -- sensible anyway.
+    { activePage = LoginPage
+    , configuration = NotAsked
+
+    -- We start at 1970, which might be nice to avoid, but probably more
+    -- trouble than it's worth ... this will almost immediately get updated
+    -- with the real date.
+    , currentDate = fromLocalDateTime (Date.fromTime 0)
     , language = English
     , offline = False
-    , pageLogin = Pages.Login.Model.emptyModel
-    , pageParticipant = ParticipantManager.Model.emptyModel
-    , theme = Light
-    , user = NotAsked
     }

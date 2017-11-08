@@ -51,13 +51,6 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
       ],
     ];
 
-    $public_fields['lastExamination'] = [
-      'property' => 'nid',
-      'process_callbacks' => [
-        [$this, 'lastExamination'],
-      ],
-    ];
-
     foreach (array_keys(field_info_instances($this->getEntityType(), $this->getBundle())) as $field_name) {
       if (strpos($field_name, 'field_date') !== 0) {
         // Not a date field.
@@ -130,55 +123,6 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
       ->execute();
 
     return empty($result['node']) ? NULL : key($result['node']);
-  }
-
-  /**
-   * Return the group of the child.
-   *
-   * @param int $nid
-   *   The child node ID.
-   *
-   * @return int|null
-   *   The Group node ID or NULL if not found.
-   */
-  public static function getGroup($nid) {
-    $mother_nid = self::getMother($nid);
-    if (!$mother_nid) {
-      return NULL;
-    }
-
-    $mother_wrapper = entity_metadata_wrapper('node', $mother_nid);
-    return $mother_wrapper->field_group->getIdentifier();
-  }
-
-  /**
-   * Fetches the measurement values of the last completed assessment.
-   *
-   * @param int $nid
-   *   Node Id of a Mother or a Child.
-   *
-   * @return int|null
-   *   The Examination Node ID or NULL if not found.
-   */
-  protected function lastExamination($nid) {
-    $group_nid = self::getGroup($nid);
-
-    $query = new EntityFieldQuery();
-    $result = $query
-      ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', 'examination')
-      ->fieldCondition('field_group', 'target_id', $group_nid)
-      ->propertyOrderBy('created', 'DESC')
-      // There can be only a single examination.
-      ->range(0, 1)
-      ->execute();
-
-    if (empty($result['node'])) {
-      // No Examination for this Child yet.
-      return NULL;
-    }
-
-    return key($result['node']);
   }
 
 }

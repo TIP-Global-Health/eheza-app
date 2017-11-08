@@ -1,98 +1,62 @@
 module Pages.Activity.View exposing (view)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
-import Activity.Utils exposing (getActivityIdentity, hasPendingChildActivity, hasPendingMotherActivity)
-import Config.Model exposing (BackendUrl)
+import Activity.Utils exposing (getActivityIcon)
+import Backend.Session.Model exposing (EditableSession)
 import Date exposing (Date)
-import Dict
-import Examination.Utils exposing (getLastExaminationFromChild)
+import EveryDict
+import Gizra.Html exposing (emptyNode)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List as List
-import Measurement.View
-import Pages.Activity.Model exposing (Model, Msg(..), Tab(..), thumbnailDimensions)
-import Pages.Activity.Utils
-import Participant.Model exposing (Participant, ParticipantId, ParticipantType(..), ParticipantTypeFilter(..), ParticipantsDict)
-import Participant.Utils exposing (getParticipantName, getParticipantAvatarThumb)
-import Translate as Trans exposing (translate, Language)
-import User.Model exposing (User)
-import Utils.Html exposing (emptyNode, tabItem, thumbnailImage)
+import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
+import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
+import Participant.Utils exposing (getParticipants, participantHasPendingActivity, getParticipantName, getParticipantAvatarThumb)
+import Translate exposing (translate, Language)
+import Utils.Html exposing (tabItem, thumbnailImage)
 
 
-view : BackendUrl -> String -> User -> Language -> Date -> ParticipantsDict -> Model -> List (Html Msg)
-view backendUrl accessToken currentUser language currentDate participantsDict model =
+thumbnailDimensions : { height : Int, width : Int }
+thumbnailDimensions =
+    { width = 96
+    , height = 96
+    }
+
+
+{-| Note that we don't "own" the activityType ... it just gets provided to us,
+and is managed elsewhere.
+-}
+view : Language -> ActivityType -> EditableSession -> Model -> Html Msg
+view language selectedActivity session model =
     let
-        selectedActivityIdentity =
-            getActivityIdentity model.selectedActivity
-
-        participantsWithPendingActivity =
-            Pages.Activity.Utils.participantsWithPendingActivity currentDate participantsDict model
-
-        participantsWithCompletedActivity =
-            participantsDict
-                |> Dict.filter
-                    (\participantId participant ->
-                        case participant.info of
-                            ParticipantChild child ->
-                                case selectedActivityIdentity.activityType of
-                                    Child activityType ->
-                                        not <| hasPendingChildActivity currentDate child activityType
-
-                                    Mother _ ->
-                                        False
-
-                            ParticipantMother mother ->
-                                case selectedActivityIdentity.activityType of
-                                    Child _ ->
-                                        False
-
-                                    Mother activityType ->
-                                        not <| hasPendingMotherActivity currentDate mother activityType
-                    )
+        ( pendingParticipants, completedParticipants ) =
+            getParticipants session.offlineSession
+                |> EveryDict.partition (\id _ -> participantHasPendingActivity id selectedActivity session)
 
         activityDescription =
-            let
-                description =
-                    case selectedActivityIdentity.activityType of
-                        Child ChildPicture ->
-                            Trans.ActivitiesPhotoHelp
-
-                        Child Height ->
-                            Trans.ActivitiesHeightHelp
-
-                        Child Muac ->
-                            Trans.ActivitiesMuacHelp
-
-                        Child NutritionSigns ->
-                            Trans.ActivitiesNutritionSignsHelp
-
-                        Child Weight ->
-                            Trans.ActivitiesWeightHelp
-
-                        Child ProgressReport ->
-                            Trans.ActivitiesProgressReportHelp
-
-                        Mother FamilyPlanning ->
-                            Trans.ActivitiesFamilyPlanningSignsHelp
-            in
-                div
-                    [ class "ui unstackable items" ]
-                    [ div [ class "item" ]
-                        [ div [ class "ui image" ]
-                            [ span [ class <| "icon-item icon-item-" ++ selectedActivityIdentity.icon ] [] ]
-                        , div [ class "content" ]
-                            [ p [] [ text <| translate language description ] ]
-                        ]
+            div
+                [ class "ui unstackable items" ]
+                [ div [ class "item" ]
+                    [ div [ class "ui image" ]
+                        [ span [ class <| "icon-item icon-item-" ++ getActivityIcon selectedActivity ] [] ]
+                    , div [ class "content" ]
+                        [ p [] [ text <| translate language (Translate.ActivitiesHelp selectedActivity) ] ]
                     ]
+                ]
 
         tabs =
             let
                 pendingTabTitle =
-                    translate language <| Trans.ActivitiesToComplete <| Dict.size participantsWithPendingActivity
+                    EveryDict.size pendingParticipants
+                        |> Translate.ActivitiesToComplete
+                        |> translate language
 
                 completedTabTitle =
-                    translate language <| Trans.ActivitiesCompleted <| Dict.size participantsWithCompletedActivity
+                    EveryDict.size completedParticipants
+                        |> Translate.ActivitiesCompleted
+                        |> translate language
             in
                 div [ class "ui tabular menu" ]
                     [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
@@ -104,12 +68,12 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                 ( selectedParticipants, emptySectionMessage ) =
                     case model.selectedTab of
                         Pending ->
-                            ( participantsWithPendingActivity, translate language Trans.PendingSectionEmpty )
+                            ( pendingParticipants, translate language Translate.PendingSectionEmpty )
 
                         Completed ->
-                            ( participantsWithCompletedActivity, translate language Trans.CompletedSectionEmpty )
+                            ( completedParticipants, translate language Translate.CompletedSectionEmpty )
 
-                viewParticipantCard maybeSelectedParticipant ( participantId, participant ) =
+                viewParticipantCard ( participantId, participant ) =
                     let
                         name =
                             getParticipantName participant
@@ -118,21 +82,16 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                             getParticipantAvatarThumb participant
 
                         imageView =
-                            thumbnailImage participant.info imageSrc name thumbnailDimensions.height thumbnailDimensions.width
+                            thumbnailImage participant imageSrc name thumbnailDimensions.height thumbnailDimensions.width
                     in
                         div
                             [ classList
                                 [ ( "participant card", True )
-                                , ( "active"
-                                  , case maybeSelectedParticipant of
-                                        Just ( id, _ ) ->
-                                            id == participantId
-
-                                        Nothing ->
-                                            False
-                                  )
+                                , ( "active", Just participantId == model.selectedParticipant )
                                 ]
-                            , onClick <| SetSelectedParticipant <| Just ( participantId, participant )
+                            , onClick <|
+                                SetSelectedParticipant <|
+                                    Just participantId
                             ]
                             [ div
                                 [ class "image" ]
@@ -142,16 +101,13 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
                             ]
 
                 participantsCards =
-                    if Dict.size selectedParticipants == 0 then
+                    if EveryDict.size selectedParticipants == 0 then
                         [ span [] [ text emptySectionMessage ] ]
                     else
-                        List.map (viewParticipantCard model.selectedParticipant) <|
-                            List.sortBy
-                                (\( _, participant ) ->
-                                    getParticipantName participant
-                                )
-                            <|
-                                Dict.toList selectedParticipants
+                        selectedParticipants
+                            |> EveryDict.toList
+                            |> List.sortBy (\( _, participant ) -> getParticipantName participant)
+                            |> List.map viewParticipantCard
             in
                 div
                     [ class "ui participant segment" ]
@@ -161,17 +117,39 @@ view backendUrl accessToken currentUser language currentDate participantsDict mo
 
         measurementsForm =
             case model.selectedParticipant of
-                Just ( participantId, participant ) ->
-                    case participant.info of
-                        ParticipantChild child ->
-                            Html.map (MsgMeasurement ( participantId, participant )) <|
-                                Measurement.View.viewChild backendUrl accessToken currentUser language currentDate ( participantId, child ) (getLastExaminationFromChild child) (Just model.selectedActivity) model.measurements
+                Just (ParticipantChildId childId) ->
+                    Debug.crash "implement"
 
-                        ParticipantMother mother ->
-                            Html.map (MsgMeasurement ( participantId, participant )) <|
-                                Measurement.View.viewMother backendUrl accessToken currentUser language (Just model.selectedActivity) model.measurements
+                Just (ParticipantMotherId motherId) ->
+                    Debug.crash "implement"
 
                 Nothing ->
                     emptyNode
+
+        header =
+            div
+                [ class "ui basic head segment" ]
+                [ h1 [ class "ui header" ]
+                    [ text <| translate language (Translate.ActivitiesTitle selectedActivity) ]
+                , a
+                    [ class "link-back"
+                    , Debug.crash "redo"
+
+                    {-
+                       , onClick <|
+                           MsgPagesActivity <|
+                               Pages.Activity.Model.SetRedirectPage <|
+                                   App.PageType.Activities
+                    -}
+                    ]
+                    [ span [ class "icon-back" ] [] ]
+                ]
     in
-        [ activityDescription, tabs, participants, measurementsForm ]
+        div
+            [ class "wrap" ]
+            [ header
+            , activityDescription
+            , tabs
+            , participants
+            , measurementsForm
+            ]
