@@ -1,7 +1,7 @@
 'use strict';
 const assert = require('assert');
 
-describe('The Photo form', () => {
+describe.skip('The Photo form', () => {
   before(() => {
     browser.loginAndViewParticipantsPage('aya');
     browser.visitChildWithTodoTasks();

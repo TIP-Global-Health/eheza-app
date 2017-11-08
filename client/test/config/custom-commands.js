@@ -19,14 +19,6 @@ module.exports = function (browser, capabilities, specs) {
   });
 
   /**
-   * After a user login, the displayed page should contain the participants table.
-   */
-  browser.addCommand('loginAndViewParticipantsPage', (user) => {
-    browser.login(user);
-    browser.waitForVisible('.wrap.page-participants');
-  });
-
-  /**
    * Click the back button.
    */
   browser.addCommand('goBack', () => {
@@ -84,7 +76,7 @@ module.exports = function (browser, capabilities, specs) {
     // The first Child is also special, it has all the dates
     // in the past for activities.
     // @see server/scripts/helper-functions.sh
-    browser.url('/#participant/41');
+    browser.url('/#child/41');
     browser.waitForVisible('.ui.task.segment');
   });
 
