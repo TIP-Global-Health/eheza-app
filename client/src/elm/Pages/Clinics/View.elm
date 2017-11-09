@@ -177,7 +177,7 @@ viewFoundClinic language currentDate clinicId clinic sessions =
                 |> EveryDictList.head
 
         downloadAttrs =
-            case Debug.log "validSession" validSession of
+            case validSession of
                 Just ( sessionId, session ) ->
                     [ class "ui fluid primary button"
 
