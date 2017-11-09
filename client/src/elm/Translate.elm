@@ -51,6 +51,9 @@ type TranslationId
     | CompletedSectionEmpty
     | Connected
     | Dashboard
+    | DownloadHealthAssessment
+    | DownloadSession1
+    | DownloadSession2
     | DropzoneDefaultMessage
     | EndSession
     | ErrorBadUrl
@@ -316,8 +319,17 @@ translate lang trans =
                 Dashboard ->
                     { english = "Dashboard" }
 
+                DownloadHealthAssessment ->
+                    { english = "Download Health Assessment" }
+
                 DropzoneDefaultMessage ->
                     { english = "Touch here to take a photo, or drop a photo file here." }
+
+                DownloadSession1 ->
+                    { english = "You have no sessions loaded to this device. Your next session will be available for download the day before it is scheduled to begin." }
+
+                DownloadSession2 ->
+                    { english = "You must be connected to the internet to download a session." }
 
                 EndSession ->
                     { english = "End Session" }

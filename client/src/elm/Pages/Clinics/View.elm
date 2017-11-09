@@ -8,14 +8,18 @@ available for data-entry.
 import Html exposing (..)
 import App.Model exposing (Msg(..), MsgLoggedIn(..))
 import Backend.Clinic.Model exposing (Clinic)
+import Backend.Session.Model exposing (Session)
 import Backend.Entities exposing (ClinicId, SessionId)
 import Backend.Model
 import EveryDictList exposing (EveryDictList)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.PageNotFound.View
 import RemoteData exposing (RemoteData(..), WebData)
+import Time.Date exposing (delta)
 import Translate exposing (Language(..), TranslationId, translate)
 import User.Model exposing (User)
 import User.Utils exposing (assignedToClinic)
@@ -32,12 +36,17 @@ the big one.
 If `selectedClinic` is Just, we'll show a page for that clinic. If not, we'll
 show a list of clinics.
 
+You shouldn't call this if you already have an OfflineSession to edit ... in that
+case, you ought to show the UI for the OfflineSession instead. (In future, we could
+change that and allow viewing this even if you have an offline session, but we'd need
+to define what that would look like).
+
 -}
-view : Language -> User -> Maybe ClinicId -> Backend.Model.Model -> Html Msg
-view language user selectedClinic backend =
+view : Language -> NominalDate -> User -> Maybe ClinicId -> Backend.Model.Model -> Html Msg
+view language currentDate user selectedClinic backend =
     case selectedClinic of
         Just clinicId ->
-            viewClinic language clinicId backend
+            viewClinic language currentDate clinicId backend
 
         Nothing ->
             viewClinicList language user backend.clinics
@@ -105,7 +114,100 @@ viewClinicButton user ( clinicId, clinic ) =
 
 <https://github.com/Gizra/ihangane/issues/407>
 
+Basically, this view is meant to show the clinic, and offer an opportunity to
+download a session for offline editing. We are only supporting one offline
+session at a time at the moment (we could change that in future). We don't
+enforce that here ... if we already have an offline session, it's the caller's
+responsibility not to call us.
+
+We consult the `futureSessions` in the backend to implement the "you can only
+download one day before" rule mentioned in the explanatory text on the screen.
+
+TODO: We don't actually implement the "one day before" rule on the backend yet,
+just in the UI.
+
+TODO: We don't check whether the user is authorized to view this clinic here
+... the `viewClinicList` function won't enable a link if the user isn't
+authorized, but we should check here as well, in case a crafty user just types
+in a URL to get here.
+
 -}
-viewClinic : Language -> ClinicId -> Backend.Model.Model -> Html Msg
-viewClinic language clinic backend =
-    div [] [ text "clinic goes here" ]
+viewClinic : Language -> NominalDate -> ClinicId -> Backend.Model.Model -> Html Msg
+viewClinic language currentDate clinicId backend =
+    div [ class "wrap wrap-alt-2" ] <|
+        viewOrFetch language
+            (MsgLoggedIn <| MsgBackend Backend.Model.FetchClinics)
+            (\clinics ->
+                viewOrFetch language
+                    (MsgLoggedIn <| MsgBackend <| Backend.Model.FetchFutureSessions currentDate)
+                    (\sessions -> viewLoadedClinic language currentDate clinicId clinics sessions)
+                    backend.futureSessions
+            )
+            backend.clinics
+
+
+viewLoadedClinic : Language -> NominalDate -> ClinicId -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
+viewLoadedClinic language currentDate clinicId clinics ( queryDate, futureSessions ) =
+    case EveryDictList.get clinicId clinics of
+        Just clinic ->
+            viewFoundClinic language currentDate clinicId clinic futureSessions
+
+        Nothing ->
+            [ Pages.PageNotFound.View.viewPage language <|
+                UserPage <|
+                    ClinicsPage <|
+                        Just clinicId
+            ]
+
+
+viewFoundClinic : Language -> NominalDate -> ClinicId -> Clinic -> EveryDictList SessionId Session -> List (Html Msg)
+viewFoundClinic language currentDate clinicId clinic sessions =
+    let
+        validSession =
+            sessions
+                |> EveryDictList.filter
+                    (\_ session ->
+                        -- Must be the appropriate clinicId
+                        (session.clinicId == clinicId)
+                            -- And start date must be in past, or at most one day in future
+                            && ((delta session.scheduledDate.start currentDate).days <= 1)
+                            -- And end date must be in the future
+                            && (Time.Date.compare session.scheduledDate.end currentDate /= GT)
+                    )
+                |> EveryDictList.head
+
+        downloadAttrs =
+            case Debug.log "validSession" validSession of
+                Just ( sessionId, session ) ->
+                    [ class "ui fluid primary button"
+
+                    -- TODO: onClick
+                    ]
+
+                Nothing ->
+                    [ class "ui fluid primary dark button disabled" ]
+    in
+        [ div
+            [ class "ui basic head segment" ]
+            [ h1
+                [ class "ui header" ]
+                [ text clinic.name ]
+            , a
+                [ class "link-back"
+                , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
+                ]
+                [ span [ class "icon-back" ] []
+                , span [] []
+                ]
+            ]
+        , div
+            [ class "ui basic wide segment" ]
+            [ div
+                [ class "ui info" ]
+                [ p [] [ text <| translate language Translate.DownloadSession1 ]
+                , p [] [ text <| translate language Translate.DownloadSession2 ]
+                ]
+            , button downloadAttrs
+                [ text <| translate language <| Translate.DownloadHealthAssessment ]
+            ]
+        ]
