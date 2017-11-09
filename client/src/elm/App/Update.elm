@@ -134,7 +134,7 @@ update msg model =
                                         -- For now, just tranition to the
                                         -- clinics page ... we'll need to
                                         -- make more choices eventually.
-                                        [ SetActivePage <| UserPage ClinicsPage ]
+                                        [ SetActivePage <| UserPage <| ClinicsPage Nothing ]
 
                                     _ ->
                                         -- If we were showing the LoginPage

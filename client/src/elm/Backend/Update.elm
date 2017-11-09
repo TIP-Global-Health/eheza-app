@@ -91,6 +91,20 @@ update backendUrl accessToken msg model =
                 , Cmd.none
                 )
 
+            FetchFutureSessions date ->
+                ( { model | futureSessions = Loading }
+                , selectFromBackend sessionEndpoint (SessionParams (Just date)) <|
+                    (RemoteData.fromResult >> RemoteData.map EveryDictList.fromList >> HandleFetchedSessions date)
+                )
+
+            HandleFetchedSessions date result ->
+                -- We remember the date as well as the result, so that we can
+                -- know whether we need to reload (i.e. when the date changes,
+                -- due to the passage of time)
+                ( { model | futureSessions = RemoteData.map (\sessions -> ( date, sessions )) result }
+                , Cmd.none
+                )
+
             FetchOfflineSession sessionId ->
                 ( { model | offlineSession = Loading }
                 , getFromBackend offlineSessionEndpoint sessionId <|

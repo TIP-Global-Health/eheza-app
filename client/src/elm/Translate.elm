@@ -61,6 +61,7 @@ type TranslationId
     | ErrorNetworkError
     | ErrorTimeout
     | FamilyPlanningSignLabel FamilyPlanningSign
+    | Fetch
     | Gender Gender
     | KilogramShorthand
     | LinkToMother
@@ -232,7 +233,7 @@ translate lang trans =
                                 MotherPage motherId ->
                                     { english = "Mother" }
 
-                        UserPage ClinicsPage ->
+                        UserPage (ClinicsPage _) ->
                             { english = "Clinics" }
 
                         UserPage MyAccountPage ->
@@ -361,6 +362,9 @@ translate lang trans =
 
                         NoFamilyPlanning ->
                             { english = "None of these" }
+
+                Fetch ->
+                    { english = "Fetch" }
 
                 Gender gender ->
                     case gender of

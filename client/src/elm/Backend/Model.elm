@@ -24,7 +24,7 @@ import Backend.Session.Model exposing (OfflineSession, Session)
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (Entity, EntityDictList)
+import Restful.Endpoint exposing (Entity)
 import Restful.UpdatableData exposing (UpdatableWebData)
 
 
@@ -89,6 +89,23 @@ type alias Model =
     -- in our local storage ... we'll delete the whole thing once we successfully
     -- save it to the backend.
     , edits : UpdatableWebData (Maybe MeasurementEdits)
+
+    -- This tracks future sessions ... that is, sessions which are either
+    -- available now, or will be in the future. We remember which
+    -- date we asked about, so that if the date changes (i.e. it becomes
+    -- tomorrow, due to the passage of time), we can know that we ought to
+    -- ask again.
+    --
+    -- We fetch all the future sessions at once, if we need them at all.
+    -- The data type is probably small enough that this is fine ... we can
+    -- fetch them in smaller batches if necessary (by clinicId, probably).
+    --
+    -- TODO: Restful.Endpoint should eventually have a `QueryResult` type which
+    -- remembers the params we supplied and a WebData for the result ...
+    -- since one would really always want to remember what query the results
+    -- represent. (And, eventually, one would want to remember the `count`
+    -- and which pages you have etc.).
+    , futureSessions : WebData ( NominalDate, EveryDictList SessionId Session )
     }
 
 
@@ -97,6 +114,7 @@ emptyModel =
     { clinics = NotAsked
     , offlineSession = NotAsked
     , edits = Restful.UpdatableData.notAsked
+    , futureSessions = NotAsked
     }
 
 
@@ -105,8 +123,10 @@ putting things back into the backend.
 -}
 type Msg
     = FetchClinics
+    | FetchFutureSessions NominalDate
       -- For now, fetches the offline session from the backend ... will need to
       -- integrate caching, obviously!
     | FetchOfflineSession SessionId
     | HandleFetchedClinics (WebData (EveryDictList ClinicId Clinic))
     | HandleFetchedOfflineSession (WebData (Maybe (Entity SessionId OfflineSession)))
+    | HandleFetchedSessions NominalDate (WebData (EveryDictList SessionId Session))

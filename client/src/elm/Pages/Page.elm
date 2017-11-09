@@ -83,7 +83,7 @@ type Page
 the login page instead.
 -}
 type UserPage
-    = ClinicsPage -- shows a list of clinics, allows you to choose session to download
+    = ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
     | MyAccountPage -- shows information about the logged-in user
 
 
