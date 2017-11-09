@@ -88,7 +88,7 @@ update msg model =
                         MsgBackend subMsg ->
                             let
                                 ( backend, cmd ) =
-                                    Backend.Update.update credentials.backendUrl credentials.accessToken subMsg data.backend
+                                    Backend.Update.updateBackend credentials.backendUrl credentials.accessToken subMsg data.backend
                             in
                                 ( { data | backend = backend }
                                 , Cmd.map (MsgLoggedIn << MsgBackend) cmd

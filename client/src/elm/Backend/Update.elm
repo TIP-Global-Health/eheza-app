@@ -1,4 +1,4 @@
-module Backend.Update exposing (update)
+module Backend.Update exposing (updateBackend)
 
 {-| This could perhaps be distributed one level down, to
 `Backend.Session.Update`, `Backend.Clinic.Update` etc. Or, perhaps it is nicer
@@ -67,8 +67,8 @@ offlineSessionEndpoint =
     }
 
 
-update : BackendUrl -> String -> Msg -> Model -> ( Model, Cmd Msg )
-update backendUrl accessToken msg model =
+updateBackend : BackendUrl -> String -> MsgBackend -> ModelBackend -> ( ModelBackend, Cmd MsgBackend )
+updateBackend backendUrl accessToken msg model =
     let
         -- Partially apply the backendUrl and accessToken, just for fun
         selectFromBackend =
@@ -105,13 +105,14 @@ update backendUrl accessToken msg model =
                 , Cmd.none
                 )
 
-            FetchOfflineSession sessionId ->
-                ( { model | offlineSession = Loading }
-                , getFromBackend offlineSessionEndpoint sessionId <|
-                    (RemoteData.fromResult >> HandleFetchedOfflineSession)
-                )
+            FetchOfflineSessionFromBackend sessionId ->
+                Debug.crash "redo"
 
-            HandleFetchedOfflineSession data ->
-                ( { model | offlineSession = data }
-                , Cmd.none
-                )
+            {-
+               ( { model | offlineSession = Loading }
+               , getFromBackend offlineSessionEndpoint sessionId <|
+                   (RemoteData.fromResult >> HandleFetchedOfflineSessionFromBackend)
+               )
+            -}
+            HandleFetchedOfflineSessionFromBackend data ->
+                Debug.crash "redo"

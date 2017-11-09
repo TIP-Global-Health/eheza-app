@@ -24,7 +24,6 @@ import Backend.Session.Model exposing (OfflineSession, Session)
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (Entity)
 import Restful.UpdatableData exposing (UpdatableWebData)
 
 
@@ -32,17 +31,56 @@ import Restful.UpdatableData exposing (UpdatableWebData)
 on the backend. So, conceptually it is a kind of a local cache of some of the
 things on the backend.
 -}
-type alias Model =
+type alias ModelBackend =
     -- For now, we fetch all the clinics from the backend at once when we need
     -- any. So, the `WebData` tracks that request, and the `DictList` tracks
     -- its result.
     { clinics : WebData (EveryDictList ClinicId Clinic)
 
+    -- This tracks future sessions ... that is, sessions which are either
+    -- available now, or will be in the future. We remember which
+    -- date we asked about, so that if the date changes (i.e. it becomes
+    -- tomorrow, due to the passage of time), we can know that we ought to
+    -- ask again.
+    --
+    -- We fetch all the future sessions at once, if we need them at all.
+    -- The data type is probably small enough that this is fine ... we can
+    -- fetch them in smaller batches if necessary (by clinicId, probably).
+    --
+    -- TODO: Restful.Endpoint should eventually have a `QueryResult` type which
+    -- remembers the params we supplied and a WebData for the result ...
+    -- since one would really always want to remember what query the results
+    -- represent. (And, eventually, one would want to remember the `count`
+    -- and which pages you have etc.).
+    , futureSessions : WebData ( NominalDate, EveryDictList SessionId Session )
+    }
+
+
+emptyModelBackend : ModelBackend
+emptyModelBackend =
+    { clinics = NotAsked
+    , futureSessions = NotAsked
+    }
+
+
+{-| These are all the messages related to getting things from the backend and
+putting things back into the backend.
+-}
+type MsgBackend
+    = FetchClinics
+    | FetchFutureSessions NominalDate
+    | FetchOfflineSessionFromBackend SessionId
+    | HandleFetchedClinics (WebData (EveryDictList ClinicId Clinic))
+    | HandleFetchedOfflineSessionFromBackend (WebData (Maybe ( SessionId, OfflineSession )))
+    | HandleFetchedSessions NominalDate (WebData (EveryDictList SessionId Session))
+
+
+{-| This models things which we cache locally ... so, like `ModelBackend`, but
+instead of saving them to the backend, we save them locally.
+-}
+type alias ModelCached =
     -- This tracks, if we have one, the OfflineSession which we're currently
-    -- doing data entry for. This the only piece of data from the backend which
-    -- we're guaranteed to be able to access while offline (because we cache
-    -- it locally). So, it needs to contain everything we need for offline
-    -- data entry.
+    -- doing data entry for.
     --
     -- The `WebData` wrapper represents whether we've tried to fetch it from
     -- our local cache (and any error that may have occurred). The inner
@@ -67,7 +105,7 @@ type alias Model =
     --   locally.
     --
     -- * If we have one, we're definitely using it, not doing something else.
-    , offlineSession : WebData (Maybe (Entity SessionId OfflineSession))
+    { offlineSession : WebData (Maybe ( SessionId, OfflineSession ))
 
     -- This tracks mesaurements which we've edited, but haven't uploaded to
     -- the backend yet. These are immediately cached locally, which is what
@@ -89,44 +127,19 @@ type alias Model =
     -- in our local storage ... we'll delete the whole thing once we successfully
     -- save it to the backend.
     , edits : UpdatableWebData (Maybe MeasurementEdits)
-
-    -- This tracks future sessions ... that is, sessions which are either
-    -- available now, or will be in the future. We remember which
-    -- date we asked about, so that if the date changes (i.e. it becomes
-    -- tomorrow, due to the passage of time), we can know that we ought to
-    -- ask again.
-    --
-    -- We fetch all the future sessions at once, if we need them at all.
-    -- The data type is probably small enough that this is fine ... we can
-    -- fetch them in smaller batches if necessary (by clinicId, probably).
-    --
-    -- TODO: Restful.Endpoint should eventually have a `QueryResult` type which
-    -- remembers the params we supplied and a WebData for the result ...
-    -- since one would really always want to remember what query the results
-    -- represent. (And, eventually, one would want to remember the `count`
-    -- and which pages you have etc.).
-    , futureSessions : WebData ( NominalDate, EveryDictList SessionId Session )
     }
 
 
-emptyModel : Model
-emptyModel =
-    { clinics = NotAsked
-    , offlineSession = NotAsked
+emptyModelCached : ModelCached
+emptyModelCached =
+    { offlineSession = NotAsked
     , edits = Restful.UpdatableData.notAsked
-    , futureSessions = NotAsked
     }
 
 
-{-| These are all the messages related to getting things from the backend and
-putting things back into the backend.
+{-| These are all the messages related to getting things from the cache and
+putting things back into the cache.
 -}
-type Msg
-    = FetchClinics
-    | FetchFutureSessions NominalDate
-      -- For now, fetches the offline session from the backend ... will need to
-      -- integrate caching, obviously!
-    | FetchOfflineSession SessionId
-    | HandleFetchedClinics (WebData (EveryDictList ClinicId Clinic))
-    | HandleFetchedOfflineSession (WebData (Maybe (Entity SessionId OfflineSession)))
-    | HandleFetchedSessions NominalDate (WebData (EveryDictList SessionId Session))
+type MsgCached
+    = FetchOfflineSessionFromCache
+    | HandleFetchedOfflineSessionFromCache (WebData (Maybe ( SessionId, OfflineSession )))

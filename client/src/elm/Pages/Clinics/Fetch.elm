@@ -46,7 +46,7 @@ fetch in case of error (at least, not without a delay), since you wouldn't want
 to just automatically retry errors constantly.
 
 -}
-fetch : NominalDate -> Maybe ClinicId -> Backend.Model.Model -> List Backend.Model.Msg
+fetch : NominalDate -> Maybe ClinicId -> Backend.Model.ModelBackend -> List Backend.Model.MsgBackend
 fetch currentDate clinicId backend =
     -- So, to recap, this is called by the parent's `fetch` function, to see
     -- whether any data needs to be fetched. We can return messages that will

@@ -42,7 +42,7 @@ change that and allow viewing this even if you have an offline session, but we'd
 to define what that would look like).
 
 -}
-view : Language -> NominalDate -> User -> Maybe ClinicId -> Backend.Model.Model -> Html Msg
+view : Language -> NominalDate -> User -> Maybe ClinicId -> Backend.Model.ModelBackend -> Html Msg
 view language currentDate user selectedClinic backend =
     case selectedClinic of
         Just clinicId ->
@@ -132,7 +132,7 @@ authorized, but we should check here as well, in case a crafty user just types
 in a URL to get here.
 
 -}
-viewClinic : Language -> NominalDate -> ClinicId -> Backend.Model.Model -> Html Msg
+viewClinic : Language -> NominalDate -> ClinicId -> Backend.Model.ModelBackend -> Html Msg
 viewClinic language currentDate clinicId backend =
     div [ class "wrap wrap-alt-2" ] <|
         viewOrFetch language

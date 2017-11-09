@@ -53,7 +53,6 @@ import Pages.Activities.Model
 import Pages.Activity.Model
 import Pages.Participant.Model
 import Pages.Participants.Model
-import Pages.Page exposing (Page(..))
 
 
 {-| This is where we track all the UI state that relates to an EditableSession
