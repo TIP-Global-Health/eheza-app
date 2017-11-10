@@ -57,7 +57,8 @@ is removed from `historicalMeasurments`.
 -}
 splitHistoricalMeasurements : OfflineSession -> OfflineSession
 splitHistoricalMeasurements session =
-    Debug.crash "implement"
+    -- TODO: implement
+    session
 
 
 decodeMothers : Decoder (EveryDictList MotherId Mother)

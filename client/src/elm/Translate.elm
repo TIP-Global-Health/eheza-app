@@ -54,6 +54,7 @@ type TranslationId
     | DownloadHealthAssessment
     | DownloadSession1
     | DownloadSession2
+    | DownloadSuccessful
     | DownloadingSession1
     | DownloadingSession2
     | DropzoneDefaultMessage
@@ -97,6 +98,7 @@ type TranslationId
     | PlaceholderTextGroupDate
     | PlaceholderTextJoined
     | PreviousFloatMeasurement Float
+    | ReadyToBeginSession
     | ReportAge String
     | ReportDOB String
     | ReportRemaining Int
@@ -327,6 +329,9 @@ translate lang trans =
                 DownloadHealthAssessment ->
                     { english = "Download Health Assessment" }
 
+                DownloadSuccessful ->
+                    { english = "Download Successful" }
+
                 DownloadingSession1 ->
                     { english = "Downloading…" }
 
@@ -534,6 +539,9 @@ translate lang trans =
 
                 PreviousFloatMeasurement value ->
                     { english = "Previous measurement: " ++ (toString value) }
+
+                ReadyToBeginSession ->
+                    { english = "You are now ready to begin your session." }
 
                 ReportAge age ->
                     { english = "Age: " ++ age }

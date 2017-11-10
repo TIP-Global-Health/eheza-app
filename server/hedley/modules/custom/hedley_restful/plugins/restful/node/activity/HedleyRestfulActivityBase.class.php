@@ -20,7 +20,31 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulEntityBaseNode {
       'callback' => 'static::getType',
     ];
 
+    $public_fields['date_measured'] = [
+      'property' => 'field_date_measured',
+      'process_callbacks' => [
+        [$this, 'renderDate'],
+      ],
+    ];
+
+    $public_fields['session'] = [
+      'property' => 'field_session',
+      'resource' => [
+        'session' => [
+          'name' => 'sessions',
+          'full_view' => FALSE,
+        ],
+      ],
+    ];
+
     return $public_fields;
+  }
+
+  /**
+   * Show the date with date only.
+   */
+  public function renderDate($date) {
+    return date("Y-m-d", $date);
   }
 
 }

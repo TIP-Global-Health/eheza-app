@@ -211,19 +211,43 @@ viewFoundClinic language currentDate clinicId clinic request sessions =
                             , div
                                 [ class "actions" ]
                                 [ div
-                                    [ class "two basic ui buttons"
-                                    , onClick <| MsgLoggedIn <| MsgBackend <| ResetOfflineSessionRequest
-                                    ]
+                                    [ class "two basic ui buttons" ]
                                     [ button
-                                        [ class "ui fluid button" ]
+                                        [ class "ui fluid button"
+                                        , onClick <| MsgLoggedIn <| MsgBackend <| ResetOfflineSessionRequest
+                                        ]
                                         [ text <| translate language Translate.OK ]
                                     ]
                                 ]
                             ]
 
                 Success sessionId ->
-                    -- TODO: Show button to go on, if sessions match ...
-                    Nothing
+                    if Just sessionId == Maybe.map Tuple.first validSession then
+                        Just <|
+                            div
+                                [ class "ui tiny inverted active modal" ]
+                                [ div
+                                    [ class "header" ]
+                                    [ text <| translate language Translate.DownloadSuccessful ]
+                                , div
+                                    [ class "content" ]
+                                    [ span [ class "icon-success" ] []
+                                    , p [] [ text <| translate language Translate.ReadyToBeginSession ]
+                                    ]
+                                , div
+                                    [ class "actions" ]
+                                    [ div
+                                        [ class "two basic ui buttons" ]
+                                        [ button
+                                            [ class "ui fluid button"
+                                            , onClick <| MsgLoggedIn <| MsgBackend <| ResetOfflineSessionRequest
+                                            ]
+                                            [ text <| translate language Translate.OK ]
+                                        ]
+                                    ]
+                                ]
+                    else
+                        Nothing
 
         downloadAttrs =
             case ( validSession, downloadProgress ) of
