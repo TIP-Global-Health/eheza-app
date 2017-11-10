@@ -1,7 +1,6 @@
 module Pages.Router exposing (delta2url, parseUrl)
 
 import Activity.Utils exposing (encodeActivityTypeAsString, decodeActivityTypeFromString, defaultActivityType)
-import Pages.Model exposing (..)
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (toEntityId, fromEntityId)
 import RouteUrl exposing (HistoryEntry(..), UrlChange)
@@ -43,8 +42,14 @@ delta2url previous current =
         -- These are pages that required a logged-in user
         UserPage userPage ->
             case userPage of
-                ClinicsPage ->
-                    Just <| UrlChange NewEntry "#clinics"
+                ClinicsPage clinicId ->
+                    let
+                        clinic =
+                            clinicId
+                                |> Maybe.map (\id -> "/" ++ toString (fromEntityId (id)))
+                                |> Maybe.withDefault ""
+                    in
+                        Just <| UrlChange NewEntry ("#clinics" ++ clinic)
 
                 MyAccountPage ->
                     Just <| UrlChange NewEntry "#my-account"
@@ -66,7 +71,8 @@ parseUrl =
             (SessionPage << ActivityPage << Maybe.withDefault defaultActivityType << decodeActivityTypeFromString)
             (s "activity" </> string)
         , map (SessionPage << ChildPage << toEntityId) (s "child" </> int)
-        , map (UserPage ClinicsPage) (s "clinics")
+        , map (UserPage << ClinicsPage << Just << toEntityId) (s "clinics" </> int)
+        , map (UserPage (ClinicsPage Nothing)) (s "clinics")
         , map LoginPage (s "login")
         , map (UserPage MyAccountPage) (s "my-account")
         , map (SessionPage << MotherPage << toEntityId) (s "mother" </> int)

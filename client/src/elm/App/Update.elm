@@ -88,7 +88,7 @@ update msg model =
                         MsgBackend subMsg ->
                             let
                                 ( backend, cmd ) =
-                                    Backend.Update.update credentials.backendUrl credentials.accessToken subMsg data.backend
+                                    Backend.Update.updateBackend credentials.backendUrl credentials.accessToken subMsg data.backend
                             in
                                 ( { data | backend = backend }
                                 , Cmd.map (MsgLoggedIn << MsgBackend) cmd
@@ -134,7 +134,7 @@ update msg model =
                                         -- For now, just tranition to the
                                         -- clinics page ... we'll need to
                                         -- make more choices eventually.
-                                        [ SetActivePage <| UserPage ClinicsPage ]
+                                        [ SetActivePage <| UserPage <| ClinicsPage Nothing ]
 
                                     _ ->
                                         -- If we were showing the LoginPage

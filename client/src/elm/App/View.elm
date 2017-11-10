@@ -92,12 +92,19 @@ viewConfiguredModel model configured =
                         |> Html.map MsgPageLogin
 
                 UserPage userPage ->
-                    case userPage of
-                        MyAccountPage ->
-                            Pages.MyAccount.View.view model.language login.credentials.user
+                    -- If relogin is required, show the login page instead
+                    case login.relogin of
+                        Just _ ->
+                            Pages.Login.View.view model.language model.activePage configured.login configured.loginPage
+                                |> Html.map MsgPageLogin
 
-                        ClinicsPage ->
-                            Pages.Clinics.View.view model.language login.credentials.user login.data.backend.clinics
+                        Nothing ->
+                            case userPage of
+                                MyAccountPage ->
+                                    Pages.MyAccount.View.view model.language login.credentials.user
+
+                                ClinicsPage clinicId ->
+                                    Pages.Clinics.View.view model.language model.currentDate login.credentials.user clinicId login.data.backend
 
                 PageNotFound url ->
                     Pages.PageNotFound.View.view model.language url

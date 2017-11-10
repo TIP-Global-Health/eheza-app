@@ -94,7 +94,7 @@ viewLogout language user =
         -- which of these options are actually the most likely at some point
         , button
             [ class "ui fluid primary button"
-            , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage Pages.Page.ClinicsPage
+            , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.ClinicsPage Nothing
             ]
             [ text <| translate language Translate.SelectYourClinic ]
         , button

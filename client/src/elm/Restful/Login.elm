@@ -12,12 +12,13 @@ module Restful.Login
         , accessTokenRejected
         , checkCachedCredentials
         , drupalConfig
-        , isProgressing
         , getError
+        , hasValidAccessToken
+        , isProgressing
         , loggedOut
         , logout
-        , maybeData
         , mapData
+        , maybeData
         , tryLogin
         , update
         )
@@ -53,7 +54,7 @@ can be handled here.
 
 ## Accessing the data associated with the login
 
-@socs maybeData, mapData
+@socs maybeData, mapData, hasValidAccessToken
 
 -}
 
@@ -744,6 +745,24 @@ decodeCredentials config backendUrl =
         )
         (field "access_token" Json.Decode.string)
         (field "user" config.decodeUser)
+
+
+{-| As far as we know, do we have a still-valid access token?
+
+If we don't know yet, we indicate `False`.
+
+-}
+hasValidAccessToken : LoginStatus user data -> Bool
+hasValidAccessToken status =
+    case status of
+        Anonymous _ ->
+            False
+
+        CheckingCachedCredentials ->
+            False
+
+        LoggedIn login ->
+            login.relogin == Nothing
 
 
 {-| Record the fact that our access token was rejected.

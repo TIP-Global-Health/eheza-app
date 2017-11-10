@@ -12,3 +12,12 @@ getLoggedInModel model =
     model.configuration
         |> RemoteData.toMaybe
         |> Maybe.andThen (.login >> maybeData)
+
+
+{-| Do we think we have a valid access token?
+-}
+hasValidAccessToken : Model -> Bool
+hasValidAccessToken model =
+    model.configuration
+        |> RemoteData.map (.login >> Restful.Login.hasValidAccessToken)
+        |> RemoteData.withDefault False

@@ -1,4 +1,4 @@
-module Backend.Update exposing (update)
+module Backend.Update exposing (updateBackend)
 
 {-| This could perhaps be distributed one level down, to
 `Backend.Session.Update`, `Backend.Clinic.Update` etc. Or, perhaps it is nicer
@@ -67,15 +67,15 @@ offlineSessionEndpoint =
     }
 
 
-update : BackendUrl -> String -> Msg -> Model -> ( Model, Cmd Msg )
-update backendUrl accessToken msg model =
+updateBackend : BackendUrl -> String -> MsgBackend -> ModelBackend -> ( ModelBackend, Cmd MsgBackend )
+updateBackend backendUrl accessToken msg model =
     let
         -- Partially apply the backendUrl and accessToken, just for fun
         selectFromBackend =
             Restful.Endpoint.select backendUrl (Just accessToken)
 
-        getFromBackend =
-            Restful.Endpoint.get backendUrl (Just accessToken)
+        getFromBackend404 =
+            Restful.Endpoint.get404 backendUrl (Just accessToken)
     in
         case msg of
             FetchClinics ->
@@ -91,13 +91,39 @@ update backendUrl accessToken msg model =
                 , Cmd.none
                 )
 
-            FetchOfflineSession sessionId ->
-                ( { model | offlineSession = Loading }
-                , getFromBackend offlineSessionEndpoint sessionId <|
-                    (RemoteData.fromResult >> HandleFetchedOfflineSession)
+            FetchFutureSessions date ->
+                ( { model | futureSessions = Loading }
+                , selectFromBackend sessionEndpoint (SessionParams (Just date)) <|
+                    (RemoteData.fromResult >> RemoteData.map EveryDictList.fromList >> HandleFetchedSessions date)
                 )
 
-            HandleFetchedOfflineSession data ->
-                ( { model | offlineSession = data }
+            HandleFetchedSessions date result ->
+                -- We remember the date as well as the result, so that we can
+                -- know whether we need to reload (i.e. when the date changes,
+                -- due to the passage of time)
+                ( { model | futureSessions = RemoteData.map (\sessions -> ( date, sessions )) result }
+                , Cmd.none
+                )
+
+            FetchOfflineSessionFromBackend sessionId ->
+                ( { model | offlineSessionRequest = Loading }
+                , getFromBackend404 offlineSessionEndpoint sessionId HandleFetchedOfflineSessionFromBackend
+                )
+
+            HandleFetchedOfflineSessionFromBackend result ->
+                case result of
+                    Err error ->
+                        ( { model | offlineSessionRequest = RemoteData.fromResult (Result.map Tuple.first result) }
+                        , Cmd.none
+                        )
+
+                    Ok ( sessionId, session ) ->
+                        -- TODO: Kick off a save into the cache.
+                        ( { model | offlineSessionRequest = Success sessionId }
+                        , Cmd.none
+                        )
+
+            ResetOfflineSessionRequest ->
+                ( { model | offlineSessionRequest = NotAsked }
                 , Cmd.none
                 )

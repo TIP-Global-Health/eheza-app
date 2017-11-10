@@ -173,7 +173,7 @@ since the request essentially succeeded ... there merely was no entity with
 that ID.
 
 -}
-get : BackendUrl -> Maybe AccessToken -> EndPoint error params key value -> key -> (Result error (Maybe (Entity key value)) -> msg) -> Cmd msg
+get : BackendUrl -> Maybe AccessToken -> EndPoint error params key value -> key -> (Result error (Maybe ( key, value )) -> msg) -> Cmd msg
 get backendUrl accessToken endpoint key tagger =
     let
         queryParams =
@@ -183,7 +183,7 @@ get backendUrl accessToken endpoint key tagger =
     in
         HttpBuilder.get (backendUrl </> endpoint.path </> toString (endpoint.untag key))
             |> withQueryParams queryParams
-            |> withExpect (expectJson (decodeSingleEntity (decodeStorageTuple (decodeId endpoint.tag) endpoint.decoder)))
+            |> withExpect (expectJson (decodeSingleEntity (map2 (,) (decodeId endpoint.tag) endpoint.decoder)))
             |> send
                 (\result ->
                     let
@@ -206,7 +206,7 @@ get backendUrl accessToken endpoint key tagger =
 
 {-| Let `get`, but treats a 404 response as an error in the `Result`, rather than a `Nothing` response.
 -}
-get404 : BackendUrl -> Maybe AccessToken -> EndPoint error params key value -> key -> (Result error (Entity key value) -> msg) -> Cmd msg
+get404 : BackendUrl -> Maybe AccessToken -> EndPoint error params key value -> key -> (Result error ( key, value ) -> msg) -> Cmd msg
 get404 backendUrl accessToken endpoint key tagger =
     let
         queryParams =
@@ -216,7 +216,7 @@ get404 backendUrl accessToken endpoint key tagger =
     in
         HttpBuilder.get (backendUrl </> endpoint.path </> toString (endpoint.untag key))
             |> withQueryParams queryParams
-            |> withExpect (expectJson (decodeSingleEntity (decodeStorageTuple (decodeId endpoint.tag) endpoint.decoder)))
+            |> withExpect (expectJson (decodeSingleEntity (map2 (,) (decodeId endpoint.tag) endpoint.decoder)))
             |> send (Result.mapError endpoint.error >> tagger)
 
 

@@ -4,9 +4,9 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
-import Gizra.Json exposing (decodeFloat, decodeInt, decodeIntDict)
+import Gizra.Json exposing (decodeFloat, decodeInt, decodeIntDict, decodeEmptyArrayAs)
 import Gizra.NominalDate
-import Json.Decode exposing (Decoder, andThen, at, decodeValue, dict, fail, field, int, list, map, map2, nullable, string, succeed, value)
+import Json.Decode exposing (Decoder, andThen, at, decodeValue, dict, fail, field, int, list, map, map2, nullable, string, succeed, value, oneOf)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (decodeEntity, decodeEntityId, decodeSingleEntity, decodeStorageTuple, toEntityId)
 import Utils.Json exposing (decodeEverySet)
@@ -40,8 +40,18 @@ decodeMeasurement participantDecoder valueDecoder =
 decodeHistoricalMeasurements : Decoder HistoricalMeasurements
 decodeHistoricalMeasurements =
     decode HistoricalMeasurements
-        |> requiredAt [ "participants", "mother_activity" ] (map (toEveryDict toEntityId) (decodeIntDict decodeMotherMeasurementList))
-        |> requiredAt [ "participants", "child_activity" ] (map (toEveryDict toEntityId) (decodeIntDict decodeChildMeasurementList))
+        |> requiredAt [ "participants", "mother_activity" ]
+            (oneOf
+                [ decodeEmptyArrayAs EveryDict.empty
+                , map (toEveryDict toEntityId) (decodeIntDict decodeMotherMeasurementList)
+                ]
+            )
+        |> requiredAt [ "participants", "child_activity" ]
+            (oneOf
+                [ decodeEmptyArrayAs EveryDict.empty
+                , map (toEveryDict toEntityId) (decodeIntDict decodeChildMeasurementList)
+                ]
+            )
 
 
 {-| TODO: Put in elm-essentials.

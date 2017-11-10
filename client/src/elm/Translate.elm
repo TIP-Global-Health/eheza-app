@@ -51,6 +51,12 @@ type TranslationId
     | CompletedSectionEmpty
     | Connected
     | Dashboard
+    | DownloadHealthAssessment
+    | DownloadSession1
+    | DownloadSession2
+    | DownloadSuccessful
+    | DownloadingSession1
+    | DownloadingSession2
     | DropzoneDefaultMessage
     | EndSession
     | ErrorBadUrl
@@ -61,10 +67,12 @@ type TranslationId
     | ErrorNetworkError
     | ErrorTimeout
     | FamilyPlanningSignLabel FamilyPlanningSign
+    | Fetch
     | Gender Gender
     | KilogramShorthand
     | LinkToMother
     | LoginPhrase LoginPhrase
+    | MakeSureYouAreConnected
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
@@ -78,6 +86,7 @@ type TranslationId
     | NoParticipantsFound
     | NotAvailable
     | NotConnected
+    | OK
     | Page
     | Page404
     | PageNotFoundMsg
@@ -89,6 +98,7 @@ type TranslationId
     | PlaceholderTextGroupDate
     | PlaceholderTextJoined
     | PreviousFloatMeasurement Float
+    | ReadyToBeginSession
     | ReportAge String
     | ReportDOB String
     | ReportRemaining Int
@@ -101,6 +111,7 @@ type TranslationId
     | SearchByName
     | SelectYourClinic
     | TitleHealthAssessment
+    | UnableToDownload
     | WelcomeUser String
     | ZScoreHeightForAge
     | ZScoreMuacForAge
@@ -232,7 +243,7 @@ translate lang trans =
                                 MotherPage motherId ->
                                     { english = "Mother" }
 
-                        UserPage ClinicsPage ->
+                        UserPage (ClinicsPage _) ->
                             { english = "Clinics" }
 
                         UserPage MyAccountPage ->
@@ -315,8 +326,26 @@ translate lang trans =
                 Dashboard ->
                     { english = "Dashboard" }
 
+                DownloadHealthAssessment ->
+                    { english = "Download Health Assessment" }
+
+                DownloadSuccessful ->
+                    { english = "Download Successful" }
+
+                DownloadingSession1 ->
+                    { english = "Downloading…" }
+
+                DownloadingSession2 ->
+                    { english = "Downloading may take a few minutes, or a few hours. Do not leave this page while data is downloading." }
+
                 DropzoneDefaultMessage ->
                     { english = "Touch here to take a photo, or drop a photo file here." }
+
+                DownloadSession1 ->
+                    { english = "You have no sessions loaded to this device. Your next session will be available for download the day before it is scheduled to begin." }
+
+                DownloadSession2 ->
+                    { english = "You must be connected to the internet to download a session." }
 
                 EndSession ->
                     { english = "End Session" }
@@ -361,6 +390,9 @@ translate lang trans =
 
                         NoFamilyPlanning ->
                             { english = "None of these" }
+
+                Fetch ->
+                    { english = "Fetch" }
 
                 Gender gender ->
                     case gender of
@@ -422,6 +454,9 @@ translate lang trans =
                         YouMustLoginBefore ->
                             { english = "You must sign in before you can access the" }
 
+                MakeSureYouAreConnected ->
+                    { english = "Make sure you are connected to the internet. If the issue continues, call The Ihangane Project at +250 788 817 542." }
+
                 MeasurementNoChange ->
                     { english = "No Change" }
 
@@ -469,6 +504,9 @@ translate lang trans =
                 NotConnected ->
                     { english = "Not Connected" }
 
+                OK ->
+                    { english = "OK" }
+
                 Page ->
                     { english = "Page" }
 
@@ -501,6 +539,9 @@ translate lang trans =
 
                 PreviousFloatMeasurement value ->
                     { english = "Previous measurement: " ++ (toString value) }
+
+                ReadyToBeginSession ->
+                    { english = "You are now ready to begin your session." }
 
                 ReportAge age ->
                     { english = "Age: " ++ age }
@@ -572,6 +613,9 @@ translate lang trans =
 
                 TitleHealthAssessment ->
                     { english = "2017 July Health Assessment" }
+
+                UnableToDownload ->
+                    { english = "Unable to Download" }
 
                 WelcomeUser name ->
                     { english = "Welcome " ++ name }

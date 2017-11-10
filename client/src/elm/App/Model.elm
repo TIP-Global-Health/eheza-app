@@ -69,14 +69,14 @@ it at the appropriate moment.
 
 -}
 type alias LoggedInModel =
-    { backend : Backend.Model.Model
+    { backend : Backend.Model.ModelBackend
     , pages : Pages.Model.SessionPages
     }
 
 
 emptyLoggedInModel : LoggedInModel
 emptyLoggedInModel =
-    { backend = Backend.Model.emptyModel
+    { backend = Backend.Model.emptyModelBackend
     , pages = Pages.Model.emptySessionPages
     }
 
@@ -130,7 +130,7 @@ type Msg
 {-| Messages we can only handle if we're logged in.
 -}
 type MsgLoggedIn
-    = MsgBackend Backend.Model.Msg
+    = MsgBackend Backend.Model.MsgBackend
     | MsgSession Pages.Model.MsgSession
 
 
