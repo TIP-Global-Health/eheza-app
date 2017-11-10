@@ -184,7 +184,7 @@ viewFoundClinic language currentDate clinicId clinic request sessions =
 
                 Loading ->
                     div
-                        [ class "ui tiny inverted modal" ]
+                        [ class "ui tiny inverted active modal" ]
                         [ div
                             [ class "header" ]
                             [ text <| translate language Translate.DownloadingSession1 ]
@@ -198,7 +198,7 @@ viewFoundClinic language currentDate clinicId clinic request sessions =
                 Failure err ->
                     -- TODO: We could do something with the err ...
                     div
-                        [ class "ui tiny inverted modal" ]
+                        [ class "ui tiny inverted active modal" ]
                         [ div
                             [ class "header" ]
                             [ text <| translate language Translate.UnableToDownload ]
