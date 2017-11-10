@@ -12,7 +12,6 @@ import Backend.Session.Model exposing (Session)
 import Backend.Entities exposing (ClinicId, SessionId)
 import Backend.Model exposing (MsgBackend(..))
 import EveryDictList exposing (EveryDictList)
-import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -24,6 +23,7 @@ import Time.Date exposing (delta)
 import Translate exposing (Language(..), TranslationId, translate)
 import User.Model exposing (User)
 import User.Utils exposing (assignedToClinic)
+import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewOrFetch)
 
 
@@ -180,68 +180,78 @@ viewFoundClinic language currentDate clinicId clinic request sessions =
         downloadProgress =
             case request of
                 NotAsked ->
-                    emptyNode
+                    Nothing
 
                 Loading ->
-                    div
-                        [ class "ui tiny inverted active modal" ]
-                        [ div
-                            [ class "header" ]
-                            [ text <| translate language Translate.DownloadingSession1 ]
-                        , div
-                            [ class "content" ]
-                            [ div [ class "ui active centered massive inline loader" ] []
-                            , p [] [ text <| translate language Translate.DownloadingSession2 ]
+                    Just <|
+                        div
+                            [ class "ui tiny inverted active modal" ]
+                            [ div
+                                [ class "header" ]
+                                [ text <| translate language Translate.DownloadingSession1 ]
+                            , div
+                                [ class "content" ]
+                                [ div [ class "ui active centered massive inline loader" ] []
+                                , p [] [ text <| translate language Translate.DownloadingSession2 ]
+                                ]
                             ]
-                        ]
 
                 Failure err ->
                     -- TODO: We could do something with the err ...
-                    div
-                        [ class "ui tiny inverted active modal" ]
-                        [ div
-                            [ class "header" ]
-                            [ text <| translate language Translate.UnableToDownload ]
-                        , div
-                            [ class "content" ]
-                            [ p [] [ text <| translate language Translate.MakeSureYouAreConnected ]
-                            ]
-                        , div
-                            [ class "actions" ]
+                    Just <|
+                        div
+                            [ class "ui tiny inverted active modal" ]
                             [ div
-                                [ class "two basic ui buttons"
-                                , onClick <| MsgLoggedIn <| MsgBackend <| ResetOfflineSessionRequest
+                                [ class "header" ]
+                                [ text <| translate language Translate.UnableToDownload ]
+                            , div
+                                [ class "content" ]
+                                [ p [] [ text <| translate language Translate.MakeSureYouAreConnected ]
                                 ]
-                                [ button
-                                    [ class "ui fluid button" ]
-                                    [ text <| translate language Translate.OK ]
+                            , div
+                                [ class "actions" ]
+                                [ div
+                                    [ class "two basic ui buttons"
+                                    , onClick <| MsgLoggedIn <| MsgBackend <| ResetOfflineSessionRequest
+                                    ]
+                                    [ button
+                                        [ class "ui fluid button" ]
+                                        [ text <| translate language Translate.OK ]
+                                    ]
                                 ]
                             ]
-                        ]
 
                 Success sessionId ->
                     -- TODO: Show button to go on, if sessions match ...
-                    emptyNode
+                    Nothing
 
         downloadAttrs =
-            case validSession of
-                Just ( sessionId, session ) ->
+            case ( validSession, downloadProgress ) of
+                ( Just ( sessionId, session ), Nothing ) ->
                     [ class "ui fluid primary button"
                     , onClick <| MsgLoggedIn <| MsgBackend <| FetchOfflineSessionFromBackend sessionId
                     ]
 
-                Nothing ->
+                _ ->
                     [ class "ui fluid primary dark button disabled" ]
+
+        backButtonAttrs =
+            case downloadProgress of
+                Just _ ->
+                    [ class "link-back disabled" ]
+
+                Nothing ->
+                    [ class "link-back"
+                    , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
+                    ]
     in
-        [ div
+        [ viewModal downloadProgress
+        , div
             [ class "ui basic head segment" ]
             [ h1
                 [ class "ui header" ]
                 [ text clinic.name ]
-            , a
-                [ class "link-back"
-                , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
-                ]
+            , a backButtonAttrs
                 [ span [ class "icon-back" ] []
                 , span [] []
                 ]
@@ -256,5 +266,4 @@ viewFoundClinic language currentDate clinicId clinic request sessions =
             , button downloadAttrs
                 [ text <| translate language <| Translate.DownloadHealthAssessment ]
             ]
-        , downloadProgress
         ]

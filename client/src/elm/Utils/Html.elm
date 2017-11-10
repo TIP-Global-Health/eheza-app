@@ -2,13 +2,14 @@ module Utils.Html
     exposing
         ( debugView
         , divider
+        , viewModal
         , spinner
         , tabItem
         , thumbnailImage
         )
 
 import Config.Model exposing (Model)
-import Gizra.Html exposing (showIf)
+import Gizra.Html exposing (showIf, showMaybe)
 import Html exposing (Html, a, div, h5, img, span, text, i)
 import Html.Attributes exposing (attribute, class, classList, id, src, style)
 import Html.Events exposing (onClick)
@@ -80,3 +81,15 @@ thumbnailImage participant source label height width =
                 , class <| "photo-participant" ++ subClass
                 ]
                 []
+
+
+{-| Takes some HTML with a "modal" class, and puts it in an overlay
+which dims the background and centers the modal vertically in the
+viewport.
+
+Or, if nothing, shows an emptyNode.
+
+-}
+viewModal : Maybe (Html msg) -> Html msg
+viewModal =
+    showMaybe << Maybe.map (\modal -> div [ class "overlay" ] [ modal ])

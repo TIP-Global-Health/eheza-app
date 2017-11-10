@@ -14,3 +14,42 @@ input::placeholder {
 a {
   cursor: pointer;
 }
+
+// CSS for an overlay. So, the idea is that we have a structure that looks like
+// this:
+//
+// <div class="overlay">
+//     <div class="modal">
+//
+//     </div>
+// </div>
+//
+// ... other stuff
+//
+// The position: fixed etc. will size the overlay to be 100% of the viewport.
+//
+// The z-index will put this in front of the other stuff.
+//
+// The background-color dims everything that isn't in the modal itself (i.e.
+// the other stuff).
+//
+// TODO: Ideally, we'd also like to block interaction with everything that
+// isn't inside the modal. For the moment, we're doing this manually ...  that
+// is, we disable event handlers without any particular magic.
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 10;
+  background-color: rgba(0,0,0,0.5);
+}
+
+// CSS for the modal itself, inside an overlay. We center
+// the modal vertically inside the viewport.
+.overlay > .modal {
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
