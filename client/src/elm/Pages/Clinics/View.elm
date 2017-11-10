@@ -10,8 +10,9 @@ import App.Model exposing (Msg(..), MsgLoggedIn(..))
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Session.Model exposing (Session)
 import Backend.Entities exposing (ClinicId, SessionId)
-import Backend.Model
+import Backend.Model exposing (MsgBackend(..))
 import EveryDictList exposing (EveryDictList)
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -140,17 +141,17 @@ viewClinic language currentDate clinicId backend =
             (\clinics ->
                 viewOrFetch language
                     (MsgLoggedIn <| MsgBackend <| Backend.Model.FetchFutureSessions currentDate)
-                    (\sessions -> viewLoadedClinic language currentDate clinicId clinics sessions)
+                    (\sessions -> viewLoadedClinic language currentDate clinicId clinics backend.offlineSessionRequest sessions)
                     backend.futureSessions
             )
             backend.clinics
 
 
-viewLoadedClinic : Language -> NominalDate -> ClinicId -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
-viewLoadedClinic language currentDate clinicId clinics ( queryDate, futureSessions ) =
+viewLoadedClinic : Language -> NominalDate -> ClinicId -> EveryDictList ClinicId Clinic -> WebData SessionId -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
+viewLoadedClinic language currentDate clinicId clinics request ( queryDate, futureSessions ) =
     case EveryDictList.get clinicId clinics of
         Just clinic ->
-            viewFoundClinic language currentDate clinicId clinic futureSessions
+            viewFoundClinic language currentDate clinicId clinic request futureSessions
 
         Nothing ->
             [ Pages.PageNotFound.View.viewPage language <|
@@ -160,8 +161,8 @@ viewLoadedClinic language currentDate clinicId clinics ( queryDate, futureSessio
             ]
 
 
-viewFoundClinic : Language -> NominalDate -> ClinicId -> Clinic -> EveryDictList SessionId Session -> List (Html Msg)
-viewFoundClinic language currentDate clinicId clinic sessions =
+viewFoundClinic : Language -> NominalDate -> ClinicId -> Clinic -> WebData SessionId -> EveryDictList SessionId Session -> List (Html Msg)
+viewFoundClinic language currentDate clinicId clinic request sessions =
     let
         validSession =
             sessions
@@ -172,16 +173,61 @@ viewFoundClinic language currentDate clinicId clinic sessions =
                             -- And start date must be in past, or at most one day in future
                             && ((delta session.scheduledDate.start currentDate).days <= 1)
                             -- And end date must be in the future
-                            && (Time.Date.compare session.scheduledDate.end currentDate /= GT)
+                            && (Time.Date.compare session.scheduledDate.end currentDate /= LT)
                     )
                 |> EveryDictList.head
+
+        downloadProgress =
+            case request of
+                NotAsked ->
+                    emptyNode
+
+                Loading ->
+                    div
+                        [ class "ui tiny inverted modal" ]
+                        [ div
+                            [ class "header" ]
+                            [ text <| translate language Translate.DownloadingSession1 ]
+                        , div
+                            [ class "content" ]
+                            [ div [ class "ui active centered massive inline loader" ] []
+                            , p [] [ text <| translate language Translate.DownloadingSession2 ]
+                            ]
+                        ]
+
+                Failure err ->
+                    -- TODO: We could do something with the err ...
+                    div
+                        [ class "ui tiny inverted modal" ]
+                        [ div
+                            [ class "header" ]
+                            [ text <| translate language Translate.UnableToDownload ]
+                        , div
+                            [ class "content" ]
+                            [ p [] [ text <| translate language Translate.MakeSureYouAreConnected ]
+                            ]
+                        , div
+                            [ class "actions" ]
+                            [ div
+                                [ class "two basic ui buttons"
+                                , onClick <| MsgLoggedIn <| MsgBackend <| ResetOfflineSessionRequest
+                                ]
+                                [ button
+                                    [ class "ui fluid button" ]
+                                    [ text <| translate language Translate.OK ]
+                                ]
+                            ]
+                        ]
+
+                Success sessionId ->
+                    -- TODO: Show button to go on, if sessions match ...
+                    emptyNode
 
         downloadAttrs =
             case validSession of
                 Just ( sessionId, session ) ->
                     [ class "ui fluid primary button"
-
-                    -- TODO: onClick
+                    , onClick <| MsgLoggedIn <| MsgBackend <| FetchOfflineSessionFromBackend sessionId
                     ]
 
                 Nothing ->
@@ -210,4 +256,5 @@ viewFoundClinic language currentDate clinicId clinic sessions =
             , button downloadAttrs
                 [ text <| translate language <| Translate.DownloadHealthAssessment ]
             ]
+        , downloadProgress
         ]

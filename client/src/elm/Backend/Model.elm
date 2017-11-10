@@ -23,6 +23,7 @@ import Backend.Measurement.Model exposing (MeasurementEdits)
 import Backend.Session.Model exposing (OfflineSession, Session)
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
+import Http exposing (Error)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.UpdatableData exposing (UpdatableWebData)
 
@@ -53,6 +54,17 @@ type alias ModelBackend =
     -- represent. (And, eventually, one would want to remember the `count`
     -- and which pages you have etc.).
     , futureSessions : WebData ( NominalDate, EveryDictList SessionId Session )
+
+    -- This is a flag which tracks our progress in downloading an
+    -- offlineSession from the backend. We don't actually **store** the data
+    -- here, because we want to use it from the cache, and only consider it
+    -- **really** available if we can get if from the cache. However, it's
+    -- still handy to have a flag that tells us whether a request is in
+    -- progress or not. (In fact, we need to know, for the UI).
+    --
+    -- We do remember which sessionID we downloaded, since that helps a bit
+    -- to match things up in the UI.
+    , offlineSessionRequest : WebData SessionId
     }
 
 
@@ -60,6 +72,7 @@ emptyModelBackend : ModelBackend
 emptyModelBackend =
     { clinics = NotAsked
     , futureSessions = NotAsked
+    , offlineSessionRequest = NotAsked
     }
 
 
@@ -71,8 +84,9 @@ type MsgBackend
     | FetchFutureSessions NominalDate
     | FetchOfflineSessionFromBackend SessionId
     | HandleFetchedClinics (WebData (EveryDictList ClinicId Clinic))
-    | HandleFetchedOfflineSessionFromBackend (WebData (Maybe ( SessionId, OfflineSession )))
+    | HandleFetchedOfflineSessionFromBackend (Result Error ( SessionId, OfflineSession ))
     | HandleFetchedSessions NominalDate (WebData (EveryDictList SessionId Session))
+    | ResetOfflineSessionRequest -- resets it to `NotAsked`
 
 
 {-| This models things which we cache locally ... so, like `ModelBackend`, but

@@ -60,7 +60,7 @@ class HedleyRestfulSessions extends HedleyRestfulEntityBaseNode {
       // open in the future.
       $openAfter = $request['open_after'];
 
-      $query->fieldCondition('field_scheduled_date', 'value2', $openAfter, '<=');
+      $query->fieldCondition('field_scheduled_date', 'value2', $openAfter, '>=');
     }
 
     return $query;

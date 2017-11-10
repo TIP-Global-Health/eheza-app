@@ -54,6 +54,8 @@ type TranslationId
     | DownloadHealthAssessment
     | DownloadSession1
     | DownloadSession2
+    | DownloadingSession1
+    | DownloadingSession2
     | DropzoneDefaultMessage
     | EndSession
     | ErrorBadUrl
@@ -69,6 +71,7 @@ type TranslationId
     | KilogramShorthand
     | LinkToMother
     | LoginPhrase LoginPhrase
+    | MakeSureYouAreConnected
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
@@ -82,6 +85,7 @@ type TranslationId
     | NoParticipantsFound
     | NotAvailable
     | NotConnected
+    | OK
     | Page
     | Page404
     | PageNotFoundMsg
@@ -105,6 +109,7 @@ type TranslationId
     | SearchByName
     | SelectYourClinic
     | TitleHealthAssessment
+    | UnableToDownload
     | WelcomeUser String
     | ZScoreHeightForAge
     | ZScoreMuacForAge
@@ -322,6 +327,12 @@ translate lang trans =
                 DownloadHealthAssessment ->
                     { english = "Download Health Assessment" }
 
+                DownloadingSession1 ->
+                    { english = "Downloading…" }
+
+                DownloadingSession2 ->
+                    { english = "Downloading may take a few minutes, or a few hours. Do not leave this page while data is downloading." }
+
                 DropzoneDefaultMessage ->
                     { english = "Touch here to take a photo, or drop a photo file here." }
 
@@ -438,6 +449,9 @@ translate lang trans =
                         YouMustLoginBefore ->
                             { english = "You must sign in before you can access the" }
 
+                MakeSureYouAreConnected ->
+                    { english = "Make sure you are connected to the internet. If the issue continues, call The Ihangane Project at +250 788 817 542." }
+
                 MeasurementNoChange ->
                     { english = "No Change" }
 
@@ -484,6 +498,9 @@ translate lang trans =
 
                 NotConnected ->
                     { english = "Not Connected" }
+
+                OK ->
+                    { english = "OK" }
 
                 Page ->
                     { english = "Page" }
@@ -588,6 +605,9 @@ translate lang trans =
 
                 TitleHealthAssessment ->
                     { english = "2017 July Health Assessment" }
+
+                UnableToDownload ->
+                    { english = "Unable to Download" }
 
                 WelcomeUser name ->
                     { english = "Welcome " ++ name }

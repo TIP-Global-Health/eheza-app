@@ -74,8 +74,8 @@ updateBackend backendUrl accessToken msg model =
         selectFromBackend =
             Restful.Endpoint.select backendUrl (Just accessToken)
 
-        getFromBackend =
-            Restful.Endpoint.get backendUrl (Just accessToken)
+        getFromBackend404 =
+            Restful.Endpoint.get404 backendUrl (Just accessToken)
     in
         case msg of
             FetchClinics ->
@@ -106,13 +106,24 @@ updateBackend backendUrl accessToken msg model =
                 )
 
             FetchOfflineSessionFromBackend sessionId ->
-                Debug.crash "redo"
+                ( { model | offlineSessionRequest = Loading }
+                , getFromBackend404 offlineSessionEndpoint sessionId HandleFetchedOfflineSessionFromBackend
+                )
 
-            {-
-               ( { model | offlineSession = Loading }
-               , getFromBackend offlineSessionEndpoint sessionId <|
-                   (RemoteData.fromResult >> HandleFetchedOfflineSessionFromBackend)
-               )
-            -}
-            HandleFetchedOfflineSessionFromBackend data ->
-                Debug.crash "redo"
+            HandleFetchedOfflineSessionFromBackend result ->
+                case result of
+                    Err error ->
+                        ( { model | offlineSessionRequest = RemoteData.fromResult (Result.map Tuple.first result) }
+                        , Cmd.none
+                        )
+
+                    Ok ( sessionId, session ) ->
+                        -- TODO: Kick off a save into the cache.
+                        ( { model | offlineSessionRequest = Success sessionId }
+                        , Cmd.none
+                        )
+
+            ResetOfflineSessionRequest ->
+                ( { model | offlineSessionRequest = NotAsked }
+                , Cmd.none
+                )
