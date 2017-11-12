@@ -24,6 +24,7 @@ import Backend.Session.Model exposing (OfflineSession, Session)
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import Http exposing (Error)
+import Json.Encode exposing (Value)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.UpdatableData exposing (UpdatableWebData)
 
@@ -119,7 +120,7 @@ type alias ModelCached =
     --   locally.
     --
     -- * If we have one, we're definitely using it, not doing something else.
-    { offlineSession : WebData (Maybe ( SessionId, OfflineSession ))
+    { offlineSession : UpdatableWebData (Maybe ( SessionId, OfflineSession ))
 
     -- This tracks mesaurements which we've edited, but haven't uploaded to
     -- the backend yet. These are immediately cached locally, which is what
@@ -146,7 +147,7 @@ type alias ModelCached =
 
 emptyModelCached : ModelCached
 emptyModelCached =
-    { offlineSession = NotAsked
+    { offlineSession = Restful.UpdatableData.notAsked
     , edits = Restful.UpdatableData.notAsked
     }
 
@@ -155,5 +156,6 @@ emptyModelCached =
 putting things back into the cache.
 -}
 type MsgCached
-    = FetchOfflineSessionFromCache
-    | HandleFetchedOfflineSessionFromCache (WebData (Maybe ( SessionId, OfflineSession )))
+    = CacheOfflineSession SessionId OfflineSession
+    | CacheOfflineSessionResult Value
+    | FetchOfflineSessionFromCache

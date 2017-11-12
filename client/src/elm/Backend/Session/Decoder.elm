@@ -25,8 +25,10 @@ decodeSession =
         |> required "scheduled_date" (decodeDrupalRange decodeYYYYMMDD)
         |> custom
             (oneOf
-                -- Work with "full_view" true or false
+                -- Work with "full_view" true or false, or with the
+                -- structure we encode for the cache.
                 [ field "clinic" decodeEntityId
+                , field "clinic_id" decodeEntityId
                 , at [ "clinic", "id" ] decodeEntityId
                 ]
             )

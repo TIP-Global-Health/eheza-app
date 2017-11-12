@@ -81,18 +81,27 @@ init flags =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        MsgCache subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    Backend.Update.updateCache subMsg model.cache
+            in
+                ( { model | cache = subModel }
+                , Cmd.map MsgCache subCmd
+                )
+
         MsgLoggedIn loggedInMsg ->
             updateLoggedIn
                 (\credentials data ->
                     case loggedInMsg of
                         MsgBackend subMsg ->
                             let
-                                ( backend, cmd ) =
+                                ( backend, cmd, cacheMsgs ) =
                                     Backend.Update.updateBackend credentials.backendUrl credentials.accessToken subMsg data.backend
                             in
                                 ( { data | backend = backend }
                                 , Cmd.map (MsgLoggedIn << MsgBackend) cmd
-                                , []
+                                , List.map MsgCache cacheMsgs
                                 )
 
                         MsgSession subMsg ->
