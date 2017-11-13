@@ -54,6 +54,13 @@ elmApp.ports.cacheOfflineSession.subscribe(function(json) {
     elmApp.ports.cacheOfflineSessionResult.send({});
 });
 
+elmApp.ports.fetchOfflineSession.subscribe(function () {
+    var session = localStorage.getItem('offlineSession');
+
+    // TODO: Consider exceptions?
+    elmApp.ports.handleOfflineSession.send(session || "");
+});
+
 /**
  * Port the 'Pusher' events names into our Elm's app.
  */

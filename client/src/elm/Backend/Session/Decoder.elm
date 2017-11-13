@@ -53,6 +53,15 @@ decodeOfflineSession =
         |> map splitHistoricalMeasurements
 
 
+{-| We use this to decode the string we store in local storage.
+-}
+decodeOfflineSessionWithId : Decoder ( SessionId, OfflineSession )
+decodeOfflineSessionWithId =
+    decode (,)
+        |> required "sessionId" decodeEntityId
+        |> required "session" decodeOfflineSession
+
+
 {-| Takes the historical measurements and populates `previousMeasurements`
 and `currentMeasurements` as appropriate. Anything which goes in `currentMeasurements`
 is removed from `historicalMeasurments`.

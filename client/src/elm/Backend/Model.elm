@@ -159,3 +159,4 @@ type MsgCached
     = CacheOfflineSession SessionId OfflineSession
     | CacheOfflineSessionResult Value
     | FetchOfflineSessionFromCache
+    | HandleOfflineSession String

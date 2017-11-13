@@ -1,4 +1,4 @@
-port module Backend.Update exposing (updateBackend, updateCache)
+port module Backend.Update exposing (updateBackend, updateCache, subscriptions, fetchOfflineSession)
 
 {-| This could perhaps be distributed one level down, to
 `Backend.Session.Update`, `Backend.Clinic.Update` etc. Or, perhaps it is nicer
@@ -9,14 +9,15 @@ import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (..)
-import Backend.Session.Decoder exposing (decodeSession, decodeOfflineSession)
-import Backend.Session.Encoder exposing (encodeOfflineSession)
+import Backend.Session.Decoder exposing (decodeSession, decodeOfflineSession, decodeOfflineSessionWithId)
+import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId)
 import Backend.Session.Model exposing (Session, OfflineSession)
 import Config.Model exposing (BackendUrl)
 import Restful.Endpoint exposing (EndPoint, toEntityId, fromEntityId, encodeEntityId)
 import EveryDictList
 import Gizra.NominalDate exposing (NominalDate)
 import Http exposing (Error)
+import Json.Decode
 import Json.Encode exposing (Value, object)
 import Maybe.Extra exposing (toList)
 import RemoteData exposing (RemoteData(..))
@@ -151,10 +152,7 @@ updateCache msg model =
                     , update = Loading
                     }
               }
-            , object
-                [ ( "sessionId", encodeEntityId sessionId )
-                , ( "session", encodeOfflineSession session )
-                ]
+            , encodeOfflineSessionWithId sessionId session
                 |> Json.Encode.encode 0
                 |> cacheOfflineSession
             )
@@ -170,7 +168,52 @@ updateCache msg model =
                 )
 
         FetchOfflineSessionFromCache ->
-            Debug.crash "implement"
+            ( { model
+                | offlineSession =
+                    { value = Loading
+                    , update = NotAsked
+                    }
+              }
+            , fetchOfflineSession ()
+            )
+
+        HandleOfflineSession cached ->
+            case Json.Decode.decodeString decodeOfflineSessionWithId cached of
+                Ok result ->
+                    ( { model
+                        | offlineSession =
+                            { value = Success (Just result)
+                            , update = NotAsked
+                            }
+                      }
+                    , Cmd.none
+                    )
+
+                Err err ->
+                    -- TODO: Actually think about the error. for now, we just say
+                    -- we don't have one.
+                    let
+                        _ =
+                            Debug.log "error fetching session from cache" err
+                    in
+                        ( { model
+                            | offlineSession =
+                                { value = Success Nothing
+                                , update = NotAsked
+                                }
+                          }
+                        , Cmd.none
+                        )
+
+
+{-| Subscribe to the answers to our cache requests.
+-}
+subscriptions : Sub MsgCached
+subscriptions =
+    Sub.batch
+        [ cacheOfflineSessionResult CacheOfflineSessionResult
+        , handleOfflineSession HandleOfflineSession
+        ]
 
 
 {-| Cache an offline session. For now, we've just got one slot ... of course,

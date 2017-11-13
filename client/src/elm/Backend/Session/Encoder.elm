@@ -2,6 +2,7 @@ module Backend.Session.Encoder exposing (..)
 
 import Backend.Child.Encoder exposing (encodeChild)
 import Backend.Clinic.Encoder exposing (encodeClinic)
+import Backend.Entities exposing (..)
 import Backend.Mother.Encoder exposing (encodeMother)
 import Backend.Session.Model exposing (..)
 import EveryDict
@@ -45,4 +46,14 @@ encodeOfflineSession offline =
                 , ( "child_activity", list [] )
                 ]
           )
+        ]
+
+
+{-| We use this for caching to local storage.
+-}
+encodeOfflineSessionWithId : SessionId -> OfflineSession -> Value
+encodeOfflineSessionWithId sessionId session =
+    object
+        [ ( "sessionId", encodeEntityId sessionId )
+        , ( "session", encodeOfflineSession session )
         ]

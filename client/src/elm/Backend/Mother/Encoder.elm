@@ -11,5 +11,5 @@ encodeMother mother =
     [ ( "label", string mother.name )
     , ( "avatar", string mother.image )
     , ( "children", list (List.map encodeEntityId mother.children) )
-    , ( "birthDate", encodeYYYYMMDD mother.birthDate )
+    , ( "date_birth", encodeYYYYMMDD mother.birthDate )
     ]
