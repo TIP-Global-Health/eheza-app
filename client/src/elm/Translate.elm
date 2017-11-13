@@ -44,6 +44,7 @@ type TranslationId
     | Assessment
     | Baby
     | BabyName String
+    | BeginHealthAssessment
     | CentimeterShorthand
     | ChildNutritionSignLabel ChildNutritionSign
     | Children
@@ -69,6 +70,7 @@ type TranslationId
     | FamilyPlanningSignLabel FamilyPlanningSign
     | Fetch
     | Gender Gender
+    | GoHome
     | KilogramShorthand
     | LinkToMother
     | LoginPhrase LoginPhrase
@@ -285,6 +287,9 @@ translate lang trans =
                 BabyName name ->
                     { english = "Baby: " ++ name }
 
+                BeginHealthAssessment ->
+                    { english = "Begin Health Assessment" }
+
                 CentimeterShorthand ->
                     { english = "cm" }
 
@@ -401,6 +406,9 @@ translate lang trans =
 
                         Female ->
                             { english = "Female" }
+
+                GoHome ->
+                    { english = "Go to main page" }
 
                 KilogramShorthand ->
                     { english = "kg" }

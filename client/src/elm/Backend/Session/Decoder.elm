@@ -25,8 +25,10 @@ decodeSession =
         |> required "scheduled_date" (decodeDrupalRange decodeYYYYMMDD)
         |> custom
             (oneOf
-                -- Work with "full_view" true or false
+                -- Work with "full_view" true or false, or with the
+                -- structure we encode for the cache.
                 [ field "clinic" decodeEntityId
+                , field "clinic_id" decodeEntityId
                 , at [ "clinic", "id" ] decodeEntityId
                 ]
             )
@@ -49,6 +51,15 @@ decodeOfflineSession =
         |> hardcoded emptyMeasurements
         |> hardcoded emptyMeasurements
         |> map splitHistoricalMeasurements
+
+
+{-| We use this to decode the string we store in local storage.
+-}
+decodeOfflineSessionWithId : Decoder ( SessionId, OfflineSession )
+decodeOfflineSessionWithId =
+    decode (,)
+        |> required "sessionId" decodeEntityId
+        |> required "session" decodeOfflineSession
 
 
 {-| Takes the historical measurements and populates `previousMeasurements`

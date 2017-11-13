@@ -2,8 +2,8 @@ module App.View exposing (view)
 
 import App.Model exposing (..)
 import Config.View
-import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
+import Html.Attributes exposing (class)
 import Pages.Clinics.View
 import Pages.Login.View
 import Pages.MyAccount.View
@@ -12,6 +12,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.View exposing (viewSessionPage)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Login
+import Utils.Html exposing (spinner)
 
 
 view : Model -> Html Msg
@@ -28,7 +29,7 @@ view model =
         _ ->
             -- Don't show anything if config resolution is in process but
             -- hasn't failed yet.
-            emptyNode
+            viewLoading
 
 
 {-| We call this after checking our config. We ask for the model itself,
@@ -104,7 +105,15 @@ viewConfiguredModel model configured =
                                     Pages.MyAccount.View.view model.language login.credentials.user
 
                                 ClinicsPage clinicId ->
-                                    Pages.Clinics.View.view model.language model.currentDate login.credentials.user clinicId login.data.backend
+                                    -- We need the cached session
+                                    case model.cache.offlineSession.value of
+                                        Success session ->
+                                            Pages.Clinics.View.view model.language model.currentDate login.credentials.user clinicId login.data.backend (Maybe.map Tuple.first session)
+
+                                        _ ->
+                                            -- TODO: Whose job should it be to show errors loading the offlineSession
+                                            -- from the cache?
+                                            viewLoading
 
                 PageNotFound url ->
                     Pages.PageNotFound.View.view model.language url
@@ -117,3 +126,16 @@ viewConfiguredModel model configured =
                         (Debug.crash "Provide editable session")
                         login.data.pages
                         |> Html.map (MsgLoggedIn << MsgSession)
+
+
+{-| Just show a generic loading indicator, for cases that will resolve soon,
+where we don't need to show any progress.
+-}
+viewLoading : Html any
+viewLoading =
+    div
+        [ class "wrap wrap-alt-2" ]
+        [ div
+            [ class "ui segment center aligned" ]
+            [ spinner ]
+        ]

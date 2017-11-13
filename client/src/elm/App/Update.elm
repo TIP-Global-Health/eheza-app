@@ -14,8 +14,6 @@ import Pages.Login.Update
 import Pages.Page exposing (Page(..), UserPage(ClinicsPage))
 import Pages.Update
 import Pages.Update
-import Pusher.Model
-import Pusher.Utils exposing (getClusterName)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (decodeSingleEntity)
 import Restful.Login exposing (LoginStatus(..), Login, Credentials, checkCachedCredentials)
@@ -52,14 +50,21 @@ init flags =
                     checkCachedCredentials loginConfig config.backendUrl flags.credentials
 
                 cmd =
+                    -- We always check the cache for an offline session, since that affects
+                    -- the UI we'll offer to show at a basic level. (An alternative would be
+                    -- to fetch it only when we really, really need it).
                     Cmd.batch
-                        [ pusherKey
-                            ( config.pusherKey.key
-                            , getClusterName config.pusherKey.cluster
-                            , Pusher.Model.eventNames
-                            )
-                        , Task.perform Tick Time.now
+                        [ -- We'll leave out the pusherKey for the moment, until we're
+                          -- actually using it.
+                          {- pusherKey
+                             ( config.pusherKey.key
+                             , getClusterName config.pusherKey.cluster
+                             , Pusher.Model.eventNames
+                             )
+                          -}
+                          Task.perform Tick Time.now
                         , loginCmd
+                        , Backend.Update.fetchOfflineSession ()
                         ]
 
                 configuredModel =
@@ -81,18 +86,27 @@ init flags =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        MsgCache subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    Backend.Update.updateCache subMsg model.cache
+            in
+                ( { model | cache = subModel }
+                , Cmd.map MsgCache subCmd
+                )
+
         MsgLoggedIn loggedInMsg ->
             updateLoggedIn
                 (\credentials data ->
                     case loggedInMsg of
                         MsgBackend subMsg ->
                             let
-                                ( backend, cmd ) =
+                                ( backend, cmd, cacheMsgs ) =
                                     Backend.Update.updateBackend credentials.backendUrl credentials.accessToken subMsg data.backend
                             in
                                 ( { data | backend = backend }
                                 , Cmd.map (MsgLoggedIn << MsgBackend) cmd
-                                , []
+                                , List.map MsgCache cacheMsgs
                                 )
 
                         MsgSession subMsg ->
@@ -275,6 +289,7 @@ subscriptions model =
     Sub.batch
         [ Time.every minute Tick
         , offline SetOffline
+        , Sub.map MsgCache Backend.Update.subscriptions
         ]
 
 

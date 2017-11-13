@@ -30,6 +30,10 @@ default.
 -}
 type alias Model =
     { activePage : Page
+
+    -- We don't need a configuration or to be logged in to access the cache, at
+    -- least for the moment.
+    , cache : Backend.Model.ModelCached
     , configuration : RemoteData String ConfiguredModel
     , currentDate : NominalDate
     , language : Language
@@ -118,7 +122,8 @@ In any event, that will need some thought at some point.
 
 -}
 type Msg
-    = MsgLoggedIn MsgLoggedIn
+    = MsgCache Backend.Model.MsgCached
+    | MsgLoggedIn MsgLoggedIn
     | MsgLogin (Restful.Login.Msg User)
     | MsgPageLogin Pages.Login.Model.Msg
     | SetActivePage Page
@@ -146,6 +151,7 @@ emptyModel =
     -- if we auto-login, we'll transition to something
     -- sensible anyway.
     { activePage = LoginPage
+    , cache = Backend.Model.emptyModelCached
     , configuration = NotAsked
 
     -- We start at 1970, which might be nice to avoid, but probably more

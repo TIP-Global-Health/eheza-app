@@ -9,6 +9,9 @@ type Gender
     | Male
 
 
+{-| We keep just the basic information in the `Child` record itself.
+For things like measurements, you need an `OfflineSession`.
+-}
 type alias Child =
     { name : String
     , image : String

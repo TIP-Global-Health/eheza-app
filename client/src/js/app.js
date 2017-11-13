@@ -42,6 +42,25 @@ elmApp.ports.cacheCredentials.subscribe(function(params) {
     localStorage.setItem('credentials', credentials);
 });
 
+elmApp.ports.cacheOfflineSession.subscribe(function(json) {
+    // For the moment, we'll cache it in the simplest way possible ... we'll
+    // see how much more we need to do. We can probably store the JSON as a
+    // lump, since we treat it as immutable and don't update it frequently.
+    // But we may need to manage quota, or use a different mechanism in order
+    // to get more quota.
+    localStorage.setItem('offlineSession', json);
+
+    // TODO: We should catch exceptions ... and report back a real result!
+    elmApp.ports.cacheOfflineSessionResult.send({});
+});
+
+elmApp.ports.fetchOfflineSession.subscribe(function () {
+    var session = localStorage.getItem('offlineSession');
+
+    // TODO: Consider exceptions?
+    elmApp.ports.handleOfflineSession.send(session || "");
+});
+
 /**
  * Port the 'Pusher' events names into our Elm's app.
  */

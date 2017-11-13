@@ -16,6 +16,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Maybe.Extra exposing (isJust)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PageNotFound.View
 import RemoteData exposing (RemoteData(..), WebData)
@@ -37,17 +38,28 @@ the big one.
 If `selectedClinic` is Just, we'll show a page for that clinic. If not, we'll
 show a list of clinics.
 
-You shouldn't call this if you already have an OfflineSession to edit ... in that
-case, you ought to show the UI for the OfflineSession instead. (In future, we could
-change that and allow viewing this even if you have an offline session, but we'd need
-to define what that would look like).
+The `cachedSession` param represents the `OfflineSession` from our cache.
+Loading the offline session from the cache is essential for our startup logic ..
+since if we have a session with edits, we'll bypass all of this and show the
+editing UI for the session. So, we demand here that the caller definitely knows
+whether the offlineSession exists or not ... if it's still a `NotAsked`, then
+you just shouldn't call us yet ... you should show something else while you
+figure that out. In other words, a `Nothing` for `cachedSession` means we
+definitely don't have one, not that we're still checking. Note that we don't
+actually need the `OfflineSession` itself here, but if you provide the `SessionId`,
+you are asserting that you'll also be able to provide the `OfflineSession` itself
+when needed.
+
+Also, you shouldn't call us if you already have edits for the offline session
+... in that case, you should show the editing UI and insist that the edits be
+uploaded before showing this again.
 
 -}
-view : Language -> NominalDate -> User -> Maybe ClinicId -> Backend.Model.ModelBackend -> Html Msg
-view language currentDate user selectedClinic backend =
+view : Language -> NominalDate -> User -> Maybe ClinicId -> Backend.Model.ModelBackend -> Maybe SessionId -> Html Msg
+view language currentDate user selectedClinic backend cachedSession =
     case selectedClinic of
         Just clinicId ->
-            viewClinic language currentDate clinicId backend
+            viewClinic language currentDate clinicId backend cachedSession
 
         Nothing ->
             viewClinicList language user backend.clinics
@@ -133,25 +145,25 @@ authorized, but we should check here as well, in case a crafty user just types
 in a URL to get here.
 
 -}
-viewClinic : Language -> NominalDate -> ClinicId -> Backend.Model.ModelBackend -> Html Msg
-viewClinic language currentDate clinicId backend =
+viewClinic : Language -> NominalDate -> ClinicId -> Backend.Model.ModelBackend -> Maybe SessionId -> Html Msg
+viewClinic language currentDate clinicId backend cachedSession =
     div [ class "wrap wrap-alt-2" ] <|
         viewOrFetch language
             (MsgLoggedIn <| MsgBackend Backend.Model.FetchClinics)
             (\clinics ->
                 viewOrFetch language
                     (MsgLoggedIn <| MsgBackend <| Backend.Model.FetchFutureSessions currentDate)
-                    (\sessions -> viewLoadedClinic language currentDate clinicId clinics backend.offlineSessionRequest sessions)
+                    (\sessions -> viewLoadedClinic language currentDate clinicId clinics backend.offlineSessionRequest sessions cachedSession)
                     backend.futureSessions
             )
             backend.clinics
 
 
-viewLoadedClinic : Language -> NominalDate -> ClinicId -> EveryDictList ClinicId Clinic -> WebData SessionId -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
-viewLoadedClinic language currentDate clinicId clinics request ( queryDate, futureSessions ) =
+viewLoadedClinic : Language -> NominalDate -> ClinicId -> EveryDictList ClinicId Clinic -> WebData SessionId -> ( NominalDate, EveryDictList SessionId Session ) -> Maybe SessionId -> List (Html Msg)
+viewLoadedClinic language currentDate clinicId clinics request ( queryDate, futureSessions ) cachedSession =
     case EveryDictList.get clinicId clinics of
         Just clinic ->
-            viewFoundClinic language currentDate clinicId clinic request futureSessions
+            viewFoundClinic language currentDate clinicId clinic request futureSessions cachedSession
 
         Nothing ->
             [ Pages.PageNotFound.View.viewPage language <|
@@ -161,8 +173,8 @@ viewLoadedClinic language currentDate clinicId clinics request ( queryDate, futu
             ]
 
 
-viewFoundClinic : Language -> NominalDate -> ClinicId -> Clinic -> WebData SessionId -> EveryDictList SessionId Session -> List (Html Msg)
-viewFoundClinic language currentDate clinicId clinic request sessions =
+viewFoundClinic : Language -> NominalDate -> ClinicId -> Clinic -> WebData SessionId -> EveryDictList SessionId Session -> Maybe SessionId -> List (Html Msg)
+viewFoundClinic language currentDate clinicId clinic request sessions cachedSession =
     let
         validSession =
             sessions
@@ -176,6 +188,7 @@ viewFoundClinic language currentDate clinicId clinic request sessions =
                             && (Time.Date.compare session.scheduledDate.end currentDate /= LT)
                     )
                 |> EveryDictList.head
+                |> Maybe.map Tuple.first
 
         downloadProgress =
             case request of
@@ -222,7 +235,7 @@ viewFoundClinic language currentDate clinicId clinic request sessions =
                             ]
 
                 Success sessionId ->
-                    if Just sessionId == Maybe.map Tuple.first validSession then
+                    if Just sessionId == validSession then
                         Just <|
                             div
                                 [ class "ui tiny inverted active modal" ]
@@ -250,8 +263,9 @@ viewFoundClinic language currentDate clinicId clinic request sessions =
                         Nothing
 
         downloadAttrs =
+            -- We enable the download if it's not already in progress, and we've got a valid session
             case ( validSession, downloadProgress ) of
-                ( Just ( sessionId, session ), Nothing ) ->
+                ( Just sessionId, Nothing ) ->
                     [ class "ui fluid primary button"
                     , onClick <| MsgLoggedIn <| MsgBackend <| FetchOfflineSessionFromBackend sessionId
                     ]
@@ -260,6 +274,7 @@ viewFoundClinic language currentDate clinicId clinic request sessions =
                     [ class "ui fluid primary dark button disabled" ]
 
         backButtonAttrs =
+            -- Disable the back button if we're showing the download progress modal
             case downloadProgress of
                 Just _ ->
                     [ class "link-back disabled" ]
@@ -268,6 +283,24 @@ viewFoundClinic language currentDate clinicId clinic request sessions =
                     [ class "link-back"
                     , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
                     ]
+
+        -- If we already have a downloaded session for the valid session, we
+        -- just offer to start it. Otherwise, we offer to download it.
+        content =
+            if isJust validSession && cachedSession == validSession then
+                [ button
+                    [ class "ui fluid primary button" ]
+                    [ text <| translate language Translate.BeginHealthAssessment ]
+                ]
+            else
+                [ div
+                    [ class "ui info" ]
+                    [ p [] [ text <| translate language Translate.DownloadSession1 ]
+                    , p [] [ text <| translate language Translate.DownloadSession2 ]
+                    ]
+                , button downloadAttrs
+                    [ text <| translate language <| Translate.DownloadHealthAssessment ]
+                ]
     in
         [ viewModal downloadProgress
         , div
@@ -282,12 +315,5 @@ viewFoundClinic language currentDate clinicId clinic request sessions =
             ]
         , div
             [ class "ui basic wide segment" ]
-            [ div
-                [ class "ui info" ]
-                [ p [] [ text <| translate language Translate.DownloadSession1 ]
-                , p [] [ text <| translate language Translate.DownloadSession2 ]
-                ]
-            , button downloadAttrs
-                [ text <| translate language <| Translate.DownloadHealthAssessment ]
-            ]
+            content
         ]
