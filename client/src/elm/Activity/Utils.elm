@@ -22,6 +22,7 @@ module Activity.Utils
         , motherHasPendingActivity
         , motherOrAnyChildHasAnyCompletedActivity
         , motherOrAnyChildHasAnyPendingActivity
+        , setCheckedIn
         )
 
 import Activity.Model exposing (ActivityListItem, ActivityType(..), ChildActivityType(..), MotherActivityType(..))
@@ -29,7 +30,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (applyEdit)
 import Backend.Session.Model exposing (..)
-import Backend.Session.Utils exposing (getMother, getMotherMeasurementData, getChildMeasurementData)
+import Backend.Session.Utils exposing (getMother, getMotherMeasurementData, getChildMeasurementData, mapMotherEdits)
 import EveryDict
 import EveryDictList
 import Maybe.Extra exposing (isJust, isNothing)
@@ -391,6 +392,11 @@ isCheckedIn motherId session =
             motherOrAnyChildHasAnyCompletedActivity motherId session
     in
         explicitlyCheckedIn || hasCompletedActivity
+
+
+setCheckedIn : Bool -> MotherId -> EditableSession -> EditableSession
+setCheckedIn checkedIn =
+    mapMotherEdits (\edits -> { edits | explicitlyCheckedIn = checkedIn })
 
 
 {-| Does the mother herself have any pending activity?

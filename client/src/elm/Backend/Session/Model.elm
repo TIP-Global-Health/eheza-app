@@ -1,4 +1,4 @@
-module Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
+module Backend.Session.Model exposing (EditableSession, OfflineSession, Session, MsgEditableSession(..))
 
 {-| A "session" refers to an editing session ... that is, an occasion on
 which measurements are taken.
@@ -88,3 +88,9 @@ type alias EditableSession =
     , uiChild : EveryDict ChildId Measurement.Model.ModelChild
     , uiMother : EveryDict MotherId Measurement.Model.ModelMother
     }
+
+
+{-| This models some messages the UI can send to change an EditableSession.
+-}
+type MsgEditableSession
+    = SetCheckedIn MotherId Bool

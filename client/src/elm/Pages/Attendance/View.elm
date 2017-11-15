@@ -9,7 +9,7 @@ at a session.
 
 import Activity.Utils exposing (isCheckedIn)
 import Backend.Entities exposing (..)
-import Backend.Session.Model exposing (EditableSession)
+import Backend.Session.Model exposing (EditableSession, MsgEditableSession(..))
 import Backend.Mother.Model exposing (Mother)
 import EveryDictList
 import Html exposing (..)
@@ -77,11 +77,15 @@ viewMother session motherId mother =
         checkIn =
             if isCheckedIn motherId session then
                 a
-                    [ class "link-checked-in" ]
+                    [ class "link-checked-in"
+                    , onClick <| MsgEditableSession <| SetCheckedIn motherId False
+                    ]
                     [ span [ class "icon-checked-in" ] [] ]
             else
                 a
-                    [ class "link-check-in" ]
+                    [ class "link-check-in"
+                    , onClick <| MsgEditableSession <| SetCheckedIn motherId True
+                    ]
                     [ span [ class "icon-check-in" ] [] ]
     in
         div

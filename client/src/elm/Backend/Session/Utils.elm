@@ -103,3 +103,24 @@ makeEditableSession offlineSession =
     , uiChild = EveryDict.empty
     , uiMother = EveryDict.empty
     }
+
+
+{-| Given a function that changes MotherEdits, apply that to the motherId.
+-}
+mapMotherEdits : (MotherEdits -> MotherEdits) -> MotherId -> EditableSession -> EditableSession
+mapMotherEdits func motherId session =
+    let
+        edits =
+            session.edits
+    in
+        EveryDict.get motherId edits.mothers
+            |> Maybe.withDefault emptyMotherEdits
+            |> (\motherEdits ->
+                    { session
+                        | edits =
+                            { edits
+                                | mothers =
+                                    EveryDict.insert motherId (func motherEdits) edits.mothers
+                            }
+                    }
+               )

@@ -20,7 +20,7 @@ in the UI.
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (MeasurementEdits)
-import Backend.Session.Model exposing (OfflineSession, EditableSession, Session)
+import Backend.Session.Model exposing (OfflineSession, EditableSession, Session, MsgEditableSession)
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import Http exposing (Error)
@@ -167,5 +167,8 @@ type MsgCached
       -- Deletes an editable session from the cache. You shouldn't call this
       -- if the session has edits that haven't been saved to the backend!
     | DeleteEditableSession
+      -- Some messages which we define elsewhere that the UI can send to
+      -- modify an editable session.
+    | MsgEditableSession MsgEditableSession
       -- Replace whatever we have with this
     | SetEditableSession SessionId EditableSession

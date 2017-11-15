@@ -184,13 +184,8 @@ update msg model =
 
         MsgSession subMsg ->
             let
-                ( subModel, subCmd, redirect ) =
+                ( subModel, subCmd, extraMsgs ) =
                     Pages.Update.updateSession subMsg model.sessionPages
-
-                extraMsgs =
-                    redirect
-                        |> Maybe.Extra.toList
-                        |> List.map SetActivePage
             in
                 ( { model | sessionPages = subModel }
                 , Cmd.map MsgSession subCmd

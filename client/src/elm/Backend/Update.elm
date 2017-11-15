@@ -5,6 +5,7 @@ port module Backend.Update exposing (updateBackend, updateCache, subscriptions, 
 to keep it together here for now.
 -}
 
+import Activity.Utils exposing (setCheckedIn)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
@@ -13,7 +14,7 @@ import Backend.Measurement.Encoder exposing (encodeMeasurementEdits)
 import Backend.Model exposing (..)
 import Backend.Session.Decoder exposing (decodeSession, decodeOfflineSession, decodeOfflineSessionWithId)
 import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId)
-import Backend.Session.Model exposing (Session, OfflineSession, EditableSession)
+import Backend.Session.Model exposing (Session, OfflineSession, EditableSession, MsgEditableSession(..))
 import Backend.Session.Utils exposing (makeEditableSession)
 import Config.Model exposing (BackendUrl)
 import Restful.Endpoint exposing (EndPoint, toEntityId, fromEntityId, encodeEntityId)
@@ -242,6 +243,18 @@ updateCache msg model =
                             ( { model | editableSession = Success Nothing }
                             , Cmd.none
                             )
+
+        MsgEditableSession subMsg ->
+            case subMsg of
+                SetCheckedIn motherId checkedIn ->
+                    withEditableSession ( model, Cmd.none )
+                        (\sessionId session ->
+                            ( { model | editableSession = Success <| Just ( sessionId, setCheckedIn checkedIn motherId session ) }
+                            , Cmd.none
+                            )
+                                |> sequence updateCache [ CacheEdits ]
+                        )
+                        model
 
         SetEditableSession sessionId session ->
             ( { model | editableSession = Success <| Just ( sessionId, session ) }
