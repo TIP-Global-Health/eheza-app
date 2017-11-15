@@ -64,7 +64,7 @@ init flags =
                           -}
                           Task.perform Tick Time.now
                         , loginCmd
-                        , Backend.Update.fetchOfflineSession ()
+                        , Backend.Update.fetchEditableSession ()
                         ]
 
                 configuredModel =
@@ -107,21 +107,6 @@ update msg model =
                                 ( { data | backend = backend }
                                 , Cmd.map (MsgLoggedIn << MsgBackend) cmd
                                 , List.map MsgCache cacheMsgs
-                                )
-
-                        MsgSession subMsg ->
-                            let
-                                ( subModel, subCmd, redirect ) =
-                                    Pages.Update.updateSession subMsg data.pages
-
-                                extraMsgs =
-                                    redirect
-                                        |> Maybe.Extra.toList
-                                        |> List.map (SetActivePage << SessionPage)
-                            in
-                                ( { data | pages = subModel }
-                                , Cmd.map (MsgLoggedIn << MsgSession) subCmd
-                                , extraMsgs
                                 )
                 )
                 model
@@ -196,6 +181,16 @@ update msg model =
                         )
                 )
                 model
+
+        MsgSession subMsg ->
+            let
+                ( subModel, subCmd, extraMsgs ) =
+                    Pages.Update.updateSession subMsg model.sessionPages
+            in
+                ( { model | sessionPages = subModel }
+                , Cmd.map MsgSession subCmd
+                )
+                    |> sequence update extraMsgs
 
         SetActivePage page ->
             -- TODO: There may be some additinoal logic needed here ... we'll see.

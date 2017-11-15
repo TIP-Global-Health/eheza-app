@@ -1,4 +1,4 @@
-module Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
+module Backend.Session.Model exposing (EditableSession, OfflineSession, Session, MsgEditableSession(..))
 
 {-| A "session" refers to an editing session ... that is, an occasion on
 which measurements are taken.
@@ -69,7 +69,7 @@ The `editStatus` tracks whether we have a save in progress for the
 cacehd edits. It's inside the type, because we can't save them unless
 we have them ...
 
-TODO: The uiChild and uiMother fields may or may not best belong here, since
+The uiChild and uiMother fields could be put elsewhere, since
 they aren't backend concepts. However, they don't belong at the level of
 particular pages, since we actually use them in two different pages and
 don't want multiple sources of truth for what's going on in the editor.
@@ -78,16 +78,19 @@ since they are tied to an editable session. And, we fundamentally want one
 for each child and mother (to represent the edits for each child and
 mother) ... that way we guarantee that they don't "leak" to the wrong child
 or mother. So, it seems that they belong in this type, but that may not
-be perfect. Possibly this whole type belongs somewhere else.
-
-In fact, this is really a kind of **interface** type ... we don't actually
-keep this type in the model as such.
+be perfect.
 
 -}
 type alias EditableSession =
     { offlineSession : OfflineSession
     , edits : MeasurementEdits
-    , editStatus : WebData ()
+    , update : WebData ()
     , uiChild : EveryDict ChildId Measurement.Model.ModelChild
     , uiMother : EveryDict MotherId Measurement.Model.ModelMother
     }
+
+
+{-| This models some messages the UI can send to change an EditableSession.
+-}
+type MsgEditableSession
+    = SetCheckedIn MotherId Bool

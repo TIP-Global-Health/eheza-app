@@ -38,27 +38,47 @@ elmApp.ports.cacheCredentials.subscribe(function(params) {
     // the credentials without trying to distinguish amongst backends.
     var backendUrl = params[0];
     var credentials = params[1];
-    
+
     localStorage.setItem('credentials', credentials);
 });
 
-elmApp.ports.cacheOfflineSession.subscribe(function(json) {
+elmApp.ports.cacheEditableSession.subscribe(function(json) {
+    // We cache the session and the edits separattely, so that we can treat
+    // the session itself as basically immutable, and just keep saving the
+    // edits.
+    var session = json[0];
+    var edits = json[1];
+
     // For the moment, we'll cache it in the simplest way possible ... we'll
     // see how much more we need to do. We can probably store the JSON as a
     // lump, since we treat it as immutable and don't update it frequently.
     // But we may need to manage quota, or use a different mechanism in order
     // to get more quota.
-    localStorage.setItem('offlineSession', json);
+    localStorage.setItem('session', session);
+    localStorage.setItem('edits', edits);
 
     // TODO: We should catch exceptions ... and report back a real result!
-    elmApp.ports.cacheOfflineSessionResult.send({});
+    elmApp.ports.cacheEditableSessionResult.send({});
 });
 
-elmApp.ports.fetchOfflineSession.subscribe(function () {
-    var session = localStorage.getItem('offlineSession');
+elmApp.ports.fetchEditableSession.subscribe(function () {
+    var session = localStorage.getItem('session') || "";
+    var edits = localStorage.getItem('edits') || "";
 
     // TODO: Consider exceptions?
-    elmApp.ports.handleOfflineSession.send(session || "");
+    elmApp.ports.handleEditableSession.send([session, edits]);
+});
+
+elmApp.ports.cacheEdits.subscribe(function (json) {
+    localStorage.setItem('edits', json);
+
+    // TODO: Consider exceptions ...
+    elmApp.ports.cacheEditsResult.send ({});
+});
+
+elmApp.ports.deleteEditableSession.subscribe(function () {
+    localStorage.setItem('session', "");
+    localStorage.setItem('edits', "");
 });
 
 /**

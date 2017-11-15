@@ -8,12 +8,7 @@ module Measurement.View
 {-| This module provides a form for entering measurements.
 -}
 
-import Activity.Model
-    exposing
-        ( ActivityType(..)
-        , ChildActivityType(..)
-        , MotherActivityType(..)
-        )
+import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Backend.Child.Model exposing (Child, Gender)
 import Backend.Measurement.Encoder exposing (encodeNutritionSignAsString, encodeFamilyPlanningSignAsString)
 import Backend.Measurement.Model exposing (..)
@@ -43,7 +38,7 @@ viewChild : Language -> Date -> Child -> ChildActivityType -> MeasurementData Ch
 viewChild language currentDate child activity measurements model =
     case activity of
         ChildPicture ->
-            viewPhoto language measurements.status model.photo
+            viewPhoto language measurements.update model.photo
 
         Height ->
             viewHeight language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .height) .height measurements) model
@@ -52,7 +47,7 @@ viewChild language currentDate child activity measurements model =
             viewMuac language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .muac) .muac measurements) model
 
         NutritionSigns ->
-            viewNutritionSigns language measurements.status model.nutritionSigns
+            viewNutritionSigns language measurements.update model.nutritionSigns
 
         Weight ->
             viewWeight language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .weight) .weight measurements) model
@@ -316,7 +311,7 @@ viewFloatForm config language currentDate child measurements model =
                 saveButton language
                     config.saveMsg
                     (isJust floatValue)
-                    measurements.status
+                    measurements.update
                     Nothing
             ]
 
@@ -580,7 +575,7 @@ viewMother : Language -> MotherActivityType -> MeasurementData MotherMeasurement
 viewMother language activity measurements model =
     case activity of
         FamilyPlanning ->
-            viewFamilyPlanning language measurements.status model.familyPlanningSigns
+            viewFamilyPlanning language measurements.update model.familyPlanningSigns
 
 
 viewFamilyPlanning : Language -> WebData () -> EverySet FamilyPlanningSign -> Html MsgMother

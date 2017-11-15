@@ -7,6 +7,7 @@ import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import EveryDict
 import EveryDictList
+import RemoteData exposing (RemoteData(..))
 
 
 {-| Given a mother's id, get all her children from the offline session.
@@ -70,7 +71,7 @@ getChildMeasurementData childId session =
     , edits =
         EveryDict.get childId session.edits.children
             |> Maybe.withDefault emptyChildEdits
-    , status = session.editStatus
+    , update = session.update
     }
 
 
@@ -87,5 +88,39 @@ getMotherMeasurementData motherId session =
     , edits =
         EveryDict.get motherId session.edits.mothers
             |> Maybe.withDefault emptyMotherEdits
-    , status = session.editStatus
+    , update = session.update
     }
+
+
+{-| Given an OfflineSession for which we don't have edits, fill in default
+values as a starting point for an EditableSession.
+-}
+makeEditableSession : OfflineSession -> EditableSession
+makeEditableSession offlineSession =
+    { offlineSession = offlineSession
+    , edits = emptyMeasurementEdits
+    , update = NotAsked
+    , uiChild = EveryDict.empty
+    , uiMother = EveryDict.empty
+    }
+
+
+{-| Given a function that changes MotherEdits, apply that to the motherId.
+-}
+mapMotherEdits : (MotherEdits -> MotherEdits) -> MotherId -> EditableSession -> EditableSession
+mapMotherEdits func motherId session =
+    let
+        edits =
+            session.edits
+    in
+        EveryDict.get motherId edits.mothers
+            |> Maybe.withDefault emptyMotherEdits
+            |> (\motherEdits ->
+                    { session
+                        | edits =
+                            { edits
+                                | mothers =
+                                    EveryDict.insert motherId (func motherEdits) edits.mothers
+                            }
+                    }
+               )

@@ -42,12 +42,15 @@ type TranslationId
     | AgeSingleDayWithoutMonth Int Int
     | AppName
     | Assessment
+    | Attendance
     | Baby
     | BabyName String
     | BeginHealthAssessment
     | CentimeterShorthand
+    | CheckIn
     | ChildNutritionSignLabel ChildNutritionSign
     | Children
+    | ClickTheCheckMark
     | Clinics
     | CompletedSectionEmpty
     | Connected
@@ -65,6 +68,7 @@ type TranslationId
     | ErrorBadStatus
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
+    | ErrorFetchingCachedSession
     | ErrorNetworkError
     | ErrorTimeout
     | FamilyPlanningSignLabel FamilyPlanningSign
@@ -84,6 +88,7 @@ type TranslationId
     | MuacIndication MuacIndication
     | MyAccount
     | NoActiveIncidents
+    | NoCachedSession
     | NoChildrenRegisteredInTheSystem
     | NoParticipantsFound
     | NotAvailable
@@ -236,6 +241,9 @@ translate lang trans =
                                 ActivityPage activityType ->
                                     { english = "Activity" }
 
+                                AttendancePage ->
+                                    { english = "Attendance" }
+
                                 ParticipantsPage ->
                                     { english = "Participants" }
 
@@ -281,6 +289,9 @@ translate lang trans =
                 Assessment ->
                     { english = "Assessment" }
 
+                Attendance ->
+                    { english = "Attendance" }
+
                 Baby ->
                     { english = "Baby" }
 
@@ -292,6 +303,9 @@ translate lang trans =
 
                 CentimeterShorthand ->
                     { english = "cm" }
+
+                CheckIn ->
+                    { english = "Check in:" }
 
                 ChildNutritionSignLabel sign ->
                     case sign of
@@ -318,6 +332,9 @@ translate lang trans =
 
                 Children ->
                     { english = "Children" }
+
+                ClickTheCheckMark ->
+                    { english = "Click the check mark if the mother is in attendance. The check mark will appear green when a mother has been signed in." }
 
                 Clinics ->
                     { english = "Clinics" }
@@ -369,6 +386,9 @@ translate lang trans =
 
                 ErrorConfigurationError ->
                     { english = "Configuration error" }
+
+                ErrorFetchingCachedSession ->
+                    { english = "There was an error fetchhing the session stored on this device." }
 
                 ErrorNetworkError ->
                     { english = "There was a network error." }
@@ -499,6 +519,9 @@ translate lang trans =
 
                 NoActiveIncidents ->
                     { english = "No active incidents!" }
+
+                NoCachedSession ->
+                    { english = "No session was found on this device." }
 
                 NoChildrenRegisteredInTheSystem ->
                     { english = "No children registered in the system" }

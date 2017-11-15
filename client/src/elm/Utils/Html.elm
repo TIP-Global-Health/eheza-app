@@ -6,6 +6,7 @@ module Utils.Html
         , spinner
         , tabItem
         , thumbnailImage
+        , wrapPage
         )
 
 import Config.Model exposing (Model)
@@ -93,3 +94,16 @@ Or, if nothing, shows an emptyNode.
 viewModal : Maybe (Html msg) -> Html msg
 viewModal =
     showMaybe << Maybe.map (\modal -> div [ class "overlay" ] [ modal ])
+
+
+{-| Take some HTML and wrap it in some standard HTML to make a page that
+works with our CSS. Meant for cases where we just want to show a quick
+error message or something where we don't have a full design.
+-}
+wrapPage : List (Html a) -> Html a
+wrapPage html =
+    div [ class "wrap wrap-alt-2" ]
+        [ div
+            [ class "ui basic segment" ]
+            html
+        ]

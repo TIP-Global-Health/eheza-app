@@ -1,11 +1,14 @@
 module Pages.Update exposing (..)
 
+import App.Model
+import Backend.Model
 import EveryDict
+import Maybe.Extra
 import Pages.Activity.Model
 import Pages.Activity.Update
 import Pages.Activities.Update
 import Pages.Model exposing (..)
-import Pages.Page exposing (SessionPage)
+import Pages.Page exposing (Page(..), SessionPage)
 import Pages.Participant.Model
 import Pages.Participant.Update
 import Pages.Participants.Update
@@ -17,7 +20,7 @@ to redirect the user's attention to the given page.
 This is specialized to our `SessionPages` model.
 
 -}
-updateSession : MsgSession -> SessionPages -> ( SessionPages, Cmd MsgSession, Maybe SessionPage )
+updateSession : MsgSession -> SessionPages -> ( SessionPages, Cmd MsgSession, List App.Model.Msg )
 updateSession msg model =
     case msg of
         MsgActivities subMsg ->
@@ -27,7 +30,8 @@ updateSession msg model =
             in
                 ( { model | activitiesPage = subModel }
                 , Cmd.map MsgActivities subCmd
-                , subPage
+                , Maybe.map (App.Model.SetActivePage << SessionPage) subPage
+                    |> Maybe.Extra.toList
                 )
 
         MsgActivity activityType subMsg ->
@@ -39,7 +43,7 @@ updateSession msg model =
             in
                 ( { model | activityPages = EveryDict.insert activityType subModel model.activityPages }
                 , Cmd.map (MsgActivity activityType) subCmd
-                , Nothing
+                , []
                 )
 
         MsgChild childId subMsg ->
@@ -51,8 +55,17 @@ updateSession msg model =
             in
                 ( { model | childPages = EveryDict.insert childId subModel model.childPages }
                 , Cmd.map (MsgChild childId) subCmd
-                , Nothing
+                , []
                 )
+
+        MsgEditableSession subMsg ->
+            -- Just route it over to the backend ...
+            ( model
+            , Cmd.none
+            , [ App.Model.MsgCache <|
+                    Backend.Model.MsgEditableSession subMsg
+              ]
+            )
 
         MsgMother motherId subMsg ->
             let
@@ -63,7 +76,7 @@ updateSession msg model =
             in
                 ( { model | motherPages = EveryDict.insert motherId subModel model.motherPages }
                 , Cmd.map (MsgMother motherId) subCmd
-                , Nothing
+                , []
                 )
 
         MsgParticipants subMsg ->
@@ -73,5 +86,9 @@ updateSession msg model =
             in
                 ( { model | participantsPage = subModel }
                 , Cmd.map MsgParticipants subCmd
-                , subPage
+                , Maybe.map (App.Model.SetActivePage << SessionPage) subPage
+                    |> Maybe.Extra.toList
                 )
+
+        SetActivePage page ->
+            ( model, Cmd.none, [ App.Model.SetActivePage page ] )

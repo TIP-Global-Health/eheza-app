@@ -27,6 +27,9 @@ yet.
 `language` is here because we always need some kind of language, if just a
 default.
 
+TODO: Should review this layering at some point to see whether it was too much
+/ too little.
+
 -}
 type alias Model =
     { activePage : Page
@@ -34,6 +37,10 @@ type alias Model =
     -- We don't need a configuration or to be logged in to access the cache, at
     -- least for the moment.
     , cache : Backend.Model.ModelCached
+
+    -- TODO: This doesn't really belong here ... we shouldn't have this unless
+    -- we have a session ... but I've done enough restructuring for now!
+    , sessionPages : Pages.Model.SessionPages
     , configuration : RemoteData String ConfiguredModel
     , currentDate : NominalDate
     , language : Language
@@ -74,14 +81,12 @@ it at the appropriate moment.
 -}
 type alias LoggedInModel =
     { backend : Backend.Model.ModelBackend
-    , pages : Pages.Model.SessionPages
     }
 
 
 emptyLoggedInModel : LoggedInModel
 emptyLoggedInModel =
     { backend = Backend.Model.emptyModelBackend
-    , pages = Pages.Model.emptySessionPages
     }
 
 
@@ -126,6 +131,7 @@ type Msg
     | MsgLoggedIn MsgLoggedIn
     | MsgLogin (Restful.Login.Msg User)
     | MsgPageLogin Pages.Login.Model.Msg
+    | MsgSession Pages.Model.MsgSession
     | SetActivePage Page
     | SetLanguage Language
     | SetOffline Bool
@@ -136,7 +142,6 @@ type Msg
 -}
 type MsgLoggedIn
     = MsgBackend Backend.Model.MsgBackend
-    | MsgSession Pages.Model.MsgSession
 
 
 type alias Flags =
@@ -160,4 +165,5 @@ emptyModel =
     , currentDate = fromLocalDateTime (Date.fromTime 0)
     , language = English
     , offline = False
+    , sessionPages = Pages.Model.emptySessionPages
     }

@@ -6,7 +6,7 @@ import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
 import Gizra.Json exposing (decodeFloat, decodeInt, decodeIntDict, decodeEmptyArrayAs)
 import Gizra.NominalDate
-import Json.Decode exposing (Decoder, andThen, at, decodeValue, dict, fail, field, int, list, map, map2, nullable, string, succeed, value, oneOf)
+import Json.Decode exposing (Decoder, andThen, at, bool, decodeValue, dict, fail, field, int, list, map, map2, nullable, string, succeed, value, oneOf)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (decodeEntity, decodeEntityId, decodeSingleEntity, decodeStorageTuple, toEntityId)
 import Utils.Json exposing (decodeEverySet)
@@ -77,9 +77,15 @@ decodeChildMeasurementList =
         |> optional "weight" (list (decodeEntity decodeWeight)) []
 
 
+{-| The `oneOf` considers the encoding the backend supplies and the encoding
+we use for the cache.
+-}
 decodePhoto : Decoder Photo
 decodePhoto =
-    at [ "photo", "styles", "thumbnail" ] string
+    oneOf
+        [ at [ "photo", "styles", "thumbnail" ] string
+        , field "photo" string
+        ]
         |> map PhotoValue
         |> decodeChildMeasurement
 
@@ -181,4 +187,72 @@ decodeFamilyPlanningSign =
                         fail <|
                             sign
                                 ++ " is not a recognized FamilyPlanningSign"
+            )
+
+
+{-| Decodes what `encodeMeasurementEdits` produces.
+-}
+decodeMeasurementEdits : Decoder MeasurementEdits
+decodeMeasurementEdits =
+    decode MeasurementEdits
+        |> required "mothers" (map (toEveryDict toEntityId) (decodeIntDict decodeMotherEdits))
+        |> required "children" (map (toEveryDict toEntityId) (decodeIntDict decodeChildEdits))
+
+
+{-| Decodes what `encodeChildEdits` produces.
+-}
+decodeChildEdits : Decoder ChildEdits
+decodeChildEdits =
+    decode ChildEdits
+        |> required "height" (decodeEdit decodeHeight)
+        |> required "muac" (decodeEdit decodeMuac)
+        |> required "nutrition" (decodeEdit decodeNutrition)
+        |> required "photo" (decodeEdit decodePhoto)
+        |> required "weight" (decodeEdit decodeWeight)
+
+
+{-| Decodes what `encodeChildEdits` produces.
+-}
+decodeMotherEdits : Decoder MotherEdits
+decodeMotherEdits =
+    decode MotherEdits
+        |> required "family-planning" (decodeEdit decodeFamilyPlanning)
+        |> optional "checked-in" bool False
+
+
+{-| The opposite of `encodeEdit`
+-}
+decodeEdit : Decoder value -> Decoder (Edit value)
+decodeEdit valueDecoder =
+    field "tag" string
+        |> andThen
+            (\tag ->
+                case tag of
+                    "unedited" ->
+                        succeed Unedited
+
+                    "created" ->
+                        field "value" valueDecoder
+                            |> map Created
+
+                    "edited" ->
+                        map2
+                            (\backend edited ->
+                                Edited
+                                    { backend = backend
+                                    , edited = edited
+                                    }
+                            )
+                            (field "backend" valueDecoder)
+                            (field "edited" valueDecoder)
+
+                    "deleted" ->
+                        field "value" valueDecoder
+                            |> map Deleted
+
+                    _ ->
+                        fail <|
+                            "tag '"
+                                ++ tag
+                                ++ "' is not a valid tag for an Edit"
             )

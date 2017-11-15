@@ -274,15 +274,28 @@ type Edit value
 
 
 {-| This represents a set of edits to Mother measurements.
+
+`explicitlyCheckedIn` represents whether the mother has been **explicitly** marked as
+being in attendance or not. (I had thought of just having no `MotherEdits` for
+mothers who aren't in attendance, but that doesn't work so well, since we
+construct default values where needed, so it's awkward to give the absence of
+the value an implicit meaning).
+
+But see the `isCheckedIn` function in `Activity.Utils`, which also checks whether
+the mother is **implicitly** checked in, because she or a child has a completed
+activity.
+
 -}
 type alias MotherEdits =
     { familyPlanning : Edit FamilyPlanning
+    , explicitlyCheckedIn : Bool
     }
 
 
 emptyMotherEdits : MotherEdits
 emptyMotherEdits =
     { familyPlanning = Unedited
+    , explicitlyCheckedIn = False
     }
 
 
@@ -335,5 +348,5 @@ type alias MeasurementData data edits =
     { previous : data
     , current : data
     , edits : edits
-    , status : WebData ()
+    , update : WebData ()
     }

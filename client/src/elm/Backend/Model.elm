@@ -20,7 +20,7 @@ in the UI.
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (MeasurementEdits)
-import Backend.Session.Model exposing (OfflineSession, Session)
+import Backend.Session.Model exposing (OfflineSession, EditableSession, Session, MsgEditableSession)
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import Http exposing (Error)
@@ -94,7 +94,7 @@ type MsgBackend
 instead of saving them to the backend, we save them locally.
 -}
 type alias ModelCached =
-    -- This tracks, if we have one, the OfflineSession which we're currently
+    -- This tracks, if we have one, the EditableSession which we're currently
     -- doing data entry for.
     --
     -- The `WebData` wrapper represents whether we've tried to fetch it from
@@ -103,10 +103,10 @@ type alias ModelCached =
     -- successfully query our local cache, and find it's not there, then the
     -- `WebData` layer is a `Success`, and the `Maybe` is a `Nothing`.
     --
-    -- At least at first, we'll track our "mode" by whether we have an offline
+    -- At least at first, we'll track our "mode" by whether we have an editable
     -- session in local storage. So:
     --
-    -- * We'll automatically try to load an offline session from local storage
+    -- * We'll automatically try to load an editable session from local storage
     --   when the app starts up.
     --
     -- * If we get one, we'll automatically show that in the UI, and prevent
@@ -120,43 +120,55 @@ type alias ModelCached =
     --   locally.
     --
     -- * If we have one, we're definitely using it, not doing something else.
-    { offlineSession : UpdatableWebData (Maybe ( SessionId, OfflineSession ))
-
-    -- This tracks mesaurements which we've edited, but haven't uploaded to
-    -- the backend yet. These are immediately cached locally, which is what
-    -- the `UpdatableData` is for ... it wraps our effort to fetch from local
-    -- strorage the measurements we've taken but not uploaded yet, as well
-    -- as our efforts to cache the edits in local storage.
     --
-    -- It's nice to track this separately, rather than integrating into
-    -- the offlineSession with `EditableWebData`, because we upload these
-    -- in a batch, all at once, rather than individually. So, we don't need
-    -- to track the status of each measurement separately ... we deal with
-    -- them together.
-    --
-    -- Note that we're assuming here that we'll save all of these before
-    -- switching to another session ... that is, we can't have two sessions
-    -- in progress at once. (We could change that down the road if necessary).
-    --
-    -- The inner `Maybe` represents whether we found any editable measurements
-    -- in our local storage ... we'll delete the whole thing once we successfully
-    -- save it to the backend.
-    , edits : UpdatableWebData (Maybe MeasurementEdits)
+    -- In fact, we'll also do slightly different things in the UI depending
+    -- on whether our editable session has edits or not ... you won't be
+    -- locked into edit mode until you've made an edit.
+    { editableSession : WebData (Maybe ( SessionId, EditableSession ))
     }
 
 
 emptyModelCached : ModelCached
 emptyModelCached =
-    { offlineSession = Restful.UpdatableData.notAsked
-    , edits = Restful.UpdatableData.notAsked
+    { editableSession = NotAsked
     }
 
 
 {-| These are all the messages related to getting things from the cache and
 putting things back into the cache.
+
+We parameterize by the sessionId for many of these. For now, we're only
+really using one cache slot, so we have to be careful that we don't
+blow away something we actually want to keep. (That is, we have to be
+careful not to save over an EditableSession that has edits). We could
+instead use multiple slots easily enough, I suppose.
+
 -}
 type MsgCached
-    = CacheOfflineSession SessionId OfflineSession
-    | CacheOfflineSessionResult Value
-    | FetchOfflineSessionFromCache
-    | HandleOfflineSession String
+    = -- Caches the whole editable session, including edits. We've only
+      -- got one slot, for now, so you need to make sure you're not
+      -- overwriting something that has edits. Or, perhaps we could
+      -- check ... I suppose we know!
+      CacheEditableSession
+    | CacheEditableSessionResult Value
+      -- Fetches the whole editable session from the cache.
+    | FetchEditableSessionFromCache
+    | HandleEditableSession ( String, String )
+      -- Just cache the edits ... assumes we already have the offlineSession
+      -- part cached, so we don't need to keep doing it. That is, we treat
+      -- the offlineSession part as immutable, so we only have to keep
+      -- saving the edits over and over.
+      --
+      -- For now, we save all the edits at once, so in that sense we save
+      -- them over and over. If that ends up causing any trouble, we could
+      -- do something more sophisticated, but it's probably not necessary.
+    | CacheEdits
+    | CacheEditsResult Value
+      -- Deletes an editable session from the cache. You shouldn't call this
+      -- if the session has edits that haven't been saved to the backend!
+    | DeleteEditableSession
+      -- Some messages which we define elsewhere that the UI can send to
+      -- modify an editable session.
+    | MsgEditableSession MsgEditableSession
+      -- Replace whatever we have with this
+    | SetEditableSession SessionId EditableSession

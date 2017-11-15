@@ -30,6 +30,9 @@ delta2url previous current =
                 ActivityPage activityType ->
                     Just <| UrlChange NewEntry ("#activity/" ++ encodeActivityTypeAsString activityType)
 
+                AttendancePage ->
+                    Just <| UrlChange NewEntry "#attendance"
+
                 ChildPage id ->
                     Just <| UrlChange NewEntry ("#child/" ++ toString (fromEntityId id))
 
@@ -70,6 +73,7 @@ parseUrl =
         , map
             (SessionPage << ActivityPage << Maybe.withDefault defaultActivityType << decodeActivityTypeFromString)
             (s "activity" </> string)
+        , map (SessionPage AttendancePage) (s "attendance")
         , map (SessionPage << ChildPage << toEntityId) (s "child" </> int)
         , map (UserPage << ClinicsPage << Just << toEntityId) (s "clinics" </> int)
         , map (UserPage (ClinicsPage Nothing)) (s "clinics")
