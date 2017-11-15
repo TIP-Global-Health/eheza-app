@@ -68,7 +68,7 @@ viewFoundSession language currentDate page session model =
                 |> Html.map (MsgActivity activityType)
 
         AttendancePage ->
-            Pages.Attendance.View.view
+            Pages.Attendance.View.view language session
 
         ParticipantsPage ->
             model.participantsPage

@@ -16,9 +16,11 @@ module Activity.Utils
         , hasAnyPendingMotherActivity
         , hasCompletedChildActivity
         , hasCompletedMotherActivity
+        , isCheckedIn
         , motherHasCompletedActivity
         , motherHasAnyPendingActivity
         , motherHasPendingActivity
+        , motherOrAnyChildHasAnyCompletedActivity
         , motherOrAnyChildHasAnyPendingActivity
         )
 
@@ -307,10 +309,22 @@ hasAnyPendingMotherActivity measurements =
         |> List.any ((flip hasCompletedMotherActivity) measurements >> not)
 
 
+hasAnyCompletedMotherActivity : MeasurementData MotherMeasurements MotherEdits -> Bool
+hasAnyCompletedMotherActivity measurements =
+    getAllMotherActivities
+        |> List.any ((flip hasCompletedMotherActivity) measurements)
+
+
 hasAnyPendingChildActivity : MeasurementData ChildMeasurements ChildEdits -> Bool
 hasAnyPendingChildActivity measurements =
     getAllChildActivities
         |> List.any ((flip hasCompletedChildActivity) measurements >> not)
+
+
+hasAnyCompletedChildActivity : MeasurementData ChildMeasurements ChildEdits -> Bool
+hasAnyCompletedChildActivity measurements =
+    getAllChildActivities
+        |> List.any ((flip hasCompletedChildActivity) measurements)
 
 
 {-| See whether either the mother, or any of her children, has a pending activity.
@@ -336,6 +350,49 @@ motherOrAnyChildHasAnyPendingActivity motherId session =
         motherHasOne || anyChildHasOne
 
 
+{-| See whether either the mother, or any of her children, has any completed activity.
+
+If we can't find the mother, we return False.
+
+-}
+motherOrAnyChildHasAnyCompletedActivity : MotherId -> EditableSession -> Bool
+motherOrAnyChildHasAnyCompletedActivity motherId session =
+    let
+        motherHasOne =
+            motherHasAnyCompletedActivity motherId session
+
+        anyChildHasOne =
+            getMother motherId session.offlineSession
+                |> Maybe.map
+                    (\mother ->
+                        mother.children
+                            |> List.any (\childId -> childHasAnyCompletedActivity childId session)
+                    )
+                |> Maybe.withDefault False
+    in
+        motherHasOne || anyChildHasOne
+
+
+{-| Has the mother been marked as checked in?
+
+We'll return true if the mother has been explicitly checked-in in the UI, or
+has a completed activity ... that way, we can freely change the explicit
+check-in (and activities) without worrying about synchronizing the two.
+
+-}
+isCheckedIn : MotherId -> EditableSession -> Bool
+isCheckedIn motherId session =
+    let
+        explicitlyCheckedIn =
+            getMotherMeasurementData motherId session
+                |> (.edits >> .explicitlyCheckedIn)
+
+        hasCompletedActivity =
+            motherOrAnyChildHasAnyCompletedActivity motherId session
+    in
+        explicitlyCheckedIn || hasCompletedActivity
+
+
 {-| Does the mother herself have any pending activity?
 -}
 motherHasAnyPendingActivity : MotherId -> EditableSession -> Bool
@@ -344,9 +401,25 @@ motherHasAnyPendingActivity motherId session =
         |> hasAnyPendingMotherActivity
 
 
+{-| Does the mother herself have any completed activity?
+-}
+motherHasAnyCompletedActivity : MotherId -> EditableSession -> Bool
+motherHasAnyCompletedActivity motherId session =
+    getMotherMeasurementData motherId session
+        |> hasAnyCompletedMotherActivity
+
+
 {-| Does the child have any pending activity?
 -}
 childHasAnyPendingActivity : ChildId -> EditableSession -> Bool
 childHasAnyPendingActivity childId session =
     getChildMeasurementData childId session
         |> hasAnyPendingChildActivity
+
+
+{-| Does the child have any completed activity?
+-}
+childHasAnyCompletedActivity : ChildId -> EditableSession -> Bool
+childHasAnyCompletedActivity childId session =
+    getChildMeasurementData childId session
+        |> hasAnyCompletedChildActivity

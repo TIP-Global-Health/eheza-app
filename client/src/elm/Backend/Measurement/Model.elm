@@ -274,15 +274,28 @@ type Edit value
 
 
 {-| This represents a set of edits to Mother measurements.
+
+`explicitlyCheckedIn` represents whether the mother has been **explicitly** marked as
+being in attendance or not. (I had thought of just having no `MotherEdits` for
+mothers who aren't in attendance, but that doesn't work so well, since we
+construct default values where needed, so it's awkward to give the absence of
+the value an implicit meaning).
+
+But see the `isCheckedIn` function in `Activity.Utils`, which also checks whether
+the mother is **implicitly** checked in, because she or a child has a completed
+activity.
+
 -}
 type alias MotherEdits =
     { familyPlanning : Edit FamilyPlanning
+    , explicitlyCheckedIn : Bool
     }
 
 
 emptyMotherEdits : MotherEdits
 emptyMotherEdits =
     { familyPlanning = Unedited
+    , explicitlyCheckedIn = False
     }
 
 
@@ -307,25 +320,6 @@ emptyChildEdits =
 
 {-| This tracks editable measurements for a whole batch of mothers and
 children.
-
-We overload this (but I think it makes sense to do so) in order to indicate
-which mothers are in attendance. The rules are as follows:
-
-  - If there is no entry in the dict for a mother, she is not in attendance.
-
-  - If there is an entry in the dict for a mother (even if the entry is empty),
-    then the mother is in attendance.
-
-So, there is a difference between "mother not found" and "mother found with
-empty set of MotherEdits". In the former case, the mother is not in attendance.
-In the latter, the mother is in attendance, but hasn't had any measurements
-taken yet.
-
-We'll also implement the rule that you can't mark a mother as not being in
-attendance once you've entered a measurement for the mother or a child ...
-since otherwise we'd throw away the data! And, logically speaking, such a
-rule makes sense anyway.
-
 -}
 type alias MeasurementEdits =
     { mothers : EveryDict MotherId MotherEdits

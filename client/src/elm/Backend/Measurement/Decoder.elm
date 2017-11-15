@@ -6,7 +6,7 @@ import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
 import Gizra.Json exposing (decodeFloat, decodeInt, decodeIntDict, decodeEmptyArrayAs)
 import Gizra.NominalDate
-import Json.Decode exposing (Decoder, andThen, at, decodeValue, dict, fail, field, int, list, map, map2, nullable, string, succeed, value, oneOf)
+import Json.Decode exposing (Decoder, andThen, at, bool, decodeValue, dict, fail, field, int, list, map, map2, nullable, string, succeed, value, oneOf)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (decodeEntity, decodeEntityId, decodeSingleEntity, decodeStorageTuple, toEntityId)
 import Utils.Json exposing (decodeEverySet)
@@ -217,6 +217,7 @@ decodeMotherEdits : Decoder MotherEdits
 decodeMotherEdits =
     decode MotherEdits
         |> required "family-planning" (decodeEdit decodeFamilyPlanning)
+        |> optional "checked-in" bool False
 
 
 {-| The opposite of `encodeEdit`

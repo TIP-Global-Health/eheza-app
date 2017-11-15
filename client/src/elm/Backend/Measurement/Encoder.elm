@@ -4,7 +4,7 @@ import Backend.Measurement.Model exposing (..)
 import EveryDict
 import EverySet
 import Gizra.NominalDate
-import Json.Encode as Encoder exposing (Value, float, int, list, string, object)
+import Json.Encode as Encoder exposing (Value, float, int, list, string, object, bool)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (EntityId(..), encodeEntityId, fromEntityId)
 
@@ -159,6 +159,7 @@ encodeMotherEdits : MotherEdits -> Value
 encodeMotherEdits edits =
     object
         [ ( "family-planning", encodeEdit (object << encodeFamilyPlanning) edits.familyPlanning )
+        , ( "checked-in", bool edits.explicitlyCheckedIn )
         ]
 
 

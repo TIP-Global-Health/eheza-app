@@ -42,12 +42,15 @@ type TranslationId
     | AgeSingleDayWithoutMonth Int Int
     | AppName
     | Assessment
+    | Attendance
     | Baby
     | BabyName String
     | BeginHealthAssessment
     | CentimeterShorthand
+    | CheckIn
     | ChildNutritionSignLabel ChildNutritionSign
     | Children
+    | ClickTheCheckMark
     | Clinics
     | CompletedSectionEmpty
     | Connected
@@ -286,6 +289,9 @@ translate lang trans =
                 Assessment ->
                     { english = "Assessment" }
 
+                Attendance ->
+                    { english = "Attendance" }
+
                 Baby ->
                     { english = "Baby" }
 
@@ -297,6 +303,9 @@ translate lang trans =
 
                 CentimeterShorthand ->
                     { english = "cm" }
+
+                CheckIn ->
+                    { english = "Check in:" }
 
                 ChildNutritionSignLabel sign ->
                     case sign of
@@ -323,6 +332,9 @@ translate lang trans =
 
                 Children ->
                     { english = "Children" }
+
+                ClickTheCheckMark ->
+                    { english = "Click the check mark if the mother is in attendance. The check mark will appear green when a mother has been signed in." }
 
                 Clinics ->
                     { english = "Clinics" }
