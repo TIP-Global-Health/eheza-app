@@ -77,9 +77,15 @@ decodeChildMeasurementList =
         |> optional "weight" (list (decodeEntity decodeWeight)) []
 
 
+{-| The `oneOf` considers the encoding the backend supplies and the encoding
+we use for the cache.
+-}
 decodePhoto : Decoder Photo
 decodePhoto =
-    at [ "photo", "styles", "thumbnail" ] string
+    oneOf
+        [ at [ "photo", "styles", "thumbnail" ] string
+        , field "photo" string
+        ]
         |> map PhotoValue
         |> decodeChildMeasurement
 
@@ -181,4 +187,71 @@ decodeFamilyPlanningSign =
                         fail <|
                             sign
                                 ++ " is not a recognized FamilyPlanningSign"
+            )
+
+
+{-| Decodes what `encodeMeasurementEdits` produces.
+-}
+decodeMeasurementEdits : Decoder MeasurementEdits
+decodeMeasurementEdits =
+    decode MeasurementEdits
+        |> required "mothers" (map (toEveryDict toEntityId) (decodeIntDict decodeMotherEdits))
+        |> required "children" (map (toEveryDict toEntityId) (decodeIntDict decodeChildEdits))
+
+
+{-| Decodes what `encodeChildEdits` produces.
+-}
+decodeChildEdits : Decoder ChildEdits
+decodeChildEdits =
+    decode ChildEdits
+        |> required "height" (decodeEdit decodeHeight)
+        |> required "muac" (decodeEdit decodeMuac)
+        |> required "nutrition" (decodeEdit decodeNutrition)
+        |> required "photo" (decodeEdit decodePhoto)
+        |> required "weight" (decodeEdit decodeWeight)
+
+
+{-| Decodes what `encodeChildEdits` produces.
+-}
+decodeMotherEdits : Decoder MotherEdits
+decodeMotherEdits =
+    decode MotherEdits
+        |> required "family-planning" (decodeEdit decodeFamilyPlanning)
+
+
+{-| The opposite of `encodeEdit`
+-}
+decodeEdit : Decoder value -> Decoder (Edit value)
+decodeEdit valueDecoder =
+    field "tag" string
+        |> andThen
+            (\tag ->
+                case tag of
+                    "unedited" ->
+                        succeed Unedited
+
+                    "created" ->
+                        field "value" valueDecoder
+                            |> map Created
+
+                    "edited" ->
+                        map2
+                            (\backend edited ->
+                                Edited
+                                    { backend = backend
+                                    , edited = edited
+                                    }
+                            )
+                            (field "backend" valueDecoder)
+                            (field "edited" valueDecoder)
+
+                    "deleted" ->
+                        field "value" valueDecoder
+                            |> map Deleted
+
+                    _ ->
+                        fail <|
+                            "tag '"
+                                ++ tag
+                                ++ "' is not a valid tag for an Edit"
             )

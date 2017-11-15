@@ -51,21 +51,23 @@ viewConfiguredModel model configured =
                 |> Html.map MsgPageLogin
 
         Restful.Login.Anonymous progress ->
-            -- At the moment, the only thing an anonymous person can do is log
-            -- in. So, we just show the login page. We supply the `activePage`
-            -- so that the login page can possibly show some message about the
-            -- page the user really wanted, if it likes.
+            -- An anonymous person can either login or, if we have a cached
+            -- session, they can work on the cached session.
             --
-            -- If anonymous users can do more things in the future, we'd have
-            -- to consult the activePage here, and only show the login page for
-            -- things that anonymous users aren't allowed to do.
+            -- So, we mostly just show the login page. We supply the
+            -- `activePage` so that the login page can possibly show some
+            -- message about the page the user really wanted, if it likes.
             --
-            -- Actually, I suppose the one Page we ought to treat specially for
+            -- Actually, I suppose another Page we ought to treat specially for
             -- aonymous users is `PageNotFound`, since it would be weird to
             -- successfully log in, only then to be taken to a page not found.
             case model.activePage of
                 PageNotFound url ->
                     Pages.PageNotFound.View.view model.language url
+
+                SessionPage subPage ->
+                    Pages.View.viewSessionPage model.language model.currentDate subPage (Debug.crash "editable session") model.sessionPages
+                        |> Html.map MsgSession
 
                 _ ->
                     Pages.Login.View.view model.language model.activePage configured.login configured.loginPage
@@ -105,8 +107,8 @@ viewConfiguredModel model configured =
                                     Pages.MyAccount.View.view model.language login.credentials.user
 
                                 ClinicsPage clinicId ->
-                                    -- We need the cached session
-                                    case model.cache.offlineSession.value of
+                                    -- We need to know whether we have a cached session ID
+                                    case model.cache.editableSession of
                                         Success session ->
                                             Pages.Clinics.View.view model.language model.currentDate login.credentials.user clinicId login.data.backend (Maybe.map Tuple.first session)
 
@@ -124,8 +126,8 @@ viewConfiguredModel model configured =
                         model.currentDate
                         subPage
                         (Debug.crash "Provide editable session")
-                        login.data.pages
-                        |> Html.map (MsgLoggedIn << MsgSession)
+                        model.sessionPages
+                        |> Html.map MsgSession
 
 
 {-| Just show a generic loading indicator, for cases that will resolve soon,

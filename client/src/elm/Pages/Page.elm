@@ -89,11 +89,13 @@ type UserPage
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it
 makes function signatures nicer, since we can specify require a `SessionPage` with
-an `EditableSession`.
+an `EditableSession`. There is also some markup which is relevant just to these,
+so we can specify this as a parameter to som functions which produce that markup.
 -}
 type SessionPage
     = ActivitiesPage -- page that shows list of activities
     | ActivityPage ActivityType -- page that focuses on a single activity
+    | AttendancePage -- page where mothers can be marked present / absent
     | ParticipantsPage -- page that shows a list of participants
     | ChildPage ChildId -- page that focuses on a particular child
     | MotherPage MotherId -- page that focuses on a particular mother

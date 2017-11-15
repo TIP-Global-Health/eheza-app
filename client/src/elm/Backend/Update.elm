@@ -1,4 +1,4 @@
-port module Backend.Update exposing (updateBackend, updateCache, subscriptions, fetchOfflineSession)
+port module Backend.Update exposing (updateBackend, updateCache, subscriptions, fetchEditableSession)
 
 {-| This could perhaps be distributed one level down, to
 `Backend.Session.Update`, `Backend.Clinic.Update` etc. Or, perhaps it is nicer
@@ -8,10 +8,13 @@ to keep it together here for now.
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
+import Backend.Measurement.Decoder exposing (decodeMeasurementEdits)
+import Backend.Measurement.Encoder exposing (encodeMeasurementEdits)
 import Backend.Model exposing (..)
 import Backend.Session.Decoder exposing (decodeSession, decodeOfflineSession, decodeOfflineSessionWithId)
 import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId)
-import Backend.Session.Model exposing (Session, OfflineSession)
+import Backend.Session.Model exposing (Session, OfflineSession, EditableSession)
+import Backend.Session.Utils exposing (makeEditableSession)
 import Config.Model exposing (BackendUrl)
 import Restful.Endpoint exposing (EndPoint, toEntityId, fromEntityId, encodeEntityId)
 import EveryDictList
@@ -21,6 +24,7 @@ import Json.Decode
 import Json.Encode exposing (Value, object)
 import Maybe.Extra exposing (toList)
 import RemoteData exposing (RemoteData(..))
+import Update.Extra exposing (sequence)
 
 
 clinicEndpoint : EndPoint Error () ClinicId Clinic
@@ -130,7 +134,7 @@ updateBackend backendUrl accessToken msg model =
                         -- We immediately kick off a save into the cache
                         ( { model | offlineSessionRequest = Success sessionId }
                         , Cmd.none
-                        , [ CacheOfflineSession sessionId session ]
+                        , [ SetEditableSession sessionId (makeEditableSession session) ]
                         )
 
             ResetOfflineSessionRequest ->
@@ -143,67 +147,127 @@ updateBackend backendUrl accessToken msg model =
 updateCache : MsgCached -> ModelCached -> ( ModelCached, Cmd MsgCached )
 updateCache msg model =
     case msg of
-        CacheOfflineSession sessionId session ->
-            -- We mark that we have the offline session, but note that the
-            -- request to update it in the cache is pending.
-            ( { model
-                | offlineSession =
-                    { value = Success (Just ( sessionId, session ))
-                    , update = Loading
-                    }
-              }
-            , encodeOfflineSessionWithId sessionId session
-                |> Json.Encode.encode 0
-                |> cacheOfflineSession
-            )
-
-        CacheOfflineSessionResult result ->
-            -- TODO: Actually do something with the result.
-            let
-                offlineSession =
-                    model.offlineSession
-            in
-                ( { model | offlineSession = { offlineSession | update = Success () } }
-                , Cmd.none
+        CacheEditableSession ->
+            withEditableSession ( model, Cmd.none )
+                (\sessionId session ->
+                    let
+                        json =
+                            ( encodeOfflineSessionWithId sessionId session.offlineSession
+                                |> Json.Encode.encode 0
+                            , encodeMeasurementEdits session.edits
+                                |> Json.Encode.encode 0
+                            )
+                    in
+                        ( { model | editableSession = Success <| Just ( sessionId, { session | update = Loading } ) }
+                        , cacheEditableSession json
+                        )
                 )
+                model
 
-        FetchOfflineSessionFromCache ->
-            ( { model
-                | offlineSession =
-                    { value = Loading
-                    , update = NotAsked
-                    }
-              }
-            , fetchOfflineSession ()
-            )
-
-        HandleOfflineSession cached ->
-            case Json.Decode.decodeString decodeOfflineSessionWithId cached of
-                Ok result ->
-                    ( { model
-                        | offlineSession =
-                            { value = Success (Just result)
-                            , update = NotAsked
-                            }
-                      }
+        CacheEditableSessionResult result ->
+            -- TODO: Actually do something with the result. For now, we just mark Success.
+            withEditableSession ( model, Cmd.none )
+                (\sessionId session ->
+                    ( { model | editableSession = Success <| Just ( sessionId, { session | update = Success () } ) }
                     , Cmd.none
                     )
+                )
+                model
 
-                Err err ->
-                    -- TODO: Actually think about the error. for now, we just say
-                    -- we don't have one.
-                    let
-                        _ =
-                            Debug.log "error fetching session from cache" err
-                    in
-                        ( { model
-                            | offlineSession =
-                                { value = Success Nothing
-                                , update = NotAsked
-                                }
-                          }
+        CacheEdits ->
+            withEditableSession ( model, Cmd.none )
+                (\sessionId session ->
+                    ( { model | editableSession = Success <| Just ( sessionId, { session | update = Loading } ) }
+                    , encodeMeasurementEdits session.edits
+                        |> Json.Encode.encode 0
+                        |> cacheEdits
+                    )
+                )
+                model
+
+        CacheEditsResult result ->
+            -- TODO: Actually consult the result ...
+            withEditableSession ( model, Cmd.none )
+                (\sessionId session ->
+                    ( { model | editableSession = Success <| Just ( sessionId, { session | update = Success () } ) }
+                    , Cmd.none
+                    )
+                )
+                model
+
+        DeleteEditableSession ->
+            ( { model | editableSession = Success Nothing }
+            , deleteEditableSession ()
+            )
+
+        FetchEditableSessionFromCache ->
+            ( { model | editableSession = Loading }
+            , fetchEditableSession ()
+            )
+
+        HandleEditableSession ( offlineSessionJson, editsJson ) ->
+            let
+                decodedOfflineSession =
+                    Json.Decode.decodeString decodeOfflineSessionWithId offlineSessionJson
+
+                decodedEdits =
+                    Json.Decode.decodeString decodeMeasurementEdits editsJson
+
+                decodedEditableSession =
+                    Result.map2
+                        (\( sessionId, offlineSession ) edits ->
+                            makeEditableSession offlineSession
+                                |> (\session ->
+                                        ( sessionId
+                                        , { session | edits = edits }
+                                        )
+                                   )
+                        )
+                        decodedOfflineSession
+                        decodedEdits
+            in
+                case decodedEditableSession of
+                    Ok result ->
+                        ( { model | editableSession = Success <| Just result }
                         , Cmd.none
                         )
+
+                    Err err ->
+                        -- TODO: Actually think about the error. for now, we just say
+                        -- we don't have one.
+                        let
+                            _ =
+                                Debug.log "error fetching session from cache" err
+                        in
+                            ( { model | editableSession = Success Nothing }
+                            , Cmd.none
+                            )
+
+        SetEditableSession sessionId session ->
+            ( { model | editableSession = Success <| Just ( sessionId, session ) }
+            , Cmd.none
+            )
+                |> sequence updateCache [ CacheEditableSession ]
+
+
+{-| Our editable session is inside a `RemoteData` and a `Maybe`, so it's
+convenient to be able to unwrap it without too much verbosity.
+
+Given the model, we apply your function to the editable session. If we don't
+have an editable session (i.e. NotAsked or Nothing), we use the default instead
+(your first parameter).
+
+TODO: The fact we need this suggests that perhaps the types could be better
+arranged. Or, perhaps this is the best we can do.
+
+-}
+withEditableSession : a -> (SessionId -> EditableSession -> a) -> ModelCached -> a
+withEditableSession default func model =
+    model.editableSession
+        |> RemoteData.toMaybe
+        |> Maybe.Extra.join
+        |> Maybe.map (uncurry func)
+        |> Maybe.withDefault default
 
 
 {-| Subscribe to the answers to our cache requests.
@@ -211,8 +275,9 @@ updateCache msg model =
 subscriptions : Sub MsgCached
 subscriptions =
     Sub.batch
-        [ cacheOfflineSessionResult CacheOfflineSessionResult
-        , handleOfflineSession HandleOfflineSession
+        [ cacheEditableSessionResult CacheEditableSessionResult
+        , cacheEditsResult CacheEditsResult
+        , handleEditableSession HandleEditableSession
         ]
 
 
@@ -220,36 +285,55 @@ subscriptions =
 we can do something more sophisticated when necessary. (We'd need to parameterize
 each of the ports via a SessionId.)
 
+The first string is the offlineSession part, and the second string the edits.
+We cache them separately, because we basically treat the offlineSession as
+immutable, so we don't have to save it over and over.
+
 The string is some JSON-encoded data ... so that the Javascript side of this
 just needs to stuff it somewhere.
 
 TODO: It might be nice to have a module that encapsulates some cache-related
 functionality. You could imagine just two ports ... one outgoing and one
 incoming ... with some JSON-encodings that specify the operation and data.
+We could, for instance, cut down on the number of ports that way ...
 
 -}
-port cacheOfflineSession : String -> Cmd msg
+port cacheEditableSession : ( String, String ) -> Cmd msg
 
 
-{-| We want to get a possible error code back from `cacheOfflineSession`, so
+{-| We want to get a possible error code back from `cacheEditableSession`, so
 we need an incoming port.
--}
-port cacheOfflineSessionResult : (Value -> msg) -> Sub msg
 
-
-{-| Fetch our offline session. Again, just one slot.
--}
-port fetchOfflineSession : () -> Cmd msg
-
-
-{-| Delete our offline session.
--}
-port deleteOfflineSession : () -> Cmd msg
-
-
-{-| Receive an offline session from the cache.
-
-The string is whatever was provided to `cacheOfflineSession`.
+TODO: Actually define a type to convert the Value to, and actually catch
+some errors.
 
 -}
-port handleOfflineSession : (String -> msg) -> Sub msg
+port cacheEditableSessionResult : (Value -> msg) -> Sub msg
+
+
+{-| Like `cacheEditableSession`, but only caches the edits. This assumes that
+you've got the appropriate editable session cached already (we treat it as
+immutable).
+-}
+port cacheEdits : String -> Cmd msg
+
+
+port cacheEditsResult : (Value -> msg) -> Sub msg
+
+
+{-| Fetch an editable session. Again, just one slot.
+-}
+port fetchEditableSession : () -> Cmd msg
+
+
+{-| Delete our editable session.
+-}
+port deleteEditableSession : () -> Cmd msg
+
+
+{-| Receive an editable session from the cache.
+
+The strings are whatever was provided to `cacheEdtiableSession`.
+
+-}
+port handleEditableSession : (( String, String ) -> msg) -> Sub msg

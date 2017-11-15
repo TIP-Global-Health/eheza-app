@@ -8,6 +8,7 @@ import Pages.Model exposing (..)
 import Pages.Activities.View
 import Pages.Activity.Model
 import Pages.Activity.View
+import Pages.Attendance.View
 import Pages.Page exposing (SessionPage(..))
 import Pages.Participant.Model
 import Pages.Participant.View
@@ -30,6 +31,9 @@ viewSessionPage language currentDate page session model =
                 |> Maybe.withDefault Pages.Activity.Model.emptyModel
                 |> Pages.Activity.View.view language activityType session
                 |> Html.map (MsgActivity activityType)
+
+        AttendancePage ->
+            Pages.Attendance.View.view
 
         ParticipantsPage ->
             model.participantsPage

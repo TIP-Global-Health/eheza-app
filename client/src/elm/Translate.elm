@@ -236,6 +236,9 @@ translate lang trans =
                                 ActivityPage activityType ->
                                     { english = "Activity" }
 
+                                AttendancePage ->
+                                    { english = "Attendance" }
+
                                 ParticipantsPage ->
                                     { english = "Participants" }
 

@@ -1,11 +1,12 @@
 module Backend.Measurement.Encoder exposing (..)
 
 import Backend.Measurement.Model exposing (..)
+import EveryDict
 import EverySet
 import Gizra.NominalDate
-import Json.Encode as Encoder exposing (Value, float, int, list, string)
+import Json.Encode as Encoder exposing (Value, float, int, list, string, object)
 import Json.Encode.Extra exposing (maybe)
-import Restful.Endpoint exposing (EntityId(..), encodeEntityId)
+import Restful.Endpoint exposing (EntityId(..), encodeEntityId, fromEntityId)
 
 
 encodeHeight : Height -> List ( String, Value )
@@ -21,6 +22,13 @@ encodeMuac =
 encodeWeight : Weight -> List ( String, Value )
 encodeWeight =
     encodeChildMeasurement (\(WeightInKg weight) -> ( "weight", float weight ))
+
+
+{-| TODO: Revisit this, as it's probably not what we'll need for the backend..
+-}
+encodePhoto : Photo -> List ( String, Value )
+encodePhoto =
+    encodeChildMeasurement (\(PhotoValue photo) -> ( "photo", string photo ))
 
 
 encodeNutrition : ChildNutrition -> List ( String, Value )
@@ -121,3 +129,71 @@ encodeFamilyPlanningSignAsString sign =
 
         Pill ->
             "pill"
+
+
+encodeMeasurementEdits : MeasurementEdits -> Value
+encodeMeasurementEdits edits =
+    object
+        [ ( "mothers"
+          , edits.mothers
+                |> EveryDict.toList
+                |> List.map
+                    (Tuple.mapFirst (fromEntityId >> toString)
+                        >> Tuple.mapSecond encodeMotherEdits
+                    )
+                |> object
+          )
+        , ( "children"
+          , edits.children
+                |> EveryDict.toList
+                |> List.map
+                    (Tuple.mapFirst (fromEntityId >> toString)
+                        >> Tuple.mapSecond encodeChildEdits
+                    )
+                |> object
+          )
+        ]
+
+
+encodeMotherEdits : MotherEdits -> Value
+encodeMotherEdits edits =
+    object
+        [ ( "family-planning", encodeEdit (object << encodeFamilyPlanning) edits.familyPlanning )
+        ]
+
+
+encodeChildEdits : ChildEdits -> Value
+encodeChildEdits edits =
+    object
+        [ ( "height", encodeEdit (object << encodeHeight) edits.height )
+        , ( "muac", encodeEdit (object << encodeMuac) edits.muac )
+        , ( "nutrition", encodeEdit (object << encodeNutrition) edits.nutrition )
+        , ( "photo", encodeEdit (object << encodePhoto) edits.photo )
+        , ( "weight", encodeEdit (object << encodeWeight) edits.weight )
+        ]
+
+
+encodeEdit : (value -> Value) -> Edit value -> Value
+encodeEdit encodeValue edit =
+    case edit of
+        Unedited ->
+            object [ ( "tag", string "unedited" ) ]
+
+        Created value ->
+            object
+                [ ( "tag", string "created" )
+                , ( "value", encodeValue value )
+                ]
+
+        Edited { backend, edited } ->
+            object
+                [ ( "tag", string "edited" )
+                , ( "backend", encodeValue backend )
+                , ( "edited", encodeValue edited )
+                ]
+
+        Deleted value ->
+            object
+                [ ( "tag", string "deleted" )
+                , ( "value", encodeValue value )
+                ]

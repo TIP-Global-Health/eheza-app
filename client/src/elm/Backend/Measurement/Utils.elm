@@ -59,5 +59,5 @@ mapMeasurementData dataFunc editFunc measurements =
     { previous = dataFunc measurements.previous
     , current = dataFunc measurements.current
     , edits = editFunc measurements.edits
-    , status = measurements.status
+    , update = measurements.update
     }
