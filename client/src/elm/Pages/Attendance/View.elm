@@ -14,10 +14,13 @@ import Backend.Mother.Model exposing (Mother)
 import EveryDictList
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
+import Pages.Model exposing (MsgSession(..))
+import Pages.Page exposing (Page(..), UserPage(..))
 import Translate exposing (translate, Language)
 
 
-view : Language -> EditableSession -> Html a
+view : Language -> EditableSession -> Html MsgSession
 view language session =
     let
         mothers =
@@ -31,7 +34,10 @@ view language session =
                 [ h1
                     [ class "ui header" ]
                     [ text <| translate language Translate.Attendance ]
-                , a [ class "link-back" ]
+                , a
+                    [ class "link-back"
+                    , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just session.offlineSession.session.clinicId
+                    ]
                     [ span [ class "icon-back" ] []
                     , span [] []
                     ]
@@ -65,7 +71,7 @@ view language session =
             ]
 
 
-viewMother : EditableSession -> MotherId -> Mother -> Html msg
+viewMother : EditableSession -> MotherId -> Mother -> Html MsgSession
 viewMother session motherId mother =
     let
         checkIn =

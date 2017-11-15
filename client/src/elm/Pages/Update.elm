@@ -5,7 +5,7 @@ import Pages.Activity.Model
 import Pages.Activity.Update
 import Pages.Activities.Update
 import Pages.Model exposing (..)
-import Pages.Page exposing (SessionPage)
+import Pages.Page exposing (Page(..), SessionPage)
 import Pages.Participant.Model
 import Pages.Participant.Update
 import Pages.Participants.Update
@@ -17,7 +17,7 @@ to redirect the user's attention to the given page.
 This is specialized to our `SessionPages` model.
 
 -}
-updateSession : MsgSession -> SessionPages -> ( SessionPages, Cmd MsgSession, Maybe SessionPage )
+updateSession : MsgSession -> SessionPages -> ( SessionPages, Cmd MsgSession, Maybe Page )
 updateSession msg model =
     case msg of
         MsgActivities subMsg ->
@@ -27,7 +27,7 @@ updateSession msg model =
             in
                 ( { model | activitiesPage = subModel }
                 , Cmd.map MsgActivities subCmd
-                , subPage
+                , Maybe.map SessionPage subPage
                 )
 
         MsgActivity activityType subMsg ->
@@ -73,5 +73,8 @@ updateSession msg model =
             in
                 ( { model | participantsPage = subModel }
                 , Cmd.map MsgParticipants subCmd
-                , subPage
+                , Maybe.map SessionPage subPage
                 )
+
+        SetActivePage page ->
+            ( model, Cmd.none, Just page )

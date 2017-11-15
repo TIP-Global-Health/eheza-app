@@ -17,7 +17,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..), UserPage(..), SessionPage(..))
 import Pages.PageNotFound.View
 import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date exposing (delta)
@@ -289,7 +289,9 @@ viewFoundClinic language currentDate clinicId clinic request sessions cachedSess
         content =
             if isJust validSession && cachedSession == validSession then
                 [ button
-                    [ class "ui fluid primary button" ]
+                    [ class "ui fluid primary button"
+                    , onClick <| SetActivePage (SessionPage AttendancePage)
+                    ]
                     [ text <| translate language Translate.BeginHealthAssessment ]
                 ]
             else

@@ -51,6 +51,7 @@ import EveryDict exposing (EveryDict)
 import Measurement.Model
 import Pages.Activities.Model
 import Pages.Activity.Model
+import Pages.Page exposing (Page)
 import Pages.Participant.Model
 import Pages.Participants.Model
 
@@ -99,3 +100,4 @@ type MsgSession
     | MsgChild ChildId (Pages.Participant.Model.Msg ChildActivityType Measurement.Model.MsgChild)
     | MsgMother MotherId (Pages.Participant.Model.Msg MotherActivityType Measurement.Model.MsgMother)
     | MsgParticipants Pages.Participants.Model.Msg
+    | SetActivePage Page

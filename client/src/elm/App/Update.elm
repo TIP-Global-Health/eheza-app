@@ -190,7 +190,7 @@ update msg model =
                 extraMsgs =
                     redirect
                         |> Maybe.Extra.toList
-                        |> List.map (SetActivePage << SessionPage)
+                        |> List.map SetActivePage
             in
                 ( { model | sessionPages = subModel }
                 , Cmd.map MsgSession subCmd
