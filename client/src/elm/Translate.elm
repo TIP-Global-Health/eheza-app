@@ -65,6 +65,7 @@ type TranslationId
     | ErrorBadStatus
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
+    | ErrorFetchingCachedSession
     | ErrorNetworkError
     | ErrorTimeout
     | FamilyPlanningSignLabel FamilyPlanningSign
@@ -84,6 +85,7 @@ type TranslationId
     | MuacIndication MuacIndication
     | MyAccount
     | NoActiveIncidents
+    | NoCachedSession
     | NoChildrenRegisteredInTheSystem
     | NoParticipantsFound
     | NotAvailable
@@ -373,6 +375,9 @@ translate lang trans =
                 ErrorConfigurationError ->
                     { english = "Configuration error" }
 
+                ErrorFetchingCachedSession ->
+                    { english = "There was an error fetchhing the session stored on this device." }
+
                 ErrorNetworkError ->
                     { english = "There was a network error." }
 
@@ -502,6 +507,9 @@ translate lang trans =
 
                 NoActiveIncidents ->
                     { english = "No active incidents!" }
+
+                NoCachedSession ->
+                    { english = "No session was found on this device." }
 
                 NoChildrenRegisteredInTheSystem ->
                     { english = "No children registered in the system" }

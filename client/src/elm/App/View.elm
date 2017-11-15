@@ -66,7 +66,7 @@ viewConfiguredModel model configured =
                     Pages.PageNotFound.View.view model.language url
 
                 SessionPage subPage ->
-                    Pages.View.viewSessionPage model.language model.currentDate subPage (Debug.crash "editable session") model.sessionPages
+                    Pages.View.viewSessionPage model.language model.currentDate subPage model.cache.editableSession model.sessionPages
                         |> Html.map MsgSession
 
                 _ ->
@@ -125,7 +125,7 @@ viewConfiguredModel model configured =
                         model.language
                         model.currentDate
                         subPage
-                        (Debug.crash "Provide editable session")
+                        model.cache.editableSession
                         model.sessionPages
                         |> Html.map MsgSession
 

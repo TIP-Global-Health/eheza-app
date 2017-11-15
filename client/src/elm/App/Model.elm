@@ -27,6 +27,9 @@ yet.
 `language` is here because we always need some kind of language, if just a
 default.
 
+TODO: Should review this layering at some point to see whether it was too much
+/ too little.
+
 -}
 type alias Model =
     { activePage : Page
