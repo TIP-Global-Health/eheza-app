@@ -1,6 +1,5 @@
 module Pages.Activities.Model exposing (..)
 
-import Participant.Model exposing (ParticipantTypeFilter(..))
 import Pages.Page exposing (Page)
 
 
