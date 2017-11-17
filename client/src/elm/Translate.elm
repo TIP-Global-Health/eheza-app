@@ -52,7 +52,6 @@ type TranslationId
     | Children
     | ClickTheCheckMark
     | Clinics
-    | CompletedSectionEmpty
     | Connected
     | Dashboard
     | DownloadHealthAssessment
@@ -88,6 +87,14 @@ type TranslationId
     | MuacIndication MuacIndication
     | MyAccount
     | NoActiveIncidents
+    | NoActivitiesCompleted
+    | NoActivitiesCompletedForThisParticipant
+    | NoActivitiesPending
+    | NoActivitiesPendingForThisParticipant
+    | NoParticipantsPending
+    | NoParticipantsPendingForThisActivity
+    | NoParticipantsCompleted
+    | NoParticipantsCompletedForThisActivity
     | NoCachedSession
     | NoChildrenRegisteredInTheSystem
     | NoParticipantsFound
@@ -98,7 +105,6 @@ type TranslationId
     | Page404
     | PageNotFoundMsg
     | Participants
-    | PendingSectionEmpty
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
     | PlaceholderEnterWeight
@@ -339,9 +345,6 @@ translate lang trans =
                 Clinics ->
                     { english = "Clinics" }
 
-                CompletedSectionEmpty ->
-                    { english = "This section has not yet been completed." }
-
                 Connected ->
                     { english = "Connected" }
 
@@ -520,6 +523,30 @@ translate lang trans =
                 NoActiveIncidents ->
                     { english = "No active incidents!" }
 
+                NoActivitiesCompleted ->
+                    { english = "No activities are entirely completed for the attending participants." }
+
+                NoActivitiesPending ->
+                    { english = "All activities are completed for the attending participants." }
+
+                NoActivitiesCompletedForThisParticipant ->
+                    { english = "No activities are completed for this participants." }
+
+                NoActivitiesPendingForThisParticipant ->
+                    { english = "All activities are completed for this participant." }
+
+                NoParticipantsCompleted ->
+                    { english = "No participants have completed all their activities yet." }
+
+                NoParticipantsPending ->
+                    { english = "All attending participants have completed their activities." }
+
+                NoParticipantsCompletedForThisActivity ->
+                    { english = "No participants have completed this activity yet." }
+
+                NoParticipantsPendingForThisActivity ->
+                    { english = "All attending participants have completed this activitity." }
+
                 NoCachedSession ->
                     { english = "No session was found on this device." }
 
@@ -549,9 +576,6 @@ translate lang trans =
 
                 Participants ->
                     { english = "Participants" }
-
-                PendingSectionEmpty ->
-                    { english = "This section has been completed." }
 
                 PlaceholderEnterHeight ->
                     { english = "Enter height here…" }

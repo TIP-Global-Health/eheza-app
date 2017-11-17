@@ -59,10 +59,10 @@ view language session model =
         ( selectedActivities, emptySectionMessage ) =
             case model.selectedTab of
                 Pending ->
-                    ( pendingActivities, translate language Trans.PendingSectionEmpty )
+                    ( pendingActivities, translate language Trans.NoActivitiesPending )
 
                 Completed ->
-                    ( noPendingActivities, translate language Trans.CompletedSectionEmpty )
+                    ( noPendingActivities, translate language Trans.NoActivitiesCompleted )
     in
         div
             [ class "wrap wrap-alt" ]

@@ -68,10 +68,10 @@ view language selectedActivity session model =
                 ( selectedParticipants, emptySectionMessage ) =
                     case model.selectedTab of
                         Pending ->
-                            ( pendingParticipants, translate language Translate.PendingSectionEmpty )
+                            ( pendingParticipants, translate language Translate.NoParticipantsPendingForThisActivity )
 
                         Completed ->
-                            ( completedParticipants, translate language Translate.CompletedSectionEmpty )
+                            ( completedParticipants, translate language Translate.NoParticipantsCompletedForThisActivity )
 
                 viewParticipantCard ( participantId, participant ) =
                     let

@@ -52,10 +52,10 @@ view language editableSession model =
                 ( selectedMothers, emptySectionMessage ) =
                     case model.selectedTab of
                         Pending ->
-                            ( mothersWithPendingActivity, translate language Trans.PendingSectionEmpty )
+                            ( mothersWithPendingActivity, translate language Trans.NoParticipantsPending )
 
                         Completed ->
-                            ( mothersWithoutPendingActivity, translate language Trans.CompletedSectionEmpty )
+                            ( mothersWithoutPendingActivity, translate language Trans.NoParticipantsCompleted )
 
                 viewMotherCard ( motherId, mother ) =
                     div

@@ -221,13 +221,13 @@ viewActivityCards config language participantId selectedTab selectedActivity ses
 
         pendingActivitiesView =
             if List.isEmpty pendingActivities then
-                [ span [] [ text <| translate language Trans.PendingSectionEmpty ] ]
+                [ span [] [ text <| translate language Trans.NoActivitiesPendingForThisParticipant ] ]
             else
                 List.map (viewActivityListItem config language selectedActivity) pendingActivities
 
         completedActivitiesView =
             if List.isEmpty completedActivities then
-                [ span [] [ text <| translate language Trans.CompletedSectionEmpty ] ]
+                [ span [] [ text <| translate language Trans.NoActivitiesCompletedForThisParticipant ] ]
             else
                 List.map (viewActivityListItem config language selectedActivity) completedActivities
 
