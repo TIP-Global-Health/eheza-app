@@ -201,6 +201,8 @@ a {
   background: $color-primary;
   margin-bottom: 0;
   border-radius: 0 !important;
+  z-index: 300;
+  position: relative;
 
   &:after {
     border-color: transparent transparent transparent $color-primary;
