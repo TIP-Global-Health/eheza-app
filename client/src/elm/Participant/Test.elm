@@ -6,7 +6,7 @@ import Fixtures exposing (exampleChildA, exampleChildB, exampleMother)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Test exposing (describe, test, Test)
 import Participant.Model exposing (AgeDay(..), Participant(ParticipantChild, ParticipantMother))
-import Participant.Utils exposing (getParticipantAgeDays, getParticipantBirthDate, renderAgeMonthsDays, renderDateOfBirth)
+import Participant.Utils exposing (getAgeDays, getParticipantBirthDate, renderAgeMonthsDays, renderDateOfBirth)
 import Time.Date exposing (date)
 import Translate exposing (Language(English))
 
@@ -22,8 +22,8 @@ renderParticipantDateOfBirth language =
     getParticipantBirthDate >> renderDateOfBirth language
 
 
-getParticipantAgeTest : Test
-getParticipantAgeTest =
+getAgeDaysTest : Test
+getAgeDaysTest =
     let
         today =
             fromLocalDateTime (Date.fromTime 1503920848000)
@@ -32,40 +32,40 @@ getParticipantAgeTest =
             [ test "for newborn" <|
                 \() ->
                     Expect.equal
-                        (getParticipantAgeDays
-                            (ParticipantChild { exampleChildA | birthDate = fromLocalDateTime <| Date.fromTime 1503834862000 })
+                        (getAgeDays
+                            (fromLocalDateTime <| Date.fromTime 1503834862000)
                             today
                         )
                         (Participant.Model.AgeDay 1)
             , test "for a week old newborn" <|
                 \() ->
                     Expect.equal
-                        (getParticipantAgeDays
-                            (ParticipantChild { exampleChildA | birthDate = fromLocalDateTime <| Date.fromTime 1503316462000 })
+                        (getAgeDays
+                            (fromLocalDateTime <| Date.fromTime 1503316462000)
                             today
                         )
                         (Participant.Model.AgeDay 7)
             , test "for a one month old baby" <|
                 \() ->
                     Expect.equal
-                        (getParticipantAgeDays
-                            (ParticipantChild { exampleChildA | birthDate = fromLocalDateTime <| Date.fromTime 1501156048000 })
+                        (getAgeDays
+                            (fromLocalDateTime <| Date.fromTime 1501156048000)
                             today
                         )
                         (Participant.Model.AgeDay 32)
             , test "for a thirteen months old baby" <|
                 \() ->
                     Expect.equal
-                        (getParticipantAgeDays
-                            (ParticipantChild { exampleChildA | birthDate = fromLocalDateTime <| Date.fromTime 1469101648000 })
+                        (getAgeDays
+                            (fromLocalDateTime <| Date.fromTime 1469101648000)
                             today
                         )
                         (Participant.Model.AgeDay 403)
             , test "for a 30 years old mother" <|
                 \() ->
                     Expect.equal
-                        (getParticipantAgeDays
-                            (ParticipantMother { exampleMother | birthDate = fromLocalDateTime <| Date.fromTime 557840848000 })
+                        (getAgeDays
+                            (fromLocalDateTime <| Date.fromTime 557840848000)
                             today
                         )
                         (Participant.Model.AgeDay 10950)
@@ -175,7 +175,7 @@ renderParticipantDateOfBirthTest =
 all : Test
 all =
     describe "Participant tests"
-        [ getParticipantAgeTest
+        [ getAgeDaysTest
         , renderParticipantAgeTest
         , renderParticipantDateOfBirthTest
         ]

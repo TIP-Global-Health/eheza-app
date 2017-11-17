@@ -41,7 +41,8 @@ type alias Model =
 
 
 type Msg
-    = MsgMeasurementChild ChildId Measurement.Model.MsgChild
+    = GoBackToActivitiesPage
+    | MsgMeasurementChild ChildId Measurement.Model.MsgChild
     | MsgMeasurementMother MotherId Measurement.Model.MsgMother
     | SetSelectedParticipant (Maybe ParticipantId)
     | SetSelectedTab Tab

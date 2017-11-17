@@ -7,10 +7,13 @@ import Date.Extra.Facts exposing (monthFromMonthNumber)
 import EveryDict exposing (EveryDict)
 import EveryDictList
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
-import Participant.Model exposing (AgeDay, Participant(..), ParticipantId(..))
+import Participant.Model exposing (AgeDay(..), Participant(..), ParticipantId(..))
 import Translate as Trans exposing (translate, Language)
 import Time.Date
 import Utils.NominalDate exposing (diffDays, diffCalendarMonthsAndDays)
+
+
+-- TODO: This can all be deleted.
 
 
 getParticipantAvatarThumb : Participant -> String
@@ -53,14 +56,15 @@ getParticipantBirthDate participant =
             mother.birthDate
 
 
-{-| Calculates the age of a participant.
+{-| Calculates an age in days. The first date is the birthdate,
+and the second the current date.
 To get current time, see App/Model.currentDate and
 Gizra.NominalDate.fromLocalDateTime
 -}
-getParticipantAgeDays : Participant -> NominalDate -> AgeDay
-getParticipantAgeDays participant now =
-    Participant.Model.AgeDay <|
-        diffDays (getParticipantBirthDate participant) now
+getAgeDays : NominalDate -> NominalDate -> AgeDay
+getAgeDays birth now =
+    diffDays birth now
+        |> AgeDay
 
 
 {-| Shows the difference between the first date (the birthdate)

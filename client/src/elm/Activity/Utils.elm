@@ -22,6 +22,7 @@ module Activity.Utils
         , motherHasPendingActivity
         , motherOrAnyChildHasAnyCompletedActivity
         , motherOrAnyChildHasAnyPendingActivity
+        , onlyCheckedIn
         , setCheckedIn
         )
 
@@ -400,6 +401,35 @@ childIsCheckedIn childId session =
         |> Maybe.map Tuple.first
         |> Maybe.map (\motherId -> isCheckedIn motherId session)
         |> Maybe.withDefault False
+
+
+{-| Filters the mothers and children in an editable session to only
+include those who are marked in attendance.
+-}
+onlyCheckedIn : EditableSession -> EditableSession
+onlyCheckedIn session =
+    let
+        mothers =
+            session.offlineSession.mothers
+                |> EveryDictList.filter (\motherId _ -> isCheckedIn motherId session)
+
+        children =
+            -- TODO: This could be done more efficiently, given that we've got the mothers
+            session.offlineSession.children
+                |> EveryDict.filter (\childId _ -> childIsCheckedIn childId session)
+
+        offlineSession =
+            (\offline ->
+                { offline
+                    | mothers = mothers
+                    , children = children
+                }
+            )
+                session.offlineSession
+    in
+        -- For now, at least, we don't bother filtering the measurements ... we just
+        -- filter the mothers and children.
+        { session | offlineSession = offlineSession }
 
 
 {-| Does the mother herself have any pending activity?

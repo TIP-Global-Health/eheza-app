@@ -1,10 +1,13 @@
 module Pages.Activity.View exposing (view)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
-import Activity.Utils exposing (getActivityIcon)
+import Activity.Utils exposing (getActivityIcon, onlyCheckedIn, childHasPendingActivity, motherHasPendingActivity)
+import Backend.Child.Model exposing (Child)
+import Backend.Entities exposing (..)
+import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (EditableSession)
-import Date exposing (Date)
-import EveryDict
+import EveryDict exposing (EveryDict)
+import EveryDictList
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -13,7 +16,6 @@ import Html.Events exposing (onClick)
 import List as List
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
 import Participant.Model exposing (Participant(..), ParticipantId(..))
-import Participant.Utils exposing (getParticipants, participantHasPendingActivity, getParticipantName, getParticipantAvatarThumb)
 import Translate exposing (translate, Language)
 import Utils.Html exposing (tabItem, thumbnailImage)
 
@@ -29,20 +31,80 @@ thumbnailDimensions =
 and is managed elsewhere.
 -}
 view : Language -> ActivityType -> EditableSession -> Model -> Html Msg
-view language selectedActivity session model =
+view language selectedActivity =
+    -- It's awkward to try to deal with children and mothers together, and we
+    -- know which we want, based on the activity type. So, we specialize!
+    case selectedActivity of
+        ChildActivity childActivity ->
+            viewActivity childConfig language childActivity
+
+        MotherActivity motherActivity ->
+            viewActivity motherConfig language motherActivity
+
+
+{-| TODO: At some point, we should be able to get rid of the `ParticipantId`
+and `Participant` types entirely ... in this transitional stage, we have
+some functions that want them.
+-}
+type alias Config activity id participant =
+    { hasPendingActivity : id -> activity -> EditableSession -> Bool
+    , getParticipants : EditableSession -> EveryDict id participant
+    , wrapActivityType : activity -> ActivityType
+    , wrapParticipantId : id -> ParticipantId
+    , getAvatarThumb : participant -> String
+    , getName : participant -> String
+    , getBirthDate : participant -> NominalDate
+    , iconClass : String
+    }
+
+
+childConfig : Config ChildActivityType ChildId Child
+childConfig =
+    { hasPendingActivity = childHasPendingActivity
+    , getParticipants = \session -> session.offlineSession.children
+    , wrapActivityType = ChildActivity
+    , wrapParticipantId = ParticipantChildId
+    , getAvatarThumb = .image
+    , getName = .name
+    , getBirthDate = .birthDate
+    , iconClass = "child"
+    }
+
+
+motherConfig : Config MotherActivityType MotherId Mother
+motherConfig =
+    -- TODO: getParticipants is inefficient ... should make the children and
+    -- mothers match, and either pre-sort in EveryDictList or sort each time in
+    -- EveryDict
+    { hasPendingActivity = motherHasPendingActivity
+    , getParticipants = \session -> session.offlineSession.mothers |> EveryDictList.toList |> EveryDict.fromList
+    , wrapActivityType = MotherActivity
+    , wrapParticipantId = ParticipantMotherId
+    , getAvatarThumb = .image
+    , getName = .name
+    , getBirthDate = .birthDate
+    , iconClass = "mother"
+    }
+
+
+viewActivity : Config activity id participant -> Language -> activity -> EditableSession -> Model -> Html Msg
+viewActivity config language selectedActivity fullSession model =
     let
+        checkedIn =
+            onlyCheckedIn fullSession
+
         ( pendingParticipants, completedParticipants ) =
-            getParticipants session.offlineSession
-                |> EveryDict.partition (\id _ -> participantHasPendingActivity id selectedActivity session)
+            config.getParticipants checkedIn
+                |> EveryDict.partition (\id _ -> config.hasPendingActivity id selectedActivity checkedIn)
 
         activityDescription =
             div
                 [ class "ui unstackable items" ]
                 [ div [ class "item" ]
                     [ div [ class "ui image" ]
-                        [ span [ class <| "icon-item icon-item-" ++ getActivityIcon selectedActivity ] [] ]
+                        [ span [ class <| "icon-item icon-item-" ++ getActivityIcon (config.wrapActivityType selectedActivity) ] [] ]
                     , div [ class "content" ]
-                        [ p [] [ text <| translate language (Translate.ActivitiesHelp selectedActivity) ] ]
+                        [ p [] [ text <| translate language <| Translate.ActivitiesHelp <| config.wrapActivityType selectedActivity ] ]
                     ]
                 ]
 
@@ -76,28 +138,29 @@ view language selectedActivity session model =
                 viewParticipantCard ( participantId, participant ) =
                     let
                         name =
-                            getParticipantName participant
+                            config.getName participant
 
                         imageSrc =
-                            getParticipantAvatarThumb participant
+                            config.getAvatarThumb participant
 
                         imageView =
-                            thumbnailImage participant imageSrc name thumbnailDimensions.height thumbnailDimensions.width
+                            thumbnailImage config.iconClass imageSrc name thumbnailDimensions.height thumbnailDimensions.width
                     in
                         div
                             [ classList
                                 [ ( "participant card", True )
-                                , ( "active", Just participantId == model.selectedParticipant )
+                                , ( "active", Just (config.wrapParticipantId participantId) == model.selectedParticipant )
                                 ]
                             , onClick <|
                                 SetSelectedParticipant <|
-                                    Just participantId
+                                    Just <|
+                                        config.wrapParticipantId participantId
                             ]
                             [ div
                                 [ class "image" ]
                                 [ imageView ]
                             , div [ class "content" ]
-                                [ p [] [ text <| getParticipantName participant ] ]
+                                [ p [] [ text <| config.getName participant ] ]
                             ]
 
                 participantsCards =
@@ -106,7 +169,7 @@ view language selectedActivity session model =
                     else
                         selectedParticipants
                             |> EveryDict.toList
-                            |> List.sortBy (\( _, participant ) -> getParticipantName participant)
+                            |> List.sortBy (\( _, participant ) -> config.getName participant)
                             |> List.map viewParticipantCard
             in
                 div
@@ -118,10 +181,12 @@ view language selectedActivity session model =
         measurementsForm =
             case model.selectedParticipant of
                 Just (ParticipantChildId childId) ->
-                    Debug.crash "implement"
+                    -- TODO: implement
+                    div [] [ text "put measurement form here" ]
 
                 Just (ParticipantMotherId motherId) ->
-                    Debug.crash "implement"
+                    -- TODO: implement
+                    div [] [ text "put measurement form here" ]
 
                 Nothing ->
                     emptyNode
@@ -130,17 +195,10 @@ view language selectedActivity session model =
             div
                 [ class "ui basic head segment" ]
                 [ h1 [ class "ui header" ]
-                    [ text <| translate language (Translate.ActivitiesTitle selectedActivity) ]
+                    [ text <| translate language <| Translate.ActivitiesTitle <| config.wrapActivityType selectedActivity ]
                 , a
                     [ class "link-back"
-                    , Debug.crash "redo"
-
-                    {-
-                       , onClick <|
-                           MsgPagesActivity <|
-                               Pages.Activity.Model.SetRedirectPage <|
-                                   App.PageType.Activities
-                    -}
+                    , onClick GoBackToActivitiesPage
                     ]
                     [ span [ class "icon-back" ] [] ]
                 ]

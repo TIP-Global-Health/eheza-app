@@ -11,8 +11,6 @@ import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild, getMother, getMyMother, getChildren)
-import Date exposing (Date)
-import EveryDict
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -108,7 +106,7 @@ viewFoundChild language currentDate ( childId, child ) session model =
             , div [ class "ui unstackable items participant-page child" ]
                 [ div [ class "item" ]
                     [ div [ class "ui image" ]
-                        [ thumbnailImage (ParticipantChild child) child.image childName thumbnailDimensions.height thumbnailDimensions.width ]
+                        [ thumbnailImage "child" child.image childName thumbnailDimensions.height thumbnailDimensions.width ]
                     , div [ class "content" ]
                         [ h2 [ class "ui header" ]
                             [ text childName ]
@@ -163,7 +161,7 @@ viewFoundMother language ( motherId, mother ) session model =
                 [ class "ui unstackable items participant-page mother" ]
                 [ div [ class "item" ]
                     [ div [ class "ui image" ]
-                        [ thumbnailImage (ParticipantMother mother) mother.image mother.name thumbnailDimensions.height thumbnailDimensions.width ]
+                        [ thumbnailImage "mother" mother.image mother.name thumbnailDimensions.height thumbnailDimensions.width ]
                     , div [ class "content" ]
                         [ h2 [ class "ui header" ]
                             [ text mother.name ]

@@ -8,7 +8,6 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Pages.Page exposing (Page(..), UserPage(..), SessionPage(..))
 import Pages.Participants.Model exposing (Model, Msg(..), Tab(..))
-import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
 import Translate as Trans exposing (translate, Language)
 import Utils.Html exposing (tabItem, thumbnailImage)
 
@@ -67,7 +66,7 @@ view language editableSession model =
                         ]
                         [ div
                             [ class "image" ]
-                            [ thumbnailImage (ParticipantMother mother) mother.image mother.name thumbnailDimensions.height thumbnailDimensions.width ]
+                            [ thumbnailImage "mother" mother.image mother.name thumbnailDimensions.height thumbnailDimensions.width ]
                         , div
                             [ class "content" ]
                             [ p [] [ text mother.name ] ]

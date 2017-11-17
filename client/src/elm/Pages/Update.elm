@@ -8,6 +8,7 @@ import Pages.Activity.Model
 import Pages.Activity.Update
 import Pages.Activities.Update
 import Pages.Model exposing (..)
+import Pages.Page exposing (Page(..))
 import Pages.Participant.Model
 import Pages.Participant.Update
 import Pages.Participants.Update
@@ -35,14 +36,16 @@ updateSession msg model =
 
         MsgActivity activityType subMsg ->
             let
-                ( subModel, subCmd ) =
+                ( subModel, subCmd, subPage ) =
                     EveryDict.get activityType model.activityPages
                         |> Maybe.withDefault Pages.Activity.Model.emptyModel
                         |> Pages.Activity.Update.update subMsg
             in
                 ( { model | activityPages = EveryDict.insert activityType subModel model.activityPages }
                 , Cmd.map (MsgActivity activityType) subCmd
-                , []
+                , subPage
+                    |> Maybe.map (App.Model.SetActivePage << SessionPage)
+                    |> Maybe.Extra.toList
                 )
 
         MsgChild childId subMsg ->

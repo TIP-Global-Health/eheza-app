@@ -18,6 +18,9 @@ types ... e.g. MotherId goes with Mother and MotherActivity, while ChildId goes
 with Child and ChildActivity. But, sometimes referring to a `Participant` or
 `ParticipantId` is still handy.
 
+TODO: Move the things we still need from here elsewhere, or consolidate
+the typeclass-like records here.
+
 -}
 
 import Backend.Entities exposing (..)
