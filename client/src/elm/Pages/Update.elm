@@ -50,14 +50,15 @@ updateSession msg model =
 
         MsgChild childId subMsg ->
             let
-                ( subModel, subCmd ) =
+                ( subModel, subCmd, page ) =
                     EveryDict.get childId model.childPages
                         |> Maybe.withDefault Pages.Participant.Model.emptyModel
                         |> Pages.Participant.Update.updateChild subMsg
             in
                 ( { model | childPages = EveryDict.insert childId subModel model.childPages }
                 , Cmd.map (MsgChild childId) subCmd
-                , []
+                , Maybe.map App.Model.SetActivePage page
+                    |> Maybe.Extra.toList
                 )
 
         MsgEditableSession subMsg ->
@@ -71,14 +72,15 @@ updateSession msg model =
 
         MsgMother motherId subMsg ->
             let
-                ( subModel, subCmd ) =
+                ( subModel, subCmd, page ) =
                     EveryDict.get motherId model.motherPages
                         |> Maybe.withDefault Pages.Participant.Model.emptyModel
                         |> Pages.Participant.Update.updateMother subMsg
             in
                 ( { model | motherPages = EveryDict.insert motherId subModel model.motherPages }
                 , Cmd.map (MsgMother motherId) subCmd
-                , []
+                , Maybe.map App.Model.SetActivePage page
+                    |> Maybe.Extra.toList
                 )
 
         MsgParticipants subMsg ->

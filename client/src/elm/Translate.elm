@@ -530,7 +530,7 @@ translate lang trans =
                     { english = "All activities are completed for the attending participants." }
 
                 NoActivitiesCompletedForThisParticipant ->
-                    { english = "No activities are completed for this participants." }
+                    { english = "No activities are completed for this participant." }
 
                 NoActivitiesPendingForThisParticipant ->
                     { english = "All activities are completed for this participant." }

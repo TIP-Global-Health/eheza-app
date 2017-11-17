@@ -1,8 +1,4 @@
-module Pages.Participant.View
-    exposing
-        ( viewChild
-        , viewMother
-        )
+module Pages.Participant.View exposing (viewChild, viewMother)
 
 import Activity.Model exposing (ActivityListItem, ActivityType(..), ChildActivityType, MotherActivityType(..))
 import Activity.Utils exposing (getActivityList, getActivityIcon, getAllChildActivities, getAllMotherActivities, motherHasPendingActivity, childHasPendingActivity)
@@ -19,8 +15,9 @@ import Html.Events exposing (onClick)
 import Maybe.Extra
 import Measurement.Model
 import Measurement.View
+import Pages.Page exposing (Page(..), SessionPage(..))
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
-import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
+import Participant.Model exposing (Participant(..), ParticipantId(..))
 import Participant.Utils exposing (renderAgeMonthsDays, renderDateOfBirth)
 import ProgressReport.View exposing (viewProgressReport)
 import Translate as Trans exposing (Language, translate)
@@ -98,7 +95,8 @@ viewFoundChild language currentDate ( childId, child ) session model =
                 [ viewProgressReport language childId session ]
             else
                 [ Html.map MsgMeasurement <|
-                    Debug.crash "implement"
+                    -- TODO: implement
+                    div [] [ text "measurement form here" ]
                 ]
     in
         div [ class "wrap" ] <|
@@ -172,7 +170,8 @@ viewFoundMother language ( motherId, mother ) session model =
             ]
                 ++ (viewActivityCards motherConfig language motherId model.selectedTab model.selectedActivity session)
                 ++ [ Html.map MsgMeasurement <|
-                        Debug.crash "implement"
+                        -- TODO: implement
+                        div [] [ text "measurement form here" ]
                    ]
 
 
@@ -317,14 +316,10 @@ viewHeader config language participantId session =
                     if active then
                         [ class "active" ]
                     else
-                        [ onClick <|
-                            Debug.crash "redo"
-
-                        {-
-                           MsgPagesParticipant (Debug.crash "id") <|
-                               Pages.Participant.Model.SetRedirectPage
-                                   (App.PageType.Participant (Debug.crash "id"))
-                        -}
+                        [ ChildPage childId
+                            |> SessionPage
+                            |> Redirect
+                            |> onClick
                         ]
             in
                 li attributes
@@ -351,13 +346,10 @@ viewHeader config language participantId session =
                     if active then
                         [ class "active" ]
                     else
-                        [ onClick <|
-                            Debug.crash "redo"
-
-                        {-
-                           MsgPagesParticipant (Debug.crash "motherId") <|
-                               Pages.Participant.Model.SetRedirectPage (App.PageType.Participant (fromEntityId motherId))
-                        -}
+                        [ MotherPage motherId
+                            |> SessionPage
+                            |> Redirect
+                            |> onClick
                         ]
             in
                 li attributes
@@ -373,14 +365,9 @@ viewHeader config language participantId session =
                 [ text <| translate language Trans.Assessment ]
             , a
                 [ class "link-back"
-                , onClick <|
-                    Debug.crash "redo"
-
-                {-
-                   MsgPagesParticipant participantId <|
-                       Pages.Participant.Model.SetRedirectPage <|
-                           App.PageType.Dashboard []
-                -}
+                , SessionPage ParticipantsPage
+                    |> Redirect
+                    |> onClick
                 ]
                 [ span [ class "icon-back" ] [] ]
             , ul

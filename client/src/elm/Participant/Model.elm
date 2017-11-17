@@ -3,7 +3,6 @@ module Participant.Model
         ( AgeDay(..)
         , Participant(..)
         , ParticipantId(..)
-        , ParticipantTypeFilter(..)
         )
 
 {-| This module provides a type which is either a child or a mother.
@@ -42,9 +41,3 @@ type Participant
 type ParticipantId
     = ParticipantChildId ChildId
     | ParticipantMotherId MotherId
-
-
-type ParticipantTypeFilter
-    = All
-    | Children
-    | Mothers
