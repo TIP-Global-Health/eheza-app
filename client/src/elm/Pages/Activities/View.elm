@@ -7,8 +7,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List as List
 import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
-import Pages.Page exposing (SessionPage(..))
-import Pages.Utils exposing (DashboardPage(..), viewDashboardPageHeader)
+import Pages.Page exposing (SessionPage(..), Page(..), UserPage(..))
 import Translate as Trans exposing (translate, Language)
 import Utils.Html exposing (tabItem)
 
@@ -42,7 +41,7 @@ view language session model =
                 [ class "card" ]
                 [ div
                     [ class "image"
-                    , onClick <| SetRedirectPage <| ActivityPage item.activityType
+                    , onClick <| SetRedirectPage <| SessionPage <| ActivityPage item.activityType
                     ]
                     [ span [ class <| "icon-task icon-task-" ++ getActivityIcon item.activityType ] [] ]
                 , div
@@ -67,7 +66,30 @@ view language session model =
     in
         div
             [ class "wrap wrap-alt" ]
-            [ viewDashboardPageHeader SetRedirectPage language ActivitiesDashboard
+            [ div
+                [ class "ui basic head segment" ]
+                [ h1
+                    [ class "ui header" ]
+                    [ text <| translate language Trans.Activities ]
+                , a
+                    [ class "link-back"
+                    , onClick <| SetRedirectPage <| UserPage <| ClinicsPage <| Just session.offlineSession.session.clinicId
+                    ]
+                    [ span [ class "icon-back" ] []
+                    , span [] []
+                    ]
+                , ul [ class "links-head" ]
+                    [ li
+                        [ onClick <| SetRedirectPage <| SessionPage AttendancePage ]
+                        [ a [] [ span [ class "icon-completed" ] [] ] ]
+                    , li
+                        [ onClick <| SetRedirectPage <| SessionPage ParticipantsPage ]
+                        [ a [] [ span [ class "icon-mother" ] [] ] ]
+                    , li
+                        [ class "active" ]
+                        [ a [] [ span [ class "icon-measurements" ] [] ] ]
+                    ]
+                ]
             , tabs
             , div
                 [ class "ui full segment" ]

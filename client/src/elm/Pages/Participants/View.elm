@@ -5,8 +5,9 @@ import Backend.Session.Model exposing (OfflineSession, EditableSession)
 import EveryDictList
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
+import Pages.Page exposing (Page(..), UserPage(..), SessionPage(..))
 import Pages.Participants.Model exposing (Model, Msg(..), Tab(..))
-import Pages.Utils exposing (viewDashboardPageHeader, DashboardPage(..))
 import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
 import Translate as Trans exposing (translate, Language)
 import Utils.Html exposing (tabItem, thumbnailImage)
@@ -58,13 +59,10 @@ view language editableSession model =
                 viewMotherCard ( motherId, mother ) =
                     div
                         [ class "card"
-                        , Debug.crash "redo"
-
-                        {-
-                           , App.PageType.PageMother motherId
-                               |> SetRedirectPage
-                               |> onClick
-                        -}
+                        , MotherPage motherId
+                            |> SessionPage
+                            |> SetRedirectPage
+                            |> onClick
                         ]
                         [ div
                             [ class "image" ]
@@ -97,6 +95,32 @@ view language editableSession model =
                     [ text <| translate language Trans.EndSession ]
                 ]
 
+        header =
+            div
+                [ class "ui basic head segment" ]
+                [ h1
+                    [ class "ui header" ]
+                    [ text <| translate language Trans.Participants ]
+                , a
+                    [ class "link-back"
+                    , onClick <| SetRedirectPage <| UserPage <| ClinicsPage <| Just editableSession.offlineSession.session.clinicId
+                    ]
+                    [ span [ class "icon-back" ] []
+                    , span [] []
+                    ]
+                , ul [ class "links-head" ]
+                    [ li
+                        [ onClick <| SetRedirectPage <| SessionPage AttendancePage ]
+                        [ a [] [ span [ class "icon-completed" ] [] ] ]
+                    , li
+                        [ class "active" ]
+                        [ a [] [ span [ class "icon-mother" ] [] ] ]
+                    , li
+                        [ onClick <| SetRedirectPage <| SessionPage ActivitiesPage ]
+                        [ a [] [ span [ class "icon-measurements" ] [] ] ]
+                    ]
+                ]
+
         content =
             div
                 [ class "ui full segment" ]
@@ -104,7 +128,7 @@ view language editableSession model =
     in
         div
             [ class "wrap wrap-alt page-participants" ]
-            [ viewDashboardPageHeader SetRedirectPage language ParticipantsDashboard
+            [ header
             , tabs
             , content
             ]

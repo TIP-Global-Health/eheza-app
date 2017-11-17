@@ -8,7 +8,6 @@ import Pages.Activity.Model
 import Pages.Activity.Update
 import Pages.Activities.Update
 import Pages.Model exposing (..)
-import Pages.Page exposing (Page(..), SessionPage)
 import Pages.Participant.Model
 import Pages.Participant.Update
 import Pages.Participants.Update
@@ -30,7 +29,7 @@ updateSession msg model =
             in
                 ( { model | activitiesPage = subModel }
                 , Cmd.map MsgActivities subCmd
-                , Maybe.map (App.Model.SetActivePage << SessionPage) subPage
+                , Maybe.map App.Model.SetActivePage subPage
                     |> Maybe.Extra.toList
                 )
 
@@ -86,7 +85,7 @@ updateSession msg model =
             in
                 ( { model | participantsPage = subModel }
                 , Cmd.map MsgParticipants subCmd
-                , Maybe.map (App.Model.SetActivePage << SessionPage) subPage
+                , Maybe.map App.Model.SetActivePage subPage
                     |> Maybe.Extra.toList
                 )
 
