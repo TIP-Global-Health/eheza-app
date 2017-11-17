@@ -1,6 +1,6 @@
 module Pages.Participants.View exposing (view)
 
-import Activity.Utils exposing (getTotalsNumberPerActivity, motherOrAnyChildHasAnyPendingActivity)
+import Activity.Utils exposing (getTotalsNumberPerActivity, motherOrAnyChildHasAnyPendingActivity, isCheckedIn)
 import Backend.Session.Model exposing (OfflineSession, EditableSession)
 import EveryDictList
 import Html exposing (..)
@@ -23,11 +23,12 @@ thumbnailDimensions =
 view : Language -> EditableSession -> Model -> Html Msg
 view language editableSession model =
     let
-        allMothers =
+        mothersInAttendance =
             editableSession.offlineSession.mothers
+                |> EveryDictList.filter (\motherId _ -> isCheckedIn motherId editableSession)
 
         ( mothersWithPendingActivity, mothersWithoutPendingActivity ) =
-            EveryDictList.partition (\motherId _ -> motherOrAnyChildHasAnyPendingActivity motherId editableSession) allMothers
+            EveryDictList.partition (\motherId _ -> motherOrAnyChildHasAnyPendingActivity motherId editableSession) mothersInAttendance
 
         tabs =
             let
