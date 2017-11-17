@@ -12,11 +12,5 @@ update msg model =
         SetSelectedTab tab ->
             ( { model | selectedTab = tab }, Cmd.none, Nothing )
 
-        SetParticipantTypeFilter participantTypeFilter ->
-            ( { model | participantTypeFilter = participantTypeFilter }
-            , Cmd.none
-            , Nothing
-            )
-
         SetRedirectPage page ->
             ( model, Cmd.none, Just page )

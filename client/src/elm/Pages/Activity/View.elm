@@ -12,7 +12,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List as List
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
-import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
+import Participant.Model exposing (Participant(..), ParticipantId(..))
 import Participant.Utils exposing (getParticipants, participantHasPendingActivity, getParticipantName, getParticipantAvatarThumb)
 import Translate exposing (translate, Language)
 import Utils.Html exposing (tabItem, thumbnailImage)

@@ -34,7 +34,6 @@ import Backend.Session.Utils exposing (getMother, getMotherMeasurementData, getC
 import EveryDict
 import EveryDictList
 import Maybe.Extra exposing (isJust, isNothing)
-import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
 
 
 {-| Used for URL etc., not for display in the normal UI
@@ -109,8 +108,8 @@ defaultActivityType =
 {-| Note that `ProgressReport` isn't included for now, as it is
 handled specially in the UI.
 -}
-getActivityTypeList : ParticipantTypeFilter -> List ActivityType
-getActivityTypeList participantTypeFilter =
+getActivityTypeList : List ActivityType
+getActivityTypeList =
     let
         childrenActivities =
             List.map ChildActivity getAllChildActivities
@@ -118,28 +117,20 @@ getActivityTypeList participantTypeFilter =
         mothersActivities =
             List.map MotherActivity getAllMotherActivities
     in
-        case participantTypeFilter of
-            All ->
-                childrenActivities ++ mothersActivities
-
-            Children ->
-                childrenActivities
-
-            Mothers ->
-                mothersActivities
+        childrenActivities ++ mothersActivities
 
 
 {-| Get the pending and completed activities.
 -}
-getActivityList : ParticipantTypeFilter -> EditableSession -> List ActivityListItem
-getActivityList participantTypeFilter session =
+getActivityList : EditableSession -> List ActivityListItem
+getActivityList session =
     List.map
         (\activityType ->
             { activityType = activityType
             , totals = getTotalsNumberPerActivity activityType session
             }
         )
-        (getActivityTypeList participantTypeFilter)
+        getActivityTypeList
 
 
 {-| Returns a string representing an icon for the activity, for use in a "class" attribute.

@@ -17,7 +17,7 @@ view : Language -> EditableSession -> Model -> Html Msg
 view language session model =
     let
         allActivityList =
-            getActivityList model.participantTypeFilter session
+            getActivityList session
 
         pendingActivities =
             List.filter (\activity -> (activity.totals.pending > 0)) allActivityList

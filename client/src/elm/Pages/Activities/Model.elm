@@ -22,17 +22,12 @@ desired activity. So, we're not drawing a wrapper around the `Page.Activity`
 
 -}
 type alias Model =
-    -- The `participantTypeFilter` appears to be unused, in the sense that it's
-    -- always `All` and we never change it. So, we might remove this at some
-    -- point, unless we expect to use it?
-    { participantTypeFilter : ParticipantTypeFilter
-    , selectedTab : Tab
+    { selectedTab : Tab
     }
 
 
 type Msg
-    = SetParticipantTypeFilter ParticipantTypeFilter
-    | SetRedirectPage SessionPage
+    = SetRedirectPage SessionPage
     | SetSelectedTab Tab
 
 
@@ -48,6 +43,5 @@ type Tab
 
 emptyModel : Model
 emptyModel =
-    { participantTypeFilter = All
-    , selectedTab = Pending
+    { selectedTab = Pending
     }
