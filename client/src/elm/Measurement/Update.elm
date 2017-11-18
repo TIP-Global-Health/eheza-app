@@ -131,7 +131,8 @@ updateMother msg model =
 -}
 postPhoto : BackendUrl -> String -> ChildId -> ModelChild -> ( ModelChild, Cmd MsgChild )
 postPhoto backendUrl accessToken childId model =
-    Debug.crash "re-implement"
+    -- TODO: Re-implement
+    ( model, Cnd.none )
 
 
 
