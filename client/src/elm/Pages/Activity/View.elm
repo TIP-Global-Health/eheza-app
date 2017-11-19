@@ -1,13 +1,8 @@
 module Pages.Activity.View exposing (view)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Activity.Utils exposing (getActivityIcon, onlyCheckedIn, childHasPendingActivity, motherHasPendingActivity)
-import Backend.Child.Model exposing (Child)
-import Backend.Entities exposing (..)
-import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (EditableSession)
 import EveryDict exposing (EveryDict)
-import EveryDictList
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -15,7 +10,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List as List
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
-import Participant.Model exposing (Participant(..), ParticipantId(..))
+import Participant.Model exposing (Participant)
 import Translate exposing (translate, Language)
 import Utils.Html exposing (tabItem, thumbnailImage)
 
@@ -27,68 +22,8 @@ thumbnailDimensions =
     }
 
 
-{-| Note that we don't "own" the activityType ... it just gets provided to us,
-and is managed elsewhere.
--}
-view : Language -> ActivityType -> EditableSession -> Model -> Html Msg
-view language selectedActivity =
-    -- It's awkward to try to deal with children and mothers together, and we
-    -- know which we want, based on the activity type. So, we specialize!
-    case selectedActivity of
-        ChildActivity childActivity ->
-            viewActivity childConfig language childActivity
-
-        MotherActivity motherActivity ->
-            viewActivity motherConfig language motherActivity
-
-
-{-| TODO: At some point, we should be able to get rid of the `ParticipantId`
-and `Participant` types entirely ... in this transitional stage, we have
-some functions that want them.
--}
-type alias Config activity id participant =
-    { hasPendingActivity : id -> activity -> EditableSession -> Bool
-    , getParticipants : EditableSession -> EveryDict id participant
-    , wrapActivityType : activity -> ActivityType
-    , wrapParticipantId : id -> ParticipantId
-    , getAvatarThumb : participant -> String
-    , getName : participant -> String
-    , getBirthDate : participant -> NominalDate
-    , iconClass : String
-    }
-
-
-childConfig : Config ChildActivityType ChildId Child
-childConfig =
-    { hasPendingActivity = childHasPendingActivity
-    , getParticipants = \session -> session.offlineSession.children
-    , wrapActivityType = ChildActivity
-    , wrapParticipantId = ParticipantChildId
-    , getAvatarThumb = .image
-    , getName = .name
-    , getBirthDate = .birthDate
-    , iconClass = "child"
-    }
-
-
-motherConfig : Config MotherActivityType MotherId Mother
-motherConfig =
-    -- TODO: getParticipants is inefficient ... should make the children and
-    -- mothers match, and either pre-sort in EveryDictList or sort each time in
-    -- EveryDict
-    { hasPendingActivity = motherHasPendingActivity
-    , getParticipants = \session -> session.offlineSession.mothers |> EveryDictList.toList |> EveryDict.fromList
-    , wrapActivityType = MotherActivity
-    , wrapParticipantId = ParticipantMotherId
-    , getAvatarThumb = .image
-    , getName = .name
-    , getBirthDate = .birthDate
-    , iconClass = "mother"
-    }
-
-
-viewActivity : Config activity id participant -> Language -> activity -> EditableSession -> Model -> Html Msg
-viewActivity config language selectedActivity fullSession model =
+view : Participant id value activity -> Language -> NominalDate -> activity -> EditableSession -> Model id -> Html (Msg id)
+view config language currentDate selectedActivity fullSession model =
     let
         checkedIn =
             onlyCheckedIn fullSession
@@ -102,9 +37,9 @@ viewActivity config language selectedActivity fullSession model =
                 [ class "ui unstackable items" ]
                 [ div [ class "item" ]
                     [ div [ class "ui image" ]
-                        [ span [ class <| "icon-item icon-item-" ++ getActivityIcon (config.wrapActivityType selectedActivity) ] [] ]
+                        [ span [ class <| "icon-item icon-item-" ++ getActivityIcon (config.tagActivityType selectedActivity) ] [] ]
                     , div [ class "content" ]
-                        [ p [] [ text <| translate language <| Translate.ActivitiesHelp <| config.wrapActivityType selectedActivity ] ]
+                        [ p [] [ text <| translate language <| Translate.ActivitiesHelp <| config.tagActivityType selectedActivity ] ]
                     ]
                 ]
 
@@ -149,12 +84,11 @@ viewActivity config language selectedActivity fullSession model =
                         div
                             [ classList
                                 [ ( "participant card", True )
-                                , ( "active", Just (config.wrapParticipantId participantId) == model.selectedParticipant )
+                                , ( "active", Just participantId == model.selectedParticipant )
                                 ]
-                            , onClick <|
-                                SetSelectedParticipant <|
-                                    Just <|
-                                        config.wrapParticipantId participantId
+                            , Just participantId
+                                |> SetSelectedParticipant
+                                |> onClick
                             ]
                             [ div
                                 [ class "image" ]
@@ -179,23 +113,34 @@ viewActivity config language selectedActivity fullSession model =
                     ]
 
         measurementsForm =
-            case model.selectedParticipant of
-                Just (ParticipantChildId childId) ->
-                    -- TODO: implement
-                    div [] [ text "put measurement form here" ]
+            -- TODO: Re-implement
+            emptyNode
 
-                Just (ParticipantMotherId motherId) ->
-                    -- TODO: implement
-                    div [] [ text "put measurement form here" ]
+        {-
+           case model.selectedParticipant of
+               Just (ParticipantChildId childId) ->
+                   getChild childId fullSession
+                       |> Maybe.map
+                           (\child ->
+                               Measurement.View.viewChild language currentDate child selectedActivity
+                           )
+                       |> Maybe.withDefault emptyNode
 
-                Nothing ->
-                    emptyNode
+               Just (ParticipantMotherId motherId) ->
+                   Measurement.View.viewMother language selectedActivity
 
+               Nothing ->
+                   emptyNode
+        -}
         header =
             div
                 [ class "ui basic head segment" ]
                 [ h1 [ class "ui header" ]
-                    [ text <| translate language <| Translate.ActivitiesTitle <| config.wrapActivityType selectedActivity ]
+                    [ config.tagActivityType selectedActivity
+                        |> Translate.ActivitiesTitle
+                        |> translate language
+                        |> text
+                    ]
                 , a
                     [ class "link-back"
                     , onClick GoBackToActivitiesPage

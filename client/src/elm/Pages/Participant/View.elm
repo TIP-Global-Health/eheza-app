@@ -17,11 +17,12 @@ import Measurement.Model
 import Measurement.View
 import Pages.Page exposing (Page(..), SessionPage(..))
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
-import Participant.Model exposing (Participant(..), ParticipantId(..))
-import Participant.Utils exposing (renderAgeMonthsDays, renderDateOfBirth)
+import Participant.Model exposing (Participant)
+import Participant.Utils exposing (childParticipant, motherParticipant)
 import ProgressReport.View exposing (viewProgressReport)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage)
+import Utils.NominalDate exposing (renderAgeMonthsDays, renderDateOfBirth)
 
 
 thumbnailDimensions : { width : Int, height : Int }
@@ -100,7 +101,7 @@ viewFoundChild language currentDate ( childId, child ) session model =
                 ]
     in
         div [ class "wrap" ] <|
-            [ viewHeader childConfig language childId session
+            [ viewHeader childParticipant language childId session
             , div [ class "ui unstackable items participant-page child" ]
                 [ div [ class "item" ]
                     [ div [ class "ui image" ]
@@ -115,7 +116,7 @@ viewFoundChild language currentDate ( childId, child ) session model =
                     ]
                 ]
             ]
-                ++ (viewActivityCards childConfig language childId model.selectedTab model.selectedActivity session)
+                ++ (viewActivityCards childParticipant language childId model.selectedTab model.selectedActivity session)
                 ++ content
 
 
@@ -154,7 +155,7 @@ viewFoundMother language ( motherId, mother ) session model =
                 |> List.intersperse break
     in
         div [ class "wrap" ] <|
-            [ viewHeader motherConfig language motherId session
+            [ viewHeader motherParticipant language motherId session
             , div
                 [ class "ui unstackable items participant-page mother" ]
                 [ div [ class "item" ]
@@ -168,49 +169,14 @@ viewFoundMother language ( motherId, mother ) session model =
                     ]
                 ]
             ]
-                ++ (viewActivityCards motherConfig language motherId model.selectedTab model.selectedActivity session)
+                ++ (viewActivityCards motherParticipant language motherId model.selectedTab model.selectedActivity session)
                 ++ [ Html.map MsgMeasurement <|
                         -- TODO: implement
                         div [] [ text "measurement form here" ]
                    ]
 
 
-{-| Several functions below work with either mothers or children. To support that,
-we provide a typeclass-like config which are specialized to the relevant types.
--}
-type alias ParticipantConfig participantId activityType =
-    { activities : List activityType
-    , getMotherId : participantId -> EditableSession -> Maybe MotherId
-    , hasPendingActivity : participantId -> activityType -> EditableSession -> Bool
-    , showProgressReportTab : Bool
-    , wrapActivityType : activityType -> ActivityType
-    , wrapParticipantId : participantId -> ParticipantId
-    }
-
-
-childConfig : ParticipantConfig ChildId ChildActivityType
-childConfig =
-    { activities = getAllChildActivities
-    , getMotherId = \childId session -> getMyMother childId session.offlineSession |> Maybe.map Tuple.first
-    , hasPendingActivity = childHasPendingActivity
-    , showProgressReportTab = True
-    , wrapActivityType = ChildActivity
-    , wrapParticipantId = ParticipantChildId
-    }
-
-
-motherConfig : ParticipantConfig MotherId MotherActivityType
-motherConfig =
-    { activities = getAllMotherActivities
-    , getMotherId = \motherId session -> Just motherId
-    , hasPendingActivity = motherHasPendingActivity
-    , showProgressReportTab = False
-    , wrapActivityType = MotherActivity
-    , wrapParticipantId = ParticipantMotherId
-    }
-
-
-viewActivityCards : ParticipantConfig participantId activityType -> Language -> participantId -> Tab -> Maybe activityType -> EditableSession -> List (Html (Msg activityType any))
+viewActivityCards : Participant id value activity -> Language -> id -> Tab -> Maybe activity -> EditableSession -> List (Html (Msg activity any))
 viewActivityCards config language participantId selectedTab selectedActivity session =
     let
         ( pendingActivities, completedActivities ) =
@@ -265,7 +231,7 @@ viewActivityCards config language participantId selectedTab selectedActivity ses
         [ tabs, activeView ]
 
 
-viewActivityListItem : ParticipantConfig participantId activityType -> Language -> Maybe activityType -> activityType -> Html (Msg activityType any)
+viewActivityListItem : Participant id value activity -> Language -> Maybe activity -> activity -> Html (Msg activity any)
 viewActivityListItem config language selectedActivity activityItem =
     div [ class "column" ]
         [ a
@@ -275,8 +241,8 @@ viewActivityListItem config language selectedActivity activityItem =
                 , ( "active", selectedActivity == Just activityItem )
                 ]
             ]
-            [ span [ class ("icon-section icon-" ++ getActivityIcon (config.wrapActivityType activityItem)) ] []
-            , text <| translate language <| Trans.ActivitiesTitle <| config.wrapActivityType activityItem
+            [ span [ class ("icon-section icon-" ++ getActivityIcon (config.tagActivityType activityItem)) ] []
+            , text <| translate language <| Trans.ActivitiesTitle <| config.tagActivityType activityItem
             ]
         ]
 
@@ -284,7 +250,7 @@ viewActivityListItem config language selectedActivity activityItem =
 {-| Given a mother or a child, this figures out who the whole family is, and shows a header allowing
 you to switch between any family member.
 -}
-viewHeader : ParticipantConfig participantId activityType -> Language -> participantId -> EditableSession -> Html (Msg activityType any)
+viewHeader : Participant id value activity -> Language -> id -> EditableSession -> Html (Msg activity any)
 viewHeader config language participantId session =
     let
         -- Whether we've looking at a child or a mother, we figure out who the
@@ -310,7 +276,7 @@ viewHeader config language participantId session =
             let
                 -- This determines whether this child is the one we were given
                 active =
-                    config.wrapParticipantId participantId == ParticipantChildId childId
+                    config.toChildId participantId == Just childId
 
                 attributes =
                     if active then
@@ -340,7 +306,7 @@ viewHeader config language participantId session =
             let
                 -- Figures out whether we're actually looking at this mother
                 active =
-                    config.wrapParticipantId participantId == ParticipantMotherId motherId
+                    config.toMotherId participantId == Just motherId
 
                 attributes =
                     if active then

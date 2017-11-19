@@ -4,7 +4,7 @@ import Pages.Activity.Model exposing (Model, Msg(..))
 import Pages.Page exposing (SessionPage(..))
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe SessionPage )
+update : Msg id -> Model id -> ( Model id, Cmd (Msg id), Maybe SessionPage )
 update msg model =
     case msg of
         GoBackToActivitiesPage ->

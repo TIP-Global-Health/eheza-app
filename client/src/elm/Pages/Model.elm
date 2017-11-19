@@ -67,7 +67,8 @@ type alias SessionPages =
 
     -- Shows a page for a single activity. We keep separate UI state for
     -- each activity.
-    , activityPages : EveryDict ActivityType Pages.Activity.Model.Model
+    , childActivityPages : EveryDict ChildActivityType (Pages.Activity.Model.Model ChildId)
+    , motherActivityPages : EveryDict MotherActivityType (Pages.Activity.Model.Model MotherId)
 
     -- Shows a list of participants ... user can select one.
     , participantsPage : Pages.Participants.Model.Model
@@ -86,7 +87,8 @@ type alias SessionPages =
 emptySessionPages : SessionPages
 emptySessionPages =
     { activitiesPage = Pages.Activities.Model.emptyModel
-    , activityPages = EveryDict.empty
+    , childActivityPages = EveryDict.empty
+    , motherActivityPages = EveryDict.empty
     , childPages = EveryDict.empty
     , motherPages = EveryDict.empty
     , participantsPage = Pages.Participants.Model.emptyModel
@@ -97,7 +99,8 @@ emptySessionPages =
 -}
 type MsgSession
     = MsgActivities Pages.Activities.Model.Msg
-    | MsgActivity ActivityType Pages.Activity.Model.Msg
+    | MsgChildActivity ChildActivityType (Pages.Activity.Model.Msg ChildId)
+    | MsgMotherActivity MotherActivityType (Pages.Activity.Model.Msg MotherId)
     | MsgChild ChildId (Pages.Participant.Model.Msg ChildActivityType Measurement.Model.MsgChild)
     | MsgMother MotherId (Pages.Participant.Model.Msg MotherActivityType Measurement.Model.MsgMother)
     | MsgParticipants Pages.Participants.Model.Msg

@@ -1,6 +1,5 @@
 module ProgressReport.Test exposing (all)
 
-import Date
 import Expect
 import Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildB, exampleMother, exampleUser)
 import Html exposing (div)

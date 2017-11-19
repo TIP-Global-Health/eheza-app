@@ -34,15 +34,29 @@ updateSession msg model =
                     |> Maybe.Extra.toList
                 )
 
-        MsgActivity activityType subMsg ->
+        MsgChildActivity activityType subMsg ->
             let
                 ( subModel, subCmd, subPage ) =
-                    EveryDict.get activityType model.activityPages
+                    EveryDict.get activityType model.childActivityPages
                         |> Maybe.withDefault Pages.Activity.Model.emptyModel
                         |> Pages.Activity.Update.update subMsg
             in
-                ( { model | activityPages = EveryDict.insert activityType subModel model.activityPages }
-                , Cmd.map (MsgActivity activityType) subCmd
+                ( { model | childActivityPages = EveryDict.insert activityType subModel model.childActivityPages }
+                , Cmd.map (MsgChildActivity activityType) subCmd
+                , subPage
+                    |> Maybe.map (App.Model.SetActivePage << SessionPage)
+                    |> Maybe.Extra.toList
+                )
+
+        MsgMotherActivity activityType subMsg ->
+            let
+                ( subModel, subCmd, subPage ) =
+                    EveryDict.get activityType model.motherActivityPages
+                        |> Maybe.withDefault Pages.Activity.Model.emptyModel
+                        |> Pages.Activity.Update.update subMsg
+            in
+                ( { model | motherActivityPages = EveryDict.insert activityType subModel model.motherActivityPages }
+                , Cmd.map (MsgMotherActivity activityType) subCmd
                 , subPage
                     |> Maybe.map (App.Model.SetActivePage << SessionPage)
                     |> Maybe.Extra.toList

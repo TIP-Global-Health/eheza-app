@@ -26,8 +26,8 @@ import Measurement.Utils exposing (..)
 import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Round
 import Translate as Trans exposing (Language(..), TranslationId, translate)
-import Utils.NominalDate exposing (diffDays)
-import ZScore.Model exposing (AgeInDays(..), Centimetres(..), Kilograms(..), ZScore)
+import Utils.NominalDate exposing (diffDays, Days(..))
+import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
 import ZScore.Utils exposing (viewZScore, zScoreForHeight, zScoreForMuac, zScoreForWeight, zScoreWeightForHeight)
 
 
@@ -66,7 +66,7 @@ type alias FloatFormConfig value =
     , activity : ActivityType
     , placeholderText : TranslationId
     , zScoreLabelForAge : TranslationId
-    , zScoreForAge : AgeInDays -> Gender -> Float -> Maybe ZScore
+    , zScoreForAge : Days -> Gender -> Float -> Maybe ZScore
     , zScoreForHeight : Maybe (Centimetres -> Gender -> Float -> Maybe ZScore)
     , constraints : FloatInputConstraints
     , unit : TranslationId
@@ -211,8 +211,7 @@ viewFloatForm config language currentDate child measurements model =
 
         -- And, we'll need the child's age.
         ageInDays =
-            AgeInDays <|
-                diffDays child.birthDate dateMeasured
+            diffDays child.birthDate dateMeasured
 
         zScoreForAgeText =
             floatValue

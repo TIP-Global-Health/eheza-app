@@ -2,7 +2,6 @@ module Fixtures exposing (..)
 
 import Backend.Mother.Model exposing (Mother)
 import Backend.Child.Model exposing (Child, Gender(..))
-import Date
 import Time.Date exposing (date)
 import User.Model exposing (User)
 
