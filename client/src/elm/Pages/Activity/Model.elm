@@ -1,9 +1,5 @@
 module Pages.Activity.Model exposing (..)
 
-import Backend.Entities exposing (..)
-import Measurement.Model
-
-
 {-| This models (part of) the UI state for the page which is oriented around
 the following flow:
 
@@ -33,16 +29,17 @@ just supplies an activity to us ... we can't change it in this part of the UI.
 We can only change the `selectedParticipant` and `selectedTab`.
 
 -}
+
+
 type alias Model id =
     { selectedParticipant : Maybe id
     , selectedTab : Tab
     }
 
 
-type Msg id
+type Msg id measurement
     = GoBackToActivitiesPage
-    | MsgMeasurementChild ChildId Measurement.Model.MsgChild
-    | MsgMeasurementMother MotherId Measurement.Model.MsgMother
+    | MsgMeasurement measurement
     | SetSelectedParticipant (Maybe id)
     | SetSelectedTab Tab
 

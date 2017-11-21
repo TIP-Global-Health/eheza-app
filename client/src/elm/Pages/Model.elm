@@ -99,8 +99,8 @@ emptySessionPages =
 -}
 type MsgSession
     = MsgActivities Pages.Activities.Model.Msg
-    | MsgChildActivity ChildActivityType (Pages.Activity.Model.Msg ChildId)
-    | MsgMotherActivity MotherActivityType (Pages.Activity.Model.Msg MotherId)
+    | MsgChildActivity ChildActivityType (Pages.Activity.Model.Msg ChildId Measurement.Model.MsgChild)
+    | MsgMotherActivity MotherActivityType (Pages.Activity.Model.Msg MotherId Measurement.Model.MsgMother)
     | MsgChild ChildId (Pages.Participant.Model.Msg ChildActivityType Measurement.Model.MsgChild)
     | MsgMother MotherId (Pages.Participant.Model.Msg MotherActivityType Measurement.Model.MsgMother)
     | MsgParticipants Pages.Participants.Model.Msg

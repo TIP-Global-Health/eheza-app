@@ -269,7 +269,7 @@ viewFoundMother language ( motherId, mother ) session model =
                 ++ content
 
 
-viewActivityCards : Participant id value activity -> Language -> id -> Tab -> Maybe activity -> EditableSession -> List (Html (Msg activity any))
+viewActivityCards : Participant id value activity msg -> Language -> id -> Tab -> Maybe activity -> EditableSession -> List (Html (Msg activity any))
 viewActivityCards config language participantId selectedTab selectedActivity session =
     let
         ( pendingActivities, completedActivities ) =
@@ -324,7 +324,7 @@ viewActivityCards config language participantId selectedTab selectedActivity ses
         [ tabs, activeView ]
 
 
-viewActivityListItem : Participant id value activity -> Language -> Maybe activity -> activity -> Html (Msg activity any)
+viewActivityListItem : Participant id value activity msg -> Language -> Maybe activity -> activity -> Html (Msg activity any)
 viewActivityListItem config language selectedActivity activityItem =
     div [ class "column" ]
         [ a
@@ -343,7 +343,7 @@ viewActivityListItem config language selectedActivity activityItem =
 {-| Given a mother or a child, this figures out who the whole family is, and shows a header allowing
 you to switch between any family member.
 -}
-viewHeader : Participant id value activity -> Language -> id -> EditableSession -> Html (Msg activity any)
+viewHeader : Participant id value activity msg -> Language -> id -> EditableSession -> Html (Msg activity any)
 viewHeader config language participantId session =
     let
         -- Whether we've looking at a child or a mother, we figure out who the

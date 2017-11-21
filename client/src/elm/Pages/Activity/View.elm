@@ -22,7 +22,7 @@ thumbnailDimensions =
     }
 
 
-view : Participant id value activity -> Language -> NominalDate -> activity -> EditableSession -> Model id -> Html (Msg id)
+view : Participant id value activity msg -> Language -> NominalDate -> activity -> EditableSession -> Model id -> Html (Msg id msg)
 view config language currentDate selectedActivity fullSession model =
     let
         checkedIn =
@@ -113,25 +113,16 @@ view config language currentDate selectedActivity fullSession model =
                     ]
 
         measurementsForm =
-            -- TODO: Re-implement
-            emptyNode
+            case model.selectedParticipant of
+                Just id ->
+                    -- This is a convenience for the way the code was structured ... ideally,
+                    -- we'd build a `viewMeasurements` on top of smaller capabilities of the
+                    -- `Participant` config, but this is faster for now.
+                    config.viewMeasurements language currentDate id selectedActivity checkedIn
 
-        {-
-           case model.selectedParticipant of
-               Just (ParticipantChildId childId) ->
-                   getChild childId fullSession
-                       |> Maybe.map
-                           (\child ->
-                               Measurement.View.viewChild language currentDate child selectedActivity
-                           )
-                       |> Maybe.withDefault emptyNode
+                Nothing ->
+                    emptyNode
 
-               Just (ParticipantMotherId motherId) ->
-                   Measurement.View.viewMother language selectedActivity
-
-               Nothing ->
-                   emptyNode
-        -}
         header =
             div
                 [ class "ui basic head segment" ]

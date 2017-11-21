@@ -15,11 +15,18 @@ import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
 import EveryDict exposing (EveryDict)
 import Gizra.NominalDate exposing (NominalDate)
+import Html exposing (Html)
+import Pages.Activity.Model
+import Translate exposing (Language)
 
 
 {-| Implementations for child and mother are in Participant.Utils.
+
+`viewMeasurments` wouldn't ideally be here ... instead, we'd have smaller
+things here that it needs. But this is faster for the moment.
+
 -}
-type alias Participant id value activity =
+type alias Participant id value activity msg =
     { activities : List activity
     , getAvatarThumb : value -> String
     , getBirthDate : value -> NominalDate
@@ -32,4 +39,5 @@ type alias Participant id value activity =
     , tagActivityType : activity -> ActivityType
     , toChildId : id -> Maybe ChildId
     , toMotherId : id -> Maybe MotherId
+    , viewMeasurements : Language -> NominalDate -> id -> activity -> EditableSession -> Html (Pages.Activity.Model.Msg id msg)
     }

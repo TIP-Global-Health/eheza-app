@@ -8,10 +8,12 @@ import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Utils exposing (getMyMother)
 import EveryDict exposing (EveryDict)
 import EveryDictList
+import Measurement.Model
+import Pages.Activity.Utils exposing (viewChildMeasurements, viewMotherMeasurements)
 import Participant.Model exposing (Participant)
 
 
-childParticipant : Participant ChildId Child ChildActivityType
+childParticipant : Participant ChildId Child ChildActivityType Measurement.Model.MsgChild
 childParticipant =
     { activities = getAllChildActivities
     , getAvatarThumb = .image
@@ -25,10 +27,11 @@ childParticipant =
     , tagActivityType = ChildActivity
     , toChildId = Just
     , toMotherId = always Nothing
+    , viewMeasurements = viewChildMeasurements
     }
 
 
-motherParticipant : Participant MotherId Mother MotherActivityType
+motherParticipant : Participant MotherId Mother MotherActivityType Measurement.Model.MsgMother
 motherParticipant =
     -- TODO: getParticipants is inefficient ... should make the children and
     -- mothers match, and either pre-sort in EveryDictList or sort each time in
@@ -45,4 +48,5 @@ motherParticipant =
     , tagActivityType = MotherActivity
     , toChildId = always Nothing
     , toMotherId = Just
+    , viewMeasurements = viewMotherMeasurements
     }
