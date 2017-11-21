@@ -9,7 +9,6 @@ import EveryDict exposing (EveryDict)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (Entity)
 
 
 -- GENERAL CASE
@@ -140,7 +139,7 @@ of a specialized type (rather than a single list with a tagged type).
 
 -}
 type alias MotherMeasurementList =
-    { familyPlannings : List (Entity FamilyPlanningId FamilyPlanning)
+    { familyPlannings : List ( FamilyPlanningId, FamilyPlanning )
     }
 
 
@@ -159,11 +158,11 @@ simple with a `List` and see how that goes.
 
 -}
 type alias ChildMeasurementList =
-    { heights : List (Entity HeightId Height)
-    , muacs : List (Entity MuacId Muac)
-    , nutritions : List (Entity ChildNutritionId ChildNutrition)
-    , photos : List (Entity PhotoId Photo)
-    , weights : List (Entity WeightId Weight)
+    { heights : List ( HeightId, Height )
+    , muacs : List ( MuacId, Muac )
+    , nutritions : List ( ChildNutritionId, ChildNutrition )
+    , photos : List ( PhotoId, Photo )
+    , weights : List ( WeightId, Weight )
     }
 
 
@@ -203,11 +202,11 @@ is the type you'd use if you wanted to apply a `List.head` to everything
 in `ChildMeasurementList`, for instance.
 -}
 type alias ChildMeasurements =
-    { height : Maybe (Entity HeightId Height)
-    , muac : Maybe (Entity MuacId Muac)
-    , nutrition : Maybe (Entity ChildNutritionId ChildNutrition)
-    , photo : Maybe (Entity PhotoId Photo)
-    , weight : Maybe (Entity WeightId Weight)
+    { height : Maybe ( HeightId, Height )
+    , muac : Maybe ( MuacId, Muac )
+    , nutrition : Maybe ( ChildNutritionId, ChildNutrition )
+    , photo : Maybe ( PhotoId, Photo )
+    , weight : Maybe ( WeightId, Weight )
     }
 
 
@@ -224,7 +223,7 @@ emptyChildMeasurements =
 {-| Like `ChildMeasurements`, but for mothers.
 -}
 type alias MotherMeasurements =
-    { familyPlanning : Maybe (Entity FamilyPlanningId FamilyPlanning)
+    { familyPlanning : Maybe ( FamilyPlanningId, FamilyPlanning )
     }
 
 
@@ -337,11 +336,21 @@ emptyMeasurementEdits =
 {-| This a convenience for functions which want to take values wrapped
 in the given way.
 
-The `status` indicates whether we're currently saving the edits, or any
-error from the last save.
+  - `status` indicates whether we're currently saving the edits, or any error
+    from the last save.
 
-TODO: There is probably a slightly better way to do this, but this will
-do for now.
+  - `previous` is the most recently value that is not part of this editing
+    session ... that is, a previous value to compare to
+
+  - `current` is the value stored **in the backend** for the current editing
+    session (i.e. **not** a value cached locally that hasn't been saved yet).
+
+  - `edits` represents changes which we want to make in this editing session. We
+    save those changes locally and then apply them to the backend at some point.
+
+There is possibly a slightly better way to do this ... in particular, it might
+make sense to enforce some kind of relationship between `data` and `edits`.
+But, that could make this less flexible ... this seems to do for now.
 
 -}
 type alias MeasurementData data edits =

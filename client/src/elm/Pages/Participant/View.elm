@@ -6,7 +6,7 @@ import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (EditableSession)
-import Backend.Session.Utils exposing (getChild, getMother, getMyMother, getChildren)
+import Backend.Session.Utils exposing (getChild, getMother, getMyMother, getChildren, getChildMeasurementData, getMotherMeasurementData)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -14,6 +14,7 @@ import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
 import Maybe.Extra
 import Measurement.Model
+import Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getMotherForm)
 import Measurement.View
 import Pages.Page exposing (Page(..), SessionPage(..))
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
@@ -95,10 +96,21 @@ viewFoundChild language currentDate ( childId, child ) session model =
             if model.selectedTab == ProgressReport then
                 [ viewProgressReport language childId session ]
             else
-                [ Html.map MsgMeasurement <|
-                    -- TODO: implement
-                    div [] [ text "measurement form here" ]
-                ]
+                case model.selectedActivity of
+                    Just activity ->
+                        let
+                            measurements =
+                                getChildMeasurementData childId session
+
+                            form =
+                                getChildForm childId session
+                        in
+                            [ Measurement.View.viewChild language currentDate child activity measurements form
+                                |> Html.map MsgMeasurement
+                            ]
+
+                    Nothing ->
+                        []
     in
         div [ class "wrap" ] <|
             [ viewHeader childParticipant language childId session
@@ -153,6 +165,23 @@ viewFoundMother language ( motherId, mother ) session model =
                         text <| (translate language Trans.Baby) ++ " " ++ toString (index + 1) ++ ": " ++ child.name
                     )
                 |> List.intersperse break
+
+        content =
+            case model.selectedActivity of
+                Just activity ->
+                    let
+                        measurements =
+                            getMotherMeasurementData motherId session
+
+                        form =
+                            getMotherForm motherId session
+                    in
+                        [ Measurement.View.viewMother language activity measurements form
+                            |> Html.map MsgMeasurement
+                        ]
+
+                Nothing ->
+                    []
     in
         div [ class "wrap" ] <|
             [ viewHeader motherParticipant language motherId session
@@ -170,10 +199,7 @@ viewFoundMother language ( motherId, mother ) session model =
                 ]
             ]
                 ++ (viewActivityCards motherParticipant language motherId model.selectedTab model.selectedActivity session)
-                ++ [ Html.map MsgMeasurement <|
-                        -- TODO: implement
-                        div [] [ text "measurement form here" ]
-                   ]
+                ++ content
 
 
 viewActivityCards : Participant id value activity -> Language -> id -> Tab -> Maybe activity -> EditableSession -> List (Html (Msg activity any))

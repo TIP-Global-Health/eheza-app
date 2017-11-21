@@ -1,9 +1,4 @@
-module Measurement.View
-    exposing
-        ( viewChild
-        , viewMother
-        , viewMuacIndication
-        )
+module Measurement.View exposing (viewChild, viewMother, viewMuacIndication)
 
 {-| This module provides a form for entering measurements.
 -}
@@ -13,7 +8,6 @@ import Backend.Child.Model exposing (Child, Gender)
 import Backend.Measurement.Encoder exposing (encodeNutritionSignAsString, encodeFamilyPlanningSignAsString)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (applyEdit, muacIndication, mapMeasurementData)
-import Date exposing (Date)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
@@ -34,7 +28,7 @@ import ZScore.Utils exposing (viewZScore, zScoreForHeight, zScoreForMuac, zScore
 {-| We need the current date in order to immediately construct a ZScore for the
 child when we enter something.
 -}
-viewChild : Language -> Date -> Child -> ChildActivityType -> MeasurementData ChildMeasurements ChildEdits -> ModelChild -> Html MsgChild
+viewChild : Language -> NominalDate -> Child -> ChildActivityType -> MeasurementData ChildMeasurements ChildEdits -> ModelChild -> Html MsgChild
 viewChild language currentDate child activity measurements model =
     case activity of
         ChildPicture ->
@@ -75,7 +69,7 @@ type alias FloatFormConfig value =
     , dateMeasured : value -> NominalDate
     , viewIndication : Maybe (Language -> Float -> Html MsgChild)
     , updateMsg : String -> MsgChild
-    , saveMsg : MsgChild
+    , saveMsg : Float -> MsgChild
     }
 
 
@@ -94,7 +88,7 @@ heightFormConfig =
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateHeight
-    , saveMsg = SendOutMsgChild SaveHeight
+    , saveMsg = SendOutMsgChild << SaveHeight << HeightInCm
     }
 
 
@@ -113,7 +107,7 @@ muacFormConfig =
     , dateMeasured = .dateMeasured
     , viewIndication = Just <| \language val -> viewMuacIndication language (muacIndication (MuacInCm val))
     , updateMsg = UpdateMuac
-    , saveMsg = SendOutMsgChild SaveMuac
+    , saveMsg = SendOutMsgChild << SaveMuac << MuacInCm
     }
 
 
@@ -132,26 +126,26 @@ weightFormConfig =
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateWeight
-    , saveMsg = SendOutMsgChild SaveWeight
+    , saveMsg = SendOutMsgChild << SaveWeight << WeightInKg
     }
 
 
-viewHeight : Language -> Date -> Child -> MeasurementData (Maybe Height) (Edit Height) -> ModelChild -> Html MsgChild
+viewHeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Height) (Edit Height) -> ModelChild -> Html MsgChild
 viewHeight language date child measurements model =
     viewFloatForm heightFormConfig language date child measurements model
 
 
-viewWeight : Language -> Date -> Child -> MeasurementData (Maybe Weight) (Edit Weight) -> ModelChild -> Html MsgChild
+viewWeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Weight) (Edit Weight) -> ModelChild -> Html MsgChild
 viewWeight language date child measurements model =
     viewFloatForm weightFormConfig language date child measurements model
 
 
-viewMuac : Language -> Date -> Child -> MeasurementData (Maybe Muac) (Edit Muac) -> ModelChild -> Html MsgChild
+viewMuac : Language -> NominalDate -> Child -> MeasurementData (Maybe Muac) (Edit Muac) -> ModelChild -> Html MsgChild
 viewMuac language date child measurements model =
     viewFloatForm muacFormConfig language date child measurements model
 
 
-viewFloatForm : FloatFormConfig value -> Language -> Date -> Child -> MeasurementData (Maybe value) (Edit value) -> ModelChild -> Html MsgChild
+viewFloatForm : FloatFormConfig value -> Language -> NominalDate -> Child -> MeasurementData (Maybe value) (Edit value) -> ModelChild -> Html MsgChild
 viewFloatForm config language currentDate child measurements model =
     let
         -- What is the string input value from the form?
@@ -207,7 +201,7 @@ viewFloatForm config language currentDate child measurements model =
         dateMeasured =
             savedMeasurement
                 |> Maybe.map config.dateMeasured
-                |> Maybe.withDefault (fromLocalDateTime currentDate)
+                |> Maybe.withDefault currentDate
 
         -- And, we'll need the child's age.
         ageInDays =
@@ -308,8 +302,7 @@ viewFloatForm config language currentDate child measurements model =
                 ]
             , div [ class "actions" ] <|
                 saveButton language
-                    config.saveMsg
-                    (isJust floatValue)
+                    (Maybe.map config.saveMsg floatValue)
                     measurements.update
                     Nothing
             ]
@@ -429,8 +422,7 @@ viewPhoto language saveStatus ( fileId, photoValue ) =
                 ]
             , div [ class "actions" ] <|
                 saveButton language
-                    (SendOutMsgChild SavePhoto)
-                    hasFileId
+                    (Just (SendOutMsgChild SavePhoto))
                     saveStatus
                     (Just "column")
             ]
@@ -442,8 +434,8 @@ Button will also take care of preventing double submission,
 and showing success and error indications.
 
 -}
-saveButton : Language -> msg -> Bool -> WebData () -> Maybe String -> List (Html msg)
-saveButton language msg hasInput saveStatus maybeDivClass =
+saveButton : Language -> Maybe msg -> WebData () -> Maybe String -> List (Html msg)
+saveButton language msg saveStatus maybeDivClass =
     let
         isLoading =
             saveStatus == Loading
@@ -452,17 +444,18 @@ saveButton language msg hasInput saveStatus maybeDivClass =
             RemoteData.isFailure saveStatus
 
         saveAttr =
-            if isLoading || not hasInput then
+            if isLoading then
                 []
             else
-                [ onClick msg ]
+                Maybe.map onClick msg
+                    |> Maybe.Extra.toList
     in
         [ button
             ([ classList
                 [ ( "ui fluid primary button", True )
                 , ( "loading", isLoading )
                 , ( "negative", isFailure )
-                , ( "disabled", not hasInput )
+                , ( "disabled", Maybe.Extra.isNothing msg )
                 ]
              , id "save-form"
              ]
@@ -481,6 +474,12 @@ viewNutritionSigns language saveStatus signs =
     let
         activity =
             ChildActivity NutritionSigns
+
+        saveMsg =
+            if EverySet.isEmpty signs then
+                Nothing
+            else
+                Just <| SendOutMsgChild <| SaveChildNutritionSigns signs
     in
         div
             [ class "ui full segment nutrition"
@@ -498,8 +497,7 @@ viewNutritionSigns language saveStatus signs =
             , div [ class "actions" ] <|
                 saveButton
                     language
-                    (SendOutMsgChild SaveChildNutritionSigns)
-                    (not (EverySet.isEmpty signs))
+                    saveMsg
                     saveStatus
                     Nothing
             ]
@@ -582,6 +580,12 @@ viewFamilyPlanning language saveStatus signs =
     let
         activity =
             MotherActivity FamilyPlanning
+
+        saveMsg =
+            if EverySet.isEmpty signs then
+                Nothing
+            else
+                Just <| SendOutMsgMother <| SaveFamilyPlanningSigns signs
     in
         div
             [ class "ui full segment family-planning"
@@ -599,8 +603,7 @@ viewFamilyPlanning language saveStatus signs =
                 ]
             , div [ class "actions" ] <|
                 saveButton language
-                    (SendOutMsgMother SaveFamilyPlanningSigns)
-                    (not (EverySet.isEmpty signs))
+                    saveMsg
                     saveStatus
                     Nothing
             ]

@@ -6,7 +6,7 @@ import EverySet
 import Gizra.NominalDate
 import Json.Encode as Encoder exposing (Value, float, int, list, string, object, bool)
 import Json.Encode.Extra exposing (maybe)
-import Restful.Endpoint exposing (EntityId(..), encodeEntityId, fromEntityId)
+import Restful.Endpoint exposing (Entity, EntityId(..), encodeEntityId, fromEntityId)
 
 
 encodeHeight : Height -> List ( String, Value )
@@ -198,3 +198,52 @@ encodeEdit encodeValue edit =
                 [ ( "tag", string "deleted" )
                 , ( "value", encodeValue value )
                 ]
+
+
+encodeChildMeasurementList : ChildMeasurementList -> Value
+encodeChildMeasurementList measurements =
+    object
+        [ ( "height"
+          , measurements.heights
+                |> List.map (encodeEntity encodeHeight)
+                |> list
+          )
+        , ( "muac"
+          , measurements.muacs
+                |> List.map (encodeEntity encodeMuac)
+                |> list
+          )
+        , ( "nutrition"
+          , measurements.nutritions
+                |> List.map (encodeEntity encodeNutrition)
+                |> list
+          )
+        , ( "photo"
+          , measurements.photos
+                |> List.map (encodeEntity encodePhoto)
+                |> list
+          )
+        , ( "weight"
+          , measurements.weights
+                |> List.map (encodeEntity encodeWeight)
+                |> list
+          )
+        ]
+
+
+encodeMotherMeasurementList : MotherMeasurementList -> Value
+encodeMotherMeasurementList measurements =
+    object
+        [ ( "family-planning"
+          , measurements.familyPlannings
+                |> List.map (encodeEntity encodeFamilyPlanning)
+                |> list
+          )
+        ]
+
+
+encodeEntity : (b -> List ( String, Value )) -> ( EntityId a, b ) -> Value
+encodeEntity encoder ( id, value ) =
+    object <|
+        ( "id", encodeEntityId id )
+            :: encoder value

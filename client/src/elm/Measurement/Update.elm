@@ -132,7 +132,7 @@ updateMother msg model =
 postPhoto : BackendUrl -> String -> ChildId -> ModelChild -> ( ModelChild, Cmd MsgChild )
 postPhoto backendUrl accessToken childId model =
     -- TODO: Re-implement
-    ( model, Cnd.none )
+    ( model, Cmd.none )
 
 
 

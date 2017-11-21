@@ -8,7 +8,7 @@ import Gizra.Json exposing (decodeFloat, decodeInt, decodeIntDict, decodeEmptyAr
 import Gizra.NominalDate
 import Json.Decode exposing (Decoder, andThen, at, bool, decodeValue, dict, fail, field, int, list, map, map2, nullable, string, succeed, value, oneOf)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
-import Restful.Endpoint exposing (decodeEntity, decodeEntityId, decodeSingleEntity, decodeStorageTuple, toEntityId)
+import Restful.Endpoint exposing (EntityId, decodeEntityId, decodeSingleEntity, decodeStorageTuple, toEntityId)
 import Utils.Json exposing (decodeEverySet)
 
 
@@ -61,20 +61,27 @@ toEveryDict func =
     Dict.foldl (\key value acc -> EveryDict.insert (func key) value acc) EveryDict.empty
 
 
+decodeWithEntityId : Decoder a -> Decoder ( EntityId b, a )
+decodeWithEntityId decoder =
+    map2 (,)
+        (field "id" decodeEntityId)
+        decoder
+
+
 decodeMotherMeasurementList : Decoder MotherMeasurementList
 decodeMotherMeasurementList =
     decode MotherMeasurementList
-        |> optional "family-planning" (list (decodeEntity decodeFamilyPlanning)) []
+        |> optional "family-planning" (list (decodeWithEntityId decodeFamilyPlanning)) []
 
 
 decodeChildMeasurementList : Decoder ChildMeasurementList
 decodeChildMeasurementList =
     decode ChildMeasurementList
-        |> optional "height" (list (decodeEntity decodeHeight)) []
-        |> optional "muac" (list (decodeEntity decodeMuac)) []
-        |> optional "nutrition" (list (decodeEntity decodeNutrition)) []
-        |> optional "photo" (list (decodeEntity decodePhoto)) []
-        |> optional "weight" (list (decodeEntity decodeWeight)) []
+        |> optional "height" (list (decodeWithEntityId decodeHeight)) []
+        |> optional "muac" (list (decodeWithEntityId decodeMuac)) []
+        |> optional "nutrition" (list (decodeWithEntityId decodeNutrition)) []
+        |> optional "photo" (list (decodeWithEntityId decodePhoto)) []
+        |> optional "weight" (list (decodeWithEntityId decodeWeight)) []
 
 
 {-| The `oneOf` considers the encoding the backend supplies and the encoding

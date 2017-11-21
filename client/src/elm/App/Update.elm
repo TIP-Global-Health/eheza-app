@@ -2,6 +2,7 @@ port module App.Update exposing (init, update, subscriptions)
 
 import App.Model exposing (..)
 import Backend.Update
+import Backend.Utils exposing (withEditableSession)
 import Config
 import Date
 import Dict
@@ -89,7 +90,7 @@ update msg model =
         MsgCache subMsg ->
             let
                 ( subModel, subCmd ) =
-                    Backend.Update.updateCache subMsg model.cache
+                    Backend.Update.updateCache model.currentDate subMsg model.cache
             in
                 ( { model | cache = subModel }
                 , Cmd.map MsgCache subCmd
@@ -183,14 +184,20 @@ update msg model =
                 model
 
         MsgSession subMsg ->
-            let
-                ( subModel, subCmd, extraMsgs ) =
-                    Pages.Update.updateSession subMsg model.sessionPages
-            in
-                ( { model | sessionPages = subModel }
-                , Cmd.map MsgSession subCmd
+            -- TODO: Should ideally reflect the fact that an EditableSession is
+            -- required in the types.
+            withEditableSession ( model, Cmd.none )
+                (\_ session ->
+                    let
+                        ( subModel, subCmd, extraMsgs ) =
+                            Pages.Update.updateSession session subMsg model.sessionPages
+                    in
+                        ( { model | sessionPages = subModel }
+                        , Cmd.map MsgSession subCmd
+                        )
+                            |> sequence update extraMsgs
                 )
-                    |> sequence update extraMsgs
+                model.cache
 
         SetActivePage page ->
             -- TODO: There may be some additinoal logic needed here ... we'll see.

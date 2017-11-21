@@ -74,15 +74,15 @@ which we can handle, it represents messages we **can't** handle, and would
 like the caller to take care of.
 -}
 type OutMsgChild
-    = SaveHeight
-    | SaveWeight
-    | SaveMuac
-    | SaveChildNutritionSigns
+    = SaveHeight HeightInCm
+    | SaveWeight WeightInKg
+    | SaveMuac MuacInCm
+    | SaveChildNutritionSigns (EverySet ChildNutritionSign)
     | SavePhoto
 
 
 type OutMsgMother
-    = SaveFamilyPlanningSigns
+    = SaveFamilyPlanningSigns (EverySet FamilyPlanningSign)
 
 
 emptyModelChild : ModelChild

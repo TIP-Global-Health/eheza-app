@@ -54,6 +54,21 @@ applyEdit edit value =
             Nothing
 
 
+{-| Given the data, do we have a current value? May be the value
+stored in the backend, or an edited value.
+-}
+currentValue : MeasurementData (Maybe ( id, value )) (Edit value) -> Maybe value
+currentValue data =
+    applyEdit data.edits (Maybe.map Tuple.second data.current)
+
+
+{-| Like `currentValue`, but just considers the backend.
+-}
+backendValue : MeasurementData (Maybe ( id, value )) (Edit value) -> Maybe value
+backendValue data =
+    Maybe.map Tuple.second data.current
+
+
 mapMeasurementData : (d1 -> d2) -> (e1 -> e2) -> MeasurementData d1 e1 -> MeasurementData d2 e2
 mapMeasurementData dataFunc editFunc measurements =
     { previous = dataFunc measurements.previous
