@@ -418,6 +418,7 @@ viewPhoto language saveStatus ( fileId, photoValue ) =
                 , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
                 , Maybe.map viewPhotoThumb photoValue
                     |> showMaybe
+                , div [] [ text "Photos are not working at the moment" ]
                 , div [ class "dropzone" ] []
                 ]
             , div [ class "actions" ] <|
