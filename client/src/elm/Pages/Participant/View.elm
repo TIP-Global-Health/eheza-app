@@ -1,7 +1,7 @@
 module Pages.Participant.View exposing (viewChild, viewMother)
 
 import Activity.Model exposing (ActivityListItem, ActivityType(..), ChildActivityType, MotherActivityType(..))
-import Activity.Utils exposing (getActivityList, getActivityIcon, getAllChildActivities, getAllMotherActivities, motherHasPendingActivity, childHasPendingActivity)
+import Activity.Utils exposing (getActivityList, getActivityIcon, getAllChildActivities, getAllMotherActivities, motherHasPendingActivity, childHasPendingActivity, motherHasCompletedActivity, childHasCompletedActivity)
 import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
@@ -92,11 +92,46 @@ viewFoundChild language currentDate ( childId, child ) session model =
         break =
             br [] []
 
+        config =
+            childParticipant
+
+        ( pendingActivities, completedActivities ) =
+            List.partition (\activity -> childHasPendingActivity childId activity session) getAllChildActivities
+
+        selectedActivity =
+            case model.selectedTab of
+                ProgressReport ->
+                    model.selectedActivity
+
+                Completed ->
+                    -- We show the selected activity, or the first completed activity
+                    -- if there is none or the selected activity is not completed.
+                    model.selectedActivity
+                        |> Maybe.andThen
+                            (\activity ->
+                                if childHasCompletedActivity childId activity session then
+                                    Just activity
+                                else
+                                    Nothing
+                            )
+                        |> Maybe.Extra.orElse (List.head completedActivities)
+
+                Pending ->
+                    model.selectedActivity
+                        |> Maybe.andThen
+                            (\activity ->
+                                if childHasPendingActivity childId activity session then
+                                    Just activity
+                                else
+                                    Nothing
+                            )
+                        |> Maybe.Extra.orElse (List.head pendingActivities)
+
         content =
             if model.selectedTab == ProgressReport then
                 [ viewProgressReport language childId session ]
             else
-                case model.selectedActivity of
+                case selectedActivity of
                     Just activity ->
                         let
                             measurements =
@@ -128,7 +163,7 @@ viewFoundChild language currentDate ( childId, child ) session model =
                     ]
                 ]
             ]
-                ++ (viewActivityCards childParticipant language childId model.selectedTab model.selectedActivity session)
+                ++ (viewActivityCards childParticipant language childId model.selectedTab selectedActivity session)
                 ++ content
 
 
@@ -166,8 +201,40 @@ viewFoundMother language ( motherId, mother ) session model =
                     )
                 |> List.intersperse break
 
+        ( pendingActivities, completedActivities ) =
+            List.partition (\activity -> motherHasPendingActivity motherId activity session) getAllMotherActivities
+
+        selectedActivity =
+            case model.selectedTab of
+                ProgressReport ->
+                    model.selectedActivity
+
+                Completed ->
+                    -- We show the selected activity, or the first completed activity
+                    -- if there is none or the selected activity is not completed.
+                    model.selectedActivity
+                        |> Maybe.andThen
+                            (\activity ->
+                                if motherHasCompletedActivity motherId activity session then
+                                    Just activity
+                                else
+                                    Nothing
+                            )
+                        |> Maybe.Extra.orElse (List.head completedActivities)
+
+                Pending ->
+                    model.selectedActivity
+                        |> Maybe.andThen
+                            (\activity ->
+                                if motherHasPendingActivity motherId activity session then
+                                    Just activity
+                                else
+                                    Nothing
+                            )
+                        |> Maybe.Extra.orElse (List.head pendingActivities)
+
         content =
-            case model.selectedActivity of
+            case selectedActivity of
                 Just activity ->
                     let
                         measurements =
@@ -198,7 +265,7 @@ viewFoundMother language ( motherId, mother ) session model =
                     ]
                 ]
             ]
-                ++ (viewActivityCards motherParticipant language motherId model.selectedTab model.selectedActivity session)
+                ++ (viewActivityCards motherParticipant language motherId model.selectedTab selectedActivity session)
                 ++ content
 
 

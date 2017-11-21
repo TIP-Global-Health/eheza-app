@@ -170,7 +170,7 @@ specially in the UI at the moment ... that may change in future.
 -}
 getAllChildActivities : List ChildActivityType
 getAllChildActivities =
-    [ ChildPicture, Height, Muac, NutritionSigns, Weight ]
+    [ Height, Muac, NutritionSigns, Weight, ChildPicture ]
 
 
 getAllMotherActivities : List MotherActivityType
