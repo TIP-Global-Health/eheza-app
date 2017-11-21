@@ -214,7 +214,7 @@ translate lang trans =
                             { english = "Height" }
 
                         ChildActivity Muac ->
-                            { english = "Mid Upper Arm Circumference (MUAC)" }
+                            { english = "MUAC" }
 
                         ChildActivity NutritionSigns ->
                             { english = "Nutrition" }
