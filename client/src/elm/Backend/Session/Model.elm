@@ -38,22 +38,17 @@ type alias OfflineSession =
     , mothers : EveryDictList MotherId Mother
     , children : EveryDict ChildId Child
 
-    -- These are all the measurements which are **not** part of the
-    -- current session ... that is, all measurements which we're not
-    -- editing at the moment. So, it inclues the "previousMeasurements"
-    -- but not the "currentMeasurements".
+    -- These are all the measurements which have been saved to the backend.
     , historicalMeasurements : HistoricalMeasurements
 
     -- These are the measurements we're currently working on, that is,
     -- the ones for this very session, that have been saved to the backend.
-    -- These are **not** included in `historicalMeasurements`
     , currentMeasurements : Measurements
 
     -- These represent the most recent measurement of each kind in
-    -- `historicalMeasurements`. That is, it is the most recent measurement
-    -- we have before the current session, to be used to compare the
-    -- current session with. They are still included in `historicalMeasurements`
-    -- as well, since we're not editing these ... they are stable.
+    -- `historicalMeasurements` that is not in `currentMeasurements`. That is,
+    -- it is the most recent measurement we have before the current session, to
+    -- be used to compare the current session with.
     , previousMeasurements : Measurements
     }
 
@@ -69,28 +64,35 @@ The `editStatus` tracks whether we have a save in progress for the
 cacehd edits. It's inside the type, because we can't save them unless
 we have them ...
 
-The uiChild and uiMother fields could be put elsewhere, since
-they aren't backend concepts. However, they don't belong at the level of
-particular pages, since we actually use them in two different pages and
-don't want multiple sources of truth for what's going on in the editor.
-Plus, logically the uiChild and uiMother belong in the `EditableSession`
-since they are tied to an editable session. And, we fundamentally want one
-for each child and mother (to represent the edits for each child and
-mother) ... that way we guarantee that they don't "leak" to the wrong child
-or mother. So, it seems that they belong in this type, but that may not
-be perfect.
+The childForms and motherForms fields could be put elsewhere, since they aren't
+backend concepts. However, they don't belong at the level of particular pages,
+since we actually use them in two different pages and don't want multiple
+sources of truth for what's going on in the editor. Plus, logically the
+motherForms and childForms belong in the `EditableSession` since they are tied
+to an editable session. And, we fundamentally want one for each child and
+mother (to represent the edits for each child and mother) ... that way we
+guarantee that they don't "leak" to the wrong child or mother. So, it seems
+that they belong in this type, but that may not be perfect. (This is the kind
+of thing that `RestfulData` might eventually handle more elegantly).
 
 -}
 type alias EditableSession =
     { offlineSession : OfflineSession
     , edits : MeasurementEdits
     , update : WebData ()
-    , uiChild : EveryDict ChildId Measurement.Model.ModelChild
-    , uiMother : EveryDict MotherId Measurement.Model.ModelMother
+    , childForms : EveryDict ChildId Measurement.Model.ModelChild
+    , motherForms : EveryDict MotherId Measurement.Model.ModelMother
     }
 
 
 {-| This models some messages the UI can send to change an EditableSession.
+
+They are actually handled in `Backend.Update`.
+
 -}
 type MsgEditableSession
     = SetCheckedIn MotherId Bool
+    | SetMotherForm MotherId Measurement.Model.ModelMother
+    | SetChildForm ChildId Measurement.Model.ModelChild
+    | MeasurementOutMsgChild ChildId Measurement.Model.OutMsgChild
+    | MeasurementOutMsgMother MotherId Measurement.Model.OutMsgMother

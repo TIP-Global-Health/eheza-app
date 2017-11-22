@@ -1,15 +1,15 @@
 module Pages.Participants.View exposing (view)
 
-import Activity.Utils exposing (getTotalsNumberPerActivity, motherOrAnyChildHasAnyPendingActivity)
+import Activity.Utils exposing (getTotalsNumberPerActivity, motherOrAnyChildHasAnyPendingActivity, isCheckedIn)
 import Backend.Session.Model exposing (OfflineSession, EditableSession)
 import EveryDictList
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
+import Pages.Page exposing (Page(..), UserPage(..), SessionPage(..))
 import Pages.Participants.Model exposing (Model, Msg(..), Tab(..))
-import Pages.Utils exposing (viewDashboardPageHeader, DashboardPage(..))
-import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
 import Translate as Trans exposing (translate, Language)
-import Utils.Html exposing (tabItem, thumbnailImage)
+import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
 
 
 thumbnailDimensions : { width : Int, height : Int }
@@ -22,11 +22,12 @@ thumbnailDimensions =
 view : Language -> EditableSession -> Model -> Html Msg
 view language editableSession model =
     let
-        allMothers =
+        mothersInAttendance =
             editableSession.offlineSession.mothers
+                |> EveryDictList.filter (\motherId _ -> isCheckedIn motherId editableSession)
 
         ( mothersWithPendingActivity, mothersWithoutPendingActivity ) =
-            EveryDictList.partition (\motherId _ -> motherOrAnyChildHasAnyPendingActivity motherId editableSession) allMothers
+            EveryDictList.partition (\motherId _ -> motherOrAnyChildHasAnyPendingActivity motherId editableSession) mothersInAttendance
 
         tabs =
             let
@@ -50,25 +51,22 @@ view language editableSession model =
                 ( selectedMothers, emptySectionMessage ) =
                     case model.selectedTab of
                         Pending ->
-                            ( mothersWithPendingActivity, translate language Trans.PendingSectionEmpty )
+                            ( mothersWithPendingActivity, translate language Trans.NoParticipantsPending )
 
                         Completed ->
-                            ( mothersWithoutPendingActivity, translate language Trans.CompletedSectionEmpty )
+                            ( mothersWithoutPendingActivity, translate language Trans.NoParticipantsCompleted )
 
                 viewMotherCard ( motherId, mother ) =
                     div
                         [ class "card"
-                        , Debug.crash "redo"
-
-                        {-
-                           , App.PageType.PageMother motherId
-                               |> SetRedirectPage
-                               |> onClick
-                        -}
+                        , MotherPage motherId
+                            |> SessionPage
+                            |> SetRedirectPage
+                            |> onClick
                         ]
                         [ div
                             [ class "image" ]
-                            [ thumbnailImage (ParticipantMother mother) mother.image mother.name thumbnailDimensions.height thumbnailDimensions.width ]
+                            [ thumbnailImage "mother" mother.image mother.name thumbnailDimensions.height thumbnailDimensions.width ]
                         , div
                             [ class "content" ]
                             [ p [] [ text mother.name ] ]
@@ -90,11 +88,71 @@ view language editableSession model =
                         ]
                     ]
 
+        endSessionDialog =
+            if model.showEndSessionDialog then
+                Just <|
+                    div [ class "ui tiny active modal" ]
+                        [ div
+                            [ class "header" ]
+                            [ text <| translate language Trans.AreYouSure ]
+                        , div
+                            [ class "content" ]
+                            [ p []
+                                [ text <| translate language Trans.OnceYouEndYourSession ]
+                            ]
+                        , div
+                            [ class "actions" ]
+                            [ div
+                                [ class "two primary ui buttons" ]
+                                [ button
+                                    [ class "ui fluid button"
+                                    , onClick <| ShowEndSessionDialog False
+                                    ]
+                                    [ text <| translate language Trans.Cancel ]
+                                , button
+                                    [ class "ui fluid button"
+                                    , onClick CloseSession
+                                    ]
+                                    [ text <| translate language Trans.Continue ]
+                                ]
+                            ]
+                        ]
+            else
+                Nothing
+
         endSessionButton =
             div [ class "actions" ]
                 [ button
-                    [ class "ui fluid button" ]
+                    [ class "ui fluid primary button"
+                    , onClick <| ShowEndSessionDialog True
+                    ]
                     [ text <| translate language Trans.EndSession ]
+                ]
+
+        header =
+            div
+                [ class "ui basic head segment" ]
+                [ h1
+                    [ class "ui header" ]
+                    [ text <| translate language Trans.Participants ]
+                , a
+                    [ class "link-back"
+                    , onClick <| SetRedirectPage <| UserPage <| ClinicsPage <| Just editableSession.offlineSession.session.clinicId
+                    ]
+                    [ span [ class "icon-back" ] []
+                    , span [] []
+                    ]
+                , ul [ class "links-head" ]
+                    [ li
+                        [ onClick <| SetRedirectPage <| SessionPage AttendancePage ]
+                        [ a [] [ span [ class "icon-completed" ] [] ] ]
+                    , li
+                        [ class "active" ]
+                        [ a [] [ span [ class "icon-mother" ] [] ] ]
+                    , li
+                        [ onClick <| SetRedirectPage <| SessionPage ActivitiesPage ]
+                        [ a [] [ span [ class "icon-measurements" ] [] ] ]
+                    ]
                 ]
 
         content =
@@ -103,8 +161,9 @@ view language editableSession model =
                 [ mothers, endSessionButton ]
     in
         div
-            [ class "wrap wrap-alt page-participants" ]
-            [ viewDashboardPageHeader SetRedirectPage language ParticipantsDashboard
+            [ class "wrap wrap-alt-2 page-participants" ]
+            [ header
             , tabs
             , content
+            , viewModal endSessionDialog
             ]

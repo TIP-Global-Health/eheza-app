@@ -1,10 +1,8 @@
 module Pages.Activity.View exposing (view)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
-import Activity.Utils exposing (getActivityIcon)
+import Activity.Utils exposing (getActivityIcon, onlyCheckedIn, childHasPendingActivity, motherHasPendingActivity)
 import Backend.Session.Model exposing (EditableSession)
-import Date exposing (Date)
-import EveryDict
+import EveryDict exposing (EveryDict)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -12,8 +10,8 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List as List
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
-import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
-import Participant.Utils exposing (getParticipants, participantHasPendingActivity, getParticipantName, getParticipantAvatarThumb)
+import Pages.Activity.Utils exposing (selectParticipantForTab)
+import Participant.Model exposing (Participant)
 import Translate exposing (translate, Language)
 import Utils.Html exposing (tabItem, thumbnailImage)
 
@@ -25,24 +23,24 @@ thumbnailDimensions =
     }
 
 
-{-| Note that we don't "own" the activityType ... it just gets provided to us,
-and is managed elsewhere.
--}
-view : Language -> ActivityType -> EditableSession -> Model -> Html Msg
-view language selectedActivity session model =
+view : Participant id value activity msg -> Language -> NominalDate -> activity -> EditableSession -> Model id -> Html (Msg id msg)
+view config language currentDate selectedActivity fullSession model =
     let
+        checkedIn =
+            onlyCheckedIn fullSession
+
         ( pendingParticipants, completedParticipants ) =
-            getParticipants session.offlineSession
-                |> EveryDict.partition (\id _ -> participantHasPendingActivity id selectedActivity session)
+            config.getParticipants checkedIn
+                |> EveryDict.partition (\id _ -> config.hasPendingActivity id selectedActivity checkedIn)
 
         activityDescription =
             div
                 [ class "ui unstackable items" ]
                 [ div [ class "item" ]
                     [ div [ class "ui image" ]
-                        [ span [ class <| "icon-item icon-item-" ++ getActivityIcon selectedActivity ] [] ]
+                        [ span [ class <| "icon-item icon-item-" ++ getActivityIcon (config.tagActivityType selectedActivity) ] [] ]
                     , div [ class "content" ]
-                        [ p [] [ text <| translate language (Translate.ActivitiesHelp selectedActivity) ] ]
+                        [ p [] [ text <| translate language <| Translate.ActivitiesHelp <| config.tagActivityType selectedActivity ] ]
                     ]
                 ]
 
@@ -63,41 +61,45 @@ view language selectedActivity session model =
                     , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
                     ]
 
+        -- We compute this so that it's consistent with the tab
+        selectedParticipant =
+            selectParticipantForTab config model.selectedTab selectedActivity fullSession model.selectedParticipant
+
         participants =
             let
                 ( selectedParticipants, emptySectionMessage ) =
                     case model.selectedTab of
                         Pending ->
-                            ( pendingParticipants, translate language Translate.PendingSectionEmpty )
+                            ( pendingParticipants, translate language Translate.NoParticipantsPendingForThisActivity )
 
                         Completed ->
-                            ( completedParticipants, translate language Translate.CompletedSectionEmpty )
+                            ( completedParticipants, translate language Translate.NoParticipantsCompletedForThisActivity )
 
                 viewParticipantCard ( participantId, participant ) =
                     let
                         name =
-                            getParticipantName participant
+                            config.getName participant
 
                         imageSrc =
-                            getParticipantAvatarThumb participant
+                            config.getAvatarThumb participant
 
                         imageView =
-                            thumbnailImage participant imageSrc name thumbnailDimensions.height thumbnailDimensions.width
+                            thumbnailImage config.iconClass imageSrc name thumbnailDimensions.height thumbnailDimensions.width
                     in
                         div
                             [ classList
                                 [ ( "participant card", True )
-                                , ( "active", Just participantId == model.selectedParticipant )
+                                , ( "active", Just participantId == selectedParticipant )
                                 ]
-                            , onClick <|
-                                SetSelectedParticipant <|
-                                    Just participantId
+                            , Just participantId
+                                |> SetSelectedParticipant
+                                |> onClick
                             ]
                             [ div
                                 [ class "image" ]
                                 [ imageView ]
                             , div [ class "content" ]
-                                [ p [] [ text <| getParticipantName participant ] ]
+                                [ p [] [ text <| config.getName participant ] ]
                             ]
 
                 participantsCards =
@@ -106,7 +108,7 @@ view language selectedActivity session model =
                     else
                         selectedParticipants
                             |> EveryDict.toList
-                            |> List.sortBy (\( _, participant ) -> getParticipantName participant)
+                            |> List.sortBy (\( _, participant ) -> config.getName participant)
                             |> List.map viewParticipantCard
             in
                 div
@@ -116,12 +118,12 @@ view language selectedActivity session model =
                     ]
 
         measurementsForm =
-            case model.selectedParticipant of
-                Just (ParticipantChildId childId) ->
-                    Debug.crash "implement"
-
-                Just (ParticipantMotherId motherId) ->
-                    Debug.crash "implement"
+            case selectedParticipant of
+                Just id ->
+                    -- This is a convenience for the way the code was structured ... ideally,
+                    -- we'd build a `viewMeasurements` on top of smaller capabilities of the
+                    -- `Participant` config, but this is faster for now.
+                    config.viewMeasurements language currentDate id selectedActivity checkedIn
 
                 Nothing ->
                     emptyNode
@@ -130,17 +132,14 @@ view language selectedActivity session model =
             div
                 [ class "ui basic head segment" ]
                 [ h1 [ class "ui header" ]
-                    [ text <| translate language (Translate.ActivitiesTitle selectedActivity) ]
+                    [ config.tagActivityType selectedActivity
+                        |> Translate.ActivitiesTitle
+                        |> translate language
+                        |> text
+                    ]
                 , a
                     [ class "link-back"
-                    , Debug.crash "redo"
-
-                    {-
-                       , onClick <|
-                           MsgPagesActivity <|
-                               Pages.Activity.Model.SetRedirectPage <|
-                                   App.PageType.Activities
-                    -}
+                    , onClick GoBackToActivitiesPage
                     ]
                     [ span [ class "icon-back" ] [] ]
                 ]

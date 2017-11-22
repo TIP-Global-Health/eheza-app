@@ -9,6 +9,13 @@ import Time.Date exposing (year, month, day, delta, daysInMonth)
 import Gizra.NominalDate exposing (NominalDate)
 import Date.Extra exposing (fromParts, diff, Interval(Day))
 import Date.Extra.Facts exposing (monthFromMonthNumber)
+import Translate exposing (translate, Language)
+
+
+{-| A wrapper for an integer representing days.
+-}
+type Days
+    = Days Int
 
 
 {-| Converts a `NominalDate` to an Elm-core `Date`, with the supplied values
@@ -34,7 +41,7 @@ toLocalDateTime nominal hour minutes seconds milliseconds =
 The result is positive if the second parameter is after the first parameter.
 
 -}
-diffDays : NominalDate -> NominalDate -> Int
+diffDays : NominalDate -> NominalDate -> Days
 diffDays low high =
     -- delta gives us separate deltas for years, months and days ... so, for
     -- instance, for a difference of 2 years and 1 month, you'd get
@@ -45,6 +52,7 @@ diffDays low high =
     -- }
     delta high low
         |> .days
+        |> Days
 
 
 {-| Difference between two dates, in terms of months and days. This is based on
@@ -84,3 +92,62 @@ diffCalendarMonthsAndDays low high =
             { months = uncorrected.months - 1
             , days = uncorrected.days + (Maybe.withDefault 0 (daysInMonth (year low) (month low)))
             }
+
+
+{-| Shows the difference between the first date (the birthdate)
+and the second date, formatted in months and days.
+-}
+renderAgeMonthsDays : Language -> NominalDate -> NominalDate -> String
+renderAgeMonthsDays language birthDate now =
+    let
+        diff =
+            diffCalendarMonthsAndDays birthDate now
+
+        days =
+            diff.days
+
+        months =
+            diff.months
+    in
+        if (days == 1 && months == 0) then
+            translate language <| Translate.AgeSingleDayWithoutMonth months days
+        else if (months == 0) then
+            translate language <| Translate.AgeDays days
+        else if (months == 1 && days == 0) then
+            translate language <| Translate.AgeSingleMonthWithoutDay months
+        else if (months > 1 && days == 0) then
+            translate language <| Translate.AgeMonthsWithoutDay months
+        else if (months == 1 && days == 1) then
+            translate language <| Translate.AgeSingleBoth months days
+        else if (days == 1) then
+            translate language <| Translate.AgeSingleDayWithMonth months days
+        else if (months == 1 && days /= 0) then
+            translate language <| Translate.AgeSingleMonth months days
+        else
+            translate language <| Translate.Age months days
+
+
+renderDateOfBirth : Language -> NominalDate -> String
+renderDateOfBirth language birthDate =
+    let
+        day =
+            Time.Date.day birthDate
+
+        month =
+            Time.Date.month birthDate
+                |> monthFromMonthNumber
+                |> Translate.ResolveMonth
+                |> translate language
+
+        year =
+            Time.Date.year birthDate
+    in
+        (if day < 10 then
+            "0" ++ toString day
+         else
+            toString day
+        )
+            ++ " "
+            ++ month
+            ++ " "
+            ++ toString year

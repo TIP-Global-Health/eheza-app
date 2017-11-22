@@ -16,7 +16,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Pages.Model exposing (MsgSession(..))
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..), UserPage(..), SessionPage(..))
 import Translate exposing (translate, Language)
 
 
@@ -41,17 +41,15 @@ view language session =
                     [ span [ class "icon-back" ] []
                     , span [] []
                     ]
-
-                -- TODO: This should be a function, since we can use it on all the session pages
                 , ul [ class "links-head" ]
                     [ li
                         [ class "active" ]
                         [ a [] [ span [ class "icon-completed" ] [] ] ]
                     , li
-                        []
+                        [ onClick <| SetActivePage <| SessionPage ParticipantsPage ]
                         [ a [] [ span [ class "icon-mother" ] [] ] ]
                     , li
-                        []
+                        [ onClick <| SetActivePage <| SessionPage ActivitiesPage ]
                         [ a [] [ span [ class "icon-measurements" ] [] ] ]
                     ]
                 ]

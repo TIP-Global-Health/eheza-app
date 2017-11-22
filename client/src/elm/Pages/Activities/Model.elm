@@ -1,7 +1,6 @@
 module Pages.Activities.Model exposing (..)
 
-import Participant.Model exposing (ParticipantTypeFilter(..))
-import Pages.Page exposing (SessionPage)
+import Pages.Page exposing (Page)
 
 
 {-| This module manages the state for the first part of the UI
@@ -22,18 +21,16 @@ desired activity. So, we're not drawing a wrapper around the `Page.Activity`
 
 -}
 type alias Model =
-    -- The `participantTypeFilter` appears to be unused, in the sense that it's
-    -- always `All` and we never change it. So, we might remove this at some
-    -- point, unless we expect to use it?
-    { participantTypeFilter : ParticipantTypeFilter
-    , selectedTab : Tab
+    { selectedTab : Tab
+    , showEndSessionDialog : Bool
     }
 
 
 type Msg
-    = SetParticipantTypeFilter ParticipantTypeFilter
-    | SetRedirectPage SessionPage
+    = CloseSession
+    | SetRedirectPage Page
     | SetSelectedTab Tab
+    | ShowEndSessionDialog Bool
 
 
 {-| This is related to the `Tab` type in `Pages.Activity.Model`, except that here
@@ -48,6 +45,6 @@ type Tab
 
 emptyModel : Model
 emptyModel =
-    { participantTypeFilter = All
-    , selectedTab = Pending
+    { selectedTab = Pending
+    , showEndSessionDialog = False
     }

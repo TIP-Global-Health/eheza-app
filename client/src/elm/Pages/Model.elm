@@ -60,6 +60,13 @@ import Pages.Participants.Model
 {-| This is where we track all the UI state that relates to an EditableSession
 ... that is, UI pages which will need an EditableSession to be supplied in
 order to view or update them.
+
+TODO: Most (or evven all) of the state (and messages) in Pages.Activity, Pages.Activites,
+Pages.Participant, and Pages.Participants could be consolidated here, so that all of
+them could work in the same base type (as Pages.Attendance already does). That would
+simplify things. Also, this should probably then move to its own folder (i.e.
+`Pages.EditableSession` or something like that).
+
 -}
 type alias SessionPages =
     -- Shows a list of activities ... user can select one.
@@ -67,7 +74,8 @@ type alias SessionPages =
 
     -- Shows a page for a single activity. We keep separate UI state for
     -- each activity.
-    , activityPages : EveryDict ActivityType Pages.Activity.Model.Model
+    , childActivityPages : EveryDict ChildActivityType (Pages.Activity.Model.Model ChildId)
+    , motherActivityPages : EveryDict MotherActivityType (Pages.Activity.Model.Model MotherId)
 
     -- Shows a list of participants ... user can select one.
     , participantsPage : Pages.Participants.Model.Model
@@ -86,7 +94,8 @@ type alias SessionPages =
 emptySessionPages : SessionPages
 emptySessionPages =
     { activitiesPage = Pages.Activities.Model.emptyModel
-    , activityPages = EveryDict.empty
+    , childActivityPages = EveryDict.empty
+    , motherActivityPages = EveryDict.empty
     , childPages = EveryDict.empty
     , motherPages = EveryDict.empty
     , participantsPage = Pages.Participants.Model.emptyModel
@@ -97,7 +106,8 @@ emptySessionPages =
 -}
 type MsgSession
     = MsgActivities Pages.Activities.Model.Msg
-    | MsgActivity ActivityType Pages.Activity.Model.Msg
+    | MsgChildActivity ChildActivityType (Pages.Activity.Model.Msg ChildId Measurement.Model.MsgChild)
+    | MsgMotherActivity MotherActivityType (Pages.Activity.Model.Msg MotherId Measurement.Model.MsgMother)
     | MsgChild ChildId (Pages.Participant.Model.Msg ChildActivityType Measurement.Model.MsgChild)
     | MsgMother MotherId (Pages.Participant.Model.Msg MotherActivityType Measurement.Model.MsgMother)
     | MsgParticipants Pages.Participants.Model.Msg

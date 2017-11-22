@@ -16,9 +16,12 @@ mother and child with the appropriate types.
 
 -}
 
+import Pages.Page exposing (Page)
+
 
 type Msg activity measurement
     = MsgMeasurement measurement
+    | Redirect Page
     | SetSelectedActivity activity
     | SetSelectedTab Tab
 

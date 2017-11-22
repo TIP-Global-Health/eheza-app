@@ -100,9 +100,30 @@ makeEditableSession offlineSession =
     { offlineSession = offlineSession
     , edits = emptyMeasurementEdits
     , update = NotAsked
-    , uiChild = EveryDict.empty
-    , uiMother = EveryDict.empty
+    , childForms = EveryDict.empty
+    , motherForms = EveryDict.empty
     }
+
+
+{-| Given a function that changes ChildEdits, apply that to the motherId.
+-}
+mapChildEdits : (ChildEdits -> ChildEdits) -> ChildId -> EditableSession -> EditableSession
+mapChildEdits func childId session =
+    let
+        edits =
+            session.edits
+    in
+        EveryDict.get childId edits.children
+            |> Maybe.withDefault emptyChildEdits
+            |> (\childEdits ->
+                    { session
+                        | edits =
+                            { edits
+                                | children =
+                                    EveryDict.insert childId (func childEdits) edits.children
+                            }
+                    }
+               )
 
 
 {-| Given a function that changes MotherEdits, apply that to the motherId.

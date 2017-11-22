@@ -14,17 +14,20 @@ show the participant.
 
 -}
 
-import Pages.Page exposing (SessionPage(..))
+import Pages.Page exposing (Page(..))
 
 
 type alias Model =
     { selectedTab : Tab
+    , showEndSessionDialog : Bool
     }
 
 
 type Msg
-    = SetRedirectPage SessionPage
+    = CloseSession
+    | SetRedirectPage Page
     | SetSelectedTab Tab
+    | ShowEndSessionDialog Bool
 
 
 {-| Once again we have a `Tab` type, roughly analogous to the type in
@@ -41,4 +44,5 @@ type Tab
 emptyModel : Model
 emptyModel =
     { selectedTab = Pending
+    , showEndSessionDialog = False
     }

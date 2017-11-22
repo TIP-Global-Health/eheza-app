@@ -2,8 +2,8 @@ module ZScore.Test exposing (all)
 
 import Backend.Child.Model exposing (Gender(..))
 import Expect
-import Participant.Model
 import Test exposing (Test, describe, test)
+import Utils.NominalDate exposing (Days(..))
 import ZScore.Model exposing (..)
 import ZScore.Utils exposing (..)
 
@@ -103,7 +103,7 @@ zScoreForWeightTest =
             (\( age, weight, gender, expected ) ->
                 test (toString age) <|
                     \() ->
-                        zScoreForWeight (AgeInDays age) gender (Kilograms weight)
+                        zScoreForWeight (Days age) gender (Kilograms weight)
                             |> Expect.equal (Just expected)
             )
         |> describe "zScoreForWeight"
@@ -129,7 +129,7 @@ zScoreForHeightTest =
             (\( age, height, gender, expected ) ->
                 test (toString age) <|
                     \() ->
-                        zScoreForHeight (AgeInDays age) gender (Centimetres height)
+                        zScoreForHeight (Days age) gender (Centimetres height)
                             |> Expect.equal (Just expected)
             )
         |> describe "zScoreForHeight"
@@ -152,7 +152,7 @@ zScoreForMuacTest =
             (\( age, muac, gender, expected ) ->
                 test (toString age) <|
                     \() ->
-                        zScoreForMuac (AgeInDays age) gender (Centimetres muac)
+                        zScoreForMuac (Days age) gender (Centimetres muac)
                             |> Expect.equal (Just expected)
             )
         |> describe "zScoreForMuac"

@@ -13,8 +13,9 @@ algorithm described at <https://github.com/Gizra/ihangane/issues/303>.
 -}
 
 import Backend.Child.Model exposing (Gender(..))
+import Utils.NominalDate exposing (Days(..))
 import IntDict exposing (IntDict)
-import ZScore.Model exposing (AgeInDays(..), Centimetres(..), Kilograms(..), ZScore(..))
+import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore(..))
 import ZScore.Internal.HeightBoys as HeightBoys
 import ZScore.Internal.HeightGirls as HeightGirls
 import ZScore.Internal.MuacBoys as MuacBoys
@@ -30,8 +31,8 @@ import ZScore.Internal.WeightHeightGirls as WeightHeightGirls
 Returns a `Maybe` in case the age is out of the range of our data.
 
 -}
-zScoreForHeight : AgeInDays -> Gender -> Centimetres -> Maybe ZScore
-zScoreForHeight (AgeInDays age) gender (Centimetres cm) =
+zScoreForHeight : Days -> Gender -> Centimetres -> Maybe ZScore
+zScoreForHeight (Days age) gender (Centimetres cm) =
     let
         data =
             case gender of
@@ -49,8 +50,8 @@ zScoreForHeight (AgeInDays age) gender (Centimetres cm) =
 Returns a `Maybe` in case the age is out of the range of our data.
 
 -}
-zScoreForMuac : AgeInDays -> Gender -> Centimetres -> Maybe ZScore
-zScoreForMuac (AgeInDays age) gender (Centimetres cm) =
+zScoreForMuac : Days -> Gender -> Centimetres -> Maybe ZScore
+zScoreForMuac (Days age) gender (Centimetres cm) =
     let
         data =
             case gender of
@@ -68,8 +69,8 @@ zScoreForMuac (AgeInDays age) gender (Centimetres cm) =
 Returns a `Maybe` in case the age is out of the range of our data.
 
 -}
-zScoreForWeight : AgeInDays -> Gender -> Kilograms -> Maybe ZScore
-zScoreForWeight (AgeInDays age) gender (Kilograms kg) =
+zScoreForWeight : Days -> Gender -> Kilograms -> Maybe ZScore
+zScoreForWeight (Days age) gender (Kilograms kg) =
     let
         data =
             case gender of

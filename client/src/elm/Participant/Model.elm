@@ -1,47 +1,43 @@
-module Participant.Model
-    exposing
-        ( AgeDay(..)
-        , Participant(..)
-        , ParticipantId(..)
-        , ParticipantTypeFilter(..)
-        )
+module Participant.Model exposing (Participant)
 
-{-| This module provides a type which is either a child or a mother.
-Basically, it's sometimes useful to put children and mothers together
-in lists etc., so this gives us a way to do that.
+{-| This module provides a type which allows us to do certain things
+with either children or mothers, by providing a typeclass-like
+record which tells us how to do those things.
 
-We're actually using this type less and less. Instead, we're often using
-function signatures that are parameterized in such a way as to be able to
-handle children or mothers, or tracking children and mothers in separate
-functions or lists. That allows us to express a kind of association between
+This also allows us to express a kind of association between
 types ... e.g. MotherId goes with Mother and MotherActivity, while ChildId goes
-with Child and ChildActivity. But, sometimes referring to a `Participant` or
-`ParticipantId` is still handy.
+with Child and ChildActivity.
 
 -}
 
+import Activity.Model exposing (ActivityType)
 import Backend.Entities exposing (..)
-import Backend.Child.Model exposing (Child)
-import Backend.Mother.Model exposing (Mother)
+import Backend.Session.Model exposing (EditableSession)
+import EveryDict exposing (EveryDict)
+import Gizra.NominalDate exposing (NominalDate)
+import Html exposing (Html)
+import Pages.Activity.Model
+import Translate exposing (Language)
 
 
-{-| TODO: Move this somewhere else.
+{-| Implementations for child and mother are in Participant.Utils.
+
+`viewMeasurments` wouldn't ideally be here ... instead, we'd have smaller
+things here that it needs. But this is faster for the moment.
+
 -}
-type AgeDay
-    = AgeDay Int
-
-
-type Participant
-    = ParticipantChild Child
-    | ParticipantMother Mother
-
-
-type ParticipantId
-    = ParticipantChildId ChildId
-    | ParticipantMotherId MotherId
-
-
-type ParticipantTypeFilter
-    = All
-    | Children
-    | Mothers
+type alias Participant id value activity msg =
+    { activities : List activity
+    , getAvatarThumb : value -> String
+    , getBirthDate : value -> NominalDate
+    , getMotherId : id -> EditableSession -> Maybe MotherId
+    , getName : value -> String
+    , getParticipants : EditableSession -> EveryDict id value
+    , hasPendingActivity : id -> activity -> EditableSession -> Bool
+    , iconClass : String
+    , showProgressReportTab : Bool
+    , tagActivityType : activity -> ActivityType
+    , toChildId : id -> Maybe ChildId
+    , toMotherId : id -> Maybe MotherId
+    , viewMeasurements : Language -> NominalDate -> id -> activity -> EditableSession -> Html (Pages.Activity.Model.Msg id msg)
+    }

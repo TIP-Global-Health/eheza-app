@@ -1,5 +1,6 @@
 module Pages.View exposing (..)
 
+import Activity.Model exposing (ActivityType(..))
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
 import EveryDict
@@ -14,6 +15,7 @@ import Pages.Page exposing (SessionPage(..))
 import Pages.Participant.Model
 import Pages.Participant.View
 import Pages.Participants.View
+import Participant.Utils exposing (childParticipant, motherParticipant)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (translate, Language)
 import Utils.Html exposing (spinner, wrapPage)
@@ -62,10 +64,18 @@ viewFoundSession language currentDate page session model =
                 |> Html.map MsgActivities
 
         ActivityPage activityType ->
-            EveryDict.get activityType model.activityPages
-                |> Maybe.withDefault Pages.Activity.Model.emptyModel
-                |> Pages.Activity.View.view language activityType session
-                |> Html.map (MsgActivity activityType)
+            case activityType of
+                ChildActivity activity ->
+                    EveryDict.get activity model.childActivityPages
+                        |> Maybe.withDefault Pages.Activity.Model.emptyModel
+                        |> Pages.Activity.View.view childParticipant language currentDate activity session
+                        |> Html.map (MsgChildActivity activity)
+
+                MotherActivity activity ->
+                    EveryDict.get activity model.motherActivityPages
+                        |> Maybe.withDefault Pages.Activity.Model.emptyModel
+                        |> Pages.Activity.View.view motherParticipant language currentDate activity session
+                        |> Html.map (MsgMotherActivity activity)
 
         AttendancePage ->
             Pages.Attendance.View.view language session

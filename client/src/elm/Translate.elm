@@ -41,19 +41,21 @@ type TranslationId
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int Int
     | AppName
+    | AreYouSure
     | Assessment
     | Attendance
     | Baby
     | BabyName String
     | BeginHealthAssessment
+    | Cancel
     | CentimeterShorthand
     | CheckIn
     | ChildNutritionSignLabel ChildNutritionSign
     | Children
     | ClickTheCheckMark
     | Clinics
-    | CompletedSectionEmpty
     | Connected
+    | Continue
     | Dashboard
     | DownloadHealthAssessment
     | DownloadSession1
@@ -88,17 +90,25 @@ type TranslationId
     | MuacIndication MuacIndication
     | MyAccount
     | NoActiveIncidents
+    | NoActivitiesCompleted
+    | NoActivitiesCompletedForThisParticipant
+    | NoActivitiesPending
+    | NoActivitiesPendingForThisParticipant
+    | NoParticipantsPending
+    | NoParticipantsPendingForThisActivity
+    | NoParticipantsCompleted
+    | NoParticipantsCompletedForThisActivity
     | NoCachedSession
     | NoChildrenRegisteredInTheSystem
     | NoParticipantsFound
     | NotAvailable
     | NotConnected
     | OK
+    | OnceYouEndYourSession
     | Page
     | Page404
     | PageNotFoundMsg
     | Participants
-    | PendingSectionEmpty
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
     | PlaceholderEnterWeight
@@ -208,7 +218,7 @@ translate lang trans =
                             { english = "Height" }
 
                         ChildActivity Muac ->
-                            { english = "Mid Upper Arm Circumference (MUAC)" }
+                            { english = "MUAC" }
 
                         ChildActivity NutritionSigns ->
                             { english = "Nutrition" }
@@ -286,6 +296,9 @@ translate lang trans =
                 AppName ->
                     { english = "E-Heza System" }
 
+                AreYouSure ->
+                    { english = "Are you sure?" }
+
                 Assessment ->
                     { english = "Assessment" }
 
@@ -300,6 +313,9 @@ translate lang trans =
 
                 BeginHealthAssessment ->
                     { english = "Begin Health Assessment" }
+
+                Cancel ->
+                    { english = "Cancel" }
 
                 CentimeterShorthand ->
                     { english = "cm" }
@@ -339,11 +355,11 @@ translate lang trans =
                 Clinics ->
                     { english = "Clinics" }
 
-                CompletedSectionEmpty ->
-                    { english = "This section has not yet been completed." }
-
                 Connected ->
                     { english = "Connected" }
+
+                Continue ->
+                    { english = "Continue" }
 
                 Dashboard ->
                     { english = "Dashboard" }
@@ -520,6 +536,30 @@ translate lang trans =
                 NoActiveIncidents ->
                     { english = "No active incidents!" }
 
+                NoActivitiesCompleted ->
+                    { english = "No activities are entirely completed for the attending participants." }
+
+                NoActivitiesPending ->
+                    { english = "All activities are completed for the attending participants." }
+
+                NoActivitiesCompletedForThisParticipant ->
+                    { english = "No activities are completed for this participant." }
+
+                NoActivitiesPendingForThisParticipant ->
+                    { english = "All activities are completed for this participant." }
+
+                NoParticipantsCompleted ->
+                    { english = "No participants have completed all their activities yet." }
+
+                NoParticipantsPending ->
+                    { english = "All attending participants have completed their activities." }
+
+                NoParticipantsCompletedForThisActivity ->
+                    { english = "No participants have completed this activity yet." }
+
+                NoParticipantsPendingForThisActivity ->
+                    { english = "All attending participants have completed this activitity." }
+
                 NoCachedSession ->
                     { english = "No session was found on this device." }
 
@@ -538,6 +578,9 @@ translate lang trans =
                 OK ->
                     { english = "OK" }
 
+                OnceYouEndYourSession ->
+                    { english = "Once you end your session, you will no longer be able to edit or add data. Remember to upload this session within the next 48 hours." }
+
                 Page ->
                     { english = "Page" }
 
@@ -549,9 +592,6 @@ translate lang trans =
 
                 Participants ->
                     { english = "Participants" }
-
-                PendingSectionEmpty ->
-                    { english = "This section has been completed." }
 
                 PlaceholderEnterHeight ->
                     { english = "Enter height here…" }

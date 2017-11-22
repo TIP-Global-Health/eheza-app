@@ -1,18 +1,12 @@
-module Pages.Participant.View
-    exposing
-        ( viewChild
-        , viewMother
-        )
+module Pages.Participant.View exposing (viewChild, viewMother)
 
 import Activity.Model exposing (ActivityListItem, ActivityType(..), ChildActivityType, MotherActivityType(..))
-import Activity.Utils exposing (getActivityList, getActivityIcon, getAllChildActivities, getAllMotherActivities, motherHasPendingActivity, childHasPendingActivity)
+import Activity.Utils exposing (getActivityList, getActivityIcon, getAllChildActivities, getAllMotherActivities, motherHasPendingActivity, childHasPendingActivity, motherHasCompletedActivity, childHasCompletedActivity)
 import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (EditableSession)
-import Backend.Session.Utils exposing (getChild, getMother, getMyMother, getChildren)
-import Date exposing (Date)
-import EveryDict
+import Backend.Session.Utils exposing (getChild, getMother, getMyMother, getChildren, getChildMeasurementData, getMotherMeasurementData)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -20,13 +14,16 @@ import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
 import Maybe.Extra
 import Measurement.Model
+import Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getMotherForm)
 import Measurement.View
+import Pages.Page exposing (Page(..), SessionPage(..))
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
-import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
-import Participant.Utils exposing (renderAgeMonthsDays, renderDateOfBirth)
+import Participant.Model exposing (Participant)
+import Participant.Utils exposing (childParticipant, motherParticipant)
 import ProgressReport.View exposing (viewProgressReport)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage)
+import Utils.NominalDate exposing (renderAgeMonthsDays, renderDateOfBirth)
 
 
 thumbnailDimensions : { width : Int, height : Int }
@@ -95,20 +92,67 @@ viewFoundChild language currentDate ( childId, child ) session model =
         break =
             br [] []
 
+        config =
+            childParticipant
+
+        ( pendingActivities, completedActivities ) =
+            List.partition (\activity -> childHasPendingActivity childId activity session) getAllChildActivities
+
+        selectedActivity =
+            case model.selectedTab of
+                ProgressReport ->
+                    model.selectedActivity
+
+                Completed ->
+                    -- We show the selected activity, or the first completed activity
+                    -- if there is none or the selected activity is not completed.
+                    model.selectedActivity
+                        |> Maybe.andThen
+                            (\activity ->
+                                if childHasCompletedActivity childId activity session then
+                                    Just activity
+                                else
+                                    Nothing
+                            )
+                        |> Maybe.Extra.orElse (List.head completedActivities)
+
+                Pending ->
+                    model.selectedActivity
+                        |> Maybe.andThen
+                            (\activity ->
+                                if childHasPendingActivity childId activity session then
+                                    Just activity
+                                else
+                                    Nothing
+                            )
+                        |> Maybe.Extra.orElse (List.head pendingActivities)
+
         content =
             if model.selectedTab == ProgressReport then
                 [ viewProgressReport language childId session ]
             else
-                [ Html.map MsgMeasurement <|
-                    Debug.crash "implement"
-                ]
+                case selectedActivity of
+                    Just activity ->
+                        let
+                            measurements =
+                                getChildMeasurementData childId session
+
+                            form =
+                                getChildForm childId session
+                        in
+                            [ Measurement.View.viewChild language currentDate child activity measurements form
+                                |> Html.map MsgMeasurement
+                            ]
+
+                    Nothing ->
+                        []
     in
         div [ class "wrap" ] <|
-            [ viewHeader childConfig language childId session
+            [ viewHeader childParticipant language childId session
             , div [ class "ui unstackable items participant-page child" ]
                 [ div [ class "item" ]
                     [ div [ class "ui image" ]
-                        [ thumbnailImage (ParticipantChild child) child.image childName thumbnailDimensions.height thumbnailDimensions.width ]
+                        [ thumbnailImage "child" child.image childName thumbnailDimensions.height thumbnailDimensions.width ]
                     , div [ class "content" ]
                         [ h2 [ class "ui header" ]
                             [ text childName ]
@@ -119,7 +163,7 @@ viewFoundChild language currentDate ( childId, child ) session model =
                     ]
                 ]
             ]
-                ++ (viewActivityCards childConfig language childId model.selectedTab model.selectedActivity session)
+                ++ (viewActivityCards childParticipant language childId model.selectedTab selectedActivity session)
                 ++ content
 
 
@@ -156,14 +200,63 @@ viewFoundMother language ( motherId, mother ) session model =
                         text <| (translate language Trans.Baby) ++ " " ++ toString (index + 1) ++ ": " ++ child.name
                     )
                 |> List.intersperse break
+
+        ( pendingActivities, completedActivities ) =
+            List.partition (\activity -> motherHasPendingActivity motherId activity session) getAllMotherActivities
+
+        selectedActivity =
+            case model.selectedTab of
+                ProgressReport ->
+                    model.selectedActivity
+
+                Completed ->
+                    -- We show the selected activity, or the first completed activity
+                    -- if there is none or the selected activity is not completed.
+                    model.selectedActivity
+                        |> Maybe.andThen
+                            (\activity ->
+                                if motherHasCompletedActivity motherId activity session then
+                                    Just activity
+                                else
+                                    Nothing
+                            )
+                        |> Maybe.Extra.orElse (List.head completedActivities)
+
+                Pending ->
+                    model.selectedActivity
+                        |> Maybe.andThen
+                            (\activity ->
+                                if motherHasPendingActivity motherId activity session then
+                                    Just activity
+                                else
+                                    Nothing
+                            )
+                        |> Maybe.Extra.orElse (List.head pendingActivities)
+
+        content =
+            case selectedActivity of
+                Just activity ->
+                    let
+                        measurements =
+                            getMotherMeasurementData motherId session
+
+                        form =
+                            getMotherForm motherId session
+                    in
+                        [ Measurement.View.viewMother language activity measurements form
+                            |> Html.map MsgMeasurement
+                        ]
+
+                Nothing ->
+                    []
     in
         div [ class "wrap" ] <|
-            [ viewHeader motherConfig language motherId session
+            [ viewHeader motherParticipant language motherId session
             , div
                 [ class "ui unstackable items participant-page mother" ]
                 [ div [ class "item" ]
                     [ div [ class "ui image" ]
-                        [ thumbnailImage (ParticipantMother mother) mother.image mother.name thumbnailDimensions.height thumbnailDimensions.width ]
+                        [ thumbnailImage "mother" mother.image mother.name thumbnailDimensions.height thumbnailDimensions.width ]
                     , div [ class "content" ]
                         [ h2 [ class "ui header" ]
                             [ text mother.name ]
@@ -172,48 +265,11 @@ viewFoundMother language ( motherId, mother ) session model =
                     ]
                 ]
             ]
-                ++ (viewActivityCards motherConfig language motherId model.selectedTab model.selectedActivity session)
-                ++ [ Html.map MsgMeasurement <|
-                        Debug.crash "implement"
-                   ]
+                ++ (viewActivityCards motherParticipant language motherId model.selectedTab selectedActivity session)
+                ++ content
 
 
-{-| Several functions below work with either mothers or children. To support that,
-we provide a typeclass-like config which are specialized to the relevant types.
--}
-type alias ParticipantConfig participantId activityType =
-    { activities : List activityType
-    , getMotherId : participantId -> EditableSession -> Maybe MotherId
-    , hasPendingActivity : participantId -> activityType -> EditableSession -> Bool
-    , showProgressReportTab : Bool
-    , wrapActivityType : activityType -> ActivityType
-    , wrapParticipantId : participantId -> ParticipantId
-    }
-
-
-childConfig : ParticipantConfig ChildId ChildActivityType
-childConfig =
-    { activities = getAllChildActivities
-    , getMotherId = \childId session -> getMyMother childId session.offlineSession |> Maybe.map Tuple.first
-    , hasPendingActivity = childHasPendingActivity
-    , showProgressReportTab = True
-    , wrapActivityType = ChildActivity
-    , wrapParticipantId = ParticipantChildId
-    }
-
-
-motherConfig : ParticipantConfig MotherId MotherActivityType
-motherConfig =
-    { activities = getAllMotherActivities
-    , getMotherId = \motherId session -> Just motherId
-    , hasPendingActivity = motherHasPendingActivity
-    , showProgressReportTab = False
-    , wrapActivityType = MotherActivity
-    , wrapParticipantId = ParticipantMotherId
-    }
-
-
-viewActivityCards : ParticipantConfig participantId activityType -> Language -> participantId -> Tab -> Maybe activityType -> EditableSession -> List (Html (Msg activityType any))
+viewActivityCards : Participant id value activity msg -> Language -> id -> Tab -> Maybe activity -> EditableSession -> List (Html (Msg activity any))
 viewActivityCards config language participantId selectedTab selectedActivity session =
     let
         ( pendingActivities, completedActivities ) =
@@ -221,13 +277,13 @@ viewActivityCards config language participantId selectedTab selectedActivity ses
 
         pendingActivitiesView =
             if List.isEmpty pendingActivities then
-                [ span [] [ text <| translate language Trans.PendingSectionEmpty ] ]
+                [ span [] [ text <| translate language Trans.NoActivitiesPendingForThisParticipant ] ]
             else
                 List.map (viewActivityListItem config language selectedActivity) pendingActivities
 
         completedActivitiesView =
             if List.isEmpty completedActivities then
-                [ span [] [ text <| translate language Trans.CompletedSectionEmpty ] ]
+                [ span [] [ text <| translate language Trans.NoActivitiesCompletedForThisParticipant ] ]
             else
                 List.map (viewActivityListItem config language selectedActivity) completedActivities
 
@@ -268,7 +324,7 @@ viewActivityCards config language participantId selectedTab selectedActivity ses
         [ tabs, activeView ]
 
 
-viewActivityListItem : ParticipantConfig participantId activityType -> Language -> Maybe activityType -> activityType -> Html (Msg activityType any)
+viewActivityListItem : Participant id value activity msg -> Language -> Maybe activity -> activity -> Html (Msg activity any)
 viewActivityListItem config language selectedActivity activityItem =
     div [ class "column" ]
         [ a
@@ -278,8 +334,8 @@ viewActivityListItem config language selectedActivity activityItem =
                 , ( "active", selectedActivity == Just activityItem )
                 ]
             ]
-            [ span [ class ("icon-section icon-" ++ getActivityIcon (config.wrapActivityType activityItem)) ] []
-            , text <| translate language <| Trans.ActivitiesTitle <| config.wrapActivityType activityItem
+            [ span [ class ("icon-section icon-" ++ getActivityIcon (config.tagActivityType activityItem)) ] []
+            , text <| translate language <| Trans.ActivitiesTitle <| config.tagActivityType activityItem
             ]
         ]
 
@@ -287,7 +343,7 @@ viewActivityListItem config language selectedActivity activityItem =
 {-| Given a mother or a child, this figures out who the whole family is, and shows a header allowing
 you to switch between any family member.
 -}
-viewHeader : ParticipantConfig participantId activityType -> Language -> participantId -> EditableSession -> Html (Msg activityType any)
+viewHeader : Participant id value activity msg -> Language -> id -> EditableSession -> Html (Msg activity any)
 viewHeader config language participantId session =
     let
         -- Whether we've looking at a child or a mother, we figure out who the
@@ -313,20 +369,16 @@ viewHeader config language participantId session =
             let
                 -- This determines whether this child is the one we were given
                 active =
-                    config.wrapParticipantId participantId == ParticipantChildId childId
+                    config.toChildId participantId == Just childId
 
                 attributes =
                     if active then
                         [ class "active" ]
                     else
-                        [ onClick <|
-                            Debug.crash "redo"
-
-                        {-
-                           MsgPagesParticipant (Debug.crash "id") <|
-                               Pages.Participant.Model.SetRedirectPage
-                                   (App.PageType.Participant (Debug.crash "id"))
-                        -}
+                        [ ChildPage childId
+                            |> SessionPage
+                            |> Redirect
+                            |> onClick
                         ]
             in
                 li attributes
@@ -347,19 +399,16 @@ viewHeader config language participantId session =
             let
                 -- Figures out whether we're actually looking at this mother
                 active =
-                    config.wrapParticipantId participantId == ParticipantMotherId motherId
+                    config.toMotherId participantId == Just motherId
 
                 attributes =
                     if active then
                         [ class "active" ]
                     else
-                        [ onClick <|
-                            Debug.crash "redo"
-
-                        {-
-                           MsgPagesParticipant (Debug.crash "motherId") <|
-                               Pages.Participant.Model.SetRedirectPage (App.PageType.Participant (fromEntityId motherId))
-                        -}
+                        [ MotherPage motherId
+                            |> SessionPage
+                            |> Redirect
+                            |> onClick
                         ]
             in
                 li attributes
@@ -375,14 +424,9 @@ viewHeader config language participantId session =
                 [ text <| translate language Trans.Assessment ]
             , a
                 [ class "link-back"
-                , onClick <|
-                    Debug.crash "redo"
-
-                {-
-                   MsgPagesParticipant participantId <|
-                       Pages.Participant.Model.SetRedirectPage <|
-                           App.PageType.Dashboard []
-                -}
+                , SessionPage ParticipantsPage
+                    |> Redirect
+                    |> onClick
                 ]
                 [ span [ class "icon-back" ] [] ]
             , ul

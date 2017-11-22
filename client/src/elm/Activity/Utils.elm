@@ -22,6 +22,7 @@ module Activity.Utils
         , motherHasPendingActivity
         , motherOrAnyChildHasAnyCompletedActivity
         , motherOrAnyChildHasAnyPendingActivity
+        , onlyCheckedIn
         , setCheckedIn
         )
 
@@ -30,11 +31,10 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (applyEdit)
 import Backend.Session.Model exposing (..)
-import Backend.Session.Utils exposing (getMother, getMotherMeasurementData, getChildMeasurementData, mapMotherEdits)
+import Backend.Session.Utils exposing (getMother, getMotherMeasurementData, getChildMeasurementData, mapMotherEdits, getMyMother)
 import EveryDict
 import EveryDictList
 import Maybe.Extra exposing (isJust, isNothing)
-import Participant.Model exposing (Participant(..), ParticipantId(..), ParticipantTypeFilter(..))
 
 
 {-| Used for URL etc., not for display in the normal UI
@@ -109,8 +109,8 @@ defaultActivityType =
 {-| Note that `ProgressReport` isn't included for now, as it is
 handled specially in the UI.
 -}
-getActivityTypeList : ParticipantTypeFilter -> List ActivityType
-getActivityTypeList participantTypeFilter =
+getActivityTypeList : List ActivityType
+getActivityTypeList =
     let
         childrenActivities =
             List.map ChildActivity getAllChildActivities
@@ -118,28 +118,20 @@ getActivityTypeList participantTypeFilter =
         mothersActivities =
             List.map MotherActivity getAllMotherActivities
     in
-        case participantTypeFilter of
-            All ->
-                childrenActivities ++ mothersActivities
-
-            Children ->
-                childrenActivities
-
-            Mothers ->
-                mothersActivities
+        childrenActivities ++ mothersActivities
 
 
 {-| Get the pending and completed activities.
 -}
-getActivityList : ParticipantTypeFilter -> EditableSession -> List ActivityListItem
-getActivityList participantTypeFilter session =
+getActivityList : EditableSession -> List ActivityListItem
+getActivityList session =
     List.map
         (\activityType ->
             { activityType = activityType
             , totals = getTotalsNumberPerActivity activityType session
             }
         )
-        (getActivityTypeList participantTypeFilter)
+        getActivityTypeList
 
 
 {-| Returns a string representing an icon for the activity, for use in a "class" attribute.
@@ -178,7 +170,7 @@ specially in the UI at the moment ... that may change in future.
 -}
 getAllChildActivities : List ChildActivityType
 getAllChildActivities =
-    [ ChildPicture, Height, Muac, NutritionSigns, Weight ]
+    [ Height, Muac, NutritionSigns, Weight, ChildPicture ]
 
 
 getAllMotherActivities : List MotherActivityType
@@ -189,8 +181,8 @@ getAllMotherActivities =
 {-| Given an activity, how many of those measurements should we expect, and how
 many are still pending?
 
-TODO: We'll need to modify this to take into account which people are actually present,
-once we've got that in the data model.
+Both the pending and the total leave out anyone who is not in attendance (that is,
+either marked in attendance, or has at least one activity completed).
 
 -}
 getTotalsNumberPerActivity : ActivityType -> EditableSession -> { pending : Int, total : Int }
@@ -198,13 +190,15 @@ getTotalsNumberPerActivity activityType session =
     case activityType of
         ChildActivity childType ->
             let
-                -- Until we have data about who is actually present, the total would be
-                -- everyone who is in the session. (Eventually, we may filter this).
+                childrenInAttendance =
+                    session.offlineSession.children
+                        |> EveryDict.filter (\childId _ -> childIsCheckedIn childId session)
+
                 total =
-                    EveryDict.size session.offlineSession.children
+                    EveryDict.size childrenInAttendance
 
                 completed =
-                    session.offlineSession.children
+                    childrenInAttendance
                         |> EveryDict.filter (\childId _ -> hasCompletedChildActivity childType (getChildMeasurementData childId session))
                         |> EveryDict.size
             in
@@ -214,15 +208,17 @@ getTotalsNumberPerActivity activityType session =
 
         MotherActivity motherType ->
             let
-                -- Until we have data about who is actually present, the total would be
-                -- everyone who is in the session. (Eventually, we may filter this).
+                mothersInAttendance =
+                    session.offlineSession.mothers
+                        |> EveryDictList.filter (\motherId _ -> isCheckedIn motherId session)
+
                 total =
-                    EveryDictList.size session.offlineSession.mothers
+                    EveryDictList.size mothersInAttendance
 
                 -- It's actually eaiser to count the completed ones, so we do that and
                 -- just subtract to get pending.
                 completed =
-                    session.offlineSession.mothers
+                    mothersInAttendance
                         |> EveryDictList.filter (\motherId _ -> hasCompletedMotherActivity motherType (getMotherMeasurementData motherId session))
                         |> EveryDictList.size
             in
@@ -397,6 +393,43 @@ isCheckedIn motherId session =
 setCheckedIn : Bool -> MotherId -> EditableSession -> EditableSession
 setCheckedIn checkedIn =
     mapMotherEdits (\edits -> { edits | explicitlyCheckedIn = checkedIn })
+
+
+childIsCheckedIn : ChildId -> EditableSession -> Bool
+childIsCheckedIn childId session =
+    getMyMother childId session.offlineSession
+        |> Maybe.map Tuple.first
+        |> Maybe.map (\motherId -> isCheckedIn motherId session)
+        |> Maybe.withDefault False
+
+
+{-| Filters the mothers and children in an editable session to only
+include those who are marked in attendance.
+-}
+onlyCheckedIn : EditableSession -> EditableSession
+onlyCheckedIn session =
+    let
+        mothers =
+            session.offlineSession.mothers
+                |> EveryDictList.filter (\motherId _ -> isCheckedIn motherId session)
+
+        children =
+            -- TODO: This could be done more efficiently, given that we've got the mothers
+            session.offlineSession.children
+                |> EveryDict.filter (\childId _ -> childIsCheckedIn childId session)
+
+        offlineSession =
+            (\offline ->
+                { offline
+                    | mothers = mothers
+                    , children = children
+                }
+            )
+                session.offlineSession
+    in
+        -- For now, at least, we don't bother filtering the measurements ... we just
+        -- filter the mothers and children.
+        { session | offlineSession = offlineSession }
 
 
 {-| Does the mother herself have any pending activity?

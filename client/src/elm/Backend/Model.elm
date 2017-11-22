@@ -19,14 +19,12 @@ in the UI.
 
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (MeasurementEdits)
 import Backend.Session.Model exposing (OfflineSession, EditableSession, Session, MsgEditableSession)
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import Http exposing (Error)
 import Json.Encode exposing (Value)
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.UpdatableData exposing (UpdatableWebData)
 
 
 {-| This model basically represents things we have locally which also belong
