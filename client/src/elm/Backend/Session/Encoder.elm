@@ -29,6 +29,7 @@ encodeOfflineSession offline =
     [ ( "scheduled_date", encodeDrupalRange encodeYYYYMMDD offline.session.scheduledDate )
     , ( "clinic_id", encodeEntityId offline.session.clinicId )
     , ( "clinic", encodeClinic offline.clinic )
+    , ( "closed", bool offline.session.closed )
     , ( "participants"
       , object
             [ ( "mothers"
