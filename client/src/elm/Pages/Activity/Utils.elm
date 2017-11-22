@@ -1,15 +1,19 @@
 module Pages.Activity.Utils exposing (..)
 
 import Activity.Model exposing (ChildActivityType(..), MotherActivityType(..))
+import Activity.Utils exposing (onlyCheckedIn)
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild, getMother, getChildMeasurementData, getMotherMeasurementData)
+import EveryDict
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html)
+import Maybe.Extra
 import Measurement.Model
 import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Measurement.View
 import Pages.Activity.Model exposing (..)
+import Participant.Model exposing (Participant)
 import Translate exposing (Language)
 import Gizra.Html exposing (emptyNode)
 
@@ -47,3 +51,44 @@ viewMotherMeasurements language currentDate motherId activity session =
     in
         Measurement.View.viewMother language activity measurements form
             |> Html.map MsgMeasurement
+
+
+{-| This chooses an appropriate participant, given the participant the user selected
+and the tab we're on. So, we automatically select a participant when we can, and we
+don't show a "completed" participant for an activity if we're on the "pending"
+tab (and vice-versa).
+-}
+selectParticipantForTab : Participant id value activity msg -> Tab -> activity -> EditableSession -> Maybe id -> Maybe id
+selectParticipantForTab config tab activity session userSelection =
+    let
+        checkedIn =
+            onlyCheckedIn session
+
+        ( pendingParticipants, completedParticipants ) =
+            config.getParticipants checkedIn
+                |> EveryDict.toList
+                |> List.map Tuple.first
+                |> List.partition (\id -> config.hasPendingActivity id activity checkedIn)
+    in
+        case tab of
+            Completed ->
+                userSelection
+                    |> Maybe.andThen
+                        (\id ->
+                            if config.hasPendingActivity id activity session then
+                                Nothing
+                            else
+                                Just id
+                        )
+                    |> Maybe.Extra.orElse (List.head completedParticipants)
+
+            Pending ->
+                userSelection
+                    |> Maybe.andThen
+                        (\id ->
+                            if config.hasPendingActivity id activity session then
+                                Just id
+                            else
+                                Nothing
+                        )
+                    |> Maybe.Extra.orElse (List.head pendingParticipants)

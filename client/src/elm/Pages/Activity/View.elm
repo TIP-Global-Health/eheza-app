@@ -10,6 +10,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List as List
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
+import Pages.Activity.Utils exposing (selectParticipantForTab)
 import Participant.Model exposing (Participant)
 import Translate exposing (translate, Language)
 import Utils.Html exposing (tabItem, thumbnailImage)
@@ -60,6 +61,10 @@ view config language currentDate selectedActivity fullSession model =
                     , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
                     ]
 
+        -- We compute this so that it's consistent with the tab
+        selectedParticipant =
+            selectParticipantForTab config model.selectedTab selectedActivity fullSession model.selectedParticipant
+
         participants =
             let
                 ( selectedParticipants, emptySectionMessage ) =
@@ -84,7 +89,7 @@ view config language currentDate selectedActivity fullSession model =
                         div
                             [ classList
                                 [ ( "participant card", True )
-                                , ( "active", Just participantId == model.selectedParticipant )
+                                , ( "active", Just participantId == selectedParticipant )
                                 ]
                             , Just participantId
                                 |> SetSelectedParticipant
@@ -113,7 +118,7 @@ view config language currentDate selectedActivity fullSession model =
                     ]
 
         measurementsForm =
-            case model.selectedParticipant of
+            case selectedParticipant of
                 Just id ->
                     -- This is a convenience for the way the code was structured ... ideally,
                     -- we'd build a `viewMeasurements` on top of smaller capabilities of the

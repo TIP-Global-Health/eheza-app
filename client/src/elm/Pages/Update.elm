@@ -8,11 +8,13 @@ import Maybe.Extra
 import Measurement.Utils exposing (getMotherForm, getChildForm)
 import Pages.Activity.Model
 import Pages.Activity.Update
+import Pages.Activity.Utils exposing (selectParticipantForTab)
 import Pages.Activities.Update
 import Pages.Model exposing (..)
 import Pages.Participant.Model
 import Pages.Participant.Update
 import Pages.Participants.Update
+import Participant.Utils exposing (childParticipant, motherParticipant)
 
 
 {-| We need the editableSession in order to pass on some needed data. But we
@@ -38,14 +40,16 @@ updateSession session msg model =
                     EveryDict.get activityType model.childActivityPages
                         |> Maybe.withDefault Pages.Activity.Model.emptyModel
 
+                -- TODO: This is a little fragile ... we're applying the same logic
+                -- we apply in the view, so that we'll route the messages to
+                -- the correct participant. But we really ought to actually
+                -- include the participant ID as part of the message, so there
+                -- is no possibility for error.
+                selectedParticipant =
+                    selectParticipantForTab childParticipant activityPage.selectedTab activityType session activityPage.selectedParticipant
+
                 childForm =
-                    -- This isn't ideal ... should let Pages.Activity.Update
-                    -- manage this, ideally. Note that this means that we would
-                    -- need to be careful about how we use an alternate selected
-                    -- participant, since we're using it in the routing. It might
-                    -- be better to embed an ID in the messages, so the view can
-                    -- explicitly route messages to the ID it actually used.
-                    activityPage.selectedParticipant
+                    selectedParticipant
                         |> Maybe.map (\childId -> getChildForm childId session)
 
                 ( subModel, subCmd, subForm, outMsg, page ) =
@@ -53,7 +57,7 @@ updateSession session msg model =
 
                 sessionMsgs =
                     -- Again, this isn't ideal ... should rethink this structure eventually.
-                    activityPage.selectedParticipant
+                    selectedParticipant
                         |> Maybe.map
                             (\childId ->
                                 [ Maybe.map (Backend.Session.Model.SetChildForm childId) subForm
@@ -85,14 +89,16 @@ updateSession session msg model =
                     EveryDict.get activityType model.motherActivityPages
                         |> Maybe.withDefault Pages.Activity.Model.emptyModel
 
+                -- TODO: This is a little fragile ... we're applying the same logic
+                -- we apply in the view, so that we'll route the messages to
+                -- the correct participant. But we really ought to actually
+                -- include the participant ID as part of the message, so there
+                -- is no possibility for error.
+                selectedParticipant =
+                    selectParticipantForTab motherParticipant activityPage.selectedTab activityType session activityPage.selectedParticipant
+
                 motherForm =
-                    -- This isn't ideal ... should let Pages.Activity.Update
-                    -- manage this, ideally. Note that this means that we would
-                    -- need to be careful about how we use an alternate selected
-                    -- participant, since we're using it in the routing. It might
-                    -- be better to embed an ID in the messages, so the view can
-                    -- explicitly route messages to the ID it actually used.
-                    activityPage.selectedParticipant
+                    selectedParticipant
                         |> Maybe.map (\motherId -> getMotherForm motherId session)
 
                 ( subModel, subCmd, subForm, outMsg, page ) =
@@ -100,7 +106,7 @@ updateSession session msg model =
 
                 sessionMsgs =
                     -- Again, this isn't ideal ... should rethink this structure eventually.
-                    activityPage.selectedParticipant
+                    selectedParticipant
                         |> Maybe.map
                             (\motherId ->
                                 [ Maybe.map (Backend.Session.Model.SetMotherForm motherId) subForm
