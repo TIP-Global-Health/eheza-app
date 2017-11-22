@@ -60,6 +60,13 @@ import Pages.Participants.Model
 {-| This is where we track all the UI state that relates to an EditableSession
 ... that is, UI pages which will need an EditableSession to be supplied in
 order to view or update them.
+
+TODO: Most (or evven all) of the state (and messages) in Pages.Activity, Pages.Activites,
+Pages.Participant, and Pages.Participants could be consolidated here, so that all of
+them could work in the same base type (as Pages.Attendance already does). That would
+simplify things. Also, this should probably then move to its own folder (i.e.
+`Pages.EditableSession` or something like that).
+
 -}
 type alias SessionPages =
     -- Shows a list of activities ... user can select one.
