@@ -319,16 +319,23 @@ emptyChildEdits =
 
 {-| This tracks editable measurements for a whole batch of mothers and
 children.
+
+`explicitlyClosed` tracks whether the user has closed editing. (It could also
+be closed because of the end date for the session, but that's tracked
+elsewhere).
+
 -}
 type alias MeasurementEdits =
-    { mothers : EveryDict MotherId MotherEdits
+    { explicitlyClosed : Bool
+    , mothers : EveryDict MotherId MotherEdits
     , children : EveryDict ChildId ChildEdits
     }
 
 
 emptyMeasurementEdits : MeasurementEdits
 emptyMeasurementEdits =
-    { mothers = EveryDict.empty
+    { explicitlyClosed = False
+    , mothers = EveryDict.empty
     , children = EveryDict.empty
     }
 

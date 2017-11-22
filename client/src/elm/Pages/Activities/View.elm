@@ -1,7 +1,7 @@
 module Pages.Activities.View exposing (view)
 
 import Activity.Utils exposing (getActivityList, getActivityIcon)
-import Backend.Session.Model exposing (..)
+import Backend.Session.Model exposing (EditableSession)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)

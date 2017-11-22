@@ -152,6 +152,7 @@ encodeMeasurementEdits edits =
                     )
                 |> object
           )
+        , ( "closed", bool edits.explicitlyClosed )
         ]
 
 

@@ -202,6 +202,7 @@ decodeFamilyPlanningSign =
 decodeMeasurementEdits : Decoder MeasurementEdits
 decodeMeasurementEdits =
     decode MeasurementEdits
+        |> optional "closed" bool False
         |> required "mothers" (map (toEveryDict toEntityId) (decodeIntDict decodeMotherEdits))
         |> required "children" (map (toEveryDict toEntityId) (decodeIntDict decodeChildEdits))
 

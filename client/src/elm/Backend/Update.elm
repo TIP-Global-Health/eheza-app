@@ -253,6 +253,21 @@ updateCache currentDate msg model =
 
         MsgEditableSession subMsg ->
             case subMsg of
+                CloseSession ->
+                    withEditableSession ( model, Cmd.none )
+                        (\sessionId session ->
+                            let
+                                newSession =
+                                    (\edits -> { session | edits = { edits | explicitlyClosed = True } })
+                                        session.edits
+                            in
+                                ( { model | editableSession = Success <| Just ( sessionId, newSession ) }
+                                , Cmd.none
+                                )
+                                    |> sequence (updateCache currentDate) [ CacheEdits ]
+                        )
+                        model
+
                 MeasurementOutMsgChild childId outMsg ->
                     withEditableSession ( model, Cmd.none )
                         (\sessionId session ->
