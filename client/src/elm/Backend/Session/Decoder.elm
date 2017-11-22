@@ -12,7 +12,7 @@ import Backend.Session.Model exposing (..)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (decodeDrupalRange, decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, andThen, dict, fail, field, int, list, map, map2, nullable, string, succeed, at, oneOf)
+import Json.Decode exposing (Decoder, bool, andThen, dict, fail, field, int, list, map, map2, nullable, string, succeed, at, oneOf)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (decodeEntityId)
 import Time.Date
@@ -33,6 +33,7 @@ decodeSession =
                 , at [ "clinic", "id" ] decodeEntityId
                 ]
             )
+        |> optional "closed" bool False
 
 
 {-| Decodes the JSON sent by /api/offline_sessions

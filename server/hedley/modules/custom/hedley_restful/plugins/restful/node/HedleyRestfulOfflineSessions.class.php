@@ -25,6 +25,10 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       'callback' => 'static::getType',
     ];
 
+    $public_fields['closed'] = [
+      'property' => 'field_closed',
+    ];
+
     $public_fields['scheduled_date'] = [
       'property' => 'field_scheduled_date',
       'process_callbacks' => [

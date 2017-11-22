@@ -22,6 +22,7 @@ online, from /api/sessions.
 type alias Session =
     { scheduledDate : NominalDateRange
     , clinicId : ClinicId
+    , closed : Bool
     }
 
 
