@@ -26,7 +26,7 @@ updateSession session msg model =
         MsgActivities subMsg ->
             let
                 ( subModel, subCmd, subPage ) =
-                    Pages.Activities.Update.update subMsg model.activitiesPage
+                    Pages.Activities.Update.update session subMsg model.activitiesPage
             in
                 ( { model | activitiesPage = subModel }
                 , Cmd.map MsgActivities subCmd
@@ -210,7 +210,7 @@ updateSession session msg model =
         MsgParticipants subMsg ->
             let
                 ( subModel, subCmd, subPage ) =
-                    Pages.Participants.Update.update subMsg model.participantsPage
+                    Pages.Participants.Update.update session subMsg model.participantsPage
             in
                 ( { model | participantsPage = subModel }
                 , Cmd.map MsgParticipants subCmd

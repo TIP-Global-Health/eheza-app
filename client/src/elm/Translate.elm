@@ -41,11 +41,13 @@ type TranslationId
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int Int
     | AppName
+    | AreYouSure
     | Assessment
     | Attendance
     | Baby
     | BabyName String
     | BeginHealthAssessment
+    | Cancel
     | CentimeterShorthand
     | CheckIn
     | ChildNutritionSignLabel ChildNutritionSign
@@ -53,6 +55,7 @@ type TranslationId
     | ClickTheCheckMark
     | Clinics
     | Connected
+    | Continue
     | Dashboard
     | DownloadHealthAssessment
     | DownloadSession1
@@ -101,6 +104,7 @@ type TranslationId
     | NotAvailable
     | NotConnected
     | OK
+    | OnceYouEndYourSession
     | Page
     | Page404
     | PageNotFoundMsg
@@ -292,6 +296,9 @@ translate lang trans =
                 AppName ->
                     { english = "E-Heza System" }
 
+                AreYouSure ->
+                    { english = "Are you sure?" }
+
                 Assessment ->
                     { english = "Assessment" }
 
@@ -306,6 +313,9 @@ translate lang trans =
 
                 BeginHealthAssessment ->
                     { english = "Begin Health Assessment" }
+
+                Cancel ->
+                    { english = "Cancel" }
 
                 CentimeterShorthand ->
                     { english = "cm" }
@@ -347,6 +357,9 @@ translate lang trans =
 
                 Connected ->
                     { english = "Connected" }
+
+                Continue ->
+                    { english = "Continue" }
 
                 Dashboard ->
                     { english = "Dashboard" }
@@ -564,6 +577,9 @@ translate lang trans =
 
                 OK ->
                     { english = "OK" }
+
+                OnceYouEndYourSession ->
+                    { english = "Once you end your session, you will no longer be able to edit or add data. Remember to upload this session within the next 48 hours." }
 
                 Page ->
                     { english = "Page" }

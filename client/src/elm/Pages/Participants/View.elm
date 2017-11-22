@@ -9,7 +9,7 @@ import Html.Events exposing (onClick)
 import Pages.Page exposing (Page(..), UserPage(..), SessionPage(..))
 import Pages.Participants.Model exposing (Model, Msg(..), Tab(..))
 import Translate as Trans exposing (translate, Language)
-import Utils.Html exposing (tabItem, thumbnailImage)
+import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
 
 
 thumbnailDimensions : { width : Int, height : Int }
@@ -88,10 +88,44 @@ view language editableSession model =
                         ]
                     ]
 
+        endSessionDialog =
+            if model.showEndSessionDialog then
+                Just <|
+                    div [ class "ui tiny active modal" ]
+                        [ div
+                            [ class "header" ]
+                            [ text <| translate language Trans.AreYouSure ]
+                        , div
+                            [ class "content" ]
+                            [ p []
+                                [ text <| translate language Trans.OnceYouEndYourSession ]
+                            ]
+                        , div
+                            [ class "actions" ]
+                            [ div
+                                [ class "two primary ui buttons" ]
+                                [ button
+                                    [ class "ui fluid button"
+                                    , onClick <| ShowEndSessionDialog False
+                                    ]
+                                    [ text <| translate language Trans.Cancel ]
+                                , button
+                                    [ class "ui fluid button"
+                                    , onClick CloseSession
+                                    ]
+                                    [ text <| translate language Trans.Continue ]
+                                ]
+                            ]
+                        ]
+            else
+                Nothing
+
         endSessionButton =
             div [ class "actions" ]
                 [ button
-                    [ class "ui fluid button" ]
+                    [ class "ui fluid primary button"
+                    , onClick <| ShowEndSessionDialog True
+                    ]
                     [ text <| translate language Trans.EndSession ]
                 ]
 
@@ -127,8 +161,9 @@ view language editableSession model =
                 [ mothers, endSessionButton ]
     in
         div
-            [ class "wrap wrap-alt page-participants" ]
+            [ class "wrap wrap-alt-2 page-participants" ]
             [ header
             , tabs
             , content
+            , viewModal endSessionDialog
             ]

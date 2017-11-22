@@ -22,12 +22,15 @@ desired activity. So, we're not drawing a wrapper around the `Page.Activity`
 -}
 type alias Model =
     { selectedTab : Tab
+    , showEndSessionDialog : Bool
     }
 
 
 type Msg
-    = SetRedirectPage Page
+    = CloseSession
+    | SetRedirectPage Page
     | SetSelectedTab Tab
+    | ShowEndSessionDialog Bool
 
 
 {-| This is related to the `Tab` type in `Pages.Activity.Model`, except that here
@@ -43,4 +46,5 @@ type Tab
 emptyModel : Model
 emptyModel =
     { selectedTab = Pending
+    , showEndSessionDialog = False
     }
