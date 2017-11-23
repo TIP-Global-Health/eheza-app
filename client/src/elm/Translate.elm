@@ -53,6 +53,7 @@ type TranslationId
     | ChildNutritionSignLabel ChildNutritionSign
     | Children
     | ClickTheCheckMark
+    | ClinicNotFound
     | Clinics
     | Connected
     | Continue
@@ -127,6 +128,7 @@ type TranslationId
     | SaveError
     | SearchByName
     | SelectYourClinic
+    | SessionInProgress
     | TitleHealthAssessment
     | UnableToDownload
     | WelcomeUser String
@@ -351,6 +353,9 @@ translate lang trans =
 
                 ClickTheCheckMark ->
                     { english = "Click the check mark if the mother is in attendance. The check mark will appear green when a mother has been signed in." }
+
+                ClinicNotFound ->
+                    { english = "Clinic not found" }
 
                 Clinics ->
                     { english = "Clinics" }
@@ -681,6 +686,9 @@ translate lang trans =
 
                 SelectYourClinic ->
                     { english = "Select your clinic" }
+
+                SessionInProgress ->
+                    { english = "A health assessment is already in progress for another clinic." }
 
                 TitleHealthAssessment ->
                     { english = "2017 July Health Assessment" }

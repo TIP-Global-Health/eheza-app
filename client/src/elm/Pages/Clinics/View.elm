@@ -8,15 +8,15 @@ available for data-entry.
 import Html exposing (..)
 import App.Model exposing (Msg(..), MsgLoggedIn(..))
 import Backend.Clinic.Model exposing (Clinic)
-import Backend.Session.Model exposing (Session)
+import Backend.Session.Model exposing (Session, EditableSession)
 import Backend.Entities exposing (ClinicId, SessionId)
 import Backend.Model exposing (MsgBackend(..))
 import EveryDictList exposing (EveryDictList)
+import Gizra.Html exposing (showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust)
 import Pages.Page exposing (Page(..), UserPage(..), SessionPage(..))
 import Pages.PageNotFound.View
 import RemoteData exposing (RemoteData(..), WebData)
@@ -55,7 +55,7 @@ Also, you shouldn't call us if you already have edits for the offline session
 uploaded before showing this again.
 
 -}
-view : Language -> NominalDate -> User -> Maybe ClinicId -> Backend.Model.ModelBackend -> Maybe SessionId -> Html Msg
+view : Language -> NominalDate -> User -> Maybe ClinicId -> Backend.Model.ModelBackend -> Maybe ( SessionId, EditableSession ) -> Html Msg
 view language currentDate user selectedClinic backend cachedSession =
     case selectedClinic of
         Just clinicId ->
@@ -129,9 +129,7 @@ viewClinicButton user ( clinicId, clinic ) =
 
 Basically, this view is meant to show the clinic, and offer an opportunity to
 download a session for offline editing. We are only supporting one offline
-session at a time at the moment (we could change that in future). We don't
-enforce that here ... if we already have an offline session, it's the caller's
-responsibility not to call us.
+session at a time at the moment (we could change that in future).
 
 We consult the `futureSessions` in the backend to implement the "you can only
 download one day before" rule mentioned in the explanatory text on the screen.
@@ -145,25 +143,32 @@ authorized, but we should check here as well, in case a crafty user just types
 in a URL to get here.
 
 -}
-viewClinic : Language -> NominalDate -> ClinicId -> Backend.Model.ModelBackend -> Maybe SessionId -> Html Msg
+viewClinic : Language -> NominalDate -> ClinicId -> Backend.Model.ModelBackend -> Maybe ( SessionId, EditableSession ) -> Html Msg
 viewClinic language currentDate clinicId backend cachedSession =
-    div [ class "wrap wrap-alt-2" ] <|
-        viewOrFetch language
-            (MsgLoggedIn <| MsgBackend Backend.Model.FetchClinics)
-            (\clinics ->
+    case cachedSession of
+        Just ( sessionId, session ) ->
+            -- If we do have a cached session, then show something that depends on its status
+            viewClinicWithCachedSession language clinicId backend.offlineSessionRequest sessionId session
+
+        Nothing ->
+            -- If we don't have a cached session, show the UI for getting one
+            div [ class "wrap wrap-alt-2" ] <|
                 viewOrFetch language
-                    (MsgLoggedIn <| MsgBackend <| Backend.Model.FetchFutureSessions currentDate)
-                    (\sessions -> viewLoadedClinic language currentDate clinicId clinics backend.offlineSessionRequest sessions cachedSession)
-                    backend.futureSessions
-            )
-            backend.clinics
+                    (MsgLoggedIn <| MsgBackend Backend.Model.FetchClinics)
+                    (\clinics ->
+                        viewOrFetch language
+                            (MsgLoggedIn <| MsgBackend <| Backend.Model.FetchFutureSessions currentDate)
+                            (\sessions -> viewLoadedClinic language currentDate clinicId clinics backend.offlineSessionRequest sessions)
+                            backend.futureSessions
+                    )
+                    backend.clinics
 
 
-viewLoadedClinic : Language -> NominalDate -> ClinicId -> EveryDictList ClinicId Clinic -> WebData SessionId -> ( NominalDate, EveryDictList SessionId Session ) -> Maybe SessionId -> List (Html Msg)
-viewLoadedClinic language currentDate clinicId clinics request ( queryDate, futureSessions ) cachedSession =
+viewLoadedClinic : Language -> NominalDate -> ClinicId -> EveryDictList ClinicId Clinic -> WebData SessionId -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
+viewLoadedClinic language currentDate clinicId clinics request ( queryDate, futureSessions ) =
     case EveryDictList.get clinicId clinics of
         Just clinic ->
-            viewFoundClinic language currentDate clinicId clinic request futureSessions cachedSession
+            viewFoundClinic language currentDate clinicId clinic request futureSessions
 
         Nothing ->
             [ Pages.PageNotFound.View.viewPage language <|
@@ -173,8 +178,8 @@ viewLoadedClinic language currentDate clinicId clinics request ( queryDate, futu
             ]
 
 
-viewFoundClinic : Language -> NominalDate -> ClinicId -> Clinic -> WebData SessionId -> EveryDictList SessionId Session -> Maybe SessionId -> List (Html Msg)
-viewFoundClinic language currentDate clinicId clinic request sessions cachedSession =
+viewFoundClinic : Language -> NominalDate -> ClinicId -> Clinic -> WebData SessionId -> EveryDictList SessionId Session -> List (Html Msg)
+viewFoundClinic language currentDate clinicId clinic request sessions =
     let
         validSession =
             sessions
@@ -190,36 +195,104 @@ viewFoundClinic language currentDate clinicId clinic request sessions cachedSess
                 |> EveryDictList.head
                 |> Maybe.map Tuple.first
 
-        downloadProgress =
-            case request of
-                NotAsked ->
-                    Nothing
+        downloadAttrs =
+            case validSession of
+                Just sessionId ->
+                    [ class "ui fluid primary button"
+                    , onClick <| MsgLoggedIn <| MsgBackend <| FetchOfflineSessionFromBackend sessionId
+                    ]
 
-                Loading ->
-                    Just <|
-                        div
-                            [ class "ui tiny inverted active modal" ]
+                Nothing ->
+                    [ class "ui fluid primary dark button disabled" ]
+
+        content =
+            [ div
+                [ class "ui info" ]
+                [ p [] [ text <| translate language Translate.DownloadSession1 ]
+                , p [] [ text <| translate language Translate.DownloadSession2 ]
+                ]
+            , button downloadAttrs
+                [ text <| translate language <| Translate.DownloadHealthAssessment ]
+            ]
+    in
+        [ showMaybe <| Maybe.map (viewDownloadProgress language request) validSession
+        , div
+            [ class "ui basic head segment" ]
+            [ h1
+                [ class "ui header" ]
+                [ text clinic.name ]
+            , a
+                [ class "link-back"
+                , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
+                ]
+                [ span [ class "icon-back" ] []
+                , span [] []
+                ]
+            ]
+        , div
+            [ class "ui basic wide segment" ]
+            content
+        ]
+
+
+viewDownloadProgress : Language -> WebData SessionId -> SessionId -> Html Msg
+viewDownloadProgress language request validSession =
+    viewModal <|
+        case request of
+            NotAsked ->
+                Nothing
+
+            Loading ->
+                Just <|
+                    div
+                        [ class "ui tiny inverted active modal" ]
+                        [ div
+                            [ class "header" ]
+                            [ text <| translate language Translate.DownloadingSession1 ]
+                        , div
+                            [ class "content" ]
+                            [ div [ class "ui active centered massive inline loader" ] []
+                            , p [] [ text <| translate language Translate.DownloadingSession2 ]
+                            ]
+                        ]
+
+            Failure err ->
+                -- TODO: We could do something with the err ...
+                Just <|
+                    div
+                        [ class "ui tiny inverted active modal" ]
+                        [ div
+                            [ class "header" ]
+                            [ text <| translate language Translate.UnableToDownload ]
+                        , div
+                            [ class "content" ]
+                            [ p [] [ text <| translate language Translate.MakeSureYouAreConnected ]
+                            ]
+                        , div
+                            [ class "actions" ]
                             [ div
-                                [ class "header" ]
-                                [ text <| translate language Translate.DownloadingSession1 ]
-                            , div
-                                [ class "content" ]
-                                [ div [ class "ui active centered massive inline loader" ] []
-                                , p [] [ text <| translate language Translate.DownloadingSession2 ]
+                                [ class "two basic ui buttons" ]
+                                [ button
+                                    [ class "ui fluid button"
+                                    , onClick <| MsgLoggedIn <| MsgBackend <| ResetOfflineSessionRequest
+                                    ]
+                                    [ text <| translate language Translate.OK ]
                                 ]
                             ]
+                        ]
 
-                Failure err ->
-                    -- TODO: We could do something with the err ...
+            Success sessionId ->
+                if sessionId == validSession then
                     Just <|
                         div
                             [ class "ui tiny inverted active modal" ]
                             [ div
                                 [ class "header" ]
-                                [ text <| translate language Translate.UnableToDownload ]
+                                [ text <| translate language Translate.DownloadSuccessful ]
                             , div
                                 [ class "content" ]
-                                [ p [] [ text <| translate language Translate.MakeSureYouAreConnected ]
+                                [ span [ class "icon-success" ] []
+                                , p [] [ text <| translate language Translate.ReadyToBeginSession ]
                                 ]
                             , div
                                 [ class "actions" ]
@@ -233,61 +306,15 @@ viewFoundClinic language currentDate clinicId clinic request sessions cachedSess
                                     ]
                                 ]
                             ]
+                else
+                    Nothing
 
-                Success sessionId ->
-                    if Just sessionId == validSession then
-                        Just <|
-                            div
-                                [ class "ui tiny inverted active modal" ]
-                                [ div
-                                    [ class "header" ]
-                                    [ text <| translate language Translate.DownloadSuccessful ]
-                                , div
-                                    [ class "content" ]
-                                    [ span [ class "icon-success" ] []
-                                    , p [] [ text <| translate language Translate.ReadyToBeginSession ]
-                                    ]
-                                , div
-                                    [ class "actions" ]
-                                    [ div
-                                        [ class "two basic ui buttons" ]
-                                        [ button
-                                            [ class "ui fluid button"
-                                            , onClick <| MsgLoggedIn <| MsgBackend <| ResetOfflineSessionRequest
-                                            ]
-                                            [ text <| translate language Translate.OK ]
-                                        ]
-                                    ]
-                                ]
-                    else
-                        Nothing
 
-        downloadAttrs =
-            -- We enable the download if it's not already in progress, and we've got a valid session
-            case ( validSession, downloadProgress ) of
-                ( Just sessionId, Nothing ) ->
-                    [ class "ui fluid primary button"
-                    , onClick <| MsgLoggedIn <| MsgBackend <| FetchOfflineSessionFromBackend sessionId
-                    ]
-
-                _ ->
-                    [ class "ui fluid primary dark button disabled" ]
-
-        backButtonAttrs =
-            -- Disable the back button if we're showing the download progress modal
-            case downloadProgress of
-                Just _ ->
-                    [ class "link-back disabled" ]
-
-                Nothing ->
-                    [ class "link-back"
-                    , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
-                    ]
-
-        -- If we already have a downloaded session for the valid session, we
-        -- just offer to start it. Otherwise, we offer to download it.
+viewClinicWithCachedSession : Language -> ClinicId -> WebData SessionId -> SessionId -> EditableSession -> Html Msg
+viewClinicWithCachedSession language clinicId downloadRequest sessionId session =
+    let
         content =
-            if isJust validSession && cachedSession == validSession then
+            if session.offlineSession.session.clinicId == clinicId then
                 [ button
                     [ class "ui fluid primary button"
                     , onClick <| SetActivePage (SessionPage AttendancePage)
@@ -295,27 +322,40 @@ viewFoundClinic language currentDate clinicId clinic request sessions cachedSess
                     [ text <| translate language Translate.BeginHealthAssessment ]
                 ]
             else
-                [ div
-                    [ class "ui info" ]
-                    [ p [] [ text <| translate language Translate.DownloadSession1 ]
-                    , p [] [ text <| translate language Translate.DownloadSession2 ]
+                [ p [] [ text <| translate language Translate.SessionInProgress ]
+                , button
+                    [ class "ui fluid primary dark button"
+                    , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just clinicId
                     ]
-                , button downloadAttrs
-                    [ text <| translate language <| Translate.DownloadHealthAssessment ]
+                    [ text activeClinicName ]
                 ]
+
+        activeClinicName =
+            EveryDictList.get session.offlineSession.session.clinicId session.offlineSession.clinics
+                |> Maybe.map .name
+                |> Maybe.withDefault (translate language Translate.ClinicNotFound)
+
+        clinicName =
+            EveryDictList.get clinicId session.offlineSession.clinics
+                |> Maybe.map .name
+                |> Maybe.withDefault (translate language Translate.ClinicNotFound)
     in
-        [ viewModal downloadProgress
-        , div
-            [ class "ui basic head segment" ]
-            [ h1
-                [ class "ui header" ]
-                [ text clinic.name ]
-            , a backButtonAttrs
-                [ span [ class "icon-back" ] []
-                , span [] []
+        div [ class "wrap wrap-alt-2" ]
+            [ viewDownloadProgress language downloadRequest sessionId
+            , div
+                [ class "ui basic head segment" ]
+                [ h1
+                    [ class "ui header" ]
+                    [ text clinicName ]
+                , a
+                    [ class "link-back"
+                    , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
+                    ]
+                    [ span [ class "icon-back" ] []
+                    , span [] []
+                    ]
                 ]
+            , div
+                [ class "ui basic wide segment" ]
+                content
             ]
-        , div
-            [ class "ui basic wide segment" ]
-            content
-        ]

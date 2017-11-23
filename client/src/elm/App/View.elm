@@ -107,10 +107,10 @@ viewConfiguredModel model configured =
                                     Pages.MyAccount.View.view model.language login.credentials.user
 
                                 ClinicsPage clinicId ->
-                                    -- We need to know whether we have a cached session ID
+                                    -- We need to know whether we have a cached session
                                     case model.cache.editableSession of
                                         Success session ->
-                                            Pages.Clinics.View.view model.language model.currentDate login.credentials.user clinicId login.data.backend (Maybe.map Tuple.first session)
+                                            Pages.Clinics.View.view model.language model.currentDate login.credentials.user clinicId login.data.backend session
 
                                         _ ->
                                             -- TODO: Whose job should it be to show errors loading the offlineSession
