@@ -315,12 +315,22 @@ viewClinicWithCachedSession language clinicId downloadRequest sessionId session 
     let
         content =
             if session.offlineSession.session.clinicId == clinicId then
-                [ button
-                    [ class "ui fluid primary button"
-                    , onClick <| SetActivePage (SessionPage AttendancePage)
+                if session.edits.explicitlyClosed then
+                    [ div
+                        [ class "ui info" ]
+                        [ p [] [ text <| translate language Translate.YouHaveACompletedSession ]
+                        ]
+                    , button
+                        [ class "ui fluid primary button" ]
+                        [ text <| translate language Translate.UploadHealthAssessment ]
                     ]
-                    [ text <| translate language Translate.BeginHealthAssessment ]
-                ]
+                else
+                    [ button
+                        [ class "ui fluid primary button"
+                        , onClick <| SetActivePage (SessionPage AttendancePage)
+                        ]
+                        [ text <| translate language Translate.BeginHealthAssessment ]
+                    ]
             else
                 [ p [] [ text <| translate language Translate.SessionInProgress ]
                 , button

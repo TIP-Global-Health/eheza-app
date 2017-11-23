@@ -131,7 +131,9 @@ type TranslationId
     | SessionInProgress
     | TitleHealthAssessment
     | UnableToDownload
+    | UploadHealthAssessment
     | WelcomeUser String
+    | YouHaveACompletedSession
     | ZScoreHeightForAge
     | ZScoreMuacForAge
     | ZScoreWeightForAge
@@ -696,8 +698,14 @@ translate lang trans =
                 UnableToDownload ->
                     { english = "Unable to Download" }
 
+                UploadHealthAssessment ->
+                    { english = "Upload Health Assessment" }
+
                 WelcomeUser name ->
                     { english = "Welcome " ++ name }
+
+                YouHaveACompletedSession ->
+                    { english = "You have a completed session that needs to be uploaded. Please connect to the internet and upload this session within 48 hours." }
 
                 ZScoreHeightForAge ->
                     { english = "Z-Score Height for Age: " }
