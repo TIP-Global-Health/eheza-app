@@ -27,9 +27,15 @@ encodeSession session =
 encodeOfflineSession : OfflineSession -> List ( String, Value )
 encodeOfflineSession offline =
     [ ( "scheduled_date", encodeDrupalRange encodeYYYYMMDD offline.session.scheduledDate )
-    , ( "clinic_id", encodeEntityId offline.session.clinicId )
-    , ( "clinic", encodeClinic offline.clinic )
+    , ( "clinic", encodeEntityId offline.session.clinicId )
     , ( "closed", bool offline.session.closed )
+
+    -- TODO: Generalize the "withId" encoding in a function somewhere
+    , ( "clinics"
+      , EveryDictList.toList offline.clinics
+            |> List.map (\( id, clinic ) -> object (( "id", encodeEntityId id ) :: encodeClinic clinic))
+            |> list
+      )
     , ( "participants"
       , object
             [ ( "mothers"

@@ -47,8 +47,9 @@ decodeOfflineSession =
                 decode OfflineSession
                     -- For the "basic" session data, we can reuse the decoder
                     |> custom decodeSession
-                    -- we get the full clinic here, as a convenience for going offline
-                    |> required "clinic" decodeClinic
+                    -- We get **all** the basic clinic information, as a convenience for
+                    -- presenting the UI while offline
+                    |> required "clinics" (EveryDictList.decodeArray2 (field "id" decodeEntityId) decodeClinic)
                     |> requiredAt [ "participants", "mothers" ] decodeMothers
                     |> requiredAt [ "participants", "children" ] decodeChildren
                     |> custom decodeHistoricalMeasurements

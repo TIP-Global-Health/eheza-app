@@ -31,14 +31,16 @@ type alias Session =
     }
 
 
-{-| This adds the additional information we get when we take
-a Session offline for data-entry. It includes everything we need for
-data-entry. We get it from /api/offline_sessions (and massage that
-a bit for convenience).
+{-| This adds the additional information we get when we take a Session offline
+for data-entry. It includes everything we need for data-entry. We get it from
+/api/offline_sessions (and massage that a bit for convenience).
 -}
 type alias OfflineSession =
     { session : Session
-    , clinic : Clinic
+
+    -- We include the basic information about all the clinics so that we can at
+    -- least present a limited UI on clinic pages that includes their name.
+    , clinics : EveryDictList ClinicId Clinic
 
     -- We'll sort by mother's name
     , mothers : EveryDictList MotherId Mother

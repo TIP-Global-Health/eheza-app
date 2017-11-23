@@ -4,8 +4,7 @@ import Backend.Clinic.Model exposing (..)
 import Json.Encode exposing (..)
 
 
-encodeClinic : Clinic -> Value
+encodeClinic : Clinic -> List ( String, Value )
 encodeClinic clinic =
-    object
-        [ ( "label", string clinic.name )
-        ]
+    [ ( "label", string clinic.name )
+    ]

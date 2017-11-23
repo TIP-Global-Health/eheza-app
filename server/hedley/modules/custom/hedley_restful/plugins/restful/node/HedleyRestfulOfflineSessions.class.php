@@ -41,8 +41,18 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       'resource' => [
         'clinic' => [
           'name' => 'clinics',
-          'full_view' => TRUE,
+          'full_view' => FALSE,
         ],
+      ],
+    ];
+
+    // We include basic data for all clinics, as this makes the offline UI
+    // simpler. I suppose this could just be a second, independent HTTP
+    // request, but including it here is simpler.
+    $public_fields['clinics'] = [
+      'property' => 'nid',
+      'process_callbacks' => [
+        [$this, 'getClinicData'],
       ],
     ];
 
@@ -74,6 +84,35 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       'value' => $date['value'] ? hedley_restful_timestamp_only_date($date['value']) : NULL,
       'value2' => $date['value2'] ? hedley_restful_timestamp_only_date($date['value2']) : NULL,
     ];
+  }
+
+  /**
+   * Return clinic data for all clinics.
+   *
+   * Of course, this could just be a separate, independent HTTP request, but
+   * it's convenient to provide everything needed for an offline session at
+   * once.
+   *
+   * @param int $nid
+   *   The session node ID (not actually used, since we're getting all clinics).
+   *
+   * @return array
+   *   Array with the RESTful output.
+   */
+  public function getClinicData($nid) {
+    $account = $this->getAccount();
+
+    $clinic_ids = hedley_restful_extract_ids(
+      (new EntityFieldQuery())
+        ->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', 'clinic')
+        ->propertyCondition('status', NODE_PUBLISHED)
+        ->propertyOrderBy('title', 'ASC')
+        ->range(0, 1000)
+        ->execute()
+    );
+
+    return hedley_restful_output_from_handler('clinics', $clinic_ids, $account);
   }
 
   /**
