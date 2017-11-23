@@ -10,7 +10,7 @@ import App.Model exposing (Msg(..), MsgLoggedIn(..))
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Session.Model exposing (Session, EditableSession)
 import Backend.Entities exposing (ClinicId, SessionId)
-import Backend.Model exposing (MsgBackend(..))
+import Backend.Model exposing (MsgBackend(..), ModelBackend)
 import EveryDictList exposing (EveryDictList)
 import Gizra.Html exposing (showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -55,7 +55,7 @@ Also, you shouldn't call us if you already have edits for the offline session
 uploaded before showing this again.
 
 -}
-view : Language -> NominalDate -> User -> Maybe ClinicId -> Backend.Model.ModelBackend -> Maybe ( SessionId, EditableSession ) -> Html Msg
+view : Language -> NominalDate -> User -> Maybe ClinicId -> ModelBackend -> Maybe ( SessionId, EditableSession ) -> Html Msg
 view language currentDate user selectedClinic backend cachedSession =
     case selectedClinic of
         Just clinicId ->
@@ -143,12 +143,12 @@ authorized, but we should check here as well, in case a crafty user just types
 in a URL to get here.
 
 -}
-viewClinic : Language -> NominalDate -> ClinicId -> Backend.Model.ModelBackend -> Maybe ( SessionId, EditableSession ) -> Html Msg
+viewClinic : Language -> NominalDate -> ClinicId -> ModelBackend -> Maybe ( SessionId, EditableSession ) -> Html Msg
 viewClinic language currentDate clinicId backend cachedSession =
     case cachedSession of
         Just ( sessionId, session ) ->
             -- If we do have a cached session, then show something that depends on its status
-            viewClinicWithCachedSession language clinicId backend.offlineSessionRequest sessionId session
+            viewClinicWithCachedSession language clinicId backend sessionId session
 
         Nothing ->
             -- If we don't have a cached session, show the UI for getting one
@@ -158,17 +158,17 @@ viewClinic language currentDate clinicId backend cachedSession =
                     (\clinics ->
                         viewOrFetch language
                             (MsgLoggedIn <| MsgBackend <| Backend.Model.FetchFutureSessions currentDate)
-                            (\sessions -> viewLoadedClinic language currentDate clinicId clinics backend.offlineSessionRequest sessions)
+                            (\sessions -> viewLoadedClinic language currentDate clinicId clinics backend sessions)
                             backend.futureSessions
                     )
                     backend.clinics
 
 
-viewLoadedClinic : Language -> NominalDate -> ClinicId -> EveryDictList ClinicId Clinic -> WebData SessionId -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
-viewLoadedClinic language currentDate clinicId clinics request ( queryDate, futureSessions ) =
+viewLoadedClinic : Language -> NominalDate -> ClinicId -> EveryDictList ClinicId Clinic -> ModelBackend -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
+viewLoadedClinic language currentDate clinicId clinics backend ( queryDate, futureSessions ) =
     case EveryDictList.get clinicId clinics of
         Just clinic ->
-            viewFoundClinic language currentDate clinicId clinic request futureSessions
+            viewFoundClinic language currentDate clinicId clinic backend futureSessions
 
         Nothing ->
             [ Pages.PageNotFound.View.viewPage language <|
@@ -178,8 +178,8 @@ viewLoadedClinic language currentDate clinicId clinics request ( queryDate, futu
             ]
 
 
-viewFoundClinic : Language -> NominalDate -> ClinicId -> Clinic -> WebData SessionId -> EveryDictList SessionId Session -> List (Html Msg)
-viewFoundClinic language currentDate clinicId clinic request sessions =
+viewFoundClinic : Language -> NominalDate -> ClinicId -> Clinic -> ModelBackend -> EveryDictList SessionId Session -> List (Html Msg)
+viewFoundClinic language currentDate clinicId clinic backend sessions =
     let
         validSession =
             sessions
@@ -215,7 +215,8 @@ viewFoundClinic language currentDate clinicId clinic request sessions =
                 [ text <| translate language <| Translate.DownloadHealthAssessment ]
             ]
     in
-        [ showMaybe <| Maybe.map (viewDownloadProgress language request) validSession
+        [ showMaybe <| Maybe.map (viewDownloadProgress language backend.offlineSessionRequest) validSession
+        , viewUploadProgress language backend.uploadEditsRequest
         , div
             [ class "ui basic head segment" ]
             [ h1
@@ -310,8 +311,82 @@ viewDownloadProgress language request validSession =
                     Nothing
 
 
-viewClinicWithCachedSession : Language -> ClinicId -> WebData SessionId -> SessionId -> EditableSession -> Html Msg
-viewClinicWithCachedSession language clinicId downloadRequest sessionId session =
+viewUploadProgress : Language -> WebData SessionId -> Html Msg
+viewUploadProgress language request =
+    viewModal <|
+        case request of
+            NotAsked ->
+                Nothing
+
+            Loading ->
+                Just <|
+                    div
+                        [ class "ui tiny inverted active modal" ]
+                        [ div
+                            [ class "header" ]
+                            [ text <| translate language Translate.UploadingSession1 ]
+                        , div
+                            [ class "content" ]
+                            [ div [ class "ui active centered massive inline loader" ] []
+                            , p [] [ text <| translate language Translate.UploadingSession2 ]
+                            ]
+                        ]
+
+            Failure err ->
+                -- TODO: We could do something with the err ...
+                Just <|
+                    div
+                        [ class "ui tiny inverted active modal" ]
+                        [ div
+                            [ class "header" ]
+                            [ text <| translate language Translate.UnableToUpload ]
+                        , div
+                            [ class "content" ]
+                            [ p [] [ text <| translate language Translate.MakeSureYouAreConnected ]
+                            ]
+                        , div
+                            [ class "actions" ]
+                            [ div
+                                [ class "two basic ui buttons" ]
+                                [ button
+                                    [ class "ui fluid button"
+                                    , onClick <| MsgLoggedIn <| MsgBackend <| ResetUploadEditsRequest
+                                    ]
+                                    [ text <| translate language Translate.OK ]
+                                ]
+                            ]
+                        ]
+
+            Success sessionId ->
+                Just <|
+                    div
+                        [ class "ui tiny inverted active modal" ]
+                        [ div
+                            [ class "header" ]
+                            [ text <| translate language Translate.UploadSuccessful ]
+                        , div
+                            [ class "content" ]
+                            [ span [ class "icon-success" ] []
+                            , p [] [ text <| translate language Translate.DataIsNowSaved ]
+                            ]
+                        , div
+                            [ class "actions" ]
+                            [ div
+                                [ class "two basic ui buttons" ]
+                                [ button
+                                    [ class "ui fluid button"
+                                    , onClick <| MsgLoggedIn <| MsgBackend <| ResetUploadEditsRequest
+                                    ]
+                                    [ text <| translate language Translate.OK ]
+                                ]
+                            ]
+                        ]
+
+
+{-| This is where we get if we're trying to view a clinic and we've got a session cached locally.
+-}
+viewClinicWithCachedSession : Language -> ClinicId -> ModelBackend -> SessionId -> EditableSession -> Html Msg
+viewClinicWithCachedSession language clinicId backend sessionId session =
     let
         content =
             if session.offlineSession.session.clinicId == clinicId then
@@ -320,8 +395,15 @@ viewClinicWithCachedSession language clinicId downloadRequest sessionId session 
                         [ class "ui info" ]
                         [ p [] [ text <| translate language Translate.YouHaveACompletedSession ]
                         ]
+
+                    -- TODO: Need to consider whether we're logged in or not
+                    -- ... so, actually need to be able to show this when we're
+                    -- **not** logged in. So, we'll need a `Maybe User` above
+                    -- (or something like that).
                     , button
-                        [ class "ui fluid primary button" ]
+                        [ class "ui fluid primary button"
+                        , onClick <| MsgLoggedIn <| MsgBackend <| UploadEdits sessionId session.edits
+                        ]
                         [ text <| translate language Translate.UploadHealthAssessment ]
                     ]
                 else
@@ -332,7 +414,9 @@ viewClinicWithCachedSession language clinicId downloadRequest sessionId session 
                         [ text <| translate language Translate.BeginHealthAssessment ]
                     ]
             else
-                [ p [] [ text <| translate language Translate.SessionInProgress ]
+                [ div
+                    [ class "ui info" ]
+                    [ p [] [ text <| translate language Translate.SessionInProgress ] ]
                 , button
                     [ class "ui fluid primary dark button"
                     , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just clinicId
@@ -351,7 +435,8 @@ viewClinicWithCachedSession language clinicId downloadRequest sessionId session 
                 |> Maybe.withDefault (translate language Translate.ClinicNotFound)
     in
         div [ class "wrap wrap-alt-2" ]
-            [ viewDownloadProgress language downloadRequest sessionId
+            [ viewDownloadProgress language backend.offlineSessionRequest sessionId
+            , viewUploadProgress language backend.uploadEditsRequest
             , div
                 [ class "ui basic head segment" ]
                 [ h1

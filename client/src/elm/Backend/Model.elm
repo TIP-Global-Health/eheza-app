@@ -19,6 +19,7 @@ in the UI.
 
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (MeasurementEdits)
 import Backend.Session.Model exposing (OfflineSession, EditableSession, Session, MsgEditableSession)
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
@@ -64,6 +65,10 @@ type alias ModelBackend =
     -- We do remember which sessionID we downloaded, since that helps a bit
     -- to match things up in the UI.
     , offlineSessionRequest : WebData SessionId
+
+    -- Another flag, tracking our progress in uploading edits to the backend.
+    -- Again, we track which session we uploaded.
+    , uploadEditsRequest : WebData SessionId
     }
 
 
@@ -72,6 +77,7 @@ emptyModelBackend =
     { clinics = NotAsked
     , futureSessions = NotAsked
     , offlineSessionRequest = NotAsked
+    , uploadEditsRequest = NotAsked
     }
 
 
@@ -82,10 +88,13 @@ type MsgBackend
     = FetchClinics
     | FetchFutureSessions NominalDate
     | FetchOfflineSessionFromBackend SessionId
+    | UploadEdits SessionId MeasurementEdits
     | HandleFetchedClinics (WebData (EveryDictList ClinicId Clinic))
     | HandleFetchedOfflineSessionFromBackend (Result Error ( SessionId, OfflineSession ))
     | HandleFetchedSessions NominalDate (WebData (EveryDictList SessionId Session))
+    | HandleUploadedEdits SessionId (Result Error ())
     | ResetOfflineSessionRequest -- resets it to `NotAsked`
+    | ResetUploadEditsRequest
 
 
 {-| This models things which we cache locally ... so, like `ModelBackend`, but

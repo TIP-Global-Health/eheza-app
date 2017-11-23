@@ -149,6 +149,34 @@ updateBackend backendUrl accessToken msg model =
                 , []
                 )
 
+            UploadEdits sessionId edits ->
+                ( { model | uploadEditsRequest = Loading }
+                , Cmd.none
+                  -- TODO: actually do it ...
+                , []
+                )
+
+            HandleUploadedEdits sessionId result ->
+                case result of
+                    Err error ->
+                        ( { model | uploadEditsRequest = RemoteData.fromResult (Result.map (always sessionId) result) }
+                        , Cmd.none
+                        , []
+                        )
+
+                    Ok _ ->
+                        -- Record success, and delete our locally cached session
+                        ( { model | uploadEditsRequest = Success sessionId }
+                        , Cmd.none
+                        , [ DeleteEditableSession ]
+                        )
+
+            ResetUploadEditsRequest ->
+                ( { model | uploadEditsRequest = NotAsked }
+                , Cmd.none
+                , []
+                )
+
 
 updateCache : NominalDate -> MsgCached -> ModelCached -> ( ModelCached, Cmd MsgCached )
 updateCache currentDate msg model =
