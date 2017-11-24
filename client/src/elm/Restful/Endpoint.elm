@@ -15,6 +15,11 @@ module Restful.Endpoint
         , fromEntityId
         , get
         , get404
+        , patch
+        , patch_
+        , post
+        , put
+        , put_
         , select
         , toEntityId
         , (</>)
@@ -32,7 +37,7 @@ modified to use) with other backends that produce similar JSON.
 
 ## CRUD Operations
 
-@docs get, get404, select
+@docs get, get404, select, patch, patch_, post, put, put_
 
 
 ## JSON
@@ -216,6 +221,102 @@ get404 backendUrl accessToken endpoint key tagger =
         HttpBuilder.get (backendUrl </> endpoint.path </> toString (endpoint.untag key))
             |> withQueryParams queryParams
             |> withExpect (expectJson (decodeSingleEntity (map2 (,) (decodeId endpoint.tag) endpoint.decoder)))
+            |> send (Result.mapError endpoint.error >> tagger)
+
+
+{-| Sends a `POST` request to create the specified value.
+-}
+post : BackendUrl -> Maybe AccessToken -> EndPoint error params key value -> value -> (Result error ( key, value ) -> msg) -> Cmd msg
+post backendUrl accessToken endpoint value tagger =
+    let
+        queryParams =
+            accessToken
+                |> Maybe.Extra.toList
+                |> List.map (\token -> ( "access_token", token ))
+    in
+        HttpBuilder.post (backendUrl </> endpoint.path)
+            |> withQueryParams queryParams
+            |> withExpect (expectJson (decodeSingleEntity (map2 (,) (decodeId endpoint.tag) endpoint.decoder)))
+            |> withJsonBody (endpoint.encoder value)
+            |> send (Result.mapError endpoint.error >> tagger)
+
+
+{-| Sends a `PUT` request to create the specified value.
+
+Assumes that the backend will respond with the full value. If that's not true, you
+can use `put_` instead.
+
+-}
+put : BackendUrl -> Maybe AccessToken -> EndPoint error params key value -> key -> value -> (Result error value -> msg) -> Cmd msg
+put backendUrl accessToken endpoint key value tagger =
+    let
+        queryParams =
+            accessToken
+                |> Maybe.Extra.toList
+                |> List.map (\token -> ( "access_token", token ))
+    in
+        HttpBuilder.put (backendUrl </> endpoint.path </> toString (endpoint.untag key))
+            |> withQueryParams queryParams
+            |> withExpect (expectJson (decodeSingleEntity endpoint.decoder))
+            |> withJsonBody (endpoint.encoder value)
+            |> send (Result.mapError endpoint.error >> tagger)
+
+
+{-| Like `put`, but ignores any value sent by the backend back ... just interprets errors.
+-}
+put_ : BackendUrl -> Maybe AccessToken -> EndPoint error params key value -> key -> value -> (Result error () -> msg) -> Cmd msg
+put_ backendUrl accessToken endpoint key value tagger =
+    let
+        queryParams =
+            accessToken
+                |> Maybe.Extra.toList
+                |> List.map (\token -> ( "access_token", token ))
+    in
+        HttpBuilder.put (backendUrl </> endpoint.path </> toString (endpoint.untag key))
+            |> withQueryParams queryParams
+            |> withJsonBody (endpoint.encoder value)
+            |> send (Result.mapError endpoint.error >> tagger)
+
+
+{-| Sends a `PATCH` request for the specified key and value.
+
+Now, the point of a `PATCH` request is that you're not sending the **full** value,
+but some subset. So, you supply your own JSON value, rather than using the one that
+the endpoint would create use for PUT or POST. (We could have a separate config for
+each kind of PATCH, which would contribute to type-safety, but is possibly overkill).
+
+This function assumes that the backend will send the full value back. If it won't, then
+you can use `patch_` instead.
+
+-}
+patch : BackendUrl -> Maybe AccessToken -> EndPoint error params key value -> key -> Value -> (Result error value -> msg) -> Cmd msg
+patch backendUrl accessToken endpoint key value tagger =
+    let
+        queryParams =
+            accessToken
+                |> Maybe.Extra.toList
+                |> List.map (\token -> ( "access_token", token ))
+    in
+        HttpBuilder.patch (backendUrl </> endpoint.path </> toString (endpoint.untag key))
+            |> withQueryParams queryParams
+            |> withExpect (expectJson (decodeSingleEntity endpoint.decoder))
+            |> withJsonBody value
+            |> send (Result.mapError endpoint.error >> tagger)
+
+
+{-| Like `patch`, but doesn't try to decode the response ... just reports errors.
+-}
+patch_ : BackendUrl -> Maybe AccessToken -> EndPoint error params key value -> key -> Value -> (Result error () -> msg) -> Cmd msg
+patch_ backendUrl accessToken endpoint key value tagger =
+    let
+        queryParams =
+            accessToken
+                |> Maybe.Extra.toList
+                |> List.map (\token -> ( "access_token", token ))
+    in
+        HttpBuilder.patch (backendUrl </> endpoint.path </> toString (endpoint.untag key))
+            |> withQueryParams queryParams
+            |> withJsonBody value
             |> send (Result.mapError endpoint.error >> tagger)
 
 
