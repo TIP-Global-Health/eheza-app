@@ -239,7 +239,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
   /**
    * {@inheritdoc}
    */
-  public function handleEdits() {
+  public function handleEdits($sessionId) {
     // Conceptually, we're "patching" the offline session with the edits made
     // on the client during the session. The JSON format we get here for the
     // edits is the same thing we cache in local storage on the client (for use
@@ -248,11 +248,93 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     //
     // We totally take over the PATCH verb ... if you want to patch the Session
     // entity in the normal way, use the Sessions endpoint instead.
+    //
+    // Here's an example of what the JSON would look like. We could, of course,
+    // massage this on the client to send something different, if that ends up
+    // being convenient here.
+    /*
+    {
+    "children": {
+    "48": {
+    "height": {
+    "tag": "created",
+    "value": {
+    "child": 48,
+    "date_measured": "2017-11-24",
+    "height": 23,
+    "session": 226
+    }
+    },
+    "muac": {
+    "tag": "unedited"
+    },
+    "nutrition": {
+    "tag": "unedited"
+    },
+    "photo": {
+    "tag": "unedited"
+    },
+    "weight": {
+    "tag": "created",
+    "value": {
+    "child": 48,
+    "date_measured": "2017-11-24",
+    "session": 226,
+    "weight": 23
+    }
+    }
+    }
+    },
+    "closed": true,
+    "mothers": {
+    "26": {
+    "checked-in": true,
+    "family-planning": {
+    "tag": "unedited"
+    }
+    },
+    "29": {
+    "checked-in": true,
+    "family-planning": {
+    "tag": "unedited"
+    }
+    },
+    "33": {
+    "checked-in": true,
+    "family-planning": {
+    "tag": "unedited"
+    }
+    },
+    "41": {
+    "checked-in": true,
+    "family-planning": {
+    "tag": "created",
+    "value": {
+    "date_measured": "2017-11-24",
+    "family_planning_signs": [
+    "condoms",
+    "pill"
+    ],
+    "mother": 41,
+    "session": 226
+    }
+    }
+    }
+    }
+    }
+     */
+
     $request = $this->getRequest();
 
-    // TODO: Implement this
-    if (!$request) {
-      return [];
+    // Load the session.
+    $session = entity_metadata_wrapper('node', $sessionId);
+
+    if ($request['closed']) {
+      // We should close the session now.
+      if (!($session->field_closed->value())) {
+        $session->field_closed->set(TRUE);
+        $session->save();
+      }
     }
 
     return [];

@@ -171,8 +171,12 @@ updateBackend backendUrl accessToken msg model =
                         )
 
                     Ok _ ->
-                        -- Record success, and delete our locally cached session
-                        ( { model | uploadEditsRequest = Success sessionId }
+                        -- Record success, and delete our locally cached session.
+                        -- We also invalidate our `futureSessions`, which will indirectly make us fetch them again.
+                        ( { model
+                            | uploadEditsRequest = Success sessionId
+                            , futureSessions = NotAsked
+                          }
                         , Cmd.none
                         , [ DeleteEditableSession ]
                         )
