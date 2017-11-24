@@ -93,6 +93,9 @@ updateBackend backendUrl accessToken msg model =
 
         getFromBackend404 =
             Restful.Endpoint.get404 backendUrl (Just accessToken)
+
+        patchBackend =
+            Restful.Endpoint.patch_ backendUrl (Just accessToken)
     in
         case msg of
             FetchClinics ->
@@ -155,8 +158,7 @@ updateBackend backendUrl accessToken msg model =
 
             UploadEdits sessionId edits ->
                 ( { model | uploadEditsRequest = Loading }
-                , Cmd.none
-                  -- TODO: actually do it ...
+                , patchBackend offlineSessionEndpoint sessionId (encodeMeasurementEdits edits) (HandleUploadedEdits sessionId)
                 , []
                 )
 

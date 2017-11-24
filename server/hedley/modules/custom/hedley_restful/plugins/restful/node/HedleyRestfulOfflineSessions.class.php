@@ -16,6 +16,22 @@
 class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
 
   /**
+   * Overrides \RestfulDataProviderEFQ::controllersInfo().
+   */
+  public static function controllersInfo() {
+    // We only allow limited access to offline sessions ... you can download
+    // one, and you can send a patch request with batched edits, which we will
+    // handle specially.
+    return [
+      '^.*$' => [
+        \RestfulInterface::GET => 'viewEntities',
+        \RestfulInterface::HEAD => 'viewEntities',
+        \RestfulInterface::PATCH => 'handleEdits',
+      ],
+    ];
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function publicFieldsInfo() {
@@ -218,6 +234,28 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       "mother_activity" => $grouped_mother_activity,
       "child_activity" => $grouped_child_activity,
     ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function handleEdits() {
+    // Conceptually, we're "patching" the offline session with the edits made
+    // on the client during the session. The JSON format we get here for the
+    // edits is the same thing we cache in local storage on the client (for use
+    // while we're offline). Then, we can send those edits up to this endpoint
+    // as a PATCH request.
+    //
+    // We totally take over the PATCH verb ... if you want to patch the Session
+    // entity in the normal way, use the Sessions endpoint instead.
+    $request = $this->getRequest();
+
+    // TODO: Implement this
+    if (!$request) {
+      return [];
+    }
+
+    return [];
   }
 
 }
