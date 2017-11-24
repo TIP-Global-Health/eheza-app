@@ -329,15 +329,29 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     // Load the session.
     $session = entity_metadata_wrapper('node', $sessionId);
 
-    if ($request['closed']) {
-      // We should close the session now.
-      if (!($session->field_closed->value())) {
-        $session->field_closed->set(TRUE);
-        $session->save();
+    $transaction = db_transaction();
+
+    try {
+      if ($request['closed']) {
+        // We should close the session now.
+        if (!($session->field_closed->value())) {
+          $session->field_closed->set(TRUE);
+          $session->save();
+        }
       }
+
+      // TODO: Implement the edits and creates
     }
 
-    return [];
+    catch (Exception $e) {
+      $transaction->rollback();
+      throw $e;
+    }
+
+    // We don't send back the whole offline session.
+    return [
+      "id" => $sessionId,
+    ];
   }
 
 }
