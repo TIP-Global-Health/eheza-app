@@ -76,7 +76,7 @@ In the type parameters:
 
 -}
 type alias EndPoint error params key value =
-    -- The relative path to the endpoint ... that is, the part after `/api/`
+    -- The relative path to the endpoint ... that is, the part after the backendUrl
     { path : String
 
     -- The tag which wraps the integer node ID. (This assumes an integer node
@@ -96,9 +96,8 @@ type alias EndPoint error params key value =
 
     -- An encoder for the value. The ID will be added automatically ... you
     -- just need to supply the key-value pairs to encode the value itself.
-    --
-    -- , encoder : value -> List ( String, Value )
-    --
+    , encoder : value -> Value
+
     -- You may want to use your own error type. If so, provided something
     -- that maps from the kind of `Http.Error` this endpoint produces to
     -- your local error type. If you just want to use `Http.Error` dirdctly

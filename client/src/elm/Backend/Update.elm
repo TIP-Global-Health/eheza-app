@@ -7,6 +7,7 @@ to keep it together here for now.
 
 import Activity.Utils exposing (setCheckedIn)
 import Backend.Clinic.Decoder exposing (decodeClinic)
+import Backend.Clinic.Encoder exposing (encodeClinic)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Decoder exposing (decodeMeasurementEdits)
@@ -15,7 +16,7 @@ import Backend.Measurement.Model exposing (Edit(..))
 import Backend.Measurement.Utils exposing (backendValue, mapMeasurementData)
 import Backend.Model exposing (..)
 import Backend.Session.Decoder exposing (decodeSession, decodeOfflineSession)
-import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId)
+import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession)
 import Backend.Session.Model exposing (Session, OfflineSession, EditableSession, MsgEditableSession(..))
 import Backend.Session.Utils exposing (makeEditableSession, mapChildEdits, mapMotherEdits, getChildMeasurementData, getMotherMeasurementData)
 import Backend.Utils exposing (withEditableSession)
@@ -39,6 +40,7 @@ clinicEndpoint =
     , tag = toEntityId
     , untag = fromEntityId
     , decoder = decodeClinic
+    , encoder = object << encodeClinic
     , error = identity
     , params = always []
     }
@@ -64,6 +66,7 @@ sessionEndpoint =
     , tag = toEntityId
     , untag = fromEntityId
     , decoder = decodeSession
+    , encoder = encodeSession
     , error = identity
     , params = encodeSessionParams
     }
@@ -75,6 +78,7 @@ offlineSessionEndpoint =
     , tag = toEntityId
     , untag = fromEntityId
     , decoder = decodeOfflineSession
+    , encoder = object << encodeOfflineSession
     , error = identity
     , params = always []
     }
