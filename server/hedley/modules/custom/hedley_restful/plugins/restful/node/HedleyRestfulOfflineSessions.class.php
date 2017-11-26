@@ -277,16 +277,30 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       "weight" => "weights",
     ];
 
-    $result =
+    $activity_ids = hedley_restful_extract_ids(
       (new EntityFieldQuery())
         ->entityCondition('entity_type', 'node')
         ->entityCondition('bundle', array_keys($bundles))
         ->fieldCondition('field_session', 'target_id', $sessionId, "=")
         ->propertyCondition('status', NODE_PUBLISHED)
         ->range(0, 10000)
-        ->execute();
+        ->execute()
+    );
 
-    error_log(print_r($result, TRUE));
+    $existing = [];
+    node_load_multiple($activity_ids);
+
+    foreach ($activity_ids as $id) {
+      $wrapper = entity_metadata_wrapper('node', $id);
+      if ($wrapper->__isset('field_child')) {
+        $participant_id = $wrapper->field_child->getIdentifier();
+      }
+      else {
+        $participant_id = $wrapper->field_mother->getIdentifier();
+      }
+
+      $existing[$participant_id][$wrapper->getBundle()] = $id;
+    }
 
     $transaction = db_transaction();
 
@@ -299,18 +313,26 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
         }
       }
 
-      foreach ($request['children'] as $edits) {
+      foreach ($request['children'] as $childId => $edits) {
         foreach ($edits as $activity => $edit) {
           if ($bundles[$activity]) {
-            $this->handleEdit($activity, $edit, $sessionId, $account);
+            $handler = restful_get_restful_handler($bundles[$activity]);
+            $handler->setAccount($account);
+            $previous = $existing[$childId][$activity];
+
+            $this->handleEdit($handler, $edit, $previous);
           }
         }
       }
 
-      foreach ($request['mothers'] as $edits) {
+      foreach ($request['mothers'] as $motherId => $edits) {
         foreach ($edits as $activity => $edit) {
           if ($bundles[$activity]) {
-            $this->handleEdit($activity, $edit, $sessionId, $account);
+            $handler = restful_get_restful_handler($bundles[$activity]);
+            $handler->setAccount($account);
+            $previous = $existing[$motherId][$activity];
+
+            $this->handleEdit($handler, $edit, $previous);
           }
         }
       }
@@ -330,34 +352,44 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
   /**
    * Execute a set of edits the client has made in a session.
    *
-   * @param string $activity
-   *   The activity.
+   * @param object $handler
+   *   The Restful handler.
    * @param object $edit
    *   An describing the edit.
-   * @param int $sessionId
-   *   The session node ID.
-   * @param object $account
-   *   The user.
+   * @param int $id
+   *   The ID of the existing value for the session, if found.
    */
-  public static function handleEdit($activity, $edit, $sessionId, $account) {
-    $bundles = [
-      "height" => "heights",
-      "family_planning" => "family-plannings",
-      "muac" => "muacs",
-      "nutrition" => "nutritions",
-      "photo" => "photos",
-      "weight" => "weights",
-    ];
-
-    $handler = restful_get_restful_handler($bundles[$activity]);
-    $handler->setAccount($account);
-
+  public static function handleEdit($handler, $edit, $id) {
     switch ($edit['tag']) {
-    case 'created':
-      // TODO: This should probably be a customization in the handler itself
-      $edit['value']['date_measured'] = strtotime($edit['value']['date_measured']);
-      $handler->post("", $edit['value']);
-      break;
+      case 'created':
+        // TODO: This should probably be a customization in the handler itself.
+        $edit['value']['date_measured'] = strtotime($edit['value']['date_measured']);
+
+        if ($id) {
+          // This is actually an update ... perhaps we ought to signal that
+          // somehow?
+          $handler->patch($id, $edit['value']);
+        }
+        else {
+          $handler->post("", $edit['value']);
+        }
+        break;
+
+      case 'edited':
+        // TODO: Again, belongs in handler.
+        $edit['edited']['date_measured'] = strtotime($edit['edited']['date_measured']);
+
+        if ($id) {
+          $handler->patch($id, $edit['edited']);
+        }
+        else {
+          // This is actually an update ... perhaps the value was deleted
+          // behind our back?
+          $handler->post("", $edit['edited']);
+        }
+        break;
+
+      // TODO: Delete not implemented yet.
     }
   }
 
