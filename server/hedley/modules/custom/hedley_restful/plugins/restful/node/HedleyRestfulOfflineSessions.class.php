@@ -192,7 +192,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     );
 
     $mother_bundles = [
-      "family-planning" => "family-plannings",
+      "family_planning" => "family-plannings",
     ];
 
     $mother_activity_ids = hedley_restful_extract_ids(
@@ -237,7 +237,20 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
   }
 
   /**
-   * {@inheritdoc}
+   * Execute the edits the client has made in a session.
+   *
+   * The edits are passed in the JSON body of the request,
+   * and take roughly the following form:
+   *
+   * - closed : Bool -- whether the session should be closed
+   * - children : array of children
+   * - mothers : array of mothers
+   *
+   * @param int $sessionId
+   *   The session node ID.
+   *
+   * @return array
+   *   Array with the RESTful output.
    */
   public function handleEdits($sessionId) {
     // Conceptually, we're "patching" the offline session with the edits made
@@ -248,86 +261,32 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     //
     // We totally take over the PATCH verb ... if you want to patch the Session
     // entity in the normal way, use the Sessions endpoint instead.
-    //
-    // Here's an example of what the JSON would look like. We could, of course,
-    // massage this on the client to send something different, if that ends up
-    // being convenient here.
-    /*
-    {
-    "children": {
-    "48": {
-    "height": {
-    "tag": "created",
-    "value": {
-    "child": 48,
-    "date_measured": "2017-11-24",
-    "height": 23,
-    "session": 226
-    }
-    },
-    "muac": {
-    "tag": "unedited"
-    },
-    "nutrition": {
-    "tag": "unedited"
-    },
-    "photo": {
-    "tag": "unedited"
-    },
-    "weight": {
-    "tag": "created",
-    "value": {
-    "child": 48,
-    "date_measured": "2017-11-24",
-    "session": 226,
-    "weight": 23
-    }
-    }
-    }
-    },
-    "closed": true,
-    "mothers": {
-    "26": {
-    "checked-in": true,
-    "family-planning": {
-    "tag": "unedited"
-    }
-    },
-    "29": {
-    "checked-in": true,
-    "family-planning": {
-    "tag": "unedited"
-    }
-    },
-    "33": {
-    "checked-in": true,
-    "family-planning": {
-    "tag": "unedited"
-    }
-    },
-    "41": {
-    "checked-in": true,
-    "family-planning": {
-    "tag": "created",
-    "value": {
-    "date_measured": "2017-11-24",
-    "family_planning_signs": [
-    "condoms",
-    "pill"
-    ],
-    "mother": 41,
-    "session": 226
-    }
-    }
-    }
-    }
-    }
-     */
-
     $request = $this->getRequest();
+    $account = $this->getAccount();
 
     // Load the session.
     $session = entity_metadata_wrapper('node', $sessionId);
+
+    // Now, let's get all the existing measurements for this session.
+    $bundles = [
+      "height" => "heights",
+      "family_planning" => "family-plannings",
+      "muac" => "muacs",
+      "nutrition" => "nutritions",
+      "photo" => "photos",
+      "weight" => "weights",
+    ];
+
+    $result =
+      (new EntityFieldQuery())
+        ->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', array_keys($bundles))
+        ->fieldCondition('field_session', 'target_id', $sessionId, "=")
+        ->propertyCondition('status', NODE_PUBLISHED)
+        ->range(0, 10000)
+        ->execute();
+
+    error_log(print_r($result, TRUE));
 
     $transaction = db_transaction();
 
@@ -340,7 +299,21 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
         }
       }
 
-      // TODO: Implement the edits and creates
+      foreach ($request['children'] as $edits) {
+        foreach ($edits as $activity => $edit) {
+          if ($bundles[$activity]) {
+            $this->handleEdit($activity, $edit, $sessionId, $account);
+          }
+        }
+      }
+
+      foreach ($request['mothers'] as $edits) {
+        foreach ($edits as $activity => $edit) {
+          if ($bundles[$activity]) {
+            $this->handleEdit($activity, $edit, $sessionId, $account);
+          }
+        }
+      }
     }
 
     catch (Exception $e) {
@@ -352,6 +325,40 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     return [
       "id" => $sessionId,
     ];
+  }
+
+  /**
+   * Execute a set of edits the client has made in a session.
+   *
+   * @param string $activity
+   *   The activity.
+   * @param object $edit
+   *   An describing the edit.
+   * @param int $sessionId
+   *   The session node ID.
+   * @param object $account
+   *   The user.
+   */
+  public static function handleEdit($activity, $edit, $sessionId, $account) {
+    $bundles = [
+      "height" => "heights",
+      "family_planning" => "family-plannings",
+      "muac" => "muacs",
+      "nutrition" => "nutritions",
+      "photo" => "photos",
+      "weight" => "weights",
+    ];
+
+    $handler = restful_get_restful_handler($bundles[$activity]);
+    $handler->setAccount($account);
+
+    switch ($edit['tag']) {
+    case 'created':
+      // TODO: This should probably be a customization in the handler itself
+      $edit['value']['date_measured'] = strtotime($edit['value']['date_measured']);
+      $handler->post("", $edit['value']);
+      break;
+    }
   }
 
 }

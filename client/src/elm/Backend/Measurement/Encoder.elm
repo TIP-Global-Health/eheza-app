@@ -159,8 +159,8 @@ encodeMeasurementEdits edits =
 encodeMotherEdits : MotherEdits -> Value
 encodeMotherEdits edits =
     object
-        [ ( "family-planning", encodeEdit (object << encodeFamilyPlanning) edits.familyPlanning )
-        , ( "checked-in", bool edits.explicitlyCheckedIn )
+        [ ( "family_planning", encodeEdit (object << encodeFamilyPlanning) edits.familyPlanning )
+        , ( "checked_in", bool edits.explicitlyCheckedIn )
         ]
 
 
@@ -235,7 +235,7 @@ encodeChildMeasurementList measurements =
 encodeMotherMeasurementList : MotherMeasurementList -> Value
 encodeMotherMeasurementList measurements =
     object
-        [ ( "family-planning"
+        [ ( "family_planning"
           , measurements.familyPlannings
                 |> List.map (encodeEntity encodeFamilyPlanning)
                 |> list

@@ -66,7 +66,7 @@ encodeActivityTypeAsString activityType =
         MotherActivity activity ->
             case activity of
                 FamilyPlanning ->
-                    "family-planning"
+                    "family_planning"
 
 
 {-| The inverse of encodeActivityTypeAsString
@@ -92,7 +92,7 @@ decodeActivityTypeFromString s =
         "weight" ->
             Just <| ChildActivity Weight
 
-        "family-planning" ->
+        "family_planning" ->
             Just <| MotherActivity FamilyPlanning
 
         _ ->

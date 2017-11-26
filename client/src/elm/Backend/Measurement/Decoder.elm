@@ -71,7 +71,7 @@ decodeWithEntityId decoder =
 decodeMotherMeasurementList : Decoder MotherMeasurementList
 decodeMotherMeasurementList =
     decode MotherMeasurementList
-        |> optional "family-planning" (list (decodeWithEntityId decodeFamilyPlanning)) []
+        |> optional "family_planning" (list (decodeWithEntityId decodeFamilyPlanning)) []
 
 
 decodeChildMeasurementList : Decoder ChildMeasurementList
@@ -224,8 +224,8 @@ decodeChildEdits =
 decodeMotherEdits : Decoder MotherEdits
 decodeMotherEdits =
     decode MotherEdits
-        |> required "family-planning" (decodeEdit decodeFamilyPlanning)
-        |> optional "checked-in" bool False
+        |> required "family_planning" (decodeEdit decodeFamilyPlanning)
+        |> optional "checked_in" bool False
 
 
 {-| The opposite of `encodeEdit`
