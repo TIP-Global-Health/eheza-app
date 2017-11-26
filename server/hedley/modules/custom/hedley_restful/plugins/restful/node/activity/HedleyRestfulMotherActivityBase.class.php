@@ -20,7 +20,7 @@ abstract class HedleyRestfulMotherActivityBase extends HedleyRestfulActivityBase
       'property' => 'field_mother',
       'resource' => [
         // Bundle name.
-        'child' => [
+        'mother' => [
           // Resource name.
           'name' => 'mothers',
           'full_view' => FALSE,

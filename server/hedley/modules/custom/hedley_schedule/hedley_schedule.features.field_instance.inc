@@ -50,6 +50,49 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-session-field_closed'.
+  $field_instances['node-session-field_closed'] = array(
+    'bundle' => 'session',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => 'Has the session been explicitly closed by the user?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 2,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_closed',
+    'label' => 'Closed',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => -1,
+    ),
+  );
+
   // Exported field_instance: 'node-session-field_scheduled_date'.
   $field_instances['node-session-field_scheduled_date'] = array(
     'bundle' => 'session',
@@ -110,7 +153,9 @@ The end date is the last day on which data entry will be allowed for this sessio
   // Translatables
   // Included for use with string extractors like potx.
   t('Clinic');
+  t('Closed');
   t('Enter the clinic for which data-entry is being scheduled.');
+  t('Has the session been explicitly closed by the user?');
   t('Scheduled Date');
   t('The start date is the date on which the data entry is scheduled.
 

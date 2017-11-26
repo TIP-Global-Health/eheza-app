@@ -20,6 +20,10 @@ class HedleyRestfulSessions extends HedleyRestfulEntityBaseNode {
       'callback' => 'static::getType',
     ];
 
+    $public_fields['closed'] = [
+      'property' => 'field_closed',
+    ];
+
     $public_fields['scheduled_date'] = [
       'property' => 'field_scheduled_date',
       'process_callbacks' => [
@@ -61,6 +65,7 @@ class HedleyRestfulSessions extends HedleyRestfulEntityBaseNode {
       $openAfter = $request['open_after'];
 
       $query->fieldCondition('field_scheduled_date', 'value2', $openAfter, '>=');
+      $query->fieldCondition('field_closed', 'value', TRUE, '<>');
     }
 
     return $query;
@@ -77,6 +82,7 @@ class HedleyRestfulSessions extends HedleyRestfulEntityBaseNode {
       $openAfter = $request['open_after'];
 
       $query->fieldCondition('field_scheduled_date', 'value2', $openAfter, '<=');
+      $query->fieldCondition('field_closed', 'value', TRUE, '<>');
     }
 
     return $query;

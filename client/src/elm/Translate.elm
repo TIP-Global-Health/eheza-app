@@ -53,10 +53,12 @@ type TranslationId
     | ChildNutritionSignLabel ChildNutritionSign
     | Children
     | ClickTheCheckMark
+    | ClinicNotFound
     | Clinics
     | Connected
     | Continue
     | Dashboard
+    | DataIsNowSaved
     | DownloadHealthAssessment
     | DownloadSession1
     | DownloadSession2
@@ -127,9 +129,16 @@ type TranslationId
     | SaveError
     | SearchByName
     | SelectYourClinic
+    | SessionInProgress
     | TitleHealthAssessment
     | UnableToDownload
+    | UnableToUpload
+    | UploadHealthAssessment
+    | UploadingSession1
+    | UploadingSession2
+    | UploadSuccessful
     | WelcomeUser String
+    | YouHaveACompletedSession
     | ZScoreHeightForAge
     | ZScoreMuacForAge
     | ZScoreWeightForAge
@@ -352,6 +361,9 @@ translate lang trans =
                 ClickTheCheckMark ->
                     { english = "Click the check mark if the mother is in attendance. The check mark will appear green when a mother has been signed in." }
 
+                ClinicNotFound ->
+                    { english = "Clinic not found" }
+
                 Clinics ->
                     { english = "Clinics" }
 
@@ -363,6 +375,9 @@ translate lang trans =
 
                 Dashboard ->
                     { english = "Dashboard" }
+
+                DataIsNowSaved ->
+                    { english = "Data is now saved on the server." }
 
                 DownloadHealthAssessment ->
                     { english = "Download Health Assessment" }
@@ -682,14 +697,35 @@ translate lang trans =
                 SelectYourClinic ->
                     { english = "Select your clinic" }
 
+                SessionInProgress ->
+                    { english = "A health assessment is already in progress for another clinic." }
+
                 TitleHealthAssessment ->
                     { english = "2017 July Health Assessment" }
 
                 UnableToDownload ->
                     { english = "Unable to Download" }
 
+                UnableToUpload ->
+                    { english = "Unable to Upload" }
+
+                UploadHealthAssessment ->
+                    { english = "Upload Health Assessment" }
+
+                UploadingSession1 ->
+                    { english = "Uploading…" }
+
+                UploadingSession2 ->
+                    { english = "Uploading may take a few minutes, or a few hours. Do not leave this page while data is uploading." }
+
+                UploadSuccessful ->
+                    { english = "Upload Successful" }
+
                 WelcomeUser name ->
                     { english = "Welcome " ++ name }
+
+                YouHaveACompletedSession ->
+                    { english = "You have a completed session that needs to be uploaded. Please connect to the internet and upload this session within 48 hours." }
 
                 ZScoreHeightForAge ->
                     { english = "Z-Score Height for Age: " }

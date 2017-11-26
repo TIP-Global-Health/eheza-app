@@ -16,6 +16,22 @@
 class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
 
   /**
+   * Overrides \RestfulDataProviderEFQ::controllersInfo().
+   */
+  public static function controllersInfo() {
+    // We only allow limited access to offline sessions ... you can download
+    // one, and you can send a patch request with batched edits, which we will
+    // handle specially.
+    return [
+      '^.*$' => [
+        \RestfulInterface::GET => 'viewEntities',
+        \RestfulInterface::HEAD => 'viewEntities',
+        \RestfulInterface::PATCH => 'handleEdits',
+      ],
+    ];
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function publicFieldsInfo() {
@@ -23,6 +39,10 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
 
     $public_fields['type'] = [
       'callback' => 'static::getType',
+    ];
+
+    $public_fields['closed'] = [
+      'property' => 'field_closed',
     ];
 
     $public_fields['scheduled_date'] = [
@@ -37,8 +57,18 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       'resource' => [
         'clinic' => [
           'name' => 'clinics',
-          'full_view' => TRUE,
+          'full_view' => FALSE,
         ],
+      ],
+    ];
+
+    // We include basic data for all clinics, as this makes the offline UI
+    // simpler. I suppose this could just be a second, independent HTTP
+    // request, but including it here is simpler.
+    $public_fields['clinics'] = [
+      'property' => 'nid',
+      'process_callbacks' => [
+        [$this, 'getClinicData'],
       ],
     ];
 
@@ -70,6 +100,35 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       'value' => $date['value'] ? hedley_restful_timestamp_only_date($date['value']) : NULL,
       'value2' => $date['value2'] ? hedley_restful_timestamp_only_date($date['value2']) : NULL,
     ];
+  }
+
+  /**
+   * Return clinic data for all clinics.
+   *
+   * Of course, this could just be a separate, independent HTTP request, but
+   * it's convenient to provide everything needed for an offline session at
+   * once.
+   *
+   * @param int $nid
+   *   The session node ID (not actually used, since we're getting all clinics).
+   *
+   * @return array
+   *   Array with the RESTful output.
+   */
+  public function getClinicData($nid) {
+    $account = $this->getAccount();
+
+    $clinic_ids = hedley_restful_extract_ids(
+      (new EntityFieldQuery())
+        ->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', 'clinic')
+        ->propertyCondition('status', NODE_PUBLISHED)
+        ->propertyOrderBy('title', 'ASC')
+        ->range(0, 1000)
+        ->execute()
+    );
+
+    return hedley_restful_output_from_handler('clinics', $clinic_ids, $account);
   }
 
   /**
@@ -133,7 +192,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     );
 
     $mother_bundles = [
-      "family-planning" => "family-plannings",
+      "family_planning" => "family-plannings",
     ];
 
     $mother_activity_ids = hedley_restful_extract_ids(
@@ -175,6 +234,163 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       "mother_activity" => $grouped_mother_activity,
       "child_activity" => $grouped_child_activity,
     ];
+  }
+
+  /**
+   * Execute the edits the client has made in a session.
+   *
+   * The edits are passed in the JSON body of the request,
+   * and take roughly the following form:
+   *
+   * - closed : Bool -- whether the session should be closed
+   * - children : array of children
+   * - mothers : array of mothers
+   *
+   * @param int $sessionId
+   *   The session node ID.
+   *
+   * @return array
+   *   Array with the RESTful output.
+   */
+  public function handleEdits($sessionId) {
+    // Conceptually, we're "patching" the offline session with the edits made
+    // on the client during the session. The JSON format we get here for the
+    // edits is the same thing we cache in local storage on the client (for use
+    // while we're offline). Then, we can send those edits up to this endpoint
+    // as a PATCH request.
+    //
+    // We totally take over the PATCH verb ... if you want to patch the Session
+    // entity in the normal way, use the Sessions endpoint instead.
+    $request = $this->getRequest();
+    $account = $this->getAccount();
+
+    // Load the session.
+    $session = entity_metadata_wrapper('node', $sessionId);
+
+    // Now, let's get all the existing measurements for this session.
+    $bundles = [
+      "height" => "heights",
+      "family_planning" => "family-plannings",
+      "muac" => "muacs",
+      "nutrition" => "nutritions",
+      "photo" => "photos",
+      "weight" => "weights",
+    ];
+
+    $activity_ids = hedley_restful_extract_ids(
+      (new EntityFieldQuery())
+        ->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', array_keys($bundles))
+        ->fieldCondition('field_session', 'target_id', $sessionId, "=")
+        ->propertyCondition('status', NODE_PUBLISHED)
+        ->range(0, 10000)
+        ->execute()
+    );
+
+    $existing = [];
+    node_load_multiple($activity_ids);
+
+    foreach ($activity_ids as $id) {
+      $wrapper = entity_metadata_wrapper('node', $id);
+      if ($wrapper->__isset('field_child')) {
+        $participant_id = $wrapper->field_child->getIdentifier();
+      }
+      else {
+        $participant_id = $wrapper->field_mother->getIdentifier();
+      }
+
+      $existing[$participant_id][$wrapper->getBundle()] = $id;
+    }
+
+    $transaction = db_transaction();
+
+    try {
+      if ($request['closed']) {
+        // We should close the session now.
+        if (!($session->field_closed->value())) {
+          $session->field_closed->set(TRUE);
+          $session->save();
+        }
+      }
+
+      foreach ($request['children'] as $childId => $edits) {
+        foreach ($edits as $activity => $edit) {
+          if ($bundles[$activity]) {
+            $handler = restful_get_restful_handler($bundles[$activity]);
+            $handler->setAccount($account);
+            $previous = $existing[$childId][$activity];
+
+            $this->handleEdit($handler, $edit, $previous);
+          }
+        }
+      }
+
+      foreach ($request['mothers'] as $motherId => $edits) {
+        foreach ($edits as $activity => $edit) {
+          if ($bundles[$activity]) {
+            $handler = restful_get_restful_handler($bundles[$activity]);
+            $handler->setAccount($account);
+            $previous = $existing[$motherId][$activity];
+
+            $this->handleEdit($handler, $edit, $previous);
+          }
+        }
+      }
+    }
+
+    catch (Exception $e) {
+      $transaction->rollback();
+      throw $e;
+    }
+
+    // We don't send back the whole offline session.
+    return [
+      "id" => $sessionId,
+    ];
+  }
+
+  /**
+   * Execute a set of edits the client has made in a session.
+   *
+   * @param object $handler
+   *   The Restful handler.
+   * @param object $edit
+   *   An describing the edit.
+   * @param int $id
+   *   The ID of the existing value for the session, if found.
+   */
+  public static function handleEdit($handler, $edit, $id) {
+    switch ($edit['tag']) {
+      case 'created':
+        // TODO: This should probably be a customization in the handler itself.
+        $edit['value']['date_measured'] = strtotime($edit['value']['date_measured']);
+
+        if ($id) {
+          // This is actually an update ... perhaps we ought to signal that
+          // somehow?
+          $handler->patch($id, $edit['value']);
+        }
+        else {
+          $handler->post("", $edit['value']);
+        }
+        break;
+
+      case 'edited':
+        // TODO: Again, belongs in handler.
+        $edit['edited']['date_measured'] = strtotime($edit['edited']['date_measured']);
+
+        if ($id) {
+          $handler->patch($id, $edit['edited']);
+        }
+        else {
+          // This is actually an update ... perhaps the value was deleted
+          // behind our back?
+          $handler->post("", $edit['edited']);
+        }
+        break;
+
+      // TODO: Delete not implemented yet.
+    }
   }
 
 }

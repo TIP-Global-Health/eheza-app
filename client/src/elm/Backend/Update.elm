@@ -7,6 +7,7 @@ to keep it together here for now.
 
 import Activity.Utils exposing (setCheckedIn)
 import Backend.Clinic.Decoder exposing (decodeClinic)
+import Backend.Clinic.Encoder exposing (encodeClinic)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Decoder exposing (decodeMeasurementEdits)
@@ -15,7 +16,7 @@ import Backend.Measurement.Model exposing (Edit(..))
 import Backend.Measurement.Utils exposing (backendValue, mapMeasurementData)
 import Backend.Model exposing (..)
 import Backend.Session.Decoder exposing (decodeSession, decodeOfflineSession)
-import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId)
+import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession)
 import Backend.Session.Model exposing (Session, OfflineSession, EditableSession, MsgEditableSession(..))
 import Backend.Session.Utils exposing (makeEditableSession, mapChildEdits, mapMotherEdits, getChildMeasurementData, getMotherMeasurementData)
 import Backend.Utils exposing (withEditableSession)
@@ -39,6 +40,7 @@ clinicEndpoint =
     , tag = toEntityId
     , untag = fromEntityId
     , decoder = decodeClinic
+    , encoder = object << encodeClinic
     , error = identity
     , params = always []
     }
@@ -64,6 +66,7 @@ sessionEndpoint =
     , tag = toEntityId
     , untag = fromEntityId
     , decoder = decodeSession
+    , encoder = encodeSession
     , error = identity
     , params = encodeSessionParams
     }
@@ -75,6 +78,7 @@ offlineSessionEndpoint =
     , tag = toEntityId
     , untag = fromEntityId
     , decoder = decodeOfflineSession
+    , encoder = object << encodeOfflineSession
     , error = identity
     , params = always []
     }
@@ -89,6 +93,9 @@ updateBackend backendUrl accessToken msg model =
 
         getFromBackend404 =
             Restful.Endpoint.get404 backendUrl (Just accessToken)
+
+        patchBackend =
+            Restful.Endpoint.patch_ backendUrl (Just accessToken)
     in
         case msg of
             FetchClinics ->
@@ -145,6 +152,37 @@ updateBackend backendUrl accessToken msg model =
 
             ResetOfflineSessionRequest ->
                 ( { model | offlineSessionRequest = NotAsked }
+                , Cmd.none
+                , []
+                )
+
+            UploadEdits sessionId edits ->
+                ( { model | uploadEditsRequest = Loading }
+                , patchBackend offlineSessionEndpoint sessionId (encodeMeasurementEdits edits) (HandleUploadedEdits sessionId)
+                , []
+                )
+
+            HandleUploadedEdits sessionId result ->
+                case result of
+                    Err error ->
+                        ( { model | uploadEditsRequest = RemoteData.fromResult (Result.map (always sessionId) result) }
+                        , Cmd.none
+                        , []
+                        )
+
+                    Ok _ ->
+                        -- Record success, and delete our locally cached session.
+                        -- We also invalidate our `futureSessions`, which will indirectly make us fetch them again.
+                        ( { model
+                            | uploadEditsRequest = Success sessionId
+                            , futureSessions = NotAsked
+                          }
+                        , Cmd.none
+                        , [ DeleteEditableSession ]
+                        )
+
+            ResetUploadEditsRequest ->
+                ( { model | uploadEditsRequest = NotAsked }
                 , Cmd.none
                 , []
                 )
@@ -253,6 +291,21 @@ updateCache currentDate msg model =
 
         MsgEditableSession subMsg ->
             case subMsg of
+                CloseSession ->
+                    withEditableSession ( model, Cmd.none )
+                        (\sessionId session ->
+                            let
+                                newSession =
+                                    (\edits -> { session | edits = { edits | explicitlyClosed = True } })
+                                        session.edits
+                            in
+                                ( { model | editableSession = Success <| Just ( sessionId, newSession ) }
+                                , Cmd.none
+                                )
+                                    |> sequence (updateCache currentDate) [ CacheEdits ]
+                        )
+                        model
+
                 MeasurementOutMsgChild childId outMsg ->
                     withEditableSession ( model, Cmd.none )
                         (\sessionId session ->

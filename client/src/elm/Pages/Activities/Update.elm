@@ -1,27 +1,32 @@
 module Pages.Activities.Update exposing (update)
 
 import Backend.Session.Model exposing (EditableSession)
-import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Activities.Model exposing (Model, Msg(..))
+import Pages.Model exposing (MsgSession(..))
+import Pages.Page exposing (Page(..), UserPage(..))
 
 
 {-| The extra return parameter indicates our desire to change the `activePage`.
 -}
-update : EditableSession -> Msg -> Model -> ( Model, Cmd Msg, Maybe Page )
+update : EditableSession -> Msg -> Model -> ( Model, Cmd Msg, List MsgSession )
 update session msg model =
     case msg of
         CloseSession ->
-            -- For now, just redirect ... will need to do a little more than that.
             ( { model | showEndSessionDialog = False }
             , Cmd.none
-            , Just <| UserPage <| ClinicsPage <| Just session.offlineSession.session.clinicId
+            , [ MsgEditableSession <| Backend.Session.Model.CloseSession
+              , SetActivePage <| UserPage <| ClinicsPage <| Just session.offlineSession.session.clinicId
+              ]
+            )
+
+        SetRedirectPage page ->
+            ( model
+            , Cmd.none
+            , [ SetActivePage page ]
             )
 
         SetSelectedTab tab ->
-            ( { model | selectedTab = tab }, Cmd.none, Nothing )
-
-        SetRedirectPage page ->
-            ( model, Cmd.none, Just page )
+            ( { model | selectedTab = tab }, Cmd.none, [] )
 
         ShowEndSessionDialog show ->
-            ( { model | showEndSessionDialog = show }, Cmd.none, Nothing )
+            ( { model | showEndSessionDialog = show }, Cmd.none, [] )

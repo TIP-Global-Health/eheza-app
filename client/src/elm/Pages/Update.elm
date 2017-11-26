@@ -1,6 +1,6 @@
 module Pages.Update exposing (..)
 
-import App.Model
+import App.Model exposing (Msg(MsgSession))
 import Backend.Model
 import Backend.Session.Model exposing (EditableSession, MsgEditableSession(..))
 import EveryDict
@@ -25,13 +25,12 @@ updateSession session msg model =
     case msg of
         MsgActivities subMsg ->
             let
-                ( subModel, subCmd, subPage ) =
+                ( subModel, subCmd, extraMsgs ) =
                     Pages.Activities.Update.update session subMsg model.activitiesPage
             in
                 ( { model | activitiesPage = subModel }
                 , Cmd.map MsgActivities subCmd
-                , Maybe.map App.Model.SetActivePage subPage
-                    |> Maybe.Extra.toList
+                , List.map MsgSession extraMsgs
                 )
 
         MsgChildActivity activityType subMsg ->
@@ -209,13 +208,12 @@ updateSession session msg model =
 
         MsgParticipants subMsg ->
             let
-                ( subModel, subCmd, subPage ) =
+                ( subModel, subCmd, extraMsgs ) =
                     Pages.Participants.Update.update session subMsg model.participantsPage
             in
                 ( { model | participantsPage = subModel }
                 , Cmd.map MsgParticipants subCmd
-                , Maybe.map App.Model.SetActivePage subPage
-                    |> Maybe.Extra.toList
+                , List.map MsgSession extraMsgs
                 )
 
         SetActivePage page ->

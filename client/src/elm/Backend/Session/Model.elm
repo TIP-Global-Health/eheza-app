@@ -18,21 +18,29 @@ import RemoteData exposing (WebData)
 
 {-| This is the basic `Session` data that we get when we're
 online, from /api/sessions.
+
+Note that `closed` here tracks what the backend thinks ... there is a separate
+structure in `EditableSession.edits` that tracks whether we've closed a session
+locally.
+
 -}
 type alias Session =
     { scheduledDate : NominalDateRange
     , clinicId : ClinicId
+    , closed : Bool
     }
 
 
-{-| This adds the additional information we get when we take
-a Session offline for data-entry. It includes everything we need for
-data-entry. We get it from /api/offline_sessions (and massage that
-a bit for convenience).
+{-| This adds the additional information we get when we take a Session offline
+for data-entry. It includes everything we need for data-entry. We get it from
+/api/offline_sessions (and massage that a bit for convenience).
 -}
 type alias OfflineSession =
     { session : Session
-    , clinic : Clinic
+
+    -- We include the basic information about all the clinics so that we can at
+    -- least present a limited UI on clinic pages that includes their name.
+    , clinics : EveryDictList ClinicId Clinic
 
     -- We'll sort by mother's name
     , mothers : EveryDictList MotherId Mother
@@ -64,6 +72,9 @@ The `editStatus` tracks whether we have a save in progress for the
 cacehd edits. It's inside the type, because we can't save them unless
 we have them ...
 
+`edits` includes things like attendance and whether we've closed the
+session since downloading it.
+
 The childForms and motherForms fields could be put elsewhere, since they aren't
 backend concepts. However, they don't belong at the level of particular pages,
 since we actually use them in two different pages and don't want multiple
@@ -91,7 +102,8 @@ They are actually handled in `Backend.Update`.
 
 -}
 type MsgEditableSession
-    = SetCheckedIn MotherId Bool
+    = CloseSession
+    | SetCheckedIn MotherId Bool
     | SetMotherForm MotherId Measurement.Model.ModelMother
     | SetChildForm ChildId Measurement.Model.ModelChild
     | MeasurementOutMsgChild ChildId Measurement.Model.OutMsgChild
