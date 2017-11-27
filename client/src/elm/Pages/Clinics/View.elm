@@ -430,7 +430,7 @@ viewClinicWithCachedSession language clinicId backend sessionId session =
                     [ p [] [ text <| translate language Translate.SessionInProgress ] ]
                 , button
                     [ class "ui fluid primary dark button"
-                    , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just clinicId
+                    , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just session.offlineSession.session.clinicId
                     ]
                     [ text activeClinicName ]
                 ]
