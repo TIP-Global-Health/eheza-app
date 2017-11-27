@@ -95,27 +95,20 @@ viewConfiguredModel model configured =
                         |> Html.map MsgPageLogin
 
                 UserPage userPage ->
-                    -- If relogin is required, show the login page instead
-                    case login.relogin of
-                        Just _ ->
-                            Pages.Login.View.view model.language model.activePage configured.login configured.loginPage
-                                |> Html.map MsgPageLogin
+                    case userPage of
+                        MyAccountPage ->
+                            Pages.MyAccount.View.view model.language login.credentials.user
 
-                        Nothing ->
-                            case userPage of
-                                MyAccountPage ->
-                                    Pages.MyAccount.View.view model.language login.credentials.user
+                        ClinicsPage clinicId ->
+                            -- We need to know whether we have a cached session
+                            case model.cache.editableSession of
+                                Success session ->
+                                    Pages.Clinics.View.view model.language model.currentDate login.credentials.user clinicId login.data.backend session
 
-                                ClinicsPage clinicId ->
-                                    -- We need to know whether we have a cached session
-                                    case model.cache.editableSession of
-                                        Success session ->
-                                            Pages.Clinics.View.view model.language model.currentDate login.credentials.user clinicId login.data.backend session
-
-                                        _ ->
-                                            -- TODO: Whose job should it be to show errors loading the offlineSession
-                                            -- from the cache?
-                                            viewLoading
+                                _ ->
+                                    -- TODO: Whose job should it be to show errors loading the offlineSession
+                                    -- from the cache?
+                                    viewLoading
 
                 PageNotFound url ->
                     Pages.PageNotFound.View.view model.language url

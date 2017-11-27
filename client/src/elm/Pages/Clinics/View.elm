@@ -62,29 +62,40 @@ view language currentDate user selectedClinic backend cachedSession =
             viewClinic language currentDate clinicId backend cachedSession
 
         Nothing ->
-            viewClinicList language user backend.clinics
+            viewClinicList language user backend.clinics (Maybe.map Tuple.second cachedSession)
 
 
-viewClinicList : Language -> User -> WebData (EveryDictList ClinicId Clinic) -> Html Msg
-viewClinicList language user clinicData =
-    div [ class "wrap wrap-alt-2" ]
-        [ div [ class "ui basic head segment" ]
-            [ h1 [ class "ui header" ]
-                [ text <| translate language Translate.Clinics ]
-            , a
-                [ class "link-back"
-                , onClick <| SetActivePage LoginPage
+viewClinicList : Language -> User -> WebData (EveryDictList ClinicId Clinic) -> Maybe EditableSession -> Html Msg
+viewClinicList language user clinicData session =
+    let
+        content =
+            -- We get the clinics from the session, if one is loaded, or we rely on
+            -- being online, if not.
+            case session of
+                Just loaded ->
+                    viewLoadedClinicList language user loaded.offlineSession.clinics
+
+                Nothing ->
+                    clinicData
+                        |> viewOrFetch language
+                            (MsgLoggedIn <| MsgBackend Backend.Model.FetchClinics)
+                            (viewLoadedClinicList language user)
+    in
+        div [ class "wrap wrap-alt-2" ]
+            [ div
+                [ class "ui basic head segment" ]
+                [ h1 [ class "ui header" ]
+                    [ text <| translate language Translate.Clinics ]
+                , a
+                    [ class "link-back"
+                    , onClick <| SetActivePage LoginPage
+                    ]
+                    [ span [ class "icon-back" ] []
+                    , span [] []
+                    ]
                 ]
-                [ span [ class "icon-back" ] []
-                , span [] []
-                ]
+            , div [ class "ui basic segment" ] content
             ]
-        , clinicData
-            |> viewOrFetch language
-                (MsgLoggedIn <| MsgBackend Backend.Model.FetchClinics)
-                (viewLoadedClinicList language user)
-            |> div [ class "ui basic segment" ]
-        ]
 
 
 {-| This is the "inner" view function ... we get here if all the data was actually available.
