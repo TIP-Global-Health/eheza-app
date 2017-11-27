@@ -18,6 +18,8 @@ import Pages.Update
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (decodeSingleEntity)
 import Restful.Login exposing (LoginStatus(..), Login, Credentials, checkCachedCredentials)
+import ServiceWorker.Model
+import ServiceWorker.Update
 import Task
 import Time exposing (minute)
 import Update.Extra exposing (sequence)
@@ -77,6 +79,8 @@ init flags =
                 ( { emptyModel | configuration = Success configuredModel }
                 , cmd
                 )
+                    |> sequence update
+                        [ MsgServiceWorker ServiceWorker.Model.Register ]
 
         Nothing ->
             ( { emptyModel | configuration = Failure <| "No config found for: " ++ flags.hostname }
@@ -182,6 +186,15 @@ update msg model =
                         )
                 )
                 model
+
+        MsgServiceWorker subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    ServiceWorker.Update.update subMsg model.serviceWorker
+            in
+                ( { model | serviceWorker = subModel }
+                , Cmd.map MsgServiceWorker subCmd
+                )
 
         MsgSession subMsg ->
             -- TODO: Should ideally reflect the fact that an EditableSession is
@@ -292,6 +305,7 @@ subscriptions model =
         [ Time.every minute Tick
         , offline SetOffline
         , Sub.map MsgCache Backend.Update.subscriptions
+        , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
         ]
 
 

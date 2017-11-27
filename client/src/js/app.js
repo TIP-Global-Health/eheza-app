@@ -204,3 +204,29 @@ function attachDropzone(selector, config) {
     });
 }
 */
+
+navigator.serviceWorker.oncontrollerchange = function () {
+  elmApp.ports.serviceWorkerIn.send({
+    tag: "SetActive",
+    value: true
+  });
+
+  // We could also start sending some events related to the active worker ...
+};
+
+elmApp.ports.serviceWorkerOut.subscribe(function (message) {
+  switch (message.tag) {
+    case 'Register':
+      navigator.serviceWorker.register('service-worker.js').then(function(reg) {
+
+        // We could also start sending some events ...
+      });
+      break;
+
+    case 'Unregister':
+      navigator.serviceWorker.getRegistration().then(function (reg) {
+        reg.unregister();
+      });
+      break;
+  }
+});
