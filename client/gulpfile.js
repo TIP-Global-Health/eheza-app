@@ -127,21 +127,18 @@ gulp.task('bower', function () {
 
 // Optimizes all the CSS, HTML and concats the JS etc
 gulp.task("minify", ["styles", "copy:images"], function () {
-  var assets = $.useref.assets({searchPath: "serve"});
-
   return gulp.src("serve/**/*.*")
     // Concatenate JavaScript files and preserve important comments
     .pipe($.if("*.js", $.uglify({preserveComments: "some"})))
     .on('error', function(err) {
         console.error(err);
     })
+
     // Minify CSS
     .pipe($.if("*.css", $.minifyCss()))
-    // Start cache busting the files
-    .pipe($.revAll({ ignore: ["index.html", ".eot", ".svg", ".ttf", ".woff"] }))
-    .pipe(assets.restore())
-    // Replace the asset names with their cache busted names
-    .pipe($.revReplace())
+
+    // We don't do cache-busting here because the PWA stuff makes that obsolete
+
     // Minify HTML
     .pipe($.if("*.html", $.htmlmin({
       removeComments: true,
@@ -152,6 +149,7 @@ gulp.task("minify", ["styles", "copy:images"], function () {
       removeAttributeQuotes: true,
       removeRedundantAttributes: true
     })))
+
     // Send the output to the correct folder
     .pipe(gulp.dest("dist"))
     .pipe($.size({title: "optimizations"}));
@@ -200,9 +198,9 @@ gulp.task("serve:dev", ["build"], function () {
 // reload the website accordingly. Update or add other files you need to be watched.
 gulp.task("watch", function () {
   // We need to copy dev, so index.html may be replaced by error messages.
-  gulp.watch(["src/index.html", "src/js/**/*.js"], ["copy:dev", reload]);
-  gulp.watch(["src/elm/**/*.elm"], ["elm", "copy:dev", reload]);
-  gulp.watch(["src/assets/scss/**/*.scss"], ["styles", "copy:dev", reload]);
+  gulp.watch(["src/index.html", "src/js/**/*.js"], ["copy:dev", "pwa:dev", reload]);
+  gulp.watch(["src/elm/**/*.elm"], ["elm", "copy:dev", "pwa:dev", reload]);
+  gulp.watch(["src/assets/scss/**/*.scss"], ["styles", "copy:dev", "pwa:dev", reload]);
 });
 
 // Serve the site after optimizations to see that everything looks fine
@@ -216,15 +214,83 @@ gulp.task("serve:prod", function () {
   });
 });
 
+var precacheFileGlob = '*.{js,html,css,png,jpg,gif,svg,eot,ttf,woff}';
+
+// We cache bower_components individually, since they often include things
+// we don't need.
+var precacheLocalDev = [
+  'serve/' + precacheFileGlob,
+  'serve/assets/**/' + precacheFileGlob,
+  'serve/bower_components/copy-button/bundled.min.js',
+  'serve/bower_components/dropzone/dist/min/dropzone.min.css',
+  'serve/bower_components/dropzone/dist/min/dropzone.min.js',
+  'serve/bower_components/offline/offline.min.js'
+];
+
+// There may be a better way to do this, but for the moment we have some
+// slight duplication here.
+var precacheProd = [
+  'dist/' + precacheFileGlob,
+  'dist/assets/**/' + precacheFileGlob,
+  'dist/bower_components/copy-button/bundled.min.*.js',
+  'dist/bower_components/dropzone/dist/min/dropzone.min.*.css',
+  'dist/bower_components/dropzone/dist/min/dropzone.min.*.js',
+  'dist/bower_components/offline/offline.min.*.js'
+];
+
+// In addition to local assets, we also cache some remote assets
+// that won't change ... i.e. CDN stuff.
+var cacheRemote = [{
+    urlPattern: /^https:\/\/js\.pusher\.com\//,
+    // The version is in the URL, so we don't need to check network
+    // if it's in the cache.
+    handler: 'cacheFirst'
+},{
+    urlPattern: /^https:\/\/cdn\.jsdelivr\.net\//,
+    handler: 'cacheFirst'
+},{
+    urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
+    handler: 'cacheFirst'
+},{
+    urlPattern: /^https:\/\/fonts\.gstatic\.com\//,
+    handler: 'cacheFirst'
+}];
+
+// For offline use while developing
+gulp.task('pwa:dev', ["styles", "copy:dev", "elm"], function(callback) {
+  var swPrecache = require('sw-precache');
+  var rootDir = 'serve/';
+
+  swPrecache.write(`${rootDir}/service-worker.js`, {
+    cacheId: 'ihangane',
+    staticFileGlobs: precacheLocalDev,
+    stripPrefix: rootDir,
+    runtimeCaching: cacheRemote,
+    maximumFileSizeToCacheInBytes: 20 * 1024 * 1024
+  }, callback);
+});
+
+// Offline use in production.
+gulp.task('pwa:prod', function (callback) {
+  var swPrecache = require('sw-precache');
+  var rootDir = 'dist/';
+
+  swPrecache.write(`${rootDir}/service-worker.js`, {
+    cacheId: 'ihangane',
+    staticFileGlobs: precacheProd,
+    stripPrefix: rootDir,
+    runtimeCaching: cacheRemote,
+    maximumFileSizeToCacheInBytes: 20 * 1024 * 1024
+  }, callback);
+});
+
 // Default task, run when just writing "gulp" in the terminal
 gulp.task("default", ["serve:dev", "watch"]);
 
 // Builds the site but doesnt serve it to you
 // @todo: Add "bower" here
-gulp.task("build", gulpSequence("clean:dev", ["styles", "copy:dev", "elm"]));
+gulp.task("build", gulpSequence("clean:dev", ["styles", "copy:dev", "elm", "pwa:dev"]));
 
 // Builds your site with the "build" command and then runs all the optimizations on
 // it and outputs it to "./dist"
-gulp.task("publish", ["build", "clean:prod"], function () {
-  gulp.start("minify", "cname", "images", "fonts");
-});
+gulp.task("publish", gulpSequence(["build", "clean:prod"], ["minify", "cname", "images", "fonts"], "pwa:dev"));

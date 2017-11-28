@@ -1,4 +1,4 @@
-module Utils.WebData exposing (sendWithHandler, viewError, viewOrFetch, whenNotAsked)
+module Utils.WebData exposing (sendWithHandler, resetError, viewError, viewOrFetch, whenNotAsked)
 
 import Json.Decode exposing (Decoder, list)
 import Html exposing (..)
@@ -57,38 +57,55 @@ whenNotAsked msg data =
   - some WebData
   - a messages that would kick off a fetch
   - a function that would produce some HTML
+  - a function that would wrap error HTML
 
 ... return some HTML that will use a `Success` to make HTML, or provide
 some HTML to kick off the fetch.
 
 -}
-viewOrFetch : Language -> msg -> (a -> List (Html msg)) -> WebData a -> List (Html msg)
-viewOrFetch language fetch view data =
+viewOrFetch : Language -> msg -> (a -> List (Html msg)) -> (List (Html msg) -> List (Html msg)) -> WebData a -> List (Html msg)
+viewOrFetch language fetch view wrapError data =
     case data of
         NotAsked ->
-            [ div
-                [ class "ui button"
-                , onClick fetch
+            wrapError
+                [ div
+                    [ class "ui message" ]
+                    [ div
+                        [ class "ui primary button"
+                        , onClick fetch
+                        ]
+                        [ text <| translate language Translate.Fetch ]
+                    ]
                 ]
-                [ text <| translate language Translate.Fetch ]
-            ]
 
         Loading ->
-            [ spinner ]
+            wrapError
+                [ spinner ]
 
         Failure err ->
-            [ div [ class "ui message error" ]
-                [ viewError language err
-                , div
-                    [ class "ui button"
+            wrapError
+                [ div
+                    [ class "ui message error" ]
+                    [ viewError language err ]
+                , button
+                    [ class "ui primary button"
                     , onClick fetch
                     ]
                     [ text <| translate language Translate.Retry ]
                 ]
-            ]
 
         Success a ->
             view a
+
+
+resetError : RemoteData e a -> RemoteData e a
+resetError data =
+    case data of
+        Failure _ ->
+            NotAsked
+
+        _ ->
+            data
 
 
 sendWithHandler : Decoder a -> (Result Http.Error a -> msg) -> RequestBuilder a1 -> Cmd msg

@@ -21,3 +21,12 @@ hasValidAccessToken model =
     model.configuration
         |> RemoteData.map (.login >> Restful.Login.hasValidAccessToken)
         |> RemoteData.withDefault False
+
+
+{-| Do we have an access token at all?
+-}
+hasAccessToken : Model -> Bool
+hasAccessToken model =
+    model.configuration
+        |> RemoteData.map (.login >> Restful.Login.hasAccessToken)
+        |> RemoteData.withDefault False

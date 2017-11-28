@@ -9,6 +9,7 @@ import Pages.Model
 import Pages.Page exposing (Page(LoginPage))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Login exposing (LoginStatus)
+import ServiceWorker.Model
 import Time exposing (Time)
 import Translate exposing (Language(..))
 import User.Model exposing (User)
@@ -44,6 +45,7 @@ type alias Model =
     , configuration : RemoteData String ConfiguredModel
     , currentDate : NominalDate
     , language : Language
+    , serviceWorker : ServiceWorker.Model.Model
     , offline : Bool
     }
 
@@ -132,6 +134,7 @@ type Msg
     | MsgLogin (Restful.Login.Msg User)
     | MsgPageLogin Pages.Login.Model.Msg
     | MsgSession Pages.Model.MsgSession
+    | MsgServiceWorker ServiceWorker.Model.Msg
     | SetActivePage Page
     | SetLanguage Language
     | SetOffline Bool
@@ -166,4 +169,5 @@ emptyModel =
     , language = English
     , offline = False
     , sessionPages = Pages.Model.emptySessionPages
+    , serviceWorker = ServiceWorker.Model.emptyModel
     }

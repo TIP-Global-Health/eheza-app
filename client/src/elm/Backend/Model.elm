@@ -93,6 +93,7 @@ type MsgBackend
     | HandleFetchedOfflineSessionFromBackend (Result Error ( SessionId, OfflineSession ))
     | HandleFetchedSessions NominalDate (WebData (EveryDictList SessionId Session))
     | HandleUploadedEdits SessionId (Result Error ())
+    | ResetErrors -- reset errors to `NotAsked` when certain requests succeed, so they will retry
     | ResetOfflineSessionRequest -- resets it to `NotAsked`
     | ResetUploadEditsRequest
 

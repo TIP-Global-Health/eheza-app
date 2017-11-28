@@ -25,6 +25,7 @@ import Restful.Endpoint exposing (EndPoint, toEntityId, fromEntityId, encodeEnti
 import EveryDict
 import EveryDictList
 import Gizra.NominalDate exposing (NominalDate)
+import Gizra.Update exposing (sequenceExtra)
 import Http exposing (Error)
 import Json.Decode
 import Json.Encode exposing (Value, object)
@@ -32,6 +33,7 @@ import Maybe.Extra exposing (toList)
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
 import Update.Extra exposing (sequence)
+import Utils.WebData exposing (resetError)
 
 
 clinicEndpoint : EndPoint Error () ClinicId Clinic
@@ -96,6 +98,24 @@ updateBackend backendUrl accessToken msg model =
 
         patchBackend =
             Restful.Endpoint.patch_ backendUrl (Just accessToken)
+
+        resetErrorsIfSucceeded data =
+            sequenceExtra (updateBackend backendUrl accessToken) <|
+                case data of
+                    Success _ ->
+                        [ ResetErrors ]
+
+                    _ ->
+                        []
+
+        resetErrorsIfOk result =
+            sequenceExtra (updateBackend backendUrl accessToken) <|
+                case result of
+                    Ok _ ->
+                        [ ResetErrors ]
+
+                    Err _ ->
+                        []
     in
         case msg of
             FetchClinics ->
@@ -112,6 +132,7 @@ updateBackend backendUrl accessToken msg model =
                 , Cmd.none
                 , []
                 )
+                    |> resetErrorsIfSucceeded clinics
 
             FetchFutureSessions date ->
                 ( { model | futureSessions = Loading }
@@ -128,6 +149,7 @@ updateBackend backendUrl accessToken msg model =
                 , Cmd.none
                 , []
                 )
+                    |> resetErrorsIfSucceeded result
 
             FetchOfflineSessionFromBackend sessionId ->
                 ( { model | offlineSessionRequest = Loading }
@@ -136,19 +158,31 @@ updateBackend backendUrl accessToken msg model =
                 )
 
             HandleFetchedOfflineSessionFromBackend result ->
-                case result of
-                    Err error ->
-                        ( { model | offlineSessionRequest = RemoteData.fromResult (Result.map Tuple.first result) }
-                        , Cmd.none
-                        , []
-                        )
+                resetErrorsIfOk result <|
+                    case result of
+                        Err error ->
+                            ( { model | offlineSessionRequest = RemoteData.fromResult (Result.map Tuple.first result) }
+                            , Cmd.none
+                            , []
+                            )
 
-                    Ok ( sessionId, session ) ->
-                        -- We immediately kick off a save into the cache
-                        ( { model | offlineSessionRequest = Success sessionId }
-                        , Cmd.none
-                        , [ SetEditableSession sessionId (makeEditableSession session) ]
-                        )
+                        Ok ( sessionId, session ) ->
+                            -- We immediately kick off a save into the cache
+                            ( { model | offlineSessionRequest = Success sessionId }
+                            , Cmd.none
+                            , [ SetEditableSession sessionId (makeEditableSession session) ]
+                            )
+
+            ResetErrors ->
+                -- Reset some error conditions to `NotAsked`, so that they will
+                -- be automatically retried if needed.
+                ( { model
+                    | clinics = resetError model.clinics
+                    , futureSessions = resetError model.futureSessions
+                  }
+                , Cmd.none
+                , []
+                )
 
             ResetOfflineSessionRequest ->
                 ( { model | offlineSessionRequest = NotAsked }
@@ -163,23 +197,24 @@ updateBackend backendUrl accessToken msg model =
                 )
 
             HandleUploadedEdits sessionId result ->
-                case result of
-                    Err error ->
-                        ( { model | uploadEditsRequest = RemoteData.fromResult (Result.map (always sessionId) result) }
-                        , Cmd.none
-                        , []
-                        )
+                resetErrorsIfOk result <|
+                    case result of
+                        Err error ->
+                            ( { model | uploadEditsRequest = RemoteData.fromResult (Result.map (always sessionId) result) }
+                            , Cmd.none
+                            , []
+                            )
 
-                    Ok _ ->
-                        -- Record success, and delete our locally cached session.
-                        -- We also invalidate our `futureSessions`, which will indirectly make us fetch them again.
-                        ( { model
-                            | uploadEditsRequest = Success sessionId
-                            , futureSessions = NotAsked
-                          }
-                        , Cmd.none
-                        , [ DeleteEditableSession ]
-                        )
+                        Ok _ ->
+                            -- Record success, and delete our locally cached session.
+                            -- We also invalidate our `futureSessions`, which will indirectly make us fetch them again.
+                            ( { model
+                                | uploadEditsRequest = Success sessionId
+                                , futureSessions = NotAsked
+                              }
+                            , Cmd.none
+                            , [ DeleteEditableSession ]
+                            )
 
             ResetUploadEditsRequest ->
                 ( { model | uploadEditsRequest = NotAsked }

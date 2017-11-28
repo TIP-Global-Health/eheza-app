@@ -129,6 +129,7 @@ type TranslationId
     | SaveError
     | SearchByName
     | SelectYourClinic
+    | SessionClosed
     | SessionInProgress
     | TitleHealthAssessment
     | UnableToDownload
@@ -151,10 +152,12 @@ type LoginPhrase
     | ForgotPassword2
     | LoggedInAs
     | LoginError LoginError
+    | LoginOrWorkOffline
     | Logout
     | Password
     | SignIn
     | Username
+    | WorkOffline
     | YouMustLoginBefore
 
 
@@ -422,7 +425,7 @@ translate lang trans =
                     { english = "There was an error fetchhing the session stored on this device." }
 
                 ErrorNetworkError ->
-                    { english = "There was a network error." }
+                    { english = "A network error occurred contacting the server. Are you connected to the Internet?" }
 
                 ErrorTimeout ->
                     { english = "The network request timed out." }
@@ -498,6 +501,9 @@ translate lang trans =
                                 Timeout ->
                                     { english = "The request to the server timed out." }
 
+                        LoginOrWorkOffline ->
+                            { english = "Either login below, or work offline without logging in." }
+
                         Logout ->
                             { english = "Logout" }
 
@@ -509,6 +515,9 @@ translate lang trans =
 
                         Username ->
                             { english = "Username" }
+
+                        WorkOffline ->
+                            { english = "Work Offline" }
 
                         YouMustLoginBefore ->
                             { english = "You must sign in before you can access the" }
@@ -696,6 +705,9 @@ translate lang trans =
 
                 SelectYourClinic ->
                     { english = "Select your clinic" }
+
+                SessionClosed ->
+                    { english = "Session closed" }
 
                 SessionInProgress ->
                     { english = "A health assessment is already in progress for another clinic." }
