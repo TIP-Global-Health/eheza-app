@@ -1,7 +1,7 @@
 module App.Fetch exposing (..)
 
 import App.Model exposing (..)
-import App.Utils exposing (getLoggedInModel, hasValidAccessToken)
+import App.Utils exposing (getLoggedInModel, hasAccessToken)
 import Pages.Clinics.Fetch
 import Pages.Page exposing (Page(..), UserPage(..))
 
@@ -24,20 +24,16 @@ views. more often than that.
 -}
 fetch : Model -> List Msg
 fetch model =
-    if hasValidAccessToken model then
-        case model.activePage of
-            UserPage (ClinicsPage clinicId) ->
-                getLoggedInModel model
-                    |> Maybe.map
-                        (\loggedIn ->
-                            Pages.Clinics.Fetch.fetch model.currentDate clinicId loggedIn.backend
-                                |> List.map (MsgLoggedIn << MsgBackend)
-                        )
-                    |> Maybe.withDefault []
+    case model.activePage of
+        UserPage (ClinicsPage clinicId) ->
+            getLoggedInModel model
+                |> Maybe.map
+                    (\loggedIn ->
+                        Pages.Clinics.Fetch.fetch model.currentDate clinicId loggedIn.backend
+                            |> List.map (MsgLoggedIn << MsgBackend)
+                    )
+                |> Maybe.withDefault []
 
-            _ ->
-                -- For now, we've only implemented this pattern for ClinicsPage.
-                []
-    else
-        -- No point trying to fetch until we think our access token is valid
-        []
+        _ ->
+            -- For now, we've only implemented this pattern for ClinicsPage.
+            []

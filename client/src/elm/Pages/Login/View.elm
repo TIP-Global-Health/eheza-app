@@ -1,9 +1,11 @@
 module Pages.Login.View exposing (view)
 
-import Gizra.Html exposing (emptyNode, showIf)
+import Backend.Session.Model exposing (EditableSession)
+import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
+import Maybe.Extra exposing (isNothing)
 import Pages.Login.Model exposing (..)
 import Pages.Page exposing (Page)
 import Restful.Login exposing (LoginStatus(..), LoginError)
@@ -12,22 +14,22 @@ import User.Model exposing (..)
 import Utils.Html exposing (spinner)
 
 
-view : Language -> Page -> LoginStatus User data -> Model -> Html Msg
-view language activePage loginStatus model =
+view : Language -> Page -> LoginStatus User data -> Model -> Maybe EditableSession -> Html Msg
+view language activePage loginStatus model session =
     -- We always show the wrapper and the logo. Then, we call `viewContent`
     -- to supply the rest, depending on our params.
     div [ class "wrap wrap-alt-2" ]
         [ div
             [ class "ui basic login segment" ]
-            (viewLogo language :: viewContent language activePage loginStatus model)
+            (viewLogo language :: viewContent language activePage loginStatus model session)
         ]
 
 
 {-| Here, we differentiate based on whether we're logged in or not ... and
 show something appropriate based on that.
 -}
-viewContent : Language -> Page -> LoginStatus User data -> Model -> List (Html Msg)
-viewContent language activePage loginStatus model =
+viewContent : Language -> Page -> LoginStatus User data -> Model -> Maybe EditableSession -> List (Html Msg)
+viewContent language activePage loginStatus model session =
     case loginStatus of
         CheckingCachedCredentials ->
             [ viewCheckingCachedCredentials language ]
@@ -44,18 +46,39 @@ viewContent language activePage loginStatus model =
                     -- We have some login information, but we need to re-login
                     -- ...  our access token was rejected at some point. For
                     -- the moment, we'll just show the login form.
-                    --
-                    -- TODO: Should probably say something in the UI about
-                    -- relogin ... i.e. distinguish this a little bit from a
-                    -- "cold" login. Also, we might "fix" the username ...
-                    -- that is, not allow the user to enter a different username
-                    -- unless they actually logout first.
-                    viewLoginForm language activePage loginStatus model
+                    let
+                        message =
+                            div
+                                [ class "ui message" ]
+                                [ text <| translate language <| Translate.LoginPhrase Translate.LoginOrWorkOffline
+                                ]
+
+                        viewSession =
+                            session
+                                |> Maybe.map
+                                    (\loaded ->
+                                        button
+                                            [ class "ui fluid primary button"
+                                            , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.ClinicsPage <| Just loaded.offlineSession.session.clinicId
+                                            ]
+                                            [ text <| translate language <| Translate.LoginPhrase Translate.WorkOffline
+                                            ]
+                                    )
+                                |> showMaybe
+
+                        loginForm =
+                            viewLoginForm language activePage loginStatus model
+                    in
+                        message :: viewSession :: loginForm
 
                 Nothing ->
-                    -- We're logged in, and, as far as we know, our access token
-                    -- is still good.
-                    [ viewLogout language login.credentials.user ]
+                    -- We're logged in, and, as far as we know, our access
+                    -- token is still good. But we pnly allow logout if there
+                    -- is no session loaded, for now -- it's a simplification.
+                    -- We could re-arrange things to allow anonymous users to
+                    -- edit downloaded sessions.
+                    [ viewWhenLoggedIn language login.credentials.user session
+                    ]
 
 
 {-| Some HTML to show while we're checking our cached credentials to see
@@ -78,8 +101,8 @@ opportunity to logout, or do something else. Note that you won't get here
 usually, because if your active page was elsewhere, you'll transition
 there automatically once you login.
 -}
-viewLogout : Language -> User -> Html Msg
-viewLogout language user =
+viewWhenLoggedIn : Language -> User -> Maybe EditableSession -> Html Msg
+viewWhenLoggedIn language user session =
     div []
         [ p []
             [ Translate.LoginPhrase Translate.LoggedInAs
@@ -97,14 +120,18 @@ viewLogout language user =
             , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.ClinicsPage Nothing
             ]
             [ text <| translate language Translate.SelectYourClinic ]
-        , button
-            [ class "ui fluid button"
-            , onClick HandleLogoutClicked
-            ]
-            [ Translate.LoginPhrase Translate.Logout
-                |> translate language
-                |> text
-            ]
+
+        -- For now, we only allow logout if we have no session downloaded.
+        -- This is a sipmlification that we could change later.
+        , showIf (isNothing session) <|
+            button
+                [ class "ui fluid button"
+                , onClick HandleLogoutClicked
+                ]
+                [ Translate.LoginPhrase Translate.Logout
+                    |> translate language
+                    |> text
+                ]
         ]
 
 
