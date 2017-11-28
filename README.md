@@ -21,3 +21,6 @@ implications.
 Eventually, we may want to deal with some of this in the app itself (i.e. ask
 the user to reload when a new version is available, and give the user a way to
 relinquish the URL from within the app itself).
+
+Note that to get the "work while offline" caching, you need to access the app
+via https ... e.g. https://***REMOVED***/app/
