@@ -259,7 +259,7 @@ var cacheRemote = [{
 // For offline use while developing
 gulp.task('pwa:dev', ["styles", "copy:dev", "elm"], function(callback) {
   var swPrecache = require('sw-precache');
-  var rootDir = 'serve';
+  var rootDir = 'serve/';
 
   swPrecache.write(`${rootDir}/service-worker.js`, {
     cacheId: 'ihangane',
@@ -273,7 +273,7 @@ gulp.task('pwa:dev', ["styles", "copy:dev", "elm"], function(callback) {
 // Offline use in production.
 gulp.task('pwa:prod', function (callback) {
   var swPrecache = require('sw-precache');
-  var rootDir = 'dist';
+  var rootDir = 'dist/';
 
   swPrecache.write(`${rootDir}/service-worker.js`, {
     cacheId: 'ihangane',
