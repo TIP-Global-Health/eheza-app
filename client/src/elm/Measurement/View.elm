@@ -465,9 +465,9 @@ saveButton language msg saveStatus maybeDivClass =
              ]
                 ++ saveAttr
             )
-            [ text <| translate language Trans.Save
+            [ text <| translate language Trans.Update
             ]
-        , [ text <| translate language Trans.SaveError ]
+        , [ text <| translate language Trans.UpdateError ]
             |> div []
             |> showIf isFailure
         ]
