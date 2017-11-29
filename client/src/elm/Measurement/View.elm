@@ -60,7 +60,7 @@ type alias FloatFormConfig value =
     , activity : ActivityType
     , placeholderText : TranslationId
     , zScoreLabelForAge : TranslationId
-    , zScoreForAge : Days -> Gender -> Float -> Maybe ZScore
+    , zScoreForAge : Maybe (Days -> Gender -> Float -> Maybe ZScore)
     , zScoreForHeight : Maybe (Centimetres -> Gender -> Float -> Maybe ZScore)
     , constraints : FloatInputConstraints
     , unit : TranslationId
@@ -79,7 +79,7 @@ heightFormConfig =
     , activity = ChildActivity Height
     , placeholderText = Trans.PlaceholderEnterHeight
     , zScoreLabelForAge = Trans.ZScoreHeightForAge
-    , zScoreForAge = \age gender height -> zScoreForHeight age gender (Centimetres height)
+    , zScoreForAge = Just <| \age gender height -> zScoreForHeight age gender (Centimetres height)
     , zScoreForHeight = Nothing
     , constraints = getInputConstraintsHeight
     , unit = Trans.CentimeterShorthand
@@ -98,7 +98,7 @@ muacFormConfig =
     , activity = ChildActivity Muac
     , placeholderText = Trans.PlaceholderEnterMUAC
     , zScoreLabelForAge = Trans.ZScoreMuacForAge
-    , zScoreForAge = \age gender muac -> zScoreForMuac age gender (Centimetres muac)
+    , zScoreForAge = Nothing
     , zScoreForHeight = Nothing
     , constraints = getInputConstraintsMuac
     , unit = Trans.CentimeterShorthand
@@ -117,7 +117,7 @@ weightFormConfig =
     , activity = ChildActivity Weight
     , placeholderText = Trans.PlaceholderEnterWeight
     , zScoreLabelForAge = Trans.ZScoreWeightForAge
-    , zScoreForAge = \age gender weight -> zScoreForWeight age gender (Kilograms weight)
+    , zScoreForAge = Just <| \age gender weight -> zScoreForWeight age gender (Kilograms weight)
     , zScoreForHeight = Just <| \height gender weight -> zScoreWeightForHeight height gender (Kilograms weight)
     , constraints = getInputConstraintsWeight
     , unit = Trans.KilogramShorthand
@@ -207,22 +207,25 @@ viewFloatForm config language currentDate child measurements model =
         ageInDays =
             diffDays child.birthDate dateMeasured
 
-        zScoreForAgeText =
-            floatValue
-                |> Maybe.andThen (\val -> config.zScoreForAge ageInDays child.gender val)
-                |> Maybe.map viewZScore
-                |> Maybe.withDefault (translate language Trans.NotAvailable)
-
-        -- We always show something about the ZScore ... if we can't
-        -- calculate one, we say that it's unavailable.
         renderedZScoreForAge =
-            div
-                [ class "ui large header z-score age" ]
-                [ text <| translate language config.zScoreLabelForAge
-                , span
-                    [ class "sub header" ]
-                    [ text zScoreForAgeText ]
-                ]
+            config.zScoreForAge
+                |> Maybe.map
+                    (\zScoreForAge ->
+                        let
+                            zScoreText =
+                                floatValue
+                                    |> Maybe.andThen (\val -> zScoreForAge ageInDays child.gender val)
+                                    |> Maybe.map viewZScore
+                                    |> Maybe.withDefault (translate language Trans.NotAvailable)
+                        in
+                            div
+                                [ class "ui large header z-score age" ]
+                                [ text <| translate language config.zScoreLabelForAge
+                                , span
+                                    [ class "sub header" ]
+                                    [ text zScoreText ]
+                                ]
+                    )
 
         -- In some cases (weight) we also calculate a ZScore based on the
         -- height (rather than age). In order to do that, we need both the height and the weight.
@@ -297,7 +300,7 @@ viewFloatForm config language currentDate child measurements model =
                         |> Maybe.map (viewPreviousMeasurement config language)
                         |> showMaybe
                     ]
-                , renderedZScoreForAge
+                , showMaybe renderedZScoreForAge
                 , showMaybe renderedZScoreForHeight
                 ]
             , div [ class "actions" ] <|
