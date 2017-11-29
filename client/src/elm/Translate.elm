@@ -125,8 +125,6 @@ type TranslationId
     | ReportCompleted { pending : Int, total : Int }
     | ResolveMonth Month
     | Retry
-    | Save
-    | SaveError
     | SearchByName
     | SelectYourClinic
     | SessionClosed
@@ -134,6 +132,8 @@ type TranslationId
     | TitleHealthAssessment
     | UnableToDownload
     | UnableToUpload
+    | Update
+    | UpdateError
     | UploadHealthAssessment
     | UploadingSession1
     | UploadingSession2
@@ -694,12 +694,6 @@ translate lang trans =
                 Retry ->
                     { english = "Retry" }
 
-                Save ->
-                    { english = "Save" }
-
-                SaveError ->
-                    { english = "Save error" }
-
                 SearchByName ->
                     { english = "Search by Name" }
 
@@ -720,6 +714,12 @@ translate lang trans =
 
                 UnableToUpload ->
                     { english = "Unable to Upload" }
+
+                Update ->
+                    { english = "Update" }
+
+                UpdateError ->
+                    { english = "Update Error" }
 
                 UploadHealthAssessment ->
                     { english = "Upload Health Assessment" }
