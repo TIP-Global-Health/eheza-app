@@ -58,10 +58,6 @@ viewChild language currentDate childId session model =
 viewFoundChild : Language -> NominalDate -> ( ChildId, Child ) -> EditableSession -> Model ChildActivityType -> Html (Msg ChildActivityType Measurement.Model.MsgChild)
 viewFoundChild language currentDate ( childId, child ) session model =
     let
-        childName =
-            translate language <|
-                Trans.BabyName child.name
-
         maybeMother =
             child.motherId
                 |> Maybe.andThen (\motherId -> getMother motherId session.offlineSession)
@@ -152,10 +148,10 @@ viewFoundChild language currentDate ( childId, child ) session model =
             , div [ class "ui unstackable items participant-page child" ]
                 [ div [ class "item" ]
                     [ div [ class "ui image" ]
-                        [ thumbnailImage "child" child.image childName thumbnailDimensions.height thumbnailDimensions.width ]
+                        [ thumbnailImage "child" child.image child.name thumbnailDimensions.height thumbnailDimensions.width ]
                     , div [ class "content" ]
                         [ h2 [ class "ui header" ]
-                            [ text childName ]
+                            [ text child.name ]
                         , p [] <|
                             motherInfo
                                 ++ [ break, dateOfBirth, break, age, break, gender ]
