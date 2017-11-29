@@ -92,7 +92,7 @@ function hedley_patient_field_default_field_instances() {
     'label' => 'Date birth',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -108,7 +108,7 @@ function hedley_patient_field_default_field_instances() {
         'label_position' => 'above',
         'no_fieldset' => 0,
         'text_parts' => array(),
-        'year_range' => '-3:+3',
+        'year_range' => '-5:+0',
       ),
       'type' => 'date_select',
       'weight' => 8,
@@ -189,9 +189,13 @@ function hedley_patient_field_default_field_instances() {
     ),
     'widget' => array(
       'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
       'weight' => 7,
     ),
   );
@@ -318,7 +322,7 @@ function hedley_patient_field_default_field_instances() {
     'label' => 'Date birth',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -333,8 +337,10 @@ function hedley_patient_field_default_field_instances() {
         'input_format_custom' => '',
         'label_position' => 'above',
         'no_fieldset' => 0,
-        'text_parts' => array(),
-        'year_range' => '-3:+3',
+        'text_parts' => array(
+          0 => 'year',
+        ),
+        'year_range' => '1970:-10',
       ),
       'type' => 'date_select',
       'weight' => 6,
