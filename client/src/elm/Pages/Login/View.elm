@@ -5,7 +5,6 @@ import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
-import Maybe.Extra exposing (isNothing)
 import Pages.Login.Model exposing (..)
 import Pages.Page exposing (Page)
 import Restful.Login exposing (LoginStatus(..), LoginError)
@@ -120,18 +119,14 @@ viewWhenLoggedIn language user session =
             , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.ClinicsPage Nothing
             ]
             [ text <| translate language Translate.SelectYourClinic ]
-
-        -- For now, we only allow logout if we have no session downloaded.
-        -- This is a sipmlification that we could change later.
-        , showIf (isNothing session) <|
-            button
-                [ class "ui fluid button"
-                , onClick HandleLogoutClicked
-                ]
-                [ Translate.LoginPhrase Translate.Logout
-                    |> translate language
-                    |> text
-                ]
+        , button
+            [ class "ui fluid button"
+            , onClick HandleLogoutClicked
+            ]
+            [ Translate.LoginPhrase Translate.Logout
+                |> translate language
+                |> text
+            ]
         ]
 
 
