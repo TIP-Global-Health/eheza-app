@@ -266,7 +266,8 @@ gulp.task('pwa:dev', ["styles", "copy:dev", "elm"], function(callback) {
     staticFileGlobs: precacheLocalDev,
     stripPrefix: rootDir,
     runtimeCaching: cacheRemote,
-    maximumFileSizeToCacheInBytes: 20 * 1024 * 1024
+    maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
+    importScripts: ["photos.js"]
   }, callback);
 });
 
@@ -280,7 +281,8 @@ gulp.task('pwa:prod', function (callback) {
     staticFileGlobs: precacheProd,
     stripPrefix: rootDir,
     runtimeCaching: cacheRemote,
-    maximumFileSizeToCacheInBytes: 20 * 1024 * 1024
+    maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
+    importScripts: ["photos.js"]
   }, callback);
 });
 

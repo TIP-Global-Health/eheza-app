@@ -81,7 +81,7 @@ view config language currentDate selectedActivity fullSession model =
                             config.getName participant
 
                         imageSrc =
-                            config.getAvatarThumb participant
+                            config.getAvatarUrl participant
 
                         imageView =
                             thumbnailImage config.iconClass imageSrc name thumbnailDimensions.height thumbnailDimensions.width

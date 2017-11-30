@@ -14,7 +14,7 @@ For things like measurements, you need an `OfflineSession`.
 -}
 type alias Child =
     { name : String
-    , image : String
+    , avatarUrl : Maybe String
     , motherId : Maybe MotherId
     , siblingId : Maybe ChildId
     , birthDate : NominalDate

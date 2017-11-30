@@ -16,7 +16,7 @@ import Participant.Model exposing (Participant)
 childParticipant : Participant ChildId Child ChildActivityType Measurement.Model.MsgChild
 childParticipant =
     { activities = getAllChildActivities
-    , getAvatarThumb = .image
+    , getAvatarUrl = .avatarUrl
     , getBirthDate = .birthDate
     , getMotherId = \childId session -> getMyMother childId session.offlineSession |> Maybe.map Tuple.first
     , getName = .name
@@ -37,7 +37,7 @@ motherParticipant =
     -- mothers match, and either pre-sort in EveryDictList or sort each time in
     -- EveryDict
     { activities = getAllMotherActivities
-    , getAvatarThumb = .image
+    , getAvatarUrl = .avatarUrl
     , getBirthDate = .birthDate
     , getMotherId = \motherId session -> Just motherId
     , getName = .name

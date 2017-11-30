@@ -6,7 +6,7 @@ import Gizra.NominalDate exposing (NominalDate)
 
 type alias Mother =
     { name : String
-    , image : String
+    , avatarUrl : Maybe String
     , children : List ChildId
     , birthDate : NominalDate
     }

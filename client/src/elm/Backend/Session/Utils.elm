@@ -155,12 +155,12 @@ getPhotoUrls session =
         fromMothers =
             session.mothers
                 |> EveryDictList.values
-                |> List.map .image
+                |> List.filterMap .avatarUrl
 
         fromChildren =
             session.children
                 |> EveryDict.values
-                |> List.map .image
+                |> List.filterMap .avatarUrl
 
         fromMeasurements =
             session.historicalMeasurements.children

@@ -50,28 +50,30 @@ tabItem title active taId action =
         [ text title ]
 
 
-thumbnailImage : String -> String -> String -> Int -> Int -> Html any
-thumbnailImage subClass source label height width =
-    if String.isEmpty source then
-        span
-            [ class <| "icon-participant " ++ subClass
-            , style
-                [ ( "height", (toString height) ++ "px" )
-                , ( "width", (toString width) ++ "px" )
+thumbnailImage : String -> Maybe String -> String -> Int -> Int -> Html any
+thumbnailImage subClass maybeAvatarUrl label height width =
+    case maybeAvatarUrl of
+        Nothing ->
+            span
+                [ class <| "icon-participant " ++ subClass
+                , style
+                    [ ( "height", (toString height) ++ "px" )
+                    , ( "width", (toString width) ++ "px" )
+                    ]
                 ]
-            ]
-            []
-    else
-        img
-            [ src source
-            , attribute "alt" label
-            , style
-                [ ( "height", (toString height) ++ "px" )
-                , ( "width", (toString width) ++ "px" )
+                []
+
+        Just source ->
+            img
+                [ src source
+                , attribute "alt" label
+                , style
+                    [ ( "height", (toString height) ++ "px" )
+                    , ( "width", (toString width) ++ "px" )
+                    ]
+                , class <| "photo-participant " ++ subClass
                 ]
-            , class <| "photo-participant " ++ subClass
-            ]
-            []
+                []
 
 
 {-| Takes some HTML with a "modal" class, and puts it in an overlay

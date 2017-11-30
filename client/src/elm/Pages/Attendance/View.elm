@@ -18,6 +18,7 @@ import Html.Events exposing (onClick)
 import Pages.Model exposing (MsgSession(..))
 import Pages.Page exposing (Page(..), UserPage(..), SessionPage(..))
 import Translate exposing (translate, Language)
+import Utils.Html exposing (thumbnailImage)
 
 
 view : Language -> EditableSession -> Html MsgSession
@@ -89,14 +90,7 @@ viewMother session motherId mother =
         div
             [ class "item" ]
             [ checkIn
-            , img
-                [ alt mother.name
-                , class "ui image"
-                , height 110
-                , width 110
-                , src "assets/images/profile-baby.jpg"
-                ]
-                []
+            , thumbnailImage "mother" mother.avatarUrl mother.name 110 110
             , div
                 [ class "content" ]
                 [ text mother.name ]
