@@ -1,4 +1,4 @@
-port module Measurement.Update exposing (updateChild, updateMother, subscriptions)
+port module Measurement.Update exposing (updateChild, updateMother)
 
 import Backend.Entities exposing (ChildId, MotherId)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..))
@@ -17,12 +17,6 @@ instance, by actually writing the data to local storage).
 updateChild : MsgChild -> ModelChild -> ( ModelChild, Cmd MsgChild, Maybe OutMsgChild )
 updateChild msg model =
     case msg of
-        HandleDropzoneUploadedFile fileId ->
-            ( { model | photo = ( Just fileId, Nothing ) }
-            , Cmd.none
-            , Nothing
-            )
-
         UpdateHeight val ->
             ( { model | height = val }
             , Cmd.none
@@ -65,12 +59,6 @@ updateChild msg model =
                 , Cmd.none
                 , Nothing
                 )
-
-        ResetDropZone ->
-            ( model
-            , dropzoneReset ()
-            , Nothing
-            )
 
         SendOutMsgChild outMsg ->
             ( model
@@ -156,18 +144,3 @@ postPhoto backendUrl accessToken childId model =
                , command
                )
 -}
-
-
-subscriptions : ModelChild -> Sub MsgChild
-subscriptions model =
-    dropzoneUploadedFile HandleDropzoneUploadedFile
-
-
-{-| Get a msg if a file has been uploaded via the Dropzone.
--}
-port dropzoneUploadedFile : (Int -> msg) -> Sub msg
-
-
-{-| Cause the drop zone widget to clear its image
--}
-port dropzoneReset : () -> Cmd msg

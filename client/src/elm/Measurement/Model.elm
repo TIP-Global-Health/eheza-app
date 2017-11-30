@@ -34,7 +34,7 @@ type alias ModelChild =
     { height : String
     , muac : String
     , nutritionSigns : EverySet ChildNutritionSign
-    , photo : ( Maybe FileId, Maybe PhotoValue )
+    , photo : Maybe PhotoValue
     , weight : String
     }
 
@@ -55,9 +55,7 @@ type alias FileId =
 
 
 type MsgChild
-    = HandleDropzoneUploadedFile Int
-    | ResetDropZone
-    | SelectNutritionSign Bool ChildNutritionSign
+    = SelectNutritionSign Bool ChildNutritionSign
     | SendOutMsgChild OutMsgChild
     | UpdateHeight String
     | UpdateMuac String
@@ -90,7 +88,7 @@ emptyModelChild =
     { height = ""
     , muac = ""
     , nutritionSigns = EverySet.empty
-    , photo = ( Nothing, Nothing )
+    , photo = Nothing
     , weight = ""
     }
 

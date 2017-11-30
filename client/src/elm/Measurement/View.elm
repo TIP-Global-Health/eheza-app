@@ -398,31 +398,21 @@ viewFloatDiff config language previousValue currentValue =
             viewMessage False
 
 
-viewPhoto : Language -> WebData () -> ( Maybe FileId, Maybe PhotoValue ) -> Html MsgChild
-viewPhoto language saveStatus ( fileId, photoValue ) =
+viewPhoto : Language -> WebData () -> Maybe PhotoValue -> Html MsgChild
+viewPhoto language saveStatus photo =
     let
-        hasFileId =
-            isJust fileId
-
-        handleClick =
-            if hasFileId then
-                [ onClick ResetDropZone ]
-            else
-                []
-
         activity =
             ChildActivity ChildPicture
     in
         div
             [ class "ui full segment photo" ]
             [ div [ class "content" ]
-                [ h3 [ class "ui header" ]
+                [ h3
+                    [ class "ui header" ]
                     [ text <| translate language (Trans.ActivitiesTitle activity) ]
                 , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
-                , Maybe.map viewPhotoThumb photoValue
+                , Maybe.map viewPhotoThumb photo
                     |> showMaybe
-                , div [] [ text "Photos are not working at the moment" ]
-                , div [ class "dropzone" ] []
                 ]
             , div [ class "actions" ] <|
                 saveButton language
