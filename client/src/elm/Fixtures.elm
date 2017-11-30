@@ -36,7 +36,7 @@ exampleUser =
 exampleChildA : Child
 exampleChildA =
     { name = "Michelle Kelly"
-    , image = "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
+    , avatarUrl = Just "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , motherId = Nothing
     , siblingId = Nothing
     , birthDate = date 2016 8 28
@@ -49,7 +49,7 @@ exampleChildA =
 exampleChildB : Child
 exampleChildB =
     { name = "Habimana Hakizimana"
-    , image = "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
+    , avatarUrl = Just "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , motherId = Nothing
     , siblingId = Nothing
     , birthDate = date 2016 11 17
@@ -62,7 +62,7 @@ exampleChildB =
 exampleMother : Mother
 exampleMother =
     { name = "Sebabive Gahiji"
-    , image = "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
+    , avatarUrl = Just "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , children = []
     , birthDate = date 2016 8 28
     }
