@@ -18,8 +18,10 @@ import Backend.Model exposing (..)
 import Backend.Session.Decoder exposing (decodeSession, decodeOfflineSession)
 import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession)
 import Backend.Session.Model exposing (Session, OfflineSession, EditableSession, MsgEditableSession(..))
-import Backend.Session.Utils exposing (makeEditableSession, mapChildEdits, mapMotherEdits, getChildMeasurementData, getMotherMeasurementData)
+import Backend.Session.Utils exposing (makeEditableSession, mapChildEdits, mapMotherEdits, getChildMeasurementData, getMotherMeasurementData, getPhotoUrls)
 import Backend.Utils exposing (withEditableSession)
+import CacheStorage.Model exposing (cachePhotos)
+import CacheStorage.Update
 import Config.Model exposing (BackendUrl)
 import Restful.Endpoint exposing (EndPoint, toEntityId, fromEntityId, encodeEntityId, decodeEntityId)
 import EveryDict
@@ -167,10 +169,12 @@ updateBackend backendUrl accessToken msg model =
                             )
 
                         Ok ( sessionId, session ) ->
-                            -- We immediately kick off a save into the cache
+                            -- We immediately kick off a save into the cache, and to cache the photos we'll need
                             ( { model | offlineSessionRequest = Success sessionId }
                             , Cmd.none
-                            , [ SetEditableSession sessionId (makeEditableSession session) ]
+                            , [ SetEditableSession sessionId (makeEditableSession session)
+                              , MsgCacheStorage <| cachePhotos <| getPhotoUrls session
+                              ]
                             )
 
             ResetErrors ->
@@ -323,6 +327,15 @@ updateCache currentDate msg model =
                             ( { model | editableSession = Success Nothing }
                             , Cmd.none
                             )
+
+        MsgCacheStorage subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    CacheStorage.Update.update subMsg model.cacheStorage
+            in
+                ( { model | cacheStorage = subModel }
+                , Cmd.map MsgCacheStorage subCmd
+                )
 
         MsgEditableSession subMsg ->
             case subMsg of
@@ -561,6 +574,7 @@ subscriptions =
         [ cacheEditableSessionResult CacheEditableSessionResult
         , cacheEditsResult CacheEditsResult
         , handleEditableSession HandleEditableSession
+        , Sub.map MsgCacheStorage CacheStorage.Update.subscriptions
         ]
 
 

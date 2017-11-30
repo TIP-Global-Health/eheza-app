@@ -145,3 +145,36 @@ mapMotherEdits func motherId session =
                             }
                     }
                )
+
+
+{-| Return a list of all the photo URLs we ought to cache to work with this offline.
+-}
+getPhotoUrls : OfflineSession -> List String
+getPhotoUrls session =
+    let
+        fromMothers =
+            session.mothers
+                |> EveryDictList.values
+                |> List.map .image
+
+        fromChildren =
+            session.children
+                |> EveryDict.values
+                |> List.map .image
+
+        fromMeasurements =
+            session.historicalMeasurements.children
+                |> EveryDict.values
+                |> List.map
+                    (\measurements ->
+                        measurements.photos
+                            |> List.map
+                                (\( _, photo ) ->
+                                    case photo.value of
+                                        PhotoValue url ->
+                                            url
+                                )
+                    )
+                |> List.concat
+    in
+        fromMothers ++ fromChildren ++ fromMeasurements

@@ -21,6 +21,7 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (MeasurementEdits)
 import Backend.Session.Model exposing (OfflineSession, EditableSession, Session, MsgEditableSession)
+import CacheStorage.Model
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import Http exposing (Error)
@@ -133,12 +134,18 @@ type alias ModelCached =
     -- on whether our editable session has edits or not ... you won't be
     -- locked into edit mode until you've made an edit.
     { editableSession : WebData (Maybe ( SessionId, EditableSession ))
+
+    -- This uses the `CacheStorage` API, which ultimately will be nicer
+    -- than using local storage ... so, eventually could transition
+    -- editableSession into here as well.
+    , cacheStorage : CacheStorage.Model.Model
     }
 
 
 emptyModelCached : ModelCached
 emptyModelCached =
-    { editableSession = NotAsked
+    { cacheStorage = CacheStorage.Model.emptyModel
+    , editableSession = NotAsked
     }
 
 
@@ -175,6 +182,8 @@ type MsgCached
       -- Deletes an editable session from the cache. You shouldn't call this
       -- if the session has edits that haven't been saved to the backend!
     | DeleteEditableSession
+      -- Messages for cacheStorage
+    | MsgCacheStorage CacheStorage.Model.Msg
       -- Some messages which we define elsewhere that the UI can send to
       -- modify an editable session.
     | MsgEditableSession MsgEditableSession

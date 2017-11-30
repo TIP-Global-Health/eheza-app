@@ -230,3 +230,42 @@ elmApp.ports.serviceWorkerOut.subscribe(function (message) {
       break;
   }
 });
+
+function withPhotos(func) {
+  caches.open("photos").then(func);
+}
+
+function updatePhotos () {
+  withPhotos(function (cache) {
+    cache.keys().then(function (keys) {
+      var urls = keys.map(function (request) {
+        return request.url;
+      });
+
+      elmApp.ports.cacheStorageResponse.send({
+        tag: "SetCachedPhotos",
+        value: urls
+      });
+    });
+  });
+}
+
+elmApp.ports.cacheStorageRequest.subscribe(function (request) {
+  switch (request.tag) {
+    case 'CachePhotos':
+      withPhotos(function (cache) {
+        cache.addAll(request.value).then(updatePhotos, function (err) {
+          console.log(err);
+        });
+      });
+      break;
+
+    case 'CheckCachedPhotos':
+      updatePhotos();
+      break;
+
+    case 'ClearCachedPhotos':
+      caches.delete("photos").then(updatePhotos);
+      break;
+  }
+});
