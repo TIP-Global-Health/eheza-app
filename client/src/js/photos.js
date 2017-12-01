@@ -17,6 +17,9 @@
     // if it's not in the cache, we'll just try to fetch it.
     var matchUrl = /\/sites\/default\/files\//;
 
+    var uploadCache = "photos-upload";
+    var uploadUrl = /\/cache-upload\/images/;
+
     self.addEventListener('fetch', function (event) {
         if ((event.request.method === 'GET') && matchUrl.test(event.request.url)) {
             var response =
@@ -39,6 +42,47 @@
                 });
 
             event.respondWith(response);
+        }
+
+        if ((event.request.method === 'POST') && uploadUrl.test(event.request.url)) {
+            event.respondWith(
+                caches.open(
+                    uploadCache
+                ).then (function (cache) {
+                    var url = "/cache-upload/images/" + "something";
+
+                    // We want to extract the file that got sent, and store it in a way
+                    // that a request will hand it back.
+                    var eventualRequest = new Request (url, {
+                        method: "GET"
+                    });
+
+                    // The body of our eventual response ... extract the image from the
+                    // request.
+                    var body = "";
+
+                    // So, this is the response we'll eventually send, when the actual
+                    // file is requested ...
+                    var eventualResponse = new Response (body, {
+                        status: 200,
+                        statusText: "OK",
+                        headers: {
+                        // possibly Content-Length and Content-Type ?
+                        }
+                    });
+
+                    return cache.put(eventualRequest, eventualResponse).then(function () {
+                        var responseText = JSON.stringify({
+                            url: url
+                        });
+
+                        return new Response (responseText, {
+                            status: 201,
+                            statusText: "Created"
+                        });
+                    });
+                })
+            );
         }
     });
 })();
