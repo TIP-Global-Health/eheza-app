@@ -3,7 +3,7 @@ module Pages.Activity.View exposing (view)
 import Activity.Utils exposing (getActivityIcon, onlyCheckedIn, childHasPendingActivity, motherHasPendingActivity)
 import Backend.Session.Model exposing (EditableSession)
 import EveryDict exposing (EveryDict)
-import Gizra.Html exposing (emptyNode)
+import Gizra.Html exposing (emptyNode, keyed, divKeyed, keyedDivKeyed)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -144,11 +144,11 @@ view config language currentDate selectedActivity fullSession model =
                     [ span [ class "icon-back" ] [] ]
                 ]
     in
-        div
+        divKeyed
             [ class "wrap" ]
-            [ header
-            , activityDescription
-            , tabs
-            , participants
-            , measurementsForm
+            [ header |> keyed "header"
+            , activityDescription |> keyed "activity-description"
+            , tabs |> keyed "tabs"
+            , participants |> keyed "participants"
+            , measurementsForm |> keyed "measurements-form"
             ]

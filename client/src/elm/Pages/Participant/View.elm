@@ -7,7 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild, getMother, getMyMother, getChildren, getChildMeasurementData, getMotherMeasurementData)
-import Gizra.Html exposing (emptyNode)
+import Gizra.Html exposing (emptyNode, keyed, divKeyed, keyedDivKeyed)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
@@ -125,7 +125,9 @@ viewFoundChild language currentDate ( childId, child ) session model =
 
         content =
             if model.selectedTab == ProgressReport then
-                [ viewProgressReport language childId session ]
+                [ viewProgressReport language childId session
+                    |> keyed "progress-report"
+                ]
             else
                 case selectedActivity of
                     Just activity ->
@@ -138,29 +140,34 @@ viewFoundChild language currentDate ( childId, child ) session model =
                         in
                             [ Measurement.View.viewChild language currentDate child activity measurements form
                                 |> Html.map MsgMeasurement
+                                |> keyed "content"
                             ]
 
                     Nothing ->
                         []
     in
-        div [ class "wrap" ] <|
-            [ viewHeader childParticipant language childId session
-            , div [ class "ui unstackable items participant-page child" ]
-                [ div [ class "item" ]
-                    [ div [ class "ui image" ]
-                        [ thumbnailImage "child" child.avatarUrl child.name thumbnailDimensions.height thumbnailDimensions.width ]
-                    , div [ class "content" ]
-                        [ h2 [ class "ui header" ]
-                            [ text child.name ]
-                        , p [] <|
-                            motherInfo
-                                ++ [ break, dateOfBirth, break, age, break, gender ]
+        divKeyed [ class "wrap" ] <|
+            List.concat
+                [ [ viewHeader childParticipant language childId session
+                        |> keyed "header"
+                  , div [ class "ui unstackable items participant-page child" ]
+                        [ div [ class "item" ]
+                            [ div [ class "ui image" ]
+                                [ thumbnailImage "child" child.avatarUrl child.name thumbnailDimensions.height thumbnailDimensions.width ]
+                            , div [ class "content" ]
+                                [ h2 [ class "ui header" ]
+                                    [ text child.name ]
+                                , p [] <|
+                                    motherInfo
+                                        ++ [ break, dateOfBirth, break, age, break, gender ]
+                                ]
+                            ]
                         ]
-                    ]
+                        |> keyed "child-info"
+                  ]
+                , viewActivityCards childParticipant language childId model.selectedTab selectedActivity session
+                , content
                 ]
-            ]
-                ++ (viewActivityCards childParticipant language childId model.selectedTab selectedActivity session)
-                ++ content
 
 
 viewMother : Language -> MotherId -> EditableSession -> Model MotherActivityType -> Html (Msg MotherActivityType Measurement.Model.MsgMother)
@@ -241,31 +248,36 @@ viewFoundMother language ( motherId, mother ) session model =
                     in
                         [ Measurement.View.viewMother language activity measurements form
                             |> Html.map MsgMeasurement
+                            |> keyed "content"
                         ]
 
                 Nothing ->
                     []
     in
-        div [ class "wrap" ] <|
-            [ viewHeader motherParticipant language motherId session
-            , div
-                [ class "ui unstackable items participant-page mother" ]
-                [ div [ class "item" ]
-                    [ div [ class "ui image" ]
-                        [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
-                    , div [ class "content" ]
-                        [ h2 [ class "ui header" ]
-                            [ text mother.name ]
-                        , p [] childrenList
+        divKeyed [ class "wrap" ] <|
+            List.concat
+                [ [ viewHeader motherParticipant language motherId session
+                        |> keyed "header"
+                  , div
+                        [ class "ui unstackable items participant-page mother" ]
+                        [ div [ class "item" ]
+                            [ div [ class "ui image" ]
+                                [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
+                            , div [ class "content" ]
+                                [ h2 [ class "ui header" ]
+                                    [ text mother.name ]
+                                , p [] childrenList
+                                ]
+                            ]
                         ]
-                    ]
+                        |> keyed "mother"
+                  ]
+                , viewActivityCards motherParticipant language motherId model.selectedTab selectedActivity session
+                , content
                 ]
-            ]
-                ++ (viewActivityCards motherParticipant language motherId model.selectedTab selectedActivity session)
-                ++ content
 
 
-viewActivityCards : Participant id value activity msg -> Language -> id -> Tab -> Maybe activity -> EditableSession -> List (Html (Msg activity any))
+viewActivityCards : Participant id value activity msg -> Language -> id -> Tab -> Maybe activity -> EditableSession -> List ( String, Html (Msg activity any) )
 viewActivityCards config language participantId selectedTab selectedActivity session =
     let
         ( pendingActivities, completedActivities ) =
@@ -317,7 +329,9 @@ viewActivityCards config language participantId selectedTab selectedActivity ses
                 ]
                     ++ extraTabs
     in
-        [ tabs, activeView ]
+        [ tabs |> keyed "tabs"
+        , activeView |> keyed "active-view"
+        ]
 
 
 viewActivityListItem : Participant id value activity msg -> Language -> Maybe activity -> activity -> Html (Msg activity any)
