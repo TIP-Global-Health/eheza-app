@@ -45,51 +45,68 @@
         }
 
         if ((event.request.method === 'POST') && uploadUrl.test(event.request.url)) {
-            event.respondWith(
+            var response =
                 caches.open(
                     uploadCache
                 ).then (function (cache) {
-                    // TODO: We'll need to generate a unique URL here ...
-                    var url = "/cache-upload/images/" + "something";
-
-                    // We want to extract the file that got sent, and store it in a way
-                    // that a request will hand it back.
-                    var eventualRequest = new Request (url, {
-                        method: "GET"
-                    });
-
-                    return event.request.formData().then(function (formData) {
-                        // The body of our eventual response ... extract the image from the
-                        // request.
-                        var body = formData.get("file");
-
-                        // So, this is the response we'll eventually send, when the actual
-                        // file is requested ...
-                        var eventualResponse = new Response (body, {
-                            status: 200,
-                            statusText: "OK",
-                            headers: {
-                                'Content-Length': body.size,
-                                'Content-Type': body.type
-                            }
-                        });
-
-                        return cache.put(eventualRequest, eventualResponse).then(function () {
-                            var responseText = JSON.stringify({
-                                url: url
+                    return cache.keys().then(function (keys) {
+                        // We'll generate a unique URL here, to simulate what happens
+                        // on a POST
+                        var index = 1;
+                        while (true) {
+                            var url = (new URL("/cache-upload/images/" + index, location.href)).toString();
+                            var used = keys.some(function (key) {
+                                return key.url == url;
                             });
+                            if (!used) return url;
+                            index = index + 1;
+                        }
+                    }).then (function (url) {
+                        return event.request.formData().then(function (formData) {
+                            // The body of our eventual response ... extract the image from the
+                            // request.
+                            var body = formData.get("file");
 
-                            return new Response (responseText, {
-                                status: 201,
-                                statusText: "Created",
+                            // So, this is the response we'll eventually send, when the actual
+                            // file is requested ...
+                            var eventualResponse = new Response (body, {
+                                status: 200,
+                                statusText: "OK",
                                 headers: {
-                                    Location: url
+                                    'Content-Length': body.size,
+                                    'Content-Type': body.type
                                 }
                             });
+
+                            // We want to extract the file that got sent, and store it in a way
+                            // that a request will hand it back.
+                            var eventualRequest = new Request (url, {
+                                method: "GET"
+                            });
+
+                            return cache.put(eventualRequest, eventualResponse).then(function () {
+                                var responseText = JSON.stringify({
+                                    url: url
+                                });
+
+                                return new Response (responseText, {
+                                    status: 201,
+                                    statusText: "Created",
+                                    headers: {
+                                        Location: url
+                                    }
+                                });
+                            });
                         });
                     });
-                })
-            );
+                }).catch(function (e) {
+                    return new Response (e.toString(), {
+                        status: 500,
+                        statusText: "Cache upload error",
+                    });
+                });
+
+            event.respondWith(response);
         }
     });
 })();
