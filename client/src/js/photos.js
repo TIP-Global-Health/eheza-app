@@ -21,6 +21,7 @@
     var uploadUrl = /\/cache-upload\/images/;
 
     self.addEventListener('fetch', function (event) {
+        // Handle avatars and photos we've cached from the backend for the session
         if ((event.request.method === 'GET') && matchUrl.test(event.request.url)) {
             var response =
                 caches.open(
@@ -44,6 +45,28 @@
             event.respondWith(response);
         }
 
+        // Handle GET for images which we've uploaded to the cache in this session
+        if ((event.request.method === 'GET') && uploadUrl.test(event.request.url)) {
+            var response =
+                caches.open(
+                    uploadCache
+                ).then(function (cache) {
+                    return cache.match(event.request.url).then(function(response) {
+                        if (response) {
+                            return response;
+                        } else {
+                            return new Response ('Uploaded image was not found', {
+                                status: 404,
+                                statusText: "Not Found"
+                            });
+                        }
+                    });
+                });
+
+            event.respondWith(response);
+        }
+
+        // Handle the POST requests from Dropzone
         if ((event.request.method === 'POST') && uploadUrl.test(event.request.url)) {
             var response =
                 caches.open(
