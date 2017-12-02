@@ -49,6 +49,7 @@
                 caches.open(
                     uploadCache
                 ).then (function (cache) {
+                    // TODO: We'll need to generate a unique URL here ...
                     var url = "/cache-upload/images/" + "something";
 
                     // We want to extract the file that got sent, and store it in a way
@@ -57,28 +58,34 @@
                         method: "GET"
                     });
 
-                    // The body of our eventual response ... extract the image from the
-                    // request.
-                    var body = "";
+                    return event.request.formData().then(function (formData) {
+                        // The body of our eventual response ... extract the image from the
+                        // request.
+                        var body = formData.get("file");
 
-                    // So, this is the response we'll eventually send, when the actual
-                    // file is requested ...
-                    var eventualResponse = new Response (body, {
-                        status: 200,
-                        statusText: "OK",
-                        headers: {
-                        // possibly Content-Length and Content-Type ?
-                        }
-                    });
-
-                    return cache.put(eventualRequest, eventualResponse).then(function () {
-                        var responseText = JSON.stringify({
-                            url: url
+                        // So, this is the response we'll eventually send, when the actual
+                        // file is requested ...
+                        var eventualResponse = new Response (body, {
+                            status: 200,
+                            statusText: "OK",
+                            headers: {
+                                'Content-Length': body.size,
+                                'Content-Type': body.type
+                            }
                         });
 
-                        return new Response (responseText, {
-                            status: 201,
-                            statusText: "Created"
+                        return cache.put(eventualRequest, eventualResponse).then(function () {
+                            var responseText = JSON.stringify({
+                                url: url
+                            });
+
+                            return new Response (responseText, {
+                                status: 201,
+                                statusText: "Created",
+                                headers: {
+                                    Location: url
+                                }
+                            });
                         });
                     });
                 })
