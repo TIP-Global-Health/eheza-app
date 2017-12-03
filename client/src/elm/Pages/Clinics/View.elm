@@ -10,13 +10,14 @@ import App.Model exposing (Msg(..), MsgLoggedIn(..))
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Session.Model exposing (Session, EditableSession)
 import Backend.Entities exposing (ClinicId, SessionId)
-import Backend.Model exposing (MsgBackend(..), ModelBackend)
+import Backend.Model exposing (MsgBackend(..), ModelBackend, ModelCached)
 import EveryDictList exposing (EveryDictList)
 import Gizra.Html exposing (showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Maybe.Extra
 import Pages.Page exposing (Page(..), UserPage(..), SessionPage(..))
 import Pages.PageNotFound.View
 import RemoteData exposing (RemoteData(..), WebData)
@@ -51,19 +52,25 @@ you are asserting that you'll also be able to provide the `OfflineSession` itsel
 when needed.
 
 -}
-view : Language -> NominalDate -> User -> Maybe ClinicId -> ModelBackend -> Maybe ( SessionId, EditableSession ) -> Html Msg
-view language currentDate user selectedClinic backend cachedSession =
+view : Language -> NominalDate -> User -> Maybe ClinicId -> ModelBackend -> ModelCached -> Html Msg
+view language currentDate user selectedClinic backend cache =
     case selectedClinic of
         Just clinicId ->
-            viewClinic language currentDate clinicId backend cachedSession
+            viewClinic language currentDate clinicId backend cache
 
         Nothing ->
-            viewClinicList language user backend.clinics (Maybe.map Tuple.second cachedSession)
+            viewClinicList language user backend.clinics cache
 
 
-viewClinicList : Language -> User -> WebData (EveryDictList ClinicId Clinic) -> Maybe EditableSession -> Html Msg
-viewClinicList language user clinicData session =
+viewClinicList : Language -> User -> WebData (EveryDictList ClinicId Clinic) -> ModelCached -> Html Msg
+viewClinicList language user clinicData cache =
     let
+        session =
+            cache.editableSession
+                |> RemoteData.toMaybe
+                |> Maybe.Extra.join
+                |> Maybe.map Tuple.second
+
         content =
             -- We get the clinics from the session, if one is loaded, or we rely on
             -- being online, if not.
@@ -151,55 +158,61 @@ authorized, but we should check here as well, in case a crafty user just types
 in a URL to get here.
 
 -}
-viewClinic : Language -> NominalDate -> ClinicId -> ModelBackend -> Maybe ( SessionId, EditableSession ) -> Html Msg
-viewClinic language currentDate clinicId backend cachedSession =
-    case cachedSession of
-        Just ( sessionId, session ) ->
-            -- If we do have a cached session, then show something that depends on its status
-            viewClinicWithCachedSession language clinicId backend sessionId session
+viewClinic : Language -> NominalDate -> ClinicId -> ModelBackend -> ModelCached -> Html Msg
+viewClinic language currentDate clinicId backend cache =
+    let
+        cachedSession =
+            cache.editableSession
+                |> RemoteData.toMaybe
+                |> Maybe.Extra.join
+    in
+        case cachedSession of
+            Just ( sessionId, session ) ->
+                -- If we do have a cached session, then show something that depends on its status
+                viewClinicWithCachedSession language clinicId backend cache sessionId session
 
-        Nothing ->
-            -- If we don't have a cached session, show the UI for getting one/
-            -- TODO: Make this less awkward
-            let
-                wrapError html =
-                    [ div
-                        [ class "ui basic head segment" ]
-                        [ h1
-                            [ class "ui header" ]
-                            [ text <| translate language Translate.ClinicNotFound ]
-                        , a
-                            [ class "link-back"
-                            , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
+            Nothing ->
+                -- If we don't have a cached session, show the UI for getting one/
+                -- TODO: Make this less awkward
+                let
+                    wrapError html =
+                        [ div
+                            [ class "ui basic head segment" ]
+                            [ h1
+                                [ class "ui header" ]
+                                [ text <| translate language Translate.ClinicNotFound ]
+                            , a
+                                [ class "link-back"
+                                , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
+                                ]
+                                [ span [ class "icon-back" ] []
+                                , span [] []
+                                ]
                             ]
-                            [ span [ class "icon-back" ] []
-                            , span [] []
-                            ]
+                        , div [ class "ui basic wide segment" ] html
                         ]
-                    , div [ class "ui basic wide segment" ] html
-                    ]
 
-                content =
-                    viewOrFetch language
-                        (MsgLoggedIn <| MsgBackend <| Backend.Model.FetchClinics)
-                        (\clinics ->
-                            viewOrFetch language
-                                (MsgLoggedIn <| MsgBackend <| Backend.Model.FetchFutureSessions currentDate)
-                                (\sessions -> viewLoadedClinic language currentDate clinicId clinics backend sessions)
-                                wrapError
-                                backend.futureSessions
-                        )
-                        wrapError
-                        backend.clinics
-            in
-                div [ class "wrap wrap-alt-2" ] content
+                    content =
+                        viewOrFetch language
+                            (MsgLoggedIn <| MsgBackend <| Backend.Model.FetchClinics)
+                            (\clinics ->
+                                viewOrFetch language
+                                    (MsgLoggedIn <| MsgBackend <| Backend.Model.FetchFutureSessions currentDate)
+                                    (\sessions -> viewLoadedClinic language currentDate clinicId clinics backend cache sessions)
+                                    wrapError
+                                    backend.futureSessions
+                            )
+                            wrapError
+                            backend.clinics
+                in
+                    div [ class "wrap wrap-alt-2" ] content
 
 
-viewLoadedClinic : Language -> NominalDate -> ClinicId -> EveryDictList ClinicId Clinic -> ModelBackend -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
-viewLoadedClinic language currentDate clinicId clinics backend ( queryDate, futureSessions ) =
+viewLoadedClinic : Language -> NominalDate -> ClinicId -> EveryDictList ClinicId Clinic -> ModelBackend -> ModelCached -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
+viewLoadedClinic language currentDate clinicId clinics backend cache ( queryDate, futureSessions ) =
     case EveryDictList.get clinicId clinics of
         Just clinic ->
-            viewFoundClinic language currentDate clinicId clinic backend futureSessions
+            viewFoundClinic language currentDate clinicId clinic backend cache futureSessions
 
         Nothing ->
             [ Pages.PageNotFound.View.viewPage language <|
@@ -209,8 +222,8 @@ viewLoadedClinic language currentDate clinicId clinics backend ( queryDate, futu
             ]
 
 
-viewFoundClinic : Language -> NominalDate -> ClinicId -> Clinic -> ModelBackend -> EveryDictList SessionId Session -> List (Html Msg)
-viewFoundClinic language currentDate clinicId clinic backend sessions =
+viewFoundClinic : Language -> NominalDate -> ClinicId -> Clinic -> ModelBackend -> ModelCached -> EveryDictList SessionId Session -> List (Html Msg)
+viewFoundClinic language currentDate clinicId clinic backend cache sessions =
     let
         validSession =
             sessions
@@ -246,7 +259,7 @@ viewFoundClinic language currentDate clinicId clinic backend sessions =
                 [ text <| translate language <| Translate.DownloadHealthAssessment ]
             ]
     in
-        [ showMaybe <| Maybe.map (viewDownloadProgress language backend.offlineSessionRequest) validSession
+        [ showMaybe <| Maybe.map (viewDownloadProgress language backend.offlineSessionRequest cache.cacheStorage.cachedPhotos) validSession
         , viewUploadProgress language backend.uploadEditsRequest
         , div
             [ class "ui basic head segment" ]
@@ -267,10 +280,16 @@ viewFoundClinic language currentDate clinicId clinic backend sessions =
         ]
 
 
-viewDownloadProgress : Language -> WebData SessionId -> SessionId -> Html Msg
-viewDownloadProgress language request validSession =
+{-| The `WebData SessionId` represents a request to download the offline session.
+
+The `WebData (List String)` represents a request to cache the photos that the
+offline session needs.
+
+-}
+viewDownloadProgress : Language -> WebData SessionId -> WebData (List String) -> SessionId -> Html Msg
+viewDownloadProgress language request photos validSession =
     viewModal <|
-        case request of
+        case RemoteData.append request photos of
             NotAsked ->
                 Nothing
 
@@ -313,7 +332,7 @@ viewDownloadProgress language request validSession =
                             ]
                         ]
 
-            Success sessionId ->
+            Success ( sessionId, photoUrls ) ->
                 if sessionId == validSession then
                     Just <|
                         div
@@ -416,8 +435,8 @@ viewUploadProgress language request =
 
 {-| This is where we get if we're trying to view a clinic and we've got a session cached locally.
 -}
-viewClinicWithCachedSession : Language -> ClinicId -> ModelBackend -> SessionId -> EditableSession -> Html Msg
-viewClinicWithCachedSession language clinicId backend sessionId session =
+viewClinicWithCachedSession : Language -> ClinicId -> ModelBackend -> ModelCached -> SessionId -> EditableSession -> Html Msg
+viewClinicWithCachedSession language clinicId backend cache sessionId session =
     let
         content =
             if session.offlineSession.session.clinicId == clinicId then
@@ -466,7 +485,7 @@ viewClinicWithCachedSession language clinicId backend sessionId session =
                 |> Maybe.withDefault (translate language Translate.ClinicNotFound)
     in
         div [ class "wrap wrap-alt-2" ]
-            [ viewDownloadProgress language backend.offlineSessionRequest sessionId
+            [ viewDownloadProgress language backend.offlineSessionRequest cache.cacheStorage.cachedPhotos sessionId
             , viewUploadProgress language backend.uploadEditsRequest
             , div
                 [ class "ui basic head segment" ]

@@ -68,7 +68,7 @@ the backend (but have been saved locally).
 So, the `offlineSession` represents what's on the backend, while `edits`
 represents what's cached in local storage, and not yet on the backend.
 
-The `editStatus` tracks whether we have a save in progress for the
+The `update` tracks whether we have a save in progress for the
 cacehd edits. It's inside the type, because we can't save them unless
 we have them ...
 

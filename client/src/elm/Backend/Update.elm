@@ -20,7 +20,7 @@ import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSess
 import Backend.Session.Model exposing (Session, OfflineSession, EditableSession, MsgEditableSession(..))
 import Backend.Session.Utils exposing (makeEditableSession, mapChildEdits, mapMotherEdits, getChildMeasurementData, getMotherMeasurementData, getPhotoUrls)
 import Backend.Utils exposing (withEditableSession)
-import CacheStorage.Model exposing (cachePhotos)
+import CacheStorage.Model exposing (cachePhotos, clearCachedPhotos)
 import CacheStorage.Update
 import Config.Model exposing (BackendUrl)
 import Restful.Endpoint exposing (EndPoint, toEntityId, fromEntityId, encodeEntityId, decodeEntityId)
@@ -282,6 +282,8 @@ updateCache currentDate msg model =
             ( { model | editableSession = Success Nothing }
             , deleteEditableSession ()
             )
+                |> sequence (updateCache currentDate)
+                    [ MsgCacheStorage clearCachedPhotos ]
 
         FetchEditableSessionFromCache ->
             ( { model | editableSession = Loading }
