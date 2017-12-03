@@ -121,9 +121,12 @@ function bindDropZone () {
     // TODO: Feed the dictDefaultMessage in as a param, so we can use the
     // translated version.
     dropZone = new Dropzone(selector, {
-        maxFiles: 1,
         url: "/cache-upload/images",
-        dictDefaultMessage: "Touch here to take a photo, or drop a photo file here."
+        dictDefaultMessage: "Touch here to take a photo, or drop a photo file here.",
+        resizeWidth: 800,
+        resizeHeight: 800,
+        resizeMethod: "contain",
+        acceptedFiles: "jpg,jpeg,png,gif,image/*"
     });
 
     dropZone.on('complete', function (file) {
@@ -134,6 +137,8 @@ function bindDropZone () {
         });
 
         element.dispatchEvent(event);
+
+        dropZone.removeFile(file);
     });
 }
 

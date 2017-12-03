@@ -1,7 +1,7 @@
 port module Measurement.Update exposing (updateChild, updateMother)
 
 import Backend.Entities exposing (ChildId, MotherId)
-import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..))
+import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..), PhotoValue(..))
 import Config.Model exposing (BackendUrl)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
@@ -68,6 +68,12 @@ updateChild msg model =
 
         UpdateWeight val ->
             ( { model | weight = val }
+            , Cmd.none
+            , Nothing
+            )
+
+        DropZoneComplete result ->
+            ( { model | photo = Just (PhotoValue result.url) }
             , Cmd.none
             , Nothing
             )

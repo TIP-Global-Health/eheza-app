@@ -14,7 +14,9 @@ import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
+import Json.Decode
 import Maybe.Extra exposing (isJust)
+import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
 import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
@@ -425,6 +427,7 @@ viewPhoto language saveStatus photo =
                     , div
                         [ id "dropzone"
                         , class "eight wide column dropzone"
+                        , on "dropzonecomplete" (Json.Decode.map DropZoneComplete decodeDropZoneFile)
                         ]
                         []
                         |> keyed "dropzone"
@@ -438,7 +441,7 @@ viewPhoto language saveStatus photo =
             , keyed "button" <|
                 div [ class "actions" ] <|
                     saveButton language
-                        (Just (SendOutMsgChild SavePhoto))
+                        (Maybe.map (SendOutMsgChild << SavePhoto) photo)
                         saveStatus
                         (Just "column")
             ]

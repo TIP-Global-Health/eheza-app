@@ -54,12 +54,22 @@ type alias FileId =
     Int
 
 
+{-| Represents the "file" that DropZone gives us when
+the upload is complete. There are several things we
+could get from this ... for now, just the location.
+-}
+type alias DropZoneFile =
+    { url : String
+    }
+
+
 type MsgChild
     = SelectNutritionSign Bool ChildNutritionSign
     | SendOutMsgChild OutMsgChild
     | UpdateHeight String
     | UpdateMuac String
     | UpdateWeight String
+    | DropZoneComplete DropZoneFile
 
 
 type MsgMother
@@ -76,7 +86,7 @@ type OutMsgChild
     | SaveWeight WeightInKg
     | SaveMuac MuacInCm
     | SaveChildNutritionSigns (EverySet ChildNutritionSign)
-    | SavePhoto
+    | SavePhoto PhotoValue
 
 
 type OutMsgMother

@@ -526,9 +526,29 @@ makeChildEdit currentDate childId outMsg sessionId session =
                 in
                     mapChildEdits (\edits -> { edits | nutrition = edit }) childId session
 
-            SavePhoto ->
-                -- TODO: Re-implement
-                session
+            SavePhoto photo ->
+                let
+                    backend =
+                        mapMeasurementData .photo .photo data
+                            |> backendValue
+
+                    edit =
+                        case backend of
+                            Just value ->
+                                Edited
+                                    { backend = value
+                                    , edited = { value | value = photo }
+                                    }
+
+                            Nothing ->
+                                Created
+                                    { participantId = childId
+                                    , sessionId = Just sessionId
+                                    , dateMeasured = currentDate
+                                    , value = photo
+                                    }
+                in
+                    mapChildEdits (\edits -> { edits | photo = edit }) childId session
 
 
 {-| We reach this when the user hits "Save" upon editing something in the measurement
