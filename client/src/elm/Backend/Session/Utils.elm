@@ -168,12 +168,7 @@ getPhotoUrls session =
                 |> List.map
                     (\measurements ->
                         measurements.photos
-                            |> List.map
-                                (\( _, photo ) ->
-                                    case photo.value of
-                                        PhotoValue url ->
-                                            url
-                                )
+                            |> List.map (Tuple.second >> .value >> .url)
                     )
                 |> List.concat
     in

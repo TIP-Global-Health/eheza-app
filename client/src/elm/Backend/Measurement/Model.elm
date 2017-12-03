@@ -33,10 +33,17 @@ type alias Measurement participantId value =
 -- SPECIFIC MEASUREMENT TYPES
 
 
-{-| The string represents the URL of the photo.
+{-| The string represents the URL of the photo -- that is, the URL which
+we can reference in order to display the photo.
+
+The `Maybe Int` represents the ID of the file entity on the backend, if
+the file has been uploaded.
+
 -}
-type PhotoValue
-    = PhotoValue String
+type alias PhotoValue =
+    { url : String
+    , fid : Maybe Int
+    }
 
 
 type alias Photo =

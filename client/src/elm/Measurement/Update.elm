@@ -1,7 +1,7 @@
 port module Measurement.Update exposing (updateChild, updateMother)
 
 import Backend.Entities exposing (ChildId, MotherId)
-import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..), PhotoValue(..))
+import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..), PhotoValue)
 import Config.Model exposing (BackendUrl)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
@@ -73,7 +73,16 @@ updateChild msg model =
             )
 
         DropZoneComplete result ->
-            ( { model | photo = Just (PhotoValue result.url) }
+            -- The `fid` being Nothing signifies that we haven't uploaded this to
+            -- the backend yet, so we don't know what file ID the backend will
+            -- ultimately give it.
+            ( { model
+                | photo =
+                    Just
+                        { url = result.url
+                        , fid = Nothing
+                        }
+              }
             , Cmd.none
             , Nothing
             )

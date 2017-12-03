@@ -343,10 +343,10 @@ viewMuacIndication language muac =
 {-| Show a photo thumbnail.
 -}
 viewPhotoThumb : PhotoValue -> Html any
-viewPhotoThumb (PhotoValue url) =
+viewPhotoThumb photo =
     div []
         [ img
-            [ src url
+            [ src photo.url
             , class "ui small image"
             ]
             []
