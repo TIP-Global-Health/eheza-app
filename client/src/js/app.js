@@ -77,8 +77,13 @@ elmApp.ports.cacheEdits.subscribe(function (json) {
 });
 
 elmApp.ports.deleteEditableSession.subscribe(function () {
+    // Delete the session and edits in local storage
     localStorage.setItem('session', "");
     localStorage.setItem('edits', "");
+
+    // And delete our photos caches
+    caches.delete("photos");
+    caches.delete("photos-upload");
 });
 
 Offline.on('down', function() {
