@@ -91,7 +91,7 @@ decodePhoto : Decoder Photo
 decodePhoto =
     decode PhotoValue
         |> requiredAt [ "photo", "styles", "thumbnail" ] string
-        |> optionalAt [ "photo", "id" ] (map Just <| decodeInt) Nothing
+        |> optionalAt [ "photo", "id" ] (map Just decodeInt) Nothing
         |> decodeChildMeasurement
 
 
