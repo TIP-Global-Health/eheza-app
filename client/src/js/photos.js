@@ -8,6 +8,9 @@
  */
 'use strict';
 
+// TODO: Check if `await` is supported on the browsers we'll support ... could
+// simplify some of the nested promises below in that case, I believe.
+
 (function () {
     var cacheName = "photos";
 
@@ -19,6 +22,7 @@
 
     var uploadCache = "photos-upload";
     var uploadUrl = /\/cache-upload\/images/;
+    var backendUploadUrl = /\/backend-upload\/images/;
 
     self.addEventListener('fetch', function (event) {
         // Handle avatars and photos we've cached from the backend for the session
@@ -66,7 +70,68 @@
             event.respondWith(response);
         }
 
-        // Handle the POST requests from Dropzone
+        // This represents a request to POST the cached image to the backend,
+        // and return whatever the backend would usually return. You could
+        // imagine doing this in Elm via ports instead, but this is actually
+        // more convenient ... we can use ordinary Elm code (without ports) to
+        // generate the requests that will end up here, and handle the
+        // responses. Conceptually, this is just an odd kind of HTTP request,
+        // and Elm knows how to handle those well, so we can just do that.
+        //
+        // TODO: That might actually be a nice model generally ... for
+        // instance, we could actually think about responding to DELETE etc.
+        // here ... doing all the cache management by HTTP request rather than
+        // doing some things via ports. But not yet!
+        //
+        // The body of the POST should be JSON in the following form:
+        //
+        // { backendUrl : String
+        // , accessToken : String
+        // , cachedUrl : String
+        // }
+        //
+        // Given that, we'll upload to the backend as Dropzone would have, and then
+        // pass through whatever result the backend provides.
+        if ((event.request.method === 'POST') && backendUploadUrl.test(event.request.url)) {
+            var response =
+                caches.open(
+                    uploadCache
+                ).then(function (cache) {
+                    return event.request.json().then (function (json) {
+                        return cache.match(json.cachedUrl).then(function(cachedResponse) {
+                            if (cachedResponse) {
+                                return cachedResponse.blob().then(function (blob) {
+                                    var url = json.backendUrl + "/api/file-upload?access_token=" + json.accessToken;
+
+                                    // TODO: We don't actually remember the "filename", and in principle it's not
+                                    // important ... it's just the file's name as it was on the original client, which
+                                    // doesn't really matter. Though, it does for the base for the filename on the
+                                    // server, so it might be nice to say something more interesting here. But this
+                                    // will be fine.
+                                    var formData = new FormData();
+                                    formData.set("file", blob, "image-file");
+
+                                    var request = new Request (url, {
+                                        method: "POST",
+                                        body: formData
+                                    });
+
+                                    return fetch(request);
+                                });
+                            } else {
+                                return new Response ('Cached image was not found', {
+                                    status: 404,
+                                    statusText: "Not Found"
+                                });
+                            }
+                        });
+                    });
+                });
+
+            event.respondWith(response);
+        }
+
+        // Handle the POST requests from Dropzone, uploading the image to our cache
         if ((event.request.method === 'POST') && uploadUrl.test(event.request.url)) {
             var response =
                 caches.open(
