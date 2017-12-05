@@ -35,7 +35,7 @@ viewChild : Language -> NominalDate -> Child -> ChildActivityType -> Measurement
 viewChild language currentDate child activity measurements model =
     case activity of
         ChildPicture ->
-            viewPhoto language measurements.update model.photo
+            viewPhoto language (mapMeasurementData (Maybe.map Tuple.second << .photo) .photo measurements) model.photo
 
         Height ->
             viewHeight language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .height) .height measurements) model
@@ -44,7 +44,7 @@ viewChild language currentDate child activity measurements model =
             viewMuac language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .muac) .muac measurements) model
 
         NutritionSigns ->
-            viewNutritionSigns language measurements.update model.nutritionSigns
+            viewNutritionSigns language (mapMeasurementData (Maybe.map Tuple.second << .nutrition) .nutrition measurements) model.nutritionSigns
 
         Weight ->
             viewWeight language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .weight) .weight measurements) model
@@ -309,7 +309,7 @@ viewFloatForm config language currentDate child measurements model =
             , div [ class "actions" ] <|
                 saveButton language
                     (Maybe.map config.saveMsg floatValue)
-                    measurements.update
+                    measurements
                     Nothing
             ]
 
@@ -401,8 +401,8 @@ viewFloatDiff config language previousValue currentValue =
             viewMessage False
 
 
-viewPhoto : Language -> WebData () -> Maybe PhotoValue -> Html MsgChild
-viewPhoto language saveStatus photo =
+viewPhoto : Language -> MeasurementData (Maybe Photo) (Edit Photo) -> Maybe PhotoValue -> Html MsgChild
+viewPhoto language measurement photo =
     let
         activity =
             ChildActivity ChildPicture
@@ -442,7 +442,7 @@ viewPhoto language saveStatus photo =
                 div [ class "actions" ] <|
                     saveButton language
                         (Maybe.map (SendOutMsgChild << SavePhoto) photo)
-                        saveStatus
+                        measurement
                         (Just "column")
             ]
 
@@ -453,14 +453,20 @@ Button will also take care of preventing double submission,
 and showing success and error indications.
 
 -}
-saveButton : Language -> Maybe msg -> WebData () -> Maybe String -> List (Html msg)
-saveButton language msg saveStatus maybeDivClass =
+saveButton : Language -> Maybe msg -> MeasurementData (Maybe a) (Edit a) -> Maybe String -> List (Html msg)
+saveButton language msg measurement maybeDivClass =
     let
         isLoading =
-            saveStatus == Loading
+            measurement.update == Loading
 
         isFailure =
-            RemoteData.isFailure saveStatus
+            RemoteData.isFailure measurement.update
+
+        ( updateText, errorText ) =
+            if isJust <| applyEdit measurement.edits measurement.current then
+                ( Trans.Update, Trans.UpdateError )
+            else
+                ( Trans.Save, Trans.SaveError )
 
         saveAttr =
             if isLoading then
@@ -480,16 +486,16 @@ saveButton language msg saveStatus maybeDivClass =
              ]
                 ++ saveAttr
             )
-            [ text <| translate language Trans.Update
+            [ text <| translate language updateText
             ]
-        , [ text <| translate language Trans.UpdateError ]
+        , [ text <| translate language errorText ]
             |> div []
             |> showIf isFailure
         ]
 
 
-viewNutritionSigns : Language -> WebData () -> EverySet ChildNutritionSign -> Html MsgChild
-viewNutritionSigns language saveStatus signs =
+viewNutritionSigns : Language -> MeasurementData (Maybe ChildNutrition) (Edit ChildNutrition) -> EverySet ChildNutritionSign -> Html MsgChild
+viewNutritionSigns language measurement signs =
     let
         activity =
             ChildActivity NutritionSigns
@@ -517,7 +523,7 @@ viewNutritionSigns language saveStatus signs =
                 saveButton
                     language
                     saveMsg
-                    saveStatus
+                    measurement
                     Nothing
             ]
 
@@ -591,11 +597,11 @@ viewMother : Language -> MotherActivityType -> MeasurementData MotherMeasurement
 viewMother language activity measurements model =
     case activity of
         FamilyPlanning ->
-            viewFamilyPlanning language measurements.update model.familyPlanningSigns
+            viewFamilyPlanning language (mapMeasurementData (Maybe.map Tuple.second << .familyPlanning) .familyPlanning measurements) model.familyPlanningSigns
 
 
-viewFamilyPlanning : Language -> WebData () -> EverySet FamilyPlanningSign -> Html MsgMother
-viewFamilyPlanning language saveStatus signs =
+viewFamilyPlanning : Language -> MeasurementData (Maybe FamilyPlanning) (Edit FamilyPlanning) -> EverySet FamilyPlanningSign -> Html MsgMother
+viewFamilyPlanning language measurement signs =
     let
         activity =
             MotherActivity FamilyPlanning
@@ -623,7 +629,7 @@ viewFamilyPlanning language saveStatus signs =
             , div [ class "actions" ] <|
                 saveButton language
                     saveMsg
-                    saveStatus
+                    measurement
                     Nothing
             ]
 
