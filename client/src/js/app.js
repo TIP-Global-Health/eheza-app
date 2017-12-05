@@ -122,7 +122,7 @@ function bindDropZone () {
     // TODO: Feed the dictDefaultMessage in as a param, so we can use the
     // translated version.
     dropZone = new Dropzone(selector, {
-        url: "/cache-upload/images",
+        url: "cache-upload/images",
         dictDefaultMessage: "Touch here to take a photo, or drop a photo file here.",
         resizeWidth: 800,
         resizeHeight: 800,
