@@ -92,8 +92,10 @@ type MsgBackend
     | HandleFetchedClinics (WebData (EveryDictList ClinicId Clinic))
     | HandleFetchedOfflineSessionFromBackend (Result Error ( SessionId, OfflineSession ))
     | HandleFetchedSessions NominalDate (WebData (EveryDictList SessionId Session))
+    | HandleRefetchedOfflineSession (Result Error ( SessionId, OfflineSession ))
     | HandleUploadedEdits SessionId (Result Error ())
     | HandleUploadPhotoResponse Photo (Result Error Int)
+    | RefetchOfflineSession SessionId
     | ResetErrors -- reset errors to `NotAsked` when certain requests succeed, so they will retry
     | ResetOfflineSessionRequest -- resets it to `NotAsked`
     | ResetUploadEditsRequest
@@ -193,3 +195,5 @@ type MsgCached
     | MsgEditableSession MsgEditableSession
       -- Replace whatever we have with this
     | SetEditableSession SessionId EditableSession
+      -- Replace just the OfflineSession, if the sessionId's match
+    | SetOfflineSession SessionId OfflineSession

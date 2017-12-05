@@ -103,9 +103,10 @@ They are actually handled in `Backend.Update`.
 -}
 type MsgEditableSession
     = CloseSession
+    | MeasurementOutMsgChild ChildId Measurement.Model.OutMsgChild
+    | MeasurementOutMsgMother MotherId Measurement.Model.OutMsgMother
+    | RefetchSession
     | SetCheckedIn MotherId Bool
     | SetMotherForm MotherId Measurement.Model.ModelMother
     | SetChildForm ChildId Measurement.Model.ModelChild
     | SetPhotoFileId Photo Int
-    | MeasurementOutMsgChild ChildId Measurement.Model.OutMsgChild
-    | MeasurementOutMsgMother MotherId Measurement.Model.OutMsgMother

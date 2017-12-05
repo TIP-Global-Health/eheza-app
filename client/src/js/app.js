@@ -205,8 +205,20 @@ elmApp.ports.cacheStorageRequest.subscribe(function (request) {
   switch (request.tag) {
     case 'CachePhotos':
       withPhotos(function (cache) {
-        cache.addAll(request.value).then(updatePhotos, function (err) {
-          console.log(err);
+        cache.keys().then(function (keys) {
+          var existing = keys.map(function (request) {
+            return request.url;
+          });
+
+          // We'll cache just the ones we don't have already.  This should be
+          // fine, since Drupal generates new URLs if the picture chagnes.
+          var uncached = request.value.filter(function (url) {
+            return existing.indexOf(url) < 0;
+          });
+
+          cache.addAll(uncached).then(updatePhotos, function (err) {
+            console.log(err);
+          });
         });
       });
       break;
