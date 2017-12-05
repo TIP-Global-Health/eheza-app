@@ -1,6 +1,7 @@
 port module App.Update exposing (init, update, subscriptions)
 
 import App.Model exposing (..)
+import Backend.Session.Model
 import Backend.Update
 import Backend.Utils exposing (withEditableSession)
 import Config
@@ -12,6 +13,7 @@ import Json.Decode exposing (oneOf)
 import Maybe.Extra
 import Pages.Login.Model
 import Pages.Login.Update
+import Pages.Model
 import Pages.Page exposing (Page(..), UserPage(ClinicsPage))
 import Pages.Update
 import Pages.Update
@@ -125,28 +127,44 @@ update msg model =
                             Restful.Login.update loginConfig subMsg configured.login
 
                         extraMsgs =
+                            -- This will be true only at the very moment of
+                            -- successful login.
                             if loggedIn then
-                                -- This will be true only at the very moment of
-                                -- successful login.  We use it to transition
-                                -- away from the `LoginPage` if that's where we
-                                -- are. We don't want to **prohibit** being on
-                                -- the LoginPage if you're already logged in,
-                                -- so we can't just detect the state of being
-                                -- logged in ... we have to get a message at
-                                -- the moment of login.
-                                case model.activePage of
-                                    LoginPage ->
-                                        -- For now, just tranition to the
-                                        -- clinics page ... we'll need to
-                                        -- make more choices eventually.
-                                        [ SetActivePage <| UserPage <| ClinicsPage Nothing ]
+                                let
+                                    -- Transition away from the `LoginPage` if
+                                    -- that's where we are. We don't want to
+                                    -- **prohibit** being on the LoginPage if
+                                    -- you're already logged in, so we can't
+                                    -- just detect the state of being logged in
+                                    -- ... we have to get a message at the
+                                    -- moment of login.
+                                    redirect =
+                                        case model.activePage of
+                                            LoginPage ->
+                                                -- For now, just tranition to the
+                                                -- clinics page ... we'll need to
+                                                -- make more choices eventually.
+                                                [ SetActivePage <| UserPage <| ClinicsPage Nothing ]
 
-                                    _ ->
-                                        -- If we were showing the LoginPage
-                                        -- **instead of** the activePage, we
-                                        -- can just actually show the activePage
-                                        -- now
-                                        []
+                                            _ ->
+                                                -- If we were showing the LoginPage
+                                                -- **instead of** the activePage, we
+                                                -- can just actually show the activePage
+                                                -- now
+                                                []
+
+                                    -- We also try to refetch the offlineSession.
+                                    -- We actually do this in two places ...
+                                    -- here, and when we get the session
+                                    -- information from the cache.  Whichever
+                                    -- gets triggered first will fail silently
+                                    -- ...  the second will succeed.
+                                    refetch =
+                                        [ MsgSession <|
+                                            Pages.Model.MsgEditableSession Backend.Session.Model.RefetchSession
+                                        ]
+                                in
+                                    redirect ++ refetch
                             else
                                 []
                     in

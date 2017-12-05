@@ -178,6 +178,41 @@ updateBackend backendUrl accessToken msg model =
                               ]
                             )
 
+            -- Like FetchOfflineSessionFromBackend, but just tries to fetch in
+            -- the background ...  doesn't complain if it doesn't work.  We'll
+            -- do this on reload, to pick up any changes made in the admin UI
+            -- on the backend. It can be done quite simply, because we don't
+            -- mutate the offlineSession ... we can just substitute it in.  An
+            -- alternative would be to push changes to clients, but that's a
+            -- bit tricky when we're contemplating periods offline ... see
+            -- disucssion at <https://github.com/Gizra/ihangane/issues/436>
+            RefetchOfflineSession sessionId ->
+                ( model
+                , getFromBackend404 offlineSessionEndpoint sessionId HandleRefetchedOfflineSession
+                , []
+                )
+
+            HandleRefetchedOfflineSession result ->
+                resetErrorsIfOk result <|
+                    case result of
+                        Err error ->
+                            -- We just ignore errors ... we may well be
+                            -- offline, which is fine.
+                            ( model, Cmd.none, [] )
+
+                        Ok ( sessionId, session ) ->
+                            -- We immediately kick off a save into the cache,
+                            -- and to cache the photos we'll need.  The photo
+                            -- URLs appear to change when the photo changes, so
+                            -- we have code in app.js that won't re-cache a
+                            -- photo we already have.
+                            ( model
+                            , Cmd.none
+                            , [ SetOfflineSession sessionId session
+                              , MsgCacheStorage <| cachePhotos <| getPhotoUrls session
+                              ]
+                            )
+
             ResetErrors ->
                 -- Reset some error conditions to `NotAsked`, so that they will
                 -- be automatically retried if needed.
@@ -390,6 +425,8 @@ updateCache currentDate msg model =
             , []
             )
 
+        -- We just get this at startup time. So, we also kick off a re-check
+        -- to see if the offline session has changed.
         HandleEditableSession ( offlineSessionJson, editsJson ) ->
             let
                 decodedOfflineSession =
@@ -417,7 +454,9 @@ updateCache currentDate msg model =
                     Ok result ->
                         ( { model | editableSession = Success <| Just result }
                         , Cmd.none
-                        , []
+                          -- This is where we're re-checking to see if the backend
+                          -- has any updates to the offlineSession.
+                        , [ RefetchOfflineSession (Tuple.first result) ]
                         )
 
                     Err err ->
@@ -490,6 +529,16 @@ updateCache currentDate msg model =
                         )
                         model
 
+                RefetchSession ->
+                    withEditableSession ( model, Cmd.none, [] )
+                        (\sessionId _ ->
+                            ( model
+                            , Cmd.none
+                            , [ RefetchOfflineSession sessionId ]
+                            )
+                        )
+                        model
+
                 SetCheckedIn motherId checkedIn ->
                     withEditableSession ( model, Cmd.none, [] )
                         (\sessionId session ->
@@ -538,6 +587,26 @@ updateCache currentDate msg model =
             , []
             )
                 |> sequenceExtra (updateCache currentDate) [ CacheEditableSession ]
+
+        -- Like SetEditableSession, but we just substitute the offlineSesttion part.
+        -- This works because we never mutate the offlineSession locally.
+        SetOfflineSession sessionId offlineSession ->
+            withEditableSession ( model, Cmd.none, [] )
+                (\currentId currentSession ->
+                    if sessionId == currentId then
+                        let
+                            newSession =
+                                { currentSession | offlineSession = offlineSession }
+                        in
+                            ( { model | editableSession = Success <| Just ( sessionId, newSession ) }
+                            , Cmd.none
+                            , []
+                            )
+                                |> sequenceExtra (updateCache currentDate) [ CacheEditableSession ]
+                    else
+                        ( model, Cmd.none, [] )
+                )
+                model
 
 
 {-| We reach this when the user hits "Save" upon editing something in the measurement
