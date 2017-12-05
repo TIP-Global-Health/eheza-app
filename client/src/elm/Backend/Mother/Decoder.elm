@@ -15,13 +15,12 @@ decodeMother : Decoder Mother
 decodeMother =
     decode Mother
         |> required "label" string
-        -- The default avatar comes from SASS , not from the Model.
-        -- And, we accommodate the JSON from the server or from the cache
+        -- We accommodate the JSON from the server or from the cache
         |> custom
             (oneOf
-                [ at [ "avatar", "styles", "patient-photo" ] string
-                , field "avatar" string
-                , succeed ""
+                [ map Just <| at [ "avatar", "styles", "patient-photo" ] string
+                , map Just <| field "avatar" string
+                , succeed Nothing
                 ]
             )
         |> required "children" (oneOf [ list decodeEntityId, decodeNullAsEmptyArray ])

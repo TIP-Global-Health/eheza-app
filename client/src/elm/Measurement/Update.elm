@@ -1,7 +1,7 @@
-port module Measurement.Update exposing (updateChild, updateMother, subscriptions)
+port module Measurement.Update exposing (updateChild, updateMother)
 
 import Backend.Entities exposing (ChildId, MotherId)
-import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..))
+import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..), PhotoValue)
 import Config.Model exposing (BackendUrl)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
@@ -17,12 +17,6 @@ instance, by actually writing the data to local storage).
 updateChild : MsgChild -> ModelChild -> ( ModelChild, Cmd MsgChild, Maybe OutMsgChild )
 updateChild msg model =
     case msg of
-        HandleDropzoneUploadedFile fileId ->
-            ( { model | photo = ( Just fileId, Nothing ) }
-            , Cmd.none
-            , Nothing
-            )
-
         UpdateHeight val ->
             ( { model | height = val }
             , Cmd.none
@@ -66,12 +60,6 @@ updateChild msg model =
                 , Nothing
                 )
 
-        ResetDropZone ->
-            ( model
-            , dropzoneReset ()
-            , Nothing
-            )
-
         SendOutMsgChild outMsg ->
             ( model
             , Cmd.none
@@ -80,6 +68,21 @@ updateChild msg model =
 
         UpdateWeight val ->
             ( { model | weight = val }
+            , Cmd.none
+            , Nothing
+            )
+
+        DropZoneComplete result ->
+            -- The `fid` being Nothing signifies that we haven't uploaded this to
+            -- the backend yet, so we don't know what file ID the backend will
+            -- ultimately give it.
+            ( { model
+                | photo =
+                    Just
+                        { url = result.url
+                        , fid = Nothing
+                        }
+              }
             , Cmd.none
             , Nothing
             )
@@ -156,18 +159,3 @@ postPhoto backendUrl accessToken childId model =
                , command
                )
 -}
-
-
-subscriptions : ModelChild -> Sub MsgChild
-subscriptions model =
-    dropzoneUploadedFile HandleDropzoneUploadedFile
-
-
-{-| Get a msg if a file has been uploaded via the Dropzone.
--}
-port dropzoneUploadedFile : (Int -> msg) -> Sub msg
-
-
-{-| Cause the drop zone widget to clear its image
--}
-port dropzoneReset : () -> Cmd msg

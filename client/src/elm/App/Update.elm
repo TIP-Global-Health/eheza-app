@@ -93,12 +93,13 @@ update msg model =
     case msg of
         MsgCache subMsg ->
             let
-                ( subModel, subCmd ) =
+                ( subModel, subCmd, extraMsgs ) =
                     Backend.Update.updateCache model.currentDate subMsg model.cache
             in
                 ( { model | cache = subModel }
                 , Cmd.map MsgCache subCmd
                 )
+                    |> sequence update (List.map (MsgLoggedIn << MsgBackend) extraMsgs)
 
         MsgLoggedIn loggedInMsg ->
             updateLoggedIn

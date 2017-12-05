@@ -55,10 +55,11 @@ fromChildMeasurementData data =
             |> currentValue
             |> Maybe.map .value
             |> Maybe.withDefault EverySet.empty
-
-    -- TODO: Reimplement photo
     , photo =
-        ( Nothing, Nothing )
+        data
+            |> mapMeasurementData .photo .photo
+            |> currentValue
+            |> Maybe.map .value
     , weight =
         data
             |> mapMeasurementData .weight .weight

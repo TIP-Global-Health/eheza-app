@@ -77,37 +77,9 @@ elmApp.ports.cacheEdits.subscribe(function (json) {
 });
 
 elmApp.ports.deleteEditableSession.subscribe(function () {
+    // Delete the session and edits in local storage
     localStorage.setItem('session', "");
     localStorage.setItem('edits', "");
-});
-
-/**
- * Port the 'Pusher' events names into our Elm's app.
- */
-elmApp.ports.pusherKey.subscribe(function(appKey) {
-    var pusher = new Pusher(appKey[0], {
-        cluster: appKey[1]
-    });
-
-    var channelName = 'general';
-
-    if (!pusher.channel(channelName)) {
-        var channel = pusher.subscribe(channelName);
-
-        var eventNames = appKey[2];
-
-        eventNames.forEach(function(eventName) {
-            channel.bind(eventName, function(data) {
-                // We wrap the data with some information which will
-                // help us dispatch it on the Elm side
-                var event = {
-                    eventType: eventName,
-                    data: data
-                };
-                elmApp.ports.pusherItemMessages.send(event);
-            });
-        });
-    }
 });
 
 Offline.on('down', function() {
@@ -119,91 +91,70 @@ Offline.on('up', function() {
 });
 
 // Dropzone.
+
 var dropZone = undefined;
 
-/*
-elmApp.ports.dropzoneConfig.subscribe(function(config) {
-    waitForElement('.dropzone', attachDropzone, config);
-});
+Dropzone.autoDiscover = false;
 
-elmApp.ports.dropzoneReset.subscribe(function() {
-  if (typeof dropZone != 'undefined') {
-      dropZone.removeAllFiles(true);
-  }
-})
+function bindDropZone () {
+    // We could make this dynamic, if needed
+    var selector = "#dropzone";
+    var element = document.querySelector(selector);
 
-function attachDropzone(selector, config) {
-    // Validate dropzone should be active.
-    if (!config.active) {
-        if (!!dropZone) {
-            dropZone.destroy();
+    if (element) {
+        if (element.dropZone) {
+            // Bail, since already initialized
+            return;
+        } else {
+            // If we had one, and it's gone away, destroy it.  So, we should
+            // only leak one ... it would be even nicer to catch the removal
+            // from the DOM, but that's not entirely straightforward. Or,
+            // perhaps we'd actually avoid any leak if we just didn't keep a
+            // reference? But we necessarily need to keep a reference to the
+            // element.
+            if (dropZone) dropZone.destroy();
         }
+    } else {
+        console.log("Could not find dropzone div");
+        return;
+    }
 
-        dropZone = undefined;
+    // TODO: Feed the dictDefaultMessage in as a param, so we can use the
+    // translated version.
+    dropZone = new Dropzone(selector, {
+        url: "/cache-upload/images",
+        dictDefaultMessage: "Touch here to take a photo, or drop a photo file here.",
+        resizeWidth: 800,
+        resizeHeight: 800,
+        resizeMethod: "contain",
+        acceptedFiles: "jpg,jpeg,png,gif,image/*"
+    });
 
-        // DropZone.destory() doesn't clean it's HTML. So in order not to
-        // confuse the Virtual dom we do it ourself.
-        var classNames = ['.dz-default', '.dz-preview'];
-        classNames.forEach(function(className) {
-            var element = document.querySelector(className);
-            if (!!element) {
-                element.parentNode.removeChild(element);
-            }
+    dropZone.on('complete', function (file) {
+        // We just send the `file` back into Elm, via the view ... Elm can
+        // decode the file as it pleases.
+        var event = makeCustomEvent("dropzonecomplete", {
+            file: file
         });
 
-    }
+        element.dispatchEvent(event);
 
-    var element = document.querySelector(selector);
-    if (!element) {
-        // Element doesn't exist yet.
-        return false;
-    }
-
-    if (!!dropZone) {
-
-        // Check if we need to remove files.
-        if (config.status == "Done") {
-            // Remove all files, even the ones being currently uploaded.
-            dropZone.removeAllFiles(true);
-        }
-
-        // Widgets were already attached once.
-        return true;
-    }
-
-    var accessToken = localStorage.getItem('accessToken');
-    if (!accessToken) {
-        // Access token is must for the requests.
-        return false;
-    }
-
-    // Set the backend url with the access token.
-    var url = config.backendUrl + '/api/file-upload?access_token=' + accessToken;
-
-    dropZone = new Dropzone(selector, {
-        dictDefaultMessage: config.defaultMessage,
-        maxFiles: 1,
-        url: url
-    });
-
-    dropZone.on('complete', function(file) {
-        if (!file.accepted) {
-            // File was not uploaded.
-            return;
-        }
-
-        if (file.xhr.status !== 200) {
-            return;
-        }
-
-        var response = JSON.parse(file.xhr.response);
-
-        // Get the file ID, and send it to Elm.
-        var id = parseInt(response.data[0]['id']);
-        elmApp.ports.dropzoneUploadedFile.send(id);
+        dropZone.removeFile(file);
     });
 }
-*/
+
+function makeCustomEvent (eventName, detail) {
+    if (typeof(CustomEvent) === 'function') {
+        return new CustomEvent(eventName, {
+            detail: detail,
+            bubbles: true
+        });
+    } else {
+        var event = document.createEvent('CustomEvent');
+        event.initCustomEvent(eventName, true, false, detail);
+        return event;
+    }
+}
 
 navigator.serviceWorker.oncontrollerchange = function () {
   elmApp.ports.serviceWorkerIn.send({
@@ -227,6 +178,47 @@ elmApp.ports.serviceWorkerOut.subscribe(function (message) {
       navigator.serviceWorker.getRegistration().then(function (reg) {
         reg.unregister();
       });
+      break;
+  }
+});
+
+function withPhotos(func) {
+  caches.open("photos").then(func);
+}
+
+function updatePhotos () {
+  withPhotos(function (cache) {
+    cache.keys().then(function (keys) {
+      var urls = keys.map(function (request) {
+        return request.url;
+      });
+
+      elmApp.ports.cacheStorageResponse.send({
+        tag: "SetCachedPhotos",
+        value: urls
+      });
+    });
+  });
+}
+
+elmApp.ports.cacheStorageRequest.subscribe(function (request) {
+  switch (request.tag) {
+    case 'CachePhotos':
+      withPhotos(function (cache) {
+        cache.addAll(request.value).then(updatePhotos, function (err) {
+          console.log(err);
+        });
+      });
+      break;
+
+    case 'CheckCachedPhotos':
+      updatePhotos();
+      break;
+
+    case 'ClearCachedPhotos':
+      caches.delete("photos").then(function () {
+        return caches.delete("photos-upload");
+      }).then(updatePhotos);
       break;
   }
 });

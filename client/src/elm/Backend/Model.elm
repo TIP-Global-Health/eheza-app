@@ -19,8 +19,9 @@ in the UI.
 
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (MeasurementEdits)
+import Backend.Measurement.Model exposing (MeasurementEdits, Photo)
 import Backend.Session.Model exposing (OfflineSession, EditableSession, Session, MsgEditableSession)
+import CacheStorage.Model
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import Http exposing (Error)
@@ -88,14 +89,16 @@ type MsgBackend
     = FetchClinics
     | FetchFutureSessions NominalDate
     | FetchOfflineSessionFromBackend SessionId
-    | UploadEdits SessionId MeasurementEdits
     | HandleFetchedClinics (WebData (EveryDictList ClinicId Clinic))
     | HandleFetchedOfflineSessionFromBackend (Result Error ( SessionId, OfflineSession ))
     | HandleFetchedSessions NominalDate (WebData (EveryDictList SessionId Session))
     | HandleUploadedEdits SessionId (Result Error ())
+    | HandleUploadPhotoResponse Photo (Result Error Int)
     | ResetErrors -- reset errors to `NotAsked` when certain requests succeed, so they will retry
     | ResetOfflineSessionRequest -- resets it to `NotAsked`
     | ResetUploadEditsRequest
+    | UploadEdits SessionId MeasurementEdits
+    | UploadPhoto Photo
 
 
 {-| This models things which we cache locally ... so, like `ModelBackend`, but
@@ -133,12 +136,18 @@ type alias ModelCached =
     -- on whether our editable session has edits or not ... you won't be
     -- locked into edit mode until you've made an edit.
     { editableSession : WebData (Maybe ( SessionId, EditableSession ))
+
+    -- This uses the `CacheStorage` API, which ultimately will be nicer
+    -- than using local storage ... so, eventually could transition
+    -- editableSession into here as well.
+    , cacheStorage : CacheStorage.Model.Model
     }
 
 
 emptyModelCached : ModelCached
 emptyModelCached =
-    { editableSession = NotAsked
+    { cacheStorage = CacheStorage.Model.emptyModel
+    , editableSession = NotAsked
     }
 
 
@@ -172,9 +181,13 @@ type MsgCached
       -- do something more sophisticated, but it's probably not necessary.
     | CacheEdits
     | CacheEditsResult Value
+      -- Calls back to MsgBackend to upload edits
+    | ContinueUploadingEdits
       -- Deletes an editable session from the cache. You shouldn't call this
       -- if the session has edits that haven't been saved to the backend!
     | DeleteEditableSession
+      -- Messages for cacheStorage
+    | MsgCacheStorage CacheStorage.Model.Msg
       -- Some messages which we define elsewhere that the UI can send to
       -- modify an editable session.
     | MsgEditableSession MsgEditableSession

@@ -109,7 +109,7 @@ viewConfiguredModel model configured =
                                     Pages.MyAccount.View.view model.language login.credentials.user
 
                                 ClinicsPage clinicId ->
-                                    Pages.Clinics.View.view model.language model.currentDate login.credentials.user clinicId login.data.backend session
+                                    Pages.Clinics.View.view model.language model.currentDate login.credentials.user clinicId login.data.backend model.cache
 
                         PageNotFound url ->
                             Pages.PageNotFound.View.view model.language url

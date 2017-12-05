@@ -66,7 +66,7 @@ view language editableSession model =
                         ]
                         [ div
                             [ class "image" ]
-                            [ thumbnailImage "mother" mother.image mother.name thumbnailDimensions.height thumbnailDimensions.width ]
+                            [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
                         , div
                             [ class "content" ]
                             [ p [] [ text mother.name ] ]

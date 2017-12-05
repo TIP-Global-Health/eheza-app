@@ -24,11 +24,23 @@ encodeWeight =
     encodeChildMeasurement (\(WeightInKg weight) -> ( "weight", float weight ))
 
 
-{-| TODO: Revisit this, as it's probably not what we'll need for the backend..
--}
 encodePhoto : Photo -> List ( String, Value )
 encodePhoto =
-    encodeChildMeasurement (\(PhotoValue photo) -> ( "photo", string photo ))
+    encodeChildMeasurement
+        (\photo ->
+            ( "photo"
+            , object
+                [ ( "styles"
+                  , object
+                        [ ( "thumbnail"
+                          , string photo.url
+                          )
+                        ]
+                  )
+                , ( "id", maybe int photo.fid )
+                ]
+            )
+        )
 
 
 encodeNutrition : ChildNutrition -> List ( String, Value )

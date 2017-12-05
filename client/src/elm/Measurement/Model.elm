@@ -34,7 +34,7 @@ type alias ModelChild =
     { height : String
     , muac : String
     , nutritionSigns : EverySet ChildNutritionSign
-    , photo : ( Maybe FileId, Maybe PhotoValue )
+    , photo : Maybe PhotoValue
     , weight : String
     }
 
@@ -54,14 +54,22 @@ type alias FileId =
     Int
 
 
+{-| Represents the "file" that DropZone gives us when
+the upload is complete. There are several things we
+could get from this ... for now, just the location.
+-}
+type alias DropZoneFile =
+    { url : String
+    }
+
+
 type MsgChild
-    = HandleDropzoneUploadedFile Int
-    | ResetDropZone
-    | SelectNutritionSign Bool ChildNutritionSign
+    = SelectNutritionSign Bool ChildNutritionSign
     | SendOutMsgChild OutMsgChild
     | UpdateHeight String
     | UpdateMuac String
     | UpdateWeight String
+    | DropZoneComplete DropZoneFile
 
 
 type MsgMother
@@ -78,7 +86,7 @@ type OutMsgChild
     | SaveWeight WeightInKg
     | SaveMuac MuacInCm
     | SaveChildNutritionSigns (EverySet ChildNutritionSign)
-    | SavePhoto
+    | SavePhoto PhotoValue
 
 
 type OutMsgMother
@@ -90,7 +98,7 @@ emptyModelChild =
     { height = ""
     , muac = ""
     , nutritionSigns = EverySet.empty
-    , photo = ( Nothing, Nothing )
+    , photo = Nothing
     , weight = ""
     }
 

@@ -89,11 +89,9 @@ we use for the cache.
 -}
 decodePhoto : Decoder Photo
 decodePhoto =
-    oneOf
-        [ at [ "photo", "styles", "thumbnail" ] string
-        , field "photo" string
-        ]
-        |> map PhotoValue
+    decode PhotoValue
+        |> requiredAt [ "photo", "styles", "thumbnail" ] string
+        |> optionalAt [ "photo", "id" ] (map Just decodeInt) Nothing
         |> decodeChildMeasurement
 
 

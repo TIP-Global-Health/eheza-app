@@ -9,17 +9,20 @@ import Backend.Measurement.Encoder exposing (encodeNutritionSignAsString, encode
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (applyEdit, muacIndication, mapMeasurementData)
 import EverySet exposing (EverySet)
-import Gizra.Html exposing (emptyNode, showIf, showMaybe)
+import Gizra.Html exposing (emptyNode, showIf, showMaybe, keyed, divKeyed, keyedDivKeyed)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
+import Json.Decode
 import Maybe.Extra exposing (isJust)
+import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
 import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Round
 import Translate as Trans exposing (Language(..), TranslationId, translate)
+import Utils.Html exposing (script)
 import Utils.NominalDate exposing (diffDays, Days(..))
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
 import ZScore.Utils exposing (viewZScore, zScoreForHeight, zScoreForMuac, zScoreForWeight, zScoreWeightForHeight)
@@ -340,10 +343,10 @@ viewMuacIndication language muac =
 {-| Show a photo thumbnail.
 -}
 viewPhotoThumb : PhotoValue -> Html any
-viewPhotoThumb (PhotoValue url) =
+viewPhotoThumb photo =
     div []
         [ img
-            [ src url
+            [ src photo.url
             , class "ui small image"
             ]
             []
@@ -398,37 +401,49 @@ viewFloatDiff config language previousValue currentValue =
             viewMessage False
 
 
-viewPhoto : Language -> WebData () -> ( Maybe FileId, Maybe PhotoValue ) -> Html MsgChild
-viewPhoto language saveStatus ( fileId, photoValue ) =
+viewPhoto : Language -> WebData () -> Maybe PhotoValue -> Html MsgChild
+viewPhoto language saveStatus photo =
     let
-        hasFileId =
-            isJust fileId
-
-        handleClick =
-            if hasFileId then
-                [ onClick ResetDropZone ]
-            else
-                []
-
         activity =
             ChildActivity ChildPicture
     in
-        div
+        divKeyed
             [ class "ui full segment photo" ]
-            [ div [ class "content" ]
-                [ h3 [ class "ui header" ]
+            [ keyedDivKeyed "content"
+                [ class "content" ]
+                [ h3
+                    [ class "ui header" ]
                     [ text <| translate language (Trans.ActivitiesTitle activity) ]
+                    |> keyed "title"
                 , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
-                , Maybe.map viewPhotoThumb photoValue
-                    |> showMaybe
-                , div [] [ text "Photos are not working at the moment" ]
-                , div [ class "dropzone" ] []
+                    |> keyed "help"
+                , keyedDivKeyed "grid"
+                    [ class "ui grid" ]
+                    [ Maybe.map viewPhotoThumb photo
+                        |> showMaybe
+                        |> List.singleton
+                        |> div [ class "eight wide column" ]
+                        |> keyed "thumbnail"
+                    , div
+                        [ id "dropzone"
+                        , class "eight wide column dropzone"
+                        , on "dropzonecomplete" (Json.Decode.map DropZoneComplete decodeDropZoneFile)
+                        ]
+                        []
+                        |> keyed "dropzone"
+
+                    -- This runs the function from our `app.js` at the precise moment this gets
+                    -- written to the DOM. Isn't that convenient?
+                    , script "bindDropZone()"
+                        |> keyed "script"
+                    ]
                 ]
-            , div [ class "actions" ] <|
-                saveButton language
-                    (Just (SendOutMsgChild SavePhoto))
-                    saveStatus
-                    (Just "column")
+            , keyed "button" <|
+                div [ class "actions" ] <|
+                    saveButton language
+                        (Maybe.map (SendOutMsgChild << SavePhoto) photo)
+                        saveStatus
+                        (Just "column")
             ]
 
 
