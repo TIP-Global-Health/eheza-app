@@ -128,9 +128,13 @@ gulp.task('bower', function () {
 // Optimizes all the CSS, HTML and concats the JS etc
 gulp.task("minify", ["styles", "copy:images"], function () {
   return gulp.src("serve/**/*.*")
-    // Concatenate JavaScript files and preserve important comments
-    .pipe($.if("*.js", $.uglify({preserveComments: "some"})))
-    .on('error', function(err) {
+    // Concatenate JavaScript files and preserve important comments.
+    // DropZone had a problem if we mangle
+    // ... see <https://github.com/rowanwins/vue-dropzone/issues/119>
+    .pipe($.if("*.js", $.uglify({
+        preserveComments: "some",
+        mangle: false
+    }))).on('error', function(err) {
         console.error(err);
     })
 
