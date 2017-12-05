@@ -363,7 +363,8 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     // TODO: There is some obvious repeitition below.
     switch ($edit['tag']) {
       case 'created':
-        // TODO: These should probably be a customization in the appropriate handlers.
+        // TODO: These should probably be a customization in the appropriate
+        // handlers.
         $edit['value']['date_measured'] = strtotime($edit['value']['date_measured']);
         if ($edit['value']['photo']) {
           $edit['value']['photo'] = $edit['value']['photo']['id'];
@@ -380,7 +381,8 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
         break;
 
       case 'edited':
-        // TODO: These should probably be a customization in the appropriate handlers.
+        // TODO: These should probably be a customization in the appropriate
+        // handlers.
         $edit['edited']['date_measured'] = strtotime($edit['edited']['date_measured']);
         if ($edit['edited']['photo']) {
           $edit['edited']['photo'] = $edit['edited']['photo']['id'];
