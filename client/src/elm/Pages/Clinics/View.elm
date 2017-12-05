@@ -39,18 +39,6 @@ the big one.
 If `selectedClinic` is Just, we'll show a page for that clinic. If not, we'll
 show a list of clinics.
 
-The `cachedSession` param represents the `OfflineSession` from our cache.
-Loading the offline session from the cache is essential for our startup logic ..
-since if we have a session with edits, we'll bypass all of this and show the
-editing UI for the session. So, we demand here that the caller definitely knows
-whether the offlineSession exists or not ... if it's still a `NotAsked`, then
-you just shouldn't call us yet ... you should show something else while you
-figure that out. In other words, a `Nothing` for `cachedSession` means we
-definitely don't have one, not that we're still checking. Note that we don't
-actually need the `OfflineSession` itself here, but if you provide the `SessionId`,
-you are asserting that you'll also be able to provide the `OfflineSession` itself
-when needed.
-
 -}
 view : Language -> NominalDate -> User -> Maybe ClinicId -> ModelBackend -> ModelCached -> Html Msg
 view language currentDate user selectedClinic backend cache =

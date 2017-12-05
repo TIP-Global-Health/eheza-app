@@ -19,7 +19,7 @@ in the UI.
 
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (MeasurementEdits)
+import Backend.Measurement.Model exposing (MeasurementEdits, Photo)
 import Backend.Session.Model exposing (OfflineSession, EditableSession, Session, MsgEditableSession)
 import CacheStorage.Model
 import EveryDictList exposing (EveryDictList)
@@ -89,14 +89,16 @@ type MsgBackend
     = FetchClinics
     | FetchFutureSessions NominalDate
     | FetchOfflineSessionFromBackend SessionId
-    | UploadEdits SessionId MeasurementEdits
     | HandleFetchedClinics (WebData (EveryDictList ClinicId Clinic))
     | HandleFetchedOfflineSessionFromBackend (Result Error ( SessionId, OfflineSession ))
     | HandleFetchedSessions NominalDate (WebData (EveryDictList SessionId Session))
     | HandleUploadedEdits SessionId (Result Error ())
+    | HandleUploadPhotoResponse Photo (Result Error Int)
     | ResetErrors -- reset errors to `NotAsked` when certain requests succeed, so they will retry
     | ResetOfflineSessionRequest -- resets it to `NotAsked`
     | ResetUploadEditsRequest
+    | UploadEdits SessionId MeasurementEdits
+    | UploadPhoto Photo
 
 
 {-| This models things which we cache locally ... so, like `ModelBackend`, but
@@ -179,6 +181,8 @@ type MsgCached
       -- do something more sophisticated, but it's probably not necessary.
     | CacheEdits
     | CacheEditsResult Value
+      -- Calls back to MsgBackend to upload edits
+    | ContinueUploadingEdits
       -- Deletes an editable session from the cache. You shouldn't call this
       -- if the session has edits that haven't been saved to the backend!
     | DeleteEditableSession

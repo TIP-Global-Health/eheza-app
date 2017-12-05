@@ -360,10 +360,14 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
    *   The ID of the existing value for the session, if found.
    */
   public static function handleEdit($handler, $edit, $id) {
+    // TODO: There is some obvious repeitition below.
     switch ($edit['tag']) {
       case 'created':
-        // TODO: This should probably be a customization in the handler itself.
+        // TODO: These should probably be a customization in the appropriate handlers.
         $edit['value']['date_measured'] = strtotime($edit['value']['date_measured']);
+        if ($edit['value']['photo']) {
+          $edit['value']['photo'] = $edit['value']['photo']['id'];
+        }
 
         if ($id) {
           // This is actually an update ... perhaps we ought to signal that
@@ -376,8 +380,11 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
         break;
 
       case 'edited':
-        // TODO: Again, belongs in handler.
+        // TODO: These should probably be a customization in the appropriate handlers.
         $edit['edited']['date_measured'] = strtotime($edit['edited']['date_measured']);
+        if ($edit['edited']['photo']) {
+          $edit['edited']['photo'] = $edit['edited']['photo']['id'];
+        }
 
         if ($id) {
           $handler->patch($id, $edit['edited']);

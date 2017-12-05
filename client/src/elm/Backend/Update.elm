@@ -13,28 +13,29 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Decoder exposing (decodeMeasurementEdits)
 import Backend.Measurement.Encoder exposing (encodeMeasurementEdits)
 import Backend.Measurement.Model exposing (Edit(..))
-import Backend.Measurement.Utils exposing (backendValue, mapMeasurementData)
+import Backend.Measurement.Utils exposing (backendValue, mapMeasurementData, getPhotosToUpload)
 import Backend.Model exposing (..)
 import Backend.Session.Decoder exposing (decodeSession, decodeOfflineSession)
 import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession)
 import Backend.Session.Model exposing (Session, OfflineSession, EditableSession, MsgEditableSession(..))
-import Backend.Session.Utils exposing (makeEditableSession, mapChildEdits, mapMotherEdits, getChildMeasurementData, getMotherMeasurementData, getPhotoUrls)
+import Backend.Session.Utils exposing (makeEditableSession, mapChildEdits, mapMotherEdits, getChildMeasurementData, getMotherMeasurementData, getPhotoUrls, setPhotoFileId)
 import Backend.Utils exposing (withEditableSession)
 import CacheStorage.Model exposing (cachePhotos, clearCachedPhotos)
 import CacheStorage.Update
 import Config.Model exposing (BackendUrl)
-import Restful.Endpoint exposing (EndPoint, toEntityId, fromEntityId, encodeEntityId, decodeEntityId)
 import EveryDict
 import EveryDictList
+import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Http exposing (Error)
-import Json.Decode
+import HttpBuilder
+import Json.Decode exposing (field)
 import Json.Encode exposing (Value, object)
 import Maybe.Extra exposing (toList)
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
-import Update.Extra exposing (sequence)
+import Restful.Endpoint exposing (EndPoint, toEntityId, fromEntityId, encodeEntityId, decodeEntityId, decodeSingleEntity)
 import Utils.WebData exposing (resetError)
 
 
@@ -195,10 +196,40 @@ updateBackend backendUrl accessToken msg model =
                 )
 
             UploadEdits sessionId edits ->
-                ( { model | uploadEditsRequest = Loading }
-                , patchBackend offlineSessionEndpoint sessionId (encodeMeasurementEdits edits) (HandleUploadedEdits sessionId)
-                , []
-                )
+                -- For now at least, our strategy is this:
+                --
+                -- 1. Get the photos we need to upload.
+                -- 2. If there are some, upload the first one.
+                -- 3. If not, upload the actual edits.
+                --
+                -- The response from trying to upload a photo will call back to
+                -- here, so we'll either upload the next photo, or upload the
+                -- edits themselves if we're done. Basically, a kind of
+                -- asynchronous recursion, I suppose.
+                --
+                -- There may be a more sensible way of doing this ... for instance
+                -- we could try uploading photos in parrallel? But this is
+                -- fairly comprehensible.
+                case getPhotosToUpload edits of
+                    first :: _ ->
+                        -- We still have one to upload, so kick off a request.
+                        --
+                        -- TODO: We could be more sophisticated with `uploadEditsRequest`
+                        -- to show exactly what stage we're at ... e.g. how many photos
+                        -- are remaining?
+                        ( { model | uploadEditsRequest = Loading }
+                        , Cmd.none
+                        , []
+                        )
+                            |> sequenceExtra (updateBackend backendUrl accessToken)
+                                (List.map UploadPhoto [ first ])
+
+                    [] ->
+                        -- All photos have been uploaded, so actually upload the edits
+                        ( { model | uploadEditsRequest = Loading }
+                        , patchBackend offlineSessionEndpoint sessionId (encodeMeasurementEdits edits) (HandleUploadedEdits sessionId)
+                        , []
+                        )
 
             HandleUploadedEdits sessionId result ->
                 resetErrorsIfOk result <|
@@ -226,12 +257,65 @@ updateBackend backendUrl accessToken msg model =
                 , []
                 )
 
+            UploadPhoto photo ->
+                -- This is a bit of a special HTTP request, so we don't use
+                -- the ordinary endpoints.
+                let
+                    json =
+                        object
+                            [ ( "backendUrl", Json.Encode.string backendUrl )
+                            , ( "accessToken", Json.Encode.string accessToken )
+                            , ( "cachedUrl", Json.Encode.string photo.value.url )
+                            ]
 
-updateCache : NominalDate -> MsgCached -> ModelCached -> ( ModelCached, Cmd MsgCached )
+                    decoder =
+                        -- We expect what Drupal returns when you upload a file.
+                        decodeSingleEntity (field "id" decodeInt)
+
+                    cmd =
+                        HttpBuilder.post "backend-upload/images"
+                            |> HttpBuilder.withJsonBody json
+                            |> HttpBuilder.withExpect (Http.expectJson decoder)
+                            |> HttpBuilder.send (HandleUploadPhotoResponse photo)
+                in
+                    ( model
+                    , cmd
+                    , []
+                    )
+
+            HandleUploadPhotoResponse photo result ->
+                case result of
+                    Err err ->
+                        -- If we get an error, record that in our `uploadEditsRequest`
+                        ( { model | uploadEditsRequest = Failure err }
+                        , Cmd.none
+                        , []
+                        )
+
+                    Ok fileId ->
+                        -- So, first we need to update our editable session to record that
+                        -- this photo now has a fileId. That needs to be cached, so that
+                        -- we don't upload the photo again (assuming the page gets reloaded
+                        -- etc.). Then, we want to try uploading the edits again, which will
+                        -- either upload the next photo, or actually upload the edits, if
+                        -- we're done.
+                        --
+                        -- Then, we kick off another request to upload the edits. We need to
+                        -- do that via MsgCached, because we don't actually know
+                        -- what the session is here ...
+                        ( model
+                        , Cmd.none
+                        , [ MsgEditableSession <| SetPhotoFileId photo fileId
+                          , ContinueUploadingEdits
+                          ]
+                        )
+
+
+updateCache : NominalDate -> MsgCached -> ModelCached -> ( ModelCached, Cmd MsgCached, List MsgBackend )
 updateCache currentDate msg model =
     case msg of
         CacheEditableSession ->
-            withEditableSession ( model, Cmd.none )
+            withEditableSession ( model, Cmd.none, [] )
                 (\sessionId session ->
                     let
                         json =
@@ -243,37 +327,51 @@ updateCache currentDate msg model =
                     in
                         ( { model | editableSession = Success <| Just ( sessionId, { session | update = Loading } ) }
                         , cacheEditableSession json
+                        , []
                         )
                 )
                 model
 
         CacheEditableSessionResult result ->
             -- TODO: Actually do something with the result. For now, we just mark Success.
-            withEditableSession ( model, Cmd.none )
+            withEditableSession ( model, Cmd.none, [] )
                 (\sessionId session ->
                     ( { model | editableSession = Success <| Just ( sessionId, { session | update = Success () } ) }
                     , Cmd.none
+                    , []
                     )
                 )
                 model
 
         CacheEdits ->
-            withEditableSession ( model, Cmd.none )
+            withEditableSession ( model, Cmd.none, [] )
                 (\sessionId session ->
                     ( { model | editableSession = Success <| Just ( sessionId, { session | update = Loading } ) }
                     , encodeMeasurementEdits session.edits
                         |> Json.Encode.encode 0
                         |> cacheEdits
+                    , []
                     )
                 )
                 model
 
         CacheEditsResult result ->
             -- TODO: Actually consult the result ...
-            withEditableSession ( model, Cmd.none )
+            withEditableSession ( model, Cmd.none, [] )
                 (\sessionId session ->
                     ( { model | editableSession = Success <| Just ( sessionId, { session | update = Success () } ) }
                     , Cmd.none
+                    , []
+                    )
+                )
+                model
+
+        ContinueUploadingEdits ->
+            withEditableSession ( model, Cmd.none, [] )
+                (\sessionId session ->
+                    ( model
+                    , Cmd.none
+                    , [ UploadEdits sessionId session.edits ]
                     )
                 )
                 model
@@ -281,13 +379,15 @@ updateCache currentDate msg model =
         DeleteEditableSession ->
             ( { model | editableSession = Success Nothing }
             , deleteEditableSession ()
+            , []
             )
-                |> sequence (updateCache currentDate)
+                |> sequenceExtra (updateCache currentDate)
                     [ MsgCacheStorage clearCachedPhotos ]
 
         FetchEditableSessionFromCache ->
             ( { model | editableSession = Loading }
             , fetchEditableSession ()
+            , []
             )
 
         HandleEditableSession ( offlineSessionJson, editsJson ) ->
@@ -317,6 +417,7 @@ updateCache currentDate msg model =
                     Ok result ->
                         ( { model | editableSession = Success <| Just result }
                         , Cmd.none
+                        , []
                         )
 
                     Err err ->
@@ -328,6 +429,7 @@ updateCache currentDate msg model =
                         in
                             ( { model | editableSession = Success Nothing }
                             , Cmd.none
+                            , []
                             )
 
         MsgCacheStorage subMsg ->
@@ -337,12 +439,13 @@ updateCache currentDate msg model =
             in
                 ( { model | cacheStorage = subModel }
                 , Cmd.map MsgCacheStorage subCmd
+                , []
                 )
 
         MsgEditableSession subMsg ->
             case subMsg of
                 CloseSession ->
-                    withEditableSession ( model, Cmd.none )
+                    withEditableSession ( model, Cmd.none, [] )
                         (\sessionId session ->
                             let
                                 newSession =
@@ -351,13 +454,14 @@ updateCache currentDate msg model =
                             in
                                 ( { model | editableSession = Success <| Just ( sessionId, newSession ) }
                                 , Cmd.none
+                                , []
                                 )
-                                    |> sequence (updateCache currentDate) [ CacheEdits ]
+                                    |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
                         )
                         model
 
                 MeasurementOutMsgChild childId outMsg ->
-                    withEditableSession ( model, Cmd.none )
+                    withEditableSession ( model, Cmd.none, [] )
                         (\sessionId session ->
                             let
                                 newSession =
@@ -365,13 +469,14 @@ updateCache currentDate msg model =
                             in
                                 ( { model | editableSession = Success <| Just ( sessionId, newSession ) }
                                 , Cmd.none
+                                , []
                                 )
-                                    |> sequence (updateCache currentDate) [ CacheEdits ]
+                                    |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
                         )
                         model
 
                 MeasurementOutMsgMother motherId outMsg ->
-                    withEditableSession ( model, Cmd.none )
+                    withEditableSession ( model, Cmd.none, [] )
                         (\sessionId session ->
                             let
                                 newSession =
@@ -379,44 +484,60 @@ updateCache currentDate msg model =
                             in
                                 ( { model | editableSession = Success <| Just ( sessionId, newSession ) }
                                 , Cmd.none
+                                , []
                                 )
-                                    |> sequence (updateCache currentDate) [ CacheEdits ]
+                                    |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
                         )
                         model
 
                 SetCheckedIn motherId checkedIn ->
-                    withEditableSession ( model, Cmd.none )
+                    withEditableSession ( model, Cmd.none, [] )
                         (\sessionId session ->
                             ( { model | editableSession = Success <| Just ( sessionId, setCheckedIn checkedIn motherId session ) }
                             , Cmd.none
+                            , []
                             )
-                                |> sequence (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
                         )
                         model
 
                 SetChildForm childId form ->
-                    withEditableSession ( model, Cmd.none )
+                    withEditableSession ( model, Cmd.none, [] )
                         (\sessionId session ->
                             ( { model | editableSession = Success <| Just ( sessionId, { session | childForms = EveryDict.insert childId form session.childForms } ) }
                             , Cmd.none
+                            , []
                             )
                         )
                         model
 
                 SetMotherForm motherId form ->
-                    withEditableSession ( model, Cmd.none )
+                    withEditableSession ( model, Cmd.none, [] )
                         (\sessionId session ->
                             ( { model | editableSession = Success <| Just ( sessionId, { session | motherForms = EveryDict.insert motherId form session.motherForms } ) }
                             , Cmd.none
+                            , []
                             )
+                        )
+                        model
+
+                SetPhotoFileId photo id ->
+                    withEditableSession ( model, Cmd.none, [] )
+                        (\sessionId session ->
+                            ( { model | editableSession = Success <| Just ( sessionId, setPhotoFileId photo id session ) }
+                            , Cmd.none
+                            , []
+                            )
+                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
                         )
                         model
 
         SetEditableSession sessionId session ->
             ( { model | editableSession = Success <| Just ( sessionId, session ) }
             , Cmd.none
+            , []
             )
-                |> sequence (updateCache currentDate) [ CacheEditableSession ]
+                |> sequenceExtra (updateCache currentDate) [ CacheEditableSession ]
 
 
 {-| We reach this when the user hits "Save" upon editing something in the measurement

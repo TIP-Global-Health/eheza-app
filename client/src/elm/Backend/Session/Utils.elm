@@ -126,6 +126,22 @@ mapChildEdits func childId session =
                )
 
 
+mapAllChildEdits : (ChildId -> ChildEdits -> ChildEdits) -> EditableSession -> EditableSession
+mapAllChildEdits func session =
+    let
+        edits =
+            session.edits
+    in
+        edits.children
+            |> EveryDict.map func
+            |> (\childEdits ->
+                    { session
+                        | edits =
+                            { edits | children = childEdits }
+                    }
+               )
+
+
 {-| Given a function that changes MotherEdits, apply that to the motherId.
 -}
 mapMotherEdits : (MotherEdits -> MotherEdits) -> MotherId -> EditableSession -> EditableSession
@@ -173,3 +189,46 @@ getPhotoUrls session =
                 |> List.concat
     in
         fromMothers ++ fromChildren ++ fromMeasurements
+
+
+{-| Given a file ID for the provided photo, record that in the edits in our
+editable session.
+-}
+setPhotoFileId : Photo -> Int -> EditableSession -> EditableSession
+setPhotoFileId photo id =
+    -- TODO: This could use some generalization ...
+    mapAllChildEdits
+        (\_ edit ->
+            case edit.photo of
+                Unedited ->
+                    edit
+
+                Created created ->
+                    if created.value.url == photo.value.url then
+                        created.value
+                            |> (\value -> { edit | photo = Created { created | value = { value | fid = Just id } } })
+                    else
+                        edit
+
+                Edited change ->
+                    let
+                        edited =
+                            change.edited
+                    in
+                        if edited.value.url == photo.value.url then
+                            edited.value
+                                |> (\value ->
+                                        { edit
+                                            | photo =
+                                                Edited
+                                                    { backend = change.backend
+                                                    , edited = { edited | value = { value | fid = Just id } }
+                                                    }
+                                        }
+                                   )
+                        else
+                            edit
+
+                Deleted _ ->
+                    edit
+        )
