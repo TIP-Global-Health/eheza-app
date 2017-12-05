@@ -125,6 +125,8 @@ type TranslationId
     | ReportCompleted { pending : Int, total : Int }
     | ResolveMonth Month
     | Retry
+    | Save
+    | SaveError
     | SearchByName
     | SelectYourClinic
     | SessionClosed
@@ -693,6 +695,12 @@ translate lang trans =
 
                 Retry ->
                     { english = "Retry" }
+
+                Save ->
+                    { english = "Save" }
+
+                SaveError ->
+                    { english = "Save Error" }
 
                 SearchByName ->
                     { english = "Search by Name" }
