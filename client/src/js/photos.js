@@ -142,7 +142,7 @@
                         // on a POST
                         var index = 1;
                         while (true) {
-                            var url = (new URL("/cache-upload/images/" + index, location.href)).toString();
+                            var url = (new URL("cache-upload/images/" + index, location.href)).toString();
                             var used = keys.some(function (key) {
                                 return key.url == url;
                             });
