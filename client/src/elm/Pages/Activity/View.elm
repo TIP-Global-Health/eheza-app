@@ -108,7 +108,7 @@ view config language currentDate selectedActivity fullSession model =
                     else
                         selectedParticipants
                             |> EveryDict.toList
-                            |> List.sortBy (\( _, participant ) -> config.getName participant)
+                            |> List.sortBy (Tuple.second >> config.getName)
                             |> List.map viewParticipantCard
             in
                 div

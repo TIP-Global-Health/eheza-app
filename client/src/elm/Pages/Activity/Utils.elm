@@ -67,6 +67,7 @@ selectParticipantForTab config tab activity session userSelection =
         ( pendingParticipants, completedParticipants ) =
             config.getParticipants checkedIn
                 |> EveryDict.toList
+                |> List.sortBy (Tuple.second >> config.getName)
                 |> List.map Tuple.first
                 |> List.partition (\id -> config.hasPendingActivity id activity checkedIn)
     in
