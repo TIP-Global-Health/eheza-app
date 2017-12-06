@@ -156,6 +156,8 @@ type LoginPhrase
     | LoginError LoginError
     | LoginOrWorkOffline
     | Logout
+    | LogoutInProgress
+    | LogoutFailed
     | Password
     | SignIn
     | Username
@@ -508,6 +510,12 @@ translate lang trans =
 
                         Logout ->
                             { english = "Logout" }
+
+                        LogoutInProgress ->
+                            { english = "Logout in progress ..." }
+
+                        LogoutFailed ->
+                            { english = "Logout Failed" }
 
                         Password ->
                             { english = "Password" }

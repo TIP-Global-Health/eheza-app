@@ -7,10 +7,12 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Pages.Login.Model exposing (..)
 import Pages.Page exposing (Page)
-import Restful.Login exposing (LoginStatus(..), LoginError)
+import RemoteData exposing (RemoteData(..))
+import Restful.Login exposing (LoginStatus(..), LoginError, Login)
 import Translate exposing (translate, Language)
 import User.Model exposing (..)
 import Utils.Html exposing (spinner)
+import Utils.WebData exposing (viewError)
 
 
 view : Language -> Page -> LoginStatus User data -> Model -> Maybe EditableSession -> Html Msg
@@ -76,7 +78,7 @@ viewContent language activePage loginStatus model session =
                     -- is no session loaded, for now -- it's a simplification.
                     -- We could re-arrange things to allow anonymous users to
                     -- edit downloaded sessions.
-                    [ viewWhenLoggedIn language login.credentials.user session
+                    [ viewWhenLoggedIn language login session
                     ]
 
 
@@ -100,34 +102,65 @@ opportunity to logout, or do something else. Note that you won't get here
 usually, because if your active page was elsewhere, you'll transition
 there automatically once you login.
 -}
-viewWhenLoggedIn : Language -> User -> Maybe EditableSession -> Html Msg
-viewWhenLoggedIn language user session =
-    div []
-        [ p []
-            [ Translate.LoginPhrase Translate.LoggedInAs
-                |> translate language
-                |> text
-            , text <| ": " ++ user.name
-            ]
+viewWhenLoggedIn : Language -> Login User data -> Maybe EditableSession -> Html Msg
+viewWhenLoggedIn language login session =
+    let
+        logoutButton =
+            case login.logout of
+                Loading ->
+                    button
+                        [ class "ui fluid button disabled" ]
+                        [ Translate.LoginPhrase Translate.LogoutInProgress
+                            |> translate language
+                            |> text
+                        ]
 
-        -- At the moment of successful login, we'll actually transition somewhere.
-        -- But, if the user **deliberately** comes back here while logged in, we
-        -- should give the user some userful options ... we may want to compute
-        -- which of these options are actually the most likely at some point
-        , button
-            [ class "ui fluid primary button"
-            , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.ClinicsPage Nothing
+                Failure err ->
+                    div []
+                        [ div
+                            [ class "class ui error message" ]
+                            [ p [] [ text <| translate language <| Translate.LoginPhrase Translate.LogoutFailed ]
+                            , viewError language err
+                            ]
+                        , button
+                            [ class "ui fluid button"
+                            , onClick HandleLogoutClicked
+                            ]
+                            [ Translate.LoginPhrase Translate.Logout
+                                |> translate language
+                                |> text
+                            ]
+                        ]
+
+                _ ->
+                    button
+                        [ class "ui fluid button"
+                        , onClick HandleLogoutClicked
+                        ]
+                        [ Translate.LoginPhrase Translate.Logout
+                            |> translate language
+                            |> text
+                        ]
+    in
+        div []
+            [ p []
+                [ Translate.LoginPhrase Translate.LoggedInAs
+                    |> translate language
+                    |> text
+                , text <| ": " ++ login.credentials.user.name
+                ]
+
+            -- At the moment of successful login, we'll actually transition somewhere.
+            -- But, if the user **deliberately** comes back here while logged in, we
+            -- should give the user some userful options ... we may want to compute
+            -- which of these options are actually the most likely at some point
+            , button
+                [ class "ui fluid primary button"
+                , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.ClinicsPage Nothing
+                ]
+                [ text <| translate language Translate.SelectYourClinic ]
+            , logoutButton
             ]
-            [ text <| translate language Translate.SelectYourClinic ]
-        , button
-            [ class "ui fluid button"
-            , onClick HandleLogoutClicked
-            ]
-            [ Translate.LoginPhrase Translate.Logout
-                |> translate language
-                |> text
-            ]
-        ]
 
 
 {-| Shows the login form itself, i.e. with inputs for username and password.
