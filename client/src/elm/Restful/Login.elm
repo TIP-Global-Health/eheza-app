@@ -60,10 +60,11 @@ can be handled here.
 -}
 
 import Base64
-import Http exposing (Error, expectJson)
+import Http exposing (Error(..), expectJson)
 import HttpBuilder exposing (withExpect, withHeader, withExpect, withQueryParams)
 import Json.Decode exposing (Decoder, field)
 import Json.Encode exposing (Value)
+import RemoteData exposing (WebData, RemoteData(..))
 import Restful.Endpoint exposing (BackendUrl, AccessToken, (</>))
 import Task
 
@@ -293,6 +294,12 @@ type LoginError
 
     What credentials did we log in with?
 
+  - logout
+
+    Tracks a request-in-progress to logout. In some cases, we need to contact
+    the server in order to logout, because it maintains an HTTP-only session
+    cookie which we can only delete via an HTTP request.
+
   - relogin
 
     Do we need to re-login? If our credentials are rejected, we don't
@@ -313,6 +320,7 @@ type LoginError
 -}
 type alias Login user data =
     { credentials : Credentials user
+    , logout : WebData ()
     , relogin : Maybe LoginProgress
     , data : data
     }
@@ -352,6 +360,7 @@ setCredentials config credentials model =
         Anonymous _ ->
             LoggedIn
                 { credentials = credentials
+                , logout = NotAsked
                 , relogin = Nothing
                 , data = config.initialData credentials.user
                 }
@@ -359,6 +368,7 @@ setCredentials config credentials model =
         CheckingCachedCredentials ->
             LoggedIn
                 { credentials = credentials
+                , logout = NotAsked
                 , relogin = Nothing
                 , data = config.initialData credentials.user
                 }
@@ -366,6 +376,7 @@ setCredentials config credentials model =
         LoggedIn login ->
             LoggedIn
                 { credentials = credentials
+                , logout = NotAsked
                 , relogin = Nothing
                 , data = login.data
                 }
@@ -443,6 +454,12 @@ where needed.
     Relative to a backendUrl, what's the path to the endpoint for getting an
     access token? e.g. "api/login-token"
 
+  - logoutPath
+
+    Relative to a backendUrl, what's the path we can send a GET to in order
+    to logout? E.g. to destroy a session cookie, if it's HTTP only, so we can't
+    destroy it from Javascript.
+
   - userPath
 
     Once we have an access token, what's the path to the endpoint from which we
@@ -487,6 +504,7 @@ where needed.
 -}
 type alias Config user data msg =
     { loginPath : String
+    , logoutPath : Maybe String
     , userPath : String
     , decodeAccessToken : Decoder AccessToken
     , decodeUser : Decoder user
@@ -514,6 +532,7 @@ restful implementation.
 drupalConfig : AppConfig user data msg -> Config user data msg
 drupalConfig appConfig =
     { loginPath = "api/login-token"
+    , logoutPath = Just "user/logout"
     , userPath = "api/me"
     , decodeAccessToken = field "access_token" Json.Decode.string
     , decodeUser = appConfig.decodeUser
@@ -532,6 +551,7 @@ type Msg user
     = CheckCachedCredentials BackendUrl String
     | HandleAccessTokenCheck (Credentials user) (Result Error user)
     | HandleLoginAttempt (Result Error (Credentials user))
+    | HandleLogoutAttempt (Result Error ())
     | Logout
     | TryLogin BackendUrl String String
 
@@ -715,12 +735,69 @@ update config msg model =
                     )
 
                 LoggedIn login ->
-                    -- We tell the app to cache credentials consisting of an empty object.
-                    -- This is simpler than telling the app to delete credentials.
-                    ( loggedOut
-                    , config.cacheCredentials login.credentials.backendUrl "{}"
-                    , False
-                    )
+                    case config.logoutPath of
+                        Just logoutPath ->
+                            -- See comment below ... in this case, we can't
+                            -- really logout unless we send a request to the
+                            -- backend to do so.
+                            ( LoggedIn { login | logout = Loading }
+                            , HttpBuilder.get (login.credentials.backendUrl </> logoutPath)
+                                |> withQueryParams [ ( "access_token", login.credentials.accessToken ) ]
+                                |> HttpBuilder.toTask
+                                |> Task.attempt HandleLogoutAttempt
+                                |> Cmd.map config.tag
+                            , False
+                            )
+
+                        Nothing ->
+                            -- In this case, we can just forget our credentials
+                            -- locally.  We'll just call ourselves recursively
+                            -- as if the logout request succeeded.
+                            update config (HandleLogoutAttempt (Ok ())) model
+
+        -- If there is an HTTP-only session cookie, and you're serving the app
+        -- from a sub-path on the Drupal site, then you can only **really**
+        -- logout if you're online and we get a successful response here. The
+        -- reason is that the session cookie can only be deleted via HTTP, and
+        -- that won't have happened unless your request succeeds here. Otherwise,
+        -- we'll still have the ssession cookie, and future attempts to login
+        -- will simply use the existing session.
+        --
+        -- For this reason, we only locally record a logout when this request
+        -- succeeds ... otherwise, we show an error.
+        HandleLogoutAttempt result ->
+            let
+                -- A 403 Forbidden response is actually success, in this case!
+                adjustedResult =
+                    case result of
+                        Err (BadStatus response) ->
+                            if response.status.code == 403 then
+                                Ok ()
+                            else
+                                result
+
+                        _ ->
+                            result
+            in
+                case ( adjustedResult, model ) of
+                    ( Ok _, LoggedIn login ) ->
+                        -- We tell the app to cache credentials consisting of an empty object.
+                        -- This is simpler than telling the app to delete credentials.
+                        ( loggedOut
+                        , config.cacheCredentials login.credentials.backendUrl "{}"
+                        , False
+                        )
+
+                    ( Err err, LoggedIn login ) ->
+                        -- Just record the error
+                        ( LoggedIn { login | logout = Failure err }
+                        , Cmd.none
+                        , False
+                        )
+
+                    _ ->
+                        -- If we weren't logged in anyway, there's nothing to do.
+                        ( model, Cmd.none, False )
 
 
 encodeCredentials : Config user data msg -> Credentials user -> String
