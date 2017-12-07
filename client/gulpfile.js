@@ -91,7 +91,7 @@ gulp.task("fonts", function () {
 });
 
 // Copy index.html and CNAME files to the "serve" directory
-gulp.task("copy:dev", ["copy:bower", "copy:images"], function () {
+gulp.task("copy:dev", ["copy:bower", "copy:images", "copy:favicon"], function () {
   return gulp.src(["src/index.html", "src/CNAME", "src/js/**/*"])
     .pipe(gulp.dest("serve"))
     .pipe($.size({ title: "index.html & CNAME" }))
@@ -111,6 +111,12 @@ gulp.task("copy:images", function () {
     .pipe($.size({ title: "Assets images" }))
 });
 
+// Copy favicon stuff
+gulp.task("copy:favicon", function () {
+  return gulp.src(["src/assets/favicon/**/*"])
+    .pipe(gulp.dest("serve/"))
+    .pipe($.size({ title: "Assets favicon" }));
+});
 
 gulp.task("cname", function () {
   return gulp.src(["serve/CNAME"])
@@ -126,7 +132,7 @@ gulp.task('bower', function () {
 
 
 // Optimizes all the CSS, HTML and concats the JS etc
-gulp.task("minify", ["styles", "copy:images"], function () {
+gulp.task("minify", ["styles", "copy:images", "copy:favicon"], function () {
   return gulp.src("serve/**/*.*")
     // Concatenate JavaScript files and preserve important comments.
     // DropZone had a problem if we mangle
