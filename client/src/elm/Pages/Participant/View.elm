@@ -148,18 +148,22 @@ viewFoundChild language currentDate ( childId, child ) session model =
     in
         divKeyed [ class "wrap" ] <|
             List.concat
-                [ [ viewHeader childParticipant language childId session
-                        |> keyed "header"
+                [ [ viewHeader language |> keyed "header"
                   , div [ class "ui unstackable items participant-page child" ]
-                        [ div [ class "item" ]
-                            [ div [ class "ui image" ]
+                        [ div
+                            [ class "item" ]
+                            [ div
+                                [ class "ui image" ]
                                 [ thumbnailImage "child" child.avatarUrl child.name thumbnailDimensions.height thumbnailDimensions.width ]
-                            , div [ class "content" ]
-                                [ h2 [ class "ui header" ]
+                            , div
+                                [ class "content" ]
+                                [ h2
+                                    [ class "ui header" ]
                                     [ text child.name ]
                                 , p [] <|
                                     motherInfo
                                         ++ [ break, dateOfBirth, break, age, break, gender ]
+                                , viewFamilyLinks childParticipant language childId session
                                 ]
                             ]
                         ]
@@ -256,17 +260,21 @@ viewFoundMother language ( motherId, mother ) session model =
     in
         divKeyed [ class "wrap" ] <|
             List.concat
-                [ [ viewHeader motherParticipant language motherId session
-                        |> keyed "header"
+                [ [ viewHeader language |> keyed "header"
                   , div
                         [ class "ui unstackable items participant-page mother" ]
-                        [ div [ class "item" ]
-                            [ div [ class "ui image" ]
+                        [ div
+                            [ class "item" ]
+                            [ div
+                                [ class "ui image" ]
                                 [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
-                            , div [ class "content" ]
-                                [ h2 [ class "ui header" ]
+                            , div
+                                [ class "content" ]
+                                [ h2
+                                    [ class "ui header" ]
                                     [ text mother.name ]
                                 , p [] childrenList
+                                , viewFamilyLinks motherParticipant language motherId session
                                 ]
                             ]
                         ]
@@ -350,11 +358,28 @@ viewActivityListItem config language selectedActivity activityItem =
         ]
 
 
-{-| Given a mother or a child, this figures out who the whole family is, and shows a header allowing
+viewHeader : Language -> Html (Msg activity any)
+viewHeader language =
+    div
+        [ class "ui basic head segment" ]
+        [ h1
+            [ class "ui header" ]
+            [ text <| translate language Trans.Assessment ]
+        , a
+            [ class "link-back"
+            , SessionPage ParticipantsPage
+                |> Redirect
+                |> onClick
+            ]
+            [ span [ class "icon-back" ] [] ]
+        ]
+
+
+{-| Given a mother or a child, this figures out who the whole family is, and shows links allowing
 you to switch between any family member.
 -}
-viewHeader : Participant id value activity msg -> Language -> id -> EditableSession -> Html (Msg activity any)
-viewHeader config language participantId session =
+viewFamilyLinks : Participant id value activity msg -> Language -> id -> EditableSession -> Html (Msg activity any)
+viewFamilyLinks config language participantId session =
     let
         -- Whether we've looking at a child or a mother, we figure out who the
         -- mother is. This will never be `Nothing` so long as the
@@ -427,19 +452,6 @@ viewHeader config language participantId session =
                         ]
                     ]
     in
-        div
-            [ class "ui basic head segment" ]
-            [ h1
-                [ class "ui header" ]
-                [ text <| translate language Trans.Assessment ]
-            , a
-                [ class "link-back"
-                , SessionPage ParticipantsPage
-                    |> Redirect
-                    |> onClick
-                ]
-                [ span [ class "icon-back" ] [] ]
-            , ul
-                [ class "links-head" ]
-                (motherMarkup ++ childrenMarkup)
-            ]
+        ul
+            [ class "links-body" ]
+            (motherMarkup ++ childrenMarkup)

@@ -55,3 +55,47 @@ a {
 .ui.header {
   font-family: $font;
 }
+
+.links-body {
+  margin: 0;
+  margin-top: 24px;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: inline-block;
+    margin-right: 24px;
+  }
+
+  a {
+    display: block;
+    width: 54px;
+    height: 54px;
+    background: #fff;
+    border-radius: 50%;
+    position: relative;
+  }
+
+  li.active a:before {
+    width: 68px;
+    height: 68px;
+    border: 3px solid #00374f;
+    content: " ";
+    display: block;
+    border-radius: 50%;
+    position: absolute;
+    top: -7px;
+    left: -7px;
+  }
+
+  .count {
+    position: absolute;
+    font-size: 1rem; //14px;
+    font-family: $font-alt;
+    font-weight: 500;
+    top: 8px;
+    right: 10px;
+    color: #0393db;
+    line-height: 1;
+  }
+}
