@@ -609,6 +609,20 @@ h3.ui.header {
   color: $color-text;
 }
 
+.ui.form input[type=number],
+.ui.form input[type=number]:focus {
+  border: 0;
+  font-size: 2rem;
+  border-radius: 0;
+  padding: 0 0.5em;
+  line-height: 0.5;
+  width: 300px; //263px;
+  text-align: right;
+  height: 50px;
+  background: #e6e6e6;
+  color: $color-text;
+}
+
 input::placeholder {
   text-align: left;
   color: #999;

@@ -157,11 +157,9 @@ viewFloatForm config language currentDate child measurements model =
 
         -- Our input is a string, which may or may not be a valid float,
         -- since we want to let users enter things like "." to start with
-        -- without clobbering what they type. Query: whether tye `type_`
-        -- ought to be "number" instead of "text"? Should test that once this
-        -- is running again, to see how it affects browser behaviour.
+        -- without clobbering what they type.
         inputAttrs =
-            [ type_ "text"
+            [ type_ "number"
             , placeholder <| translate language config.placeholderText
             , name config.blockName
             , Attr.min <| toString config.constraints.minVal
@@ -279,7 +277,8 @@ viewFloatForm config language currentDate child measurements model =
                 , div
                     [ class "ui form" ]
                     [ div [ class "ui grid" ]
-                        [ div [ class "eleven wide column" ]
+                        [ div
+                            [ class "eleven wide column" ]
                             [ div [ class "ui right labeled input" ]
                                 [ input inputAttrs []
                                 , div
