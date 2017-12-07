@@ -100,7 +100,7 @@ type alias FamilyPlanning =
 
 
 type ChildNutritionSign
-    = AbdominalDisortion
+    = AbdominalDistention
     | Apathy
     | BrittleHair
     | DrySkin

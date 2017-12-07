@@ -94,7 +94,10 @@ encodeNutritionSign =
 encodeNutritionSignAsString : ChildNutritionSign -> String
 encodeNutritionSignAsString sign =
     case sign of
-        AbdominalDisortion ->
+        AbdominalDistention ->
+            -- We're keeping this for the moment for back-compat ...
+            -- ultimately, we could change this, but we'd need to co-ordinate
+            -- changes on the backend, and deal with existing data.
             "abdominal-disortion"
 
         Apathy ->
