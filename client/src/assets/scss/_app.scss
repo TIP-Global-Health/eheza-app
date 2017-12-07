@@ -99,3 +99,22 @@ a {
     line-height: 1;
   }
 }
+
+.icon-participant {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: $color-background;
+
+  &.active {
+    background-color: $color-primary;
+  }
+
+  &.mother {
+    background: url(#{$img-path}icon-mother-grey.svg) no-repeat center;
+  }
+
+  &.child {
+    background: url(#{$img-path}icon-baby-grey.svg) no-repeat center;
+  }
+}
