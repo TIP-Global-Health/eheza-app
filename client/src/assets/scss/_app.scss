@@ -50,3 +50,8 @@ a {
   top: 50%;
   transform: translateY(-50%);
 }
+
+// Use Nunito for headers
+.ui.header {
+  font-family: $font;
+}
