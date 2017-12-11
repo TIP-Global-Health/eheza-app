@@ -2,8 +2,66 @@ module ZScore.Model
     exposing
         ( Centimetres(..)
         , Kilograms(..)
+        , Model
+        , Msg(..)
         , ZScore(..)
+        , ZScoreEntry
+        , emptyModel
         )
+
+import IntDict exposing (IntDict)
+import RemoteData exposing (WebData, RemoteData(..))
+
+
+{-| This represents the data that we use to calculate ZScores.
+We load this data from a cache, so we provide some operations here to
+do that.
+
+So, basically you need to issue a `FetchData` at some point (e.g. at
+application startup), and then provide the `Model` to the functions in
+`Utils`.
+
+-}
+type alias Model =
+    { heightForAgeBoys : WebData (IntDict ZScoreEntry)
+    , heightForAgeGirls : WebData (IntDict ZScoreEntry)
+    , weightForAgeBoys : WebData (IntDict ZScoreEntry)
+    , weightForAgeGirls : WebData (IntDict ZScoreEntry)
+    , weightForHeightBoys : WebData (IntDict ZScoreEntry)
+    , weightForHeightGirls : WebData (IntDict ZScoreEntry)
+    }
+
+
+emptyModel : Model
+emptyModel =
+    { heightForAgeBoys = NotAsked
+    , heightForAgeGirls = NotAsked
+    , weightForAgeBoys = NotAsked
+    , weightForAgeGirls = NotAsked
+    , weightForHeightBoys = NotAsked
+    , weightForHeightGirls = NotAsked
+    }
+
+
+{-| So, we're fetching the underlying data via HTTP. But, we're caching it
+locally, so (a) it will be fast, and (b) it will work offline.
+-}
+type Msg
+    = FetchAll
+    | FetchHeightForAgeBoys
+    | FetchHeightForAgeGirls
+    | FetchWeightForAgeBoys
+    | FetchWeightForAgeGirls
+    | FetchWeightForHeightBoys
+    | FetchWeightForHeightGirls
+    | HandleHeightForAgeBoys (WebData (IntDict ZScoreEntry))
+    | HandleHeightForAgeGirls (WebData (IntDict ZScoreEntry))
+    | HandleWeightForAgeBoys (WebData (IntDict ZScoreEntry))
+    | HandleWeightForAgeGirls (WebData (IntDict ZScoreEntry))
+    | HandleWeightForHeightBoys (WebData (IntDict ZScoreEntry))
+    | HandleWeightForHeightGirls (WebData (IntDict ZScoreEntry))
+
+
 
 {- We might want to re-use some of these types generally. In fact, there would
    be ways to be more sophisticated about measurement units, but they might be
@@ -37,12 +95,42 @@ possibilities.
   - Use `viewZScore` to get the ZScore as a string, such that
     `ZSCore3Neg` displays as "-3", etc.
 
+Note that when we calculate a ZScore from a measurement, we
+round in the following manner.
+
+  - If the measurement is right on ZScore0, we return ZScore0.
+    (So, that would be rare).
+
+  - If the measurement is above ZScore0, we round up. So, something
+    just barely above ZScore0 would be ZScore1.
+
+  - If the measurement is below ZScore0, we round down. So, something
+    just barefly below ZScore0 would be ZScore1Neg.
+
+So, you might say that we round away from 0. In fact, we apply a kind
+of ceiling away from 0.
+
 -}
 type ZScore
-    = ZScore3Neg
+    = ZScore4Neg
+    | ZScore3Neg
     | ZScore2Neg
     | ZScore1Neg
     | ZScore0
     | ZScore1
     | ZScore2
     | ZScore3
+    | ZScore4
+
+
+type alias ZScoreEntry =
+    { sd0 : Float
+    , sd1 : Float
+    , sd2 : Float
+    , sd3 : Float
+    , sd4 : Float
+    , sd1neg : Float
+    , sd2neg : Float
+    , sd3neg : Float
+    , sd4neg : Float
+    }

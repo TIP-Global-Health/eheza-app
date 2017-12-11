@@ -20,6 +20,7 @@ import Restful.Login
 import Translate exposing (translate, Language)
 import Utils.Html exposing (spinner, wrapPage)
 import Utils.WebData exposing (viewError)
+import ZScore.Model
 
 
 view : Model -> Html Msg
@@ -76,7 +77,7 @@ viewConfiguredModel model configured =
                             Pages.PageNotFound.View.view model.language url
 
                         SessionPage subPage ->
-                            viewSessionPage model.language model.currentDate subPage model.cache.editableSession model.sessionPages
+                            viewSessionPage model.language model.currentDate model.zscores subPage model.cache.editableSession model.sessionPages
 
                         _ ->
                             Pages.Login.View.view model.language model.activePage configured.login configured.loginPage (Maybe.map Tuple.second session)
@@ -118,6 +119,7 @@ viewConfiguredModel model configured =
                             viewSessionPage
                                 model.language
                                 model.currentDate
+                                model.zscores
                                 subPage
                                 model.cache.editableSession
                                 model.sessionPages
@@ -143,8 +145,8 @@ viewLoading =
         ]
 
 
-viewSessionPage : Language -> NominalDate -> SessionPage -> WebData (Maybe ( SessionId, EditableSession )) -> SessionPages -> Html Msg
-viewSessionPage language currentDate page session model =
+viewSessionPage : Language -> NominalDate -> ZScore.Model.Model -> SessionPage -> WebData (Maybe ( SessionId, EditableSession )) -> SessionPages -> Html Msg
+viewSessionPage language currentDate zscores page session model =
     case session of
         NotAsked ->
             wrapPage [ spinner ]
@@ -161,7 +163,7 @@ viewSessionPage language currentDate page session model =
         Success fetched ->
             case fetched of
                 Just ( _, session ) ->
-                    viewFoundSession language currentDate page session model
+                    viewFoundSession language currentDate zscores page session model
                         |> Html.map MsgSession
 
                 Nothing ->

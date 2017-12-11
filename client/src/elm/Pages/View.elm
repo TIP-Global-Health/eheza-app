@@ -18,12 +18,13 @@ import Pages.Participant.View
 import Pages.Participants.View
 import Participant.Utils exposing (childParticipant, motherParticipant)
 import Translate exposing (translate, Language)
+import ZScore.Model
 
 
 {-| This is a view function specialized for session pages, which require an editable session.
 -}
-viewFoundSession : Language -> NominalDate -> SessionPage -> EditableSession -> SessionPages -> Html MsgSession
-viewFoundSession language currentDate page session model =
+viewFoundSession : Language -> NominalDate -> ZScore.Model.Model -> SessionPage -> EditableSession -> SessionPages -> Html MsgSession
+viewFoundSession language currentDate zscores page session model =
     if session.offlineSession.session.closed || session.edits.explicitlyClosed then
         viewClosedSession language session
     else
@@ -38,13 +39,13 @@ viewFoundSession language currentDate page session model =
                     ChildActivity activity ->
                         EveryDict.get activity model.childActivityPages
                             |> Maybe.withDefault Pages.Activity.Model.emptyModel
-                            |> Pages.Activity.View.view childParticipant language currentDate activity session
+                            |> Pages.Activity.View.view childParticipant language currentDate zscores activity session
                             |> Html.map (MsgChildActivity activity)
 
                     MotherActivity activity ->
                         EveryDict.get activity model.motherActivityPages
                             |> Maybe.withDefault Pages.Activity.Model.emptyModel
-                            |> Pages.Activity.View.view motherParticipant language currentDate activity session
+                            |> Pages.Activity.View.view motherParticipant language currentDate zscores activity session
                             |> Html.map (MsgMotherActivity activity)
 
             AttendancePage ->
@@ -58,7 +59,7 @@ viewFoundSession language currentDate page session model =
             ChildPage childId ->
                 EveryDict.get childId model.childPages
                     |> Maybe.withDefault Pages.Participant.Model.emptyModel
-                    |> Pages.Participant.View.viewChild language currentDate childId session
+                    |> Pages.Participant.View.viewChild language currentDate zscores childId session
                     |> Html.map (MsgChild childId)
 
             MotherPage motherId ->
