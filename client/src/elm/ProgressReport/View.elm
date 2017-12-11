@@ -16,4 +16,5 @@ viewProgressReport : Language -> ZScore.Model.Model -> ChildId -> EditableSessio
 viewProgressReport language zscores childId session =
     div [ class "ui full segment progress-report" ]
         [ ZScore.View.viewHeightForAgeBoys zscores
+        , ZScore.View.viewHeightForAgeGirls zscores
         ]

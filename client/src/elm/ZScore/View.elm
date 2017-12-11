@@ -40,6 +40,18 @@ viewHeightForAgeBoys model =
         ]
 
 
+viewHeightForAgeGirls : Model -> Html any
+viewHeightForAgeGirls model =
+    svg
+        [ class "z-score"
+        , x "0px"
+        , y "0px"
+        , viewBox "0 0 841.9 595.3"
+        ]
+        [ frame
+        ]
+
+
 zScoreNeg3Line : Svg any
 zScoreNeg3Line =
     polygon
