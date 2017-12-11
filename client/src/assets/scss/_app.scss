@@ -135,20 +135,17 @@ svg.z-score {
     fill: #FFFFFF;
   }
 
-  .st5 {
+  .zero-to-neg-two {
     opacity: 0.5;
-  }
-
-  .st6 {
     fill: #00853F;
   }
 
-  .st7 {
+  .neg-two-to-neg-three {
     opacity: 0.5;
     fill: #F9E100;
   }
 
-  .st8 {
+  .below-neg-three {
     opacity: 0.5;
     fill: #E31837;
   }
@@ -210,7 +207,11 @@ svg.z-score {
     stroke-width: 1.5;
   }
 
-  .st22 {
+  .zero-line {
+    fill: #00853F;
+  }
+
+  .two-line {
      fill: #E31837;
   }
 
