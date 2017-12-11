@@ -20,7 +20,7 @@ import ZScore.Model exposing (..)
 viewHeightForAgeBoys : Model -> Html any
 viewHeightForAgeBoys model =
     svg
-        [ class "z-score"
+        [ class "z-score boys"
         , x "0px"
         , y "0px"
         , viewBox "0 0 841.9 595.3"
@@ -30,7 +30,7 @@ viewHeightForAgeBoys model =
         , fillBetweenNegative2AndNegative3
         , fillBelowNegative3
         , fillAbove0
-        , labels
+        , labels heightForAgeBoysLabels
         , referenceLines
         , zScore3Line
         , zScore2Line
@@ -43,12 +43,13 @@ viewHeightForAgeBoys model =
 viewHeightForAgeGirls : Model -> Html any
 viewHeightForAgeGirls model =
     svg
-        [ class "z-score"
+        [ class "z-score girls"
         , x "0px"
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
         [ frame
+        , labels heightForAgeGirlsLabels
         ]
 
 
@@ -970,8 +971,39 @@ referenceLines =
         ]
 
 
-labels : Svg any
-labels =
+type alias LabelConfig =
+    { title : String
+    , subtitle : String
+    , xAxis1 : String
+    , xAxis2 : String
+    , yAxis : String
+    }
+
+
+{-| TODO: Could allow for translating this ...
+-}
+heightForAgeBoysLabels : LabelConfig
+heightForAgeBoysLabels =
+    { title = "Length-for-age BOYS"
+    , subtitle = "Birth to 2 years (z-scores)"
+    , xAxis1 = "Months"
+    , xAxis2 = "Age (completed months and years)"
+    , yAxis = "Length (cm)"
+    }
+
+
+heightForAgeGirlsLabels : LabelConfig
+heightForAgeGirlsLabels =
+    { title = "Length-for-age GIRLS"
+    , subtitle = "Birth to 2 years (z-scores)"
+    , xAxis1 = "Months"
+    , xAxis2 = "Age (completed months and years)"
+    , yAxis = "Length (cm)"
+    }
+
+
+labels : LabelConfig -> Svg any
+labels config =
     g []
         [ rect
             [ x "110.9"
@@ -984,36 +1016,36 @@ labels =
         , rect
             [ x "12.9"
             , y "72"
-            , class "st11"
+            , class "gender"
             , width "379.4"
             , height "1"
             ]
             []
         , text_
             [ transform "matrix(1 0 0 1 109.2567 62.4895)"
-            , class "st11 st12 st13"
+            , class "gender st12 st13"
             ]
-            [ text "Length-for-age BOYS" ]
+            [ text config.title ]
         , text_
             [ transform "matrix(1 0 0 1 109.7767 86.491)"
-            , class "st11 st1 st15"
+            , class "gender st1 st15"
             ]
-            [ text "Birth to 2 years (z-scores)" ]
+            [ text config.subtitle ]
         , text_
             [ transform "matrix(1 0 0 1 62.3622 513.5461)"
             , class "st4 st1 st16"
             ]
-            [ text "Months" ]
+            [ text config.xAxis1 ]
         , text_
             [ transform "matrix(1 0 0 1 325.0975 540.9924)"
             , class "st4 st1 st17"
             ]
-            [ text "Age (completed months and years)" ]
+            [ text config.xAxis2 ]
         , text_
             [ transform "matrix(0 -1 1 0 80.8497 345.7814)"
             , class "st4 st1 st17"
             ]
-            [ text "Length (cm)" ]
+            [ text config.yAxis ]
         ]
 
 
