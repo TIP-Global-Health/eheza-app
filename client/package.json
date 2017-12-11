@@ -10,7 +10,7 @@
   "devDependencies": {
     "browser-sync": "2.18.2",
     "chance": "1.0.4",
-    "csv-parse": "^2.0.0",
+    "csv-parse": "^1.2.4",
     "del": "1.2.1",
     "elm-test": "0.18.2",
     "gulp": "3.9.1",
