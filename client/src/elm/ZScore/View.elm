@@ -26,18 +26,18 @@ viewHeightForAgeBoys model =
         , viewBox "0 0 841.9 595.3"
         ]
         [ frame
-        , fillBetween0AndNegative2
-        , fillBetweenNegative2AndNegative3
-        , fillBelowNegative3
-        , fillAbove0
+        , fillBetween0AndNegative2HeightForAgeBoys
+        , fillBetweenNegative2AndNegative3HeightForAgeBoys
+        , fillBelowNegative3HeightForAgeBoys
+        , fillAbove0HeightForAgeBoys
         , labels heightForAgeBoysLabels
         , zScoreLabelsHeightForAgeBoys
         , referenceLines
-        , zScore3Line
-        , zScore2Line
-        , zScore0Line
-        , zScoreNeg2Line
-        , zScoreNeg3Line
+        , zScore3LineHeightForAgeBoys
+        , zScore2LineHeightForAgeBoys
+        , zScore0LineHeightForAgeBoys
+        , zScoreNeg2LineHeightForAgeBoys
+        , zScoreNeg3LineHeightForAgeBoys
         ]
 
 
@@ -56,8 +56,8 @@ viewHeightForAgeGirls model =
         ]
 
 
-zScoreNeg3Line : Svg any
-zScoreNeg3Line =
+zScoreNeg3LineHeightForAgeBoys : Svg any
+zScoreNeg3LineHeightForAgeBoys =
     polygon
         [ points
             """111.3,492 112.1,490.8 112.9,489.7 113.8,488.5 114.6,487.3 115.4,486.2 116.2,485 117.1,483.8 117.9,482.7
@@ -209,8 +209,8 @@ zScoreNeg3Line =
         []
 
 
-zScoreNeg2Line : Svg any
-zScoreNeg2Line =
+zScoreNeg2LineHeightForAgeBoys : Svg any
+zScoreNeg2LineHeightForAgeBoys =
     polygon
         [ class "st22"
         , points """111.3,479.1 112.1,478 112.9,476.8 113.8,475.6 114.6,474.4 115.4,473.3 116.2,472.1 117.1,470.9
@@ -363,8 +363,8 @@ zScoreNeg2Line =
         []
 
 
-zScore0Line : Svg any
-zScore0Line =
+zScore0LineHeightForAgeBoys : Svg any
+zScore0LineHeightForAgeBoys =
     polygon
         [ class "st6"
         , points
@@ -517,8 +517,8 @@ zScore0Line =
         []
 
 
-zScore2Line : Svg any
-zScore2Line =
+zScore2LineHeightForAgeBoys : Svg any
+zScore2LineHeightForAgeBoys =
     polygon
         [ class "st22"
         , points
@@ -671,8 +671,8 @@ zScore2Line =
         []
 
 
-zScore3Line : Svg any
-zScore3Line =
+zScore3LineHeightForAgeBoys : Svg any
+zScore3LineHeightForAgeBoys =
     polygon
         [ points
             """111.3,414.9 112.1,413.7 112.9,412.4 113.8,411.2 114.6,410 115.4,408.8 116.2,407.5 117.1,406.3 117.9,405.1
@@ -1071,8 +1071,8 @@ labels config =
         ]
 
 
-fillAbove0 : Svg any
-fillAbove0 =
+fillAbove0HeightForAgeBoys : Svg any
+fillAbove0HeightForAgeBoys =
     polygon
         [ class "st9"
         , points
@@ -1156,8 +1156,8 @@ fillAbove0 =
 {-| This can almost surely be simplified by using z-index ... we don't need to define
 every boundary so carefully.
 -}
-fillBelowNegative3 : Svg any
-fillBelowNegative3 =
+fillBelowNegative3HeightForAgeBoys : Svg any
+fillBelowNegative3HeightForAgeBoys =
     Svg.path
         [ class "st8"
 
@@ -1223,8 +1223,8 @@ fillBelowNegative3 =
         []
 
 
-fillBetweenNegative2AndNegative3 : Svg any
-fillBetweenNegative2AndNegative3 =
+fillBetweenNegative2AndNegative3HeightForAgeBoys : Svg any
+fillBetweenNegative2AndNegative3HeightForAgeBoys =
     polygon
         [ class "st7"
         , points
@@ -1378,8 +1378,8 @@ fillBetweenNegative2AndNegative3 =
         []
 
 
-fillBetween0AndNegative2 : Svg any
-fillBetween0AndNegative2 =
+fillBetween0AndNegative2HeightForAgeBoys : Svg any
+fillBetween0AndNegative2HeightForAgeBoys =
     g
         [ class "st5" ]
         [ g []
