@@ -19,6 +19,54 @@ viewHeightForAgeBoys model =
         , fillBetweenNegative2AndNegative3
         , fillNegative3
         , fillAbove0
+        , labels
+        ]
+
+
+labels : Svg any
+labels =
+    g []
+        [ rect
+            [ x "110.9"
+            , y "119.9"
+            , class "st10"
+            , width "626.8"
+            , height "386.8"
+            ]
+            []
+        , rect
+            [ x "12.9"
+            , y "72"
+            , class "st11"
+            , width "379.4"
+            , height "1"
+            ]
+            []
+        , text_
+            [ transform "matrix(1 0 0 1 109.2567 62.4895)"
+            , class "st11 st12 st13"
+            ]
+            [ text "Length-for-age BOYS" ]
+        , text_
+            [ transform "matrix(1 0 0 1 109.7767 86.491)"
+            , class "st11 st1 st15"
+            ]
+            [ text "Birth to 2 years (z-scores)" ]
+        , text_
+            [ transform "matrix(1 0 0 1 62.3622 513.5461)"
+            , class "st4 st1 st16"
+            ]
+            [ text "Months" ]
+        , text_
+            [ transform "matrix(1 0 0 1 325.0975 540.9924)"
+            , class "st4 st1 st17"
+            ]
+            [ text "Age (completed months and years)" ]
+        , text_
+            [ transform "matrix(0 -1 1 0 80.8497 345.7814)"
+            , class "st4 st1 st17"
+            ]
+            [ text "Length (cm)" ]
         ]
 
 
