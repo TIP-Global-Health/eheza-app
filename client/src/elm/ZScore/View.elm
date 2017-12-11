@@ -1,5 +1,16 @@
 module ZScore.View exposing (..)
 
+{-| Ultimately, the idea is that we've got information in the `Model` that we
+can use to draw the elements below more programmatically ... that is, we don't
+have to have static lists of points here when we have the numeric values
+anyway.
+
+However, to save development time for the moment, we're only applying a limited
+amount of intelligence below ... there is more that could be done to simplify
+this, use less memory, and make it more flexible.
+
+-}
+
 import Html exposing (Html)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -943,6 +954,7 @@ referenceLines =
         , text_ [ transform "matrix(1 0 0 1 722.0057 141.1564)", class "st1 st23" ] [ text "3" ]
         , text_ [ transform "matrix(1 0 0 1 722.4686 200.841)", class "st6 st1 st23" ] [ text "0" ]
         , text_ [ transform "matrix(1 0 0 1 722.0448 161.738)", class "st22 st1 st23" ] [ text "2" ]
+        , line [ class "st21", x1 "715.4", y1 "513.6", x2 "715.4", y2 "119.5" ] []
         ]
 
 
