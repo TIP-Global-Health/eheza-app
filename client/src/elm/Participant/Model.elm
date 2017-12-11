@@ -18,6 +18,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html)
 import Pages.Activity.Model
 import Translate exposing (Language)
+import ZScore.Model
 
 
 {-| Implementations for child and mother are in Participant.Utils.
@@ -39,5 +40,5 @@ type alias Participant id value activity msg =
     , tagActivityType : activity -> ActivityType
     , toChildId : id -> Maybe ChildId
     , toMotherId : id -> Maybe MotherId
-    , viewMeasurements : Language -> NominalDate -> id -> activity -> EditableSession -> Html (Pages.Activity.Model.Msg id msg)
+    , viewMeasurements : Language -> NominalDate -> ZScore.Model.Model -> id -> activity -> EditableSession -> Html (Pages.Activity.Model.Msg id msg)
     }

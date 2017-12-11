@@ -24,6 +24,7 @@ import ProgressReport.View exposing (viewProgressReport)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderDateOfBirth)
+import ZScore.Model
 
 
 thumbnailDimensions : { width : Int, height : Int }
@@ -33,14 +34,14 @@ thumbnailDimensions =
     }
 
 
-viewChild : Language -> NominalDate -> ChildId -> EditableSession -> Model ChildActivityType -> Html (Msg ChildActivityType Measurement.Model.MsgChild)
-viewChild language currentDate childId session model =
+viewChild : Language -> NominalDate -> ZScore.Model.Model -> ChildId -> EditableSession -> Model ChildActivityType -> Html (Msg ChildActivityType Measurement.Model.MsgChild)
+viewChild language currentDate zscores childId session model =
     -- It's nice to just pass in the childId. If the session is consistent, we
     -- should always be able to get the child.  But it would be hard to
     -- convince the compiler of that, so we put in a pro-forma error message.
     case getChild childId session.offlineSession of
         Just child ->
-            viewFoundChild language currentDate ( childId, child ) session model
+            viewFoundChild language currentDate zscores ( childId, child ) session model
 
         Nothing ->
             -- TODO: Make this error a little nicer, and translatable ... it
@@ -55,8 +56,8 @@ viewChild language currentDate childId session model =
 
 {-| This one needs the `currentDate` in order to calculate ages from dates of birth.
 -}
-viewFoundChild : Language -> NominalDate -> ( ChildId, Child ) -> EditableSession -> Model ChildActivityType -> Html (Msg ChildActivityType Measurement.Model.MsgChild)
-viewFoundChild language currentDate ( childId, child ) session model =
+viewFoundChild : Language -> NominalDate -> ZScore.Model.Model -> ( ChildId, Child ) -> EditableSession -> Model ChildActivityType -> Html (Msg ChildActivityType Measurement.Model.MsgChild)
+viewFoundChild language currentDate zscores ( childId, child ) session model =
     let
         maybeMother =
             child.motherId
@@ -138,7 +139,7 @@ viewFoundChild language currentDate ( childId, child ) session model =
                             form =
                                 getChildForm childId session
                         in
-                            [ Measurement.View.viewChild language currentDate child activity measurements form
+                            [ Measurement.View.viewChild language currentDate child activity measurements zscores form
                                 |> Html.map MsgMeasurement
                                 |> keyed "content"
                             ]

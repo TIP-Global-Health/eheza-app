@@ -25,29 +25,29 @@ import Translate as Trans exposing (Language(..), TranslationId, translate)
 import Utils.Html exposing (script)
 import Utils.NominalDate exposing (diffDays, Days(..))
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
-import ZScore.Utils exposing (viewZScore, zScoreForHeight, zScoreForMuac, zScoreForWeight, zScoreWeightForHeight)
+import ZScore.Utils exposing (viewZScore, zScoreHeightForAge, zScoreWeightForAge, zScoreWeightForHeight)
 
 
 {-| We need the current date in order to immediately construct a ZScore for the
 child when we enter something.
 -}
-viewChild : Language -> NominalDate -> Child -> ChildActivityType -> MeasurementData ChildMeasurements ChildEdits -> ModelChild -> Html MsgChild
-viewChild language currentDate child activity measurements model =
+viewChild : Language -> NominalDate -> Child -> ChildActivityType -> MeasurementData ChildMeasurements ChildEdits -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewChild language currentDate child activity measurements zscores model =
     case activity of
         ChildPicture ->
             viewPhoto language (mapMeasurementData (Maybe.map Tuple.second << .photo) .photo measurements) model.photo
 
         Height ->
-            viewHeight language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .height) .height measurements) model
+            viewHeight language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .height) .height measurements) zscores model
 
         Muac ->
-            viewMuac language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .muac) .muac measurements) model
+            viewMuac language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .muac) .muac measurements) zscores model
 
         NutritionSigns ->
             viewNutritionSigns language (mapMeasurementData (Maybe.map Tuple.second << .nutrition) .nutrition measurements) model.nutritionSigns
 
         Weight ->
-            viewWeight language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .weight) .weight measurements) model
+            viewWeight language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .weight) .weight measurements) zscores model
 
         ProgressReport ->
             -- TODO: Show something here? Possibly with a button to indicate that we've completed the "activity"
@@ -63,8 +63,8 @@ type alias FloatFormConfig value =
     , activity : ActivityType
     , placeholderText : TranslationId
     , zScoreLabelForAge : TranslationId
-    , zScoreForAge : Maybe (Days -> Gender -> Float -> Maybe ZScore)
-    , zScoreForHeight : Maybe (Centimetres -> Gender -> Float -> Maybe ZScore)
+    , zScoreForAge : Maybe (ZScore.Model.Model -> Days -> Gender -> Float -> Maybe ZScore)
+    , zScoreForHeight : Maybe (ZScore.Model.Model -> Centimetres -> Gender -> Float -> Maybe ZScore)
     , constraints : FloatInputConstraints
     , unit : TranslationId
     , inputValue : ModelChild -> String
@@ -82,7 +82,7 @@ heightFormConfig =
     , activity = ChildActivity Height
     , placeholderText = Trans.PlaceholderEnterHeight
     , zScoreLabelForAge = Trans.ZScoreHeightForAge
-    , zScoreForAge = Just <| \age gender height -> zScoreForHeight age gender (Centimetres height)
+    , zScoreForAge = Just <| \model age gender height -> zScoreHeightForAge model age gender (Centimetres height)
     , zScoreForHeight = Nothing
     , constraints = getInputConstraintsHeight
     , unit = Trans.CentimeterShorthand
@@ -120,8 +120,8 @@ weightFormConfig =
     , activity = ChildActivity Weight
     , placeholderText = Trans.PlaceholderEnterWeight
     , zScoreLabelForAge = Trans.ZScoreWeightForAge
-    , zScoreForAge = Just <| \age gender weight -> zScoreForWeight age gender (Kilograms weight)
-    , zScoreForHeight = Just <| \height gender weight -> zScoreWeightForHeight height gender (Kilograms weight)
+    , zScoreForAge = Just <| \model age gender weight -> zScoreWeightForAge model age gender (Kilograms weight)
+    , zScoreForHeight = Just <| \model height gender weight -> zScoreWeightForHeight model height gender (Kilograms weight)
     , constraints = getInputConstraintsWeight
     , unit = Trans.KilogramShorthand
     , inputValue = .weight
@@ -133,23 +133,23 @@ weightFormConfig =
     }
 
 
-viewHeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Height) (Edit Height) -> ModelChild -> Html MsgChild
-viewHeight language date child measurements model =
-    viewFloatForm heightFormConfig language date child measurements model
+viewHeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Height) (Edit Height) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewHeight =
+    viewFloatForm heightFormConfig
 
 
-viewWeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Weight) (Edit Weight) -> ModelChild -> Html MsgChild
-viewWeight language date child measurements model =
-    viewFloatForm weightFormConfig language date child measurements model
+viewWeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Weight) (Edit Weight) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewWeight =
+    viewFloatForm weightFormConfig
 
 
-viewMuac : Language -> NominalDate -> Child -> MeasurementData (Maybe Muac) (Edit Muac) -> ModelChild -> Html MsgChild
-viewMuac language date child measurements model =
-    viewFloatForm muacFormConfig language date child measurements model
+viewMuac : Language -> NominalDate -> Child -> MeasurementData (Maybe Muac) (Edit Muac) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewMuac =
+    viewFloatForm muacFormConfig
 
 
-viewFloatForm : FloatFormConfig value -> Language -> NominalDate -> Child -> MeasurementData (Maybe value) (Edit value) -> ModelChild -> Html MsgChild
-viewFloatForm config language currentDate child measurements model =
+viewFloatForm : FloatFormConfig value -> Language -> NominalDate -> Child -> MeasurementData (Maybe value) (Edit value) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewFloatForm config language currentDate child measurements zscores model =
     let
         -- What is the string input value from the form?
         inputValue =
@@ -215,7 +215,7 @@ viewFloatForm config language currentDate child measurements model =
                         let
                             zScoreText =
                                 floatValue
-                                    |> Maybe.andThen (\val -> zScoreForAge ageInDays child.gender val)
+                                    |> Maybe.andThen (\val -> zScoreForAge zscores ageInDays child.gender val)
                                     |> Maybe.map viewZScore
                                     |> Maybe.withDefault (translate language Trans.NotAvailable)
                         in
@@ -248,7 +248,7 @@ viewFloatForm config language currentDate child measurements model =
                                     |> Maybe.andThen
                                         (\height ->
                                             Maybe.andThen
-                                                (\weight -> func (Centimetres height) child.gender weight)
+                                                (\weight -> func zscores (Centimetres height) child.gender weight)
                                                 floatValue
                                         )
                                     |> Maybe.map viewZScore
