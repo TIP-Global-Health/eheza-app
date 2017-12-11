@@ -50,9 +50,18 @@ viewHeightForAgeGirls model =
         , viewBox "0 0 841.9 595.3"
         ]
         [ frame
+        , fillBetween0AndNegative2HeightForAgeGirls
+        , fillBetweenNegative2AndNegative3HeightForAgeGirls
+        , fillBelowNegative3HeightForAgeGirls
+        , fillAbove0HeightForAgeGirls
         , labels heightForAgeGirlsLabels
         , zScoreLabelsHeightForAgeGirls
         , referenceLines
+        , zScore3LineHeightForAgeGirls
+        , zScore2LineHeightForAgeGirls
+        , zScore0LineHeightForAgeGirls
+        , zScoreNeg2LineHeightForAgeGirls
+        , zScoreNeg3LineHeightForAgeGirls
         ]
 
 
@@ -1876,3 +1885,48 @@ frame =
             ]
             []
         ]
+
+
+fillBetween0AndNegative2HeightForAgeGirls : Svg any
+fillBetween0AndNegative2HeightForAgeGirls =
+    g [] []
+
+
+fillBetweenNegative2AndNegative3HeightForAgeGirls : Svg any
+fillBetweenNegative2AndNegative3HeightForAgeGirls =
+    g [] []
+
+
+fillBelowNegative3HeightForAgeGirls : Svg any
+fillBelowNegative3HeightForAgeGirls =
+    g [] []
+
+
+fillAbove0HeightForAgeGirls : Svg any
+fillAbove0HeightForAgeGirls =
+    g [] []
+
+
+zScore3LineHeightForAgeGirls : Svg any
+zScore3LineHeightForAgeGirls =
+    g [] []
+
+
+zScore2LineHeightForAgeGirls : Svg any
+zScore2LineHeightForAgeGirls =
+    g [] []
+
+
+zScore0LineHeightForAgeGirls : Svg any
+zScore0LineHeightForAgeGirls =
+    g [] []
+
+
+zScoreNeg2LineHeightForAgeGirls : Svg any
+zScoreNeg2LineHeightForAgeGirls =
+    g [] []
+
+
+zScoreNeg3LineHeightForAgeGirls : Svg any
+zScoreNeg3LineHeightForAgeGirls =
+    g [] []
