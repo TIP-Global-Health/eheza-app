@@ -31,6 +31,7 @@ viewHeightForAgeBoys model =
         , fillBelowNegative3
         , fillAbove0
         , labels heightForAgeBoysLabels
+        , zScoreLabelsHeightForAgeBoys
         , referenceLines
         , zScore3Line
         , zScore2Line
@@ -50,6 +51,8 @@ viewHeightForAgeGirls model =
         ]
         [ frame
         , labels heightForAgeGirlsLabels
+        , zScoreLabelsHeightForAgeGirls
+        , referenceLines
         ]
 
 
@@ -821,6 +824,30 @@ zScore3Line =
         []
 
 
+zScoreLabelsHeightForAgeBoys : Svg any
+zScoreLabelsHeightForAgeBoys =
+    g
+        []
+        [ text_ [ transform "matrix(1 0 0 1 720.9237 240.2482)", class "st22 st1 st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.7001 260.0353)", class "st1 st23" ] [ text "-3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.0057 141.1564)", class "st1 st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.4686 200.841)", class "st6 st1 st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 722.0448 161.738)", class "st22 st1 st23" ] [ text "2" ]
+        ]
+
+
+zScoreLabelsHeightForAgeGirls : Svg any
+zScoreLabelsHeightForAgeGirls =
+    g
+        []
+        [ text_ [ transform "matrix(1 0 0 1 720.9238 251.8845)", class "st22 st1 st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.7002 273.9982)", class "st1 st23" ] [ text "-3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.29 142.5744)", class "st1 st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.4688 208.1066)", class "st6 st1 st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 722.0449 165.1994)", class "st22 st1 st23" ] [ text "2" ]
+        ]
+
+
 referenceLines : Svg any
 referenceLines =
     g []
@@ -962,11 +989,6 @@ referenceLines =
         , text_ [ transform "matrix(1 0 0 1 637.7421 516.5436)", class "st4 st1 st16" ] [ text "9" ]
         , text_ [ transform "matrix(1 0 0 1 660.8514 516.5436)", class "st4 st1 st16" ] [ text "10" ]
         , text_ [ transform "matrix(1 0 0 1 686.0399 516.5436)", class "st4 st1 st16" ] [ text "11" ]
-        , text_ [ transform "matrix(1 0 0 1 720.9237 240.2482)", class "st22 st1 st23" ] [ text "-2" ]
-        , text_ [ transform "matrix(1 0 0 1 720.7001 260.0353)", class "st1 st23" ] [ text "-3" ]
-        , text_ [ transform "matrix(1 0 0 1 722.0057 141.1564)", class "st1 st23" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 722.4686 200.841)", class "st6 st1 st23" ] [ text "0" ]
-        , text_ [ transform "matrix(1 0 0 1 722.0448 161.738)", class "st22 st1 st23" ] [ text "2" ]
         , line [ class "st21", x1 "715.4", y1 "513.6", x2 "715.4", y2 "119.5" ] []
         ]
 
