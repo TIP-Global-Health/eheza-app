@@ -8,9 +8,12 @@ import Backend.Session.Model exposing (EditableSession)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Translate as Trans exposing (Language(..), TranslationId, translate)
+import ZScore.Model
+import ZScore.View
 
 
-viewProgressReport : Language -> ChildId -> EditableSession -> Html any
-viewProgressReport language childId session =
+viewProgressReport : Language -> ZScore.Model.Model -> ChildId -> EditableSession -> Html any
+viewProgressReport language zscores childId session =
     div [ class "ui full segment progress-report" ]
-        [ text "The progress report will go here." ]
+        [ ZScore.View.viewHeightForAgeBoys zscores
+        ]
