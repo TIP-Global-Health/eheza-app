@@ -11,11 +11,11 @@ fi
 # Various dependencies to complete the steps below.
 # bzip2: uncompress phantomjs
 # g++4.8 - Fibers issue
-apt-get -y install g++-4.8 bzip2
+apt-get -y install g++-4.8 bzip2 nodejs nodejs-legacy
 # Fibers Node 7.x issue: https://github.com/laverdet/node-fibers/issues/331
 export CXX=g++-4.8
 
-nvm use stable
+node --version
 
 # Install global packages.
 npm install -g elm@~0.18.0
