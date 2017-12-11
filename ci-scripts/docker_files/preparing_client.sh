@@ -15,6 +15,8 @@ apt-get -y install g++-4.8 bzip2
 # Fibers Node 7.x issue: https://github.com/laverdet/node-fibers/issues/331
 export CXX=g++-4.8
 
+nvm use stable
+
 # Install global packages.
 npm install -g elm@~0.18.0
 npm install -g elm-test
