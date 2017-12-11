@@ -17,7 +17,7 @@ viewHeightForAgeBoys model =
         [ frame
         , fillBetween0AndNegative2
         , fillBetweenNegative2AndNegative3
-        , fillNegative3
+        , fillBelowNegative3
         , fillAbove0
         , labels
         , referenceLines
@@ -459,10 +459,13 @@ fillAbove0 =
 {-| This can almost surely be simplified by using z-index ... we don't need to define
 every boundary so carefully.
 -}
-fillNegative3 : Svg any
-fillNegative3 =
+fillBelowNegative3 : Svg any
+fillBelowNegative3 =
     Svg.path
         [ class "st8"
+
+        -- We pull this a bit to the left to correct a mis-alignment ... easier than fixing all the numbers!
+        , transform "translate(-3)"
         , d """M715.3,257.6L715.3,257.6l-0.8,0.1l-0.8,0.2l-0.8,0.1l-0.8,0.2l-0.8,0.2l-0.8,0.2l-0.8,0.2l-0.8,0.2l-0.8,0.2
             L707,259l-0.8,0.2l-0.8,0.2l-0.8,0.2l-0.8,0.2l-0.8,0.2L702,260l-0.8,0.1l-0.8,0.2l-0.8,0.2l-0.8,0.2l-0.8,0.2l-0.8,0.2l-0.8,0.2
             l-0.8,0.1l-0.8,0.2l-0.8,0.2l-0.8,0.2l-0.8,0.2l-0.8,0.2l-0.8,0.2l-0.8,0.1l-0.8,0.2l-0.8,0.2l-0.8,0.2l-0.8,0.2l-0.8,0.2
