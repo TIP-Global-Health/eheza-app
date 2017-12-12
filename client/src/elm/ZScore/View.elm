@@ -94,6 +94,33 @@ viewWeightForHeightBoys model =
         ]
 
 
+viewWeightForHeightGirls : Model -> Html any
+viewWeightForHeightGirls model =
+    svg
+        [ class "z-score girls"
+        , x "0px"
+        , y "0px"
+        , viewBox "0 0 841.9 595.3"
+        ]
+        [ frame
+        , fillBetween0AndNegative2WeightForHeightGirls
+        , fillBetweenNegative2AndNegative3WeightForHeightGirls
+        , fillBelowNegative3WeightForHeightGirls
+        , fillAbove0WeightForHeightGirls
+        , labels weightForHeightGirlsLabels
+        , referenceLinesWeightForHeight
+        , heightLines
+        , zScoreLabelsWeightForHeightGirls
+        , zScore3LineWeightForHeightGirls
+        , zScore2LineWeightForHeightGirls
+        , zScore1LineWeightForHeightGirls
+        , zScore0LineWeightForHeightGirls
+        , zScoreNegOneLineWeightForHeightGirls
+        , zScoreNeg2LineWeightForHeightGirls
+        , zScoreNeg3LineWeightForHeightGirls
+        ]
+
+
 viewHeightForAgeGirls : Model -> Html any
 viewHeightForAgeGirls model =
     svg
@@ -1474,6 +1501,16 @@ weightForAgeBoysLabels =
 weightForHeightBoysLabels : LabelConfig
 weightForHeightBoysLabels =
     { title = "Weight-for-length BOYS"
+    , subtitle = "Birth to 2 years (z-scores)"
+    , xAxis1 = ""
+    , xAxis2 = "Length (cm)"
+    , yAxis = "Weight (kg)"
+    }
+
+
+weightForHeightGirlsLabels : LabelConfig
+weightForHeightGirlsLabels =
+    { title = "Weight-for-length GIRLS"
     , subtitle = "Birth to 2 years (z-scores)"
     , xAxis1 = ""
     , xAxis2 = "Length (cm)"
@@ -6753,3 +6790,63 @@ zScoreNeg2LineWeightForHeightBoys =
             119.1,487.3 118.2,487.5 117.3,487.8 116.3,488 115.4,488.2 114.5,488.5 113.5,488.7 112.6,488.9 111.7,489.2 110.7,489.4"""
         ]
         []
+
+
+fillBetween0AndNegative2WeightForHeightGirls : Svg any
+fillBetween0AndNegative2WeightForHeightGirls =
+    g [] []
+
+
+fillBetweenNegative2AndNegative3WeightForHeightGirls : Svg any
+fillBetweenNegative2AndNegative3WeightForHeightGirls =
+    g [] []
+
+
+fillBelowNegative3WeightForHeightGirls : Svg any
+fillBelowNegative3WeightForHeightGirls =
+    g [] []
+
+
+fillAbove0WeightForHeightGirls : Svg any
+fillAbove0WeightForHeightGirls =
+    g [] []
+
+
+zScoreLabelsWeightForHeightGirls : Svg any
+zScoreLabelsWeightForHeightGirls =
+    g [] []
+
+
+zScore3LineWeightForHeightGirls : Svg any
+zScore3LineWeightForHeightGirls =
+    g [] []
+
+
+zScore2LineWeightForHeightGirls : Svg any
+zScore2LineWeightForHeightGirls =
+    g [] []
+
+
+zScore1LineWeightForHeightGirls : Svg any
+zScore1LineWeightForHeightGirls =
+    g [] []
+
+
+zScore0LineWeightForHeightGirls : Svg any
+zScore0LineWeightForHeightGirls =
+    g [] []
+
+
+zScoreNegOneLineWeightForHeightGirls : Svg any
+zScoreNegOneLineWeightForHeightGirls =
+    g [] []
+
+
+zScoreNeg2LineWeightForHeightGirls : Svg any
+zScoreNeg2LineWeightForHeightGirls =
+    g [] []
+
+
+zScoreNeg3LineWeightForHeightGirls : Svg any
+zScoreNeg3LineWeightForHeightGirls =
+    g [] []

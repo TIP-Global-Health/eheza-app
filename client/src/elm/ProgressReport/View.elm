@@ -20,4 +20,5 @@ viewProgressReport language zscores childId session =
         , ZScore.View.viewWeightForAgeBoys zscores
         , ZScore.View.viewWeightForAgeGirls zscores
         , ZScore.View.viewWeightForHeightBoys zscores
+        , ZScore.View.viewWeightForHeightGirls zscores
         ]
