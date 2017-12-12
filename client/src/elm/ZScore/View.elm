@@ -9,16 +9,20 @@ However, to save development time for the moment, we're only applying a limited
 amount of intelligence below ... there is more that could be done to simplify
 this, use less memory, and make it more flexible.
 
+Some of this ultimately should probably be done lazily in some way ... but so
+far it doesn't seem to be a performance problem, so no premature optimization!
+
 -}
 
 import Html exposing (Html)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
+import Utils.NominalDate exposing (Days(..))
 import ZScore.Model exposing (..)
 
 
-viewHeightForAgeBoys : Model -> Html any
-viewHeightForAgeBoys model =
+viewHeightForAgeBoys : Model -> List ( Days, Centimetres ) -> Html any
+viewHeightForAgeBoys model data =
     svg
         [ class "z-score boys"
         , x "0px"
@@ -39,7 +43,46 @@ viewHeightForAgeBoys model =
         , zScore0LineHeightForAgeBoys
         , zScoreNeg2LineHeightForAgeBoys
         , zScoreNeg3LineHeightForAgeBoys
+        , plotHeightAgeData heightForAgeConfig data
         ]
+
+
+{-| Things we need to know to plot stuff.
+
+The `minX` etc. refers to the reference values that are plotted at the 0 point
+and the maximum point on the chart.
+
+The `originX` etc. refers to where the zero point is in chart coordinates.
+
+-}
+type alias PlotConfig xAxis yAxis =
+    { toFloatX : xAxis -> Float
+    , toFloatY : yAxis -> Float
+    , minX : Float
+    , maxX : Float
+    , minY : Float
+    , maxY : Float
+    , originX : Float
+    , originY : Float
+    }
+
+
+heightForAgeConfig : PlotConfig Days Centimetres
+heightForAgeConfig =
+    { toFloatX = \(Days days) -> toFloat days
+    , toFloatY = \(Centimetres cm) -> cm
+    , minX = 0
+    , maxX = 100
+    , minY = 0
+    , maxY = 100
+    , originX = 0
+    , originY = 0
+    }
+
+
+plotHeightAgeData : PlotConfig x y -> List ( x, y ) -> Svg any
+plotHeightAgeData config data =
+    g [] []
 
 
 viewWeightForAgeBoys : Model -> Html any
@@ -121,8 +164,8 @@ viewWeightForHeightGirls model =
         ]
 
 
-viewHeightForAgeGirls : Model -> Html any
-viewHeightForAgeGirls model =
+viewHeightForAgeGirls : Model -> List ( Days, Centimetres ) -> Html any
+viewHeightForAgeGirls model data =
     svg
         [ class "z-score girls"
         , x "0px"
@@ -143,6 +186,7 @@ viewHeightForAgeGirls model =
         , zScore0LineHeightForAgeGirls
         , zScoreNeg2LineHeightForAgeGirls
         , zScoreNeg3LineHeightForAgeGirls
+        , plotHeightAgeData heightForAgeConfig data
         ]
 
 

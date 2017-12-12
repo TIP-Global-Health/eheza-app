@@ -126,7 +126,7 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
 
         content =
             if model.selectedTab == ProgressReport then
-                [ viewProgressReport language zscores childId session
+                [ viewProgressReport language zscores ( childId, child ) session
                     |> keyed "progress-report"
                 ]
             else
