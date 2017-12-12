@@ -67,6 +67,31 @@ viewWeightForAgeBoys model =
         ]
 
 
+viewWeightForHeightBoys : Model -> Html any
+viewWeightForHeightBoys model =
+    svg
+        [ class "z-score boys"
+        , x "0px"
+        , y "0px"
+        , viewBox "0 0 841.9 595.3"
+        ]
+        [ frame
+        , fillBetween0AndNegative2WeightForHeightBoys
+        , fillBetweenNegative2AndNegative3WeightForHeightBoys
+        , fillBelowNegative3WeightForHeightBoys
+        , fillAbove0WeightForHeightBoys
+        , labels weightForHeightBoysLabels
+        , referenceLinesWeightForHeight
+        , heightLines
+        , zScoreLabelsWeightForHeightBoys
+        , zScore3LineWeightForHeightBoys
+        , zScore2LineWeightForHeightBoys
+        , zScore0LineWeightForHeightBoys
+        , zScoreNeg2LineWeightForHeightBoys
+        , zScoreNeg3LineWeightForHeightBoys
+        ]
+
+
 viewHeightForAgeGirls : Model -> Html any
 viewHeightForAgeGirls model =
     svg
@@ -885,6 +910,11 @@ zScore3LineHeightForAgeBoys =
         []
 
 
+zScoreLabelsWeightForHeightBoys : Svg any
+zScoreLabelsWeightForHeightBoys =
+    g [] []
+
+
 zScoreLabelsHeightForAgeBoys : Svg any
 zScoreLabelsHeightForAgeBoys =
     g
@@ -979,6 +1009,11 @@ ageLines =
         , text_ [ transform "matrix(1 0 0 1 686.0399 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "11" ]
         , line [ class "st21", x1 "715.4", y1 "513.6", x2 "715.4", y2 "119.5" ] []
         ]
+
+
+heightLines : Svg any
+heightLines =
+    g [] []
 
 
 referenceLinesHeight : Svg any
@@ -1230,6 +1265,11 @@ referenceLinesWeight =
         ]
 
 
+referenceLinesWeightForHeight : Svg any
+referenceLinesWeightForHeight =
+    g [] []
+
+
 type alias LabelConfig =
     { title : String
     , subtitle : String
@@ -1257,6 +1297,16 @@ weightForAgeBoysLabels =
     , subtitle = "Birth to 2 years (z-scores)"
     , xAxis1 = "Months"
     , xAxis2 = "Age (completed months and years)"
+    , yAxis = "Weight (kg)"
+    }
+
+
+weightForHeightBoysLabels : LabelConfig
+weightForHeightBoysLabels =
+    { title = "Weight-for-length BOYS"
+    , subtitle = "Birth to 2 years (z-scores)"
+    , xAxis1 = ""
+    , xAxis2 = "Length (cm)"
     , yAxis = "Weight (kg)"
     }
 
@@ -5295,3 +5345,48 @@ zScoreNeg3LineWeightForAgeGirls =
             111.9,492.1 111.2,491.4"""
         ]
         []
+
+
+fillBetween0AndNegative2WeightForHeightBoys : Svg any
+fillBetween0AndNegative2WeightForHeightBoys =
+    g [] []
+
+
+fillBetweenNegative2AndNegative3WeightForHeightBoys : Svg any
+fillBetweenNegative2AndNegative3WeightForHeightBoys =
+    g [] []
+
+
+fillBelowNegative3WeightForHeightBoys : Svg any
+fillBelowNegative3WeightForHeightBoys =
+    g [] []
+
+
+fillAbove0WeightForHeightBoys : Svg any
+fillAbove0WeightForHeightBoys =
+    g [] []
+
+
+zScore3LineWeightForHeightBoys : Svg any
+zScore3LineWeightForHeightBoys =
+    g [] []
+
+
+zScore2LineWeightForHeightBoys : Svg any
+zScore2LineWeightForHeightBoys =
+    g [] []
+
+
+zScore0LineWeightForHeightBoys : Svg any
+zScore0LineWeightForHeightBoys =
+    g [] []
+
+
+zScoreNeg2LineWeightForHeightBoys : Svg any
+zScoreNeg2LineWeightForHeightBoys =
+    g [] []
+
+
+zScoreNeg3LineWeightForHeightBoys : Svg any
+zScoreNeg3LineWeightForHeightBoys =
+    g [] []

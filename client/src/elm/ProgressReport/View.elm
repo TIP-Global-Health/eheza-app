@@ -6,8 +6,8 @@ module ProgressReport.View
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
 import Html exposing (..)
-import Html.Attributes as Attr exposing (..)
-import Translate as Trans exposing (Language(..), TranslationId, translate)
+import Html.Attributes exposing (..)
+import Translate exposing (Language(..), translate)
 import ZScore.Model
 import ZScore.View
 
@@ -19,4 +19,5 @@ viewProgressReport language zscores childId session =
         , ZScore.View.viewHeightForAgeGirls zscores
         , ZScore.View.viewWeightForAgeBoys zscores
         , ZScore.View.viewWeightForAgeGirls zscores
+        , ZScore.View.viewWeightForHeightBoys zscores
         ]
