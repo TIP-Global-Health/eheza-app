@@ -43,7 +43,7 @@ viewHeightForAgeBoys model data =
         , zScore0LineHeightForAgeBoys
         , zScoreNeg2LineHeightForAgeBoys
         , zScoreNeg3LineHeightForAgeBoys
-        , plotHeightAgeData heightForAgeConfig data
+        , plotData heightForAgeConfig data
         ]
 
 
@@ -80,13 +80,26 @@ heightForAgeConfig =
     }
 
 
-plotHeightAgeData : PlotConfig x y -> List ( x, y ) -> Svg any
-plotHeightAgeData config data =
+weightForAgeConfig : PlotConfig Days Kilograms
+weightForAgeConfig =
+    { toFloatX = \(Days days) -> toFloat days
+    , toFloatY = \(Kilograms kg) -> kg
+    , minX = 0
+    , maxX = 100
+    , minY = 0
+    , maxY = 100
+    , originX = 0
+    , originY = 0
+    }
+
+
+plotData : PlotConfig x y -> List ( x, y ) -> Svg any
+plotData config data =
     g [] []
 
 
-viewWeightForAgeBoys : Model -> Html any
-viewWeightForAgeBoys model =
+viewWeightForAgeBoys : Model -> List ( Days, Kilograms ) -> Html any
+viewWeightForAgeBoys model data =
     svg
         [ class "z-score boys"
         , x "0px"
@@ -107,6 +120,7 @@ viewWeightForAgeBoys model =
         , zScore0LineWeightForAgeBoys
         , zScoreNeg2LineWeightForAgeBoys
         , zScoreNeg3LineWeightForAgeBoys
+        , plotData weightForAgeConfig data
         ]
 
 
@@ -186,12 +200,12 @@ viewHeightForAgeGirls model data =
         , zScore0LineHeightForAgeGirls
         , zScoreNeg2LineHeightForAgeGirls
         , zScoreNeg3LineHeightForAgeGirls
-        , plotHeightAgeData heightForAgeConfig data
+        , plotData heightForAgeConfig data
         ]
 
 
-viewWeightForAgeGirls : Model -> Html any
-viewWeightForAgeGirls model =
+viewWeightForAgeGirls : Model -> List ( Days, Kilograms ) -> Html any
+viewWeightForAgeGirls model data =
     svg
         [ class "z-score girls"
         , x "0px"
@@ -212,6 +226,7 @@ viewWeightForAgeGirls model =
         , zScore0LineWeightForAgeGirls
         , zScoreNeg2LineWeightForAgeGirls
         , zScoreNeg3LineWeightForAgeGirls
+        , plotData weightForAgeConfig data
         ]
 
 
