@@ -163,26 +163,29 @@ zScoreFromInt z =
         ZScore4
 
 
+{-| Basically, we truncate towards zero. So, if the measurement falls
+between two lines, we report the line closer to zero.
+-}
 zScoreFromEntries : Int -> Float -> IntDict ZScoreEntry -> Maybe ZScore
 zScoreFromEntries key measurement entries =
     IntDict.get key entries
         |> Maybe.map
             (\entry ->
-                if measurement < entry.sd3neg then
+                if measurement <= entry.sd4neg then
                     ZScore4Neg
-                else if measurement < entry.sd2neg then
+                else if measurement <= entry.sd3neg then
                     ZScore3Neg
-                else if measurement < entry.sd1neg then
+                else if measurement <= entry.sd2neg then
                     ZScore2Neg
-                else if measurement < entry.sd0 then
+                else if measurement <= entry.sd1neg then
                     ZScore1Neg
-                else if measurement == entry.sd0 then
+                else if measurement < entry.sd1 then
                     ZScore0
-                else if measurement <= entry.sd1 then
+                else if measurement < entry.sd2 then
                     ZScore1
-                else if measurement <= entry.sd2 then
+                else if measurement < entry.sd3 then
                     ZScore2
-                else if measurement <= entry.sd3 then
+                else if measurement < entry.sd4 then
                     ZScore3
                 else
                     ZScore4
