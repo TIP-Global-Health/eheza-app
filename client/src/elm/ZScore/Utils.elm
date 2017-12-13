@@ -163,8 +163,9 @@ zScoreFromInt z =
         ZScore4
 
 
-{-| Basically, we truncate towards zero. So, if the measurement falls
-between two lines, we report the line closer to zero.
+{-| Note that when we calculate a ZScore from a measurement, we apply a kind
+of "ceiling" ... if a measurement is between two ZScore lines, we report
+the higher one.
 -}
 zScoreFromEntries : Int -> Float -> IntDict ZScoreEntry -> Maybe ZScore
 zScoreFromEntries key measurement entries =
@@ -179,13 +180,13 @@ zScoreFromEntries key measurement entries =
                     ZScore2Neg
                 else if measurement <= entry.sd1neg then
                     ZScore1Neg
-                else if measurement < entry.sd1 then
+                else if measurement <= entry.sd0 then
                     ZScore0
-                else if measurement < entry.sd2 then
+                else if measurement <= entry.sd1 then
                     ZScore1
-                else if measurement < entry.sd3 then
+                else if measurement <= entry.sd2 then
                     ZScore2
-                else if measurement < entry.sd4 then
+                else if measurement <= entry.sd3 then
                     ZScore3
                 else
                     ZScore4

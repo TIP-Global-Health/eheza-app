@@ -95,10 +95,9 @@ possibilities.
   - Use `viewZScore` to get the ZScore as a string, such that
     `ZSCore3Neg` displays as "-3", etc.
 
-Note that when we calculate a ZScore from a measurement, we basically
-truncate any "fractional" component, towards zero ... so anything between
-0 and -1 or +1 is 0, anything between +1 and +2 is 1, anything between
--1 and -2 is -1, etc.
+Note that when we calculate a ZScore from a measurement, we apply a kind
+of "ceiling" ... if a measurement is between two ZScore lines, we report
+the higher one.
 
 -}
 type ZScore
