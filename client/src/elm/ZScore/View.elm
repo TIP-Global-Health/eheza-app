@@ -22,6 +22,31 @@ import Utils.NominalDate exposing (Days(..))
 import ZScore.Model exposing (..)
 
 
+{-| If you're calling any of the functions that generate charts,
+also call this one in order to generate some markers they all use.
+-}
+viewMarkers : Html any
+viewMarkers =
+    svg []
+        [ marker
+            [ id "dot-marker"
+            , markerWidth "8"
+            , markerHeight "8"
+            , refX "4"
+            , refY "4"
+            , markerUnits "userSpaceOnUse"
+            , class "dot-marker"
+            ]
+            [ circle
+                [ cx "4"
+                , cy "4"
+                , r "3"
+                ]
+                []
+            ]
+        ]
+
+
 viewHeightForAgeBoys : Model -> List ( Days, Centimetres ) -> Html any
 viewHeightForAgeBoys model data =
     svg
@@ -44,7 +69,7 @@ viewHeightForAgeBoys model data =
         , zScore0LineHeightForAgeBoys
         , zScoreNeg2LineHeightForAgeBoys
         , zScoreNeg3LineHeightForAgeBoys
-        , plotData heightForAgeConfig data
+        , g [ class "child-data" ] [ plotData heightForAgeConfig data ]
         ]
 
 
@@ -147,7 +172,7 @@ viewWeightForAgeBoys model data =
         , zScore0LineWeightForAgeBoys
         , zScoreNeg2LineWeightForAgeBoys
         , zScoreNeg3LineWeightForAgeBoys
-        , plotData weightForAgeConfig data
+        , g [ class "child-data" ] [ plotData weightForAgeConfig data ]
         ]
 
 
@@ -227,7 +252,7 @@ viewHeightForAgeGirls model data =
         , zScore0LineHeightForAgeGirls
         , zScoreNeg2LineHeightForAgeGirls
         , zScoreNeg3LineHeightForAgeGirls
-        , plotData heightForAgeConfig data
+        , g [ class "child-data" ] [ plotData heightForAgeConfig data ]
         ]
 
 
@@ -253,7 +278,7 @@ viewWeightForAgeGirls model data =
         , zScore0LineWeightForAgeGirls
         , zScoreNeg2LineWeightForAgeGirls
         , zScoreNeg3LineWeightForAgeGirls
-        , plotData weightForAgeConfig data
+        , g [ class "child-data" ] [ plotData weightForAgeConfig data ]
         ]
 
 

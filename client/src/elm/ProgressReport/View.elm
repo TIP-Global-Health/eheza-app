@@ -95,7 +95,8 @@ viewProgressReport language zscores ( childId, child ) session =
             List.map (chartWeightForAge child) weightValues
     in
         div [ class "ui full segment progress-report" ]
-            [ heightForAge zscores heightForAgeData
+            [ ZScore.View.viewMarkers
+            , heightForAge zscores heightForAgeData
             , weightForAge zscores weightForAgeData
             , weightForHeight zscores
             ]

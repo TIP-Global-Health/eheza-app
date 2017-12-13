@@ -185,6 +185,15 @@ svg.z-score {
     font-size: 12px;
   }
 
+  .child-data {
+    polyline {
+      fill: none;
+      stroke: black;
+      stroke-width: 2px;
+      marker: url(#dot-marker);
+    }
+  }
+
   .st18 {
     fill: none;
     stroke: #77787B;
@@ -225,5 +234,11 @@ svg.z-score {
 
   .st24 {
     fill: #E24301;
+  }
+
+  .dot-marker {
+    .circle {
+      fill: black;
+    }
   }
 }
