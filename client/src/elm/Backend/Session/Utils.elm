@@ -58,6 +58,12 @@ getMyMother childId session =
             )
 
 
+getChildHistoricalMeasurements : ChildId -> OfflineSession -> ChildMeasurementList
+getChildHistoricalMeasurements childId session =
+    EveryDict.get childId session.historicalMeasurements.children
+        |> Maybe.withDefault emptyChildMeasurementList
+
+
 {-| Gets the data in the form that `Measurement.View` (and others) will want.
 -}
 getChildMeasurementData : ChildId -> EditableSession -> MeasurementData ChildMeasurements ChildEdits
