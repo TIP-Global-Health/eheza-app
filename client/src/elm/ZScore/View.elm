@@ -109,6 +109,15 @@ weightForAgeConfig =
     }
 
 
+weightForHeightConfig : PlotConfig Centimetres Kilograms
+weightForHeightConfig =
+    { toFloatX = \(Centimetres cm) -> cm
+    , toFloatY = \(Kilograms kg) -> kg
+    , input = { minY = 1.0, maxY = 25.0, minX = 45, maxX = 110 }
+    , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
+    }
+
+
 plotData : PlotConfig x y -> List ( x, y ) -> Svg any
 plotData config data =
     let
@@ -176,8 +185,8 @@ viewWeightForAgeBoys model data =
         ]
 
 
-viewWeightForHeightBoys : Model -> Html any
-viewWeightForHeightBoys model =
+viewWeightForHeightBoys : Model -> List ( Centimetres, Kilograms ) -> Html any
+viewWeightForHeightBoys model data =
     svg
         [ class "z-score boys"
         , x "0px"
@@ -200,11 +209,12 @@ viewWeightForHeightBoys model =
         , zScoreNegOneLineWeightForHeightBoys
         , zScoreNeg2LineWeightForHeightBoys
         , zScoreNeg3LineWeightForHeightBoys
+        , g [ class "child-data" ] [ plotData weightForHeightConfig data ]
         ]
 
 
-viewWeightForHeightGirls : Model -> Html any
-viewWeightForHeightGirls model =
+viewWeightForHeightGirls : Model -> List ( Centimetres, Kilograms ) -> Html any
+viewWeightForHeightGirls model data =
     svg
         [ class "z-score girls"
         , x "0px"
@@ -227,6 +237,7 @@ viewWeightForHeightGirls model =
         , zScoreNegOneLineWeightForHeightGirls
         , zScoreNeg2LineWeightForHeightGirls
         , zScoreNeg3LineWeightForHeightGirls
+        , g [ class "child-data" ] [ plotData weightForHeightConfig data ]
         ]
 
 

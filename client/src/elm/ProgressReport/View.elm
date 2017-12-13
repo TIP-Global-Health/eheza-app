@@ -11,6 +11,7 @@ import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildHistoricalMeasurements, getChildMeasurementData)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import List.Extra
 import Translate exposing (Language(..), translate)
 import Utils.NominalDate exposing (Days(..), diffDays)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..))
@@ -93,12 +94,15 @@ viewProgressReport language zscores ( childId, child ) session =
 
         weightForAgeData =
             List.map (chartWeightForAge child) weightValues
+
+        weightForHeightData =
+            List.filterMap (chartWeightForHeight heightValues) weightValues
     in
         div [ class "ui full segment progress-report" ]
             [ ZScore.View.viewMarkers
             , heightForAge zscores heightForAgeData
             , weightForAge zscores weightForAgeData
-            , weightForHeight zscores
+            , weightForHeight zscores weightForHeightData
             ]
 
 
@@ -122,3 +126,20 @@ chartWeightForAge child weight =
         WeightInKg cm ->
             Kilograms cm
     )
+
+
+chartWeightForHeight : List Height -> Weight -> Maybe ( Centimetres, Kilograms )
+chartWeightForHeight heights weight =
+    -- For each weight, we try to find a height with a matching sessionID
+    heights
+        |> List.Extra.find (\height -> height.sessionId == weight.sessionId)
+        |> Maybe.map
+            (\height ->
+                ( case height.value of
+                    HeightInCm cm ->
+                        Centimetres cm
+                , case weight.value of
+                    WeightInKg kg ->
+                        Kilograms kg
+                )
+            )
