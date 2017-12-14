@@ -17,11 +17,9 @@ decodeZScoreEntry =
         |> required "SD1" float
         |> required "SD2" float
         |> required "SD3" float
-        |> required "SD4" float
         |> required "SD1neg" float
         |> required "SD2neg" float
         |> required "SD3neg" float
-        |> required "SD4neg" float
 
 
 decodeZScoreEntriesByDay : Decoder (IntDict ZScoreEntry)
