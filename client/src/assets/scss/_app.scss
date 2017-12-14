@@ -67,18 +67,23 @@ a {
     margin-right: 24px;
   }
 
+  .icon-mother, .icon-baby {
+    width: 56px;
+    height: 56px;
+  }
+
   a {
     display: block;
-    width: 54px;
-    height: 54px;
+    width: 58px;
+    height: 58px;
     background: #fff;
     border-radius: 50%;
     position: relative;
   }
 
   li.active a:before {
-    width: 68px;
-    height: 68px;
+    width: 72px;
+    height: 72px;
     border: 3px solid #00374f;
     content: " ";
     display: block;
@@ -93,8 +98,8 @@ a {
     font-size: 1rem; //14px;
     font-family: $font-alt;
     font-weight: 500;
-    top: 8px;
-    right: 10px;
+    top: 10px;
+    right: 12px;
     color: #0393db;
     line-height: 1;
   }
