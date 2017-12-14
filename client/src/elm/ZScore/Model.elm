@@ -95,20 +95,9 @@ possibilities.
   - Use `viewZScore` to get the ZScore as a string, such that
     `ZSCore3Neg` displays as "-3", etc.
 
-Note that when we calculate a ZScore from a measurement, we
-round in the following manner.
-
-  - If the measurement is right on ZScore0, we return ZScore0.
-    (So, that would be rare).
-
-  - If the measurement is above ZScore0, we round up. So, something
-    just barely above ZScore0 would be ZScore1.
-
-  - If the measurement is below ZScore0, we round down. So, something
-    just barefly below ZScore0 would be ZScore1Neg.
-
-So, you might say that we round away from 0. In fact, we apply a kind
-of ceiling away from 0.
+Note that when we calculate a ZScore from a measurement, we apply a kind
+of "ceiling" ... if a measurement is between two ZScore lines, we report
+the higher one.
 
 -}
 type ZScore

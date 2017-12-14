@@ -163,20 +163,24 @@ zScoreFromInt z =
         ZScore4
 
 
+{-| Note that when we calculate a ZScore from a measurement, we apply a kind
+of "ceiling" ... if a measurement is between two ZScore lines, we report
+the higher one.
+-}
 zScoreFromEntries : Int -> Float -> IntDict ZScoreEntry -> Maybe ZScore
 zScoreFromEntries key measurement entries =
     IntDict.get key entries
         |> Maybe.map
             (\entry ->
-                if measurement < entry.sd3neg then
+                if measurement <= entry.sd4neg then
                     ZScore4Neg
-                else if measurement < entry.sd2neg then
+                else if measurement <= entry.sd3neg then
                     ZScore3Neg
-                else if measurement < entry.sd1neg then
+                else if measurement <= entry.sd2neg then
                     ZScore2Neg
-                else if measurement < entry.sd0 then
+                else if measurement <= entry.sd1neg then
                     ZScore1Neg
-                else if measurement == entry.sd0 then
+                else if measurement <= entry.sd0 then
                     ZScore0
                 else if measurement <= entry.sd1 then
                     ZScore1
