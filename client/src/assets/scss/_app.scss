@@ -72,6 +72,16 @@ a {
     height: 56px;
   }
 
+  .icon-mother {
+    background: url(#{$img-path}icon-mother.svg) no-repeat center;
+    background-size: 36px 38px;
+  }
+
+  .icon-baby {
+    background: url(#{$img-path}icon-baby.svg) no-repeat center;
+    background-size: 31px 40px;
+  }
+
   a {
     display: block;
     width: 58px;
@@ -98,8 +108,8 @@ a {
     font-size: 1rem; //14px;
     font-family: $font-alt;
     font-weight: 500;
-    top: 10px;
-    right: 12px;
+    top: 9px;
+    right: 11px;
     color: #0393db;
     line-height: 1;
   }
