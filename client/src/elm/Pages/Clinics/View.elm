@@ -8,9 +8,10 @@ available for data-entry.
 import Html exposing (..)
 import App.Model exposing (Msg(..), MsgLoggedIn(..))
 import Backend.Clinic.Model exposing (Clinic)
-import Backend.Session.Model exposing (Session, EditableSession)
 import Backend.Entities exposing (ClinicId, SessionId)
 import Backend.Model exposing (MsgBackend(..), ModelBackend, ModelCached)
+import Backend.Session.Model exposing (Session, EditableSession)
+import Backend.Session.Utils
 import EveryDictList exposing (EveryDictList)
 import Gizra.Html exposing (showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -463,8 +464,7 @@ viewClinicWithCachedSession language clinicId backend cache sessionId session =
                 ]
 
         activeClinicName =
-            EveryDictList.get session.offlineSession.session.clinicId session.offlineSession.clinics
-                |> Maybe.map .name
+            Backend.Session.Utils.activeClinicName session
                 |> Maybe.withDefault (translate language Translate.ClinicNotFound)
 
         clinicName =

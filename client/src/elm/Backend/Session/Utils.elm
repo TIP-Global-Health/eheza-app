@@ -258,3 +258,9 @@ isClosed currentDate session =
         session.offlineSession.session.closed
             || session.edits.explicitlyClosed
             || pastEnd
+
+
+activeClinicName : EditableSession -> Maybe String
+activeClinicName session =
+    EveryDictList.get session.offlineSession.session.clinicId session.offlineSession.clinics
+        |> Maybe.map .name
