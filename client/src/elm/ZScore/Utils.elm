@@ -2,28 +2,19 @@ module ZScore.Utils
     exposing
         ( compareZScore
         , viewZScore
-        , zScoreForHeight
-        , zScoreForMuac
-        , zScoreForWeight
+        , zScoreHeightForAge
+        , zScoreWeightForAge
         , zScoreWeightForHeight
         )
 
-{-| This module determines a ZScore for various measurements, using an
-algorithm described at <https://github.com/Gizra/ihangane/issues/303>.
+{-| This module determines a ZScore for various measurements.
 -}
 
 import Backend.Child.Model exposing (Gender(..))
 import Utils.NominalDate exposing (Days(..))
 import IntDict exposing (IntDict)
-import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore(..))
-import ZScore.Internal.HeightBoys as HeightBoys
-import ZScore.Internal.HeightGirls as HeightGirls
-import ZScore.Internal.MuacBoys as MuacBoys
-import ZScore.Internal.MuacGirls as MuacGirls
-import ZScore.Internal.WeightBoys as WeightBoys
-import ZScore.Internal.WeightGirls as WeightGirls
-import ZScore.Internal.WeightHeightBoys as WeightHeightBoys
-import ZScore.Internal.WeightHeightGirls as WeightHeightGirls
+import RemoteData
+import ZScore.Model exposing (Model, Centimetres(..), Kilograms(..), ZScore(..), ZScoreEntry)
 
 
 {-| Calculates the ZScore from the provided data.
@@ -31,18 +22,20 @@ import ZScore.Internal.WeightHeightGirls as WeightHeightGirls
 Returns a `Maybe` in case the age is out of the range of our data.
 
 -}
-zScoreForHeight : Days -> Gender -> Centimetres -> Maybe ZScore
-zScoreForHeight (Days age) gender (Centimetres cm) =
+zScoreHeightForAge : Model -> Days -> Gender -> Centimetres -> Maybe ZScore
+zScoreHeightForAge model (Days age) gender (Centimetres cm) =
     let
-        data =
+        source =
             case gender of
                 Male ->
-                    HeightBoys.data
+                    .heightForAgeBoys
 
                 Female ->
-                    HeightGirls.data
+                    .heightForAgeGirls
     in
-        zScoreFromData age cm data
+        source model
+            |> RemoteData.toMaybe
+            |> Maybe.andThen (zScoreFromEntries age cm)
 
 
 {-| Calculates the ZScore from the provided data.
@@ -50,18 +43,20 @@ zScoreForHeight (Days age) gender (Centimetres cm) =
 Returns a `Maybe` in case the age is out of the range of our data.
 
 -}
-zScoreForMuac : Days -> Gender -> Centimetres -> Maybe ZScore
-zScoreForMuac (Days age) gender (Centimetres cm) =
+zScoreWeightForAge : Model -> Days -> Gender -> Kilograms -> Maybe ZScore
+zScoreWeightForAge model (Days age) gender (Kilograms kg) =
     let
-        data =
+        source =
             case gender of
                 Male ->
-                    MuacBoys.data
+                    .weightForAgeBoys
 
                 Female ->
-                    MuacGirls.data
+                    .weightForAgeGirls
     in
-        zScoreFromData age cm data
+        source model
+            |> RemoteData.toMaybe
+            |> Maybe.andThen (zScoreFromEntries age kg)
 
 
 {-| Calculates the ZScore from the provided data.
@@ -69,43 +64,26 @@ zScoreForMuac (Days age) gender (Centimetres cm) =
 Returns a `Maybe` in case the age is out of the range of our data.
 
 -}
-zScoreForWeight : Days -> Gender -> Kilograms -> Maybe ZScore
-zScoreForWeight (Days age) gender (Kilograms kg) =
+zScoreWeightForHeight : Model -> Centimetres -> Gender -> Kilograms -> Maybe ZScore
+zScoreWeightForHeight model (Centimetres cm) gender (Kilograms kg) =
     let
-        data =
-            case gender of
-                Male ->
-                    WeightBoys.data
-
-                Female ->
-                    WeightGirls.data
-    in
-        zScoreFromData age kg data
-
-
-{-| Calculates the ZScore from the provided data.
-
-Returns a `Maybe` in case the age is out of the range of our data.
-
--}
-zScoreWeightForHeight : Centimetres -> Gender -> Kilograms -> Maybe ZScore
-zScoreWeightForHeight (Centimetres cm) gender (Kilograms kg) =
-    let
-        data =
-            case gender of
-                Male ->
-                    WeightHeightBoys.data
-
-                Female ->
-                    WeightHeightGirls.data
-
         -- This one is a little different, because the data is keyed by integer
         -- millimetres. So, we take the float cm, multiply by 10, and round to
         -- get to the closest key.
         integerMillimetres =
             round (cm * 10)
+
+        source =
+            case gender of
+                Male ->
+                    .weightForHeightBoys
+
+                Female ->
+                    .weightForHeightGirls
     in
-        zScoreFromData integerMillimetres (cm / kg) data
+        source model
+            |> RemoteData.toMaybe
+            |> Maybe.andThen (zScoreFromEntries integerMillimetres kg)
 
 
 {-| Convert the ZScore to a string for display purposes.
@@ -159,7 +137,7 @@ zScoreToInt z =
 
 zScoreFromInt : Int -> ZScore
 zScoreFromInt z =
-    if z <= -3 then
+    if z == -3 then
         ZScore3Neg
     else if z == -2 then
         ZScore2Neg
@@ -175,35 +153,27 @@ zScoreFromInt z =
         ZScore3
 
 
-{-| This one isn't exported ... it's a convenience for internal use.
-
-We're using `IntDict` since our ages are ints, and it will be more
-efficient internally for performance and memory than a regular `Dict`.
-There would be ways of using even less memory, if that turns out to
-be necessary, by writing some "native" code that uses a Javascript
-ArrayBuffer.
-
-We could use an Elm `Array` type, but that module has some bugs which
-it would be best to avoid (at least until Elm 0.19).
-
+{-| Note that when we calculate a ZScore from a measurement, we apply a kind
+of "ceiling" ... if a measurement is between two ZScore lines, we report
+the higher one.
 -}
-zScoreFromData : Int -> Float -> IntDict ( Float, Float ) -> Maybe ZScore
-zScoreFromData key measurement data =
-    IntDict.get key data
+zScoreFromEntries : Int -> Float -> IntDict ZScoreEntry -> Maybe ZScore
+zScoreFromEntries key measurement entries =
+    IntDict.get key entries
         |> Maybe.map
-            (\( sd0, sd1 ) ->
-                let
-                    differenceFromMean =
-                        measurement - sd0
-
-                    oneStandardDeviation =
-                        sd1 - sd0
-
-                    zScoreFloat =
-                        differenceFromMean / oneStandardDeviation
-
-                    zScoreCeiling =
-                        ceiling zScoreFloat
-                in
-                    zScoreFromInt zScoreCeiling
+            (\entry ->
+                if measurement <= entry.sd3neg then
+                    ZScore3Neg
+                else if measurement <= entry.sd2neg then
+                    ZScore2Neg
+                else if measurement <= entry.sd1neg then
+                    ZScore1Neg
+                else if measurement <= entry.sd0 then
+                    ZScore0
+                else if measurement <= entry.sd1 then
+                    ZScore1
+                else if measurement <= entry.sd2 then
+                    ZScore2
+                else
+                    ZScore3
             )

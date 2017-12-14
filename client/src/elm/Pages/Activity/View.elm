@@ -14,6 +14,7 @@ import Pages.Activity.Utils exposing (selectParticipantForTab)
 import Participant.Model exposing (Participant)
 import Translate exposing (translate, Language)
 import Utils.Html exposing (tabItem, thumbnailImage)
+import ZScore.Model
 
 
 thumbnailDimensions : { height : Int, width : Int }
@@ -23,8 +24,8 @@ thumbnailDimensions =
     }
 
 
-view : Participant id value activity msg -> Language -> NominalDate -> activity -> EditableSession -> Model id -> Html (Msg id msg)
-view config language currentDate selectedActivity fullSession model =
+view : Participant id value activity msg -> Language -> NominalDate -> ZScore.Model.Model -> activity -> EditableSession -> Model id -> Html (Msg id msg)
+view config language currentDate zscores selectedActivity fullSession model =
     let
         checkedIn =
             onlyCheckedIn fullSession
@@ -123,7 +124,7 @@ view config language currentDate selectedActivity fullSession model =
                     -- This is a convenience for the way the code was structured ... ideally,
                     -- we'd build a `viewMeasurements` on top of smaller capabilities of the
                     -- `Participant` config, but this is faster for now.
-                    config.viewMeasurements language currentDate id selectedActivity checkedIn
+                    config.viewMeasurements language currentDate zscores id selectedActivity checkedIn
 
                 Nothing ->
                     emptyNode

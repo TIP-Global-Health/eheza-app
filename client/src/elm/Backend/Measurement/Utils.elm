@@ -62,6 +62,15 @@ currentValue data =
     applyEdit data.edits (Maybe.map Tuple.second data.current)
 
 
+{-| Like `currentValue`, but also supplies the ID if we have one
+(i.e. if we're editing a value saved on the backend).
+-}
+currentValueWithId : MeasurementData (Maybe ( id, value )) (Edit value) -> Maybe ( Maybe id, value )
+currentValueWithId data =
+    currentValue data
+        |> Maybe.map (\value -> ( Maybe.map Tuple.first data.current, value ))
+
+
 {-| Like `currentValue`, but just considers the backend.
 -}
 backendValue : MeasurementData (Maybe ( id, value )) (Edit value) -> Maybe value

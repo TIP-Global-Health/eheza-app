@@ -48,5 +48,5 @@ motherParticipant =
     , tagActivityType = MotherActivity
     , toChildId = always Nothing
     , toMotherId = Just
-    , viewMeasurements = viewMotherMeasurements
+    , viewMeasurements = \language date zscores -> viewMotherMeasurements language date
     }

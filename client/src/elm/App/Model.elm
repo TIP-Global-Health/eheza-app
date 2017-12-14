@@ -13,6 +13,7 @@ import ServiceWorker.Model
 import Time exposing (Time)
 import Translate exposing (Language(..))
 import User.Model exposing (User)
+import ZScore.Model
 
 
 {-| We're now doing our model in layers, corresponding to the logic
@@ -47,6 +48,7 @@ type alias Model =
     , language : Language
     , serviceWorker : ServiceWorker.Model.Model
     , offline : Bool
+    , zscores : ZScore.Model.Model
     }
 
 
@@ -135,6 +137,7 @@ type Msg
     | MsgPageLogin Pages.Login.Model.Msg
     | MsgSession Pages.Model.MsgSession
     | MsgServiceWorker ServiceWorker.Model.Msg
+    | MsgZScore ZScore.Model.Msg
     | SetActivePage Page
     | SetLanguage Language
     | SetOffline Bool
@@ -170,4 +173,5 @@ emptyModel =
     , offline = False
     , sessionPages = Pages.Model.emptySessionPages
     , serviceWorker = ServiceWorker.Model.emptyModel
+    , zscores = ZScore.Model.emptyModel
     }

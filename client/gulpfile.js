@@ -16,6 +16,7 @@ var browserSync = require("browser-sync");
 var elm  = require('gulp-elm');
 
 var fs = require('fs');
+var csvParse = require('csv-parse');
 
 // merge is used to merge the output from two different streams into the same stream
 var merge = require("merge-stream");
@@ -67,6 +68,30 @@ gulp.task("styles", [], function () {
     .pipe($.size({title: "styles"}))
     // Injects the CSS changes to your browser since Jekyll doesn"t rebuild the CSS
     .pipe(reload({stream: true}));
+});
+
+// Compile the raw Z-Score files to something more useful.
+gulp.task("zscore", [], function () {
+  var parseOptions = {
+    auto_parse: true,
+    columns: true,
+    delimiter: "\t",
+    trim: true
+  };
+
+  return gulp.src("src/assets/z-score/*.txt")
+    .pipe($.transform('utf8', function (content) {
+      return new Promise((resolve, reject) => {
+        csvParse(content, parseOptions, function (err, result) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(JSON.stringify(result));
+          }
+        });
+      });
+    })).pipe($.rename({extname: '.json'}))
+    .pipe(gulp.dest('serve/assets/z-score/'));
 });
 
 // Optimizes the images that exists
@@ -132,7 +157,7 @@ gulp.task('bower', function () {
 
 
 // Optimizes all the CSS, HTML and concats the JS etc
-gulp.task("minify", ["styles", "copy:images", "copy:favicon"], function () {
+gulp.task("minify", ["styles", "zscore", "copy:images", "copy:favicon"], function () {
   return gulp.src("serve/**/*.*")
     // Concatenate JavaScript files and preserve important comments.
     // DropZone had a problem if we mangle
@@ -211,6 +236,7 @@ gulp.task("watch", function () {
   gulp.watch(["src/index.html", "src/js/**/*.js"], ["copy:dev", "pwa:dev", reload]);
   gulp.watch(["src/elm/**/*.elm"], ["elm", "copy:dev", "pwa:dev", reload]);
   gulp.watch(["src/assets/scss/**/*.scss"], ["styles", "copy:dev", "pwa:dev", reload]);
+  gulp.watch(["src/assets/zscore/**/*.txt"], ["zscore", "copy:dev", "pwa:dev", reload]);
 });
 
 // Serve the site after optimizations to see that everything looks fine
@@ -224,7 +250,7 @@ gulp.task("serve:prod", function () {
   });
 });
 
-var precacheFileGlob = '*.{js,html,css,png,jpg,gif,svg,eot,ttf,woff}';
+var precacheFileGlob = '*.{js,html,css,png,jpg,gif,svg,eot,ttf,woff,json}';
 
 // We cache bower_components individually, since they often include things
 // we don't need.
@@ -267,7 +293,7 @@ var cacheRemote = [{
 }];
 
 // For offline use while developing
-gulp.task('pwa:dev', ["styles", "copy:dev", "elm"], function(callback) {
+gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function(callback) {
   var swPrecache = require('sw-precache');
   var rootDir = 'serve/';
 
@@ -301,7 +327,7 @@ gulp.task("default", ["serve:dev", "watch"]);
 
 // Builds the site but doesnt serve it to you
 // @todo: Add "bower" here
-gulp.task("build", gulpSequence("clean:dev", ["styles", "copy:dev", "elm", "pwa:dev"]));
+gulp.task("build", gulpSequence("clean:dev", ["styles", "zscore", "copy:dev", "elm", "pwa:dev"]));
 
 // Builds your site with the "build" command and then runs all the optimizations on
 // it and outputs it to "./dist"

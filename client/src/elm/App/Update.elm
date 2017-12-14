@@ -28,6 +28,8 @@ import Update.Extra exposing (sequence)
 import User.Decoder exposing (decodeUser)
 import User.Encoder exposing (encodeUser)
 import User.Model exposing (..)
+import ZScore.Model
+import ZScore.Update
 
 
 loginConfig : Restful.Login.Config User LoggedInModel Msg
@@ -82,7 +84,9 @@ init flags =
                 , cmd
                 )
                     |> sequence update
-                        [ MsgServiceWorker ServiceWorker.Model.Register ]
+                        [ MsgServiceWorker ServiceWorker.Model.Register
+                        , MsgZScore ZScore.Model.FetchAll
+                        ]
 
         Nothing ->
             ( { emptyModel | configuration = Failure <| "No config found for: " ++ flags.hostname }
@@ -230,6 +234,15 @@ update msg model =
                             |> sequence update extraMsgs
                 )
                 model.cache
+
+        MsgZScore subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    ZScore.Update.update subMsg model.zscores
+            in
+                ( { model | zscores = subModel }
+                , Cmd.map MsgZScore subCmd
+                )
 
         SetActivePage page ->
             -- TODO: There may be some additinoal logic needed here ... we'll see.

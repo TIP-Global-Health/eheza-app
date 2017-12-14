@@ -6,6 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild, getMother, getChildMeasurementData, getMotherMeasurementData)
 import EveryDict
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html)
 import Maybe.Extra
@@ -15,15 +16,15 @@ import Measurement.View
 import Pages.Activity.Model exposing (..)
 import Participant.Model exposing (Participant)
 import Translate exposing (Language)
-import Gizra.Html exposing (emptyNode)
+import ZScore.Model
 
 
 {-| These are conveniences for the way the code was structured.
 Ideally, we'd have smaller capabilities in `Participant` that
 this could be built on more generically, but this will do for now.
 -}
-viewChildMeasurements : Language -> NominalDate -> ChildId -> ChildActivityType -> EditableSession -> Html (Msg ChildId Measurement.Model.MsgChild)
-viewChildMeasurements language currentDate childId activity session =
+viewChildMeasurements : Language -> NominalDate -> ZScore.Model.Model -> ChildId -> ChildActivityType -> EditableSession -> Html (Msg ChildId Measurement.Model.MsgChild)
+viewChildMeasurements language currentDate zscores childId activity session =
     let
         measurements =
             getChildMeasurementData childId session
@@ -34,7 +35,7 @@ viewChildMeasurements language currentDate childId activity session =
         getChild childId session.offlineSession
             |> Maybe.map
                 (\child ->
-                    Measurement.View.viewChild language currentDate child activity measurements form
+                    Measurement.View.viewChild language currentDate child activity measurements zscores form
                         |> Html.map MsgMeasurement
                 )
             |> Maybe.withDefault emptyNode
