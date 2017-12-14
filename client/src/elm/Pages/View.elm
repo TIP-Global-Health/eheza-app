@@ -2,7 +2,9 @@ module Pages.View exposing (..)
 
 import Activity.Model exposing (ActivityType(..))
 import Backend.Session.Model exposing (EditableSession)
+import Backend.Session.Utils exposing (isClosed, activeClinicName)
 import EveryDict
+import Gizra.Html exposing (showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -25,7 +27,7 @@ import ZScore.Model
 -}
 viewFoundSession : Language -> NominalDate -> ZScore.Model.Model -> SessionPage -> EditableSession -> SessionPages -> Html MsgSession
 viewFoundSession language currentDate zscores page session model =
-    if session.offlineSession.session.closed || session.edits.explicitlyClosed then
+    if isClosed currentDate session then
         viewClosedSession language session
     else
         case page of
@@ -77,7 +79,10 @@ viewClosedSession language session =
             [ class "ui basic head segment" ]
             [ h1
                 [ class "ui header" ]
-                [ text <| translate language Translate.SessionClosed ]
+                [ activeClinicName session
+                    |> Maybe.map text
+                    |> showMaybe
+                ]
             , a
                 [ class "link-back"
                 , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just session.offlineSession.session.clinicId
@@ -85,5 +90,10 @@ viewClosedSession language session =
                 [ span [ class "icon-back" ] []
                 , span [] []
                 ]
+            ]
+        , div
+            [ class "ui error message" ]
+            [ h1 [] [ text <| translate language Translate.SessionClosed ]
+            , p [] [ text <| translate language Translate.SessionClosed2 ]
             ]
         ]

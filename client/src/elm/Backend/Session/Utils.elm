@@ -7,7 +7,9 @@ import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import EveryDict
 import EveryDictList
+import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..))
+import Time.Date
 
 
 {-| Given a mother's id, get all her children from the offline session.
@@ -238,3 +240,27 @@ setPhotoFileId photo id =
                 Deleted _ ->
                     edit
         )
+
+
+{-| Tracks the various ways in which the session ought to be considered closed:
+
+  - Was closed on backend.
+  - Has been closed on device.
+  - Has passed its closed date.
+
+-}
+isClosed : NominalDate -> EditableSession -> Bool
+isClosed currentDate session =
+    let
+        pastEnd =
+            Time.Date.compare currentDate session.offlineSession.session.scheduledDate.end == GT
+    in
+        session.offlineSession.session.closed
+            || session.edits.explicitlyClosed
+            || pastEnd
+
+
+activeClinicName : EditableSession -> Maybe String
+activeClinicName session =
+    EveryDictList.get session.offlineSession.session.clinicId session.offlineSession.clinics
+        |> Maybe.map .name

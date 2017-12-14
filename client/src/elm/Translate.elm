@@ -130,6 +130,7 @@ type TranslationId
     | SearchByName
     | SelectYourClinic
     | SessionClosed
+    | SessionClosed2
     | SessionInProgress
     | TitleHealthAssessment
     | UnableToDownload
@@ -718,6 +719,12 @@ translate lang trans =
 
                 SessionClosed ->
                     { english = "Session closed" }
+
+                SessionClosed2 ->
+                    { english =
+                        """You have stored data on the device, but it was not uploaded to the server and the session is closed.
+                        Please contact the Ihangane project for further instructions."""
+                    }
 
                 SessionInProgress ->
                     { english = "A health assessment is already in progress for another clinic." }
