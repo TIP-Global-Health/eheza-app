@@ -73,12 +73,12 @@ a {
   }
 
   .icon-mother {
-    background: url(#{$img-path}icon-mother.svg) no-repeat center;
+    background: url(#{$img-path}icon-mother-small.svg) no-repeat center;
     background-size: 36px 38px;
   }
 
   .icon-baby {
-    background: url(#{$img-path}icon-baby.svg) no-repeat center;
+    background: url(#{$img-path}icon-baby-small.svg) no-repeat center;
     background-size: 31px 40px;
   }
 
@@ -106,7 +106,7 @@ a {
   .count {
     position: absolute;
     font-size: 1rem; //14px;
-    font-family: $font-alt;
+    font-family: $font;
     font-weight: 500;
     top: 9px;
     right: 11px;
