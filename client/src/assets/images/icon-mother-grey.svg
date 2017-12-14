@@ -1,1 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 222.5 222.5"><defs><style>.cls-1{fill:#e6e6e6;}.cls-2{fill:none;stroke:#666;stroke-linecap:round;stroke-linejoin:round;stroke-width:4px;}</style></defs><title>Asset 3</title><g id="Layer_2" data-name="Layer 2"><g id="Screens"><rect class="cls-1" width="222.5" height="222.5"/><circle class="cls-2" cx="111.52" cy="77.05" r="34.93"/><path class="cls-2" d="M135.26,118.12c-1.2,12.69-23.74,22.82-23.74,22.82S89,130.81,87.78,118.12a66.41,66.41,0,0,0-42.71,62H178A66.41,66.41,0,0,0,135.26,118.12Z"/><line class="cls-2" x1="80" y1="180.12" x2="80" y2="154.57"/><line class="cls-2" x1="141.33" y1="180.12" x2="141.33" y2="154.57"/></g></g></svg>
+<?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="36 55 150 120">
+  <defs>
+    <style>.cls-2{fill:none;stroke:#666;stroke-linecap:round;stroke-linejoin:round;stroke-width:4px;}</style>
+  </defs>
+  <title>icon-mother-grey</title>
+  <circle class="cls-2" cx="111.52" cy="77.05" r="34.93"/>
+  <path class="cls-2" d="M135.26,118.12c-1.2,12.69-23.74,22.82-23.74,22.82S89,130.81,87.78,118.12a66.41,66.41,0,0,0-42.71,62H178A66.41,66.41,0,0,0,135.26,118.12Z"/>
+  <line class="cls-2" x1="80" y1="180.12" x2="80" y2="154.57"/>
+  <line class="cls-2" x1="141.33" y1="180.12" x2="141.33" y2="154.57"/>
+</svg>
