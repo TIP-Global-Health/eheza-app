@@ -100,6 +100,37 @@ a {
   }
 }
 
+.icon-participant {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+
+  &.mother {
+    background: url(#{$img-path}icon-mother-grey.svg) no-repeat center;
+    background-color: $color-background;
+    background-size: 62% 62%;
+
+    &.active {
+      background: url(#{$img-path}icon-mother-white.svg) no-repeat center;
+      background-color: $color-primary;
+      background-size: 62% 62%;
+    }
+  }
+
+  &.child {
+    background: url(#{$img-path}icon-baby-grey.svg) no-repeat center;
+    background-color: $color-background;
+    background-size: 75% 75%;
+
+    &.active {
+      background: url(#{$img-path}icon-baby-white.svg) no-repeat center;
+      background-color: $color-primary;
+      background-size: 75% 75%;
+    }
+  }
+}
+
 // These are from the SVG conversion for the Z-score charts.  I'm gradually
 // converting the `st...` to more meaningful names.
 svg.z-score {
