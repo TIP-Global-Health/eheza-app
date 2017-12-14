@@ -99,17 +99,17 @@ Note that when we calculate a ZScore from a measurement, we apply a kind
 of "ceiling" ... if a measurement is between two ZScore lines, we report
 the higher one.
 
+Also note that our data tables have a +4 and -4, but we don't use them.
+
 -}
 type ZScore
-    = ZScore4Neg
-    | ZScore3Neg
+    = ZScore3Neg
     | ZScore2Neg
     | ZScore1Neg
     | ZScore0
     | ZScore1
     | ZScore2
     | ZScore3
-    | ZScore4
 
 
 type alias ZScoreEntry =
@@ -117,9 +117,7 @@ type alias ZScoreEntry =
     , sd1 : Float
     , sd2 : Float
     , sd3 : Float
-    , sd4 : Float
     , sd1neg : Float
     , sd2neg : Float
     , sd3neg : Float
-    , sd4neg : Float
     }

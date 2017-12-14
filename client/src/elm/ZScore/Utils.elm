@@ -113,9 +113,6 @@ compareZScore z1 z2 =
 zScoreToInt : ZScore -> Int
 zScoreToInt z =
     case z of
-        ZScore4Neg ->
-            -4
-
         ZScore3Neg ->
             -3
 
@@ -137,15 +134,10 @@ zScoreToInt z =
         ZScore3 ->
             3
 
-        ZScore4 ->
-            4
-
 
 zScoreFromInt : Int -> ZScore
 zScoreFromInt z =
-    if z <= -4 then
-        ZScore4Neg
-    else if z == -3 then
+    if z == -3 then
         ZScore3Neg
     else if z == -2 then
         ZScore2Neg
@@ -157,10 +149,8 @@ zScoreFromInt z =
         ZScore1
     else if z == 2 then
         ZScore2
-    else if z == 3 then
-        ZScore3
     else
-        ZScore4
+        ZScore3
 
 
 {-| Note that when we calculate a ZScore from a measurement, we apply a kind
@@ -172,9 +162,7 @@ zScoreFromEntries key measurement entries =
     IntDict.get key entries
         |> Maybe.map
             (\entry ->
-                if measurement <= entry.sd4neg then
-                    ZScore4Neg
-                else if measurement <= entry.sd3neg then
+                if measurement <= entry.sd3neg then
                     ZScore3Neg
                 else if measurement <= entry.sd2neg then
                     ZScore2Neg
@@ -186,8 +174,6 @@ zScoreFromEntries key measurement entries =
                     ZScore1
                 else if measurement <= entry.sd2 then
                     ZScore2
-                else if measurement <= entry.sd3 then
-                    ZScore3
                 else
-                    ZScore4
+                    ZScore3
             )
