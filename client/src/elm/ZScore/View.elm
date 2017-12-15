@@ -2173,14 +2173,15 @@ frame : Svg any
 frame =
     g
         []
-        [ text_
-            [ transform "matrix(1 0 0 1 654.7987 566.1733)" ]
-            [ tspan
-                [ class "z-score-frame z-score-semibold z-score-font-sm"
-                , x "0"
-                , y "0"
+        [ a
+            [ xlinkHref "http://www.who.int/childgrowth/en/"
+            , target "_blank"
+            ]
+            [ text_
+                [ transform "matrix(1 0 0 1 500 566.1733)"
+                , class "z-score-frame z-score-semibold z-score-font-sm"
                 ]
-                [ text "WHO Child Growth Standards" ]
+                [ text "Z-score charts available at http://www.who.int/childgrowth/en/" ]
             ]
         , rect
             [ class "z-score-grey"
