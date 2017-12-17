@@ -245,35 +245,9 @@ viewProgressReport language zscores ( childId, child ) session =
                     ]
                 ]
             ]
-        , div [ class "image-report" ]
-            [ img
-                [ class "ui fluid image"
-                , attribute "height" "860"
-                , src "assets/images/report-chart-01.png"
-                , attribute "width" "1215"
-                ]
-                []
-            ]
         , div
             [ class "image-report" ]
-            [ img
-                [ class "ui fluid image"
-                , attribute "height" "860"
-                , src "assets/images/report-chart-02.png"
-                , attribute "width" "1215"
-                ]
-                []
-            ]
-        , div
-            [ class "image-report" ]
-            [ img
-                [ class "ui fluid image"
-                , attribute "height" "860"
-                , src "assets/images/report-chart-03.png"
-                , attribute "width" "1215"
-                ]
-                []
-            ]
+            [ viewCharts language zscores ( childId, child ) session ]
         ]
 
 
