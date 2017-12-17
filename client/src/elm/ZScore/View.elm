@@ -134,8 +134,8 @@ plotReferenceData config data =
     g [] []
 
 
-plotChildData : PlotConfig x y -> List ( x, y ) -> Svg any
-plotChildData config data =
+plotData : PlotConfig x y -> List { x : Float, y : Float } -> Attribute any
+plotData config data =
     let
         scaleX =
             (config.output.maxX - config.output.minX)
@@ -155,7 +155,19 @@ plotChildData config data =
             config.output.maxY
                 - ((y - config.input.minY) * scaleY)
                 |> clamp config.output.minY config.output.maxY
+    in
+        data
+            |> List.map
+                (\{ x, y } ->
+                    Round.round 1 (plotX x) ++ "," ++ Round.round 1 (plotY y)
+                )
+            |> String.join " "
+            |> points
 
+
+plotChildData : PlotConfig x y -> List ( x, y ) -> Svg any
+plotChildData config data =
+    let
         pointList =
             data
                 |> List.map
@@ -165,12 +177,7 @@ plotChildData config data =
                         }
                     )
                 |> List.sortBy .x
-                |> List.map
-                    (\{ x, y } ->
-                        Round.round 1 (plotX x) ++ "," ++ Round.round 1 (plotY y)
-                    )
-                |> String.join " "
-                |> points
+                |> plotData config
     in
         polyline
             [ class "child-data"
