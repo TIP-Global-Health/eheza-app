@@ -20,6 +20,265 @@ import ZScore.View
 
 viewProgressReport : Language -> ZScore.Model.Model -> ( ChildId, Child ) -> EditableSession -> Html any
 viewProgressReport language zscores ( childId, child ) session =
+    div [ class "wrap-report" ]
+        [ h1
+            [ class "ui report header" ]
+            [ text "Participant Summary" ]
+        , p
+            [ class "date" ]
+            [ text "Date of last Assessment: 15 July 2017" ]
+        , div
+            [ class "ui report unstackable items" ]
+            [ div
+                [ class "item" ]
+                [ div
+                    [ class "ui image" ]
+                    [ img
+                        [ alt "HIRWA Jean Pierre"
+                        , attribute "height" "152"
+                        , src "assets/images/profile-report.jpg"
+                        , attribute "width" "152"
+                        ]
+                        []
+                    ]
+                , div
+                    [ class "content" ]
+                    [ h2
+                        [ class "ui header" ]
+                        [ text "HIRWA Jean Pierre" ]
+                    , p []
+                        [ strong [] [ text "7" ]
+                        , text " months old "
+                        , strong [] [ text "Male" ]
+                        ]
+                    , p []
+                        [ text "Born "
+                        , strong [] [ text "15 February 2017" ]
+                        , br [] []
+                        , text "Child of "
+                        , strong [] [ text "TUYIZERE Gaudence" ]
+                        ]
+                    ]
+                ]
+            ]
+        , table [ class "ui celled table" ]
+            [ thead []
+                [ tr []
+                    [ th [] [ text "AGE" ]
+                    , th [ class "last" ] [ text "6 mo 7 days" ]
+                    ]
+                ]
+            , tbody []
+                [ tr []
+                    [ td [ class "first" ] [ text "Nutrition Signs" ]
+                    , td [] [ text "Edema, Abdominal Distention, Dry Skin, Apathy, Poor Appetite, Brittle Hair" ]
+                    ]
+                ]
+            ]
+        , table [ class "ui collapsing celled table" ]
+            [ thead []
+                [ tr []
+                    [ th [] [ text "AGE" ]
+                    , th [ class "center bottom aligned" ] [ text "23 days" ]
+                    , th
+                        [ class "center bottom aligned" ]
+                        [ text "1 mo"
+                        , br [] []
+                        , text "15 days"
+                        ]
+                    , th
+                        [ class "center bottom aligned" ]
+                        [ text "2 mo"
+                        , br [] []
+                        , text "11 days"
+                        ]
+                    , th [ class "center bottom aligned" ]
+                        [ text "3 mo"
+                        , br [] []
+                        , text "12 days"
+                        ]
+                    , th [ class "center bottom aligned" ]
+                        [ text "4 mo"
+                        , br [] []
+                        , text "11 days"
+                        ]
+                    , th [ class "center bottom aligned" ]
+                        [ text "5 mo"
+                        , br [] []
+                        , text "12 days"
+                        ]
+                    , th [ class "center bottom aligned last" ]
+                        [ text "6 mo"
+                        , br [] []
+                        , text "7 days"
+                        ]
+                    ]
+                ]
+            , tbody []
+                [ tr []
+                    [ td [ class "first" ] [ text "Height" ]
+                    , td [ class "center aligned negative" ] [ text "52cm" ]
+                    , td [ class "center aligned negative" ] [ text "57cm" ]
+                    , td [ class "center aligned" ] [ text "--" ]
+                    , td [ class "center aligned warning" ] [ text "58cm" ]
+                    , td [ class "center aligned positive" ] [ text "70cm" ]
+                    , td [ class "center aligned positive" ] [ text "71cm" ]
+                    , td [ class "center aligned positive" ] [ text "71cm" ]
+                    ]
+                , tr []
+                    [ td [ class "first" ] [ text "Weight" ]
+                    , td [ class "center aligned negative" ] [ text "4.2kg" ]
+                    , td [ class "center aligned negative" ] [ text "5.0kg" ]
+                    , td [ class "center aligned" ] [ text "--" ]
+                    , td [ class "center aligned warning" ] [ text "6.0kg" ]
+                    , td [ class "center aligned positive" ] [ text "8.2kg" ]
+                    , td [ class "center aligned positive" ] [ text "8.3kg" ]
+                    , td [ class "center aligned positive" ] [ text "8.4kg" ]
+                    ]
+                , tr []
+                    [ td [ class "first" ] [ text "MUAC" ]
+                    , td [ class "center aligned" ] []
+                    , td [ class "center aligned" ] []
+                    , td [ class "center aligned" ] []
+                    , td [ class "center aligned" ] []
+                    , td [ class "center aligned" ] []
+                    , td [ class "center aligned" ] []
+                    , td [ class "center aligned positive" ] [ text "13cm" ]
+                    ]
+                ]
+            ]
+        , div
+            [ class "ui five report cards" ]
+            [ div
+                [ class "report card" ]
+                [ div
+                    [ class "content" ]
+                    [ text "23 days          " ]
+                , div
+                    [ class "image" ]
+                    [ img
+                        [ alt "23 days"
+                        , attribute "height" "224"
+                        , src "assets/images/photo-report.jpg"
+                        , attribute "width" "224"
+                        ]
+                        []
+                    ]
+                ]
+            , div
+                [ class "report card" ]
+                [ div
+                    [ class "content" ]
+                    [ text "1 month 15 days" ]
+                , div
+                    [ class "image" ]
+                    [ img
+                        [ alt "23 days"
+                        , attribute "height" "224"
+                        , src "assets/images/photo-report.jpg"
+                        , attribute "width" "224"
+                        ]
+                        []
+                    ]
+                ]
+            , div
+                [ class "report card" ]
+                [ div
+                    [ class "content" ]
+                    [ text "3 months 12 days" ]
+                , div
+                    [ class "image" ]
+                    [ img
+                        [ alt "23 days"
+                        , attribute "height" "224"
+                        , src "assets/images/photo-report.jpg"
+                        , attribute "width" "224"
+                        ]
+                        []
+                    ]
+                ]
+            , div
+                [ class "report card" ]
+                [ div
+                    [ class "content" ]
+                    [ text "4 months 11 days          " ]
+                , div
+                    [ class "image" ]
+                    [ img
+                        [ alt "23 days"
+                        , attribute "height" "224"
+                        , src "assets/images/photo-report.jpg"
+                        , attribute "width" "224"
+                        ]
+                        []
+                    ]
+                ]
+            , div
+                [ class "report card" ]
+                [ div
+                    [ class "content" ]
+                    [ text "5 months 12 days          " ]
+                , div [ class "image" ]
+                    [ img
+                        [ alt "23 days"
+                        , attribute "height" "224"
+                        , src "assets/images/photo-report.jpg"
+                        , attribute "width" "224"
+                        ]
+                        []
+                    ]
+                ]
+            , div
+                [ class "report card" ]
+                [ div
+                    [ class "content" ]
+                    [ text "6 months 7 days          " ]
+                , div
+                    [ class "image" ]
+                    [ img
+                        [ alt "23 days"
+                        , attribute "height" "224"
+                        , src "assets/images/photo-report.jpg"
+                        , attribute "width" "224"
+                        ]
+                        []
+                    ]
+                ]
+            ]
+        , div [ class "image-report" ]
+            [ img
+                [ class "ui fluid image"
+                , attribute "height" "860"
+                , src "assets/images/report-chart-01.png"
+                , attribute "width" "1215"
+                ]
+                []
+            ]
+        , div
+            [ class "image-report" ]
+            [ img
+                [ class "ui fluid image"
+                , attribute "height" "860"
+                , src "assets/images/report-chart-02.png"
+                , attribute "width" "1215"
+                ]
+                []
+            ]
+        , div
+            [ class "image-report" ]
+            [ img
+                [ class "ui fluid image"
+                , attribute "height" "860"
+                , src "assets/images/report-chart-03.png"
+                , attribute "width" "1215"
+                ]
+                []
+            ]
+        ]
+
+
+viewCharts : Language -> ZScore.Model.Model -> ( ChildId, Child ) -> EditableSession -> Html any
+viewCharts language zscores ( childId, child ) session =
     let
         ( heightForAge, weightForAge, weightForHeight ) =
             case child.gender of
