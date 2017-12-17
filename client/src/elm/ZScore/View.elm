@@ -75,7 +75,8 @@ viewHeightForAgeBoys model data =
         , zScore0LineHeightForAgeBoys
         , zScoreNeg2LineHeightForAgeBoys
         , zScoreNeg3LineHeightForAgeBoys
-        , g [ class "child-data" ] [ plotData heightForAgeConfig data ]
+        , plotReferenceData heightForAgeConfig model
+        , plotChildData heightForAgeConfig data
         ]
 
 
@@ -124,8 +125,13 @@ weightForHeightConfig =
     }
 
 
-plotData : PlotConfig x y -> List ( x, y ) -> Svg any
-plotData config data =
+plotReferenceData : PlotConfig x y -> Model -> Svg any
+plotReferenceData config data =
+    g [] []
+
+
+plotChildData : PlotConfig x y -> List ( x, y ) -> Svg any
+plotChildData config data =
     let
         scaleX =
             (config.output.maxX - config.output.minX)
@@ -162,7 +168,11 @@ plotData config data =
                 |> String.join " "
                 |> points
     in
-        polyline [ pointList ] []
+        polyline
+            [ class "child-data"
+            , pointList
+            ]
+            []
 
 
 viewWeightForAgeBoys : Model -> List ( Days, Kilograms ) -> Html any
@@ -187,7 +197,8 @@ viewWeightForAgeBoys model data =
         , zScore0LineWeightForAgeBoys
         , zScoreNeg2LineWeightForAgeBoys
         , zScoreNeg3LineWeightForAgeBoys
-        , g [ class "child-data" ] [ plotData weightForAgeConfig data ]
+        , plotReferenceData weightForAgeConfig model
+        , plotChildData weightForAgeConfig data
         ]
 
 
@@ -215,7 +226,8 @@ viewWeightForHeightBoys model data =
         , zScoreNegOneLineWeightForHeightBoys
         , zScoreNeg2LineWeightForHeightBoys
         , zScoreNeg3LineWeightForHeightBoys
-        , g [ class "child-data" ] [ plotData weightForHeightConfig data ]
+        , plotReferenceData weightForHeightConfig model
+        , plotChildData weightForHeightConfig data
         ]
 
 
@@ -243,7 +255,8 @@ viewWeightForHeightGirls model data =
         , zScoreNegOneLineWeightForHeightGirls
         , zScoreNeg2LineWeightForHeightGirls
         , zScoreNeg3LineWeightForHeightGirls
-        , g [ class "child-data" ] [ plotData weightForHeightConfig data ]
+        , plotReferenceData weightForHeightConfig model
+        , plotChildData weightForHeightConfig data
         ]
 
 
@@ -269,7 +282,8 @@ viewHeightForAgeGirls model data =
         , zScore0LineHeightForAgeGirls
         , zScoreNeg2LineHeightForAgeGirls
         , zScoreNeg3LineHeightForAgeGirls
-        , g [ class "child-data" ] [ plotData heightForAgeConfig data ]
+        , plotReferenceData heightForAgeConfig model
+        , plotChildData heightForAgeConfig data
         ]
 
 
@@ -295,7 +309,8 @@ viewWeightForAgeGirls model data =
         , zScore0LineWeightForAgeGirls
         , zScoreNeg2LineWeightForAgeGirls
         , zScoreNeg3LineWeightForAgeGirls
-        , g [ class "child-data" ] [ plotData weightForAgeConfig data ]
+        , plotReferenceData weightForAgeConfig model
+        , plotChildData weightForAgeConfig data
         ]
 
 

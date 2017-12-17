@@ -231,13 +231,11 @@ svg.z-score {
     font-size: 12px;
   }
 
-  .child-data {
-    polyline {
-      fill: none;
-      stroke: black;
-      stroke-width: 2px;
-      marker: url(#dot-marker);
-    }
+  polyline.child-data {
+    fill: none;
+    stroke: black;
+    stroke-width: 2px;
+    marker: url(#dot-marker);
   }
 
   .st18 {
