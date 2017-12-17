@@ -15,6 +15,8 @@ far it doesn't seem to be a performance problem, so no premature optimization!
 -}
 
 import Html exposing (Html)
+import IntDict exposing (IntDict)
+import RemoteData
 import Round
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -75,7 +77,9 @@ viewHeightForAgeBoys model data =
         , zScore0LineHeightForAgeBoys
         , zScoreNeg2LineHeightForAgeBoys
         , zScoreNeg3LineHeightForAgeBoys
-        , plotReferenceData heightForAgeConfig model
+        , model.heightForAgeBoys
+            |> RemoteData.withDefault IntDict.empty
+            |> plotReferenceData heightForAgeConfig
         , plotChildData heightForAgeConfig data
         ]
 
@@ -125,7 +129,7 @@ weightForHeightConfig =
     }
 
 
-plotReferenceData : PlotConfig x y -> Model -> Svg any
+plotReferenceData : PlotConfig x y -> IntDict ZScoreEntry -> Svg any
 plotReferenceData config data =
     g [] []
 
@@ -197,7 +201,9 @@ viewWeightForAgeBoys model data =
         , zScore0LineWeightForAgeBoys
         , zScoreNeg2LineWeightForAgeBoys
         , zScoreNeg3LineWeightForAgeBoys
-        , plotReferenceData weightForAgeConfig model
+        , model.weightForAgeBoys
+            |> RemoteData.withDefault IntDict.empty
+            |> plotReferenceData weightForAgeConfig
         , plotChildData weightForAgeConfig data
         ]
 
@@ -226,7 +232,9 @@ viewWeightForHeightBoys model data =
         , zScoreNegOneLineWeightForHeightBoys
         , zScoreNeg2LineWeightForHeightBoys
         , zScoreNeg3LineWeightForHeightBoys
-        , plotReferenceData weightForHeightConfig model
+        , model.weightForHeightBoys
+            |> RemoteData.withDefault IntDict.empty
+            |> plotReferenceData weightForHeightConfig
         , plotChildData weightForHeightConfig data
         ]
 
@@ -255,7 +263,9 @@ viewWeightForHeightGirls model data =
         , zScoreNegOneLineWeightForHeightGirls
         , zScoreNeg2LineWeightForHeightGirls
         , zScoreNeg3LineWeightForHeightGirls
-        , plotReferenceData weightForHeightConfig model
+        , model.weightForHeightGirls
+            |> RemoteData.withDefault IntDict.empty
+            |> plotReferenceData weightForHeightConfig
         , plotChildData weightForHeightConfig data
         ]
 
@@ -282,7 +292,9 @@ viewHeightForAgeGirls model data =
         , zScore0LineHeightForAgeGirls
         , zScoreNeg2LineHeightForAgeGirls
         , zScoreNeg3LineHeightForAgeGirls
-        , plotReferenceData heightForAgeConfig model
+        , model.heightForAgeGirls
+            |> RemoteData.withDefault IntDict.empty
+            |> plotReferenceData heightForAgeConfig
         , plotChildData heightForAgeConfig data
         ]
 
@@ -309,7 +321,9 @@ viewWeightForAgeGirls model data =
         , zScore0LineWeightForAgeGirls
         , zScoreNeg2LineWeightForAgeGirls
         , zScoreNeg3LineWeightForAgeGirls
-        , plotReferenceData weightForAgeConfig model
+        , model.weightForAgeGirls
+            |> RemoteData.withDefault IntDict.empty
+            |> plotReferenceData weightForAgeConfig
         , plotChildData weightForAgeConfig data
         ]
 
