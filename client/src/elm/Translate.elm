@@ -132,6 +132,8 @@ type TranslationId
     | SessionClosed
     | SessionClosed2
     | SessionInProgress
+    | SessionUnauthorized
+    | SessionUnauthorized2
     | TitleHealthAssessment
     | UnableToDownload
     | UnableToUpload
@@ -728,6 +730,15 @@ translate lang trans =
 
                 SessionInProgress ->
                     { english = "A health assessment is already in progress for another clinic." }
+
+                SessionUnauthorized ->
+                    { english = "Session unauthorized" }
+
+                SessionUnauthorized2 ->
+                    { english =
+                        """A health assessment is in progress on this device, but you are not authorized to view it.
+                        Please contact the Ihangane project for further instructions."""
+                    }
 
                 TitleHealthAssessment ->
                     { english = "2017 July Health Assessment" }
