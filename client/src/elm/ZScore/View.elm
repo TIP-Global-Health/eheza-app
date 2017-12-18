@@ -229,8 +229,46 @@ plotReferenceData config data =
                             ]
                             []
                    )
+
+        -- Points for a polygon from neg2 to the top of the chart
+        fillAboveNegativeTwo =
+            [ { x = config.input.maxX
+              , y = config.input.maxY
+              }
+            , { x = config.input.minX
+              , y = config.input.maxY
+              }
+            ]
+                |> List.append neg2points
+                |> plotData config
+                |> String.join " "
+                |> points
+                |> (\pointList ->
+                        polygon
+                            [ class "above-neg-two"
+                            , pointList
+                            ]
+                            []
+                   )
+
+        -- Points for a polygon from neg2 to neg3
+        fillBetweenNegTwoAndNegThree =
+            neg2points
+                |> List.append (List.reverse neg3points)
+                |> plotData config
+                |> String.join " "
+                |> points
+                |> (\pointList ->
+                        polygon
+                            [ class "neg-two-to-neg-three"
+                            , pointList
+                            ]
+                            []
+                   )
     in
         [ Just fillBelowNegativeThree
+        , Just fillAboveNegativeTwo
+        , Just fillBetweenNegTwoAndNegThree
         , Just <| makeLine neg3points "three-line-new"
         , Just <| makeLine neg2points "two-line-new"
         , if config.drawSD1 then
