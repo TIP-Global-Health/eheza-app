@@ -139,7 +139,7 @@ weightForHeightConfig =
     }
 
 
-plotData : PlotConfig x y -> List { x : Float, y : Float } -> Attribute any
+plotData : PlotConfig x y -> List { x : Float, y : Float } -> List String
 plotData config data =
     let
         scaleX =
@@ -166,8 +166,6 @@ plotData config data =
                 (\{ x, y } ->
                     Round.round 1 (plotX x) ++ "," ++ Round.round 1 (plotY y)
                 )
-            |> String.join " "
-            |> points
 
 
 plotReferenceData : PlotConfig x y -> IntDict ZScoreEntry -> Svg any
@@ -204,29 +202,51 @@ plotReferenceData config data =
         neg2points =
             getPoints .sd2neg
 
-        makeLine points lineClass =
-            points
+        makeLine dataPoints lineClass =
+            dataPoints
                 |> plotData config
+                |> String.join " "
+                |> points
                 |> (\pointList -> polyline [ class lineClass, pointList ] [])
 
-        lines =
-            List.filterMap identity
-                [ Just <| makeLine neg3points "three-line-new"
-                , Just <| makeLine neg2points "two-line-new"
-                , if config.drawSD1 then
-                    Just <| makeLine (getPoints .sd1neg) "one-line-new"
-                  else
-                    Nothing
-                , Just <| makeLine (getPoints .sd0) "zero-line-new"
-                , if config.drawSD1 then
-                    Just <| makeLine (getPoints .sd1) "one-line-new"
-                  else
-                    Nothing
-                , Just <| makeLine (getPoints .sd2) "two-line-new"
-                , Just <| makeLine (getPoints .sd3) "three-line-new"
-                ]
+        -- Points for a polygon from neg3 to the bottom of the chart
+        fillBelowNegativeThree =
+            [ { x = config.input.maxX
+              , y = config.input.minY
+              }
+            , { x = config.input.minX
+              , y = config.input.minY
+              }
+            ]
+                |> List.append neg3points
+                |> plotData config
+                |> String.join " "
+                |> points
+                |> (\pointList ->
+                        polygon
+                            [ class "below-neg-three"
+                            , pointList
+                            ]
+                            []
+                   )
     in
-        g [] lines
+        [ Just fillBelowNegativeThree
+        , Just <| makeLine neg3points "three-line-new"
+        , Just <| makeLine neg2points "two-line-new"
+        , if config.drawSD1 then
+            Just <| makeLine (getPoints .sd1neg) "one-line-new"
+          else
+            Nothing
+        , Just <| makeLine (getPoints .sd0) "zero-line-new"
+        , if config.drawSD1 then
+            Just <| makeLine (getPoints .sd1) "one-line-new"
+          else
+            Nothing
+        , Just <| makeLine (getPoints .sd2) "two-line-new"
+        , Just <| makeLine (getPoints .sd3) "three-line-new"
+        ]
+            |> List.filterMap identity
+            |> g []
 
 
 plotChildData : PlotConfig x y -> List ( x, y ) -> Svg any
@@ -242,6 +262,8 @@ plotChildData config data =
                     )
                 |> List.sortBy .x
                 |> plotData config
+                |> String.join " "
+                |> points
     in
         polyline
             [ class "child-data"
