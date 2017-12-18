@@ -1,16 +1,12 @@
 module App.View exposing (view)
 
 import App.Model exposing (..)
-import Backend.Entities exposing (..)
-import Backend.Session.Model exposing (EditableSession)
 import Config.View
-import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Pages.Clinics.View
 import Pages.Login.View
-import Pages.Model exposing (SessionPages)
 import Pages.MyAccount.View
 import Pages.PageNotFound.View
 import Pages.Page exposing (Page(..), UserPage(..), SessionPage(..))
@@ -18,9 +14,9 @@ import Pages.View exposing (viewFoundSession)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Login
 import Translate exposing (translate, Language)
+import User.Model exposing (User)
 import Utils.Html exposing (spinner, wrapPage)
 import Utils.WebData exposing (viewError)
-import ZScore.Model
 
 
 view : Model -> Html Msg
@@ -62,22 +58,9 @@ viewConfiguredModel model configured =
                         |> Html.map MsgPageLogin
 
                 Restful.Login.Anonymous progress ->
-                    -- An anonymous person can either login or, if we have a cached
-                    -- session, they can work on the cached session.
-                    --
-                    -- So, we mostly just show the login page. We supply the
-                    -- `activePage` so that the login page can possibly show some
-                    -- message about the page the user really wanted, if it likes.
-                    --
-                    -- Actually, I suppose another Page we ought to treat specially for
-                    -- aonymous users is `PageNotFound`, since it would be weird to
-                    -- successfully log in, only then to be taken to a page not found.
                     case model.activePage of
                         PageNotFound url ->
                             Pages.PageNotFound.View.view model.language url
-
-                        SessionPage subPage ->
-                            viewSessionPage model.language model.currentDate model.zscores subPage model.cache.editableSession model.sessionPages
 
                         _ ->
                             Pages.Login.View.view model.language model.activePage configured.login configured.loginPage (Maybe.map Tuple.second session)
@@ -116,13 +99,7 @@ viewConfiguredModel model configured =
                             Pages.PageNotFound.View.view model.language url
 
                         SessionPage subPage ->
-                            viewSessionPage
-                                model.language
-                                model.currentDate
-                                model.zscores
-                                subPage
-                                model.cache.editableSession
-                                model.sessionPages
+                            viewSessionPage login.credentials.user subPage model
 
         _ ->
             -- TODO: What should we show if we have errors loading the
@@ -145,9 +122,9 @@ viewLoading =
         ]
 
 
-viewSessionPage : Language -> NominalDate -> ZScore.Model.Model -> SessionPage -> WebData (Maybe ( SessionId, EditableSession )) -> SessionPages -> Html Msg
-viewSessionPage language currentDate zscores page session model =
-    case session of
+viewSessionPage : User -> SessionPage -> Model -> Html Msg
+viewSessionPage user page model =
+    case model.cache.editableSession of
         NotAsked ->
             wrapPage [ spinner ]
 
@@ -156,14 +133,14 @@ viewSessionPage language currentDate zscores page session model =
 
         Failure err ->
             wrapPage
-                [ h4 [] [ text <| translate language Translate.ErrorFetchingCachedSession ]
-                , viewError language err
+                [ h4 [] [ text <| translate model.language Translate.ErrorFetchingCachedSession ]
+                , viewError model.language err
                 ]
 
         Success fetched ->
             case fetched of
                 Just ( _, session ) ->
-                    viewFoundSession language currentDate zscores page session model
+                    viewFoundSession user page session model
                         |> Html.map MsgSession
 
                 Nothing ->
@@ -173,11 +150,11 @@ viewSessionPage language currentDate zscores page session model =
                     wrapPage
                         [ div
                             [ class "ui error" ]
-                            [ p [] [ text <| translate language Translate.NoCachedSession ]
+                            [ p [] [ text <| translate model.language Translate.NoCachedSession ]
                             , button
                                 [ class "ui fluid primary button"
                                 , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
                                 ]
-                                [ text <| translate language Translate.SelectYourClinic ]
+                                [ text <| translate model.language Translate.SelectYourClinic ]
                             ]
                         ]
