@@ -177,11 +177,7 @@ plotReferenceData config data =
             -- toList will produce a sorted list, so no need to sort
             IntDict.toList data
 
-        -- It might be more efficient to iterate through the list just once,
-        -- but it may not matter a ton, so I'll leave it for a future
-        -- optimization if necessary. An even better optimization would be to
-        -- make this lazy in some way.
-        makeLine accessor lineClass =
+        getPoints accessor =
             zscoreList
                 |> List.filterMap
                     (\( x, entry ) ->
@@ -199,24 +195,35 @@ plotReferenceData config data =
                             else
                                 Nothing
                     )
+
+        -- We need the neg3 and neg2 points both to draw a line and to draw a polygon
+        -- for fill ... so, we do them here.
+        neg3points =
+            getPoints .sd3neg
+
+        neg2points =
+            getPoints .sd2neg
+
+        makeLine points lineClass =
+            points
                 |> plotData config
                 |> (\pointList -> polyline [ class lineClass, pointList ] [])
 
         lines =
             List.filterMap identity
-                [ Just <| makeLine .sd3neg "three-line-new"
-                , Just <| makeLine .sd2neg "two-line-new"
+                [ Just <| makeLine neg3points "three-line-new"
+                , Just <| makeLine neg2points "two-line-new"
                 , if config.drawSD1 then
-                    Just <| makeLine .sd1neg "one-line-new"
+                    Just <| makeLine (getPoints .sd1neg) "one-line-new"
                   else
                     Nothing
-                , Just <| makeLine .sd0 "zero-line-new"
+                , Just <| makeLine (getPoints .sd0) "zero-line-new"
                 , if config.drawSD1 then
-                    Just <| makeLine .sd1 "one-line-new"
+                    Just <| makeLine (getPoints .sd1) "one-line-new"
                   else
                     Nothing
-                , Just <| makeLine .sd2 "two-line-new"
-                , Just <| makeLine .sd3 "three-line-new"
+                , Just <| makeLine (getPoints .sd2) "two-line-new"
+                , Just <| makeLine (getPoints .sd3) "three-line-new"
                 ]
     in
         g [] lines
