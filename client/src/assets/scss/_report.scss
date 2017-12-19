@@ -158,7 +158,7 @@ svg.z-score {
     height: 27px;
     display: block;
     background: url(#{$img-path}icon-back-dark.svg);
-    float: left;
+    position: absolute;
     background-size: 34px 27px;
   }
 
