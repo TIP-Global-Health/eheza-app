@@ -145,3 +145,13 @@ a {
     }
   }
 }
+
+.icon-progress-report {
+  display: block;
+  width: 222px;
+  height: 222px;
+  background-color: #fff;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-image: url(#{$img-path}icon-progress-report.svg);
+}

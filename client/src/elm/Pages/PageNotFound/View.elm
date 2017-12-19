@@ -29,9 +29,12 @@ view language url =
 
 {-| Shows page not found message where we could interpret the URL,
 but the `Page` doesn't exist.
+
+The `msg` should be a msg that goes "home" (i.e. somewhere useful).
+
 -}
-viewPage : Language -> Page -> Html Msg
-viewPage language page =
+viewPage : Language -> msg -> Page -> Html msg
+viewPage language msg page =
     div
         [ class "wrap wrap-alt-2" ]
         [ div [ class "ui segment center aligned" ]
@@ -39,7 +42,7 @@ viewPage language page =
             , h4 [] [ text <| translate language <| Trans.ActivePage page ]
             , button
                 [ class "ui fluid button"
-                , onClick <| SetActivePage LoginPage
+                , onClick msg
                 ]
                 [ text <| translate language Trans.GoHome ]
             ]

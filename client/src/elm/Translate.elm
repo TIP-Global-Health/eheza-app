@@ -141,6 +141,7 @@ type TranslationId
     | UploadingSession1
     | UploadingSession2
     | UploadSuccessful
+    | ViewProgressReport
     | WelcomeUser String
     | YouHaveACompletedSession
     | ZScoreHeightForAge
@@ -279,6 +280,9 @@ translate lang trans =
 
                                 MotherPage motherId ->
                                     { english = "Mother" }
+
+                                ProgressReportPage childId ->
+                                    { english = "Progress Report" }
 
                         UserPage (ClinicsPage _) ->
                             { english = "Clinics" }
@@ -755,6 +759,9 @@ translate lang trans =
 
                 UploadSuccessful ->
                     { english = "Upload Successful" }
+
+                ViewProgressReport ->
+                    { english = "View Progress Report" }
 
                 WelcomeUser name ->
                     { english = "Welcome " ++ name }

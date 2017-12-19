@@ -1,4 +1,4 @@
-module ProgressReport.Test exposing (all)
+module Pages.ProgressReport.Test exposing (all)
 
 import Expect
 import Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildB, exampleMother, exampleUser)

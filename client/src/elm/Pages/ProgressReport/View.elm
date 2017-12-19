@@ -1,25 +1,37 @@
-module ProgressReport.View
-    exposing
-        ( viewProgressReport
-        )
+module Pages.ProgressReport.View exposing (view)
 
 import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (Height, Weight, HeightInCm(..), WeightInKg(..))
 import Backend.Measurement.Utils exposing (mapMeasurementData, currentValueWithId)
 import Backend.Session.Model exposing (EditableSession)
-import Backend.Session.Utils exposing (getChildHistoricalMeasurements, getChildMeasurementData)
+import Backend.Session.Utils exposing (getChildHistoricalMeasurements, getChildMeasurementData, getChild)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import List.Extra
+import Pages.Model exposing (MsgSession(..))
+import Pages.Page exposing (Page(..), SessionPage(..))
+import Pages.PageNotFound.View
 import Translate exposing (Language(..), translate)
 import Utils.NominalDate exposing (Days(..), diffDays)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..))
 import ZScore.View
 
 
-viewProgressReport : Language -> ZScore.Model.Model -> ( ChildId, Child ) -> EditableSession -> Html any
-viewProgressReport language zscores ( childId, child ) session =
+view : Language -> ZScore.Model.Model -> ChildId -> EditableSession -> Html MsgSession
+view language zscores childId session =
+    case getChild childId session.offlineSession of
+        Just child ->
+            viewFoundChild language zscores ( childId, child ) session
+
+        Nothing ->
+            ProgressReportPage childId
+                |> SessionPage
+                |> Pages.PageNotFound.View.viewPage language (SetActivePage LoginPage)
+
+
+viewFoundChild : Language -> ZScore.Model.Model -> ( ChildId, Child ) -> EditableSession -> Html MsgSession
+viewFoundChild language zscores ( childId, child ) session =
     div [ class "wrap-report" ]
         [ h1
             [ class "ui report header" ]

@@ -12,7 +12,7 @@ import Backend.Measurement.Test
 import Measurement.Test
 import Pages.Activity.Test
 import Pages.Participant.Test
-import ProgressReport.Test
+import Pages.ProgressReport.Test
 import Utils.NominalDateTest
 import ZScore.Test
 
@@ -25,7 +25,7 @@ allTests =
         , Measurement.Test.all
         , Pages.Activity.Test.all
         , Pages.Participant.Test.all
-        , ProgressReport.Test.all
+        , Pages.ProgressReport.Test.all
         , Utils.NominalDateTest.all
         , ZScore.Test.all
         ]

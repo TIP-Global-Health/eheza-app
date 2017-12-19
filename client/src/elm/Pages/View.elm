@@ -18,6 +18,7 @@ import Pages.Page exposing (SessionPage(..), Page(..), UserPage(..))
 import Pages.Participant.Model
 import Pages.Participant.View
 import Pages.Participants.View
+import Pages.ProgressReport.View
 import Participant.Utils exposing (childParticipant, motherParticipant)
 import Translate exposing (translate, Language)
 import ZScore.Model
@@ -63,6 +64,9 @@ viewFoundSession language currentDate zscores page session model =
                     |> Maybe.withDefault Pages.Participant.Model.emptyModel
                     |> Pages.Participant.View.viewChild language currentDate zscores childId session
                     |> Html.map (MsgChild childId)
+
+            ProgressReportPage childId ->
+                Pages.ProgressReport.View.view language zscores childId session
 
             MotherPage motherId ->
                 EveryDict.get motherId model.motherPages
