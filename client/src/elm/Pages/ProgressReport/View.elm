@@ -8,6 +8,7 @@ import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildHistoricalMeasurements, getChildMeasurementData, getChild)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import List.Extra
 import Pages.Model exposing (MsgSession(..))
 import Pages.Page exposing (Page(..), SessionPage(..))
@@ -35,7 +36,15 @@ viewFoundChild language zscores ( childId, child ) session =
     div [ class "page-report" ]
         [ div
             [ class "wrap-report" ]
-            [ h1
+            [ a
+                [ class "icon-back"
+                , ChildPage childId
+                    |> SessionPage
+                    |> SetActivePage
+                    |> onClick
+                ]
+                []
+            , h1
                 [ class "ui report header" ]
                 [ text "Participant Summary" ]
             , p

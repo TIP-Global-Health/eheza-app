@@ -153,6 +153,15 @@ svg.z-score {
   border-top: 9px solid #06b9ff;
   padding: 30px;
 
+  .icon-back {
+    width: 34px;
+    height: 27px;
+    display: block;
+    background: url(#{$img-path}icon-back-dark.svg);
+    float: left;
+    background-size: 34px 27px;
+  }
+
   .date {
     text-align: center;
     font-size: 1.29rem;
@@ -279,6 +288,10 @@ h1.ui.header.report {
     padding-left: 0 !important;
     padding-right: 0 !important;
     width: 100%;
+
+    .icon-back {
+      display: none;
+    }
   }
 
   .ui.cards .report.card {
