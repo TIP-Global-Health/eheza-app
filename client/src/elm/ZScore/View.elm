@@ -1,11 +1,13 @@
 module ZScore.View exposing (..)
 
-{-| We started here with some "static" graphs, converted from SVG, which we've
-gradually added more intelligence to. So, in part, we're now drawing the graphs
-from the ZScore numeric tables, rather than from static SVG. But, it's still a
-bit of a mix -- there is still some static SVG below, in labels and reference
-lines. Thus, you need to pay attention to that if you modify things ... basically,
-I'm gradually making it more programmatic as I touch various things.
+{-| Ultimately, the idea is that we've got information in the `Model` that we
+can use to draw the elements below more programmatically ... that is, we don't
+have to have static lists of points here when we have the numeric values
+anyway.
+
+However, to save development time for the moment, we're only applying a limited
+amount of intelligence below ... there is more that could be done to simplify
+this, use less memory, and make it more flexible.
 
 Some of this ultimately should probably be done lazily in some way ... but so
 far it doesn't seem to be a performance problem, so no premature optimization!
@@ -130,7 +132,7 @@ weightForHeightConfig : PlotConfig Centimetres Kilograms
 weightForHeightConfig =
     { toFloatX = \(Centimetres cm) -> cm
     , toFloatY = \(Kilograms kg) -> kg
-    , input = { minY = 5.0, maxY = 29.0, minX = 65, maxX = 120 }
+    , input = { minY = 1.0, maxY = 25.0, minX = 45, maxX = 110 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
     , referenceX = \x -> toFloat x / 10
     , drawSD1 = True
@@ -339,7 +341,7 @@ viewWeightForHeightBoys model data =
         [ frame
         , labels weightForHeightBoysLabels
         , referenceLinesWeightForHeight
-        , heightLines weightForHeightConfig
+        , heightLines
         , zScoreLabelsWeightForHeightBoys
         , model.weightForHeightBoys
             |> RemoteData.withDefault IntDict.empty
@@ -359,7 +361,7 @@ viewWeightForHeightGirls model data =
         [ frame
         , labels weightForHeightGirlsLabels
         , referenceLinesWeightForHeight
-        , heightLines weightForHeightConfig
+        , heightLines
         , zScoreLabelsWeightForHeightGirls
         , model.weightForHeightGirls
             |> RemoteData.withDefault IntDict.empty
@@ -419,13 +421,13 @@ zScoreLabelsWeightForHeightBoys =
         , circle [ class "z-score-white", cx "726", cy "250.1", r "7.5" ] []
         , circle [ class "z-score-white", cx "726.7", cy "167.9", r "7.5" ] []
         , circle [ class "z-score-white", cx "726.7", cy "224.9", r "7.5" ] []
-        , text_ [ transform "matrix(1 0 0 1 720.6 288.0)", class "two-line z-score-semibold st23" ] [ text "-2" ]
-        , text_ [ transform "matrix(1 0 0 1 720.7 312.5)", class "z-score-semibold st23" ] [ text "-3" ]
-        , text_ [ transform "matrix(1 0 0 1 722.4 132.0)", class "z-score-semibold st23" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 723.0 194.6)", class "one-line z-score-semibold st23" ] [ text "1" ]
-        , text_ [ transform "matrix(1 0 0 1 720.4 260.5)", class "one-line z-score-semibold st23" ] [ text "-1" ]
-        , text_ [ transform "matrix(1 0 0 1 722.8 155.6)", class "two-line z-score-semibold st23" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 723.5 229.1)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 720.6406 276.0231)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.7002 295.5534)", class "z-score-semibold st23" ] [ text "-3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.457 138.0392)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 723.0352 200.634)", class "one-line z-score-semibold st23" ] [ text "1" ]
+        , text_ [ transform "matrix(1 0 0 1 720.498 254.5388)", class "one-line z-score-semibold st23" ] [ text "-1" ]
+        , text_ [ transform "matrix(1 0 0 1 722.8945 171.6686)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 723.5527 229.1389)", class "zero-line z-score-semibold st23" ] [ text "0" ]
         ]
 
 
@@ -439,13 +441,13 @@ zScoreLabelsWeightForHeightGirls =
         , circle [ class "z-score-white", cx "726", cy "250.9", r "7.5" ] []
         , circle [ class "z-score-white", cx "726.7", cy "162.5", r "7.5" ] []
         , circle [ class "z-score-white", cx "726.7", cy "224.6", r "7.5" ] []
-        , text_ [ transform "matrix(1 0 0 1 720.6 285.8)", class "two-line z-score-semibold st23" ] [ text "-2" ]
-        , text_ [ transform "matrix(1 0 0 1 720.7 312.5)", class "z-score-semibold st23" ] [ text "-3" ]
-        , text_ [ transform "matrix(1 0 0 1 722.4 130.1)", class "z-score-semibold st23" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 723.0 185.9)", class "one-line z-score-semibold st23" ] [ text "1" ]
-        , text_ [ transform "matrix(1 0 0 1 720.4 255.3)", class "one-line z-score-semibold st23" ] [ text "-1" ]
-        , text_ [ transform "matrix(1 0 0 1 722.8 148.2)", class "two-line z-score-semibold st23" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 723.5 220.8)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 720.6406 278.8576)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.7002 299.5217)", class "z-score-semibold st23" ] [ text "-3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.457 130.1022)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 723.0352 198.9333)", class "one-line z-score-semibold st23" ] [ text "1" ]
+        , text_ [ transform "matrix(1 0 0 1 720.498 255.3893)", class "one-line z-score-semibold st23" ] [ text "-1" ]
+        , text_ [ transform "matrix(1 0 0 1 722.8945 166.2829)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 723.5527 228.8552)", class "zero-line z-score-semibold st23" ] [ text "0" ]
         ]
 
 
@@ -568,74 +570,89 @@ ageLines =
         ]
 
 
-{-| This is partially parameterized by the config ... eventually, this should
-be fully parameterized, and used for all the x-axis lines.
--}
-heightLines : PlotConfig Centimetres Kilograms -> Svg any
-heightLines config =
-    let
-        startY =
-            "506.6"
-
-        endY =
-            "119.9"
-
-        width =
-            config.output.maxX - config.output.minX
-
-        majorStepOutput =
-            width / 11
-
-        minorStepOutput =
-            width / 55
-
-        majorLines =
-            List.range 1 10
-                |> List.map (\step -> Round.round 1 (config.output.minX + toFloat step * majorStepOutput))
-                |> List.map (\x -> line [ class "st18", x1 x, y1 startY, x2 x, y2 endY ] [])
-
-        endLine =
-            line [ class "year-line", x1 "715.4", y1 "506.6", x2 "715.4", y2 "119.9" ] []
-
-        minorLines =
-            List.range 1 55
-                |> List.filter (\step -> rem step 5 /= 0)
-                |> List.map (\step -> Round.round 1 (config.output.minX + toFloat step * minorStepOutput))
-                |> List.map (\x -> line [ class "st19", x1 x, y1 startY, x2 x, y2 endY ] [])
-
-        labelY =
-            "518.1"
-
-        majorStepInput =
-            5
-
-        labelOffset =
-            -4
-
-        labels =
-            List.range 0 11
-                |> List.map
-                    (\step ->
-                        let
-                            x =
-                                Round.round 1 <|
-                                    config.output.minX
-                                        + (toFloat step * majorStepOutput)
-                                        + labelOffset
-
-                            label =
-                                Round.round 0 <|
-                                    config.input.minX
-                                        + (toFloat step * majorStepInput)
-                        in
-                            text_
-                                [ transform ("matrix(1 0 0 1 " ++ x ++ " " ++ labelY ++ ")")
-                                , class "z-score-white z-score-semibold st16"
-                                ]
-                                [ text label ]
-                    )
-    in
-        g [] (endLine :: majorLines ++ minorLines ++ labels)
+heightLines : Svg any
+heightLines =
+    g []
+        [ line [ class "st18", x1 "157.3", y1 "506.6", x2 "157.3", y2 "119.9" ] []
+        , line [ class "st18", x1 "203.9", y1 "506.6", x2 "203.9", y2 "119.9" ] []
+        , line [ class "st18", x1 "250.4", y1 "506.6", x2 "250.4", y2 "119.9" ] []
+        , line [ class "st18", x1 "296.9", y1 "506.6", x2 "296.9", y2 "119.9" ] []
+        , line [ class "st18", x1 "343.4", y1 "506.6", x2 "343.4", y2 "119.9" ] []
+        , line [ class "st18", x1 "389.9", y1 "506.6", x2 "389.9", y2 "119.9" ] []
+        , line [ class "st18", x1 "436.4", y1 "506.6", x2 "436.4", y2 "119.9" ] []
+        , line [ class "st18", x1 "482.9", y1 "506.6", x2 "482.9", y2 "119.9" ] []
+        , line [ class "st18", x1 "529.4", y1 "506.6", x2 "529.4", y2 "119.9" ] []
+        , line [ class "st18", x1 "575.9", y1 "506.6", x2 "575.9", y2 "119.9" ] []
+        , line [ class "st18", x1 "622.4", y1 "506.6", x2 "622.4", y2 "119.9" ] []
+        , line [ class "st18", x1 "668.9", y1 "506.6", x2 "668.9", y2 "119.9" ] []
+        , line [ class "st19", x1 "120.2", y1 "506.6", x2 "120.2", y2 "119.9" ] []
+        , line [ class "st19", x1 "129.5", y1 "506.6", x2 "129.5", y2 "119.9" ] []
+        , line [ class "st19", x1 "138.8", y1 "506.6", x2 "138.8", y2 "119.9" ] []
+        , line [ class "st19", x1 "148.1", y1 "506.6", x2 "148.1", y2 "119.9" ] []
+        , line [ class "st19", x1 "166.7", y1 "506.6", x2 "166.7", y2 "119.9" ] []
+        , line [ class "st19", x1 "176", y1 "506.6", x2 "176", y2 "119.9" ] []
+        , line [ class "st19", x1 "185.3", y1 "506.6", x2 "185.3", y2 "119.9" ] []
+        , line [ class "st19", x1 "194.6", y1 "506.6", x2 "194.6", y2 "119.9" ] []
+        , line [ class "st19", x1 "213.2", y1 "506.6", x2 "213.2", y2 "119.9" ] []
+        , line [ class "st19", x1 "222.5", y1 "506.6", x2 "222.5", y2 "119.9" ] []
+        , line [ class "st19", x1 "231.8", y1 "506.6", x2 "231.8", y2 "119.9" ] []
+        , line [ class "st19", x1 "241.1", y1 "506.6", x2 "241.1", y2 "119.9" ] []
+        , line [ class "st19", x1 "259.7", y1 "506.6", x2 "259.7", y2 "119.9" ] []
+        , line [ class "st19", x1 "269", y1 "506.6", x2 "269", y2 "119.9" ] []
+        , line [ class "st19", x1 "278.3", y1 "506.6", x2 "278.3", y2 "119.9" ] []
+        , line [ class "st19", x1 "287.6", y1 "506.6", x2 "287.6", y2 "119.9" ] []
+        , line [ class "st19", x1 "306.2", y1 "506.6", x2 "306.2", y2 "119.9" ] []
+        , line [ class "st19", x1 "315.5", y1 "506.6", x2 "315.5", y2 "119.9" ] []
+        , line [ class "st19", x1 "324.8", y1 "506.6", x2 "324.8", y2 "119.9" ] []
+        , line [ class "st19", x1 "334.1", y1 "506.6", x2 "334.1", y2 "119.9" ] []
+        , line [ class "st19", x1 "352.7", y1 "506.6", x2 "352.7", y2 "119.9" ] []
+        , line [ class "st19", x1 "362", y1 "506.6", x2 "362", y2 "119.9" ] []
+        , line [ class "st19", x1 "371.3", y1 "506.6", x2 "371.3", y2 "119.9" ] []
+        , line [ class "st19", x1 "380.6", y1 "506.6", x2 "380.6", y2 "119.9" ] []
+        , line [ class "st19", x1 "399.2", y1 "506.6", x2 "399.2", y2 "119.9" ] []
+        , line [ class "st19", x1 "408.5", y1 "506.6", x2 "408.5", y2 "119.9" ] []
+        , line [ class "st19", x1 "417.8", y1 "506.6", x2 "417.8", y2 "119.9" ] []
+        , line [ class "st19", x1 "427.1", y1 "506.6", x2 "427.1", y2 "119.9" ] []
+        , line [ class "st19", x1 "445.7", y1 "506.6", x2 "445.7", y2 "119.9" ] []
+        , line [ class "st19", x1 "455", y1 "506.6", x2 "455", y2 "119.9" ] []
+        , line [ class "st19", x1 "464.3", y1 "506.6", x2 "464.3", y2 "119.9" ] []
+        , line [ class "st19", x1 "473.6", y1 "506.6", x2 "473.6", y2 "119.9" ] []
+        , line [ class "st19", x1 "492.2", y1 "506.6", x2 "492.2", y2 "119.9" ] []
+        , line [ class "st19", x1 "501.5", y1 "506.6", x2 "501.5", y2 "119.9" ] []
+        , line [ class "st19", x1 "510.8", y1 "506.6", x2 "510.8", y2 "119.9" ] []
+        , line [ class "st19", x1 "520.1", y1 "506.6", x2 "520.1", y2 "119.9" ] []
+        , line [ class "st19", x1 "538.7", y1 "506.6", x2 "538.7", y2 "119.9" ] []
+        , line [ class "st19", x1 "548", y1 "506.6", x2 "548", y2 "119.9" ] []
+        , line [ class "st19", x1 "557.3", y1 "506.6", x2 "557.3", y2 "119.9" ] []
+        , line [ class "st19", x1 "566.6", y1 "506.6", x2 "566.6", y2 "119.9" ] []
+        , line [ class "st19", x1 "585.2", y1 "506.6", x2 "585.2", y2 "119.9" ] []
+        , line [ class "st19", x1 "594.5", y1 "506.6", x2 "594.5", y2 "119.9" ] []
+        , line [ class "st19", x1 "603.8", y1 "506.6", x2 "603.8", y2 "119.9" ] []
+        , line [ class "st19", x1 "613.1", y1 "506.6", x2 "613.1", y2 "119.9" ] []
+        , line [ class "st19", x1 "631.7", y1 "506.6", x2 "631.7", y2 "119.9" ] []
+        , line [ class "st19", x1 "641", y1 "506.6", x2 "641", y2 "119.9" ] []
+        , line [ class "st19", x1 "650.3", y1 "506.6", x2 "650.3", y2 "119.9" ] []
+        , line [ class "st19", x1 "659.6", y1 "506.6", x2 "659.6", y2 "119.9" ] []
+        , line [ class "st19", x1 "678.2", y1 "506.6", x2 "678.2", y2 "119.9" ] []
+        , line [ class "st19", x1 "687.5", y1 "506.6", x2 "687.5", y2 "119.9" ] []
+        , line [ class "st19", x1 "696.8", y1 "506.6", x2 "696.8", y2 "119.9" ] []
+        , line [ class "st19", x1 "706.1", y1 "506.6", x2 "706.1", y2 "119.9" ] []
+        , line [ class "year-line", x1 "715.4", y1 "506.6", x2 "715.4", y2 "119.9" ] []
+        , text_ [ transform "matrix(1 0 0 1 106.77 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "45" ]
+        , text_ [ transform "matrix(1 0 0 1 153.2725 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "50" ]
+        , text_ [ transform "matrix(1 0 0 1 199.7749 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "55" ]
+        , text_ [ transform "matrix(1 0 0 1 246.2773 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "60" ]
+        , text_ [ transform "matrix(1 0 0 1 292.7798 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "65" ]
+        , text_ [ transform "matrix(1 0 0 1 339.2822 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "70" ]
+        , text_ [ transform "matrix(1 0 0 1 385.7847 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "75" ]
+        , text_ [ transform "matrix(1 0 0 1 432.2871 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "80" ]
+        , text_ [ transform "matrix(1 0 0 1 478.7891 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "85" ]
+        , text_ [ transform "matrix(1 0 0 1 525.292 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "90" ]
+        , text_ [ transform "matrix(1 0 0 1 571.7939 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "95" ]
+        , text_ [ transform "matrix(1 0 0 1 616.2168 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "100" ]
+        , text_ [ transform "matrix(1 0 0 1 662.7197 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "105" ]
+        , text_ [ transform "matrix(1 0 0 1 709.0928 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "110" ]
+        ]
 
 
 referenceLinesHeight : Svg any
@@ -891,30 +908,30 @@ referenceLinesWeightForHeight =
         , line [ class "st18", x1 "110.8", y1 "168.3", x2 "737.6", y2 "168.3" ] []
         , line [ class "st18", x1 "110.8", y1 "136", x2 "737.6", y2 "136" ] []
         , line [ class "st19", x1 "110.8", y1 "128", x2 "715.4", y2 "128" ] []
-        , text_ [ transform "matrix(1 0 0 1 98.0068 493.0851)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 98.0068 460.8557)", class "z-score-white z-score-semibold st16" ] [ text "8" ]
-        , text_ [ transform "matrix(1 0 0 1 98.0068 428.6252)", class "z-score-white z-score-semibold st16" ] [ text "10" ]
-        , text_ [ transform "matrix(1 0 0 1 98.0068 396.3947)", class "z-score-white z-score-semibold st16" ] [ text "12" ]
-        , text_ [ transform "matrix(1 0 0 1 95.9273 364.1642)", class "z-score-white z-score-semibold st16" ] [ text "14" ]
-        , text_ [ transform "matrix(1 0 0 1 95.9273 331.9348)", class "z-score-white z-score-semibold st16" ] [ text "16" ]
-        , text_ [ transform "matrix(1 0 0 1 95.9273 299.7043)", class "z-score-white z-score-semibold st16" ] [ text "18" ]
-        , text_ [ transform "matrix(1 0 0 1 95.9273 267.4748)", class "z-score-white z-score-semibold st16" ] [ text "20" ]
-        , text_ [ transform "matrix(1 0 0 1 95.9273 235.2448)", class "z-score-white z-score-semibold st16" ] [ text "22" ]
-        , text_ [ transform "matrix(1 0 0 1 95.9273 203.0143)", class "z-score-white z-score-semibold st16" ] [ text "24" ]
-        , text_ [ transform "matrix(1 0 0 1 95.9273 170.7853)", class "z-score-white z-score-semibold st16" ] [ text "26" ]
-        , text_ [ transform "matrix(1 0 0 1 95.9273 138.5568)", class "z-score-white z-score-semibold st16" ] [ text "28" ]
-        , text_ [ transform "matrix(1 0 0 1 746.7832 493.0851)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 746.7832 460.8557)", class "z-score-white z-score-semibold st16" ] [ text "8" ]
-        , text_ [ transform "matrix(1 0 0 1 746.7832 428.6252)", class "z-score-white z-score-semibold st16" ] [ text "10" ]
-        , text_ [ transform "matrix(1 0 0 1 746.7832 396.3947)", class "z-score-white z-score-semibold st16" ] [ text "12" ]
-        , text_ [ transform "matrix(1 0 0 1 744.7031 364.1642)", class "z-score-white z-score-semibold st16" ] [ text "14" ]
-        , text_ [ transform "matrix(1 0 0 1 744.7031 331.9348)", class "z-score-white z-score-semibold st16" ] [ text "16" ]
-        , text_ [ transform "matrix(1 0 0 1 744.7031 299.7043)", class "z-score-white z-score-semibold st16" ] [ text "18" ]
-        , text_ [ transform "matrix(1 0 0 1 744.7031 267.4748)", class "z-score-white z-score-semibold st16" ] [ text "20" ]
-        , text_ [ transform "matrix(1 0 0 1 744.7031 235.2448)", class "z-score-white z-score-semibold st16" ] [ text "22" ]
-        , text_ [ transform "matrix(1 0 0 1 744.7031 203.0143)", class "z-score-white z-score-semibold st16" ] [ text "24" ]
-        , text_ [ transform "matrix(1 0 0 1 744.7031 170.7853)", class "z-score-white z-score-semibold st16" ] [ text "26" ]
-        , text_ [ transform "matrix(1 0 0 1 744.7031 138.5568)", class "z-score-white z-score-semibold st16" ] [ text "28" ]
+        , text_ [ transform "matrix(1 0 0 1 98.0068 493.0851)", class "z-score-white z-score-semibold st16" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 98.0068 460.8557)", class "z-score-white z-score-semibold st16" ] [ text "4" ]
+        , text_ [ transform "matrix(1 0 0 1 98.0068 428.6252)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
+        , text_ [ transform "matrix(1 0 0 1 98.0068 396.3947)", class "z-score-white z-score-semibold st16" ] [ text "8" ]
+        , text_ [ transform "matrix(1 0 0 1 95.9273 364.1642)", class "z-score-white z-score-semibold st16" ] [ text "10" ]
+        , text_ [ transform "matrix(1 0 0 1 95.9273 331.9348)", class "z-score-white z-score-semibold st16" ] [ text "12" ]
+        , text_ [ transform "matrix(1 0 0 1 95.9273 299.7043)", class "z-score-white z-score-semibold st16" ] [ text "14" ]
+        , text_ [ transform "matrix(1 0 0 1 95.9273 267.4748)", class "z-score-white z-score-semibold st16" ] [ text "16" ]
+        , text_ [ transform "matrix(1 0 0 1 95.9273 235.2448)", class "z-score-white z-score-semibold st16" ] [ text "18" ]
+        , text_ [ transform "matrix(1 0 0 1 95.9273 203.0143)", class "z-score-white z-score-semibold st16" ] [ text "20" ]
+        , text_ [ transform "matrix(1 0 0 1 95.9273 170.7853)", class "z-score-white z-score-semibold st16" ] [ text "22" ]
+        , text_ [ transform "matrix(1 0 0 1 95.9273 138.5568)", class "z-score-white z-score-semibold st16" ] [ text "24" ]
+        , text_ [ transform "matrix(1 0 0 1 746.7832 493.0851)", class "z-score-white z-score-semibold st16" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 746.7832 460.8557)", class "z-score-white z-score-semibold st16" ] [ text "4" ]
+        , text_ [ transform "matrix(1 0 0 1 746.7832 428.6252)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
+        , text_ [ transform "matrix(1 0 0 1 746.7832 396.3947)", class "z-score-white z-score-semibold st16" ] [ text "8" ]
+        , text_ [ transform "matrix(1 0 0 1 744.7031 364.1642)", class "z-score-white z-score-semibold st16" ] [ text "10" ]
+        , text_ [ transform "matrix(1 0 0 1 744.7031 331.9348)", class "z-score-white z-score-semibold st16" ] [ text "12" ]
+        , text_ [ transform "matrix(1 0 0 1 744.7031 299.7043)", class "z-score-white z-score-semibold st16" ] [ text "14" ]
+        , text_ [ transform "matrix(1 0 0 1 744.7031 267.4748)", class "z-score-white z-score-semibold st16" ] [ text "16" ]
+        , text_ [ transform "matrix(1 0 0 1 744.7031 235.2448)", class "z-score-white z-score-semibold st16" ] [ text "18" ]
+        , text_ [ transform "matrix(1 0 0 1 744.7031 203.0143)", class "z-score-white z-score-semibold st16" ] [ text "20" ]
+        , text_ [ transform "matrix(1 0 0 1 744.7031 170.7853)", class "z-score-white z-score-semibold st16" ] [ text "22" ]
+        , text_ [ transform "matrix(1 0 0 1 744.7031 138.5568)", class "z-score-white z-score-semibold st16" ] [ text "24" ]
         ]
 
 
