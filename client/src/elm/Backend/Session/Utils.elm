@@ -10,6 +10,7 @@ import EveryDictList
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..))
 import Time.Date
+import User.Model exposing (User)
 
 
 {-| Given a mother's id, get all her children from the offline session.
@@ -258,6 +259,11 @@ isClosed currentDate session =
         session.offlineSession.session.closed
             || session.edits.explicitlyClosed
             || pastEnd
+
+
+isAuthorized : User -> EditableSession -> Bool
+isAuthorized user session =
+    List.member session.offlineSession.session.clinicId user.clinics
 
 
 activeClinicName : EditableSession -> Maybe String

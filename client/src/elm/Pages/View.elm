@@ -1,11 +1,11 @@
 module Pages.View exposing (..)
 
 import Activity.Model exposing (ActivityType(..))
+import App.Model exposing (Model)
 import Backend.Session.Model exposing (EditableSession)
-import Backend.Session.Utils exposing (isClosed, activeClinicName)
+import Backend.Session.Utils exposing (isClosed, isAuthorized, activeClinicName)
 import EveryDict
 import Gizra.Html exposing (showMaybe)
-import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -21,58 +21,70 @@ import Pages.Participants.View
 import Pages.ProgressReport.View
 import Participant.Utils exposing (childParticipant, motherParticipant)
 import Translate exposing (translate, Language)
-import ZScore.Model
+import User.Model exposing (User)
 
 
 {-| This is a view function specialized for session pages, which require an editable session.
 -}
-viewFoundSession : Language -> NominalDate -> ZScore.Model.Model -> SessionPage -> EditableSession -> SessionPages -> Html MsgSession
-viewFoundSession language currentDate zscores page session model =
-    if isClosed currentDate session then
-        viewClosedSession language session
-    else
-        case page of
-            ActivitiesPage ->
-                model.activitiesPage
-                    |> Pages.Activities.View.view language session
-                    |> Html.map MsgActivities
+viewFoundSession : User -> SessionPage -> EditableSession -> Model -> Html MsgSession
+viewFoundSession user page session model =
+    let
+        language =
+            model.language
 
-            ActivityPage activityType ->
-                case activityType of
-                    ChildActivity activity ->
-                        EveryDict.get activity model.childActivityPages
-                            |> Maybe.withDefault Pages.Activity.Model.emptyModel
-                            |> Pages.Activity.View.view childParticipant language currentDate zscores activity session
-                            |> Html.map (MsgChildActivity activity)
+        currentDate =
+            model.currentDate
 
-                    MotherActivity activity ->
-                        EveryDict.get activity model.motherActivityPages
-                            |> Maybe.withDefault Pages.Activity.Model.emptyModel
-                            |> Pages.Activity.View.view motherParticipant language currentDate zscores activity session
-                            |> Html.map (MsgMotherActivity activity)
+        zscores =
+            model.zscores
+    in
+        if isClosed currentDate session then
+            viewClosedSession language session
+        else if not (isAuthorized user session) then
+            viewUnauthorizedSession language session
+        else
+            case page of
+                ActivitiesPage ->
+                    model.sessionPages.activitiesPage
+                        |> Pages.Activities.View.view language session
+                        |> Html.map MsgActivities
 
-            AttendancePage ->
-                Pages.Attendance.View.view language session
+                ActivityPage activityType ->
+                    case activityType of
+                        ChildActivity activity ->
+                            EveryDict.get activity model.sessionPages.childActivityPages
+                                |> Maybe.withDefault Pages.Activity.Model.emptyModel
+                                |> Pages.Activity.View.view childParticipant language currentDate zscores activity session
+                                |> Html.map (MsgChildActivity activity)
 
-            ParticipantsPage ->
-                model.participantsPage
-                    |> Pages.Participants.View.view language session
-                    |> Html.map MsgParticipants
+                        MotherActivity activity ->
+                            EveryDict.get activity model.sessionPages.motherActivityPages
+                                |> Maybe.withDefault Pages.Activity.Model.emptyModel
+                                |> Pages.Activity.View.view motherParticipant language currentDate zscores activity session
+                                |> Html.map (MsgMotherActivity activity)
 
-            ChildPage childId ->
-                EveryDict.get childId model.childPages
-                    |> Maybe.withDefault Pages.Participant.Model.emptyModel
-                    |> Pages.Participant.View.viewChild language currentDate zscores childId session
-                    |> Html.map (MsgChild childId)
+                AttendancePage ->
+                    Pages.Attendance.View.view language session
 
-            ProgressReportPage childId ->
-                Pages.ProgressReport.View.view language zscores childId session
+                ParticipantsPage ->
+                    model.sessionPages.participantsPage
+                        |> Pages.Participants.View.view language session
+                        |> Html.map MsgParticipants
 
-            MotherPage motherId ->
-                EveryDict.get motherId model.motherPages
-                    |> Maybe.withDefault Pages.Participant.Model.emptyModel
-                    |> Pages.Participant.View.viewMother language motherId session
-                    |> Html.map (MsgMother motherId)
+                ProgressReportPage childId ->
+                    Pages.ProgressReport.View.view language zscores childId session
+
+                ChildPage childId ->
+                    EveryDict.get childId model.sessionPages.childPages
+                        |> Maybe.withDefault Pages.Participant.Model.emptyModel
+                        |> Pages.Participant.View.viewChild language currentDate zscores childId session
+                        |> Html.map (MsgChild childId)
+
+                MotherPage motherId ->
+                    EveryDict.get motherId model.sessionPages.motherPages
+                        |> Maybe.withDefault Pages.Participant.Model.emptyModel
+                        |> Pages.Participant.View.viewMother language motherId session
+                        |> Html.map (MsgMother motherId)
 
 
 viewClosedSession : Language -> EditableSession -> Html MsgSession
@@ -99,5 +111,33 @@ viewClosedSession language session =
             [ class "ui error message" ]
             [ h1 [] [ text <| translate language Translate.SessionClosed ]
             , p [] [ text <| translate language Translate.SessionClosed2 ]
+            ]
+        ]
+
+
+viewUnauthorizedSession : Language -> EditableSession -> Html MsgSession
+viewUnauthorizedSession language session =
+    div
+        [ class "wrap wrap-alt-2" ]
+        [ div
+            [ class "ui basic head segment" ]
+            [ h1
+                [ class "ui header" ]
+                [ activeClinicName session
+                    |> Maybe.map text
+                    |> showMaybe
+                ]
+            , a
+                [ class "link-back"
+                , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just session.offlineSession.session.clinicId
+                ]
+                [ span [ class "icon-back" ] []
+                , span [] []
+                ]
+            ]
+        , div
+            [ class "ui error message" ]
+            [ h1 [] [ text <| translate language Translate.SessionUnauthorized ]
+            , p [] [ text <| translate language Translate.SessionUnauthorized2 ]
             ]
         ]

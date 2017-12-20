@@ -33,11 +33,6 @@ svg.z-score {
     fill: #FFFFFF;
   }
 
-  .zero-to-neg-two {
-    opacity: 0.5;
-    fill: #00853F;
-  }
-
   .neg-two-to-neg-three {
     opacity: 0.5;
     fill: #F9E100;
@@ -48,7 +43,7 @@ svg.z-score {
     fill: #E31837;
   }
 
-  .above-zero {
+  .above-neg-two {
     opacity: 0.5;
     fill: #00853F;
   }
@@ -83,13 +78,11 @@ svg.z-score {
     font-size: 12px;
   }
 
-  .child-data {
-    polyline {
-      fill: none;
-      stroke: black;
-      stroke-width: 2px;
-      marker: url(#dot-marker);
-    }
+  polyline.child-data {
+    fill: none;
+    stroke: black;
+    stroke-width: 2px;
+    marker: url(#dot-marker);
   }
 
   .st18 {
@@ -126,6 +119,26 @@ svg.z-score {
      fill: #E31837;
   }
 
+  .three-line-new {
+    stroke: black;
+    fill: none;
+  }
+
+  .two-line-new {
+    stroke: #E31837;
+    fill: none;
+  }
+
+  .one-line-new {
+    stroke: #E24301;
+    fill: none;
+  }
+
+  .zero-line-new {
+    stroke: #00853F;
+    fill: none;
+  }
+
   .st23 {
     font-size: 12.5145px;
   }
@@ -139,6 +152,16 @@ svg.z-score {
       fill: black;
     }
   }
+}
+
+.icon-progress-report {
+  display: block;
+  width: 222px;
+  height: 222px;
+  background-color: #fff;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-image: url(#{$img-path}icon-progress-report.svg);
 }
 
 .page-report {
