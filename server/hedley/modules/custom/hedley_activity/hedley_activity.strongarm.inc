@@ -56,42 +56,42 @@ function hedley_activity_strongarm() {
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_pattern_node_family_planning';
-  $strongarm->value = '[node:content-type] - [node:field-mother:title] - [node:field-date-measured:short] - [node:field-session:nid]';
+  $strongarm->value = '[node:content-type] - [node:field-mother:title] - [node:field-date-measured:custom:Y-m-d] - [node:field-session:nid]';
   $export['auto_entitylabel_pattern_node_family_planning'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_pattern_node_height';
-  $strongarm->value = '[node:content-type] - [node:field-child:title] - [node:field-date-measured:short] - [node:field-session:nid]';
+  $strongarm->value = '[node:content-type] - [node:field-child:title] - [node:field-date-measured:custom:Y-m-d] - [node:field-session:nid]';
   $export['auto_entitylabel_pattern_node_height'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_pattern_node_muac';
-  $strongarm->value = '[node:content-type] - [node:field-child:title] - [node:field-date-measured:short] - [node:field-session:nid]';
+  $strongarm->value = '[node:content-type] - [node:field-child:title] - [node:field-date-measured:custom:Y-m-d] - [node:field-session:nid]';
   $export['auto_entitylabel_pattern_node_muac'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_pattern_node_nutrition';
-  $strongarm->value = '[node:content-type] - [node:field-child:title] - [node:field-date-measured:short] - [node:field-session:nid]';
+  $strongarm->value = '[node:content-type] - [node:field-child:title] - [node:field-date-measured:custom:Y-m-d] - [node:field-session:nid]';
   $export['auto_entitylabel_pattern_node_nutrition'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_pattern_node_photo';
-  $strongarm->value = '[node:content-type] - [node:field-child:title] - [node:field-date-measured:short] - [node:field-session:nid]';
+  $strongarm->value = '[node:content-type] - [node:field-child:title] - [node:field-date-measured:custom:Y-m-d] - [node:field-session:nid]';
   $export['auto_entitylabel_pattern_node_photo'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_pattern_node_weight';
-  $strongarm->value = '[node:content-type] - [node:field-child:title] - [node:field-date-measured:short] - [node:field-session:nid]';
+  $strongarm->value = '[node:content-type] - [node:field-child:title] - [node:field-date-measured:custom:Y-m-d] - [node:field-session:nid]';
   $export['auto_entitylabel_pattern_node_weight'] = $strongarm;
 
   $strongarm = new stdClass();
