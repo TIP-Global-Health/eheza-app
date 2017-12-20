@@ -295,29 +295,6 @@ viewFoundChild language zscores ( childId, child ) session =
                     ]
                 ]
 
-        charts =
-            div
-                [ class "image-report" ]
-                [ viewCharts language zscores ( childId, child ) session ]
-    in
-        div [ class "page-report" ]
-            [ div
-                [ class "wrap-report" ]
-                [ backIcon
-                , title
-                , subtitle
-                , childInfo
-                , nutritionSigns
-                , floats
-                , photos
-                , charts
-                ]
-            ]
-
-
-viewCharts : Language -> ZScore.Model.Model -> ( ChildId, Child ) -> EditableSession -> Html any
-viewCharts language zscores ( childId, child ) session =
-    let
         ( heightForAge, weightForAge, weightForHeight ) =
             case child.gender of
                 Male ->
@@ -340,51 +317,38 @@ viewCharts language zscores ( childId, child ) session =
 
         -- This includes any edits that have been saved locally, but not as-you=type
         -- in the UI before you hit "Save" or "Update".
-        currentHeight =
-            current
-                |> mapMeasurementData .height .height
-                |> currentValueWithId
+        getValues func1 func2 func3 =
+            let
+                currentValue =
+                    current
+                        |> mapMeasurementData func1 func2
+                        |> currentValueWithId
 
-        currentWeight =
-            current
-                |> mapMeasurementData .weight .weight
-                |> currentValueWithId
+                historicalValues =
+                    func3 historical
+            in
+                case currentValue of
+                    Nothing ->
+                        -- No current value, so just use historical
+                        List.map Tuple.second historicalValues
+
+                    Just ( Nothing, currentValue ) ->
+                        -- We have a new current value, so use it
+                        currentValue :: List.map Tuple.second historicalValues
+
+                    Just ( Just currentId, currentValue ) ->
+                        -- We've edited an old value, so use the edited version
+                        -- and leave out the old one.
+                        historicalValues
+                            |> List.filter (\( id, _ ) -> id /= currentId)
+                            |> List.map Tuple.second
+                            |> List.append [ currentValue ]
 
         heightValues =
-            case currentHeight of
-                Nothing ->
-                    -- No current value, so just use historical
-                    List.map Tuple.second historical.heights
-
-                Just ( Nothing, currentValue ) ->
-                    -- We have a new current value, so use it
-                    currentValue :: List.map Tuple.second historical.heights
-
-                Just ( Just currentId, currentValue ) ->
-                    -- We've edited an old value, so use the edited version
-                    -- and leave out the old one.
-                    historical.heights
-                        |> List.filter (\( id, _ ) -> id /= currentId)
-                        |> List.map Tuple.second
-                        |> List.append [ currentValue ]
+            getValues .height .height .heights
 
         weightValues =
-            case currentWeight of
-                Nothing ->
-                    -- No current value, so just use historical
-                    List.map Tuple.second historical.weights
-
-                Just ( Nothing, currentValue ) ->
-                    -- We have a new current value, so use it
-                    currentValue :: List.map Tuple.second historical.weights
-
-                Just ( Just currentId, currentValue ) ->
-                    -- We've edited an old value, so use the edited version
-                    -- and leave out the old one.
-                    historical.weights
-                        |> List.filter (\( id, _ ) -> id /= currentId)
-                        |> List.map Tuple.second
-                        |> List.append [ currentValue ]
+            getValues .weight .weight .weights
 
         heightForAgeData =
             List.map (chartHeightForAge child) heightValues
@@ -394,12 +358,28 @@ viewCharts language zscores ( childId, child ) session =
 
         weightForHeightData =
             List.filterMap (chartWeightForHeight heightValues) weightValues
+
+        charts =
+            div
+                [ class "image-report" ]
+                [ ZScore.View.viewMarkers
+                , heightForAge language zscores heightForAgeData
+                , weightForAge language zscores weightForAgeData
+                , weightForHeight language zscores weightForHeightData
+                ]
     in
-        div [ class "ui full segment progress-report" ]
-            [ ZScore.View.viewMarkers
-            , heightForAge language zscores heightForAgeData
-            , weightForAge language zscores weightForAgeData
-            , weightForHeight language zscores weightForHeightData
+        div [ class "page-report" ]
+            [ div
+                [ class "wrap-report" ]
+                [ backIcon
+                , title
+                , subtitle
+                , childInfo
+                , nutritionSigns
+                , floats
+                , photos
+                , charts
+                ]
             ]
 
 
