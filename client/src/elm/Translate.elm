@@ -344,7 +344,7 @@ translate lang trans =
                             { english = "'My Account'" }
 
                 Age months days ->
-                    { english = toString months ++ " months and " ++ toString days ++ " days" }
+                    { english = toString months ++ " months " ++ toString days ++ " days" }
 
                 AgeDays days ->
                     { english = toString days ++ " days" }
@@ -353,13 +353,13 @@ translate lang trans =
                     { english = toString months ++ " month" }
 
                 AgeSingleBoth months days ->
-                    { english = toString months ++ " month and " ++ toString days ++ " day" }
+                    { english = toString months ++ " month " ++ toString days ++ " day" }
 
                 AgeSingleMonth months days ->
-                    { english = toString months ++ " month and " ++ toString days ++ " days" }
+                    { english = toString months ++ " month " ++ toString days ++ " days" }
 
                 AgeSingleDayWithMonth months days ->
-                    { english = toString months ++ " months and " ++ toString days ++ " day" }
+                    { english = toString months ++ " months " ++ toString days ++ " day" }
 
                 AgeSingleDayWithoutMonth months days ->
                     { english = toString days ++ " day" }

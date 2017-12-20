@@ -294,6 +294,8 @@ h1.ui.header.report {
 
 .ui.cards .report.card .image {
   margin-bottom: 0;
+  width: 100%;
+  height: 224px;
 }
 
 .ui.cards .report.card .content {
@@ -307,6 +309,7 @@ h1.ui.header.report {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  width: 100%;
 }
 
 @media print {

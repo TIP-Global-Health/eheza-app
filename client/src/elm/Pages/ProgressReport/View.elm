@@ -16,7 +16,7 @@ import Pages.Page exposing (Page(..), SessionPage(..))
 import Pages.PageNotFound.View
 import Translate exposing (Language(..), translate)
 import Utils.Html exposing (thumbnailImage)
-import Utils.NominalDate exposing (Days(..), diffDays, renderDateOfBirth)
+import Utils.NominalDate exposing (Days(..), diffDays, renderDateOfBirth, renderAgeMonthsDays)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..))
 import ZScore.View
 
@@ -196,104 +196,20 @@ viewFoundChild language zscores ( childId, child ) session =
                 ]
 
         photos =
-            div
-                [ class "ui five report cards" ]
-                [ div
-                    [ class "report card" ]
-                    [ div
-                        [ class "content" ]
-                        [ text "23 days          " ]
-                    , div
-                        [ class "image" ]
-                        [ img
-                            [ alt "23 days"
-                            , attribute "height" "224"
-                            , src "assets/images/photo-report.jpg"
-                            , attribute "width" "224"
+            photoValues
+                |> List.map
+                    (\photo ->
+                        div
+                            [ class "report card" ]
+                            [ div
+                                [ class "content" ]
+                                [ text <| renderAgeMonthsDays language child.birthDate photo.dateMeasured ]
+                            , div
+                                [ class "image" ]
+                                [ img [ src photo.value.url ] [] ]
                             ]
-                            []
-                        ]
-                    ]
-                , div
-                    [ class "report card" ]
-                    [ div
-                        [ class "content" ]
-                        [ text "1 month 15 days" ]
-                    , div
-                        [ class "image" ]
-                        [ img
-                            [ alt "23 days"
-                            , attribute "height" "224"
-                            , src "assets/images/photo-report.jpg"
-                            , attribute "width" "224"
-                            ]
-                            []
-                        ]
-                    ]
-                , div
-                    [ class "report card" ]
-                    [ div
-                        [ class "content" ]
-                        [ text "3 months 12 days" ]
-                    , div
-                        [ class "image" ]
-                        [ img
-                            [ alt "23 days"
-                            , attribute "height" "224"
-                            , src "assets/images/photo-report.jpg"
-                            , attribute "width" "224"
-                            ]
-                            []
-                        ]
-                    ]
-                , div
-                    [ class "report card" ]
-                    [ div
-                        [ class "content" ]
-                        [ text "4 months 11 days          " ]
-                    , div
-                        [ class "image" ]
-                        [ img
-                            [ alt "23 days"
-                            , attribute "height" "224"
-                            , src "assets/images/photo-report.jpg"
-                            , attribute "width" "224"
-                            ]
-                            []
-                        ]
-                    ]
-                , div
-                    [ class "report card" ]
-                    [ div
-                        [ class "content" ]
-                        [ text "5 months 12 days          " ]
-                    , div [ class "image" ]
-                        [ img
-                            [ alt "23 days"
-                            , attribute "height" "224"
-                            , src "assets/images/photo-report.jpg"
-                            , attribute "width" "224"
-                            ]
-                            []
-                        ]
-                    ]
-                , div
-                    [ class "report card" ]
-                    [ div
-                        [ class "content" ]
-                        [ text "6 months 7 days          " ]
-                    , div
-                        [ class "image" ]
-                        [ img
-                            [ alt "23 days"
-                            , attribute "height" "224"
-                            , src "assets/images/photo-report.jpg"
-                            , attribute "width" "224"
-                            ]
-                            []
-                        ]
-                    ]
-                ]
+                    )
+                |> div [ class "ui five report cards" ]
 
         ( heightForAge, weightForAge, weightForHeight ) =
             case child.gender of
@@ -349,6 +265,9 @@ viewFoundChild language zscores ( childId, child ) session =
 
         weightValues =
             getValues .weight .weight .weights
+
+        photoValues =
+            getValues .photo .photo .photos
 
         heightForAgeData =
             List.map (chartHeightForAge child) heightValues
