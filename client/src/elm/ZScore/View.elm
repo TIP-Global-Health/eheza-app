@@ -20,6 +20,7 @@ import RemoteData
 import Round
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
+import Translate exposing (translate, Language, TranslationId(..), ChartPhrase(..))
 import Utils.NominalDate exposing (Days(..))
 import ZScore.Model exposing (..)
 
@@ -55,18 +56,18 @@ viewMarkers =
         ]
 
 
-viewHeightForAgeBoys : Model -> List ( Days, Centimetres ) -> Html any
-viewHeightForAgeBoys model data =
+viewHeightForAgeBoys : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeightForAgeBoys language model data =
     svg
         [ class "z-score boys"
         , x "0px"
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame
-        , labels heightForAgeBoysLabels
+        [ frame language
+        , labels language heightForAgeBoysLabels
         , referenceLinesHeight
-        , ageLines
+        , ageLines language
         , zScoreLabelsHeightForAgeBoys
         , model.heightForAgeBoys
             |> RemoteData.withDefault IntDict.empty
@@ -310,18 +311,18 @@ plotChildData config data =
             []
 
 
-viewWeightForAgeBoys : Model -> List ( Days, Kilograms ) -> Html any
-viewWeightForAgeBoys model data =
+viewWeightForAgeBoys : Language -> Model -> List ( Days, Kilograms ) -> Html any
+viewWeightForAgeBoys language model data =
     svg
         [ class "z-score boys"
         , x "0px"
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame
-        , labels weightForAgeBoysLabels
+        [ frame language
+        , labels language weightForAgeBoysLabels
         , referenceLinesWeight
-        , ageLines
+        , ageLines language
         , zScoreLabelsWeightForAgeBoys
         , model.weightForAgeBoys
             |> RemoteData.withDefault IntDict.empty
@@ -330,16 +331,16 @@ viewWeightForAgeBoys model data =
         ]
 
 
-viewWeightForHeightBoys : Model -> List ( Centimetres, Kilograms ) -> Html any
-viewWeightForHeightBoys model data =
+viewWeightForHeightBoys : Language -> Model -> List ( Centimetres, Kilograms ) -> Html any
+viewWeightForHeightBoys language model data =
     svg
         [ class "z-score boys"
         , x "0px"
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame
-        , labels weightForHeightBoysLabels
+        [ frame language
+        , labels language weightForHeightBoysLabels
         , referenceLinesWeightForHeight
         , heightLines
         , zScoreLabelsWeightForHeightBoys
@@ -350,16 +351,16 @@ viewWeightForHeightBoys model data =
         ]
 
 
-viewWeightForHeightGirls : Model -> List ( Centimetres, Kilograms ) -> Html any
-viewWeightForHeightGirls model data =
+viewWeightForHeightGirls : Language -> Model -> List ( Centimetres, Kilograms ) -> Html any
+viewWeightForHeightGirls language model data =
     svg
         [ class "z-score girls"
         , x "0px"
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame
-        , labels weightForHeightGirlsLabels
+        [ frame language
+        , labels language weightForHeightGirlsLabels
         , referenceLinesWeightForHeight
         , heightLines
         , zScoreLabelsWeightForHeightGirls
@@ -370,18 +371,18 @@ viewWeightForHeightGirls model data =
         ]
 
 
-viewHeightForAgeGirls : Model -> List ( Days, Centimetres ) -> Html any
-viewHeightForAgeGirls model data =
+viewHeightForAgeGirls : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeightForAgeGirls language model data =
     svg
         [ class "z-score girls"
         , x "0px"
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame
-        , labels heightForAgeGirlsLabels
+        [ frame language
+        , labels language heightForAgeGirlsLabels
         , referenceLinesHeight
-        , ageLines
+        , ageLines language
         , zScoreLabelsHeightForAgeGirls
         , model.heightForAgeGirls
             |> RemoteData.withDefault IntDict.empty
@@ -390,18 +391,18 @@ viewHeightForAgeGirls model data =
         ]
 
 
-viewWeightForAgeGirls : Model -> List ( Days, Kilograms ) -> Html any
-viewWeightForAgeGirls model data =
+viewWeightForAgeGirls : Language -> Model -> List ( Days, Kilograms ) -> Html any
+viewWeightForAgeGirls language model data =
     svg
         [ class "z-score girls"
         , x "0px"
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame
-        , labels weightForAgeGirlsLabels
+        [ frame language
+        , labels language weightForAgeGirlsLabels
         , referenceLinesWeight
-        , ageLines
+        , ageLines language
         , zScoreLabelsWeightForAgeGirls
         , model.weightForAgeGirls
             |> RemoteData.withDefault IntDict.empty
@@ -503,8 +504,8 @@ zScoreLabelsWeightForAgeGirls =
         ]
 
 
-ageLines : Svg any
-ageLines =
+ageLines : Language -> Svg any
+ageLines language =
     g []
         [ line [ class "month-line", x1 "136", y1 "506.5", x2 "136", y2 "119.5" ] []
         , line [ class "month-line", x1 "161.2", y1 "506.5", x2 "161.2", y2 "119.5" ] []
@@ -534,17 +535,17 @@ ageLines =
             [ transform "matrix(1 0 0 1 399.4178 525.8762)"
             , class "z-score-white z-score-semibold st20"
             ]
-            [ text "1 year" ]
+            [ text <| translate language (Translate.ChartPhrase Translate.OneYear) ]
         , text_
             [ transform "matrix(1 0 0 1 100.3324 525.8762)"
             , class "z-score-white z-score-semibold st20"
             ]
-            [ text "Birth" ]
+            [ text <| translate language (Translate.ChartPhrase Translate.Birth) ]
         , text_
             [ transform "matrix(1 0 0 1 699.7343 525.9767)"
             , class "z-score-white z-score-semibold st20"
             ]
-            [ text "2 years" ]
+            [ text <| translate language (Translate.ChartPhrase Translate.TwoYears) ]
         , text_ [ transform "matrix(1 0 0 1 133.9667 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "1" ]
         , text_ [ transform "matrix(1 0 0 1 159.1552 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "2" ]
         , text_ [ transform "matrix(1 0 0 1 184.3441 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
@@ -936,78 +937,76 @@ referenceLinesWeightForHeight =
 
 
 type alias LabelConfig =
-    { title : String
-    , subtitle : String
-    , xAxis1 : String
-    , xAxis2 : String
-    , yAxis : String
+    { title : ChartPhrase
+    , subtitle : ChartPhrase
+    , xAxis1 : Maybe ChartPhrase
+    , xAxis2 : ChartPhrase
+    , yAxis : ChartPhrase
     }
 
 
-{-| TODO: Could allow for translating this ...
--}
 heightForAgeBoysLabels : LabelConfig
 heightForAgeBoysLabels =
-    { title = "Length-for-age BOYS"
-    , subtitle = "Birth to 2 years (z-scores)"
-    , xAxis1 = "Months"
-    , xAxis2 = "Age (completed months and years)"
-    , yAxis = "Length (cm)"
+    { title = Translate.LengthForAgeBoys
+    , subtitle = Translate.BirthToTwoYears
+    , xAxis1 = Just Translate.Months
+    , xAxis2 = Translate.AgeCompletedMonthsYears
+    , yAxis = Translate.LengthCm
     }
 
 
 weightForAgeBoysLabels : LabelConfig
 weightForAgeBoysLabels =
-    { title = "Weight-for-age BOYS"
-    , subtitle = "Birth to 2 years (z-scores)"
-    , xAxis1 = "Months"
-    , xAxis2 = "Age (completed months and years)"
-    , yAxis = "Weight (kg)"
+    { title = Translate.WeightForAgeBoys
+    , subtitle = Translate.BirthToTwoYears
+    , xAxis1 = Just Translate.Months
+    , xAxis2 = Translate.AgeCompletedMonthsYears
+    , yAxis = Translate.WeightKg
     }
 
 
 weightForHeightBoysLabels : LabelConfig
 weightForHeightBoysLabels =
-    { title = "Weight-for-length BOYS"
-    , subtitle = "Birth to 2 years (z-scores)"
-    , xAxis1 = ""
-    , xAxis2 = "Length (cm)"
-    , yAxis = "Weight (kg)"
+    { title = Translate.WeightForLengthBoys
+    , subtitle = Translate.BirthToTwoYears
+    , xAxis1 = Nothing
+    , xAxis2 = Translate.LengthCm
+    , yAxis = Translate.WeightKg
     }
 
 
 weightForHeightGirlsLabels : LabelConfig
 weightForHeightGirlsLabels =
-    { title = "Weight-for-length GIRLS"
-    , subtitle = "Birth to 2 years (z-scores)"
-    , xAxis1 = ""
-    , xAxis2 = "Length (cm)"
-    , yAxis = "Weight (kg)"
+    { title = Translate.WeightForLengthGirls
+    , subtitle = Translate.BirthToTwoYears
+    , xAxis1 = Nothing
+    , xAxis2 = Translate.LengthCm
+    , yAxis = Translate.WeightKg
     }
 
 
 weightForAgeGirlsLabels : LabelConfig
 weightForAgeGirlsLabels =
-    { title = "Weight-for-age GIRLS"
-    , subtitle = "Birth to 2 years (z-scores)"
-    , xAxis1 = "Months"
-    , xAxis2 = "Age (completed months and years)"
-    , yAxis = "Weight (kg)"
+    { title = Translate.WeightForAgeGirls
+    , subtitle = Translate.BirthToTwoYears
+    , xAxis1 = Just Translate.Months
+    , xAxis2 = Translate.AgeCompletedMonthsYears
+    , yAxis = Translate.WeightKg
     }
 
 
 heightForAgeGirlsLabels : LabelConfig
 heightForAgeGirlsLabels =
-    { title = "Length-for-age GIRLS"
-    , subtitle = "Birth to 2 years (z-scores)"
-    , xAxis1 = "Months"
-    , xAxis2 = "Age (completed months and years)"
-    , yAxis = "Length (cm)"
+    { title = Translate.LengthForAgeGirls
+    , subtitle = Translate.BirthToTwoYears
+    , xAxis1 = Just Translate.Months
+    , xAxis2 = Translate.AgeCompletedMonthsYears
+    , yAxis = Translate.LengthCm
     }
 
 
-labels : LabelConfig -> Svg any
-labels config =
+labels : Language -> LabelConfig -> Svg any
+labels language config =
     g []
         [ rect
             [ x "110.9"
@@ -1029,32 +1028,36 @@ labels config =
             [ transform "matrix(1 0 0 1 109.2567 62.4895)"
             , class "gender st12 st13"
             ]
-            [ text config.title ]
+            [ text <| translate language (ChartPhrase config.title) ]
         , text_
             [ transform "matrix(1 0 0 1 109.7767 86.491)"
             , class "gender z-score-semibold st15"
             ]
-            [ text config.subtitle ]
+            [ text <| translate language (ChartPhrase config.subtitle) ]
         , text_
             [ transform "matrix(1 0 0 1 62.3622 513.5461)"
             , class "z-score-white z-score-semibold st16"
             ]
-            [ text config.xAxis1 ]
+            [ config.xAxis1
+                |> Maybe.map (translate language << ChartPhrase)
+                |> Maybe.withDefault ""
+                |> text
+            ]
         , text_
             [ transform "matrix(1 0 0 1 325.0975 540.9924)"
             , class "z-score-white z-score-semibold st17"
             ]
-            [ text config.xAxis2 ]
+            [ text <| translate language (ChartPhrase config.xAxis2) ]
         , text_
             [ transform "matrix(0 -1 1 0 80.8497 345.7814)"
             , class "z-score-white z-score-semibold st17"
             ]
-            [ text config.yAxis ]
+            [ text <| translate language (ChartPhrase config.yAxis) ]
         ]
 
 
-frame : Svg any
-frame =
+frame : Language -> Svg any
+frame language =
     g
         []
         [ a
@@ -1065,7 +1068,9 @@ frame =
                 [ transform "matrix(1 0 0 1 500 566.1733)"
                 , class "z-score-frame z-score-semibold z-score-font-sm"
                 ]
-                [ text "Z-score charts available at http://www.who.int/childgrowth/en/" ]
+                [ text <| translate language (Translate.ChartPhrase Translate.ZScoreChartsAvailableAt)
+                , text " http://www.who.int/childgrowth/en/"
+                ]
             ]
         , rect
             [ class "z-score-grey"

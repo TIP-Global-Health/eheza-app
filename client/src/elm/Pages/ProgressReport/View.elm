@@ -369,9 +369,9 @@ viewCharts language zscores ( childId, child ) session =
     in
         div [ class "ui full segment progress-report" ]
             [ ZScore.View.viewMarkers
-            , heightForAge zscores heightForAgeData
-            , weightForAge zscores weightForAgeData
-            , weightForHeight zscores weightForHeightData
+            , heightForAge language zscores heightForAgeData
+            , weightForAge language zscores weightForAgeData
+            , weightForHeight language zscores weightForHeightData
             ]
 
 

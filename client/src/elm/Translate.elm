@@ -52,6 +52,7 @@ type TranslationId
     | Born
     | Cancel
     | CentimeterShorthand
+    | ChartPhrase ChartPhrase
     | CheckIn
     | ChildNutritionSignLabel ChildNutritionSign
     | ChildOf
@@ -173,6 +174,24 @@ type LoginPhrase
     | Username
     | WorkOffline
     | YouMustLoginBefore
+
+
+type ChartPhrase
+    = AgeCompletedMonthsYears
+    | Birth
+    | BirthToTwoYears
+    | LengthCm
+    | LengthForAgeBoys
+    | LengthForAgeGirls
+    | Months
+    | OneYear
+    | TwoYears
+    | WeightForAgeBoys
+    | WeightForAgeGirls
+    | WeightForLengthBoys
+    | WeightForLengthGirls
+    | WeightKg
+    | ZScoreChartsAvailableAt
 
 
 translate : Language -> TranslationId -> String
@@ -377,6 +396,53 @@ translate lang trans =
 
                 CentimeterShorthand ->
                     { english = "cm" }
+
+                ChartPhrase phrase ->
+                    case phrase of
+                        AgeCompletedMonthsYears ->
+                            { english = "Age (completed months and years)" }
+
+                        Birth ->
+                            { english = "Birth" }
+
+                        BirthToTwoYears ->
+                            { english = "Birth to 2 years (z-scores)" }
+
+                        LengthCm ->
+                            { english = "Length (cm)" }
+
+                        LengthForAgeBoys ->
+                            { english = "Length-for-age BOYS" }
+
+                        LengthForAgeGirls ->
+                            { english = "Length-for-age GIRLS" }
+
+                        Months ->
+                            { english = "Months" }
+
+                        OneYear ->
+                            { english = "1 year" }
+
+                        TwoYears ->
+                            { english = "2 years" }
+
+                        WeightForAgeBoys ->
+                            { english = "Weight-for-age BOYS" }
+
+                        WeightForAgeGirls ->
+                            { english = "Weight-for-age GIRLS" }
+
+                        WeightForLengthBoys ->
+                            { english = "Weight-for-length BOYS" }
+
+                        WeightForLengthGirls ->
+                            { english = "Weight-for-length GIRLS" }
+
+                        WeightKg ->
+                            { english = "Weight (kg)" }
+
+                        ZScoreChartsAvailableAt ->
+                            { english = "Z-score charts available at" }
 
                 CheckIn ->
                     { english = "Check in:" }
