@@ -16,7 +16,7 @@ import Pages.Page exposing (Page(..), SessionPage(..))
 import Pages.PageNotFound.View
 import Translate exposing (Language(..), translate)
 import Utils.Html exposing (thumbnailImage)
-import Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, renderDateOfBirth, renderAgeMonthsDays)
+import Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, renderDate, renderAgeMonthsDays)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..))
 import ZScore.View
 
@@ -56,9 +56,7 @@ viewFoundChild language zscores ( childId, child ) session =
                 [ class "date" ]
                 [ text <| translate language Translate.DateOfLastAssessment
                 , text ": "
-
-                -- TODO: Use real date of last assessment
-                , text "15 July 2017"
+                , text <| renderDate language session.offlineSession.session.scheduledDate.start
                 ]
 
         childInfo =
@@ -87,7 +85,7 @@ viewFoundChild language zscores ( childId, child ) session =
                         , p []
                             [ text <| translate language Translate.Born
                             , text " "
-                            , strong [] [ text <| renderDateOfBirth language child.birthDate ]
+                            , strong [] [ text <| renderDate language child.birthDate ]
                             , br [] []
                             , text <| translate language Translate.ChildOf
                             , text " "

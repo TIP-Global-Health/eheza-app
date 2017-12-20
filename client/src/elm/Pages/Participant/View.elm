@@ -22,7 +22,7 @@ import Participant.Model exposing (Participant)
 import Participant.Utils exposing (childParticipant, motherParticipant)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage)
-import Utils.NominalDate exposing (renderAgeMonthsDays, renderDateOfBirth)
+import Utils.NominalDate exposing (renderAgeMonthsDays, renderDate)
 import ZScore.Model
 
 
@@ -68,7 +68,7 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
                 |> Maybe.Extra.toList
 
         dateOfBirth =
-            renderDateOfBirth language child.birthDate
+            renderDate language child.birthDate
                 |> Trans.ReportDOB
                 |> translate language
                 |> text

@@ -140,20 +140,20 @@ renderAgeMonthsDays language birthDate now =
             translate language <| Translate.Age months days
 
 
-renderDateOfBirth : Language -> NominalDate -> String
-renderDateOfBirth language birthDate =
+renderDate : Language -> NominalDate -> String
+renderDate language date =
     let
         day =
-            Time.Date.day birthDate
+            Time.Date.day date
 
         month =
-            Time.Date.month birthDate
+            Time.Date.month date
                 |> monthFromMonthNumber
                 |> Translate.ResolveMonth
                 |> translate language
 
         year =
-            Time.Date.year birthDate
+            Time.Date.year date
     in
         (if day < 10 then
             "0" ++ toString day
