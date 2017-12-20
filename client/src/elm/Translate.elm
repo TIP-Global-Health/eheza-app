@@ -31,7 +31,9 @@ type TranslationId
     | ActivitiesLabel ActivityType
     | ActivitiesTitle ActivityType
     | ActivitiesToComplete Int
+    | ActivityProgressReport ActivityType
     | ActivePage Page
+    | AgeWord
     | Age Int Int
     | AgeDays Int
     | AgeMonthsWithoutDay Int
@@ -47,10 +49,12 @@ type TranslationId
     | Baby
     | BabyName String
     | BeginHealthAssessment
+    | Born
     | Cancel
     | CentimeterShorthand
     | CheckIn
     | ChildNutritionSignLabel ChildNutritionSign
+    | ChildOf
     | Children
     | ClickTheCheckMark
     | ClinicNotFound
@@ -59,6 +63,7 @@ type TranslationId
     | Continue
     | Dashboard
     | DataIsNowSaved
+    | DateOfLastAssessment
     | DownloadHealthAssessment
     | DownloadSession1
     | DownloadSession2
@@ -111,6 +116,7 @@ type TranslationId
     | Page404
     | PageNotFoundMsg
     | Participants
+    | ParticipantSummary
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
     | PlaceholderEnterWeight
@@ -177,6 +183,9 @@ translate lang trans =
                 AccessDenied ->
                     { english = "Access denied" }
 
+                AgeWord ->
+                    { english = "Age" }
+
                 Activities ->
                     { english = "Activities" }
 
@@ -242,6 +251,29 @@ translate lang trans =
 
                         ChildActivity NutritionSigns ->
                             { english = "Nutrition" }
+
+                        ChildActivity ChildPicture ->
+                            { english = "Photo" }
+
+                        ChildActivity ProgressReport ->
+                            { english = "Progress Report" }
+
+                        ChildActivity Weight ->
+                            { english = "Weight" }
+
+                ActivityProgressReport activity ->
+                    case activity of
+                        MotherActivity FamilyPlanning ->
+                            { english = "Planning" }
+
+                        ChildActivity Height ->
+                            { english = "Height" }
+
+                        ChildActivity Muac ->
+                            { english = "MUAC" }
+
+                        ChildActivity NutritionSigns ->
+                            { english = "Nutrition Signs" }
 
                         ChildActivity ChildPicture ->
                             { english = "Photo" }
@@ -334,6 +366,9 @@ translate lang trans =
                 BabyName name ->
                     { english = "Baby: " ++ name }
 
+                Born ->
+                    { english = "Born" }
+
                 BeginHealthAssessment ->
                     { english = "Begin Health Assessment" }
 
@@ -372,6 +407,9 @@ translate lang trans =
                 Children ->
                     { english = "Children" }
 
+                ChildOf ->
+                    { english = "Child of" }
+
                 ClickTheCheckMark ->
                     { english = "Click the check mark if the mother is in attendance. The check mark will appear green when a mother has been signed in." }
 
@@ -392,6 +430,9 @@ translate lang trans =
 
                 DataIsNowSaved ->
                     { english = "Data is now saved on the server." }
+
+                DateOfLastAssessment ->
+                    { english = "Date of last Assessment" }
 
                 DownloadHealthAssessment ->
                     { english = "Download Health Assessment" }
@@ -633,6 +674,9 @@ translate lang trans =
 
                 Participants ->
                     { english = "Participants" }
+
+                ParticipantSummary ->
+                    { english = "Participant Summary" }
 
                 PlaceholderEnterHeight ->
                     { english = "Enter height here…" }

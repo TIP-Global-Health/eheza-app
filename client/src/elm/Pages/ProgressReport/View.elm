@@ -1,5 +1,6 @@
 module Pages.ProgressReport.View exposing (view)
 
+import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (Height, Weight, HeightInCm(..), WeightInKg(..))
@@ -46,10 +47,13 @@ viewFoundChild language zscores ( childId, child ) session =
                 []
             , h1
                 [ class "ui report header" ]
-                [ text "Participant Summary" ]
+                [ text <| translate language Translate.ParticipantSummary ]
             , p
                 [ class "date" ]
-                [ text "Date of last Assessment: 15 July 2017" ]
+                [ text <| translate language Translate.DateOfLastAssessment
+                , text ": "
+                , text "15 July 2017"
+                ]
             , div
                 [ class "ui report unstackable items" ]
                 [ div
@@ -75,10 +79,12 @@ viewFoundChild language zscores ( childId, child ) session =
                             , strong [] [ text "Male" ]
                             ]
                         , p []
-                            [ text "Born "
+                            [ text <| translate language Translate.Born
+                            , text " "
                             , strong [] [ text "15 February 2017" ]
                             , br [] []
-                            , text "Child of "
+                            , text <| translate language Translate.ChildOf
+                            , text " "
                             , strong [] [ text "TUYIZERE Gaudence" ]
                             ]
                         ]
@@ -87,13 +93,19 @@ viewFoundChild language zscores ( childId, child ) session =
             , table [ class "ui celled table" ]
                 [ thead []
                     [ tr []
-                        [ th [] [ text "AGE" ]
+                        [ th [ class "uppercase" ] [ text <| translate language Translate.AgeWord ]
                         , th [ class "last" ] [ text "6 mo 7 days" ]
                         ]
                     ]
                 , tbody []
                     [ tr []
-                        [ td [ class "first" ] [ text "Nutrition Signs" ]
+                        [ td
+                            [ class "first" ]
+                            [ ChildActivity NutritionSigns
+                                |> Translate.ActivityProgressReport
+                                |> translate language
+                                |> text
+                            ]
                         , td [] [ text "Edema, Abdominal Distention, Dry Skin, Apathy, Poor Appetite, Brittle Hair" ]
                         ]
                     ]
@@ -101,7 +113,7 @@ viewFoundChild language zscores ( childId, child ) session =
             , table [ class "ui collapsing celled table" ]
                 [ thead []
                     [ tr []
-                        [ th [] [ text "AGE" ]
+                        [ th [ class "uppercase" ] [ text <| translate language Translate.AgeWord ]
                         , th [ class "center bottom aligned" ] [ text "23 days" ]
                         , th
                             [ class "center bottom aligned" ]
@@ -139,7 +151,7 @@ viewFoundChild language zscores ( childId, child ) session =
                     ]
                 , tbody []
                     [ tr []
-                        [ td [ class "first" ] [ text "Height" ]
+                        [ td [ class "first" ] [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Height)) ]
                         , td [ class "center aligned negative" ] [ text "52cm" ]
                         , td [ class "center aligned negative" ] [ text "57cm" ]
                         , td [ class "center aligned" ] [ text "--" ]
@@ -149,7 +161,7 @@ viewFoundChild language zscores ( childId, child ) session =
                         , td [ class "center aligned positive" ] [ text "71cm" ]
                         ]
                     , tr []
-                        [ td [ class "first" ] [ text "Weight" ]
+                        [ td [ class "first" ] [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Weight)) ]
                         , td [ class "center aligned negative" ] [ text "4.2kg" ]
                         , td [ class "center aligned negative" ] [ text "5.0kg" ]
                         , td [ class "center aligned" ] [ text "--" ]
@@ -159,7 +171,7 @@ viewFoundChild language zscores ( childId, child ) session =
                         , td [ class "center aligned positive" ] [ text "8.4kg" ]
                         ]
                     , tr []
-                        [ td [ class "first" ] [ text "MUAC" ]
+                        [ td [ class "first" ] [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Muac)) ]
                         , td [ class "center aligned" ] []
                         , td [ class "center aligned" ] []
                         , td [ class "center aligned" ] []

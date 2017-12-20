@@ -176,6 +176,10 @@ svg.z-score {
   border-top: 9px solid #06b9ff;
   padding: 30px;
 
+  .ui.table thead th.uppercase {
+    text-transform: uppercase;
+  }
+
   .icon-back {
     width: 34px;
     height: 27px;
