@@ -36,7 +36,7 @@ decodeZScoreEntriesByHeight : Decoder (IntDict ZScoreEntry)
 decodeZScoreEntriesByHeight =
     let
         decodeIntegerMillimetres =
-            field "Height" float
+            field "Length" float
                 |> map ((*) 10 >> round)
     in
         map2 (,) decodeIntegerMillimetres decodeZScoreEntry
