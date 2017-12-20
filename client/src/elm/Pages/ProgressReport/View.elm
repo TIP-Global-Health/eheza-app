@@ -6,7 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (Height, Weight, HeightInCm(..), WeightInKg(..))
 import Backend.Measurement.Utils exposing (mapMeasurementData, currentValueWithId)
 import Backend.Session.Model exposing (EditableSession)
-import Backend.Session.Utils exposing (getChildHistoricalMeasurements, getChildMeasurementData, getChild)
+import Backend.Session.Utils exposing (getChildHistoricalMeasurements, getChildMeasurementData, getChild, getMother)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -85,7 +85,13 @@ viewFoundChild language zscores ( childId, child ) session =
                             , br [] []
                             , text <| translate language Translate.ChildOf
                             , text " "
-                            , strong [] [ text "TUYIZERE Gaudence" ]
+                            , strong []
+                                [ child.motherId
+                                    |> Maybe.andThen (\motherId -> getMother motherId session.offlineSession)
+                                    |> Maybe.map .name
+                                    |> Maybe.withDefault "Unknown"
+                                    |> text
+                                ]
                             ]
                         ]
                     ]
