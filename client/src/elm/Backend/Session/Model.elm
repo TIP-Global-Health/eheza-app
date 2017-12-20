@@ -36,7 +36,12 @@ for data-entry. It includes everything we need for data-entry. We get it from
 /api/offline_sessions (and massage that a bit for convenience).
 -}
 type alias OfflineSession =
+    -- The particular session we're working on
     { session : Session
+
+    -- All the sessions for the relevant clinic, sorted by date. We need these
+    -- for the progress report.
+    , allSessions : EveryDictList SessionId Session
 
     -- We include the basic information about all the clinics so that we can at
     -- least present a limited UI on clinic pages that includes their name.

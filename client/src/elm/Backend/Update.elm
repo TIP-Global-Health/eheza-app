@@ -71,7 +71,7 @@ sessionEndpoint =
     , tag = toEntityId
     , untag = fromEntityId
     , decoder = decodeSession
-    , encoder = encodeSession
+    , encoder = object << encodeSession
     , error = identity
     , params = encodeSessionParams
     }
