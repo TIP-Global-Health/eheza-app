@@ -16,7 +16,7 @@ import Pages.Page exposing (Page(..), SessionPage(..))
 import Pages.PageNotFound.View
 import Translate exposing (Language(..), translate)
 import Utils.Html exposing (thumbnailImage)
-import Utils.NominalDate exposing (Days(..), diffDays)
+import Utils.NominalDate exposing (Days(..), diffDays, renderDateOfBirth)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..))
 import ZScore.View
 
@@ -81,7 +81,7 @@ viewFoundChild language zscores ( childId, child ) session =
                         , p []
                             [ text <| translate language Translate.Born
                             , text " "
-                            , strong [] [ text "15 February 2017" ]
+                            , strong [] [ text <| renderDateOfBirth language child.birthDate ]
                             , br [] []
                             , text <| translate language Translate.ChildOf
                             , text " "
