@@ -4,9 +4,10 @@ import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (Height, Weight, HeightInCm(..), WeightInKg(..))
-import Backend.Measurement.Utils exposing (mapMeasurementData, currentValueWithId)
+import Backend.Measurement.Utils exposing (mapMeasurementData, currentValue, currentValueWithId)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildHistoricalMeasurements, getChildMeasurementData, getChild, getMother)
+import EverySet
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -16,7 +17,7 @@ import Pages.Page exposing (Page(..), SessionPage(..))
 import Pages.PageNotFound.View
 import Translate exposing (Language(..), translate)
 import Utils.Html exposing (thumbnailImage)
-import Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, renderDate, renderAgeMonthsDays)
+import Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, renderDate, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..))
 import ZScore.View
 
@@ -101,14 +102,22 @@ viewFoundChild language zscores ( childId, child ) session =
                     ]
                 ]
 
-        -- TODO: Use real nutrition signs of last assessment.
+        -- We're using the current value from the current session here, at
+        -- least for now. So, we're ignoring any later sessions (normally,
+        -- there wouldn't be any), and we're just leaving it blank if it wasn't
+        -- entered in this session (rather than looking back to a previous
+        -- session when it was entered).
         nutritionSigns =
             table
                 [ class "ui celled table" ]
                 [ thead []
                     [ tr []
-                        [ th [ class "uppercase" ] [ text <| translate language Translate.AgeWord ]
-                        , th [ class "last" ] [ text "6 mo 7 days" ]
+                        [ th
+                            [ class "uppercase" ]
+                            [ text <| translate language Translate.AgeWord ]
+                        , th
+                            [ class "last" ]
+                            [ text <| renderAgeMonthsDaysAbbrev language child.birthDate session.offlineSession.session.scheduledDate.start ]
                         ]
                     ]
                 , tbody []
@@ -120,7 +129,17 @@ viewFoundChild language zscores ( childId, child ) session =
                                 |> translate language
                                 |> text
                             ]
-                        , td [] [ text "Edema, Abdominal Distention, Dry Skin, Apathy, Poor Appetite, Brittle Hair" ]
+                        , current
+                            |> mapMeasurementData .nutrition .nutrition
+                            |> currentValue
+                            |> Maybe.map .value
+                            |> Maybe.withDefault EverySet.empty
+                            |> EverySet.toList
+                            |> List.map (translate language << Translate.ChildNutritionSignReport)
+                            |> String.join ", "
+                            |> text
+                            |> List.singleton
+                            |> td []
                         ]
                     ]
                 ]

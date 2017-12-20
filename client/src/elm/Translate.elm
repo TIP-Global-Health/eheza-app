@@ -55,6 +55,7 @@ type TranslationId
     | ChartPhrase ChartPhrase
     | CheckIn
     | ChildNutritionSignLabel ChildNutritionSign
+    | ChildNutritionSignReport ChildNutritionSign
     | ChildOf
     | Children
     | ClickTheCheckMark
@@ -65,6 +66,8 @@ type TranslationId
     | Dashboard
     | DataIsNowSaved
     | DateOfLastAssessment
+    | Day
+    | Days
     | DownloadHealthAssessment
     | DownloadSession1
     | DownloadSession2
@@ -92,6 +95,7 @@ type TranslationId
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
+    | MonthAbbrev
     | MonthsOld
     | Mother
     | MotherName String
@@ -471,6 +475,29 @@ translate lang trans =
                         PoorAppetite ->
                             { english = "Poor Appetite" }
 
+                ChildNutritionSignReport sign ->
+                    case sign of
+                        AbdominalDistention ->
+                            { english = "Abdominal Distention" }
+
+                        Apathy ->
+                            { english = "Apathy" }
+
+                        BrittleHair ->
+                            { english = "Brittle Hair" }
+
+                        DrySkin ->
+                            { english = "Dry Skin" }
+
+                        Edema ->
+                            { english = "Edema" }
+
+                        None ->
+                            { english = "None" }
+
+                        PoorAppetite ->
+                            { english = "Poor Appetite" }
+
                 Children ->
                     { english = "Children" }
 
@@ -500,6 +527,12 @@ translate lang trans =
 
                 DateOfLastAssessment ->
                     { english = "Date of last Assessment" }
+
+                Day ->
+                    { english = "day" }
+
+                Days ->
+                    { english = "days" }
 
                 DownloadHealthAssessment ->
                     { english = "Download Health Assessment" }
@@ -658,6 +691,9 @@ translate lang trans =
 
                 MeasurementLost amount ->
                     { english = "Lost " ++ (toString amount) }
+
+                MonthAbbrev ->
+                    { english = "mo" }
 
                 MonthsOld ->
                     { english = "months old" }

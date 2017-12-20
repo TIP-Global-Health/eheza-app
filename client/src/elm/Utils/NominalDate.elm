@@ -140,6 +140,45 @@ renderAgeMonthsDays language birthDate now =
             translate language <| Translate.Age months days
 
 
+renderAgeMonthsDaysAbbrev : Language -> NominalDate -> NominalDate -> String
+renderAgeMonthsDaysAbbrev language birthDate now =
+    let
+        diff =
+            diffCalendarMonthsAndDays birthDate now
+
+        days =
+            diff.days
+
+        months =
+            diff.months
+
+        dayPart =
+            if days == 0 then
+                Nothing
+            else if days == 1 then
+                Just <|
+                    "1 "
+                        ++ translate language Translate.Day
+            else
+                Just <|
+                    toString days
+                        ++ " "
+                        ++ translate language Translate.Days
+
+        monthPart =
+            if months == 0 then
+                Nothing
+            else
+                Just <|
+                    toString months
+                        ++ " "
+                        ++ translate language Translate.MonthAbbrev
+    in
+        [ monthPart, dayPart ]
+            |> List.filterMap identity
+            |> String.join " "
+
+
 renderDate : Language -> NominalDate -> String
 renderDate language date =
     let
