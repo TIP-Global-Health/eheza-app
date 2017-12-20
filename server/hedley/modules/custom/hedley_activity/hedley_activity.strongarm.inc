@@ -56,7 +56,7 @@ function hedley_activity_strongarm() {
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_pattern_node_family_planning';
-  $strongarm->value = '';
+  $strongarm->value = '[node:content-type] - [node:field-mother:title] - [node:field-date-measured:short] - [node:field-session:nid]';
   $export['auto_entitylabel_pattern_node_family_planning'] = $strongarm;
 
   $strongarm = new stdClass();
