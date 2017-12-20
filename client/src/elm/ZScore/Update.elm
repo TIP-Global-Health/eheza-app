@@ -58,7 +58,7 @@ update msg model =
         FetchWeightForHeightBoys ->
             if isNotAsked model.weightForHeightBoys then
                 ( { model | weightForHeightBoys = Loading }
-                , fetchForHeight "assets/z-score/wfh_boys_z_exp.json" HandleWeightForHeightBoys
+                , fetchForHeight "assets/z-score/wfl_boys_z_exp.json" HandleWeightForHeightBoys
                 )
             else
                 ( model, Cmd.none )
@@ -66,7 +66,7 @@ update msg model =
         FetchWeightForHeightGirls ->
             if isNotAsked model.weightForHeightGirls then
                 ( { model | weightForHeightGirls = Loading }
-                , fetchForHeight "assets/z-score/wfh_girls_z_exp.json" HandleWeightForHeightGirls
+                , fetchForHeight "assets/z-score/wfl_girls_z_exp.json" HandleWeightForHeightGirls
                 )
             else
                 ( model, Cmd.none )
