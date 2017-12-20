@@ -21,7 +21,7 @@ function hedley_schedule_strongarm() {
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_pattern_node_session';
-  $strongarm->value = '';
+  $strongarm->value = '[node:content-type] - [node:field-clinic:title] - [node:field-scheduled-date:value:custom:Y-m-d] - [node:nid]';
   $export['auto_entitylabel_pattern_node_session'] = $strongarm;
 
   $strongarm = new stdClass();
