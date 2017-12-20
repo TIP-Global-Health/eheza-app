@@ -35,10 +35,9 @@ view language zscores childId session =
 
 viewFoundChild : Language -> ZScore.Model.Model -> ( ChildId, Child ) -> EditableSession -> Html MsgSession
 viewFoundChild language zscores ( childId, child ) session =
-    div [ class "page-report" ]
-        [ div
-            [ class "wrap-report" ]
-            [ a
+    let
+        backIcon =
+            a
                 [ class "icon-back"
                 , ChildPage childId
                     |> SessionPage
@@ -46,16 +45,22 @@ viewFoundChild language zscores ( childId, child ) session =
                     |> onClick
                 ]
                 []
-            , h1
+
+        title =
+            h1
                 [ class "ui report header" ]
                 [ text <| translate language Translate.ParticipantSummary ]
-            , p
+
+        subtitle =
+            p
                 [ class "date" ]
                 [ text <| translate language Translate.DateOfLastAssessment
                 , text ": "
                 , text "15 July 2017"
                 ]
-            , div
+
+        childInfo =
+            div
                 [ class "ui report unstackable items" ]
                 [ div
                     [ class "item" ]
@@ -85,7 +90,10 @@ viewFoundChild language zscores ( childId, child ) session =
                         ]
                     ]
                 ]
-            , table [ class "ui celled table" ]
+
+        nutritionSigns =
+            table
+                [ class "ui celled table" ]
                 [ thead []
                     [ tr []
                         [ th [ class "uppercase" ] [ text <| translate language Translate.AgeWord ]
@@ -105,7 +113,10 @@ viewFoundChild language zscores ( childId, child ) session =
                         ]
                     ]
                 ]
-            , table [ class "ui collapsing celled table" ]
+
+        floats =
+            table
+                [ class "ui collapsing celled table" ]
                 [ thead []
                     [ tr []
                         [ th [ class "uppercase" ] [ text <| translate language Translate.AgeWord ]
@@ -177,7 +188,9 @@ viewFoundChild language zscores ( childId, child ) session =
                         ]
                     ]
                 ]
-            , div
+
+        photos =
+            div
                 [ class "ui five report cards" ]
                 [ div
                     [ class "report card" ]
@@ -275,11 +288,25 @@ viewFoundChild language zscores ( childId, child ) session =
                         ]
                     ]
                 ]
-            , div
+
+        charts =
+            div
                 [ class "image-report" ]
                 [ viewCharts language zscores ( childId, child ) session ]
+    in
+        div [ class "page-report" ]
+            [ div
+                [ class "wrap-report" ]
+                [ backIcon
+                , title
+                , subtitle
+                , childInfo
+                , nutritionSigns
+                , floats
+                , photos
+                , charts
+                ]
             ]
-        ]
 
 
 viewCharts : Language -> ZScore.Model.Model -> ( ChildId, Child ) -> EditableSession -> Html any
