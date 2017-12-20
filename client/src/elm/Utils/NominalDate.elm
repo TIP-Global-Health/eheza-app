@@ -18,6 +18,10 @@ type Days
     = Days Int
 
 
+type Months
+    = Months Int
+
+
 {-| Converts a `NominalDate` to an Elm-core `Date`, with the supplied values
 for hour, minute, second and milliseconds (in that order).
 
@@ -53,6 +57,15 @@ diffDays low high =
     delta high low
         |> .days
         |> Days
+
+
+{-| Like `diffDays`, but shows whole completed months.
+-}
+diffMonths : NominalDate -> NominalDate -> Months
+diffMonths low high =
+    delta high low
+        |> .months
+        |> Months
 
 
 {-| Difference between two dates, in terms of months and days. This is based on

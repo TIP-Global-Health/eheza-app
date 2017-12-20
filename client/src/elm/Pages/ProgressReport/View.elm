@@ -16,7 +16,7 @@ import Pages.Page exposing (Page(..), SessionPage(..))
 import Pages.PageNotFound.View
 import Translate exposing (Language(..), translate)
 import Utils.Html exposing (thumbnailImage)
-import Utils.NominalDate exposing (Days(..), diffDays, renderDateOfBirth, renderAgeMonthsDays)
+import Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, renderDateOfBirth, renderAgeMonthsDays)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..))
 import ZScore.View
 
@@ -76,9 +76,12 @@ viewFoundChild language zscores ( childId, child ) session =
                             [ class "ui header" ]
                             [ text child.name ]
                         , p []
-                            -- TODO: Use real months old
-                            [ strong [] [ text "7" ]
-                            , text " months old "
+                            [ diffMonths child.birthDate session.offlineSession.session.scheduledDate.start
+                                |> (\(Months months) -> [ text <| toString months ])
+                                |> strong []
+                            , text " "
+                            , text <| translate language Translate.MonthsOld
+                            , text " "
                             , strong [] [ text <| translate language (Translate.Gender child.gender) ]
                             ]
                         , p []

@@ -92,6 +92,7 @@ type TranslationId
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
+    | MonthsOld
     | Mother
     | MotherName String
     | Mothers
@@ -657,6 +658,9 @@ translate lang trans =
 
                 MeasurementLost amount ->
                     { english = "Lost " ++ (toString amount) }
+
+                MonthsOld ->
+                    { english = "months old" }
 
                 Mother ->
                     { english = "Mother" }
