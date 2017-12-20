@@ -15,6 +15,7 @@ import Pages.Model exposing (MsgSession(..))
 import Pages.Page exposing (Page(..), SessionPage(..))
 import Pages.PageNotFound.View
 import Translate exposing (Language(..), translate)
+import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (Days(..), diffDays)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..))
 import ZScore.View
@@ -60,23 +61,17 @@ viewFoundChild language zscores ( childId, child ) session =
                     [ class "item" ]
                     [ div
                         [ class "ui image" ]
-                        [ img
-                            [ alt "HIRWA Jean Pierre"
-                            , attribute "height" "152"
-                            , src "assets/images/profile-report.jpg"
-                            , attribute "width" "152"
-                            ]
-                            []
+                        [ thumbnailImage "child" child.avatarUrl child.name 152 152
                         ]
                     , div
                         [ class "content" ]
                         [ h2
                             [ class "ui header" ]
-                            [ text "HIRWA Jean Pierre" ]
+                            [ text child.name ]
                         , p []
                             [ strong [] [ text "7" ]
                             , text " months old "
-                            , strong [] [ text "Male" ]
+                            , strong [] [ text <| translate language (Translate.Gender child.gender) ]
                             ]
                         , p []
                             [ text <| translate language Translate.Born
