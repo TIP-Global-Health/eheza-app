@@ -56,6 +56,8 @@ viewFoundChild language zscores ( childId, child ) session =
                 [ class "date" ]
                 [ text <| translate language Translate.DateOfLastAssessment
                 , text ": "
+
+                -- TODO: Use real date of last assessment
                 , text "15 July 2017"
                 ]
 
@@ -74,6 +76,7 @@ viewFoundChild language zscores ( childId, child ) session =
                             [ class "ui header" ]
                             [ text child.name ]
                         , p []
+                            -- TODO: Use real months old
                             [ strong [] [ text "7" ]
                             , text " months old "
                             , strong [] [ text <| translate language (Translate.Gender child.gender) ]
@@ -97,6 +100,7 @@ viewFoundChild language zscores ( childId, child ) session =
                     ]
                 ]
 
+        -- TODO: Use real nutrition signs of last assessment.
         nutritionSigns =
             table
                 [ class "ui celled table" ]
@@ -120,6 +124,7 @@ viewFoundChild language zscores ( childId, child ) session =
                     ]
                 ]
 
+        -- TODO: Use real measurmenets
         floats =
             table
                 [ class "ui collapsing celled table" ]
