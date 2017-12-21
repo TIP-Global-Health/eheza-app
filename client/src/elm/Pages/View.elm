@@ -2,6 +2,7 @@ module Pages.View exposing (..)
 
 import Activity.Model exposing (ActivityType(..))
 import App.Model exposing (Model)
+import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (isClosed, isAuthorized, activeClinicName)
 import EveryDict
@@ -26,8 +27,8 @@ import User.Model exposing (User)
 
 {-| This is a view function specialized for session pages, which require an editable session.
 -}
-viewFoundSession : User -> SessionPage -> EditableSession -> Model -> Html MsgSession
-viewFoundSession user page session model =
+viewFoundSession : User -> SessionPage -> ( SessionId, EditableSession ) -> Model -> Html MsgSession
+viewFoundSession user page ( sessionId, session ) model =
     let
         language =
             model.language
@@ -72,7 +73,7 @@ viewFoundSession user page session model =
                         |> Html.map MsgParticipants
 
                 ProgressReportPage childId ->
-                    Pages.ProgressReport.View.view language zscores childId session
+                    Pages.ProgressReport.View.view language zscores childId ( sessionId, session )
 
                 ChildPage childId ->
                     EveryDict.get childId model.sessionPages.childPages

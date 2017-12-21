@@ -3,15 +3,17 @@ module Pages.ProgressReport.View exposing (view)
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (Height, Weight, HeightInCm(..), WeightInKg(..))
+import Backend.Measurement.Model exposing (Height, Weight, HeightInCm(..), WeightInKg(..), MuacInCm(..))
 import Backend.Measurement.Utils exposing (mapMeasurementData, currentValue, currentValueWithId)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildHistoricalMeasurements, getChildMeasurementData, getChild, getMother)
+import EveryDict
+import EveryDictList
 import EverySet
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import List.Extra
+import List.Extra exposing (greedyGroupsOf)
 import Pages.Model exposing (MsgSession(..))
 import Pages.Page exposing (Page(..), SessionPage(..))
 import Pages.PageNotFound.View
@@ -22,11 +24,11 @@ import ZScore.Model exposing (Centimetres(..), Kilograms(..))
 import ZScore.View
 
 
-view : Language -> ZScore.Model.Model -> ChildId -> EditableSession -> Html MsgSession
-view language zscores childId session =
+view : Language -> ZScore.Model.Model -> ChildId -> ( SessionId, EditableSession ) -> Html MsgSession
+view language zscores childId ( sessionId, session ) =
     case getChild childId session.offlineSession of
         Just child ->
-            viewFoundChild language zscores ( childId, child ) session
+            viewFoundChild language zscores ( childId, child ) ( sessionId, session )
 
         Nothing ->
             ProgressReportPage childId
@@ -34,8 +36,10 @@ view language zscores childId session =
                 |> Pages.PageNotFound.View.viewPage language (SetActivePage LoginPage)
 
 
-viewFoundChild : Language -> ZScore.Model.Model -> ( ChildId, Child ) -> EditableSession -> Html MsgSession
-viewFoundChild language zscores ( childId, child ) session =
+{-| It would probably be beneficial to break up this function into parts.
+-}
+viewFoundChild : Language -> ZScore.Model.Model -> ( ChildId, Child ) -> ( SessionId, EditableSession ) -> Html MsgSession
+viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
     let
         backIcon =
             a
@@ -144,81 +148,119 @@ viewFoundChild language zscores ( childId, child ) session =
                     ]
                 ]
 
-        -- TODO: Use real measurmenets
+        -- This is probably a bit too obscure.
         floats =
-            table
-                [ class "ui collapsing celled table" ]
-                [ thead []
-                    [ tr []
-                        [ th [ class "uppercase" ] [ text <| translate language Translate.AgeWord ]
-                        , th [ class "center bottom aligned" ] [ text "23 days" ]
-                        , th
-                            [ class "center bottom aligned" ]
-                            [ text "1 mo"
-                            , br [] []
-                            , text "15 days"
+            EveryDictList.keys session.offlineSession.allSessions
+                |> List.Extra.dropWhile
+                    (\id ->
+                        not <|
+                            EveryDict.member id heightValuesBySession
+                                || EveryDict.member id muacValuesBySession
+                                || EveryDict.member id weightValuesBySession
+                    )
+                |> List.Extra.takeWhile (\id -> id /= sessionId)
+                |> (\ids -> ids ++ [ sessionId ])
+                |> greedyGroupsOf 12
+                |> List.map
+                    (\groupOfTwelve ->
+                        let
+                            ages =
+                                groupOfTwelve
+                                    |> List.map
+                                        (\id ->
+                                            EveryDictList.get id session.offlineSession.allSessions
+                                                |> Maybe.map (\columnSession -> renderAgeMonthsDaysAbbrev language child.birthDate columnSession.scheduledDate.start)
+                                                |> Maybe.withDefault ""
+                                                |> text
+                                                |> List.singleton
+                                                |> th
+                                                    [ classList
+                                                        [ ( "center", True )
+                                                        , ( "bottom", True )
+                                                        , ( "aligned", True )
+                                                        , ( "last", id == sessionId )
+                                                        ]
+                                                    ]
+                                        )
+                                    |> (::) ageCell
+                                    |> tr []
+
+                            heights =
+                                -- TODO: Figure out positive, negative, warning
+                                groupOfTwelve
+                                    |> List.map
+                                        (\id ->
+                                            EveryDict.get id heightValuesBySession
+                                                |> Maybe.map .value
+                                                |> Maybe.map (\(HeightInCm cm) -> toString cm ++ translate language Translate.CentimeterShorthand)
+                                                |> Maybe.withDefault "--"
+                                                |> text
+                                                |> List.singleton
+                                                |> td [ class "center aligned" ]
+                                        )
+                                    |> (::) heightCell
+                                    |> tr []
+
+                            muacs =
+                                groupOfTwelve
+                                    |> List.map
+                                        (\id ->
+                                            EveryDict.get id muacValuesBySession
+                                                |> Maybe.map .value
+                                                |> Maybe.map (\(MuacInCm cm) -> toString cm ++ translate language Translate.CentimeterShorthand)
+                                                |> Maybe.withDefault "--"
+                                                |> text
+                                                |> List.singleton
+                                                |> td [ class "center aligned" ]
+                                        )
+                                    |> (::) muacCell
+                                    |> tr []
+
+                            weights =
+                                groupOfTwelve
+                                    |> List.map
+                                        (\id ->
+                                            EveryDict.get id weightValuesBySession
+                                                |> Maybe.map .value
+                                                |> Maybe.map (\(WeightInKg kg) -> toString kg ++ translate language Translate.KilogramShorthand)
+                                                |> Maybe.withDefault "--"
+                                                |> text
+                                                |> List.singleton
+                                                |> td [ class "center aligned" ]
+                                        )
+                                    |> (::) weightCell
+                                    |> tr []
+                        in
+                            [ ages
+                            , heights
+                            , weights
+                            , muacs
                             ]
-                        , th
-                            [ class "center bottom aligned" ]
-                            [ text "2 mo"
-                            , br [] []
-                            , text "11 days"
-                            ]
-                        , th [ class "center bottom aligned" ]
-                            [ text "3 mo"
-                            , br [] []
-                            , text "12 days"
-                            ]
-                        , th [ class "center bottom aligned" ]
-                            [ text "4 mo"
-                            , br [] []
-                            , text "11 days"
-                            ]
-                        , th [ class "center bottom aligned" ]
-                            [ text "5 mo"
-                            , br [] []
-                            , text "12 days"
-                            ]
-                        , th [ class "center bottom aligned last" ]
-                            [ text "6 mo"
-                            , br [] []
-                            , text "7 days"
-                            ]
-                        ]
-                    ]
-                , tbody []
-                    [ tr []
-                        [ td [ class "first" ] [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Height)) ]
-                        , td [ class "center aligned negative" ] [ text "52cm" ]
-                        , td [ class "center aligned negative" ] [ text "57cm" ]
-                        , td [ class "center aligned" ] [ text "--" ]
-                        , td [ class "center aligned warning" ] [ text "58cm" ]
-                        , td [ class "center aligned positive" ] [ text "70cm" ]
-                        , td [ class "center aligned positive" ] [ text "71cm" ]
-                        , td [ class "center aligned positive" ] [ text "71cm" ]
-                        ]
-                    , tr []
-                        [ td [ class "first" ] [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Weight)) ]
-                        , td [ class "center aligned negative" ] [ text "4.2kg" ]
-                        , td [ class "center aligned negative" ] [ text "5.0kg" ]
-                        , td [ class "center aligned" ] [ text "--" ]
-                        , td [ class "center aligned warning" ] [ text "6.0kg" ]
-                        , td [ class "center aligned positive" ] [ text "8.2kg" ]
-                        , td [ class "center aligned positive" ] [ text "8.3kg" ]
-                        , td [ class "center aligned positive" ] [ text "8.4kg" ]
-                        ]
-                    , tr []
-                        [ td [ class "first" ] [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Muac)) ]
-                        , td [ class "center aligned" ] []
-                        , td [ class "center aligned" ] []
-                        , td [ class "center aligned" ] []
-                        , td [ class "center aligned" ] []
-                        , td [ class "center aligned" ] []
-                        , td [ class "center aligned" ] []
-                        , td [ class "center aligned positive" ] [ text "13cm" ]
-                        ]
-                    ]
-                ]
+                    )
+                |> List.concat
+                |> tbody []
+                |> List.singleton
+                |> table [ class "ui collapsing celled table" ]
+
+        ageCell =
+            th
+                [ class "uppercase" ]
+                [ text <| translate language Translate.AgeWord ]
+
+        heightCell =
+            td
+                [ class "first" ]
+                [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Height)) ]
+
+        weightCell =
+            td
+                [ class "first" ]
+                [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Weight)) ]
+
+        muacCell =
+            td
+                [ class "first" ]
+                [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Muac)) ]
 
         photos =
             photoValues
@@ -291,8 +333,33 @@ viewFoundChild language zscores ( childId, child ) session =
         weightValues =
             getValues .weight .weight .weights
 
+        muacValues =
+            getValues .muac .muac .muacs
+
         photoValues =
             getValues .photo .photo .photos
+
+        indexBySession values =
+            values
+                |> List.filterMap
+                    (\value ->
+                        case value.sessionId of
+                            Just id ->
+                                Just ( id, value )
+
+                            Nothing ->
+                                Nothing
+                    )
+                |> EveryDict.fromList
+
+        heightValuesBySession =
+            indexBySession heightValues
+
+        muacValuesBySession =
+            indexBySession muacValues
+
+        weightValuesBySession =
+            indexBySession weightValues
 
         heightForAgeData =
             List.map (chartHeightForAge child) heightValues

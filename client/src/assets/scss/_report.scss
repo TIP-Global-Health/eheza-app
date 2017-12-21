@@ -181,7 +181,7 @@ svg.z-score {
   border-top: 9px solid #06b9ff;
   padding: 30px;
 
-  .ui.table thead th.uppercase {
+  .ui.table th.uppercase {
     text-transform: uppercase;
   }
 
@@ -208,7 +208,7 @@ svg.z-score {
     margin-bottom: 45px;
   }
 
-  .ui.table thead th {
+  .ui.table th {
     background: #ccc;
     border-radius: 0 !important;
     color: #fff;
@@ -217,11 +217,11 @@ svg.z-score {
     border-color: #ccc !important;
   }
 
-  .ui.table thead th.center.aligned {
+  .ui.table th.center.aligned {
     text-align: center !important;
   }
 
-  .ui.table thead th.last {
+  .ui.table th.last {
     background: #4D4D4D;
   }
 
