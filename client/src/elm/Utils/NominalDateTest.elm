@@ -98,7 +98,7 @@ renderAgeMonthsDaysTest =
                             (fromLocalDateTime <| Date.fromTime 1501156048000)
                             today
                         )
-                        "1 month and 1 day"
+                        "1 month 1 day"
             , test "for a thirteen months old baby" <|
                 \() ->
                     Expect.equal
@@ -106,7 +106,7 @@ renderAgeMonthsDaysTest =
                             (fromLocalDateTime <| Date.fromTime 1469101648000)
                             today
                         )
-                        "13 months and 7 days"
+                        "13 months 7 days"
             , test "for a 30 years old mother" <|
                 \() ->
                     Expect.equal
@@ -114,7 +114,7 @@ renderAgeMonthsDaysTest =
                             (fromLocalDateTime <| Date.fromTime 557840848000)
                             today
                         )
-                        "359 months and 23 days"
+                        "359 months 23 days"
             ]
 
 
