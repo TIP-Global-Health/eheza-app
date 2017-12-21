@@ -204,7 +204,7 @@ viewLoadedClinic language currentDate clinicId clinics backend cache ( queryDate
             viewFoundClinic language currentDate clinicId clinic backend cache futureSessions
 
         Nothing ->
-            [ Pages.PageNotFound.View.viewPage language <|
+            [ Pages.PageNotFound.View.viewPage language (SetActivePage LoginPage) <|
                 UserPage <|
                     ClinicsPage <|
                         Just clinicId

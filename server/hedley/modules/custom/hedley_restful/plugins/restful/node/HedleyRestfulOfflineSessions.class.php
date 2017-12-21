@@ -72,6 +72,16 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       ],
     ];
 
+    // We include basic data for all sessions for the relevant clinic, because
+    // this is needed for the progress report.
+    $public_fields['all_sessions'] = [
+      'property' => 'field_clinic',
+      'sub_property' => 'nid',
+      'process_callbacks' => [
+        [$this, 'getAllSessions'],
+      ],
+    ];
+
     $public_fields['participants'] = [
       'property' => 'nid',
       'process_callbacks' => [
@@ -129,6 +139,40 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     );
 
     return hedley_restful_output_from_handler('clinics', $clinic_ids, $account);
+  }
+
+  /**
+   * Return basic session data for all sessions for the relevant clinic.
+   *
+   * Of course, this could just be a separate, independent HTTP request, but
+   * it's convenient to provide everything needed for an offline session at
+   * once.
+   *
+   * TODO: We could try to limit the number of sessions provided ... for
+   * instance, we don't really need very old sessions that no current
+   * participant ever participated in.
+   *
+   * @param int $clinic_id
+   *   The clinic ID for this session.
+   *
+   * @return array
+   *   Array with the RESTful output.
+   */
+  public function getAllSessions($clinic_id) {
+    $account = $this->getAccount();
+
+    $session_ids = hedley_restful_extract_ids(
+      (new EntityFieldQuery())
+        ->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', 'session')
+        ->propertyCondition('status', NODE_PUBLISHED)
+        ->fieldCondition('field_clinic', 'target_id', $clinic_id)
+        ->fieldOrderBy('field_scheduled_date', 'value', 'ASC')
+        ->range(0, 2000)
+        ->execute()
+    );
+
+    return hedley_restful_output_from_handler('sessions', $session_ids, $account);
   }
 
   /**

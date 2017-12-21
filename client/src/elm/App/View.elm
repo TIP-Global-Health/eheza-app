@@ -139,7 +139,7 @@ viewSessionPage user page model =
 
         Success fetched ->
             case fetched of
-                Just ( _, session ) ->
+                Just session ->
                     viewFoundSession user page session model
                         |> Html.map MsgSession
 
