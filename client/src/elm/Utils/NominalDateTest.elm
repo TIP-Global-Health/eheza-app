@@ -6,7 +6,7 @@ import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Test exposing (describe, test, Test)
 import Time.Date exposing (date)
 import Translate exposing (Language(English))
-import Utils.NominalDate exposing (Days(..), diffDays, renderAgeMonthsDays, renderDateOfBirth)
+import Utils.NominalDate exposing (Days(..), diffDays, renderAgeMonthsDays, renderDate)
 
 
 diffDaysTest : Test
@@ -118,33 +118,33 @@ renderAgeMonthsDaysTest =
             ]
 
 
-renderDateOfBirthTest : Test
-renderDateOfBirthTest =
+renderDateTest : Test
+renderDateTest =
     describe "date of birth rendering"
         [ test "for July" <|
             \() ->
                 date 2017 7 30
-                    |> renderDateOfBirth English
+                    |> renderDate English
                     |> Expect.equal "30 July 2017"
         , test "for March" <|
             \() ->
                 date 2017 3 29
-                    |> renderDateOfBirth English
+                    |> renderDate English
                     |> Expect.equal "29 March 2017"
         , test "for January" <|
             \() ->
                 date 2017 1 21
-                    |> renderDateOfBirth English
+                    |> renderDate English
                     |> Expect.equal "21 January 2017"
         , test "for August 2014" <|
             \() ->
                 date 2014 8 25
-                    |> renderDateOfBirth English
+                    |> renderDate English
                     |> Expect.equal "25 August 2014"
         , test "for May 2017" <|
             \() ->
                 date 2017 5 6
-                    |> renderDateOfBirth English
+                    |> renderDate English
                     |> Expect.equal "06 May 2017"
         ]
 
@@ -154,5 +154,5 @@ all =
     describe "NominalDate tests"
         [ diffDaysTest
         , renderAgeMonthsDaysTest
-        , renderDateOfBirthTest
+        , renderDateTest
         ]
