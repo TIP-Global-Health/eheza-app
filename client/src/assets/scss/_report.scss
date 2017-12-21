@@ -181,6 +181,12 @@ svg.z-score {
   border-top: 9px solid #06b9ff;
   padding: 30px;
 
+  .date-header {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
   .ui.table th.uppercase {
     text-transform: uppercase;
   }

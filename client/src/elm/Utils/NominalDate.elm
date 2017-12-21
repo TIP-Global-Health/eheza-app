@@ -9,6 +9,7 @@ import Time.Date exposing (year, month, day, delta, daysInMonth)
 import Gizra.NominalDate exposing (NominalDate)
 import Date.Extra exposing (fromParts, diff, Interval(Day))
 import Date.Extra.Facts exposing (monthFromMonthNumber)
+import Html exposing (Html)
 import Translate exposing (translate, Language)
 
 
@@ -177,6 +178,46 @@ renderAgeMonthsDaysAbbrev language birthDate now =
         [ monthPart, dayPart ]
             |> List.filterMap identity
             |> String.join " "
+
+
+renderAgeMonthsDaysHtml : Language -> NominalDate -> NominalDate -> List (Html any)
+renderAgeMonthsDaysHtml language birthDate now =
+    let
+        diff =
+            diffCalendarMonthsAndDays birthDate now
+
+        days =
+            diff.days
+
+        months =
+            diff.months
+
+        dayPart =
+            if days == 0 then
+                Nothing
+            else if days == 1 then
+                Just <|
+                    "1 "
+                        ++ translate language Translate.Day
+            else
+                Just <|
+                    toString days
+                        ++ " "
+                        ++ translate language Translate.Days
+
+        monthPart =
+            if months == 0 then
+                Nothing
+            else
+                Just <|
+                    toString months
+                        ++ " "
+                        ++ translate language Translate.MonthAbbrev
+    in
+        [ monthPart, dayPart ]
+            |> List.filterMap identity
+            |> List.map Html.text
+            |> List.intersperse (Html.br [] [])
 
 
 renderDate : Language -> NominalDate -> String

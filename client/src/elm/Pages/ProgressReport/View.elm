@@ -19,7 +19,7 @@ import Pages.Page exposing (Page(..), SessionPage(..))
 import Pages.PageNotFound.View
 import Translate exposing (Language(..), translate)
 import Utils.Html exposing (thumbnailImage)
-import Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, renderDate, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev)
+import Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, renderDate, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..))
 import ZScore.View
 
@@ -169,16 +169,15 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                                     |> List.map
                                         (\id ->
                                             EveryDictList.get id session.offlineSession.allSessions
-                                                |> Maybe.map (\columnSession -> renderAgeMonthsDaysAbbrev language child.birthDate columnSession.scheduledDate.start)
-                                                |> Maybe.withDefault ""
-                                                |> text
-                                                |> List.singleton
+                                                |> Maybe.map (\columnSession -> renderAgeMonthsDaysHtml language child.birthDate columnSession.scheduledDate.start)
+                                                |> Maybe.withDefault []
                                                 |> th
                                                     [ classList
                                                         [ ( "center", True )
                                                         , ( "bottom", True )
                                                         , ( "aligned", True )
                                                         , ( "last", id == sessionId )
+                                                        , ( "date-header", True )
                                                         ]
                                                     ]
                                         )
