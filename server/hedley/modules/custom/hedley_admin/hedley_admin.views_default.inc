@@ -1,0 +1,601 @@
+<?php
+/**
+ * @file
+ * hedley_admin.views_default.inc
+ */
+
+/**
+ * Implements hook_views_default_views().
+ */
+function hedley_admin_views_default_views() {
+  $export = array();
+
+  $view = new view();
+  $view->name = 'admin_views';
+  $view->description = '';
+  $view->tag = 'default';
+  $view->base_table = 'node';
+  $view->human_name = 'Admin views';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Master */
+  $handler = $view->new_display('default', 'Master', 'default');
+  $handler->display->display_options['title'] = 'Childs';
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['group_by'] = TRUE;
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '50';
+  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_options']['columns'] = array(
+    'title' => 'title',
+    'field_clinic' => 'field_clinic',
+    'title_1' => 'title_1',
+    'field_closed' => 'field_closed',
+    'nid' => 'nid',
+    'edit_node' => 'edit_node',
+  );
+  $handler->display->display_options['style_options']['default'] = '-1';
+  $handler->display->display_options['style_options']['info'] = array(
+    'title' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'field_clinic' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'title_1' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'field_closed' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'nid' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'edit_node' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+  );
+  /* Relationship: Entity Reference: Referenced Entity */
+  $handler->display->display_options['relationships']['field_mother_target_id']['id'] = 'field_mother_target_id';
+  $handler->display->display_options['relationships']['field_mother_target_id']['table'] = 'field_data_field_mother';
+  $handler->display->display_options['relationships']['field_mother_target_id']['field'] = 'field_mother_target_id';
+  $handler->display->display_options['relationships']['field_mother_target_id']['label'] = 'Mother';
+  $handler->display->display_options['relationships']['field_mother_target_id']['required'] = TRUE;
+  /* Relationship: Entity Reference: Referenced Entity */
+  $handler->display->display_options['relationships']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['relationship'] = 'field_mother_target_id';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'Clinic';
+  /* Relationship: Entity Reference: Referencing entity */
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['id'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['table'] = 'node';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['field'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['relationship'] = 'field_clinic_target_id';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['label'] = 'Session';
+  /* Field: Content: Title */
+  $handler->display->display_options['fields']['title']['id'] = 'title';
+  $handler->display->display_options['fields']['title']['table'] = 'node';
+  $handler->display->display_options['fields']['title']['field'] = 'title';
+  $handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
+  $handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
+  /* Field: Content: Title */
+  $handler->display->display_options['fields']['title_1']['id'] = 'title_1';
+  $handler->display->display_options['fields']['title_1']['table'] = 'node';
+  $handler->display->display_options['fields']['title_1']['field'] = 'title';
+  $handler->display->display_options['fields']['title_1']['relationship'] = 'field_mother_target_id';
+  $handler->display->display_options['fields']['title_1']['label'] = 'Mother';
+  /* Field: Content: Clinic */
+  $handler->display->display_options['fields']['field_clinic']['id'] = 'field_clinic';
+  $handler->display->display_options['fields']['field_clinic']['table'] = 'field_data_field_clinic';
+  $handler->display->display_options['fields']['field_clinic']['field'] = 'field_clinic';
+  $handler->display->display_options['fields']['field_clinic']['relationship'] = 'field_mother_target_id';
+  $handler->display->display_options['fields']['field_clinic']['settings'] = array(
+    'bypass_access' => 0,
+    'link' => 0,
+  );
+  /* Field: Content: Scheduled Date */
+  $handler->display->display_options['fields']['field_scheduled_date']['id'] = 'field_scheduled_date';
+  $handler->display->display_options['fields']['field_scheduled_date']['table'] = 'field_data_field_scheduled_date';
+  $handler->display->display_options['fields']['field_scheduled_date']['field'] = 'field_scheduled_date';
+  $handler->display->display_options['fields']['field_scheduled_date']['relationship'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['fields']['field_scheduled_date']['label'] = 'Last assessment date';
+  $handler->display->display_options['fields']['field_scheduled_date']['settings'] = array(
+    'format_type' => 'custom',
+    'custom_date_format' => 'd/m/Y',
+    'fromto' => 'value2',
+    'multiple_number' => '',
+    'multiple_from' => '',
+    'multiple_to' => '',
+    'show_remaining_days' => 0,
+  );
+  $handler->display->display_options['fields']['field_scheduled_date']['group_column'] = 'value2';
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid']['id'] = 'nid';
+  $handler->display->display_options['fields']['nid']['table'] = 'node';
+  $handler->display->display_options['fields']['nid']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid']['label'] = 'Progress report';
+  $handler->display->display_options['fields']['nid']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid']['alter']['text'] = 'Progress report';
+  $handler->display->display_options['fields']['nid']['alter']['make_link'] = TRUE;
+  $handler->display->display_options['fields']['nid']['alter']['path'] = '/app/#child/[nid]';
+  /* Field: Content: Edit link */
+  $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
+  $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
+  $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
+  $handler->display->display_options['fields']['edit_node']['label'] = 'Edit';
+  /* Sort criterion: Content: Post date */
+  $handler->display->display_options['sorts']['created']['id'] = 'created';
+  $handler->display->display_options['sorts']['created']['table'] = 'node';
+  $handler->display->display_options['sorts']['created']['field'] = 'created';
+  $handler->display->display_options['sorts']['created']['order'] = 'DESC';
+  /* Sort criterion: Content: Nid */
+  $handler->display->display_options['sorts']['nid']['id'] = 'nid';
+  $handler->display->display_options['sorts']['nid']['table'] = 'node';
+  $handler->display->display_options['sorts']['nid']['field'] = 'nid';
+  /* Filter criterion: Content: Published */
+  $handler->display->display_options['filters']['status']['id'] = 'status';
+  $handler->display->display_options['filters']['status']['table'] = 'node';
+  $handler->display->display_options['filters']['status']['field'] = 'status';
+  $handler->display->display_options['filters']['status']['value'] = 1;
+  $handler->display->display_options['filters']['status']['group'] = 1;
+  $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
+  /* Filter criterion: Content: Type */
+  $handler->display->display_options['filters']['type']['id'] = 'type';
+  $handler->display->display_options['filters']['type']['table'] = 'node';
+  $handler->display->display_options['filters']['type']['field'] = 'type';
+  $handler->display->display_options['filters']['type']['value'] = array(
+    'child' => 'child',
+  );
+
+  /* Display: Child */
+  $handler = $view->new_display('page', 'Child', 'page');
+  $handler->display->display_options['path'] = 'admin/content/childs';
+
+  /* Display: Clinic */
+  $handler = $view->new_display('page', 'Clinic', 'page_1');
+  $handler->display->display_options['defaults']['title'] = FALSE;
+  $handler->display->display_options['title'] = 'Clinics';
+  $handler->display->display_options['defaults']['relationships'] = FALSE;
+  /* Relationship: Content: Author */
+  $handler->display->display_options['relationships']['uid']['id'] = 'uid';
+  $handler->display->display_options['relationships']['uid']['table'] = 'node';
+  $handler->display->display_options['relationships']['uid']['field'] = 'uid';
+  $handler->display->display_options['relationships']['uid']['label'] = 'Author';
+  /* Relationship: Entity Reference: Referencing entity */
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['id'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['table'] = 'node';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['field'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['label'] = 'Mother';
+  /* Relationship: Entity Reference: Referencing entity */
+  $handler->display->display_options['relationships']['reverse_field_clinic_node_1']['id'] = 'reverse_field_clinic_node_1';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node_1']['table'] = 'node';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node_1']['field'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node_1']['label'] = 'Open sessions';
+  /* Relationship: Entity Reference: Referencing entity */
+  $handler->display->display_options['relationships']['reverse_field_clinic_node_2']['id'] = 'reverse_field_clinic_node_2';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node_2']['table'] = 'node';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node_2']['field'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node_2']['label'] = 'Closed sessions';
+  $handler->display->display_options['defaults']['fields'] = FALSE;
+  /* Field: User: Name */
+  $handler->display->display_options['fields']['name']['id'] = 'name';
+  $handler->display->display_options['fields']['name']['table'] = 'users';
+  $handler->display->display_options['fields']['name']['field'] = 'name';
+  $handler->display->display_options['fields']['name']['relationship'] = 'uid';
+  $handler->display->display_options['fields']['name']['label'] = 'Created by';
+  /* Field: Content: Title */
+  $handler->display->display_options['fields']['title']['id'] = 'title';
+  $handler->display->display_options['fields']['title']['table'] = 'node';
+  $handler->display->display_options['fields']['title']['field'] = 'title';
+  $handler->display->display_options['fields']['title']['label'] = 'Clinic name';
+  /* Field: COUNT(Content: Nid) */
+  $handler->display->display_options['fields']['nid']['id'] = 'nid';
+  $handler->display->display_options['fields']['nid']['table'] = 'node';
+  $handler->display->display_options['fields']['nid']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid']['relationship'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['fields']['nid']['group_type'] = 'count';
+  $handler->display->display_options['fields']['nid']['label'] = 'Mothers assigned';
+  /* Field: COUNT(Content: Nid) */
+  $handler->display->display_options['fields']['nid_1']['id'] = 'nid_1';
+  $handler->display->display_options['fields']['nid_1']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_1']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_1']['relationship'] = 'reverse_field_clinic_node_1';
+  $handler->display->display_options['fields']['nid_1']['group_type'] = 'count';
+  $handler->display->display_options['fields']['nid_1']['label'] = 'Open sessions';
+  /* Field: COUNT(Content: Nid) */
+  $handler->display->display_options['fields']['nid_2']['id'] = 'nid_2';
+  $handler->display->display_options['fields']['nid_2']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_2']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_2']['relationship'] = 'reverse_field_clinic_node_2';
+  $handler->display->display_options['fields']['nid_2']['group_type'] = 'count';
+  $handler->display->display_options['fields']['nid_2']['label'] = 'Closed sessions';
+  /* Field: Content: Edit link */
+  $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
+  $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
+  $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
+  $handler->display->display_options['fields']['edit_node']['label'] = 'Edit';
+  $handler->display->display_options['defaults']['filter_groups'] = FALSE;
+  $handler->display->display_options['defaults']['filters'] = FALSE;
+  /* Filter criterion: Content: Published */
+  $handler->display->display_options['filters']['status']['id'] = 'status';
+  $handler->display->display_options['filters']['status']['table'] = 'node';
+  $handler->display->display_options['filters']['status']['field'] = 'status';
+  $handler->display->display_options['filters']['status']['value'] = 1;
+  $handler->display->display_options['filters']['status']['group'] = 1;
+  $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
+  /* Filter criterion: Content: Type */
+  $handler->display->display_options['filters']['type']['id'] = 'type';
+  $handler->display->display_options['filters']['type']['table'] = 'node';
+  $handler->display->display_options['filters']['type']['field'] = 'type';
+  $handler->display->display_options['filters']['type']['value'] = array(
+    'clinic' => 'clinic',
+  );
+  $handler->display->display_options['filters']['type']['group'] = 1;
+  /* Filter criterion: Content: Type */
+  $handler->display->display_options['filters']['type_1']['id'] = 'type_1';
+  $handler->display->display_options['filters']['type_1']['table'] = 'node';
+  $handler->display->display_options['filters']['type_1']['field'] = 'type';
+  $handler->display->display_options['filters']['type_1']['relationship'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['filters']['type_1']['value'] = array(
+    'mother' => 'mother',
+  );
+  $handler->display->display_options['filters']['type_1']['group'] = 1;
+  $handler->display->display_options['path'] = 'admin/content/clinics';
+
+  /* Display: Session */
+  $handler = $view->new_display('page', 'Session', 'page_2');
+  $handler->display->display_options['defaults']['title'] = FALSE;
+  $handler->display->display_options['title'] = 'Sessions';
+  $handler->display->display_options['defaults']['relationships'] = FALSE;
+  /* Relationship: Entity Reference: Referenced Entity */
+  $handler->display->display_options['relationships']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'Clinic';
+  $handler->display->display_options['defaults']['fields'] = FALSE;
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid']['id'] = 'nid';
+  $handler->display->display_options['fields']['nid']['table'] = 'node';
+  $handler->display->display_options['fields']['nid']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid']['label'] = 'Session Id';
+  $handler->display->display_options['fields']['nid']['link_to_node'] = TRUE;
+  /* Field: Content: Scheduled Date */
+  $handler->display->display_options['fields']['field_scheduled_date']['id'] = 'field_scheduled_date';
+  $handler->display->display_options['fields']['field_scheduled_date']['table'] = 'field_data_field_scheduled_date';
+  $handler->display->display_options['fields']['field_scheduled_date']['field'] = 'field_scheduled_date';
+  $handler->display->display_options['fields']['field_scheduled_date']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['field_scheduled_date']['settings'] = array(
+    'format_type' => 'custom',
+    'custom_date_format' => 'd/m/Y',
+    'fromto' => 'value',
+    'multiple_number' => '',
+    'multiple_from' => '',
+    'multiple_to' => '',
+    'show_remaining_days' => 0,
+  );
+  /* Field: Content: Scheduled Date */
+  $handler->display->display_options['fields']['field_scheduled_date_1']['id'] = 'field_scheduled_date_1';
+  $handler->display->display_options['fields']['field_scheduled_date_1']['table'] = 'field_data_field_scheduled_date';
+  $handler->display->display_options['fields']['field_scheduled_date_1']['field'] = 'field_scheduled_date';
+  $handler->display->display_options['fields']['field_scheduled_date_1']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['field_scheduled_date_1']['alter']['text'] = '[field_scheduled_date] - [field_scheduled_date_1] ';
+  $handler->display->display_options['fields']['field_scheduled_date_1']['settings'] = array(
+    'format_type' => 'custom',
+    'custom_date_format' => 'd/m/Y',
+    'fromto' => 'value2',
+    'multiple_number' => '',
+    'multiple_from' => '',
+    'multiple_to' => '',
+    'show_remaining_days' => 0,
+  );
+  $handler->display->display_options['fields']['field_scheduled_date_1']['group_column'] = 'value2';
+  /* Field: Content: Title */
+  $handler->display->display_options['fields']['title']['id'] = 'title';
+  $handler->display->display_options['fields']['title']['table'] = 'node';
+  $handler->display->display_options['fields']['title']['field'] = 'title';
+  $handler->display->display_options['fields']['title']['relationship'] = 'field_clinic_target_id';
+  $handler->display->display_options['fields']['title']['label'] = 'Clinic';
+  /* Field: Content: Closed */
+  $handler->display->display_options['fields']['field_closed']['id'] = 'field_closed';
+  $handler->display->display_options['fields']['field_closed']['table'] = 'field_data_field_closed';
+  $handler->display->display_options['fields']['field_closed']['field'] = 'field_closed';
+  $handler->display->display_options['fields']['field_closed']['label'] = 'Status';
+  /* Field: Content: Post date */
+  $handler->display->display_options['fields']['created']['id'] = 'created';
+  $handler->display->display_options['fields']['created']['table'] = 'node';
+  $handler->display->display_options['fields']['created']['field'] = 'created';
+  $handler->display->display_options['fields']['created']['label'] = 'Uploaded';
+  $handler->display->display_options['fields']['created']['date_format'] = 'custom';
+  $handler->display->display_options['fields']['created']['custom_date_format'] = 'd/m/Y';
+  $handler->display->display_options['fields']['created']['second_date_format'] = 'long';
+  /* Field: Content: Edit link */
+  $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
+  $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
+  $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
+  $handler->display->display_options['fields']['edit_node']['label'] = 'Edit';
+  $handler->display->display_options['defaults']['filter_groups'] = FALSE;
+  $handler->display->display_options['defaults']['filters'] = FALSE;
+  /* Filter criterion: Content: Published */
+  $handler->display->display_options['filters']['status']['id'] = 'status';
+  $handler->display->display_options['filters']['status']['table'] = 'node';
+  $handler->display->display_options['filters']['status']['field'] = 'status';
+  $handler->display->display_options['filters']['status']['value'] = 1;
+  $handler->display->display_options['filters']['status']['group'] = 1;
+  $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
+  /* Filter criterion: Content: Type */
+  $handler->display->display_options['filters']['type']['id'] = 'type';
+  $handler->display->display_options['filters']['type']['table'] = 'node';
+  $handler->display->display_options['filters']['type']['field'] = 'type';
+  $handler->display->display_options['filters']['type']['value'] = array(
+    'session' => 'session',
+  );
+  $handler->display->display_options['path'] = 'admin/content/sessions';
+
+  /* Display: Mother */
+  $handler = $view->new_display('page', 'Mother', 'page_3');
+  $handler->display->display_options['defaults']['title'] = FALSE;
+  $handler->display->display_options['title'] = 'Mothers';
+  $handler->display->display_options['defaults']['relationships'] = FALSE;
+  /* Relationship: Entity Reference: Referencing entity */
+  $handler->display->display_options['relationships']['reverse_field_mother_node']['id'] = 'reverse_field_mother_node';
+  $handler->display->display_options['relationships']['reverse_field_mother_node']['table'] = 'node';
+  $handler->display->display_options['relationships']['reverse_field_mother_node']['field'] = 'reverse_field_mother_node';
+  $handler->display->display_options['relationships']['reverse_field_mother_node']['label'] = 'Child';
+  /* Relationship: Entity Reference: Referenced Entity */
+  $handler->display->display_options['relationships']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'Clinic';
+  /* Relationship: Entity Reference: Referenced Entity */
+  $handler->display->display_options['relationships']['field_mother_target_id']['id'] = 'field_mother_target_id';
+  $handler->display->display_options['relationships']['field_mother_target_id']['table'] = 'field_data_field_mother';
+  $handler->display->display_options['relationships']['field_mother_target_id']['field'] = 'field_mother_target_id';
+  $handler->display->display_options['relationships']['field_mother_target_id']['label'] = 'Planning method';
+  /* Relationship: Entity Reference: Referencing entity */
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['id'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['table'] = 'node';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['field'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['relationship'] = 'field_clinic_target_id';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['label'] = 'Session';
+  $handler->display->display_options['defaults']['fields'] = FALSE;
+  /* Field: Content: Title */
+  $handler->display->display_options['fields']['title']['id'] = 'title';
+  $handler->display->display_options['fields']['title']['table'] = 'node';
+  $handler->display->display_options['fields']['title']['field'] = 'title';
+  $handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
+  $handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
+  /* Field: COUNT(DISTINCT Content: Nid) */
+  $handler->display->display_options['fields']['nid']['id'] = 'nid';
+  $handler->display->display_options['fields']['nid']['table'] = 'node';
+  $handler->display->display_options['fields']['nid']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid']['relationship'] = 'reverse_field_mother_node';
+  $handler->display->display_options['fields']['nid']['group_type'] = 'count_distinct';
+  $handler->display->display_options['fields']['nid']['label'] = 'Childs';
+  /* Field: Content: Title */
+  $handler->display->display_options['fields']['title_1']['id'] = 'title_1';
+  $handler->display->display_options['fields']['title_1']['table'] = 'node';
+  $handler->display->display_options['fields']['title_1']['field'] = 'title';
+  $handler->display->display_options['fields']['title_1']['relationship'] = 'field_clinic_target_id';
+  $handler->display->display_options['fields']['title_1']['label'] = 'Clinic';
+  /* Field: Content: Title */
+  $handler->display->display_options['fields']['title_2']['id'] = 'title_2';
+  $handler->display->display_options['fields']['title_2']['table'] = 'node';
+  $handler->display->display_options['fields']['title_2']['field'] = 'title';
+  $handler->display->display_options['fields']['title_2']['relationship'] = 'field_mother_target_id';
+  $handler->display->display_options['fields']['title_2']['label'] = 'Planning method';
+  /* Field: COUNT(DISTINCT Content: Nid) */
+  $handler->display->display_options['fields']['nid_1']['id'] = 'nid_1';
+  $handler->display->display_options['fields']['nid_1']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_1']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_1']['relationship'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['fields']['nid_1']['group_type'] = 'count_distinct';
+  $handler->display->display_options['fields']['nid_1']['label'] = 'Participation';
+  /* Field: Content: Edit link */
+  $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
+  $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
+  $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
+  $handler->display->display_options['fields']['edit_node']['label'] = 'Edit';
+  $handler->display->display_options['defaults']['filter_groups'] = FALSE;
+  $handler->display->display_options['defaults']['filters'] = FALSE;
+  /* Filter criterion: Content: Published */
+  $handler->display->display_options['filters']['status']['id'] = 'status';
+  $handler->display->display_options['filters']['status']['table'] = 'node';
+  $handler->display->display_options['filters']['status']['field'] = 'status';
+  $handler->display->display_options['filters']['status']['value'] = 1;
+  $handler->display->display_options['filters']['status']['group'] = 1;
+  $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
+  /* Filter criterion: Content: Type */
+  $handler->display->display_options['filters']['type']['id'] = 'type';
+  $handler->display->display_options['filters']['type']['table'] = 'node';
+  $handler->display->display_options['filters']['type']['field'] = 'type';
+  $handler->display->display_options['filters']['type']['value'] = array(
+    'mother' => 'mother',
+  );
+  $handler->display->display_options['path'] = 'admin/content/mothers';
+
+  /* Display: Measure */
+  $handler = $view->new_display('page', 'Measure', 'page_4');
+  $handler->display->display_options['defaults']['title'] = FALSE;
+  $handler->display->display_options['title'] = 'Measure';
+  $handler->display->display_options['defaults']['relationships'] = FALSE;
+  /* Relationship: Entity Reference: Referenced Entity */
+  $handler->display->display_options['relationships']['field_session_target_id']['id'] = 'field_session_target_id';
+  $handler->display->display_options['relationships']['field_session_target_id']['table'] = 'field_data_field_session';
+  $handler->display->display_options['relationships']['field_session_target_id']['field'] = 'field_session_target_id';
+  $handler->display->display_options['relationships']['field_session_target_id']['label'] = 'Session';
+  /* Relationship: Entity Reference: Referenced Entity */
+  $handler->display->display_options['relationships']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['relationship'] = 'field_session_target_id';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'Clinic';
+  /* Relationship: Content: Author */
+  $handler->display->display_options['relationships']['uid']['id'] = 'uid';
+  $handler->display->display_options['relationships']['uid']['table'] = 'node';
+  $handler->display->display_options['relationships']['uid']['field'] = 'uid';
+  $handler->display->display_options['defaults']['fields'] = FALSE;
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid']['id'] = 'nid';
+  $handler->display->display_options['fields']['nid']['table'] = 'node';
+  $handler->display->display_options['fields']['nid']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid']['label'] = 'Session Id';
+  /* Field: Content: Title */
+  $handler->display->display_options['fields']['title']['id'] = 'title';
+  $handler->display->display_options['fields']['title']['table'] = 'node';
+  $handler->display->display_options['fields']['title']['field'] = 'title';
+  $handler->display->display_options['fields']['title']['label'] = 'Clinic';
+  /* Field: Content: Date Measured */
+  $handler->display->display_options['fields']['field_date_measured']['id'] = 'field_date_measured';
+  $handler->display->display_options['fields']['field_date_measured']['table'] = 'field_data_field_date_measured';
+  $handler->display->display_options['fields']['field_date_measured']['field'] = 'field_date_measured';
+  $handler->display->display_options['fields']['field_date_measured']['settings'] = array(
+    'format_type' => 'custom',
+    'custom_date_format' => 'd/m/Y',
+    'fromto' => 'both',
+    'multiple_number' => '',
+    'multiple_from' => '',
+    'multiple_to' => '',
+    'show_remaining_days' => 0,
+  );
+  /* Field: Content: Type */
+  $handler->display->display_options['fields']['type']['id'] = 'type';
+  $handler->display->display_options['fields']['type']['table'] = 'node';
+  $handler->display->display_options['fields']['type']['field'] = 'type';
+  $handler->display->display_options['fields']['type']['label'] = 'Measurement type';
+  /* Field: User: Name */
+  $handler->display->display_options['fields']['name']['id'] = 'name';
+  $handler->display->display_options['fields']['name']['table'] = 'users';
+  $handler->display->display_options['fields']['name']['field'] = 'name';
+  $handler->display->display_options['fields']['name']['relationship'] = 'uid';
+  $handler->display->display_options['fields']['name']['label'] = 'Nurse';
+  /* Field: Content: Family Planning (field_family_planning_signs:delta) */
+  $handler->display->display_options['fields']['delta']['id'] = 'delta';
+  $handler->display->display_options['fields']['delta']['table'] = 'field_data_field_family_planning_signs';
+  $handler->display->display_options['fields']['delta']['field'] = 'delta';
+  $handler->display->display_options['fields']['delta']['label'] = '';
+  $handler->display->display_options['fields']['delta']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['delta']['element_label_colon'] = FALSE;
+  /* Field: Content: Height */
+  $handler->display->display_options['fields']['field_height']['id'] = 'field_height';
+  $handler->display->display_options['fields']['field_height']['table'] = 'field_data_field_height';
+  $handler->display->display_options['fields']['field_height']['field'] = 'field_height';
+  $handler->display->display_options['fields']['field_height']['label'] = '';
+  $handler->display->display_options['fields']['field_height']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['field_height']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['field_height']['settings'] = array(
+    'thousand_separator' => '',
+    'decimal_separator' => '.',
+    'scale' => '2',
+    'prefix_suffix' => 1,
+  );
+  /* Field: Content: MUAC */
+  $handler->display->display_options['fields']['field_muac']['id'] = 'field_muac';
+  $handler->display->display_options['fields']['field_muac']['table'] = 'field_data_field_muac';
+  $handler->display->display_options['fields']['field_muac']['field'] = 'field_muac';
+  $handler->display->display_options['fields']['field_muac']['label'] = '';
+  $handler->display->display_options['fields']['field_muac']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['field_muac']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['field_muac']['settings'] = array(
+    'thousand_separator' => '',
+    'decimal_separator' => '.',
+    'scale' => '2',
+    'prefix_suffix' => 1,
+  );
+  /* Field: Content: Nutrition Signs (field_nutrition_signs:delta) */
+  $handler->display->display_options['fields']['delta_1']['id'] = 'delta_1';
+  $handler->display->display_options['fields']['delta_1']['table'] = 'field_data_field_nutrition_signs';
+  $handler->display->display_options['fields']['delta_1']['field'] = 'delta';
+  $handler->display->display_options['fields']['delta_1']['label'] = '';
+  $handler->display->display_options['fields']['delta_1']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['delta_1']['element_label_colon'] = FALSE;
+  /* Field: Content: Photo */
+  $handler->display->display_options['fields']['field_photo']['id'] = 'field_photo';
+  $handler->display->display_options['fields']['field_photo']['table'] = 'field_data_field_photo';
+  $handler->display->display_options['fields']['field_photo']['field'] = 'field_photo';
+  $handler->display->display_options['fields']['field_photo']['label'] = '';
+  $handler->display->display_options['fields']['field_photo']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['field_photo']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['field_photo']['click_sort_column'] = 'fid';
+  $handler->display->display_options['fields']['field_photo']['settings'] = array(
+    'image_style' => 'thumbnail',
+    'image_link' => '',
+  );
+  $handler->display->display_options['fields']['field_photo']['group_column'] = 'entity_id';
+  /* Field: Content: Weight */
+  $handler->display->display_options['fields']['field_weight']['id'] = 'field_weight';
+  $handler->display->display_options['fields']['field_weight']['table'] = 'field_data_field_weight';
+  $handler->display->display_options['fields']['field_weight']['field'] = 'field_weight';
+  $handler->display->display_options['fields']['field_weight']['label'] = 'Measurement value';
+  $handler->display->display_options['fields']['field_weight']['alter']['text'] = '[delta][field_height][field_muac][delta_1][field_photo][field_weight]';
+  $handler->display->display_options['fields']['field_weight']['settings'] = array(
+    'thousand_separator' => '',
+    'decimal_separator' => '.',
+    'scale' => '2',
+    'prefix_suffix' => 1,
+  );
+  $handler->display->display_options['defaults']['arguments'] = FALSE;
+  /* Contextual filter: Content: Nid */
+  $handler->display->display_options['arguments']['nid']['id'] = 'nid';
+  $handler->display->display_options['arguments']['nid']['table'] = 'node';
+  $handler->display->display_options['arguments']['nid']['field'] = 'nid';
+  $handler->display->display_options['arguments']['nid']['relationship'] = 'field_session_target_id';
+  $handler->display->display_options['arguments']['nid']['default_argument_type'] = 'fixed';
+  $handler->display->display_options['arguments']['nid']['default_argument_skip_url'] = TRUE;
+  $handler->display->display_options['arguments']['nid']['summary']['number_of_records'] = '0';
+  $handler->display->display_options['arguments']['nid']['summary']['format'] = 'default_summary';
+  $handler->display->display_options['arguments']['nid']['summary_options']['items_per_page'] = '25';
+  $handler->display->display_options['defaults']['filter_groups'] = FALSE;
+  $handler->display->display_options['defaults']['filters'] = FALSE;
+  /* Filter criterion: Content: Published */
+  $handler->display->display_options['filters']['status']['id'] = 'status';
+  $handler->display->display_options['filters']['status']['table'] = 'node';
+  $handler->display->display_options['filters']['status']['field'] = 'status';
+  $handler->display->display_options['filters']['status']['value'] = 1;
+  $handler->display->display_options['filters']['status']['group'] = 1;
+  $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
+  /* Filter criterion: Content: Type */
+  $handler->display->display_options['filters']['type']['id'] = 'type';
+  $handler->display->display_options['filters']['type']['table'] = 'node';
+  $handler->display->display_options['filters']['type']['field'] = 'type';
+  $handler->display->display_options['filters']['type']['value'] = array(
+    'family_planning' => 'family_planning',
+    'height' => 'height',
+    'muac' => 'muac',
+    'nutrition' => 'nutrition',
+    'photo' => 'photo',
+    'weight' => 'weight',
+  );
+  $handler->display->display_options['path'] = 'admin/content/measure';
+  $export['admin_views'] = $view;
+
+  return $export;
+}

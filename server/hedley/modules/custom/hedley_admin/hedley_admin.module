@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the hedley admin feature.
+ */
+
+include_once 'hedley_admin.features.inc';

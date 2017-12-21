@@ -243,3 +243,13 @@ function hedley_update_7001() {
 
   return "Added nurse permissions for family_planning";
 }
+
+/**
+ * Implements hook_update_7002().
+ *
+ * Installs the new ihangane_admin module.
+ */
+function hedley_update_7002() {
+  $modules = ['ihangane_admin'];
+  module_enable($modules);
+}

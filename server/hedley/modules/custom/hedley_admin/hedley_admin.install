@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * Implements hook_install().
+ */
+function hedley_admin_install() {
+  $default_theme = variable_get('theme_default', 'bartik');
+
+  $block = array(
+    'module' => 'system',
+    'delta' => 'menu-ihangane-admin-menu',
+    'theme' => $default_theme,
+    'status' => 1,
+    'weight' => 0,
+    'region' => 'sidebar_first',
+    'pages' => '',
+    'cache' => -1,
+  );
+
+  $query = db_insert('block')->fields(array('module', 'delta', 'theme', 'status', 'weight', 'region', 'pages', 'cache'));
+  $query->values($block);
+  $query->execute();
+}
