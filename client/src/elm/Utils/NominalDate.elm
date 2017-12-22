@@ -9,6 +9,7 @@ import Time.Date exposing (year, month, day, delta, daysInMonth)
 import Gizra.NominalDate exposing (NominalDate)
 import Date.Extra exposing (fromParts, diff, Interval(Day))
 import Date.Extra.Facts exposing (monthFromMonthNumber)
+import Html exposing (Html)
 import Translate exposing (translate, Language)
 
 
@@ -16,6 +17,10 @@ import Translate exposing (translate, Language)
 -}
 type Days
     = Days Int
+
+
+type Months
+    = Months Int
 
 
 {-| Converts a `NominalDate` to an Elm-core `Date`, with the supplied values
@@ -53,6 +58,15 @@ diffDays low high =
     delta high low
         |> .days
         |> Days
+
+
+{-| Like `diffDays`, but shows whole completed months.
+-}
+diffMonths : NominalDate -> NominalDate -> Months
+diffMonths low high =
+    delta high low
+        |> .months
+        |> Months
 
 
 {-| Difference between two dates, in terms of months and days. This is based on
@@ -127,20 +141,99 @@ renderAgeMonthsDays language birthDate now =
             translate language <| Translate.Age months days
 
 
-renderDateOfBirth : Language -> NominalDate -> String
-renderDateOfBirth language birthDate =
+renderAgeMonthsDaysAbbrev : Language -> NominalDate -> NominalDate -> String
+renderAgeMonthsDaysAbbrev language birthDate now =
+    let
+        diff =
+            diffCalendarMonthsAndDays birthDate now
+
+        days =
+            diff.days
+
+        months =
+            diff.months
+
+        dayPart =
+            if days == 0 then
+                Nothing
+            else if days == 1 then
+                Just <|
+                    "1 "
+                        ++ translate language Translate.Day
+            else
+                Just <|
+                    toString days
+                        ++ " "
+                        ++ translate language Translate.Days
+
+        monthPart =
+            if months == 0 then
+                Nothing
+            else
+                Just <|
+                    toString months
+                        ++ " "
+                        ++ translate language Translate.MonthAbbrev
+    in
+        [ monthPart, dayPart ]
+            |> List.filterMap identity
+            |> String.join " "
+
+
+renderAgeMonthsDaysHtml : Language -> NominalDate -> NominalDate -> List (Html any)
+renderAgeMonthsDaysHtml language birthDate now =
+    let
+        diff =
+            diffCalendarMonthsAndDays birthDate now
+
+        days =
+            diff.days
+
+        months =
+            diff.months
+
+        dayPart =
+            if days == 0 then
+                Nothing
+            else if days == 1 then
+                Just <|
+                    "1 "
+                        ++ translate language Translate.Day
+            else
+                Just <|
+                    toString days
+                        ++ " "
+                        ++ translate language Translate.Days
+
+        monthPart =
+            if months == 0 then
+                Nothing
+            else
+                Just <|
+                    toString months
+                        ++ " "
+                        ++ translate language Translate.MonthAbbrev
+    in
+        [ monthPart, dayPart ]
+            |> List.filterMap identity
+            |> List.map Html.text
+            |> List.intersperse (Html.br [] [])
+
+
+renderDate : Language -> NominalDate -> String
+renderDate language date =
     let
         day =
-            Time.Date.day birthDate
+            Time.Date.day date
 
         month =
-            Time.Date.month birthDate
+            Time.Date.month date
                 |> monthFromMonthNumber
                 |> Translate.ResolveMonth
                 |> translate language
 
         year =
-            Time.Date.year birthDate
+            Time.Date.year date
     in
         (if day < 10 then
             "0" ++ toString day

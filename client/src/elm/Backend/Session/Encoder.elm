@@ -15,22 +15,27 @@ import Restful.Endpoint exposing (encodeEntityId, fromEntityId)
 
 {-| Encodes a `Session`.
 -}
-encodeSession : Session -> Value
+encodeSession : Session -> List ( String, Value )
 encodeSession session =
-    object
-        [ ( "scheduled_date", encodeDrupalRange encodeYYYYMMDD session.scheduledDate )
-        , ( "clinic", encodeEntityId session.clinicId )
-        , ( "closed", bool session.closed )
-        ]
+    [ ( "scheduled_date", encodeDrupalRange encodeYYYYMMDD session.scheduledDate )
+    , ( "clinic", encodeEntityId session.clinicId )
+    , ( "closed", bool session.closed )
+    ]
 
 
 encodeOfflineSession : OfflineSession -> List ( String, Value )
 encodeOfflineSession offline =
+    -- The first three encode the data for this particular session
     [ ( "scheduled_date", encodeDrupalRange encodeYYYYMMDD offline.session.scheduledDate )
     , ( "clinic", encodeEntityId offline.session.clinicId )
     , ( "closed", bool offline.session.closed )
 
     -- TODO: Generalize the "withId" encoding in a function somewhere
+    , ( "all_sessions"
+      , EveryDictList.toList offline.allSessions
+            |> List.map (\( id, session ) -> object (( "id", encodeEntityId id ) :: encodeSession session))
+            |> list
+      )
     , ( "clinics"
       , EveryDictList.toList offline.clinics
             |> List.map (\( id, clinic ) -> object (( "id", encodeEntityId id ) :: encodeClinic clinic))

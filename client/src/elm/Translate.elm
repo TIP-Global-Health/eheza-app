@@ -31,7 +31,9 @@ type TranslationId
     | ActivitiesLabel ActivityType
     | ActivitiesTitle ActivityType
     | ActivitiesToComplete Int
+    | ActivityProgressReport ActivityType
     | ActivePage Page
+    | AgeWord
     | Age Int Int
     | AgeDays Int
     | AgeMonthsWithoutDay Int
@@ -47,10 +49,14 @@ type TranslationId
     | Baby
     | BabyName String
     | BeginHealthAssessment
+    | Born
     | Cancel
     | CentimeterShorthand
+    | ChartPhrase ChartPhrase
     | CheckIn
     | ChildNutritionSignLabel ChildNutritionSign
+    | ChildNutritionSignReport ChildNutritionSign
+    | ChildOf
     | Children
     | ClickTheCheckMark
     | ClinicNotFound
@@ -59,6 +65,9 @@ type TranslationId
     | Continue
     | Dashboard
     | DataIsNowSaved
+    | DateOfLastAssessment
+    | Day
+    | Days
     | DownloadHealthAssessment
     | DownloadSession1
     | DownloadSession2
@@ -86,6 +95,8 @@ type TranslationId
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
+    | MonthAbbrev
+    | MonthsOld
     | Mother
     | MotherName String
     | Mothers
@@ -111,6 +122,7 @@ type TranslationId
     | Page404
     | PageNotFoundMsg
     | Participants
+    | ParticipantSummary
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
     | PlaceholderEnterWeight
@@ -143,6 +155,7 @@ type TranslationId
     | UploadingSession1
     | UploadingSession2
     | UploadSuccessful
+    | ViewProgressReport
     | WelcomeUser String
     | YouHaveACompletedSession
     | ZScoreHeightForAge
@@ -168,6 +181,24 @@ type LoginPhrase
     | YouMustLoginBefore
 
 
+type ChartPhrase
+    = AgeCompletedMonthsYears
+    | Birth
+    | BirthToTwoYears
+    | LengthCm
+    | LengthForAgeBoys
+    | LengthForAgeGirls
+    | Months
+    | OneYear
+    | TwoYears
+    | WeightForAgeBoys
+    | WeightForAgeGirls
+    | WeightForLengthBoys
+    | WeightForLengthGirls
+    | WeightKg
+    | ZScoreChartsAvailableAt
+
+
 translate : Language -> TranslationId -> String
 translate lang trans =
     let
@@ -175,6 +206,9 @@ translate lang trans =
             case trans of
                 AccessDenied ->
                     { english = "Access denied" }
+
+                AgeWord ->
+                    { english = "Age" }
 
                 Activities ->
                     { english = "Activities" }
@@ -251,6 +285,29 @@ translate lang trans =
                         ChildActivity Weight ->
                             { english = "Weight" }
 
+                ActivityProgressReport activity ->
+                    case activity of
+                        MotherActivity FamilyPlanning ->
+                            { english = "Planning" }
+
+                        ChildActivity Height ->
+                            { english = "Height" }
+
+                        ChildActivity Muac ->
+                            { english = "MUAC" }
+
+                        ChildActivity NutritionSigns ->
+                            { english = "Nutrition Signs" }
+
+                        ChildActivity ChildPicture ->
+                            { english = "Photo" }
+
+                        ChildActivity ProgressReport ->
+                            { english = "Progress Report" }
+
+                        ChildActivity Weight ->
+                            { english = "Weight" }
+
                 ActivitiesToComplete count ->
                     { english = "To Do (" ++ toString count ++ ")" }
 
@@ -282,6 +339,9 @@ translate lang trans =
                                 MotherPage motherId ->
                                     { english = "Mother" }
 
+                                ProgressReportPage childId ->
+                                    { english = "Progress Report" }
+
                         UserPage (ClinicsPage _) ->
                             { english = "Clinics" }
 
@@ -289,7 +349,7 @@ translate lang trans =
                             { english = "'My Account'" }
 
                 Age months days ->
-                    { english = toString months ++ " months and " ++ toString days ++ " days" }
+                    { english = toString months ++ " months " ++ toString days ++ " days" }
 
                 AgeDays days ->
                     { english = toString days ++ " days" }
@@ -298,13 +358,13 @@ translate lang trans =
                     { english = toString months ++ " month" }
 
                 AgeSingleBoth months days ->
-                    { english = toString months ++ " month and " ++ toString days ++ " day" }
+                    { english = toString months ++ " month " ++ toString days ++ " day" }
 
                 AgeSingleMonth months days ->
-                    { english = toString months ++ " month and " ++ toString days ++ " days" }
+                    { english = toString months ++ " month " ++ toString days ++ " days" }
 
                 AgeSingleDayWithMonth months days ->
-                    { english = toString months ++ " months and " ++ toString days ++ " day" }
+                    { english = toString months ++ " months " ++ toString days ++ " day" }
 
                 AgeSingleDayWithoutMonth months days ->
                     { english = toString days ++ " day" }
@@ -330,6 +390,9 @@ translate lang trans =
                 BabyName name ->
                     { english = "Baby: " ++ name }
 
+                Born ->
+                    { english = "Born" }
+
                 BeginHealthAssessment ->
                     { english = "Begin Health Assessment" }
 
@@ -338,6 +401,53 @@ translate lang trans =
 
                 CentimeterShorthand ->
                     { english = "cm" }
+
+                ChartPhrase phrase ->
+                    case phrase of
+                        AgeCompletedMonthsYears ->
+                            { english = "Age (completed months and years)" }
+
+                        Birth ->
+                            { english = "Birth" }
+
+                        BirthToTwoYears ->
+                            { english = "Birth to 2 years (z-scores)" }
+
+                        LengthCm ->
+                            { english = "Length (cm)" }
+
+                        LengthForAgeBoys ->
+                            { english = "Length-for-age BOYS" }
+
+                        LengthForAgeGirls ->
+                            { english = "Length-for-age GIRLS" }
+
+                        Months ->
+                            { english = "Months" }
+
+                        OneYear ->
+                            { english = "1 year" }
+
+                        TwoYears ->
+                            { english = "2 years" }
+
+                        WeightForAgeBoys ->
+                            { english = "Weight-for-age BOYS" }
+
+                        WeightForAgeGirls ->
+                            { english = "Weight-for-age GIRLS" }
+
+                        WeightForLengthBoys ->
+                            { english = "Weight-for-length BOYS" }
+
+                        WeightForLengthGirls ->
+                            { english = "Weight-for-length GIRLS" }
+
+                        WeightKg ->
+                            { english = "Weight (kg)" }
+
+                        ZScoreChartsAvailableAt ->
+                            { english = "Z-score charts available at" }
 
                 CheckIn ->
                     { english = "Check in:" }
@@ -365,8 +475,34 @@ translate lang trans =
                         PoorAppetite ->
                             { english = "Poor Appetite" }
 
+                ChildNutritionSignReport sign ->
+                    case sign of
+                        AbdominalDistention ->
+                            { english = "Abdominal Distention" }
+
+                        Apathy ->
+                            { english = "Apathy" }
+
+                        BrittleHair ->
+                            { english = "Brittle Hair" }
+
+                        DrySkin ->
+                            { english = "Dry Skin" }
+
+                        Edema ->
+                            { english = "Edema" }
+
+                        None ->
+                            { english = "None" }
+
+                        PoorAppetite ->
+                            { english = "Poor Appetite" }
+
                 Children ->
                     { english = "Children" }
+
+                ChildOf ->
+                    { english = "Child of" }
 
                 ClickTheCheckMark ->
                     { english = "Click the check mark if the mother is in attendance. The check mark will appear green when a mother has been signed in." }
@@ -388,6 +524,15 @@ translate lang trans =
 
                 DataIsNowSaved ->
                     { english = "Data is now saved on the server." }
+
+                DateOfLastAssessment ->
+                    { english = "Date of last Assessment" }
+
+                Day ->
+                    { english = "day" }
+
+                Days ->
+                    { english = "days" }
 
                 DownloadHealthAssessment ->
                     { english = "Download Health Assessment" }
@@ -547,6 +692,12 @@ translate lang trans =
                 MeasurementLost amount ->
                     { english = "Lost " ++ (toString amount) }
 
+                MonthAbbrev ->
+                    { english = "mo" }
+
+                MonthsOld ->
+                    { english = "months old" }
+
                 Mother ->
                     { english = "Mother" }
 
@@ -629,6 +780,9 @@ translate lang trans =
 
                 Participants ->
                     { english = "Participants" }
+
+                ParticipantSummary ->
+                    { english = "Participant Summary" }
 
                 PlaceholderEnterHeight ->
                     { english = "Enter height here…" }
@@ -766,6 +920,9 @@ translate lang trans =
 
                 UploadSuccessful ->
                     { english = "Upload Successful" }
+
+                ViewProgressReport ->
+                    { english = "View Progress Report" }
 
                 WelcomeUser name ->
                     { english = "Welcome " ++ name }

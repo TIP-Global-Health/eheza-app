@@ -47,6 +47,13 @@ decodeOfflineSession =
                 decode OfflineSession
                     -- For the "basic" session data, we can reuse the decoder
                     |> custom decodeSession
+                    -- This is optional for transitional reasons. We can successfully decode
+                    -- the previous structure from local storage ... then, once we actually
+                    -- re-fetch the data from the backend, we'll get the updated structure.
+                    -- So, we could make this required at some point in the future.
+                    |> optional "all_sessions"
+                        (EveryDictList.decodeArray2 (field "id" decodeEntityId) decodeSession)
+                        EveryDictList.empty
                     -- We get **all** the basic clinic information, as a convenience for
                     -- presenting the UI while offline
                     |> required "clinics" (EveryDictList.decodeArray2 (field "id" decodeEntityId) decodeClinic)

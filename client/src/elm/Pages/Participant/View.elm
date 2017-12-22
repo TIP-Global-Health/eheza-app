@@ -20,10 +20,9 @@ import Pages.Page exposing (Page(..), SessionPage(..))
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
 import Participant.Model exposing (Participant)
 import Participant.Utils exposing (childParticipant, motherParticipant)
-import ProgressReport.View exposing (viewProgressReport)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage)
-import Utils.NominalDate exposing (renderAgeMonthsDays, renderDateOfBirth)
+import Utils.NominalDate exposing (renderAgeMonthsDays, renderDate)
 import ZScore.Model
 
 
@@ -69,7 +68,7 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
                 |> Maybe.Extra.toList
 
         dateOfBirth =
-            renderDateOfBirth language child.birthDate
+            renderDate language child.birthDate
                 |> Trans.ReportDOB
                 |> translate language
                 |> text
@@ -126,7 +125,19 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
 
         content =
             if model.selectedTab == ProgressReport then
-                [ viewProgressReport language zscores ( childId, child ) session
+                [ div
+                    [ class "ui segment"
+                    ]
+                    [ a
+                        [ ProgressReportPage childId
+                            |> SessionPage
+                            |> Redirect
+                            |> onClick
+                        ]
+                        [ span [ class "icon-progress-report" ] []
+                        , text <| translate language Trans.ViewProgressReport
+                        ]
+                    ]
                     |> keyed "progress-report"
                 ]
             else

@@ -42,6 +42,9 @@ delta2url previous current =
                 ParticipantsPage ->
                     Just <| UrlChange NewEntry "#participants"
 
+                ProgressReportPage id ->
+                    Just <| UrlChange NewEntry ("#progress/" ++ toString (fromEntityId id))
+
         -- These are pages that required a logged-in user
         UserPage userPage ->
             case userPage of
@@ -75,6 +78,7 @@ parseUrl =
             (s "activity" </> string)
         , map (SessionPage AttendancePage) (s "attendance")
         , map (SessionPage << ChildPage << toEntityId) (s "child" </> int)
+        , map (SessionPage << ProgressReportPage << toEntityId) (s "progress" </> int)
         , map (UserPage << ClinicsPage << Just << toEntityId) (s "clinics" </> int)
         , map (UserPage (ClinicsPage Nothing)) (s "clinics")
         , map LoginPage (s "login")

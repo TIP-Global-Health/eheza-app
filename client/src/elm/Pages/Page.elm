@@ -99,3 +99,4 @@ type SessionPage
     | ParticipantsPage -- page that shows a list of participants
     | ChildPage ChildId -- page that focuses on a particular child
     | MotherPage MotherId -- page that focuses on a particular mother
+    | ProgressReportPage ChildId -- shows progress report for child with ID
