@@ -253,20 +253,15 @@ svg.z-score {
     text-transform: uppercase;
   }
 
-  .ui.table tr td.negative, .ui.table tr td.positive, .ui.table tr td.warning {
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-
-  .ui.table tr td.negative {
+  .negative {
     color: #FF1501 !important;
   }
 
-  .ui.table tr td.positive {
+  .positive {
     color: #65AB1F !important;
   }
 
-  .ui.table tr td.warning {
+  .warning {
     color: #F9E100 !important;
   }
 }
