@@ -250,6 +250,15 @@ function hedley_update_7001() {
  * Installs the new ihangane_admin module.
  */
 function hedley_update_7002() {
-  $modules = ['ihangane_admin'];
+  $modules = ['hedley_admin'];
   module_enable($modules);
+
+  $query = db_update('block');
+  $query->fields([
+    'status' => 1,
+    'region' => 'sidebar_first',
+  ]);
+  $query->condition('delta', 'menu-ihangane-admin-menu');
+  $query->condition('theme', 'bartik');
+  $query->execute();
 }
