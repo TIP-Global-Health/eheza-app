@@ -21,6 +21,14 @@ function waitForElement(selector, fn, model, tryCount) {
     }, 200);
 }
 
+// Normally, you'd want to do this on the server, but there doesn't seem to be
+// a mechanism for it on Pantheon, since the request for the app doesn't hit
+// the PHP code.
+if (location.hostname.endsWith('pantheonsite.io') && location.protocol == 'http:') {
+    // This will do a redirect
+    location.protocol = 'https:';
+}
+
 // The Elm side of the "credentials" mechanism allows us to distinguish between
 // credentials for multiple backends. However, we can't really make much use of
 // that at the "flags" stage, because on the JS side we don't know what the
