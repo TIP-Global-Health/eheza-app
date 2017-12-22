@@ -14,13 +14,15 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
+import Maybe.Extra
 import Pages.Model exposing (MsgSession(..))
 import Pages.Page exposing (Page(..), SessionPage(..))
 import Pages.PageNotFound.View
 import Translate exposing (Language(..), translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, renderDate, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml)
-import ZScore.Model exposing (Centimetres(..), Kilograms(..))
+import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore(..))
+import ZScore.Utils exposing (zScoreWeightForAge, zScoreHeightForAge)
 import ZScore.View
 
 
@@ -207,24 +209,9 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                                                 |> Maybe.map .value
                                                 |> Maybe.map
                                                     (\((MuacInCm cm) as muac) ->
-                                                        let
-                                                            indication =
-                                                                case muacIndication muac of
-                                                                    MuacRed ->
-                                                                        "negative"
-
-                                                                    MuacYellow ->
-                                                                        "warning"
-
-                                                                    MuacGreen ->
-                                                                        "positive"
-
-                                                            value =
-                                                                toString cm ++ translate language Translate.CentimeterShorthand
-                                                        in
-                                                            span
-                                                                [ class indication ]
-                                                                [ text value ]
+                                                        span
+                                                            [ class <| classForIndication <| muacIndicationToIndication <| muacIndication muac ]
+                                                            [ text <| toString cm ++ translate language Translate.CentimeterShorthand ]
                                                     )
                                                 |> Maybe.withDefault (text "--")
                                                 |> List.singleton
@@ -233,15 +220,33 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                                     |> (::) muacCell
                                     |> tr []
 
+                            viewWeightWithIndication weight =
+                                let
+                                    kg =
+                                        case weight.value of
+                                            WeightInKg kilos ->
+                                                kilos
+
+                                    ageInDays =
+                                        diffDays child.birthDate weight.dateMeasured
+
+                                    indication =
+                                        zScoreWeightForAge zscores ageInDays child.gender (Kilograms kg)
+                                            |> Maybe.map (class << classForIndication << zScoreToIndication)
+                                            |> Maybe.Extra.toList
+
+                                    value =
+                                        toString kg ++ translate language Translate.KilogramShorthand
+                                in
+                                    span indication [ text value ]
+
                             weights =
                                 groupOfTwelve
                                     |> List.map
                                         (\id ->
                                             EveryDict.get id weightValuesBySession
-                                                |> Maybe.map .value
-                                                |> Maybe.map (\(WeightInKg kg) -> toString kg ++ translate language Translate.KilogramShorthand)
-                                                |> Maybe.withDefault "--"
-                                                |> text
+                                                |> Maybe.map viewWeightWithIndication
+                                                |> Maybe.withDefault (text "--")
                                                 |> List.singleton
                                                 |> td [ class "center aligned" ]
                                         )
@@ -409,6 +414,63 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                 , charts
                 ]
             ]
+
+
+type Indication
+    = Negative
+    | Warning
+    | Positive
+
+
+classForIndication : Indication -> String
+classForIndication indication =
+    case indication of
+        Negative ->
+            "negative"
+
+        Warning ->
+            "warning"
+
+        Positive ->
+            "positive"
+
+
+muacIndicationToIndication : MuacIndication -> Indication
+muacIndicationToIndication muacIndication =
+    case muacIndication of
+        MuacRed ->
+            Negative
+
+        MuacYellow ->
+            Warning
+
+        MuacGreen ->
+            Positive
+
+
+zScoreToIndication : ZScore -> Indication
+zScoreToIndication zScore =
+    case zScore of
+        ZScore3 ->
+            Positive
+
+        ZScore2 ->
+            Positive
+
+        ZScore1 ->
+            Positive
+
+        ZScore0 ->
+            Positive
+
+        ZScore1Neg ->
+            Positive
+
+        ZScore2Neg ->
+            Warning
+
+        ZScore3Neg ->
+            Negative
 
 
 chartHeightForAge : Child -> Height -> ( Days, Centimetres )
