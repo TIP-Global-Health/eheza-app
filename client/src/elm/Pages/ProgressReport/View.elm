@@ -191,10 +191,8 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                                     |> List.map
                                         (\id ->
                                             EveryDict.get id heightValuesBySession
-                                                |> Maybe.map .value
-                                                |> Maybe.map (\(HeightInCm cm) -> toString cm ++ translate language Translate.CentimeterShorthand)
-                                                |> Maybe.withDefault "--"
-                                                |> text
+                                                |> Maybe.map viewHeightWithIndication
+                                                |> Maybe.withDefault (text "--")
                                                 |> List.singleton
                                                 |> td [ class "center aligned" ]
                                         )
@@ -219,6 +217,26 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                                         )
                                     |> (::) muacCell
                                     |> tr []
+
+                            viewHeightWithIndication height =
+                                let
+                                    cm =
+                                        case height.value of
+                                            HeightInCm cms ->
+                                                cms
+
+                                    ageInDays =
+                                        diffDays child.birthDate height.dateMeasured
+
+                                    indication =
+                                        zScoreHeightForAge zscores ageInDays child.gender (Centimetres cm)
+                                            |> Maybe.map (class << classForIndication << zScoreToIndication)
+                                            |> Maybe.Extra.toList
+
+                                    value =
+                                        toString cm ++ translate language Translate.CentimeterShorthand
+                                in
+                                    span indication [ text value ]
 
                             viewWeightWithIndication weight =
                                 let
