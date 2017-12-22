@@ -195,16 +195,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['relationships']['reverse_field_clinic_node']['table'] = 'node';
   $handler->display->display_options['relationships']['reverse_field_clinic_node']['field'] = 'reverse_field_clinic_node';
   $handler->display->display_options['relationships']['reverse_field_clinic_node']['label'] = 'Mother';
-  /* Relationship: Entity Reference: Referencing entity */
-  $handler->display->display_options['relationships']['reverse_field_clinic_node_1']['id'] = 'reverse_field_clinic_node_1';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node_1']['table'] = 'node';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node_1']['field'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node_1']['label'] = 'Open sessions';
-  /* Relationship: Entity Reference: Referencing entity */
-  $handler->display->display_options['relationships']['reverse_field_clinic_node_2']['id'] = 'reverse_field_clinic_node_2';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node_2']['table'] = 'node';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node_2']['field'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node_2']['label'] = 'Closed sessions';
   $handler->display->display_options['defaults']['fields'] = FALSE;
   /* Field: User: Name */
   $handler->display->display_options['fields']['name']['id'] = 'name';
@@ -224,20 +214,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['nid']['relationship'] = 'reverse_field_clinic_node';
   $handler->display->display_options['fields']['nid']['group_type'] = 'count';
   $handler->display->display_options['fields']['nid']['label'] = 'Mothers assigned';
-  /* Field: COUNT(Content: Nid) */
-  $handler->display->display_options['fields']['nid_1']['id'] = 'nid_1';
-  $handler->display->display_options['fields']['nid_1']['table'] = 'node';
-  $handler->display->display_options['fields']['nid_1']['field'] = 'nid';
-  $handler->display->display_options['fields']['nid_1']['relationship'] = 'reverse_field_clinic_node_1';
-  $handler->display->display_options['fields']['nid_1']['group_type'] = 'count';
-  $handler->display->display_options['fields']['nid_1']['label'] = 'Open sessions';
-  /* Field: COUNT(Content: Nid) */
-  $handler->display->display_options['fields']['nid_2']['id'] = 'nid_2';
-  $handler->display->display_options['fields']['nid_2']['table'] = 'node';
-  $handler->display->display_options['fields']['nid_2']['field'] = 'nid';
-  $handler->display->display_options['fields']['nid_2']['relationship'] = 'reverse_field_clinic_node_2';
-  $handler->display->display_options['fields']['nid_2']['group_type'] = 'count';
-  $handler->display->display_options['fields']['nid_2']['label'] = 'Closed sessions';
   /* Field: Content: Edit link */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
@@ -329,6 +305,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_closed']['table'] = 'field_data_field_closed';
   $handler->display->display_options['fields']['field_closed']['field'] = 'field_closed';
   $handler->display->display_options['fields']['field_closed']['label'] = 'Status';
+  $handler->display->display_options['fields']['field_closed']['type'] = 'list_key';
   /* Field: Content: Post date */
   $handler->display->display_options['fields']['created']['id'] = 'created';
   $handler->display->display_options['fields']['created']['table'] = 'node';
