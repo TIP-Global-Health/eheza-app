@@ -3,8 +3,8 @@ module Pages.ProgressReport.View exposing (view)
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (Height, Weight, HeightInCm(..), WeightInKg(..), MuacInCm(..))
-import Backend.Measurement.Utils exposing (mapMeasurementData, currentValue, currentValueWithId)
+import Backend.Measurement.Model exposing (Height, Weight, HeightInCm(..), WeightInKg(..), MuacInCm(..), MuacIndication(..))
+import Backend.Measurement.Utils exposing (mapMeasurementData, currentValue, currentValueWithId, muacIndication)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildHistoricalMeasurements, getChildMeasurementData, getChild, getMother)
 import EveryDict
@@ -185,7 +185,6 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                                     |> tr []
 
                             heights =
-                                -- TODO: Figure out positive, negative, warning
                                 groupOfTwelve
                                     |> List.map
                                         (\id ->
@@ -206,9 +205,28 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                                         (\id ->
                                             EveryDict.get id muacValuesBySession
                                                 |> Maybe.map .value
-                                                |> Maybe.map (\(MuacInCm cm) -> toString cm ++ translate language Translate.CentimeterShorthand)
-                                                |> Maybe.withDefault "--"
-                                                |> text
+                                                |> Maybe.map
+                                                    (\((MuacInCm cm) as muac) ->
+                                                        let
+                                                            indication =
+                                                                case muacIndication muac of
+                                                                    MuacRed ->
+                                                                        "negative"
+
+                                                                    MuacYellow ->
+                                                                        "warning"
+
+                                                                    MuacGreen ->
+                                                                        "positive"
+
+                                                            value =
+                                                                toString cm ++ translate language Translate.CentimeterShorthand
+                                                        in
+                                                            span
+                                                                [ class indication ]
+                                                                [ text value ]
+                                                    )
+                                                |> Maybe.withDefault (text "--")
                                                 |> List.singleton
                                                 |> td [ class "center aligned" ]
                                         )
