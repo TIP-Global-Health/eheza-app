@@ -142,18 +142,22 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
   }
 
   /**
-   * Return basic session data for all sessions for the relevant clinic.
+   * Return basic session data for all sessions for all clinics.
    *
    * Of course, this could just be a separate, independent HTTP request, but
    * it's convenient to provide everything needed for an offline session at
    * once.
    *
-   * TODO: We could try to limit the number of sessions provided ... for
-   * instance, we don't really need very old sessions that no current
-   * participant ever participated in.
+   * TODO: We could try to limit the number of sessions provided. Originally,
+   * we only sent the sessions for the current clinic, but that doesn't work
+   * quite right, because we could have measurements which were done for
+   * other clinics ... for instance, in cases where a mother changed clinics.
+   * So, for now, we'll just send all of them. It would be smarter to send just
+   * some, but this will do for now.
    *
    * @param int $clinic_id
-   *   The clinic ID for this session.
+   *   The clinic ID for this session (not actually used, since now we're
+   *   sending all the sessions).
    *
    * @return array
    *   Array with the RESTful output.
@@ -166,9 +170,8 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
         ->entityCondition('entity_type', 'node')
         ->entityCondition('bundle', 'session')
         ->propertyCondition('status', NODE_PUBLISHED)
-        ->fieldCondition('field_clinic', 'target_id', $clinic_id)
         ->fieldOrderBy('field_scheduled_date', 'value', 'ASC')
-        ->range(0, 2000)
+        ->range(0, 20000)
         ->execute()
     );
 

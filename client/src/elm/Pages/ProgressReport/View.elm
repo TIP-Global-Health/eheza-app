@@ -150,18 +150,62 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                     ]
                 ]
 
-        -- This is probably a bit too obscure.
-        floats =
-            EveryDictList.keys session.offlineSession.allSessions
-                |> List.Extra.dropWhile
-                    (\id ->
-                        not <|
-                            EveryDict.member id heightValuesBySession
-                                || EveryDict.member id muacValuesBySession
-                                || EveryDict.member id weightValuesBySession
-                    )
-                |> List.Extra.takeWhile (\id -> id /= sessionId)
-                |> (\ids -> ids ++ [ sessionId ])
+        -- What we're doing here is figuring out which sessions we expect the
+        -- child to have attended. Our data model isn't perfect for this
+        -- purpose at the moment ... eventually, we should probably deal with
+        -- this more thoroughly.
+        --
+        -- For now, what we have is `sessions.offlineSession.allSessions`,
+        -- which is, in fact, basic data for all sessions and all clinics, in
+        -- order by date. We also have our measurement values, indexed by
+        -- session ID. So, basically we fold through `allSessions`, with a
+        -- `Maybe ClinicId` and a list of session ID's as our state.
+        --
+        -- * If we have a measurement for the session ID, then the child was
+        --   expected (so we add the session to the list), and we set the
+        --   child's current clinic to the clinic for that session.
+        --
+        -- * If we don't have a measurement for the session ID, we consider
+        --   it an expected session only if it matches the current clinic that
+        --   we're tracking.
+        --
+        -- So, we start by inferring "no clinic" (and thus no expected sessions),
+        -- and then infer a change in clinic whenever we see a measurement in a
+        -- session for a different clinic. That should produce reasonable results
+        -- until we model all of this more explicitly.
+        --
+        -- We do a reverse at the end for the sake of just reversing once.
+        expectedSessions =
+            session.offlineSession.allSessions
+                |> EveryDictList.foldl checkSession ( [], Nothing )
+                |> Tuple.first
+                |> List.reverse
+
+        checkSession id currentSession (( expectedIds, currentClinic ) as state) =
+            if hasMeasurement id then
+                -- We add the id at the front, and reverse everything once
+                -- we're all done.
+                ( id :: expectedIds
+                , Just currentSession.clinicId
+                )
+            else if currentClinic == Just currentSession.clinicId then
+                -- This is a session for the clinic the child appears to be
+                -- assigned to at this time, so it's expected even though
+                -- missed.
+                ( id :: expectedIds
+                , currentClinic
+                )
+            else
+                -- No measurement, and not the current clinic, so just keep going.
+                state
+
+        hasMeasurement id =
+            EveryDict.member id heightValuesBySession
+                || EveryDict.member id muacValuesBySession
+                || EveryDict.member id weightValuesBySession
+
+        heightWeightMuacTable =
+            expectedSessions
                 |> greedyGroupsOf 12
                 |> List.map
                     (\groupOfTwelve ->
@@ -427,7 +471,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                 , subtitle
                 , childInfo
                 , nutritionSigns
-                , floats
+                , heightWeightMuacTable
                 , photos
                 , charts
                 ]
