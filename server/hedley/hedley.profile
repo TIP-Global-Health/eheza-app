@@ -11,7 +11,7 @@
  */
 function hedley_form_install_configure_form_alter(&$form, $form_state) {
   // Pre-populate the site name with the server name.
-  $form['site_information']['site_name']['#default_value'] = 'E-Heza System';
+  $form['site_information']['site_name']['#default_value'] = $_SERVER['SERVER_NAME'];
 }
 
 /**
@@ -39,6 +39,8 @@ function hedley_install_tasks() {
  */
 function hedley_setup_variables() {
   $variables = array(
+    //Site Variables
+    'site_name' => 'E-Heza System',
     // Features default export path.
     'features_default_export_path' => 'profiles/hedley/modules/custom',
     // Mime-mail.
