@@ -34,7 +34,7 @@ Each mother is assigned to a clinic.'),
       'description' => t('A Session represents a date on which data-entry is scheduled for a clinic.'),
       'has_title' => '1',
       'title_label' => t('Title'),
-      'help' => t('In order to schedule data entry for a clinic,  create a new `Session`, assign the relevant `Clinic`, and specify the `Scheduled Date` for the measurements. This needs to be done in advance, using the Drupal admin UI. It will then show up in the client app as being available for data entry, until the `Close On` date.'),
+      'help' => t('In order to schedule data entry for a clinic,  create a new <em>Session</em>, assign the relevant <em>Clinic</em>, and specify the <em>Scheduled Date</em> for the measurements. This needs to be done in advance, using the Drupal admin UI. It will then show up in the client app as being available for data entry, until the <em>Close On</em> date.'),
     ),
   );
   drupal_alter('node_info', $items);
