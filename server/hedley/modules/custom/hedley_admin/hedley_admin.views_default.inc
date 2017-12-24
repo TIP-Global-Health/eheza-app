@@ -22,7 +22,7 @@ function hedley_admin_views_default_views() {
 
   /* Display: Master */
   $handler = $view->new_display('default', 'Master', 'default');
-  $handler->display->display_options['title'] = 'Childs';
+  $handler->display->display_options['title'] = 'Children';
   $handler->display->display_options['use_more_always'] = FALSE;
   $handler->display->display_options['group_by'] = TRUE;
   $handler->display->display_options['access']['type'] = 'perm';
@@ -182,6 +182,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title']['id'] = 'title';
   $handler->display->display_options['fields']['title']['table'] = 'node';
   $handler->display->display_options['fields']['title']['field'] = 'title';
+  $handler->display->display_options['fields']['title']['label'] = 'Name';
   $handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
   $handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
   /* Field: Content: Title */
@@ -208,11 +209,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['nid']['alter']['text'] = 'Progress report';
   $handler->display->display_options['fields']['nid']['alter']['make_link'] = TRUE;
   $handler->display->display_options['fields']['nid']['alter']['path'] = '/app/#child/[nid]';
-  /* Field: Content: Edit link */
-  $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
-  $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
-  $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
-  $handler->display->display_options['fields']['edit_node']['label'] = 'Edit';
   /* Field: Content: Scheduled Date */
   $handler->display->display_options['fields']['field_scheduled_date']['id'] = 'field_scheduled_date';
   $handler->display->display_options['fields']['field_scheduled_date']['table'] = 'field_data_field_scheduled_date';
@@ -230,7 +226,18 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_scheduled_date']['group_columns'] = array(
     'value2' => 'value2',
   );
-  $handler->display->display_options['path'] = 'admin/content/childs';
+  /* Field: Content: Edit link */
+  $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
+  $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
+  $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
+  $handler->display->display_options['fields']['edit_node']['label'] = 'Edit';
+  $handler->display->display_options['path'] = 'admin/content/children';
+  $handler->display->display_options['menu']['type'] = 'normal';
+  $handler->display->display_options['menu']['title'] = 'Children';
+  $handler->display->display_options['menu']['weight'] = '6';
+  $handler->display->display_options['menu']['name'] = 'main-menu';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
 
   /* Display: Clinic */
   $handler = $view->new_display('page', 'Clinic', 'page_1');
@@ -298,6 +305,12 @@ function hedley_admin_views_default_views() {
   );
   $handler->display->display_options['filters']['type_1']['group'] = 1;
   $handler->display->display_options['path'] = 'admin/content/clinics';
+  $handler->display->display_options['menu']['type'] = 'normal';
+  $handler->display->display_options['menu']['title'] = 'Clinics';
+  $handler->display->display_options['menu']['weight'] = '2';
+  $handler->display->display_options['menu']['name'] = 'main-menu';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
 
   /* Display: Session */
   $handler = $view->new_display('page', 'Session', 'page_2');
@@ -375,8 +388,8 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['nothing']['id'] = 'nothing';
   $handler->display->display_options['fields']['nothing']['table'] = 'views';
   $handler->display->display_options['fields']['nothing']['field'] = 'nothing';
-  $handler->display->display_options['fields']['nothing']['label'] = 'Measures';
-  $handler->display->display_options['fields']['nothing']['alter']['text'] = 'Measures';
+  $handler->display->display_options['fields']['nothing']['label'] = 'Measurements';
+  $handler->display->display_options['fields']['nothing']['alter']['text'] = 'Measurements';
   $handler->display->display_options['fields']['nothing']['alter']['make_link'] = TRUE;
   $handler->display->display_options['fields']['nothing']['alter']['path'] = '/admin/content/measures/[nid]';
   $handler->display->display_options['defaults']['filter_groups'] = FALSE;
@@ -396,6 +409,12 @@ function hedley_admin_views_default_views() {
     'session' => 'session',
   );
   $handler->display->display_options['path'] = 'admin/content/sessions';
+  $handler->display->display_options['menu']['type'] = 'normal';
+  $handler->display->display_options['menu']['title'] = 'Sessions';
+  $handler->display->display_options['menu']['weight'] = '8';
+  $handler->display->display_options['menu']['name'] = 'main-menu';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
 
   /* Display: Mother */
   $handler = $view->new_display('page', 'Mother', 'page_3');
@@ -432,6 +451,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title']['id'] = 'title';
   $handler->display->display_options['fields']['title']['table'] = 'node';
   $handler->display->display_options['fields']['title']['field'] = 'title';
+  $handler->display->display_options['fields']['title']['label'] = 'Name';
   $handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
   $handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
   /* Field: COUNT(DISTINCT Content: Nid) */
@@ -440,7 +460,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['nid']['field'] = 'nid';
   $handler->display->display_options['fields']['nid']['relationship'] = 'reverse_field_mother_node';
   $handler->display->display_options['fields']['nid']['group_type'] = 'count_distinct';
-  $handler->display->display_options['fields']['nid']['label'] = 'Childs';
+  $handler->display->display_options['fields']['nid']['label'] = 'Children';
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title_1']['id'] = 'title_1';
   $handler->display->display_options['fields']['title_1']['table'] = 'node';
@@ -490,11 +510,17 @@ function hedley_admin_views_default_views() {
     'family_planning' => 'family_planning',
   );
   $handler->display->display_options['path'] = 'admin/content/mothers';
+  $handler->display->display_options['menu']['type'] = 'normal';
+  $handler->display->display_options['menu']['title'] = 'Mothers';
+  $handler->display->display_options['menu']['weight'] = '4';
+  $handler->display->display_options['menu']['name'] = 'main-menu';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
 
-  /* Display: Measure */
-  $handler = $view->new_display('page', 'Measure', 'page_4');
+  /* Display: Measurements */
+  $handler = $view->new_display('page', 'Measurements', 'page_4');
   $handler->display->display_options['defaults']['title'] = FALSE;
-  $handler->display->display_options['title'] = 'Measure';
+  $handler->display->display_options['title'] = 'Measurements';
   $handler->display->display_options['defaults']['relationships'] = FALSE;
   /* Relationship: Entity Reference: Referenced Entity */
   $handler->display->display_options['relationships']['field_session_target_id']['id'] = 'field_session_target_id';
@@ -659,6 +685,12 @@ function hedley_admin_views_default_views() {
     'weight' => 'weight',
   );
   $handler->display->display_options['path'] = 'admin/content/measures';
+  $handler->display->display_options['menu']['type'] = 'normal';
+  $handler->display->display_options['menu']['title'] = 'Measurements';
+  $handler->display->display_options['menu']['weight'] = '10';
+  $handler->display->display_options['menu']['name'] = 'main-menu';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
   $export['admin_views'] = $view;
 
   return $export;
