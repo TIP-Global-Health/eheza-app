@@ -12,11 +12,11 @@ function hedley_install() {
   ini_set('auto_detect_line_endings', TRUE);
 
   // Enable our themes.
-  theme_enable(array('bartik', 'seven'));
+  theme_enable(array('bartik'));
 
   // Set the default theme.
   variable_set('theme_default', 'bartik');
-  variable_set('admin_theme', 'seven');
+  variable_set('admin_theme', 'bartik');
 
   // Enable node view page override by Page manager module.
   variable_set('page_manager_node_view_disabled', FALSE);
@@ -242,4 +242,23 @@ function hedley_update_7001() {
   hedley_add_nurse_permissions_for_content_type($content_types);
 
   return "Added nurse permissions for family_planning";
+}
+
+/**
+ * Implements hook_update_7002().
+ *
+ * Installs the new ihangane_admin module.
+ */
+function hedley_update_7002() {
+  $modules = ['hedley_admin'];
+  module_enable($modules);
+
+  $query = db_update('block');
+  $query->fields([
+    'status' => 1,
+    'region' => 'sidebar_first',
+  ]);
+  $query->condition('delta', 'menu-ihangane-admin-menu');
+  $query->condition('theme', 'bartik');
+  $query->execute();
 }
