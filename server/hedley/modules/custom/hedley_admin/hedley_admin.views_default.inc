@@ -517,10 +517,10 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['menu']['context'] = 0;
   $handler->display->display_options['menu']['context_only_inline'] = 0;
 
-  /* Display: Measure */
-  $handler = $view->new_display('page', 'Measure', 'page_4');
+  /* Display: Measurements */
+  $handler = $view->new_display('page', 'Measurements', 'page_4');
   $handler->display->display_options['defaults']['title'] = FALSE;
-  $handler->display->display_options['title'] = 'Measure';
+  $handler->display->display_options['title'] = 'Measurements';
   $handler->display->display_options['defaults']['relationships'] = FALSE;
   /* Relationship: Entity Reference: Referenced Entity */
   $handler->display->display_options['relationships']['field_session_target_id']['id'] = 'field_session_target_id';
