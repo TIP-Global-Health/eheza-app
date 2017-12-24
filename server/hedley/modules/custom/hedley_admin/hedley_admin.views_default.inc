@@ -388,8 +388,8 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['nothing']['id'] = 'nothing';
   $handler->display->display_options['fields']['nothing']['table'] = 'views';
   $handler->display->display_options['fields']['nothing']['field'] = 'nothing';
-  $handler->display->display_options['fields']['nothing']['label'] = 'Measures';
-  $handler->display->display_options['fields']['nothing']['alter']['text'] = 'Measures';
+  $handler->display->display_options['fields']['nothing']['label'] = 'Measurements';
+  $handler->display->display_options['fields']['nothing']['alter']['text'] = 'Measurements';
   $handler->display->display_options['fields']['nothing']['alter']['make_link'] = TRUE;
   $handler->display->display_options['fields']['nothing']['alter']['path'] = '/admin/content/measures/[nid]';
   $handler->display->display_options['defaults']['filter_groups'] = FALSE;
