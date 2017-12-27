@@ -1,4 +1,10 @@
 <?php
+/**
+ * @file
+ * Code for the Hedley user feature.
+ */
+
+include_once 'hedley_user.features.inc';
 
 /**
  * @file
