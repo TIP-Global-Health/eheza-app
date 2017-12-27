@@ -701,6 +701,14 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['pager']['options']['offset'] = '0';
   $handler->display->display_options['style_plugin'] = 'views_data_export_csv';
   $handler->display->display_options['path'] = 'admin/content/childs/csv';
+  $handler->display->display_options['displays'] = array(
+    'page' => 'page',
+    'default' => 0,
+    'page_1' => 0,
+    'page_2' => 0,
+    'page_3' => 0,
+    'page_4' => 0,
+  );
 
   /* Display: Clinic CSV */
   $handler = $view->new_display('views_data_export', 'Clinic CSV', 'views_data_export_2');
@@ -763,6 +771,14 @@ function hedley_admin_views_default_views() {
     'clinic' => 'clinic',
   );
   $handler->display->display_options['path'] = 'admin/content/clinics/csv';
+  $handler->display->display_options['displays'] = array(
+    'page_1' => 'page_1',
+    'default' => 0,
+    'page' => 0,
+    'page_2' => 0,
+    'page_3' => 0,
+    'page_4' => 0,
+  );
   $handler->display->display_options['sitename_title'] = 0;
 
   /* Display: Session CSV */
@@ -855,6 +871,14 @@ function hedley_admin_views_default_views() {
     'session' => 'session',
   );
   $handler->display->display_options['path'] = 'admin/content/sessions/csv';
+  $handler->display->display_options['displays'] = array(
+    'page_2' => 'page_2',
+    'default' => 0,
+    'page' => 0,
+    'page_1' => 0,
+    'page_3' => 0,
+    'page_4' => 0,
+  );
   $handler->display->display_options['sitename_title'] = 0;
 
   /* Display: Mother CSV */
@@ -950,12 +974,20 @@ function hedley_admin_views_default_views() {
     'family_planning' => 'family_planning',
   );
   $handler->display->display_options['path'] = 'admin/content/mothers/csv';
+  $handler->display->display_options['displays'] = array(
+    'page_3' => 'page_3',
+    'default' => 0,
+    'page' => 0,
+    'page_1' => 0,
+    'page_2' => 0,
+    'page_4' => 0,
+  );
   $handler->display->display_options['sitename_title'] = 0;
 
-  /* Display: Measurements */
-  $handler = $view->new_display('views_data_export', 'Measurements', 'views_data_export_5');
+  /* Display: Measurements CSV */
+  $handler = $view->new_display('views_data_export', 'Measurements CSV', 'views_data_export_5');
   $handler->display->display_options['defaults']['title'] = FALSE;
-  $handler->display->display_options['title'] = 'Measurements CSV';
+  $handler->display->display_options['title'] = 'Measurements';
   $handler->display->display_options['pager']['type'] = 'none';
   $handler->display->display_options['pager']['options']['offset'] = '0';
   $handler->display->display_options['style_plugin'] = 'views_data_export_csv';
@@ -1114,6 +1146,14 @@ function hedley_admin_views_default_views() {
     'weight' => 'weight',
   );
   $handler->display->display_options['path'] = 'admin/content/measures/csv';
+  $handler->display->display_options['displays'] = array(
+    'page_4' => 'page_4',
+    'default' => 0,
+    'page' => 0,
+    'page_1' => 0,
+    'page_2' => 0,
+    'page_3' => 0,
+  );
   $handler->display->display_options['sitename_title'] = 0;
   $export['admin_views'] = $view;
 
