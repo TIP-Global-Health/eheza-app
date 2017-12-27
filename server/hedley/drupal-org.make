@@ -96,6 +96,9 @@ projects[views][version] = "3.18"
 projects[views_bulk_operations][subdir] = "contrib"
 projects[views_bulk_operations][version] = "3.4"
 
+projects[views_data_export][subdir] = "contrib"
+projects[views_data_export][version] = "3.2"
+
 ; Libraries
 ; For the 'hedley_faker' module.
 libraries[faker][download][type] = get
