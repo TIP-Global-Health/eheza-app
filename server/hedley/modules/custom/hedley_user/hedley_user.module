@@ -2,5 +2,12 @@
 
 /**
  * @file
+ * Code for the Hedley user feature.
+ */
+
+include_once 'hedley_user.features.inc';
+
+/**
+ * @file
  * Drupal needs this blank file.
  */

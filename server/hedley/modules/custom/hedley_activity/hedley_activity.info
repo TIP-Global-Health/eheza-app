@@ -70,6 +70,7 @@ features[variable][] = auto_entitylabel_php_node_muac
 features[variable][] = auto_entitylabel_php_node_nutrition
 features[variable][] = auto_entitylabel_php_node_photo
 features[variable][] = auto_entitylabel_php_node_weight
+features[variable][] = auto_entitylabel_strip_node_family_planning
 features[variable][] = field_bundle_settings_node__family_planning
 features[variable][] = field_bundle_settings_node__height
 features[variable][] = field_bundle_settings_node__muac
