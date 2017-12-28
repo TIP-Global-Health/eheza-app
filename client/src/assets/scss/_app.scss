@@ -75,6 +75,9 @@ a {
   .icon-mother {
     background: url(#{$img-path}icon-mother-small.svg) no-repeat center;
     background-size: 36px 38px;
+    position: relative;
+    left: 1px;
+    bottom: 1px;
   }
 
   .icon-baby {
