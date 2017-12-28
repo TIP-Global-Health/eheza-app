@@ -28,6 +28,9 @@ function hedley_install() {
   date_default_timezone_set('Asia/Jerusalem');
   variable_set('date_default_timezone', 'Asia/Jerusalem');
   variable_set('date_first_day', 1);
+
+  // The Access admin menu perm is added when admin_menu is installed.
+  hedley_update_7004();
 }
 
 /**
