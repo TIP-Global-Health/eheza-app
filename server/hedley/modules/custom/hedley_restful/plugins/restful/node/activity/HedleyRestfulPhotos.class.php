@@ -31,7 +31,7 @@ class HedleyRestfulPhotos extends HedleyRestfulChildActivityBase {
       'process_callbacks' => [
         [$this, 'imageProcess'],
       ],
-      'image_styles' => ['thumbnail'],
+      'image_styles' => ['patient-photo'],
     ];
 
     return $public_fields;
