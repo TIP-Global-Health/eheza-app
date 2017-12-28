@@ -83,6 +83,8 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                         , p []
                             [ text <| renderAgeMonthsDays language child.birthDate session.offlineSession.session.scheduledDate.start
                             , text " "
+                            , text <| translate language Translate.Old
+                            , text " "
                             , strong [] [ text <| translate language (Translate.Gender child.gender) ]
                             ]
                         , p []
