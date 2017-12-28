@@ -84,13 +84,17 @@ decodeChildMeasurementList =
         |> optional "weight" (list (decodeWithEntityId decodeWeight)) []
 
 
-{-| The `oneOf` considers the encoding the backend supplies and the encoding
-we use for the cache.
+{-| The `oneOf` provides some back-compat for locally stored values.
 -}
 decodePhoto : Decoder Photo
 decodePhoto =
     decode PhotoValue
-        |> requiredAt [ "photo", "styles", "thumbnail" ] string
+        |> custom
+            (oneOf
+                [ at [ "photo", "styles", "patient-photo" ] string
+                , at [ "photo", "styles", "thumbnail" ] string
+                ]
+            )
         |> optionalAt [ "photo", "id" ] (map Just decodeInt) Nothing
         |> decodeChildMeasurement
 
