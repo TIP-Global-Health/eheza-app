@@ -29,7 +29,7 @@ function hedley_user_field_default_field_instances() {
     ),
     'entity_type' => 'user',
     'field_name' => 'field_avatar',
-    'label' => 'Avatar',
+    'label' => 'Profile photo',
     'required' => 0,
     'settings' => array(
       'alt_field' => 0,
@@ -124,9 +124,9 @@ function hedley_user_field_default_field_instances() {
 
   // Translatables
   // Included for use with string extractors like potx.
-  t('Avatar');
   t('Clinics');
   t('Phone');
+  t('Profile photo');
   t('Which clinics is this user allowed to participate in?');
 
   return $field_instances;
