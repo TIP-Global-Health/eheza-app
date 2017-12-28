@@ -32,7 +32,7 @@ encodePhoto =
             , object
                 [ ( "styles"
                   , object
-                        [ ( "thumbnail"
+                        [ ( "patient-photo"
                           , string photo.url
                           )
                         ]

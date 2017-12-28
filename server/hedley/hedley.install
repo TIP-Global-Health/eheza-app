@@ -28,6 +28,9 @@ function hedley_install() {
   date_default_timezone_set('Asia/Jerusalem');
   variable_set('date_default_timezone', 'Asia/Jerusalem');
   variable_set('date_first_day', 1);
+
+  // The Access admin menu perm is added when admin_menu is installed.
+  hedley_update_7004();
 }
 
 /**
@@ -271,4 +274,14 @@ function hedley_update_7002() {
 function hedley_update_7003() {
   $modules = ['views_data_export'];
   module_enable($modules);
+}
+
+/**
+ * Implements hook_update_7004().
+ *
+ * Revokes the admin user access permission for the administrator role.
+ */
+function hedley_update_7004() {
+  $admin_role = user_role_load_by_name('administrator');
+  user_role_revoke_permissions($admin_role->rid, ['access administration menu']);
 }
