@@ -81,11 +81,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                             [ class "ui header" ]
                             [ text child.name ]
                         , p []
-                            [ diffMonths child.birthDate session.offlineSession.session.scheduledDate.start
-                                |> (\(Months months) -> [ text <| toString months ])
-                                |> strong []
-                            , text " "
-                            , text <| translate language Translate.MonthsOld
+                            [ text <| renderAgeMonthsDays language child.birthDate session.offlineSession.session.scheduledDate.start
                             , text " "
                             , strong [] [ text <| translate language (Translate.Gender child.gender) ]
                             ]
