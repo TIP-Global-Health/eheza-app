@@ -254,6 +254,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title']['table'] = 'node';
   $handler->display->display_options['fields']['title']['field'] = 'title';
   $handler->display->display_options['fields']['title']['label'] = 'Clinic name';
+  $handler->display->display_options['fields']['title']['link_to_node'] = FALSE;
   /* Field: COUNT(Content: Nid) */
   $handler->display->display_options['fields']['nid']['id'] = 'nid';
   $handler->display->display_options['fields']['nid']['table'] = 'node';
@@ -357,6 +358,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title']['field'] = 'title';
   $handler->display->display_options['fields']['title']['relationship'] = 'field_clinic_target_id';
   $handler->display->display_options['fields']['title']['label'] = 'Clinic';
+  $handler->display->display_options['fields']['title']['link_to_node'] = FALSE;
   /* Field: Content: Closed */
   $handler->display->display_options['fields']['field_closed']['id'] = 'field_closed';
   $handler->display->display_options['fields']['field_closed']['table'] = 'field_data_field_closed';
@@ -459,6 +461,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_1']['field'] = 'title';
   $handler->display->display_options['fields']['title_1']['relationship'] = 'field_clinic_target_id';
   $handler->display->display_options['fields']['title_1']['label'] = 'Clinic';
+  $handler->display->display_options['fields']['title_1']['link_to_node'] = FALSE;
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title_2']['id'] = 'title_2';
   $handler->display->display_options['fields']['title_2']['table'] = 'node';
@@ -542,6 +545,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title']['field'] = 'title';
   $handler->display->display_options['fields']['title']['relationship'] = 'field_clinic_target_id';
   $handler->display->display_options['fields']['title']['label'] = 'Clinic';
+  $handler->display->display_options['fields']['title']['link_to_node'] = FALSE;
   /* Field: Content: Date Measured */
   $handler->display->display_options['fields']['field_date_measured']['id'] = 'field_date_measured';
   $handler->display->display_options['fields']['field_date_measured']['table'] = 'field_data_field_date_measured';
@@ -748,6 +752,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title']['table'] = 'node';
   $handler->display->display_options['fields']['title']['field'] = 'title';
   $handler->display->display_options['fields']['title']['label'] = 'Clinic name';
+  $handler->display->display_options['fields']['title']['link_to_node'] = FALSE;
   /* Field: COUNT(Content: Nid) */
   $handler->display->display_options['fields']['nid']['id'] = 'nid';
   $handler->display->display_options['fields']['nid']['table'] = 'node';
