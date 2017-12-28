@@ -35,7 +35,7 @@ function hedley_patient_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_avatar',
-    'label' => 'Avatar',
+    'label' => 'Profile photo',
     'required' => 0,
     'settings' => array(
       'alt_field' => 0,
@@ -225,7 +225,7 @@ function hedley_patient_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_avatar',
-    'label' => 'Avatar',
+    'label' => 'Profile photo',
     'required' => 0,
     'settings' => array(
       'alt_field' => 0,
@@ -350,11 +350,11 @@ function hedley_patient_field_default_field_instances() {
   // Translatables
   // Included for use with string extractors like potx.
   t('Assign each mother to a clinic so that she will be included when data-entry sessions are scheduled for the clinic.');
-  t('Avatar');
   t('Clinic');
   t('Date birth');
   t('Gender');
   t('Mother');
+  t('Profile photo');
 
   return $field_instances;
 }
