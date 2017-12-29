@@ -186,15 +186,6 @@ function hedley_admin_views_default_views() {
     'bypass_access' => 0,
     'link' => 0,
   );
-  /* Field: Content: Nid */
-  $handler->display->display_options['fields']['nid']['id'] = 'nid';
-  $handler->display->display_options['fields']['nid']['table'] = 'node';
-  $handler->display->display_options['fields']['nid']['field'] = 'nid';
-  $handler->display->display_options['fields']['nid']['label'] = 'Progress report';
-  $handler->display->display_options['fields']['nid']['alter']['alter_text'] = TRUE;
-  $handler->display->display_options['fields']['nid']['alter']['text'] = 'Progress report';
-  $handler->display->display_options['fields']['nid']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nid']['alter']['path'] = '/app/#child/[nid]';
   /* Field: Content: Scheduled Date */
   $handler->display->display_options['fields']['field_scheduled_date']['id'] = 'field_scheduled_date';
   $handler->display->display_options['fields']['field_scheduled_date']['table'] = 'field_data_field_scheduled_date';
