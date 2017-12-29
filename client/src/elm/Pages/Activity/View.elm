@@ -85,7 +85,7 @@ view config language currentDate zscores selectedActivity fullSession model =
                             config.getAvatarUrl participant
 
                         imageView =
-                            thumbnailImage config.iconClass imageSrc name thumbnailDimensions.height thumbnailDimensions.width
+                            thumbnailImage (config.iconClass ++ " rounded") imageSrc name thumbnailDimensions.height thumbnailDimensions.width
                     in
                         div
                             [ classList

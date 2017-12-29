@@ -122,7 +122,10 @@ a {
   display: block;
   width: 100%;
   height: 100%;
-  border-radius: 50%;
+
+  &.rounded {
+    border-radius: 50%;
+  }
 
   &.mother {
     background: url(#{$img-path}icon-mother-grey.svg) no-repeat center;
