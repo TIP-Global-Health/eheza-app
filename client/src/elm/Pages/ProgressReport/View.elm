@@ -38,7 +38,8 @@ view language zscores childId ( sessionId, session ) =
                 |> Pages.PageNotFound.View.viewPage language (SetActivePage LoginPage)
 
 
-{-| It would probably be beneficial to break up this function into parts.
+{-| This function is more complex than one would like ... when reviewing the
+data model in future, it might be nice to take this function into account.
 -}
 viewFoundChild : Language -> ZScore.Model.Model -> ( ChildId, Child ) -> ( SessionId, EditableSession ) -> Html MsgSession
 viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
@@ -58,12 +59,20 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                 [ class "ui report header" ]
                 [ text <| translate language Translate.ParticipantSummary ]
 
+        -- We use the date of the last session that actually had a measurement.
+        -- If there are no measurements, we use the date for the current
+        -- session.
+        dateOfLastAssessment =
+            lastSessionWithMeasurement
+                |> Maybe.map (\last -> last.scheduledDate.start)
+                |> Maybe.withDefault session.offlineSession.session.scheduledDate.start
+
         subtitle =
             p
                 [ class "date" ]
                 [ text <| translate language Translate.DateOfLastAssessment
                 , text ": "
-                , text <| renderDate language session.offlineSession.session.scheduledDate.start
+                , text <| renderDate language dateOfLastAssessment
                 ]
 
         childInfo =
@@ -81,11 +90,9 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                             [ class "ui header" ]
                             [ text child.name ]
                         , p []
-                            [ diffMonths child.birthDate session.offlineSession.session.scheduledDate.start
-                                |> (\(Months months) -> [ text <| toString months ])
-                                |> strong []
+                            [ text <| renderAgeMonthsDays language child.birthDate dateOfLastAssessment
                             , text " "
-                            , text <| translate language Translate.MonthsOld
+                            , text <| translate language Translate.Old
                             , text " "
                             , strong [] [ text <| translate language (Translate.Gender child.gender) ]
                             ]
@@ -113,6 +120,8 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
         -- there wouldn't be any), and we're just leaving it blank if it wasn't
         -- entered in this session (rather than looking back to a previous
         -- session when it was entered).
+        --
+        -- See <https://github.com/Gizra/ihangane/issues/382#issuecomment-353273873>
         nutritionSigns =
             table
                 [ class "ui celled table" ]
@@ -199,10 +208,20 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                 -- No measurement, and not the current clinic, so just keep going.
                 state
 
+        -- Do we have any kind of measurement for the child for the specified session?
         hasMeasurement id =
             EveryDict.member id heightValuesBySession
                 || EveryDict.member id muacValuesBySession
                 || EveryDict.member id weightValuesBySession
+                || EveryDict.member id nutritionValuesBySession
+                || EveryDict.member id photoValuesBySession
+
+        -- What's the last session for which we have some measurement?
+        lastSessionWithMeasurement =
+            expectedSessions
+                |> List.reverse
+                |> List.Extra.find hasMeasurement
+                |> Maybe.andThen (\id -> EveryDictList.get id session.offlineSession.allSessions)
 
         heightWeightMuacTable =
             expectedSessions
@@ -423,6 +442,9 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
         photoValues =
             getValues .photo .photo .photos
 
+        nutritionValues =
+            getValues .nutrition .nutrition .nutritions
+
         indexBySession values =
             values
                 |> List.filterMap
@@ -444,6 +466,12 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
 
         weightValuesBySession =
             indexBySession weightValues
+
+        nutritionValuesBySession =
+            indexBySession nutritionValues
+
+        photoValuesBySession =
+            indexBySession photoValues
 
         heightForAgeData =
             List.map (chartHeightForAge child) heightValues

@@ -12,6 +12,7 @@ module Activity.Utils
         , getAllChildActivities
         , getAllMotherActivities
         , getTotalsNumberPerActivity
+        , hasAnyCompletedActivity
         , hasAnyPendingChildActivity
         , hasAnyPendingMotherActivity
         , hasCompletedChildActivity
@@ -462,3 +463,21 @@ childHasAnyCompletedActivity : ChildId -> EditableSession -> Bool
 childHasAnyCompletedActivity childId session =
     getChildMeasurementData childId session
         |> hasAnyCompletedChildActivity
+
+
+{-| Is there any completed activity of any kind?
+-}
+hasAnyCompletedActivity : EditableSession -> Bool
+hasAnyCompletedActivity session =
+    let
+        forChildren =
+            session.offlineSession.children
+                |> EveryDict.toList
+                |> List.any (\( id, _ ) -> childHasAnyCompletedActivity id session)
+
+        forMothers =
+            session.offlineSession.mothers
+                |> EveryDictList.toList
+                |> List.any (\( id, _ ) -> motherHasAnyCompletedActivity id session)
+    in
+        forChildren || forMothers

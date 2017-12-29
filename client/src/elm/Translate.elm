@@ -117,6 +117,7 @@ type TranslationId
     | NotAvailable
     | NotConnected
     | OK
+    | Old
     | OnceYouEndYourSession
     | Page
     | Page404
@@ -765,6 +766,9 @@ translate lang trans =
 
                 OK ->
                     { english = "OK" }
+
+                Old ->
+                    { english = "old" }
 
                 OnceYouEndYourSession ->
                     { english = "Once you end your session, you will no longer be able to edit or add data. Remember to upload this session within the next 48 hours." }
