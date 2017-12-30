@@ -179,6 +179,7 @@ function hedley_standard_install() {
 
   $permissions = [];
   $nurse_permitted_types = [
+    'family_planning',
     'height',
     'mother',
     'muac',
