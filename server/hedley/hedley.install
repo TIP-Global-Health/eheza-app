@@ -240,12 +240,11 @@ function hedley_add_nurse_permissions_for_content_type(array $content_types) {
 /**
  * Implements hook_update_7001().
  *
+ * Adds family_planning permission for nurses.
  */
 function hedley_update_7001() {
   $content_types = ['family_planning'];
   hedley_add_nurse_permissions_for_content_type($content_types);
-
-  return "Added nurse permissions for family_planning";
 }
 
 /**
