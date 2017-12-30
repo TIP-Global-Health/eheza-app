@@ -316,6 +316,11 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     $session = entity_metadata_wrapper('node', $id);
     $wrapped_account = entity_metadata_wrapper('user', $account);
 
+    // Check if the session is closed.
+    if ($session->field_closed->value()) {
+      throw new \RestfulForbiddenException('This session is closed.');
+    }
+
     $target_clinic = $session->field_clinic->getIdentifier();
     $permitted_clinics = $wrapped_account->field_clinics->getIterator();
 
