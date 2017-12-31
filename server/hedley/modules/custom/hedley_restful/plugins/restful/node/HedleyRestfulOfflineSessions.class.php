@@ -311,8 +311,6 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       return;
     }
 
-    // Otherwise, check which clinics a user is assigned to
-    // and compare that to the session's clinic.
     $session = entity_metadata_wrapper('node', $id);
     $wrapped_account = entity_metadata_wrapper('user', $account);
 
@@ -321,6 +319,29 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       throw new \RestfulForbiddenException('This session is closed.');
     }
 
+    // Check if we're too far before the start date, or after the end.
+    $start = $session->field_scheduled_date->value->value();
+    $end = $session->field_scheduled_date->value2->value();
+
+    // The rule is no access until one day before start. But, we also
+    // have some timezone issues to worry about. So, in fact, we subtract
+    // an extra day as an oversimplification.
+    $no_access_before = $start - 86400 - 86400;
+
+    // The rule is no access after the **end** of the day. But, we again
+    // add an extra day to oversimplify timezone issues.
+    $no_access_after = $end + 86400 + 86400;
+
+    if (REQUEST_TIME < $no_access_before) {
+      throw new \RestfulForbiddenException('This session is not available yet.');
+    }
+
+    if (REQUEST_TIME > $no_access_after) {
+      throw new \RestfulForbiddenException('This session has passed its expiration date.');
+    }
+
+    // Check which clinics a user is assigned to
+    // and compare that to the session's clinic.
     $target_clinic = $session->field_clinic->getIdentifier();
     $permitted_clinics = $wrapped_account->field_clinics->getIterator();
 
