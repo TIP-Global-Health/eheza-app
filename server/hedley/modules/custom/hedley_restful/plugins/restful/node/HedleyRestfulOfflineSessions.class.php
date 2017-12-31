@@ -284,6 +284,79 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
   }
 
   /**
+   * {@inheritdoc}
+   *
+   * Overridden so that we can provide some custom access control.
+   */
+  public function viewEntity($id) {
+    $this->checkAccess($id);
+
+    return parent::viewEntity($id);
+  }
+
+  /**
+   * Check whether we should allow access to the specified session ID.
+   *
+   * Throws an exception if access should be denied.
+   *
+   * @param int $id
+   *   The session ID.
+   */
+  public function checkAccess($id) {
+    $account = $this->getAccount();
+    $admin_role = user_role_load_by_name('administrator');
+
+    // Let admins access any session.
+    if (user_has_role($admin_role->rid, $account)) {
+      return;
+    }
+
+    $session = entity_metadata_wrapper('node', $id);
+    $wrapped_account = entity_metadata_wrapper('user', $account);
+
+    // Check if the session is closed.
+    if ($session->field_closed->value()) {
+      throw new \RestfulForbiddenException('This session is closed.');
+    }
+
+    // Check if we're too far before the start date, or after the end.
+    $start = $session->field_scheduled_date->value->value();
+    $end = $session->field_scheduled_date->value2->value();
+
+    // The rule is no access until one day before start. But, we also
+    // have some timezone issues to worry about. So, in fact, we subtract
+    // an extra day as an oversimplification.
+    $no_access_before = $start - 86400 - 86400;
+
+    // The rule is no access after the **end** of the day. But, we again
+    // add an extra day to oversimplify timezone issues.
+    $no_access_after = $end + 86400 + 86400;
+
+    if (REQUEST_TIME < $no_access_before) {
+      throw new \RestfulForbiddenException('This session is not available yet.');
+    }
+
+    if (REQUEST_TIME > $no_access_after) {
+      throw new \RestfulForbiddenException('This session has passed its expiration date.');
+    }
+
+    // Check which clinics a user is assigned to
+    // and compare that to the session's clinic.
+    $target_clinic = $session->field_clinic->getIdentifier();
+    $permitted_clinics = $wrapped_account->field_clinics->getIterator();
+
+    // Iterate over the permitted clinics.
+    foreach ($permitted_clinics as $clinic) {
+      if ($clinic->getIdentifier() == $target_clinic) {
+        return;
+      }
+    }
+
+    // If we're still here, we don't have permission.
+    throw new \RestfulForbiddenException('You do not have access to the clinic for this session.');
+  }
+
+  /**
    * Execute the edits the client has made in a session.
    *
    * The edits are passed in the JSON body of the request,
@@ -310,6 +383,8 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     // entity in the normal way, use the Sessions endpoint instead.
     $request = $this->getRequest();
     $account = $this->getAccount();
+
+    $this->checkAccess($sessionId);
 
     // Load the session.
     $session = entity_metadata_wrapper('node', $sessionId);
