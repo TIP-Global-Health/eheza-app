@@ -495,6 +495,22 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['type_1']['value'] = array(
     'family_planning' => 'family_planning',
   );
+  /* Filter criterion: Content: Type */
+  $handler->display->display_options['filters']['type_2']['id'] = 'type_2';
+  $handler->display->display_options['filters']['type_2']['table'] = 'node';
+  $handler->display->display_options['filters']['type_2']['field'] = 'type';
+  $handler->display->display_options['filters']['type_2']['relationship'] = 'reverse_field_mother_node';
+  $handler->display->display_options['filters']['type_2']['value'] = array(
+    'child' => 'child',
+  );
+  /* Filter criterion: Content: Type */
+  $handler->display->display_options['filters']['type_3']['id'] = 'type_3';
+  $handler->display->display_options['filters']['type_3']['table'] = 'node';
+  $handler->display->display_options['filters']['type_3']['field'] = 'type';
+  $handler->display->display_options['filters']['type_3']['relationship'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['filters']['type_3']['value'] = array(
+    'session' => 'session',
+  );
   $handler->display->display_options['path'] = 'admin/content/mothers';
   $handler->display->display_options['menu']['type'] = 'normal';
   $handler->display->display_options['menu']['title'] = 'Mothers';
