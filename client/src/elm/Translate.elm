@@ -3,8 +3,10 @@ module Translate exposing (..)
 import Activity.Model exposing (ActivityType(..), MotherActivityType(..), ChildActivityType(..))
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..), MuacIndication(..))
 import Backend.Child.Model exposing (Gender(..))
+import Backend.Entities exposing (..)
 import Date exposing (Month(..))
 import Pages.Page exposing (..)
+import Restful.Endpoint exposing (fromEntityId)
 import Restful.Login exposing (LoginError(..))
 
 
@@ -143,7 +145,7 @@ type TranslationId
     | SearchByName
     | SelectYourClinic
     | SessionClosed
-    | SessionClosed2
+    | SessionClosed2 SessionId
     | SessionInProgress
     | SessionUnauthorized
     | SessionUnauthorized2
@@ -880,10 +882,12 @@ translate lang trans =
                 SessionClosed ->
                     { english = "Session closed" }
 
-                SessionClosed2 ->
+                SessionClosed2 sessionId ->
                     { english =
-                        """You have stored data on the device, but it was not uploaded to the server and the session is closed.
-                        Please contact the Ihangane project for further instructions."""
+                        "You have stored data on the device for session "
+                            ++ toString (fromEntityId sessionId)
+                            ++ ", but it was not uploaded to the server and the session is closed. "
+                            ++ "Please contact the Ihangane project for further instructions."
                     }
 
                 SessionInProgress ->
