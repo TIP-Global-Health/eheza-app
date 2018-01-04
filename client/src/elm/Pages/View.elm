@@ -40,7 +40,7 @@ viewFoundSession user page ( sessionId, session ) model =
             model.zscores
     in
         if isClosed currentDate session then
-            viewClosedSession language session
+            viewClosedSession language sessionId session
         else if not (isAuthorized user session) then
             viewUnauthorizedSession language session
         else
@@ -88,8 +88,8 @@ viewFoundSession user page ( sessionId, session ) model =
                         |> Html.map (MsgMother motherId)
 
 
-viewClosedSession : Language -> EditableSession -> Html MsgSession
-viewClosedSession language session =
+viewClosedSession : Language -> SessionId -> EditableSession -> Html MsgSession
+viewClosedSession language sessionId session =
     div
         [ class "wrap wrap-alt-2" ]
         [ div
@@ -111,7 +111,7 @@ viewClosedSession language session =
         , div
             [ class "ui error message" ]
             [ h1 [] [ text <| translate language Translate.SessionClosed ]
-            , p [] [ text <| translate language Translate.SessionClosed2 ]
+            , p [] [ text <| translate language <| Translate.SessionClosed2 sessionId ]
             ]
         ]
 
