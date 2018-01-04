@@ -459,13 +459,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_2']['field'] = 'title';
   $handler->display->display_options['fields']['title_2']['relationship'] = 'reverse_field_mother_node_1';
   $handler->display->display_options['fields']['title_2']['label'] = 'Planning method';
-  /* Field: COUNT(DISTINCT Content: Nid) */
-  $handler->display->display_options['fields']['nid_1']['id'] = 'nid_1';
-  $handler->display->display_options['fields']['nid_1']['table'] = 'node';
-  $handler->display->display_options['fields']['nid_1']['field'] = 'nid';
-  $handler->display->display_options['fields']['nid_1']['relationship'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['fields']['nid_1']['group_type'] = 'count_distinct';
-  $handler->display->display_options['fields']['nid_1']['label'] = 'Participation';
   /* Field: Content: Edit link */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
