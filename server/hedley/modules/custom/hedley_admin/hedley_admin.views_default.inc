@@ -96,12 +96,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['relationships']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
   $handler->display->display_options['relationships']['field_clinic_target_id']['relationship'] = 'field_mother_target_id';
   $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'Clinic';
-  /* Relationship: Entity Reference: Referencing entity */
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['id'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['table'] = 'node';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['field'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['relationship'] = 'field_clinic_target_id';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['label'] = 'Session';
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
   $handler->display->display_options['fields']['title']['table'] = 'node';
