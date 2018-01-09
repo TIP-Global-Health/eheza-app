@@ -186,23 +186,6 @@ function hedley_admin_views_default_views() {
     'bypass_access' => 0,
     'link' => 0,
   );
-  /* Field: Content: Scheduled Date */
-  $handler->display->display_options['fields']['field_scheduled_date']['id'] = 'field_scheduled_date';
-  $handler->display->display_options['fields']['field_scheduled_date']['table'] = 'field_data_field_scheduled_date';
-  $handler->display->display_options['fields']['field_scheduled_date']['field'] = 'field_scheduled_date';
-  $handler->display->display_options['fields']['field_scheduled_date']['relationship'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['fields']['field_scheduled_date']['settings'] = array(
-    'format_type' => 'custom',
-    'custom_date_format' => 'd/m/y',
-    'fromto' => 'both',
-    'multiple_number' => '',
-    'multiple_from' => '',
-    'multiple_to' => '',
-    'show_remaining_days' => 0,
-  );
-  $handler->display->display_options['fields']['field_scheduled_date']['group_columns'] = array(
-    'value2' => 'value2',
-  );
   /* Field: Content: Edit link */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
