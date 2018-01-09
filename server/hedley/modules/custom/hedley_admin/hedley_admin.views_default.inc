@@ -96,16 +96,11 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['relationships']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
   $handler->display->display_options['relationships']['field_clinic_target_id']['relationship'] = 'field_mother_target_id';
   $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'Clinic';
-  /* Relationship: Entity Reference: Referencing entity */
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['id'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['table'] = 'node';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['field'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['relationship'] = 'field_clinic_target_id';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['label'] = 'Session';
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
   $handler->display->display_options['fields']['title']['table'] = 'node';
   $handler->display->display_options['fields']['title']['field'] = 'title';
+  $handler->display->display_options['fields']['title']['label'] = 'Name';
   $handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
   $handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
   /* Field: Content: Title */
@@ -122,20 +117,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_clinic']['settings'] = array(
     'bypass_access' => 0,
     'link' => 0,
-  );
-  /* Field: Content: Scheduled Date */
-  $handler->display->display_options['fields']['field_scheduled_date']['id'] = 'field_scheduled_date';
-  $handler->display->display_options['fields']['field_scheduled_date']['table'] = 'field_data_field_scheduled_date';
-  $handler->display->display_options['fields']['field_scheduled_date']['field'] = 'field_scheduled_date';
-  $handler->display->display_options['fields']['field_scheduled_date']['relationship'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['fields']['field_scheduled_date']['settings'] = array(
-    'format_type' => 'custom',
-    'custom_date_format' => 'd/m/y',
-    'fromto' => 'value',
-    'multiple_number' => '',
-    'multiple_from' => '',
-    'multiple_to' => '',
-    'show_remaining_days' => 0,
   );
   /* Sort criterion: Content: Post date */
   $handler->display->display_options['sorts']['created']['id'] = 'created';
@@ -185,23 +166,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_clinic']['settings'] = array(
     'bypass_access' => 0,
     'link' => 0,
-  );
-  /* Field: Content: Scheduled Date */
-  $handler->display->display_options['fields']['field_scheduled_date']['id'] = 'field_scheduled_date';
-  $handler->display->display_options['fields']['field_scheduled_date']['table'] = 'field_data_field_scheduled_date';
-  $handler->display->display_options['fields']['field_scheduled_date']['field'] = 'field_scheduled_date';
-  $handler->display->display_options['fields']['field_scheduled_date']['relationship'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['fields']['field_scheduled_date']['settings'] = array(
-    'format_type' => 'custom',
-    'custom_date_format' => 'd/m/y',
-    'fromto' => 'both',
-    'multiple_number' => '',
-    'multiple_from' => '',
-    'multiple_to' => '',
-    'show_remaining_days' => 0,
-  );
-  $handler->display->display_options['fields']['field_scheduled_date']['group_columns'] = array(
-    'value2' => 'value2',
   );
   /* Field: Content: Edit link */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
@@ -418,19 +382,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['relationships']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
   $handler->display->display_options['relationships']['field_clinic_target_id']['ui_name'] = 'Clinic';
   $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'Clinic';
-  /* Relationship: Session */
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['id'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['table'] = 'node';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['field'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['relationship'] = 'field_clinic_target_id';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['ui_name'] = 'Session';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['label'] = 'Session';
-  /* Relationship: Planning method */
-  $handler->display->display_options['relationships']['reverse_field_mother_node_1']['id'] = 'reverse_field_mother_node_1';
-  $handler->display->display_options['relationships']['reverse_field_mother_node_1']['table'] = 'node';
-  $handler->display->display_options['relationships']['reverse_field_mother_node_1']['field'] = 'reverse_field_mother_node';
-  $handler->display->display_options['relationships']['reverse_field_mother_node_1']['ui_name'] = 'Planning method';
-  $handler->display->display_options['relationships']['reverse_field_mother_node_1']['label'] = 'Planning method';
   $handler->display->display_options['defaults']['fields'] = FALSE;
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
@@ -453,12 +404,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_1']['relationship'] = 'field_clinic_target_id';
   $handler->display->display_options['fields']['title_1']['label'] = 'Clinic';
   $handler->display->display_options['fields']['title_1']['link_to_node'] = FALSE;
-  /* Field: Content: Title */
-  $handler->display->display_options['fields']['title_2']['id'] = 'title_2';
-  $handler->display->display_options['fields']['title_2']['table'] = 'node';
-  $handler->display->display_options['fields']['title_2']['field'] = 'title';
-  $handler->display->display_options['fields']['title_2']['relationship'] = 'reverse_field_mother_node_1';
-  $handler->display->display_options['fields']['title_2']['label'] = 'Planning method';
   /* Field: Content: Edit link */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
@@ -481,28 +426,12 @@ function hedley_admin_views_default_views() {
     'mother' => 'mother',
   );
   /* Filter criterion: Content: Type */
-  $handler->display->display_options['filters']['type_1']['id'] = 'type_1';
-  $handler->display->display_options['filters']['type_1']['table'] = 'node';
-  $handler->display->display_options['filters']['type_1']['field'] = 'type';
-  $handler->display->display_options['filters']['type_1']['relationship'] = 'reverse_field_mother_node_1';
-  $handler->display->display_options['filters']['type_1']['value'] = array(
-    'family_planning' => 'family_planning',
-  );
-  /* Filter criterion: Content: Type */
   $handler->display->display_options['filters']['type_2']['id'] = 'type_2';
   $handler->display->display_options['filters']['type_2']['table'] = 'node';
   $handler->display->display_options['filters']['type_2']['field'] = 'type';
   $handler->display->display_options['filters']['type_2']['relationship'] = 'reverse_field_mother_node';
   $handler->display->display_options['filters']['type_2']['value'] = array(
     'child' => 'child',
-  );
-  /* Filter criterion: Content: Type */
-  $handler->display->display_options['filters']['type_3']['id'] = 'type_3';
-  $handler->display->display_options['filters']['type_3']['table'] = 'node';
-  $handler->display->display_options['filters']['type_3']['field'] = 'type';
-  $handler->display->display_options['filters']['type_3']['relationship'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['filters']['type_3']['value'] = array(
-    'session' => 'session',
   );
   $handler->display->display_options['path'] = 'admin/content/mothers';
   $handler->display->display_options['menu']['type'] = 'normal';
@@ -927,19 +856,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['relationships']['reverse_field_mother_node']['field'] = 'reverse_field_mother_node';
   $handler->display->display_options['relationships']['reverse_field_mother_node']['ui_name'] = 'Child';
   $handler->display->display_options['relationships']['reverse_field_mother_node']['label'] = 'Child';
-  /* Relationship: Session */
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['id'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['table'] = 'node';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['field'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['relationship'] = 'field_clinic_target_id';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['ui_name'] = 'Session';
-  $handler->display->display_options['relationships']['reverse_field_clinic_node']['label'] = 'Session';
-  /* Relationship: Planning method */
-  $handler->display->display_options['relationships']['reverse_field_mother_node_1']['id'] = 'reverse_field_mother_node_1';
-  $handler->display->display_options['relationships']['reverse_field_mother_node_1']['table'] = 'node';
-  $handler->display->display_options['relationships']['reverse_field_mother_node_1']['field'] = 'reverse_field_mother_node';
-  $handler->display->display_options['relationships']['reverse_field_mother_node_1']['ui_name'] = 'Planning method';
-  $handler->display->display_options['relationships']['reverse_field_mother_node_1']['label'] = 'Planning method';
   $handler->display->display_options['defaults']['fields'] = FALSE;
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
@@ -961,20 +877,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_1']['relationship'] = 'field_clinic_target_id';
   $handler->display->display_options['fields']['title_1']['label'] = 'Clinic';
   $handler->display->display_options['fields']['title_1']['link_to_node'] = FALSE;
-  /* Field: Content: Title */
-  $handler->display->display_options['fields']['title_2']['id'] = 'title_2';
-  $handler->display->display_options['fields']['title_2']['table'] = 'node';
-  $handler->display->display_options['fields']['title_2']['field'] = 'title';
-  $handler->display->display_options['fields']['title_2']['relationship'] = 'reverse_field_mother_node_1';
-  $handler->display->display_options['fields']['title_2']['label'] = 'Planning method';
-  $handler->display->display_options['fields']['title_2']['link_to_node'] = FALSE;
-  /* Field: COUNT(DISTINCT Content: Nid) */
-  $handler->display->display_options['fields']['nid_1']['id'] = 'nid_1';
-  $handler->display->display_options['fields']['nid_1']['table'] = 'node';
-  $handler->display->display_options['fields']['nid_1']['field'] = 'nid';
-  $handler->display->display_options['fields']['nid_1']['relationship'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['fields']['nid_1']['group_type'] = 'count_distinct';
-  $handler->display->display_options['fields']['nid_1']['label'] = 'Participation';
   $handler->display->display_options['defaults']['filter_groups'] = FALSE;
   $handler->display->display_options['defaults']['filters'] = FALSE;
   /* Filter criterion: Content: Published */
@@ -990,22 +892,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['type']['field'] = 'type';
   $handler->display->display_options['filters']['type']['value'] = array(
     'mother' => 'mother',
-  );
-  /* Filter criterion: Content: Type */
-  $handler->display->display_options['filters']['type_1']['id'] = 'type_1';
-  $handler->display->display_options['filters']['type_1']['table'] = 'node';
-  $handler->display->display_options['filters']['type_1']['field'] = 'type';
-  $handler->display->display_options['filters']['type_1']['relationship'] = 'reverse_field_mother_node_1';
-  $handler->display->display_options['filters']['type_1']['value'] = array(
-    'family_planning' => 'family_planning',
-  );
-  /* Filter criterion: Content: Type */
-  $handler->display->display_options['filters']['type_2']['id'] = 'type_2';
-  $handler->display->display_options['filters']['type_2']['table'] = 'node';
-  $handler->display->display_options['filters']['type_2']['field'] = 'type';
-  $handler->display->display_options['filters']['type_2']['relationship'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['filters']['type_2']['value'] = array(
-    'session' => 'session',
   );
   /* Filter criterion: Content: Type */
   $handler->display->display_options['filters']['type_3']['id'] = 'type_3';
