@@ -21,4 +21,4 @@ if [ -z "${BUILD_WEBDRIVERIO+x}" ]; then
 fi
 
 # Zalenium requires to download this dependency image first.
-docker pull elgalu/selenium
+docker pull elgalu/selenium:3.7
