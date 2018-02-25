@@ -14,6 +14,7 @@ module Restful.Endpoint
         , backend
         , decodeEntityId
         , decodeEntityUuid
+        , decodeSingleDrupalEntity
         , delete
         , drupalBackend
         , drupalEndpoint
@@ -104,7 +105,7 @@ backend entities exposed through a Restful HTTP API.
 
 ## Helpers
 
-@docs (</>)
+@docs (</>), decodeSingleDrupalEntity
 
 -}
 
@@ -279,7 +280,7 @@ So, this is equivalent to something like:
 -}
 withDrupalItems : Backend a -> Backend b
 withDrupalItems =
-    withItems decodeDrupalSingle decodeDrupalList
+    withItems decodeSingleDrupalEntity decodeDrupalList
 
 
 {-| Unwrap items in the simplest possible way:
@@ -484,7 +485,7 @@ drupalEndpoint path decodeValue encodeValue =
         { decodeCount = decodeDrupalCount
         , decodeKey = decodeDrupalId toEntityId
         , decodeMultipleItems = decodeDrupalList
-        , decodeSingleItem = decodeDrupalSingle
+        , decodeSingleItem = decodeSingleDrupalEntity
         , decodeValue = decodeValue
         , encodeCreatedValue = encodeValue
         , encodeParams = always []
@@ -879,8 +880,12 @@ decodeDrupalData =
     field "data"
 
 
-decodeDrupalSingle : Decoder a -> Decoder a
-decodeDrupalSingle =
+{-| Given a decoder for an item, applies that decoder to the kind of
+response Drupal sends for a single item (as the only element in a JSON
+array in a "data" field).
+-}
+decodeSingleDrupalEntity : Decoder a -> Decoder a
+decodeSingleDrupalEntity =
     decodeDrupalData << index 0
 
 
