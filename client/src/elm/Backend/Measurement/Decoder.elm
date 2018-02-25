@@ -8,7 +8,7 @@ import Gizra.Json exposing (decodeFloat, decodeInt, decodeIntDict, decodeEmptyAr
 import Gizra.NominalDate
 import Json.Decode exposing (Decoder, andThen, at, bool, decodeValue, dict, fail, field, int, list, map, map2, nullable, string, succeed, value, oneOf)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
-import Restful.Endpoint exposing (EntityId, decodeEntityId, decodeSingleEntity, decodeStorageTuple, toEntityId)
+import Restful.Endpoint exposing (EntityId, decodeEntityId, toEntityId)
 import Utils.Json exposing (decodeEverySet)
 
 

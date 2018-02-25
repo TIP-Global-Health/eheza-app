@@ -35,20 +35,13 @@ import Json.Encode exposing (Value, object)
 import Maybe.Extra exposing (toList)
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (EndPoint, toEntityId, fromEntityId, encodeEntityId, decodeEntityId, decodeSingleEntity)
+import Restful.Endpoint exposing (EndPoint, drupalEndpoint, toEntityId, fromEntityId, encodeEntityId, decodeEntityId, decodeSingleDrupalEntity, withAccessToken, toCmd, withParamsType)
 import Utils.WebData exposing (resetError)
 
 
-clinicEndpoint : EndPoint Error () ClinicId Clinic
+clinicEndpoint : EndPoint Error ClinicId Clinic Clinic ()
 clinicEndpoint =
-    { path = "api/clinics"
-    , tag = toEntityId
-    , untag = fromEntityId
-    , decoder = decodeClinic
-    , encoder = object << encodeClinic
-    , error = identity
-    , params = always []
-    }
+    drupalEndpoint "api/clinics" decodeClinic (object << encodeClinic)
 
 
 {-| Type-safe params ... how nice!
@@ -65,42 +58,29 @@ encodeSessionParams params =
         |> Maybe.Extra.toList
 
 
-sessionEndpoint : EndPoint Error SessionParams SessionId Session
+sessionEndpoint : EndPoint Error SessionId Session Session SessionParams
 sessionEndpoint =
-    { path = "api/sessions"
-    , tag = toEntityId
-    , untag = fromEntityId
-    , decoder = decodeSession
-    , encoder = object << encodeSession
-    , error = identity
-    , params = encodeSessionParams
-    }
+    drupalEndpoint "api/sessions" decodeSession (object << encodeSession)
+        |> withParamsType encodeSessionParams
 
 
-offlineSessionEndpoint : EndPoint Error () SessionId OfflineSession
+offlineSessionEndpoint : EndPoint Error SessionId OfflineSession OfflineSession ()
 offlineSessionEndpoint =
-    { path = "api/offline_sessions"
-    , tag = toEntityId
-    , untag = fromEntityId
-    , decoder = decodeOfflineSession
-    , encoder = object << encodeOfflineSession
-    , error = identity
-    , params = always []
-    }
+    drupalEndpoint "api/offline_sessions" decodeOfflineSession (object << encodeOfflineSession)
 
 
 updateBackend : BackendUrl -> String -> MsgBackend -> ModelBackend -> ( ModelBackend, Cmd MsgBackend, List MsgCached )
 updateBackend backendUrl accessToken msg model =
     let
-        -- Partially apply the backendUrl and accessToken, just for fun
+        -- Partially apply the backendUrl
         selectFromBackend =
-            Restful.Endpoint.select backendUrl (Just accessToken)
+            Restful.Endpoint.select backendUrl
 
-        getFromBackend404 =
-            Restful.Endpoint.get404 backendUrl (Just accessToken)
+        getFromBackend =
+            Restful.Endpoint.get backendUrl
 
         patchBackend =
-            Restful.Endpoint.patch_ backendUrl (Just accessToken)
+            Restful.Endpoint.patch_ backendUrl
 
         resetErrorsIfSucceeded data =
             sequenceExtra (updateBackend backendUrl accessToken) <|
@@ -125,8 +105,9 @@ updateBackend backendUrl accessToken msg model =
                 -- Ultimately, it would be nice to preserve any existing value of clnics
                 -- if we're reloading ... will need an `UpdateableWebData` for that.
                 ( { model | clinics = Loading }
-                , selectFromBackend clinicEndpoint () <|
-                    (RemoteData.fromResult >> RemoteData.map EveryDictList.fromList >> HandleFetchedClinics)
+                , selectFromBackend clinicEndpoint ()
+                    |> withAccessToken accessToken
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedClinics)
                 , []
                 )
 
@@ -139,8 +120,9 @@ updateBackend backendUrl accessToken msg model =
 
             FetchFutureSessions date ->
                 ( { model | futureSessions = Loading }
-                , selectFromBackend sessionEndpoint (SessionParams (Just date)) <|
-                    (RemoteData.fromResult >> RemoteData.map EveryDictList.fromList >> HandleFetchedSessions date)
+                , selectFromBackend sessionEndpoint (SessionParams (Just date))
+                    |> withAccessToken accessToken
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedSessions date)
                 , []
                 )
 
@@ -156,7 +138,9 @@ updateBackend backendUrl accessToken msg model =
 
             FetchOfflineSessionFromBackend sessionId ->
                 ( { model | offlineSessionRequest = Loading }
-                , getFromBackend404 offlineSessionEndpoint sessionId HandleFetchedOfflineSessionFromBackend
+                , getFromBackend offlineSessionEndpoint sessionId
+                    |> withAccessToken accessToken
+                    |> toCmd HandleFetchedOfflineSessionFromBackend
                 , []
                 )
 
@@ -188,7 +172,9 @@ updateBackend backendUrl accessToken msg model =
             -- disucssion at <https://github.com/Gizra/ihangane/issues/436>
             RefetchOfflineSession sessionId ->
                 ( model
-                , getFromBackend404 offlineSessionEndpoint sessionId HandleRefetchedOfflineSession
+                , getFromBackend offlineSessionEndpoint sessionId
+                    |> withAccessToken accessToken
+                    |> toCmd HandleRefetchedOfflineSession
                 , []
                 )
 
@@ -262,7 +248,9 @@ updateBackend backendUrl accessToken msg model =
                     [] ->
                         -- All photos have been uploaded, so actually upload the edits
                         ( { model | uploadEditsRequest = Loading }
-                        , patchBackend offlineSessionEndpoint sessionId (encodeMeasurementEdits edits) (HandleUploadedEdits sessionId)
+                        , patchBackend offlineSessionEndpoint sessionId (encodeMeasurementEdits edits)
+                            |> withAccessToken accessToken
+                            |> toCmd (HandleUploadedEdits sessionId)
                         , []
                         )
 
@@ -305,7 +293,7 @@ updateBackend backendUrl accessToken msg model =
 
                     decoder =
                         -- We expect what Drupal returns when you upload a file.
-                        decodeSingleEntity (field "id" decodeInt)
+                        decodeSingleDrupalEntity (field "id" decodeInt)
 
                     cmd =
                         HttpBuilder.post "backend-upload/images"
