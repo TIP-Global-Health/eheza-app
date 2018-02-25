@@ -55,7 +55,7 @@ can be handled here.
 
 ## Accessing the data associated with the login
 
-@socs maybeData, mapData, hasAccessToken, hasValidAccessToken
+@docs maybeData, mapData, hasAccessToken, hasValidAccessToken, getError, isProgressing
 
 -}
 
