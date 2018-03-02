@@ -667,7 +667,7 @@ withAccessToken token ((CrudRequest _ strategy _) as req) =
                 TokenUrlParam param ->
                     withQueryParams [ ( param, token ) ]
     in
-    modifyRequest func req
+        modifyRequest func req
 
 
 {-| Despite all the fine work and careful thought which has gone into this
@@ -798,9 +798,9 @@ withOffsetAndRange backend offset range =
         rangeParam =
             Maybe.map (\r -> ( backend.rangeParam, toString r )) range
     in
-    [ offsetParam, rangeParam ]
-        |> List.filterMap identity
-        |> withQueryParams
+        [ offsetParam, rangeParam ]
+            |> List.filterMap identity
+            |> withQueryParams
 
 
 {-| Like `select`, but you specify an offset and the number of items you want to fetch at once.
@@ -1037,17 +1037,17 @@ applyAccessToken accessToken ops =
         apply4 func =
             \a b c -> func a b c >> addAccessToken
     in
-    { delete = apply2 ops.delete
-    , get = apply2 ops.get
-    , getMany = apply2 ops.getMany
-    , patch = apply4 ops.patch
-    , patchAny = apply3 ops.patchAny
-    , patchFull = apply3 ops.patchFull
-    , post = apply2 ops.post
-    , put = apply3 ops.put
-    , select = apply2 ops.select
-    , selectRange = apply4 ops.selectRange
-    }
+        { delete = apply2 ops.delete
+        , get = apply2 ops.get
+        , getMany = apply2 ops.getMany
+        , patch = apply4 ops.patch
+        , patchAny = apply3 ops.patchAny
+        , patchFull = apply3 ops.patchFull
+        , post = apply2 ops.post
+        , put = apply3 ops.put
+        , select = apply2 ops.select
+        , selectRange = apply4 ops.selectRange
+        }
 
 
 {-| This is a wrapper for an `Int` id. It takes a "phantom" type variable
@@ -1158,4 +1158,4 @@ urlForManyKeys backendUrl (EndPoint endpoint) keys =
             List.map endpoint.keyToUrlPart keys
                 |> endpoint.backend.manyKeys
     in
-    backendUrl </> endpoint.path </> ids
+        backendUrl </> endpoint.path </> ids
