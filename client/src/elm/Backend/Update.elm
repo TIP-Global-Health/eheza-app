@@ -1,4 +1,4 @@
-port module Backend.Update exposing (updateBackend, updateCache, subscriptions, fetchEditableSession)
+port module Backend.Update exposing (fetchEditableSession, subscriptions, updateBackend, updateCache)
 
 {-| This could perhaps be distributed one level down, to
 `Backend.Session.Update`, `Backend.Clinic.Update` etc. Or, perhaps it is nicer
@@ -13,12 +13,12 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Decoder exposing (decodeMeasurementEdits)
 import Backend.Measurement.Encoder exposing (encodeMeasurementEdits)
 import Backend.Measurement.Model exposing (Edit(..))
-import Backend.Measurement.Utils exposing (backendValue, mapMeasurementData, getPhotosToUpload)
+import Backend.Measurement.Utils exposing (backendValue, getPhotosToUpload, mapMeasurementData)
 import Backend.Model exposing (..)
-import Backend.Session.Decoder exposing (decodeSession, decodeOfflineSession)
+import Backend.Session.Decoder exposing (decodeOfflineSession, decodeSession)
 import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession)
-import Backend.Session.Model exposing (Session, OfflineSession, EditableSession, MsgEditableSession(..))
-import Backend.Session.Utils exposing (makeEditableSession, mapChildEdits, mapMotherEdits, getChildMeasurementData, getMotherMeasurementData, getPhotoUrls, setPhotoFileId)
+import Backend.Session.Model exposing (EditableSession, MsgEditableSession(..), OfflineSession, Session)
+import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData, getPhotoUrls, makeEditableSession, mapChildEdits, mapMotherEdits, setPhotoFileId)
 import Backend.Utils exposing (withEditableSession)
 import CacheStorage.Model exposing (cachePhotos, clearCachedPhotos)
 import CacheStorage.Update
@@ -35,13 +35,14 @@ import Json.Encode exposing (Value, object)
 import Maybe.Extra exposing (toList)
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (EndPoint, drupalEndpoint, toEntityId, fromEntityId, encodeEntityId, decodeEntityId, decodeSingleDrupalEntity, withAccessToken, toCmd, withParamsType)
+import Restful.Endpoint exposing (ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityId, decodeSingleDrupalEntity, drupalEndpoint, encodeEntityId, fromEntityId, toCmd, toEntityId, withParamsEncoder, withValueEncoder, withoutDecoder)
 import Utils.WebData exposing (resetError)
 
 
-clinicEndpoint : EndPoint Error ClinicId Clinic Clinic ()
+clinicEndpoint : ReadWriteEndPoint Error ClinicId Clinic Clinic ()
 clinicEndpoint =
-    drupalEndpoint "api/clinics" decodeClinic (object << encodeClinic)
+    drupalEndpoint "api/clinics" decodeClinic
+        |> withValueEncoder (object << encodeClinic)
 
 
 {-| Type-safe params ... how nice!
@@ -58,29 +59,25 @@ encodeSessionParams params =
         |> Maybe.Extra.toList
 
 
-sessionEndpoint : EndPoint Error SessionId Session Session SessionParams
+sessionEndpoint : ReadWriteEndPoint Error SessionId Session Session SessionParams
 sessionEndpoint =
-    drupalEndpoint "api/sessions" decodeSession (object << encodeSession)
-        |> withParamsType encodeSessionParams
+    drupalEndpoint "api/sessions" decodeSession
+        |> withValueEncoder (object << encodeSession)
+        |> withParamsEncoder encodeSessionParams
 
 
-offlineSessionEndpoint : EndPoint Error SessionId OfflineSession OfflineSession ()
+offlineSessionEndpoint : ReadWriteEndPoint Error SessionId OfflineSession OfflineSession ()
 offlineSessionEndpoint =
-    drupalEndpoint "api/offline_sessions" decodeOfflineSession (object << encodeOfflineSession)
+    drupalEndpoint "api/offline_sessions" decodeOfflineSession
+        |> withValueEncoder (object << encodeOfflineSession)
 
 
 updateBackend : BackendUrl -> String -> MsgBackend -> ModelBackend -> ( ModelBackend, Cmd MsgBackend, List MsgCached )
 updateBackend backendUrl accessToken msg model =
     let
-        -- Partially apply the backendUrl
-        selectFromBackend =
-            Restful.Endpoint.select backendUrl
-
-        getFromBackend =
-            Restful.Endpoint.get backendUrl
-
-        patchBackend =
-            Restful.Endpoint.patch_ backendUrl
+        crud =
+            applyBackendUrl backendUrl
+                |> applyAccessToken accessToken
 
         resetErrorsIfSucceeded data =
             sequenceExtra (updateBackend backendUrl accessToken) <|
@@ -105,8 +102,7 @@ updateBackend backendUrl accessToken msg model =
                 -- Ultimately, it would be nice to preserve any existing value of clnics
                 -- if we're reloading ... will need an `UpdateableWebData` for that.
                 ( { model | clinics = Loading }
-                , selectFromBackend clinicEndpoint ()
-                    |> withAccessToken accessToken
+                , crud.select clinicEndpoint ()
                     |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedClinics)
                 , []
                 )
@@ -120,8 +116,7 @@ updateBackend backendUrl accessToken msg model =
 
             FetchFutureSessions date ->
                 ( { model | futureSessions = Loading }
-                , selectFromBackend sessionEndpoint (SessionParams (Just date))
-                    |> withAccessToken accessToken
+                , crud.select sessionEndpoint (SessionParams (Just date))
                     |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedSessions date)
                 , []
                 )
@@ -138,9 +133,8 @@ updateBackend backendUrl accessToken msg model =
 
             FetchOfflineSessionFromBackend sessionId ->
                 ( { model | offlineSessionRequest = Loading }
-                , getFromBackend offlineSessionEndpoint sessionId
-                    |> withAccessToken accessToken
-                    |> toCmd HandleFetchedOfflineSessionFromBackend
+                , crud.get offlineSessionEndpoint sessionId
+                    |> toCmd (Result.map (\session -> ( sessionId, session )) >> HandleFetchedOfflineSessionFromBackend)
                 , []
                 )
 
@@ -172,9 +166,8 @@ updateBackend backendUrl accessToken msg model =
             -- disucssion at <https://github.com/Gizra/ihangane/issues/436>
             RefetchOfflineSession sessionId ->
                 ( model
-                , getFromBackend offlineSessionEndpoint sessionId
-                    |> withAccessToken accessToken
-                    |> toCmd HandleRefetchedOfflineSession
+                , crud.get offlineSessionEndpoint sessionId
+                    |> toCmd (Result.map (\session -> ( sessionId, session )) >> HandleRefetchedOfflineSession)
                 , []
                 )
 
@@ -248,8 +241,8 @@ updateBackend backendUrl accessToken msg model =
                     [] ->
                         -- All photos have been uploaded, so actually upload the edits
                         ( { model | uploadEditsRequest = Loading }
-                        , patchBackend offlineSessionEndpoint sessionId (encodeMeasurementEdits edits)
-                            |> withAccessToken accessToken
+                        , crud.patchAny offlineSessionEndpoint sessionId (encodeMeasurementEdits edits)
+                            |> withoutDecoder
                             |> toCmd (HandleUploadedEdits sessionId)
                         , []
                         )
