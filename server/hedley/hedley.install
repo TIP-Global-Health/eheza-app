@@ -285,3 +285,13 @@ function hedley_update_7004() {
   $admin_role = user_role_load_by_name('administrator');
   user_role_revoke_permissions($admin_role->rid, ['access administration menu']);
 }
+
+/**
+ * Implements hook_update_7005().
+ *
+ * Installs the Date Views module for measurement filters.
+ */
+function hedley_update_7005() {
+  $modules = ['date_views'];
+  module_enable($modules);
+}
