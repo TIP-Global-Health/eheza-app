@@ -206,5 +206,35 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_float',
   );
 
+  // Exported field_base: 'field_z_score_age'.
+  $field_bases['field_z_score_age'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_z_score_age',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_z_score_length'.
+  $field_bases['field_z_score_length'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_z_score_length',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
   return $field_bases;
 }
