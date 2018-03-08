@@ -85,17 +85,9 @@ function hedley_admin_views_default_views() {
     ),
   );
   /* Relationship: Entity Reference: Referenced Entity */
-  $handler->display->display_options['relationships']['field_mother_target_id']['id'] = 'field_mother_target_id';
-  $handler->display->display_options['relationships']['field_mother_target_id']['table'] = 'field_data_field_mother';
-  $handler->display->display_options['relationships']['field_mother_target_id']['field'] = 'field_mother_target_id';
-  $handler->display->display_options['relationships']['field_mother_target_id']['label'] = 'Mother';
-  $handler->display->display_options['relationships']['field_mother_target_id']['required'] = TRUE;
-  /* Relationship: Entity Reference: Referenced Entity */
-  $handler->display->display_options['relationships']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
-  $handler->display->display_options['relationships']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
-  $handler->display->display_options['relationships']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
-  $handler->display->display_options['relationships']['field_clinic_target_id']['relationship'] = 'field_mother_target_id';
-  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'Clinic';
+  $handler->display->display_options['relationships']['field_session_target_id']['id'] = 'field_session_target_id';
+  $handler->display->display_options['relationships']['field_session_target_id']['table'] = 'field_data_field_session';
+  $handler->display->display_options['relationships']['field_session_target_id']['field'] = 'field_session_target_id';
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
   $handler->display->display_options['fields']['title']['table'] = 'node';
@@ -1092,6 +1084,208 @@ function hedley_admin_views_default_views() {
     'page_3' => 0,
   );
   $handler->display->display_options['sitename_title'] = 0;
+
+  /* Display: Measurements 2 */
+  $handler = $view->new_display('page', 'Measurements 2', 'page_5');
+  $handler->display->display_options['defaults']['title'] = FALSE;
+  $handler->display->display_options['title'] = 'Historical Measurements';
+  $handler->display->display_options['defaults']['group_by'] = FALSE;
+  $handler->display->display_options['defaults']['relationships'] = FALSE;
+  /* Relationship: Entity Reference: Referenced Entity */
+  $handler->display->display_options['relationships']['field_session_target_id']['id'] = 'field_session_target_id';
+  $handler->display->display_options['relationships']['field_session_target_id']['table'] = 'field_data_field_session';
+  $handler->display->display_options['relationships']['field_session_target_id']['field'] = 'field_session_target_id';
+  $handler->display->display_options['relationships']['field_session_target_id']['label'] = 'Session';
+  /* Relationship: Entity Reference: Referenced Entity */
+  $handler->display->display_options['relationships']['field_child_target_id']['id'] = 'field_child_target_id';
+  $handler->display->display_options['relationships']['field_child_target_id']['table'] = 'field_data_field_child';
+  $handler->display->display_options['relationships']['field_child_target_id']['field'] = 'field_child_target_id';
+  $handler->display->display_options['relationships']['field_child_target_id']['label'] = 'Child';
+  /* Relationship: Entity Reference: Referenced Entity */
+  $handler->display->display_options['relationships']['field_mother_target_id']['id'] = 'field_mother_target_id';
+  $handler->display->display_options['relationships']['field_mother_target_id']['table'] = 'field_data_field_mother';
+  $handler->display->display_options['relationships']['field_mother_target_id']['field'] = 'field_mother_target_id';
+  $handler->display->display_options['relationships']['field_mother_target_id']['relationship'] = 'field_child_target_id';
+  $handler->display->display_options['relationships']['field_mother_target_id']['label'] = 'Mother';
+  /* Relationship: Content: Author */
+  $handler->display->display_options['relationships']['uid']['id'] = 'uid';
+  $handler->display->display_options['relationships']['uid']['table'] = 'node';
+  $handler->display->display_options['relationships']['uid']['field'] = 'uid';
+  $handler->display->display_options['relationships']['uid']['label'] = 'Nurse';
+  $handler->display->display_options['defaults']['fields'] = FALSE;
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid']['id'] = 'nid';
+  $handler->display->display_options['fields']['nid']['table'] = 'node';
+  $handler->display->display_options['fields']['nid']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid']['relationship'] = 'field_session_target_id';
+  $handler->display->display_options['fields']['nid']['label'] = 'Session ID';
+  /* Field: Content: Date Measured */
+  $handler->display->display_options['fields']['field_date_measured']['id'] = 'field_date_measured';
+  $handler->display->display_options['fields']['field_date_measured']['table'] = 'field_data_field_date_measured';
+  $handler->display->display_options['fields']['field_date_measured']['field'] = 'field_date_measured';
+  $handler->display->display_options['fields']['field_date_measured']['label'] = 'Date';
+  $handler->display->display_options['fields']['field_date_measured']['settings'] = array(
+    'format_type' => 'custom',
+    'custom_date_format' => 'Y-m-d',
+    'fromto' => 'both',
+    'multiple_number' => '',
+    'multiple_from' => '',
+    'multiple_to' => '',
+    'show_remaining_days' => 0,
+  );
+  /* Field: Content: Clinic */
+  $handler->display->display_options['fields']['field_clinic']['id'] = 'field_clinic';
+  $handler->display->display_options['fields']['field_clinic']['table'] = 'field_data_field_clinic';
+  $handler->display->display_options['fields']['field_clinic']['field'] = 'field_clinic';
+  $handler->display->display_options['fields']['field_clinic']['relationship'] = 'field_session_target_id';
+  $handler->display->display_options['fields']['field_clinic']['settings'] = array(
+    'bypass_access' => 0,
+    'link' => 0,
+  );
+  /* Field: User: Name */
+  $handler->display->display_options['fields']['name']['id'] = 'name';
+  $handler->display->display_options['fields']['name']['table'] = 'users';
+  $handler->display->display_options['fields']['name']['field'] = 'name';
+  $handler->display->display_options['fields']['name']['relationship'] = 'uid';
+  $handler->display->display_options['fields']['name']['label'] = 'Nurse';
+  /* Field: Content: Title */
+  $handler->display->display_options['fields']['title_1']['id'] = 'title_1';
+  $handler->display->display_options['fields']['title_1']['table'] = 'node';
+  $handler->display->display_options['fields']['title_1']['field'] = 'title';
+  $handler->display->display_options['fields']['title_1']['relationship'] = 'field_mother_target_id';
+  $handler->display->display_options['fields']['title_1']['label'] = 'Mother Name';
+  /* Field: Content: Title */
+  $handler->display->display_options['fields']['title']['id'] = 'title';
+  $handler->display->display_options['fields']['title']['table'] = 'node';
+  $handler->display->display_options['fields']['title']['field'] = 'title';
+  $handler->display->display_options['fields']['title']['relationship'] = 'field_child_target_id';
+  $handler->display->display_options['fields']['title']['label'] = 'Child Name';
+  /* Field: Content: Date birth */
+  $handler->display->display_options['fields']['field_date_birth']['id'] = 'field_date_birth';
+  $handler->display->display_options['fields']['field_date_birth']['table'] = 'field_data_field_date_birth';
+  $handler->display->display_options['fields']['field_date_birth']['field'] = 'field_date_birth';
+  $handler->display->display_options['fields']['field_date_birth']['relationship'] = 'field_child_target_id';
+  $handler->display->display_options['fields']['field_date_birth']['label'] = 'Child DOB';
+  $handler->display->display_options['fields']['field_date_birth']['settings'] = array(
+    'format_type' => 'custom',
+    'custom_date_format' => 'Y-d-m',
+    'fromto' => 'both',
+    'multiple_number' => '',
+    'multiple_from' => '',
+    'multiple_to' => '',
+    'show_remaining_days' => 0,
+  );
+  /* Field: Content: Type */
+  $handler->display->display_options['fields']['type']['id'] = 'type';
+  $handler->display->display_options['fields']['type']['table'] = 'node';
+  $handler->display->display_options['fields']['type']['field'] = 'type';
+  $handler->display->display_options['fields']['type']['label'] = 'Measurement Type';
+  /* Field: Content: Height */
+  $handler->display->display_options['fields']['field_height']['id'] = 'field_height';
+  $handler->display->display_options['fields']['field_height']['table'] = 'field_data_field_height';
+  $handler->display->display_options['fields']['field_height']['field'] = 'field_height';
+  $handler->display->display_options['fields']['field_height']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['field_height']['settings'] = array(
+    'thousand_separator' => '',
+    'decimal_separator' => '.',
+    'scale' => '2',
+    'prefix_suffix' => 1,
+  );
+  /* Field: Content: MUAC */
+  $handler->display->display_options['fields']['field_muac']['id'] = 'field_muac';
+  $handler->display->display_options['fields']['field_muac']['table'] = 'field_data_field_muac';
+  $handler->display->display_options['fields']['field_muac']['field'] = 'field_muac';
+  $handler->display->display_options['fields']['field_muac']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['field_muac']['settings'] = array(
+    'thousand_separator' => '',
+    'decimal_separator' => '.',
+    'scale' => '2',
+    'prefix_suffix' => 1,
+  );
+  /* Field: Content: Weight */
+  $handler->display->display_options['fields']['field_weight']['id'] = 'field_weight';
+  $handler->display->display_options['fields']['field_weight']['table'] = 'field_data_field_weight';
+  $handler->display->display_options['fields']['field_weight']['field'] = 'field_weight';
+  $handler->display->display_options['fields']['field_weight']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['field_weight']['settings'] = array(
+    'thousand_separator' => '',
+    'decimal_separator' => '.',
+    'scale' => '2',
+    'prefix_suffix' => 1,
+  );
+  /* Field: Content: Nutrition Signs */
+  $handler->display->display_options['fields']['field_nutrition_signs']['id'] = 'field_nutrition_signs';
+  $handler->display->display_options['fields']['field_nutrition_signs']['table'] = 'field_data_field_nutrition_signs';
+  $handler->display->display_options['fields']['field_nutrition_signs']['field'] = 'field_nutrition_signs';
+  $handler->display->display_options['fields']['field_nutrition_signs']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['field_nutrition_signs']['delta_offset'] = '0';
+  /* Field: Global: Custom text */
+  $handler->display->display_options['fields']['nothing']['id'] = 'nothing';
+  $handler->display->display_options['fields']['nothing']['table'] = 'views';
+  $handler->display->display_options['fields']['nothing']['field'] = 'nothing';
+  $handler->display->display_options['fields']['nothing']['label'] = 'Measurement Value';
+  $handler->display->display_options['fields']['nothing']['alter']['text'] = '[field_height][field_muac][field_weight][field_nutrition_signs] ';
+  /* Field: Content: Z-Score Age */
+  $handler->display->display_options['fields']['field_z_score_age']['id'] = 'field_z_score_age';
+  $handler->display->display_options['fields']['field_z_score_age']['table'] = 'field_data_field_z_score_age';
+  $handler->display->display_options['fields']['field_z_score_age']['field'] = 'field_z_score_age';
+  $handler->display->display_options['fields']['field_z_score_age']['settings'] = array(
+    'thousand_separator' => '',
+    'prefix_suffix' => 1,
+  );
+  /* Field: Content: Z-Score Length */
+  $handler->display->display_options['fields']['field_z_score_length']['id'] = 'field_z_score_length';
+  $handler->display->display_options['fields']['field_z_score_length']['table'] = 'field_data_field_z_score_length';
+  $handler->display->display_options['fields']['field_z_score_length']['field'] = 'field_z_score_length';
+  $handler->display->display_options['fields']['field_z_score_length']['settings'] = array(
+    'thousand_separator' => '',
+    'prefix_suffix' => 1,
+  );
+  /* Field: Content: Edit link */
+  $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
+  $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
+  $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
+  $handler->display->display_options['fields']['edit_node']['label'] = 'Edit';
+  $handler->display->display_options['defaults']['sorts'] = FALSE;
+  /* Sort criterion: Content: Date Measured (field_date_measured) */
+  $handler->display->display_options['sorts']['field_date_measured_value']['id'] = 'field_date_measured_value';
+  $handler->display->display_options['sorts']['field_date_measured_value']['table'] = 'field_data_field_date_measured';
+  $handler->display->display_options['sorts']['field_date_measured_value']['field'] = 'field_date_measured_value';
+  /* Sort criterion: Content: Post date */
+  $handler->display->display_options['sorts']['created']['id'] = 'created';
+  $handler->display->display_options['sorts']['created']['table'] = 'node';
+  $handler->display->display_options['sorts']['created']['field'] = 'created';
+  $handler->display->display_options['sorts']['created']['order'] = 'DESC';
+  /* Sort criterion: Content: Nid */
+  $handler->display->display_options['sorts']['nid']['id'] = 'nid';
+  $handler->display->display_options['sorts']['nid']['table'] = 'node';
+  $handler->display->display_options['sorts']['nid']['field'] = 'nid';
+  $handler->display->display_options['defaults']['filter_groups'] = FALSE;
+  $handler->display->display_options['defaults']['filters'] = FALSE;
+  /* Filter criterion: Content: Published */
+  $handler->display->display_options['filters']['status']['id'] = 'status';
+  $handler->display->display_options['filters']['status']['table'] = 'node';
+  $handler->display->display_options['filters']['status']['field'] = 'status';
+  $handler->display->display_options['filters']['status']['value'] = 1;
+  $handler->display->display_options['filters']['status']['group'] = 1;
+  $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
+  /* Filter criterion: Content: Type */
+  $handler->display->display_options['filters']['type']['id'] = 'type';
+  $handler->display->display_options['filters']['type']['table'] = 'node';
+  $handler->display->display_options['filters']['type']['field'] = 'type';
+  $handler->display->display_options['filters']['type']['value'] = array(
+    'height' => 'height',
+    'muac' => 'muac',
+    'nutrition' => 'nutrition',
+    'weight' => 'weight',
+  );
+  $handler->display->display_options['path'] = 'admin/measurements2';
+  $handler->display->display_options['menu']['type'] = 'normal';
+  $handler->display->display_options['menu']['title'] = 'Historical';
+  $handler->display->display_options['menu']['weight'] = '0';
+  $handler->display->display_options['menu']['name'] = 'main-menu';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
   $export['admin_views'] = $view;
 
   return $export;
