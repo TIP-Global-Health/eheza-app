@@ -25,19 +25,49 @@ function hedley_activity_get_activity_node_types_and_restful_name() {
  * Implements hook_node_insert().
  */
 function hedley_activity_node_insert($node) {
-  hedley_activity_trigger_pusher_on_item_data_change($node);
+  switch ($node->type) {
+    case 'height':
+      // Make sure we get updated data.
+      entity_get_controller('node')->resetCache(array($node->nid));
+      hedley_activity_handle_height($node->nid);
+      break;
+
+  }
 }
 
 /**
  * Implements hook_node_update().
  */
 function hedley_activity_node_update($node) {
-  if (!in_array($node->type, array_keys(hedley_activity_get_activity_node_types_and_restful_name()))) {
-    return;
+  switch ($node->type) {
+    case 'child':
+      // Make sure we get updated data.
+      entity_get_controller('node')->resetCache(array($node->nid));
+
+      break;
+
+    case 'height':
+      // Make sure we get updated data.
+      entity_get_controller('node')->resetCache(array($node->nid));
+      hedley_activity_handle_height($node->nid);
+      break;
   }
-  // Make sure we get updated data.
-  entity_get_controller('node')->resetCache();
-  hedley_activity_trigger_pusher_on_item_data_change($node);
+}
+
+/**
+ * Given the node ID of a `height`, update z-score for related weight.
+ */
+function hedley_activity_handle_height($nid) {
+  $height = entity_metadata_wrapper('node', $nid);
+  $sessionId = $height->field_session->getIdentifier();
+  $childId = $height->field_child->getIdentifier();
+  $weight = hedley_activity_weight_for_session($sessionId, $childId);
+
+  if (isset($weight)) {
+    // The presave should fill it in, so no need to think too hard here ...
+    $weight->field_z_score_length->set(NULL);
+    $weight->save();
+  }
 }
 
 /**
