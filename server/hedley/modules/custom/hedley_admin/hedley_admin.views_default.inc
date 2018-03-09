@@ -1086,9 +1086,9 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['sitename_title'] = 0;
 
   /* Display: Measurements 2 */
-  $handler = $view->new_display('page', 'Measurements 2', 'page_5');
+  $handler = $view->new_display('page', 'Measurements 2', 'historical_child');
   $handler->display->display_options['defaults']['title'] = FALSE;
-  $handler->display->display_options['title'] = 'Historical Measurements';
+  $handler->display->display_options['title'] = 'Historical Child';
   $handler->display->display_options['defaults']['group_by'] = FALSE;
   $handler->display->display_options['defaults']['relationships'] = FALSE;
   /* Relationship: Entity Reference: Referenced Entity */
@@ -1211,7 +1211,7 @@ function hedley_admin_views_default_views() {
     'thousand_separator' => '',
     'decimal_separator' => '.',
     'scale' => '2',
-    'prefix_suffix' => 1,
+    'prefix_suffix' => 0,
   );
   /* Field: Content: MUAC */
   $handler->display->display_options['fields']['field_muac']['id'] = 'field_muac';
@@ -1233,7 +1233,7 @@ function hedley_admin_views_default_views() {
     'thousand_separator' => '',
     'decimal_separator' => '.',
     'scale' => '2',
-    'prefix_suffix' => 1,
+    'prefix_suffix' => 0,
   );
   /* Field: Content: Nutrition Signs */
   $handler->display->display_options['fields']['field_nutrition_signs']['id'] = 'field_nutrition_signs';
@@ -1389,7 +1389,7 @@ function hedley_admin_views_default_views() {
   );
   $handler->display->display_options['path'] = 'admin/measurements2';
   $handler->display->display_options['menu']['type'] = 'normal';
-  $handler->display->display_options['menu']['title'] = 'Historical';
+  $handler->display->display_options['menu']['title'] = 'Historical Child';
   $handler->display->display_options['menu']['weight'] = '0';
   $handler->display->display_options['menu']['name'] = 'main-menu';
   $handler->display->display_options['menu']['context'] = 0;
