@@ -10,3 +10,11 @@ basically:
 
 In our gulpfile, we'll transform them into some JSON that we can more
 easily handle.
+
+We then store the JSON in two places:
+
+- In our Javascript `assets` directory, so the frontend can ask for it.
+- In a z-score module for the backend, so the backend can use it.
+
+There would probably be a way to put the JSON in just one place, but this
+is pretty easy.

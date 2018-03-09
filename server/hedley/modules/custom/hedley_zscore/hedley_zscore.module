@@ -1,0 +1,191 @@
+<?php
+
+/**
+ * @file
+ * Code for the Hedley ZScore calculations.
+ */
+
+/**
+ * Read a JSON file and return the results.
+ */
+function hedley_zscore_read_file($file) {
+  $path = drupal_get_path("module", "hedley_zscore") . "/json/" . $file;
+
+  // This mimics what we do on the Elm side when decoding the JSON.
+  $json = file_get_contents($path);
+  $decoded = json_decode($json);
+
+  $indexed = [];
+  foreach ($decoded as $entry) {
+    if (isset($entry->Length)) {
+      // Lengths are in 0.1 increments, but we need integer keys,
+      // so we multiply by 10.
+      $indexed[$entry->Length * 10] = $entry;
+    }
+    else {
+      // Otherwise, we index by day.
+      $indexed[$entry->Day] = $entry;
+    }
+  }
+
+  return $indexed;
+}
+
+/**
+ * Length-for-age boys.
+ */
+function hedley_zscore_lhfa_boys() {
+  static $cached = NULL;
+
+  if (is_null($cached)) {
+    $cached = hedley_zscore_read_file("lhfa_boys_z_exp.json");
+  }
+
+  return $cached;
+}
+
+/**
+ * Length-for-age girls.
+ */
+function hedley_zscore_lhfa_girls() {
+  static $cached = NULL;
+
+  if (is_null($cached)) {
+    $cached = hedley_zscore_read_file("lhfa_girls_z_exp.json");
+  }
+
+  return $cached;
+}
+
+/**
+ * Weight-for-age boys.
+ */
+function hedley_zscore_wfa_boys() {
+  static $cached = NULL;
+
+  if (is_null($cached)) {
+    $cached = hedley_zscore_read_file("wfa_boys_z_exp.json");
+  }
+
+  return $cached;
+}
+
+/**
+ * Weight-for-age girls.
+ */
+function hedley_zscore_wfa_girls() {
+  static $cached = NULL;
+
+  if (is_null($cached)) {
+    $cached = hedley_zscore_read_file("wfa_girls_z_exp.json");
+  }
+
+  return $cached;
+}
+
+/**
+ * Weight-for-length boys.
+ */
+function hedley_zscore_wfl_boys() {
+  static $cached = NULL;
+
+  if (is_null($cached)) {
+    $cached = hedley_zscore_read_file("wfl_boys_z_exp.json");
+  }
+
+  return $cached;
+}
+
+/**
+ * Weight-for-length girls.
+ */
+function hedley_zscore_wfl_girls() {
+  static $cached = NULL;
+
+  if (is_null($cached)) {
+    $cached = hedley_zscore_read_file("wfl_girls_z_exp.json");
+  }
+
+  return $cached;
+}
+
+/**
+ * Z-Score length for age.
+ */
+function hedley_zscore_length_for_age($days, $gender, $cm) {
+  switch ($gender) {
+    case 'male':
+      $source = hedley_zscore_lhfa_boys();
+      break;
+
+    case 'female';
+      $source = hedley_zscore_lhfa_girls();
+      break;
+
+    default:
+      return NULL;
+  }
+
+  return hedley_zscore_lookup(round($days), $cm, $source);
+}
+
+/**
+ * Z-Score weight for age.
+ */
+function hedley_zscore_weight_for_age($days, $gender, $kg) {
+  $source = NULL;
+
+  switch ($gender) {
+    case 'male':
+      $source = hedley_zscore_lhfa_boys();
+      break;
+
+    case 'female';
+      $source = hedley_zscore_lhfa_girls();
+      break;
+
+    default:
+      return NULL;
+  }
+
+  return hedley_zscore_lookup(round($days), $kg, $source);
+}
+
+/**
+ * Z-Score weight for length.
+ */
+function hedley_zscore_weight_for_length($cm, $gender, $kg) {
+  return 0;
+}
+
+/**
+ * Looks up the measurement in the JSON file.
+ */
+function hedley_zscore_lookup($key, $measurement, $entries) {
+  $entry = $entries[$key];
+
+  if (is_null($entry)) {
+    return NULL;
+  }
+  elseif ($measurement <= $entry->SD3neg) {
+    return -3;
+  }
+  elseif ($measurement <= $entry->SD2neg) {
+    return -2;
+  }
+  elseif ($measurement <= $entry->SD1neg) {
+    return -1;
+  }
+  elseif ($measurement <= $entry->SD0) {
+    return 0;
+  }
+  elseif ($measurement <= $entry->SD1) {
+    return 1;
+  }
+  elseif ($measurement <= $entry->SD2) {
+    return 2;
+  }
+  else {
+    return 3;
+  }
+}

@@ -68,3 +68,34 @@ function hedley_activity_trigger_pusher_on_item_data_change($node) {
 
   hedley_pusher_trigger_event('general', $event_name, $data[0]);
 }
+
+/**
+ * Implements hook_node_presave().
+ *
+ * Calculate z-scores for measurements.
+ */
+function hedley_activity_node_presave($node) {
+  if (!in_array($node->type, ['height', 'weight'])) {
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  $birth = $wrapper->field_child->field_date_birth->value();
+  $gender = $wrapper->field_child->field_gender->value();
+  $measured = $wrapper->field_date_measured->value();
+  $days = ($measured - $birth) / 86400;
+
+  switch ($node->type) {
+    // For weight-for-length, I'll have to lookup the other node ...
+    case "height":
+      $zscore = hedley_zscore_length_for_age($days, $gender, $wrapper->field_height->value());
+      $wrapper->field_z_score_age->set($zscore);
+      break;
+
+    case "weight":
+      $zscore = hedley_zscore_weight_for_age($days, $gender, $wrapper->field_weight->value());
+      $wrapper->field_z_score_age->set($zscore);
+      break;
+  }
+}
