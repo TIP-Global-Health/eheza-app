@@ -287,11 +287,12 @@ function hedley_update_7004() {
 }
 
 /**
- * Implements hook_update_7005().
+ * Implements hook_update_N().
  *
- * Installs the Date Views module for measurement filters.
+ * Installs the Date Views module for measurement filters and VBO export for
+ * CSV download.
  */
 function hedley_update_7005() {
-  $modules = ['date_views'];
+  $modules = array('date_views', 'vbo_export');
   module_enable($modules);
 }
