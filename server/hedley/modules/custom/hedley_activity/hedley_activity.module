@@ -28,7 +28,7 @@ function hedley_activity_node_insert($node) {
   switch ($node->type) {
     case 'height':
       // Make sure we get updated data.
-      entity_get_controller('node')->resetCache(array($node->nid));
+      entity_get_controller('node')->resetCache([$node->nid]);
       hedley_activity_handle_height($node->nid);
       break;
 
@@ -42,13 +42,13 @@ function hedley_activity_node_update($node) {
   switch ($node->type) {
     case 'child':
       // Make sure we get updated data.
-      entity_get_controller('node')->resetCache(array($node->nid));
-
+      entity_get_controller('node')->resetCache([$node->nid]);
+      hedley_activity_handle_child_zscores($node->nid);
       break;
 
     case 'height':
       // Make sure we get updated data.
-      entity_get_controller('node')->resetCache(array($node->nid));
+      entity_get_controller('node')->resetCache([$node->nid]);
       hedley_activity_handle_height($node->nid);
       break;
   }
@@ -67,6 +67,31 @@ function hedley_activity_handle_height($nid) {
     // The presave should fill it in, so no need to think too hard here ...
     $weight->field_z_score_length->set(NULL);
     $weight->save();
+  }
+}
+
+/**
+ * Given the node ID of a `child`, update all z-scores for the child.
+ */
+function hedley_activity_handle_child_zscores($nid) {
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', ['height', 'weight'], 'IN')
+    ->fieldCondition('field_child', 'target_id', $nid)
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->execute();
+
+  if ($result['node']) {
+    $keys = array_keys($result['node']);
+    node_load_multiple($keys);
+
+    foreach ($keys as $key) {
+      // Just trigger presave ... that will do the hard work!
+      $wrapper = entity_metadata_wrapper('node', $key);
+      $wrapper->field_z_score_age->set(NULL);
+      $wrapper->save();
+    }
   }
 }
 
