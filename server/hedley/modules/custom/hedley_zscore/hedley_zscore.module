@@ -137,11 +137,11 @@ function hedley_zscore_weight_for_age($days, $gender, $kg) {
 
   switch ($gender) {
     case 'male':
-      $source = hedley_zscore_lhfa_boys();
+      $source = hedley_zscore_wfa_boys();
       break;
 
     case 'female';
-      $source = hedley_zscore_lhfa_girls();
+      $source = hedley_zscore_wfa_girls();
       break;
 
     default:

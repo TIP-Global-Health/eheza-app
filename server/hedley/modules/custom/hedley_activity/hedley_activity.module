@@ -81,10 +81,15 @@ function hedley_activity_node_presave($node) {
 
   $wrapper = entity_metadata_wrapper('node', $node);
 
+  if (!isset($wrapper->field_child)) {
+    return;
+  }
+
   $birth = $wrapper->field_child->field_date_birth->value();
   $gender = $wrapper->field_child->field_gender->value();
   $measured = $wrapper->field_date_measured->value();
   $days = ($measured - $birth) / 86400;
+  error_log($days);
 
   switch ($node->type) {
     // For weight-for-length, I'll have to lookup the other node ...
@@ -94,8 +99,12 @@ function hedley_activity_node_presave($node) {
       break;
 
     case "weight":
-      $zscore = hedley_zscore_weight_for_age($days, $gender, $wrapper->field_weight->value());
-      $wrapper->field_z_score_age->set($zscore);
+      $zscore_for_age = hedley_zscore_weight_for_age($days, $gender, $wrapper->field_weight->value());
+      $wrapper->field_z_score_age->set($zscore_for_age);
+
+      $session_id = $wrapper->field_session->getIdentifier();
+      error_log($session_id);
+
       break;
   }
 }
