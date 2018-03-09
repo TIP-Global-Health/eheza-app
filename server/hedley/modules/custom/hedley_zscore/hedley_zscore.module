@@ -155,19 +155,35 @@ function hedley_zscore_weight_for_age($days, $gender, $kg) {
  * Z-Score weight for length.
  */
 function hedley_zscore_weight_for_length($cm, $gender, $kg) {
-  return 0;
+  $source = NULL;
+
+  switch ($gender) {
+    case 'male':
+      $source = hedley_zscore_wfl_boys();
+      break;
+
+    case 'female';
+      $source = hedley_zscore_wfl_girls();
+      break;
+
+    default:
+      return NULL;
+  }
+
+  return hedley_zscore_lookup(round($cm * 10), $kg, $source);
 }
 
 /**
  * Looks up the measurement in the JSON file.
  */
 function hedley_zscore_lookup($key, $measurement, $entries) {
-  $entry = $entries[$key];
-
-  if (is_null($entry)) {
+  if (!isset($entries[$key])) {
     return NULL;
   }
-  elseif ($measurement <= $entry->SD3neg) {
+
+  $entry = $entries[$key];
+
+  if ($measurement <= $entry->SD3neg) {
     return -3;
   }
   elseif ($measurement <= $entry->SD2neg) {

@@ -89,7 +89,6 @@ function hedley_activity_node_presave($node) {
   $gender = $wrapper->field_child->field_gender->value();
   $measured = $wrapper->field_date_measured->value();
   $days = ($measured - $birth) / 86400;
-  error_log($days);
 
   switch ($node->type) {
     // For weight-for-length, I'll have to lookup the other node ...
@@ -102,9 +101,60 @@ function hedley_activity_node_presave($node) {
       $zscore_for_age = hedley_zscore_weight_for_age($days, $gender, $wrapper->field_weight->value());
       $wrapper->field_z_score_age->set($zscore_for_age);
 
-      $session_id = $wrapper->field_session->getIdentifier();
-      error_log($session_id);
+      $sessionId = $wrapper->field_session->getIdentifier();
+      $childId = $wrapper->field_child->getIdentifier();
+      $height = hedley_activity_height_for_session($sessionId, $childId);
+
+      if (isset($height)) {
+        $cm = $height->field_height->value();
+        $zscore_for_length = hedley_zscore_weight_for_length($cm, $gender, $wrapper->field_weight->value());
+        $wrapper->field_z_score_length->set($zscore_for_length);
+      }
 
       break;
+  }
+}
+
+/**
+ * Get the height for a child in a session.
+ */
+function hedley_activity_height_for_session($sessionId, $childId) {
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'height')
+    ->fieldCondition('field_session', 'target_id', $sessionId)
+    ->fieldCondition('field_child', 'target_id', $childId)
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->range(0, 1)
+    ->execute();
+
+  if ($result['node']) {
+    return entity_metadata_wrapper('node', array_keys($result['node'])[0]);
+  }
+  else {
+    return NULL;
+  }
+}
+
+/**
+ * Get the weight for a child in a session.
+ */
+function hedley_activity_weight_for_session($sessionId, $childId) {
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'weight')
+    ->fieldCondition('field_session', 'target_id', $sessionId)
+    ->fieldCondition('field_child', 'target_id', $childId)
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->range(0, 1)
+    ->execute();
+
+  if ($result['node']) {
+    return entity_metadata_wrapper('node', array_keys($result['node'])[0]);
+  }
+  else {
+    return NULL;
   }
 }
