@@ -43,7 +43,7 @@ class HedleyUserTestPermission extends HedleyWebTestBase {
    */
   public function setUp() {
 
-    parent::setUp(['hedley_activity']);
+    parent::setUp(['hedley_activity', 'hedley_zscore']);
 
     $this->nurse = $this->drupalCreateUser([
       'create mother content',
