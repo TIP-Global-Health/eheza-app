@@ -136,7 +136,8 @@ function hedley_activity_node_presave($node) {
 
   $wrapper = entity_metadata_wrapper('node', $node);
 
-  if (!isset($wrapper->field_child)) {
+  $childId = $wrapper->field_child->getIdentifier();
+  if (is_null($childId)) {
     return;
   }
 
@@ -157,7 +158,6 @@ function hedley_activity_node_presave($node) {
       $wrapper->field_z_score_age->set($zscore_for_age);
 
       $sessionId = $wrapper->field_session->getIdentifier();
-      $childId = $wrapper->field_child->getIdentifier();
       $height = hedley_activity_height_for_session($sessionId, $childId);
 
       if (isset($height)) {
@@ -174,6 +174,10 @@ function hedley_activity_node_presave($node) {
  * Get the height for a child in a session.
  */
 function hedley_activity_height_for_session($sessionId, $childId) {
+  if (is_null($sessionId) || is_null($childId)) {
+    return NULL;
+  }
+
   $query = new EntityFieldQuery();
   $result = $query
     ->entityCondition('entity_type', 'node')
@@ -196,6 +200,10 @@ function hedley_activity_height_for_session($sessionId, $childId) {
  * Get the weight for a child in a session.
  */
 function hedley_activity_weight_for_session($sessionId, $childId) {
+  if (is_null($sessionId) || is_null($childId)) {
+    return NULL;
+  }
+
   $query = new EntityFieldQuery();
   $result = $query
     ->entityCondition('entity_type', 'node')
