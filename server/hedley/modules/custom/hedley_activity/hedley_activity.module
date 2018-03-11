@@ -206,7 +206,7 @@ function hedley_activity_height_for_session($sessionId, $childId) {
     ->range(0, 1)
     ->execute();
 
-  if ($result['node']) {
+  if (isset($result['node'])) {
     return entity_metadata_wrapper('node', array_keys($result['node'])[0]);
   }
   else {
@@ -232,7 +232,7 @@ function hedley_activity_weight_for_session($sessionId, $childId) {
     ->range(0, 1)
     ->execute();
 
-  if ($result['node']) {
+  if (isset($result['node'])) {
     return entity_metadata_wrapper('node', array_keys($result['node'])[0]);
   }
   else {
