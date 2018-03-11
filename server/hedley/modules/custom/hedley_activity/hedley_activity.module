@@ -59,8 +59,16 @@ function hedley_activity_node_update($node) {
  */
 function hedley_activity_handle_height($nid) {
   $height = entity_metadata_wrapper('node', $nid);
-  $sessionId = $height->field_session->getIdentifier();
-  $childId = $height->field_child->getIdentifier();
+
+  try {
+    $sessionId = $height->field_session->getIdentifier();
+    $childId = $height->field_child->getIdentifier();
+  }
+  catch (EntityMetadataWrapperException $e) {
+    // Bail if the fields didn't exist.
+    return;
+  }
+
   $weight = hedley_activity_weight_for_session($sessionId, $childId);
 
   if (isset($weight)) {
@@ -136,15 +144,17 @@ function hedley_activity_node_presave($node) {
 
   $wrapper = entity_metadata_wrapper('node', $node);
 
-  $childId = $wrapper->field_child->getIdentifier();
-  if (is_null($childId)) {
+  try {
+    $birth = $wrapper->field_child->field_date_birth->value();
+    $gender = $wrapper->field_child->field_gender->value();
+    $measured = $wrapper->field_date_measured->value();
+    $days = ($measured - $birth) / 86400;
+  }
+  catch (EntityMetadataWrapperException $e) {
+    // Some nodes won't have the fields we need ... in that case,
+    // just bail.
     return;
   }
-
-  $birth = $wrapper->field_child->field_date_birth->value();
-  $gender = $wrapper->field_child->field_gender->value();
-  $measured = $wrapper->field_date_measured->value();
-  $days = ($measured - $birth) / 86400;
 
   switch ($node->type) {
     // For weight-for-length, I'll have to lookup the other node ...
@@ -157,7 +167,15 @@ function hedley_activity_node_presave($node) {
       $zscore_for_age = hedley_zscore_weight_for_age($days, $gender, $wrapper->field_weight->value());
       $wrapper->field_z_score_age->set($zscore_for_age);
 
-      $sessionId = $wrapper->field_session->getIdentifier();
+      try {
+        $childId = $wrapper->field_child->getIdentifier();
+        $sessionId = $wrapper->field_session->getIdentifier();
+      }
+      catch (EntityMetadataWrapperException $e) {
+        // Bail if the fields didn't exist.
+        return;
+      }
+
       $height = hedley_activity_height_for_session($sessionId, $childId);
 
       if (isset($height)) {
