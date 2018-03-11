@@ -347,14 +347,91 @@ function hedley_patient_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-mother-field_education_level'.
+  $field_instances['node-mother-field_education_level'] = array(
+    'bundle' => 'mother',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'What is the highest level of education you have completed?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_education_level',
+    'label' => 'Education Level',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 9,
+    ),
+  );
+
+  // Exported field_instance: 'node-mother-field_ubudehe'.
+  $field_instances['node-mother-field_ubudehe'] = array(
+    'bundle' => 'mother',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_ubudehe',
+    'label' => 'Ubudehe',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 8,
+    ),
+  );
+
   // Translatables
   // Included for use with string extractors like potx.
   t('Assign each mother to a clinic so that she will be included when data-entry sessions are scheduled for the clinic.');
   t('Clinic');
   t('Date birth');
+  t('Education Level');
   t('Gender');
   t('Mother');
   t('Profile photo');
+  t('Ubudehe');
+  t('What is the highest level of education you have completed?');
 
   return $field_instances;
 }
