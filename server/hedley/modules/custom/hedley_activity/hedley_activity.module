@@ -71,7 +71,7 @@ function hedley_activity_handle_height($nid) {
   $weight_id = hedley_activity_weight_for_session($session_id, $child_id);
 
   if (empty($weight_id)) {
-    // There is no weight node for this child/session combination
+    // There is no weight node for this child/session combination.
     return;
   }
 
@@ -98,7 +98,7 @@ function hedley_activity_handle_child_zscores($nid) {
     ->execute();
 
   if (empty($result['node'])) {
-    // No z-scores need updating
+    // No z-scores need updating.
     return;
   }
 
@@ -182,7 +182,7 @@ function hedley_activity_node_presave($node) {
     $height_id = hedley_activity_height_for_session($session_id, $child_id);
 
     if (empty($height_id)) {
-      // No height yet, so we can't update zscore_for_length
+      // No height yet, so we can't update zscore_for_length.
       return;
     }
 
