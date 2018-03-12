@@ -50,7 +50,7 @@ function hedley_activity_node_update($node) {
     return;
   }
 
-  if ($node - type == 'height') {
+  if ($node->type == 'height') {
     hedley_activity_handle_height($node->nid);
     return;
   }
