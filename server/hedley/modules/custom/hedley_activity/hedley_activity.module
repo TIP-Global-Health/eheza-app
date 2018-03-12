@@ -147,6 +147,11 @@ function hedley_activity_node_presave($node) {
 
   $wrapper = entity_metadata_wrapper('node', $node);
 
+  if (empty($wrapper->field_child->value())) {
+    // We need the child for birthdate and gender ...
+    return;
+  }
+
   $birth = $wrapper->field_child->field_date_birth->value();
   $gender = $wrapper->field_child->field_gender->value();
   $measured = $wrapper->field_date_measured->value();
