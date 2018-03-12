@@ -65,14 +65,8 @@ function hedley_activity_node_update($node) {
 function hedley_activity_handle_height($nid) {
   $height = entity_metadata_wrapper('node', $nid);
 
-  try {
-    $session_id = $height->field_session->getIdentifier();
-    $child_id = $height->field_child->getIdentifier();
-  }
-  catch (EntityMetadataWrapperException $e) {
-    // Bail if the fields didn't exist.
-    return;
-  }
+  $session_id = $height->field_session->getIdentifier();
+  $child_id = $height->field_child->getIdentifier();
 
   $weight_id = hedley_activity_weight_for_session($session_id, $child_id);
 
@@ -153,19 +147,12 @@ function hedley_activity_node_presave($node) {
 
   $wrapper = entity_metadata_wrapper('node', $node);
 
-  try {
-    $birth = $wrapper->field_child->field_date_birth->value();
-    $gender = $wrapper->field_child->field_gender->value();
-    $measured = $wrapper->field_date_measured->value();
+  $birth = $wrapper->field_child->field_date_birth->value();
+  $gender = $wrapper->field_child->field_gender->value();
+  $measured = $wrapper->field_date_measured->value();
 
-    // 86400 seconds in a day.
-    $days = ($measured - $birth) / 86400;
-  }
-  catch (EntityMetadataWrapperException $e) {
-    // Some nodes won't have the fields we need ... in that case,
-    // just bail.
-    return;
-  }
+  // 86400 seconds in a day.
+  $days = ($measured - $birth) / 86400;
 
   if ($node->type == 'height') {
     $zscore = hedley_zscore_length_for_age($days, $gender, $wrapper->field_height->value());
@@ -177,14 +164,8 @@ function hedley_activity_node_presave($node) {
     $zscore_for_age = hedley_zscore_weight_for_age($days, $gender, $wrapper->field_weight->value());
     $wrapper->field_z_score_age->set($zscore_for_age);
 
-    try {
-      $child_id = $wrapper->field_child->getIdentifier();
-      $session_id = $wrapper->field_session->getIdentifier();
-    }
-    catch (EntityMetadataWrapperException $e) {
-      // Bail if the fields didn't exist.
-      return;
-    }
+    $child_id = $wrapper->field_child->getIdentifier();
+    $session_id = $wrapper->field_session->getIdentifier();
 
     $height_id = hedley_activity_height_for_session($session_id, $child_id);
 
