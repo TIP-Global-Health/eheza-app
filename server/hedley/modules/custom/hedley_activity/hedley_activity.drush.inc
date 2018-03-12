@@ -38,7 +38,7 @@ function hedley_activity_recalculate_zscores() {
     ->propertyCondition('status', NODE_PUBLISHED)
     ->execute();
 
-  if (empty($result['node']) {
+  if (empty($result['node'])) {
     // No measurements to update.
     return;
   }
