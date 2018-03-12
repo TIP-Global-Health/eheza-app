@@ -25,32 +25,34 @@ function hedley_activity_get_activity_node_types_and_restful_name() {
  * Implements hook_node_insert().
  */
 function hedley_activity_node_insert($node) {
-  switch ($node->type) {
-    case 'height':
-      // Make sure we get updated data.
-      entity_get_controller('node')->resetCache([$node->nid]);
-      hedley_activity_handle_height($node->nid);
-      break;
-
+  if ($node->type != 'height') {
+    return;
   }
+
+  // Make sure we get updated data.
+  entity_get_controller('node')->resetCache([$node->nid]);
+  hedley_activity_handle_height($node->nid);
 }
 
 /**
  * Implements hook_node_update().
  */
 function hedley_activity_node_update($node) {
-  switch ($node->type) {
-    case 'child':
-      // Make sure we get updated data.
-      entity_get_controller('node')->resetCache([$node->nid]);
-      hedley_activity_handle_child_zscores($node->nid);
-      break;
+  if (!in_array($node->type, ['child', 'height'])) {
+    return;
+  }
 
-    case 'height':
-      // Make sure we get updated data.
-      entity_get_controller('node')->resetCache([$node->nid]);
-      hedley_activity_handle_height($node->nid);
-      break;
+  // Make sure we get updated data.
+  entity_get_controller('node')->resetCache([$node->nid]);
+
+  if ($node->type == 'child') {
+    hedley_activity_handle_child_zscores($node->nid);
+    return;
+  }
+
+  if ($node - type == 'height') {
+    hedley_activity_handle_height($node->nid);
+    return;
   }
 }
 
@@ -165,36 +167,35 @@ function hedley_activity_node_presave($node) {
     return;
   }
 
-  switch ($node->type) {
-    // For weight-for-length, we'll have to lookup the other node ...
-    case "height":
-      $zscore = hedley_zscore_length_for_age($days, $gender, $wrapper->field_height->value());
-      $wrapper->field_z_score_age->set($zscore);
-      break;
+  if ($node->type == 'height') {
+    $zscore = hedley_zscore_length_for_age($days, $gender, $wrapper->field_height->value());
+    $wrapper->field_z_score_age->set($zscore);
+    return;
+  }
 
-    case "weight":
-      $zscore_for_age = hedley_zscore_weight_for_age($days, $gender, $wrapper->field_weight->value());
-      $wrapper->field_z_score_age->set($zscore_for_age);
+  if ($node->type == 'weight') {
+    $zscore_for_age = hedley_zscore_weight_for_age($days, $gender, $wrapper->field_weight->value());
+    $wrapper->field_z_score_age->set($zscore_for_age);
 
-      try {
-        $child_id = $wrapper->field_child->getIdentifier();
-        $session_id = $wrapper->field_session->getIdentifier();
-      }
-      catch (EntityMetadataWrapperException $e) {
-        // Bail if the fields didn't exist.
-        return;
-      }
+    try {
+      $child_id = $wrapper->field_child->getIdentifier();
+      $session_id = $wrapper->field_session->getIdentifier();
+    }
+    catch (EntityMetadataWrapperException $e) {
+      // Bail if the fields didn't exist.
+      return;
+    }
 
-      $height_id = hedley_activity_height_for_session($session_id, $child_id);
+    $height_id = hedley_activity_height_for_session($session_id, $child_id);
 
-      if (isset($height_id)) {
-        $height = entity_metadata_wrapper('node', $height_id);
-        $cm = $height->field_height->value();
-        $zscore_for_length = hedley_zscore_weight_for_length($cm, $gender, $wrapper->field_weight->value());
-        $wrapper->field_z_score_length->set($zscore_for_length);
-      }
+    if (isset($height_id)) {
+      $height = entity_metadata_wrapper('node', $height_id);
+      $cm = $height->field_height->value();
+      $zscore_for_length = hedley_zscore_weight_for_length($cm, $gender, $wrapper->field_weight->value());
+      $wrapper->field_z_score_length->set($zscore_for_length);
+    }
 
-      break;
+    return;
   }
 }
 
