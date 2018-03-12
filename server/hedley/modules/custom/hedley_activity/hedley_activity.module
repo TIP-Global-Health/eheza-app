@@ -70,12 +70,16 @@ function hedley_activity_handle_height($nid) {
 
   $weight_id = hedley_activity_weight_for_session($session_id, $child_id);
 
-  if (isset($weight_id)) {
-    $weight = entity_metadata_wrapper('node', $weight_id);
-    // The presave should fill it in, so no need to think too hard here ...
-    $weight->field_z_score_length->set(NULL);
-    $weight->save();
+  if (empty($weight_id)) {
+    // There is no weight node for this child/session combination
+    return;
   }
+
+  $weight = entity_metadata_wrapper('node', $weight_id);
+
+  // The presave should fill it in, so no need to think too hard here ...
+  $weight->field_z_score_length->set(NULL);
+  $weight->save();
 }
 
 /**
@@ -93,16 +97,19 @@ function hedley_activity_handle_child_zscores($nid) {
     ->propertyCondition('status', NODE_PUBLISHED)
     ->execute();
 
-  if ($result['node']) {
-    $keys = array_keys($result['node']);
-    node_load_multiple($keys);
+  if (empty($result['node'])) {
+    // No z-scores need updating
+    return;
+  }
 
-    foreach ($keys as $key) {
-      // Just trigger presave ... that will do the hard work!
-      $wrapper = entity_metadata_wrapper('node', $key);
-      $wrapper->field_z_score_age->set(NULL);
-      $wrapper->save();
-    }
+  $keys = array_keys($result['node']);
+  node_load_multiple($keys);
+
+  foreach ($keys as $key) {
+    // Just trigger presave ... that will do the hard work!
+    $wrapper = entity_metadata_wrapper('node', $key);
+    $wrapper->field_z_score_age->set(NULL);
+    $wrapper->save();
   }
 }
 
@@ -174,14 +181,15 @@ function hedley_activity_node_presave($node) {
 
     $height_id = hedley_activity_height_for_session($session_id, $child_id);
 
-    if (isset($height_id)) {
-      $height = entity_metadata_wrapper('node', $height_id);
-      $cm = $height->field_height->value();
-      $zscore_for_length = hedley_zscore_weight_for_length($cm, $gender, $wrapper->field_weight->value());
-      $wrapper->field_z_score_length->set($zscore_for_length);
+    if (empty($height_id)) {
+      // No height yet, so we can't update zscore_for_length
+      return;
     }
 
-    return;
+    $height = entity_metadata_wrapper('node', $height_id);
+    $cm = $height->field_height->value();
+    $zscore_for_length = hedley_zscore_weight_for_length($cm, $gender, $wrapper->field_weight->value());
+    $wrapper->field_z_score_length->set($zscore_for_length);
   }
 }
 
@@ -197,7 +205,7 @@ function hedley_activity_node_presave($node) {
  *   The node ID of the height node, or NULL.
  */
 function hedley_activity_height_for_session($session_id, $child_id) {
-  if (is_null($session_id) || is_null($child_id)) {
+  if (empty($session_id) || empty($child_id)) {
     return NULL;
   }
 
@@ -226,7 +234,7 @@ function hedley_activity_height_for_session($session_id, $child_id) {
  *   The node ID of the weight node, or NULL.
  */
 function hedley_activity_weight_for_session($session_id, $child_id) {
-  if (is_null($session_id) || is_null($child_id)) {
+  if (empty($session_id) || empty($child_id)) {
     return NULL;
   }
 
