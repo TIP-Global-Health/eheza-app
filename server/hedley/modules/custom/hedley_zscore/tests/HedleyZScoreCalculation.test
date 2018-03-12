@@ -1,0 +1,31 @@
+<?php
+
+/**
+ * @file
+ * Test Z-Score calculations.
+ */
+
+/**
+ * HedleyZScore calculation tests.
+ */
+class HedleyZScoreCalculation extends DrupalWebTestCase {
+
+  /**
+   * Info hook.
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'HedleyZScoreCalculation tests',
+      'description' => 'Tests Z-Score calculations.',
+      'group' => 'Hedley',
+    ];
+  }
+
+  /**
+   * Entry point for the test.
+   */
+  public function testZScoreCalculations() {
+      $this->assertEqual(hedley_zscore_length_for_age(0, 'male', 47), -1, 'lfa 0 male 47 => -1');
+  }
+
+}
