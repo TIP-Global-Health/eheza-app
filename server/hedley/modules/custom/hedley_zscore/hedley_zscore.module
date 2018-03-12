@@ -9,7 +9,7 @@
  * Read a JSON file and return the results.
  */
 function hedley_zscore_read_file($file) {
-  $path = drupal_get_path("module", "hedley_zscore") . "/json/" . $file;
+  $path = drupal_get_path('module', 'hedley_zscore') . '/json/' . $file;
 
   // This mimics what we do on the Elm side when decoding the JSON.
   $json = file_get_contents($path);
@@ -35,9 +35,9 @@ function hedley_zscore_read_file($file) {
  * Length-for-age boys.
  */
 function hedley_zscore_lhfa_boys() {
-  static $cached = NULL;
+  $cached = &drupal_static(__FUNCTION__);
 
-  if (is_null($cached)) {
+  if (!isset($cached)) {
     $cached = hedley_zscore_read_file("lhfa_boys_z_exp.json");
   }
 
@@ -48,9 +48,9 @@ function hedley_zscore_lhfa_boys() {
  * Length-for-age girls.
  */
 function hedley_zscore_lhfa_girls() {
-  static $cached = NULL;
+  $cached = &drupal_static(__FUNCTION__);
 
-  if (is_null($cached)) {
+  if (!isset($cached)) {
     $cached = hedley_zscore_read_file("lhfa_girls_z_exp.json");
   }
 
@@ -61,9 +61,9 @@ function hedley_zscore_lhfa_girls() {
  * Weight-for-age boys.
  */
 function hedley_zscore_wfa_boys() {
-  static $cached = NULL;
+  $cached = &drupal_static(__FUNCTION__);
 
-  if (is_null($cached)) {
+  if (!isset($cached)) {
     $cached = hedley_zscore_read_file("wfa_boys_z_exp.json");
   }
 
@@ -74,9 +74,9 @@ function hedley_zscore_wfa_boys() {
  * Weight-for-age girls.
  */
 function hedley_zscore_wfa_girls() {
-  static $cached = NULL;
+  $cached = &drupal_static(__FUNCTION__);
 
-  if (is_null($cached)) {
+  if (!isset($cached)) {
     $cached = hedley_zscore_read_file("wfa_girls_z_exp.json");
   }
 
@@ -87,9 +87,9 @@ function hedley_zscore_wfa_girls() {
  * Weight-for-length boys.
  */
 function hedley_zscore_wfl_boys() {
-  static $cached = NULL;
+  $cached = &drupal_static(__FUNCTION__);
 
-  if (is_null($cached)) {
+  if (!isset($cached)) {
     $cached = hedley_zscore_read_file("wfl_boys_z_exp.json");
   }
 
@@ -100,9 +100,9 @@ function hedley_zscore_wfl_boys() {
  * Weight-for-length girls.
  */
 function hedley_zscore_wfl_girls() {
-  static $cached = NULL;
+  $cached = &drupal_static(__FUNCTION__);
 
-  if (is_null($cached)) {
+  if (!isset($cached)) {
     $cached = hedley_zscore_read_file("wfl_girls_z_exp.json");
   }
 
@@ -186,22 +186,26 @@ function hedley_zscore_lookup($key, $measurement, $entries) {
   if ($measurement <= $entry->SD3neg) {
     return -3;
   }
-  elseif ($measurement <= $entry->SD2neg) {
+
+  if ($measurement <= $entry->SD2neg) {
     return -2;
   }
-  elseif ($measurement <= $entry->SD1neg) {
+
+  if ($measurement <= $entry->SD1neg) {
     return -1;
   }
-  elseif ($measurement <= $entry->SD0) {
+
+  if ($measurement <= $entry->SD0) {
     return 0;
   }
-  elseif ($measurement <= $entry->SD1) {
+
+  if ($measurement <= $entry->SD1) {
     return 1;
   }
-  elseif ($measurement <= $entry->SD2) {
+
+  if ($measurement <= $entry->SD2) {
     return 2;
   }
-  else {
-    return 3;
-  }
+
+  return 3;
 }

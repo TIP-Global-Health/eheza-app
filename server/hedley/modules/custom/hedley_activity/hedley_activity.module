@@ -56,22 +56,26 @@ function hedley_activity_node_update($node) {
 
 /**
  * Given the node ID of a `height`, update z-score for related weight.
+ *
+ * @param int $nid
+ *   The node ID of the height.
  */
 function hedley_activity_handle_height($nid) {
   $height = entity_metadata_wrapper('node', $nid);
 
   try {
-    $sessionId = $height->field_session->getIdentifier();
-    $childId = $height->field_child->getIdentifier();
+    $session_id = $height->field_session->getIdentifier();
+    $child_id = $height->field_child->getIdentifier();
   }
   catch (EntityMetadataWrapperException $e) {
     // Bail if the fields didn't exist.
     return;
   }
 
-  $weight = hedley_activity_weight_for_session($sessionId, $childId);
+  $weight_id = hedley_activity_weight_for_session($session_id, $child_id);
 
-  if (isset($weight)) {
+  if (isset($weight_id)) {
+    $weight = entity_metadata_wrapper('node', $weight_id);
     // The presave should fill it in, so no need to think too hard here ...
     $weight->field_z_score_length->set(NULL);
     $weight->save();
@@ -80,6 +84,9 @@ function hedley_activity_handle_height($nid) {
 
 /**
  * Given the node ID of a `child`, update all z-scores for the child.
+ *
+ * @param int $nid
+ *   The node ID of the child.
  */
 function hedley_activity_handle_child_zscores($nid) {
   $query = new EntityFieldQuery();
@@ -148,6 +155,8 @@ function hedley_activity_node_presave($node) {
     $birth = $wrapper->field_child->field_date_birth->value();
     $gender = $wrapper->field_child->field_gender->value();
     $measured = $wrapper->field_date_measured->value();
+
+    // 86400 seconds in a day.
     $days = ($measured - $birth) / 86400;
   }
   catch (EntityMetadataWrapperException $e) {
@@ -157,7 +166,7 @@ function hedley_activity_node_presave($node) {
   }
 
   switch ($node->type) {
-    // For weight-for-length, I'll have to lookup the other node ...
+    // For weight-for-length, we'll have to lookup the other node ...
     case "height":
       $zscore = hedley_zscore_length_for_age($days, $gender, $wrapper->field_height->value());
       $wrapper->field_z_score_age->set($zscore);
@@ -168,17 +177,18 @@ function hedley_activity_node_presave($node) {
       $wrapper->field_z_score_age->set($zscore_for_age);
 
       try {
-        $childId = $wrapper->field_child->getIdentifier();
-        $sessionId = $wrapper->field_session->getIdentifier();
+        $child_id = $wrapper->field_child->getIdentifier();
+        $session_id = $wrapper->field_session->getIdentifier();
       }
       catch (EntityMetadataWrapperException $e) {
         // Bail if the fields didn't exist.
         return;
       }
 
-      $height = hedley_activity_height_for_session($sessionId, $childId);
+      $height_id = hedley_activity_height_for_session($session_id, $child_id);
 
-      if (isset($height)) {
+      if (isset($height_id)) {
+        $height = entity_metadata_wrapper('node', $height_id);
         $cm = $height->field_height->value();
         $zscore_for_length = hedley_zscore_weight_for_length($cm, $gender, $wrapper->field_weight->value());
         $wrapper->field_z_score_length->set($zscore_for_length);
@@ -190,9 +200,17 @@ function hedley_activity_node_presave($node) {
 
 /**
  * Get the height for a child in a session.
+ *
+ * @param int $session_id
+ *   The node ID of the session.
+ * @param int $child_id
+ *   The node ID of the child.
+ *
+ * @return int|null
+ *   The node ID of the height node, or NULL.
  */
-function hedley_activity_height_for_session($sessionId, $childId) {
-  if (is_null($sessionId) || is_null($childId)) {
+function hedley_activity_height_for_session($session_id, $child_id) {
+  if (is_null($session_id) || is_null($child_id)) {
     return NULL;
   }
 
@@ -200,25 +218,28 @@ function hedley_activity_height_for_session($sessionId, $childId) {
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'height')
-    ->fieldCondition('field_session', 'target_id', $sessionId)
-    ->fieldCondition('field_child', 'target_id', $childId)
+    ->fieldCondition('field_session', 'target_id', $session_id)
+    ->fieldCondition('field_child', 'target_id', $child_id)
     ->propertyCondition('status', NODE_PUBLISHED)
     ->range(0, 1)
     ->execute();
 
-  if (isset($result['node'])) {
-    return entity_metadata_wrapper('node', array_keys($result['node'])[0]);
-  }
-  else {
-    return NULL;
-  }
+  return !empty($result['node']) ? key($result['node']) : NULL;
 }
 
 /**
  * Get the weight for a child in a session.
+ *
+ * @param int $session_id
+ *   The node ID of the session.
+ * @param int $child_id
+ *   The node ID of the child.
+ *
+ * @return int|null
+ *   The node ID of the weight node, or NULL.
  */
-function hedley_activity_weight_for_session($sessionId, $childId) {
-  if (is_null($sessionId) || is_null($childId)) {
+function hedley_activity_weight_for_session($session_id, $child_id) {
+  if (is_null($session_id) || is_null($child_id)) {
     return NULL;
   }
 
@@ -226,16 +247,11 @@ function hedley_activity_weight_for_session($sessionId, $childId) {
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'weight')
-    ->fieldCondition('field_session', 'target_id', $sessionId)
-    ->fieldCondition('field_child', 'target_id', $childId)
+    ->fieldCondition('field_session', 'target_id', $session_id)
+    ->fieldCondition('field_child', 'target_id', $child_id)
     ->propertyCondition('status', NODE_PUBLISHED)
     ->range(0, 1)
     ->execute();
 
-  if (isset($result['node'])) {
-    return entity_metadata_wrapper('node', array_keys($result['node'])[0]);
-  }
-  else {
-    return NULL;
-  }
+  return !empty($result['node']) ? key($result['node']) : NULL;
 }
