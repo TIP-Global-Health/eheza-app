@@ -5,6 +5,10 @@
  * Code for the Hedley ZScore calculations.
  */
 
+
+define('HEDLEY_ZSCORE_MALE', 'male');
+define('HEDLEY_ZSCORE_FEMALE', 'female');
+
 /**
  * Read a JSON file and return the results.
  */
@@ -114,11 +118,11 @@ function hedley_zscore_wfl_girls() {
  */
 function hedley_zscore_length_for_age($days, $gender, $cm) {
   switch ($gender) {
-    case 'male':
+    case HEDLEY_ZSCORE_MALE:
       $source = hedley_zscore_lhfa_boys();
       break;
 
-    case 'female';
+    case HEDLEY_ZSCORE_FEMALE:
       $source = hedley_zscore_lhfa_girls();
       break;
 
@@ -136,11 +140,11 @@ function hedley_zscore_weight_for_age($days, $gender, $kg) {
   $source = NULL;
 
   switch ($gender) {
-    case 'male':
+    case HEDLEY_ZSCORE_MALE:
       $source = hedley_zscore_wfa_boys();
       break;
 
-    case 'female';
+    case HEDLEY_ZSCORE_FEMALE;
       $source = hedley_zscore_wfa_girls();
       break;
 
@@ -158,11 +162,11 @@ function hedley_zscore_weight_for_length($cm, $gender, $kg) {
   $source = NULL;
 
   switch ($gender) {
-    case 'male':
+    case HEDLEY_ZSCORE_MALE:
       $source = hedley_zscore_wfl_boys();
       break;
 
-    case 'female';
+    case HEDLEY_ZSCORE_FEMALE:
       $source = hedley_zscore_wfl_girls();
       break;
 
