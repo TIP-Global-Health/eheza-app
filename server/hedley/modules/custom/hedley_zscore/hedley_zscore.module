@@ -5,12 +5,17 @@
  * Code for the Hedley ZScore calculations.
  */
 
-
 define('HEDLEY_ZSCORE_MALE', 'male');
 define('HEDLEY_ZSCORE_FEMALE', 'female');
 
 /**
  * Read a JSON file and return the results.
+ *
+ * @param string $file
+ *   The file name, inside the json subdirectory of this very module.
+ *
+ * @return array
+ *   An array of JSON entries, indexed by Day or Length * 10.
  */
 function hedley_zscore_read_file($file) {
   $path = drupal_get_path('module', 'hedley_zscore') . '/json/' . $file;
@@ -37,6 +42,9 @@ function hedley_zscore_read_file($file) {
 
 /**
  * Length-for-age boys.
+ *
+ * @return array
+ *   An array of the entries parsed from JSON.
  */
 function hedley_zscore_lhfa_boys() {
   $cached = &drupal_static(__FUNCTION__);
@@ -50,6 +58,9 @@ function hedley_zscore_lhfa_boys() {
 
 /**
  * Length-for-age girls.
+ *
+ * @return array
+ *   An array of the entries parsed from JSON.
  */
 function hedley_zscore_lhfa_girls() {
   $cached = &drupal_static(__FUNCTION__);
@@ -63,6 +74,9 @@ function hedley_zscore_lhfa_girls() {
 
 /**
  * Weight-for-age boys.
+ *
+ * @return array
+ *   An array of the entries parsed from JSON.
  */
 function hedley_zscore_wfa_boys() {
   $cached = &drupal_static(__FUNCTION__);
@@ -76,6 +90,9 @@ function hedley_zscore_wfa_boys() {
 
 /**
  * Weight-for-age girls.
+ *
+ * @return array
+ *   An array of the entries parsed from JSON.
  */
 function hedley_zscore_wfa_girls() {
   $cached = &drupal_static(__FUNCTION__);
@@ -89,6 +106,9 @@ function hedley_zscore_wfa_girls() {
 
 /**
  * Weight-for-length boys.
+ *
+ * @return array
+ *   An array of the entries parsed from JSON.
  */
 function hedley_zscore_wfl_boys() {
   $cached = &drupal_static(__FUNCTION__);
@@ -102,6 +122,9 @@ function hedley_zscore_wfl_boys() {
 
 /**
  * Weight-for-length girls.
+ *
+ * @return array
+ *   An array of the entries parsed from JSON.
  */
 function hedley_zscore_wfl_girls() {
   $cached = &drupal_static(__FUNCTION__);
@@ -115,6 +138,16 @@ function hedley_zscore_wfl_girls() {
 
 /**
  * Z-Score length for age.
+ *
+ * @param float $days
+ *   How many days old is the child?
+ * @param string $gender
+ *   Is the child 'male' or 'female'?
+ * @param float $cm
+ *   How many centimetres is the child in length?
+ *
+ * @return int
+ *   A Z-Score
  */
 function hedley_zscore_length_for_age($days, $gender, $cm) {
   switch ($gender) {
@@ -135,6 +168,16 @@ function hedley_zscore_length_for_age($days, $gender, $cm) {
 
 /**
  * Z-Score weight for age.
+ *
+ * @param float $days
+ *   How many days old is the child?
+ * @param string $gender
+ *   Is the child 'male' or 'female'?
+ * @param float $kg
+ *   How many kilograms does the child weigh?
+ *
+ * @return int
+ *   A Z-Score
  */
 function hedley_zscore_weight_for_age($days, $gender, $kg) {
   $source = NULL;
@@ -157,6 +200,16 @@ function hedley_zscore_weight_for_age($days, $gender, $kg) {
 
 /**
  * Z-Score weight for length.
+ *
+ * @param float $cm
+ *   How many centimetres is the child in length?
+ * @param string $gender
+ *   Is the child 'male' or 'female'?
+ * @param float $kg
+ *   How many kilograms does the child weigh?
+ *
+ * @return int
+ *   A Z-Score
  */
 function hedley_zscore_weight_for_length($cm, $gender, $kg) {
   $source = NULL;
@@ -179,9 +232,19 @@ function hedley_zscore_weight_for_length($cm, $gender, $kg) {
 
 /**
  * Looks up the measurement in the JSON file.
+ *
+ * @param int $key
+ *   What index should we lookup?
+ * @param float $measurement
+ *   What is the measurement?
+ * @param array $entries
+ *   What is the decoded JSON file we should use?
+ *
+ * @return int
+ *   A Z-Score
  */
-function hedley_zscore_lookup($key, $measurement, $entries) {
-  if (!isset($entries[$key])) {
+function hedley_zscore_lookup($key, $measurement, array $entries) {
+  if (empty($entries[$key])) {
     return NULL;
   }
 
