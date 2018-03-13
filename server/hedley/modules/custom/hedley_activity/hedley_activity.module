@@ -182,14 +182,15 @@ function hedley_activity_node_presave($node) {
     $height_id = hedley_activity_height_for_session($session_id, $child_id);
 
     if (empty($height_id)) {
-      // No height yet, so we can't update zscore_for_length.
-      return;
+      // No height yet, so no z_score_length.
+      $wrapper->field_z_score_length->set(NULL);
     }
-
-    $height = entity_metadata_wrapper('node', $height_id);
-    $cm = $height->field_height->value();
-    $zscore_for_length = hedley_zscore_weight_for_length($cm, $gender, $wrapper->field_weight->value());
-    $wrapper->field_z_score_length->set($zscore_for_length);
+    else {
+      $height = entity_metadata_wrapper('node', $height_id);
+      $cm = $height->field_height->value();
+      $zscore_for_length = hedley_zscore_weight_for_length($cm, $gender, $wrapper->field_weight->value());
+      $wrapper->field_z_score_length->set($zscore_for_length);
+    }
   }
 }
 
