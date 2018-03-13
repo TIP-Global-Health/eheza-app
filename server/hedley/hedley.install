@@ -296,3 +296,13 @@ function hedley_update_7005() {
   $modules = array('date_views', 'vbo_export');
   module_enable($modules);
 }
+
+/**
+ * Implements hook_update_N().
+ *
+ * Enable new zscore module.
+ */
+function hedley_update_7006() {
+  $modules = ['hedley_zscore'];
+  module_enable($modules);
+}

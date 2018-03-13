@@ -91,7 +91,8 @@ gulp.task("zscore", [], function () {
         });
       });
     })).pipe($.rename({extname: '.json'}))
-    .pipe(gulp.dest('serve/assets/z-score/'));
+    .pipe(gulp.dest('serve/assets/z-score/'))
+    .pipe(gulp.dest('../server/hedley/modules/custom/hedley_zscore/json/'));
 });
 
 // Optimizes the images that exists

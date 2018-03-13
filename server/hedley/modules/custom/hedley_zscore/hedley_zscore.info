@@ -1,0 +1,5 @@
+name = Hedley ZScores
+core = 7.x
+description = "Hedley ZScore Calculations."
+package = Hedley
+files[] = tests/HedleyZScoreCalculation.test

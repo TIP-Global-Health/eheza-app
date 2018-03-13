@@ -411,8 +411,8 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Z-Score Age',
     'required' => 0,
     'settings' => array(
-      'max' => 2,
-      'min' => -2,
+      'max' => '',
+      'min' => '',
       'prefix' => '',
       'suffix' => '',
       'user_register_form' => FALSE,
@@ -1208,8 +1208,8 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Z-Score Age',
     'required' => 0,
     'settings' => array(
-      'max' => 2,
-      'min' => -2,
+      'max' => '',
+      'min' => '',
       'prefix' => '',
       'suffix' => '',
       'user_register_form' => FALSE,
@@ -1254,8 +1254,8 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Z-Score Length',
     'required' => 0,
     'settings' => array(
-      'max' => 2,
-      'min' => -2,
+      'max' => '',
+      'min' => '',
       'prefix' => '',
       'suffix' => '',
       'user_register_form' => FALSE,

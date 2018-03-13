@@ -7,6 +7,7 @@ dependencies[] = date
 dependencies[] = entityreference
 dependencies[] = features
 dependencies[] = hedley_patient
+dependencies[] = hedley_zscore
 dependencies[] = image
 dependencies[] = list
 dependencies[] = number

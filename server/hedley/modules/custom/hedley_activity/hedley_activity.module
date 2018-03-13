@@ -25,19 +25,92 @@ function hedley_activity_get_activity_node_types_and_restful_name() {
  * Implements hook_node_insert().
  */
 function hedley_activity_node_insert($node) {
-  hedley_activity_trigger_pusher_on_item_data_change($node);
+  if ($node->type != 'height') {
+    return;
+  }
+
+  // Make sure we get updated data.
+  entity_get_controller('node')->resetCache([$node->nid]);
+  hedley_activity_handle_height($node->nid);
 }
 
 /**
  * Implements hook_node_update().
  */
 function hedley_activity_node_update($node) {
-  if (!in_array($node->type, array_keys(hedley_activity_get_activity_node_types_and_restful_name()))) {
+  if (!in_array($node->type, ['child', 'height'])) {
     return;
   }
+
   // Make sure we get updated data.
-  entity_get_controller('node')->resetCache();
-  hedley_activity_trigger_pusher_on_item_data_change($node);
+  entity_get_controller('node')->resetCache([$node->nid]);
+
+  if ($node->type == 'child') {
+    hedley_activity_handle_child_zscores($node->nid);
+    return;
+  }
+
+  if ($node->type == 'height') {
+    hedley_activity_handle_height($node->nid);
+    return;
+  }
+}
+
+/**
+ * Given the node ID of a `height`, update z-score for related weight.
+ *
+ * @param int $nid
+ *   The node ID of the height.
+ */
+function hedley_activity_handle_height($nid) {
+  $height = entity_metadata_wrapper('node', $nid);
+
+  $session_id = $height->field_session->getIdentifier();
+  $child_id = $height->field_child->getIdentifier();
+
+  $weight_id = hedley_activity_weight_for_session($session_id, $child_id);
+
+  if (empty($weight_id)) {
+    // There is no weight node for this child/session combination.
+    return;
+  }
+
+  $weight = entity_metadata_wrapper('node', $weight_id);
+
+  // The presave should fill it in, so no need to think too hard here ...
+  $weight->field_z_score_length->set(NULL);
+  $weight->save();
+}
+
+/**
+ * Given the node ID of a `child`, update all z-scores for the child.
+ *
+ * @param int $nid
+ *   The node ID of the child.
+ */
+function hedley_activity_handle_child_zscores($nid) {
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', ['height', 'weight'], 'IN')
+    ->fieldCondition('field_child', 'target_id', $nid)
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->execute();
+
+  if (empty($result['node'])) {
+    // No z-scores need updating.
+    return;
+  }
+
+  $keys = array_keys($result['node']);
+  node_load_multiple($keys);
+
+  foreach ($keys as $key) {
+    // Just trigger presave ... that will do the hard work!
+    $wrapper = entity_metadata_wrapper('node', $key);
+    $wrapper->field_z_score_age->set(NULL);
+    $wrapper->save();
+  }
 }
 
 /**
@@ -67,4 +140,114 @@ function hedley_activity_trigger_pusher_on_item_data_change($node) {
   $event_name = 'activity__update';
 
   hedley_pusher_trigger_event('general', $event_name, $data[0]);
+}
+
+/**
+ * Implements hook_node_presave().
+ *
+ * Calculate z-scores for measurements.
+ */
+function hedley_activity_node_presave($node) {
+  if (!in_array($node->type, ['height', 'weight'])) {
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  if (empty($wrapper->field_child->value())) {
+    // We need the child for birthdate and gender ...
+    return;
+  }
+
+  $birth = $wrapper->field_child->field_date_birth->value();
+  $gender = $wrapper->field_child->field_gender->value();
+  $measured = $wrapper->field_date_measured->value();
+
+  // 86400 seconds in a day.
+  $days = ($measured - $birth) / 86400;
+
+  if ($node->type == 'height') {
+    $zscore = hedley_zscore_length_for_age($days, $gender, $wrapper->field_height->value());
+    $wrapper->field_z_score_age->set($zscore);
+    return;
+  }
+
+  if ($node->type == 'weight') {
+    $zscore_for_age = hedley_zscore_weight_for_age($days, $gender, $wrapper->field_weight->value());
+    $wrapper->field_z_score_age->set($zscore_for_age);
+
+    $child_id = $wrapper->field_child->getIdentifier();
+    $session_id = $wrapper->field_session->getIdentifier();
+
+    $height_id = hedley_activity_height_for_session($session_id, $child_id);
+
+    if (empty($height_id)) {
+      // No height yet, so no z_score_length.
+      $wrapper->field_z_score_length->set(NULL);
+    }
+    else {
+      $height = entity_metadata_wrapper('node', $height_id);
+      $cm = $height->field_height->value();
+      $zscore_for_length = hedley_zscore_weight_for_length($cm, $gender, $wrapper->field_weight->value());
+      $wrapper->field_z_score_length->set($zscore_for_length);
+    }
+  }
+}
+
+/**
+ * Get the height for a child in a session.
+ *
+ * @param int $session_id
+ *   The node ID of the session.
+ * @param int $child_id
+ *   The node ID of the child.
+ *
+ * @return int|null
+ *   The node ID of the height node, or NULL.
+ */
+function hedley_activity_height_for_session($session_id, $child_id) {
+  if (empty($session_id) || empty($child_id)) {
+    return NULL;
+  }
+
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'height')
+    ->fieldCondition('field_session', 'target_id', $session_id)
+    ->fieldCondition('field_child', 'target_id', $child_id)
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->range(0, 1)
+    ->execute();
+
+  return !empty($result['node']) ? key($result['node']) : NULL;
+}
+
+/**
+ * Get the weight for a child in a session.
+ *
+ * @param int $session_id
+ *   The node ID of the session.
+ * @param int $child_id
+ *   The node ID of the child.
+ *
+ * @return int|null
+ *   The node ID of the weight node, or NULL.
+ */
+function hedley_activity_weight_for_session($session_id, $child_id) {
+  if (empty($session_id) || empty($child_id)) {
+    return NULL;
+  }
+
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'weight')
+    ->fieldCondition('field_session', 'target_id', $session_id)
+    ->fieldCondition('field_child', 'target_id', $child_id)
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->range(0, 1)
+    ->execute();
+
+  return !empty($result['node']) ? key($result['node']) : NULL;
 }
