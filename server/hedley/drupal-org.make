@@ -28,7 +28,7 @@ projects[email][subdir] = "contrib"
 projects[email][version] = "1.3"
 
 projects[entity][subdir] = "contrib"
-projects[entity][version] = "1.8"
+projects[entity][version] = "1.9"
 
 projects[entitycache][subdir] = "contrib"
 projects[entitycache][version] = 1.2
@@ -95,6 +95,9 @@ projects[views][version] = "3.18"
 
 projects[views_bulk_operations][subdir] = "contrib"
 projects[views_bulk_operations][version] = "3.4"
+
+projects[vbo_export][subdir] = "contrib"
+projects[vbo_export][version] = "1.2"
 
 projects[views_data_export][subdir] = "contrib"
 projects[views_data_export][version] = "3.2"

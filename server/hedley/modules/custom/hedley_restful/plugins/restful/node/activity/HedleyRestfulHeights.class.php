@@ -16,17 +16,12 @@ class HedleyRestfulHeights extends HedleyRestfulChildActivityBase {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $field_names = [];
-
-    foreach ($field_names as $field_name) {
-      $public_name = str_replace('field_', '', $field_name);
-      $public_fields[$public_name] = [
-        'property' => $field_name,
-      ];
-    }
-
     $public_fields['height'] = [
       'property' => 'field_height',
+    ];
+
+    $public_fields['z_score_age'] = [
+      'property' => 'field_z_score_age',
     ];
 
     return $public_fields;

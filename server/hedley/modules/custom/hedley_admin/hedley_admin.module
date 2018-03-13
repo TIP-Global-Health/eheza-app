@@ -6,3 +6,47 @@
  */
 
 include_once 'hedley_admin.features.inc';
+
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function hedley_admin_theme_registry_alter(&$theme_registry) {
+  $theme_registry['vbo_export_csv']['function'] = 'hedley_admin_vbo_export_csv';
+}
+
+/**
+ * Csv content builder function.
+ */
+function hedley_admin_vbo_export_csv($variables) {
+  // Sanitize data.
+  foreach ($variables['header'] as $key => $item) {
+    $variables['header'][$key] = strtr($item, array($variables['separator'] => ' '));
+  }
+
+  $content_replacements = array(
+    '\r\n' => ' ',
+    '\n\r' => ' ',
+    '\r' => ' ',
+    '\n' => ' ',
+    '\t' => ' ',
+    $variables['separator'] => ' ',
+  );
+  foreach ($variables['rows'] as $row_key => $row) {
+    foreach ($row as $cell_key => $cell) {
+      $variables['rows'][$row_key][$cell_key] = strip_tags(strtr($cell, $content_replacements));
+    }
+  }
+
+  $handle = fopen('php://temp', 'r+');
+  fputcsv($handle, $variables['header']);
+  foreach ($variables['rows'] as $row) {
+    fputcsv($handle, $row);
+  }
+  rewind($handle);
+  $csv_output = '';
+  while (!feof($handle)) {
+    $csv_output .= fread($handle, 8192);
+  }
+  fclose($handle);
+  return $csv_output;
+}
