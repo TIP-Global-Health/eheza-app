@@ -6,7 +6,7 @@ import EverySet
 import Gizra.NominalDate
 import Json.Encode as Encoder exposing (Value, float, int, list, string, object, bool)
 import Json.Encode.Extra exposing (maybe)
-import Restful.Endpoint exposing (Entity, EntityId(..), encodeEntityId, fromEntityId)
+import Restful.Endpoint exposing (EntityId(..), encodeEntityId, fromEntityId)
 
 
 encodeHeight : Height -> List ( String, Value )

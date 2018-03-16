@@ -18,7 +18,7 @@ import Pages.Page exposing (Page(..), UserPage(ClinicsPage))
 import Pages.Update
 import Pages.Update
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (decodeSingleEntity)
+import Restful.Endpoint exposing (decodeSingleDrupalEntity)
 import Restful.Login exposing (LoginStatus(..), Login, Credentials, checkCachedCredentials)
 import ServiceWorker.Model
 import ServiceWorker.Update
@@ -38,7 +38,7 @@ loginConfig =
     -- a little different from how we encode it for local storage ... this
     -- could possibly be solved another way.
     Restful.Login.drupalConfig
-        { decodeUser = oneOf [ decodeSingleEntity decodeUser, decodeUser ]
+        { decodeUser = oneOf [ decodeSingleDrupalEntity decodeUser, decodeUser ]
         , encodeUser = encodeUser
         , initialData = \_ -> emptyLoggedInModel
         , cacheCredentials = curry cacheCredentials
