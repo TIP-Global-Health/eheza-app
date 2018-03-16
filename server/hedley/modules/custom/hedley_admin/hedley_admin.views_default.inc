@@ -396,11 +396,29 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_1']['relationship'] = 'field_clinic_target_id';
   $handler->display->display_options['fields']['title_1']['label'] = 'Clinic';
   $handler->display->display_options['fields']['title_1']['link_to_node'] = FALSE;
+  /* Field: Content: Ubudehe */
+  $handler->display->display_options['fields']['field_ubudehe']['id'] = 'field_ubudehe';
+  $handler->display->display_options['fields']['field_ubudehe']['table'] = 'field_data_field_ubudehe';
+  $handler->display->display_options['fields']['field_ubudehe']['field'] = 'field_ubudehe';
+  /* Field: Content: Education Level */
+  $handler->display->display_options['fields']['field_education_level']['id'] = 'field_education_level';
+  $handler->display->display_options['fields']['field_education_level']['table'] = 'field_data_field_education_level';
+  $handler->display->display_options['fields']['field_education_level']['field'] = 'field_education_level';
   /* Field: Content: Edit link */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
   $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['label'] = 'Edit';
+  $handler->display->display_options['defaults']['sorts'] = FALSE;
+  /* Sort criterion: Content: Post date */
+  $handler->display->display_options['sorts']['created']['id'] = 'created';
+  $handler->display->display_options['sorts']['created']['table'] = 'node';
+  $handler->display->display_options['sorts']['created']['field'] = 'created';
+  $handler->display->display_options['sorts']['created']['order'] = 'DESC';
+  /* Sort criterion: Content: Nid */
+  $handler->display->display_options['sorts']['nid']['id'] = 'nid';
+  $handler->display->display_options['sorts']['nid']['table'] = 'node';
+  $handler->display->display_options['sorts']['nid']['field'] = 'nid';
   $handler->display->display_options['defaults']['filter_groups'] = FALSE;
   $handler->display->display_options['defaults']['filters'] = FALSE;
   /* Filter criterion: Content: Published */
@@ -417,6 +435,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['type']['value'] = array(
     'mother' => 'mother',
   );
+  $handler->display->display_options['filters']['type']['group'] = 1;
   /* Filter criterion: Content: Type */
   $handler->display->display_options['filters']['type_2']['id'] = 'type_2';
   $handler->display->display_options['filters']['type_2']['table'] = 'node';
@@ -424,6 +443,22 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['type_2']['relationship'] = 'reverse_field_mother_node';
   $handler->display->display_options['filters']['type_2']['value'] = array(
     'child' => 'child',
+  );
+  $handler->display->display_options['filters']['type_2']['group'] = 1;
+  /* Filter criterion: Content: Clinic (field_clinic) */
+  $handler->display->display_options['filters']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
+  $handler->display->display_options['filters']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
+  $handler->display->display_options['filters']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
+  $handler->display->display_options['filters']['field_clinic_target_id']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator_id'] = 'field_clinic_target_id_op';
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['label'] = 'Clinic';
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator'] = 'field_clinic_target_id_op';
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['identifier'] = 'field_clinic_target_id';
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+    4 => 0,
   );
   $handler->display->display_options['path'] = 'admin/content/mothers';
   $handler->display->display_options['menu']['type'] = 'normal';
