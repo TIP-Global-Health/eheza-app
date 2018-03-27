@@ -140,12 +140,6 @@ decodeChildNutritionSign =
         |> andThen
             (\sign ->
                 case sign of
-                    -- We're keeping this for back-compat
-                    "abdominal-disortion" ->
-                        succeed AbdominalDistention
-
-                    -- We'll add this one for future-compat, once
-                    -- we actually change how we encode this.
                     "abdominal-distention" ->
                         succeed AbdominalDistention
 
