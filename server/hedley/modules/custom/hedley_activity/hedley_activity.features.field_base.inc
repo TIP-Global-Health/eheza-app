@@ -119,7 +119,7 @@ function hedley_activity_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'edema' => 'Edema',
-        'abdominal-disortion' => 'Abdominal Distention',
+        'abdominal-distention' => 'Abdominal Distention',
         'dry-skin' => 'Dry Skin',
         'poor-appetite' => 'Poor appetite',
         'apathy' => 'Apathy',

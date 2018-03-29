@@ -306,3 +306,16 @@ function hedley_update_7006() {
   $modules = ['hedley_zscore'];
   module_enable($modules);
 }
+
+/**
+ * Implements hook_update_7007().
+ *
+ * Fix nutrition_sign abdominal-disortion to be abdominal-distention.
+ */
+function hedley_update_7007() {
+  db_update('field_data_field_nutrition_signs')
+      ->fields(array('field_nutrition_signs_value' => 'abdominal-distention'))
+      ->condition('field_nutrition_signs_value', 'abdominal-disortion')
+      ->execute();
+
+}
