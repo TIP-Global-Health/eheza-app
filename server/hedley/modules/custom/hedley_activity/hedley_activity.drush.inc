@@ -33,17 +33,17 @@ function hedley_activity_recalculate_zscores() {
   $offset = 0;
 
   $base_query = new EntityFieldQuery();
-  $base_query = $query
+  $base_query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', $bundles)
     ->propertyCondition('status', NODE_PUBLISHED)
     ->propertyOrderBy('nid', 'ASC');
 
-  for ($query_count = clone $base_query, $count = $query_count->count()->execute(); $count > 0; $offset+=$batch_size) {
+  for ($query_count = clone $base_query, $count = $query_count->count()->execute(); $count > 0; $offset += $batch_size) {
 
     $query = clone $base_query;
 
-    $result = $query
+    $result = $query_count
       ->range($offset, $batch_size)
       ->execute();
 
