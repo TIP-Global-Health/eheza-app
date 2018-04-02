@@ -39,11 +39,10 @@ function hedley_activity_recalculate_zscores() {
     ->propertyCondition('status', NODE_PUBLISHED)
     ->propertyOrderBy('nid', 'ASC');
 
-  for ($query_count = clone $base_query, $count = $query_count->count()->execute(); $count > 0; $offset += $batch_size) {
-
+  do {
     $query = clone $base_query;
 
-    $result = $query_count
+    $result = $query
       ->range($offset, $batch_size)
       ->execute();
 
@@ -61,5 +60,10 @@ function hedley_activity_recalculate_zscores() {
       $wrapper->field_z_score_age->set(NULL);
       $wrapper->save();
     }
-  }
+
+    $offset += $batch_size;
+    $query_count = clone $base_query;
+    $count = $query_count->count()->execute();
+
+  } while ($count > 0);
 }
