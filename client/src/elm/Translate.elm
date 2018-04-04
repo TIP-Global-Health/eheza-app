@@ -644,8 +644,8 @@ translate lang trans =
                                 AccessTokenRejected ->
                                     { english = "Your access token has expired. You will need to sign in again." }
 
-                                InternalError _ ->
-                                    { english = "An internal error occurred contacting the server." }
+                                InternalError error ->
+                                    { english = "The following error occurred contacting the server. " ++ toString error }
 
                                 NetworkError ->
                                     { english = "A network error occurred contacting the server. Are you connected to the Internet?" }
