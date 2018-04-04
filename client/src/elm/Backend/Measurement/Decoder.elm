@@ -140,12 +140,13 @@ decodeChildNutritionSign =
         |> andThen
             (\sign ->
                 case sign of
-                    -- We're keeping this for back-compat
+                    -- We're keeping this one for back-compat, as
+                    -- this value still may exists in the browser
+                    -- local storage. Should be removed a little bit
+                    -- later.
                     "abdominal-disortion" ->
                         succeed AbdominalDistention
 
-                    -- We'll add this one for future-compat, once
-                    -- we actually change how we encode this.
                     "abdominal-distention" ->
                         succeed AbdominalDistention
 
