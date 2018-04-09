@@ -33,11 +33,24 @@ livePantheon =
     }
 
 
+***REMOVED*** : Model
+***REMOVED*** =
+    { backendUrl = "https://***REMOVED***"
+    , name = "***REMOVED***"
+
+    -- We're not actually using Pusher at the moment, so just filling in a
+    -- blank key for now.
+    , pusherKey = PusherAppKey "" UsEast1
+    , debug = False
+    }
+
+
 configs : Dict String Model
 configs =
     Dict.fromList
         [ ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", livePantheon )
+        , ( "***REMOVED***", ***REMOVED*** )
         ]
         |> Dict.union localConfigs
