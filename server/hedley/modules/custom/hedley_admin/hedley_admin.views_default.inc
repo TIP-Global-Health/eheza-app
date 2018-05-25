@@ -85,9 +85,9 @@ function hedley_admin_views_default_views() {
     ),
   );
   /* Relationship: Entity Reference: Referenced Entity */
-  $handler->display->display_options['relationships']['field_session_target_id']['id'] = 'field_session_target_id';
-  $handler->display->display_options['relationships']['field_session_target_id']['table'] = 'field_data_field_session';
-  $handler->display->display_options['relationships']['field_session_target_id']['field'] = 'field_session_target_id';
+  $handler->display->display_options['relationships']['field_mother_target_id']['id'] = 'field_mother_target_id';
+  $handler->display->display_options['relationships']['field_mother_target_id']['table'] = 'field_data_field_mother';
+  $handler->display->display_options['relationships']['field_mother_target_id']['field'] = 'field_mother_target_id';
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
   $handler->display->display_options['fields']['title']['table'] = 'node';
@@ -144,17 +144,19 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title']['label'] = 'Name';
   $handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
   $handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
-  /* Field: Content: Title */
+  /* Field: Content revision: Title */
   $handler->display->display_options['fields']['title_1']['id'] = 'title_1';
-  $handler->display->display_options['fields']['title_1']['table'] = 'node';
+  $handler->display->display_options['fields']['title_1']['table'] = 'node_revision';
   $handler->display->display_options['fields']['title_1']['field'] = 'title';
   $handler->display->display_options['fields']['title_1']['relationship'] = 'field_mother_target_id';
   $handler->display->display_options['fields']['title_1']['label'] = 'Mother';
-  /* Field: Content: Clinic */
+  $handler->display->display_options['fields']['title_1']['link_to_node'] = TRUE;
+  /* Field: MIN(Content: Clinic) */
   $handler->display->display_options['fields']['field_clinic']['id'] = 'field_clinic';
   $handler->display->display_options['fields']['field_clinic']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['fields']['field_clinic']['field'] = 'field_clinic';
   $handler->display->display_options['fields']['field_clinic']['relationship'] = 'field_mother_target_id';
+  $handler->display->display_options['fields']['field_clinic']['group_type'] = 'min';
   $handler->display->display_options['fields']['field_clinic']['settings'] = array(
     'bypass_access' => 0,
     'link' => 0,
