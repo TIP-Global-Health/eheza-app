@@ -384,13 +384,14 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title']['label'] = 'Name';
   $handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
   $handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
-  /* Field: COUNT(DISTINCT Content: Nid) */
-  $handler->display->display_options['fields']['nid']['id'] = 'nid';
-  $handler->display->display_options['fields']['nid']['table'] = 'node';
-  $handler->display->display_options['fields']['nid']['field'] = 'nid';
-  $handler->display->display_options['fields']['nid']['relationship'] = 'reverse_field_mother_node';
-  $handler->display->display_options['fields']['nid']['group_type'] = 'count_distinct';
-  $handler->display->display_options['fields']['nid']['label'] = 'Children';
+  /* Field: COUNT(Content: Gender) */
+  $handler->display->display_options['fields']['field_gender']['id'] = 'field_gender';
+  $handler->display->display_options['fields']['field_gender']['table'] = 'field_data_field_gender';
+  $handler->display->display_options['fields']['field_gender']['field'] = 'field_gender';
+  $handler->display->display_options['fields']['field_gender']['relationship'] = 'reverse_field_mother_node';
+  $handler->display->display_options['fields']['field_gender']['group_type'] = 'count';
+  $handler->display->display_options['fields']['field_gender']['label'] = 'Children';
+  $handler->display->display_options['fields']['field_gender']['separator'] = ', ';
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title_1']['id'] = 'title_1';
   $handler->display->display_options['fields']['title_1']['table'] = 'node';
@@ -438,15 +439,6 @@ function hedley_admin_views_default_views() {
     'mother' => 'mother',
   );
   $handler->display->display_options['filters']['type']['group'] = 1;
-  /* Filter criterion: Content: Type */
-  $handler->display->display_options['filters']['type_2']['id'] = 'type_2';
-  $handler->display->display_options['filters']['type_2']['table'] = 'node';
-  $handler->display->display_options['filters']['type_2']['field'] = 'type';
-  $handler->display->display_options['filters']['type_2']['relationship'] = 'reverse_field_mother_node';
-  $handler->display->display_options['filters']['type_2']['value'] = array(
-    'child' => 'child',
-  );
-  $handler->display->display_options['filters']['type_2']['group'] = 1;
   /* Filter criterion: Content: Clinic (field_clinic) */
   $handler->display->display_options['filters']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
   $handler->display->display_options['filters']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
