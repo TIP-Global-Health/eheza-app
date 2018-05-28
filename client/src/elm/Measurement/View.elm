@@ -531,7 +531,7 @@ viewNutritionSignsSelector : Language -> EverySet ChildNutritionSign -> List (Ht
 viewNutritionSignsSelector language nutritionSigns =
     let
         nutrionSignsAndTranslationIdsFirst =
-            [ Edema, AbdominalDistention, DrySkin ]
+            [ Edema, AbdominalDistension, DrySkin ]
 
         nutrionSignsAndTranslationIdsSecond =
             [ Apathy, PoorAppetite, BrittleHair ]

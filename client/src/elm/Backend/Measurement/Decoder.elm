@@ -145,10 +145,15 @@ decodeChildNutritionSign =
                     -- local storage. Should be removed a little bit
                     -- later.
                     "abdominal-disortion" ->
-                        succeed AbdominalDistention
+                        succeed AbdominalDistension
 
+                    -- We briefly used this typo as well, so also
+                    -- keeping for back-compat.
                     "abdominal-distention" ->
-                        succeed AbdominalDistention
+                        succeed AbdominalDistension
+
+                    "abdominal-distension" ->
+                        succeed AbdominalDistension
 
                     "apathy" ->
                         succeed Apathy
