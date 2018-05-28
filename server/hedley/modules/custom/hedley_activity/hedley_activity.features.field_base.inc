@@ -60,6 +60,7 @@ function hedley_activity_field_default_field_bases() {
         'iud' => 'IUD',
         'injection' => 'Injection',
         'necklace' => 'Necklace',
+        'implant' => 'Implant',
         'none' => 'None of these',
       ),
       'allowed_values_function' => '',
