@@ -89,6 +89,7 @@ type alias Weight =
 type FamilyPlanningSign
     = Condoms
     | IUD
+    | Implant
     | Injection
     | Necklace
     | NoFamilyPlanning
