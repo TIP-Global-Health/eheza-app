@@ -1,9 +1,9 @@
 module Translate exposing (..)
 
-import Activity.Model exposing (ActivityType(..), MotherActivityType(..), ChildActivityType(..))
-import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..), MuacIndication(..))
+import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Backend.Child.Model exposing (Gender(..))
 import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
 import Date exposing (Month(..))
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (fromEntityId)
@@ -593,6 +593,9 @@ translate lang trans =
                         IUD ->
                             { english = "IUD" }
 
+                        Implant ->
+                            { english = "Implant" }
+
                         Injection ->
                             { english = "Injection" }
 
@@ -690,10 +693,10 @@ translate lang trans =
                     { english = "No Change" }
 
                 MeasurementGained amount ->
-                    { english = "Gained " ++ (toString amount) }
+                    { english = "Gained " ++ toString amount }
 
                 MeasurementLost amount ->
-                    { english = "Lost " ++ (toString amount) }
+                    { english = "Lost " ++ toString amount }
 
                 MonthAbbrev ->
                     { english = "mo" }
@@ -806,7 +809,7 @@ translate lang trans =
                     { english = "Joined in June 2017" }
 
                 PreviousFloatMeasurement value ->
-                    { english = "Previous measurement: " ++ (toString value) }
+                    { english = "Previous measurement: " ++ toString value }
 
                 ReadyToBeginSession ->
                     { english = "You are now ready to begin your session." }
@@ -824,7 +827,7 @@ translate lang trans =
                     { english = "Re-load Participant" }
 
                 ReportCompleted { pending, total } ->
-                    { english = (toString (total - pending)) ++ "/" ++ (toString total) ++ " Completed" }
+                    { english = toString (total - pending) ++ "/" ++ toString total ++ " Completed" }
 
                 ResolveMonth month ->
                     case month of
