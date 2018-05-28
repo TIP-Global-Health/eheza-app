@@ -94,7 +94,7 @@ encodeNutritionSign =
 encodeNutritionSignAsString : ChildNutritionSign -> String
 encodeNutritionSignAsString sign =
     case sign of
-        AbdominalDistention ->
+        AbdominalDistension ->
             "abdominal-distension"
 
         Apathy ->

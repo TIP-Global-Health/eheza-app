@@ -457,8 +457,8 @@ translate lang trans =
 
                 ChildNutritionSignLabel sign ->
                     case sign of
-                        AbdominalDistention ->
-                            { english = "Abdominal Distention" }
+                        AbdominalDistension ->
+                            { english = "Abdominal Distension" }
 
                         Apathy ->
                             { english = "Apathy" }
@@ -480,8 +480,8 @@ translate lang trans =
 
                 ChildNutritionSignReport sign ->
                     case sign of
-                        AbdominalDistention ->
-                            { english = "Abdominal Distention" }
+                        AbdominalDistension ->
+                            { english = "Abdominal Distension" }
 
                         Apathy ->
                             { english = "Apathy" }
