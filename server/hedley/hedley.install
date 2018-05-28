@@ -319,3 +319,18 @@ function hedley_update_7007() {
       ->execute();
 
 }
+
+/**
+ * Implements hook_update_7008().
+ *
+ * Fix nutrition_sign abdominal-distention to be abdominal-distension.
+ *
+ * The previous fix had its own typo, so we'll fix it again.
+ */
+function hedley_update_7008() {
+  db_update('field_data_field_nutrition_signs')
+      ->fields(array('field_nutrition_signs_value' => 'abdominal-distension'))
+      ->condition('field_nutrition_signs_value', 'abdominal-distention')
+      ->execute();
+
+}
