@@ -192,25 +192,26 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['relationships']['reverse_field_clinic_node']['ui_name'] = 'Mother';
   $handler->display->display_options['relationships']['reverse_field_clinic_node']['label'] = 'Mother';
   $handler->display->display_options['defaults']['fields'] = FALSE;
-  /* Field: User: Name */
-  $handler->display->display_options['fields']['name']['id'] = 'name';
-  $handler->display->display_options['fields']['name']['table'] = 'users';
-  $handler->display->display_options['fields']['name']['field'] = 'name';
-  $handler->display->display_options['fields']['name']['relationship'] = 'uid';
-  $handler->display->display_options['fields']['name']['label'] = 'Created by';
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
   $handler->display->display_options['fields']['title']['table'] = 'node';
   $handler->display->display_options['fields']['title']['field'] = 'title';
   $handler->display->display_options['fields']['title']['label'] = 'Clinic name';
   $handler->display->display_options['fields']['title']['link_to_node'] = FALSE;
-  /* Field: COUNT(Content: Nid) */
-  $handler->display->display_options['fields']['nid']['id'] = 'nid';
-  $handler->display->display_options['fields']['nid']['table'] = 'node';
-  $handler->display->display_options['fields']['nid']['field'] = 'nid';
-  $handler->display->display_options['fields']['nid']['relationship'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['fields']['nid']['group_type'] = 'count';
-  $handler->display->display_options['fields']['nid']['label'] = 'Mothers assigned';
+  /* Field: COUNT(Content: Ubudehe) */
+  $handler->display->display_options['fields']['field_ubudehe']['id'] = 'field_ubudehe';
+  $handler->display->display_options['fields']['field_ubudehe']['table'] = 'field_data_field_ubudehe';
+  $handler->display->display_options['fields']['field_ubudehe']['field'] = 'field_ubudehe';
+  $handler->display->display_options['fields']['field_ubudehe']['relationship'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['fields']['field_ubudehe']['group_type'] = 'count';
+  $handler->display->display_options['fields']['field_ubudehe']['label'] = 'Mothers assigned';
+  $handler->display->display_options['fields']['field_ubudehe']['separator'] = ', ';
+  /* Field: User: Name */
+  $handler->display->display_options['fields']['name']['id'] = 'name';
+  $handler->display->display_options['fields']['name']['table'] = 'users';
+  $handler->display->display_options['fields']['name']['field'] = 'name';
+  $handler->display->display_options['fields']['name']['relationship'] = 'uid';
+  $handler->display->display_options['fields']['name']['label'] = 'Created by';
   /* Field: Content: Edit link */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
@@ -233,15 +234,6 @@ function hedley_admin_views_default_views() {
     'clinic' => 'clinic',
   );
   $handler->display->display_options['filters']['type']['group'] = 1;
-  /* Filter criterion: Content: Type */
-  $handler->display->display_options['filters']['type_1']['id'] = 'type_1';
-  $handler->display->display_options['filters']['type_1']['table'] = 'node';
-  $handler->display->display_options['filters']['type_1']['field'] = 'type';
-  $handler->display->display_options['filters']['type_1']['relationship'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['filters']['type_1']['value'] = array(
-    'mother' => 'mother',
-  );
-  $handler->display->display_options['filters']['type_1']['group'] = 1;
   $handler->display->display_options['path'] = 'admin/content/clinics';
   $handler->display->display_options['menu']['type'] = 'normal';
   $handler->display->display_options['menu']['title'] = 'Clinics';
@@ -693,25 +685,25 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['relationships']['reverse_field_clinic_node']['ui_name'] = 'Mother';
   $handler->display->display_options['relationships']['reverse_field_clinic_node']['label'] = 'Mother';
   $handler->display->display_options['defaults']['fields'] = FALSE;
-  /* Field: User: Name */
-  $handler->display->display_options['fields']['name']['id'] = 'name';
-  $handler->display->display_options['fields']['name']['table'] = 'users';
-  $handler->display->display_options['fields']['name']['field'] = 'name';
-  $handler->display->display_options['fields']['name']['relationship'] = 'uid';
-  $handler->display->display_options['fields']['name']['label'] = 'Created by';
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
   $handler->display->display_options['fields']['title']['table'] = 'node';
   $handler->display->display_options['fields']['title']['field'] = 'title';
   $handler->display->display_options['fields']['title']['label'] = 'Clinic name';
   $handler->display->display_options['fields']['title']['link_to_node'] = FALSE;
-  /* Field: COUNT(Content: Nid) */
-  $handler->display->display_options['fields']['nid']['id'] = 'nid';
-  $handler->display->display_options['fields']['nid']['table'] = 'node';
-  $handler->display->display_options['fields']['nid']['field'] = 'nid';
-  $handler->display->display_options['fields']['nid']['relationship'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['fields']['nid']['group_type'] = 'count';
-  $handler->display->display_options['fields']['nid']['label'] = 'Mothers assigned';
+  /* Field: COUNT(Content: Ubudehe) */
+  $handler->display->display_options['fields']['field_ubudehe']['id'] = 'field_ubudehe';
+  $handler->display->display_options['fields']['field_ubudehe']['table'] = 'field_data_field_ubudehe';
+  $handler->display->display_options['fields']['field_ubudehe']['field'] = 'field_ubudehe';
+  $handler->display->display_options['fields']['field_ubudehe']['relationship'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['fields']['field_ubudehe']['group_type'] = 'count';
+  $handler->display->display_options['fields']['field_ubudehe']['separator'] = ', ';
+  /* Field: User: Name */
+  $handler->display->display_options['fields']['name']['id'] = 'name';
+  $handler->display->display_options['fields']['name']['table'] = 'users';
+  $handler->display->display_options['fields']['name']['field'] = 'name';
+  $handler->display->display_options['fields']['name']['relationship'] = 'uid';
+  $handler->display->display_options['fields']['name']['label'] = 'Created by';
   $handler->display->display_options['defaults']['filter_groups'] = FALSE;
   $handler->display->display_options['defaults']['filters'] = FALSE;
   /* Filter criterion: Content: Published */
