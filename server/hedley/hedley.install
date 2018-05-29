@@ -338,7 +338,7 @@ function hedley_update_7008() {
  *
  * Fix nutrition_sign in revisions table.
  *
- * The previous fix had its own typo, so we'll fix it again.
+ * We had previously just fixed the data table.
  */
 function hedley_update_7009() {
   db_update('field_revision_field_nutrition_signs')
