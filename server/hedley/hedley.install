@@ -31,7 +31,6 @@ function hedley_install() {
 
   // Perform several of the updates that aren't handled in
   // `hedley_standard_install`, and are needed on a fresh install
-  hedley_update_7002();
   hedley_update_7003();
   hedley_update_7004();
   hedley_update_7005();
@@ -138,6 +137,16 @@ function hedley_standard_install() {
       'status' => 1,
       'weight' => 0,
       'region' => 'help',
+      'pages' => '',
+      'cache' => -1,
+    ),
+    array(
+      'module' => 'menu',
+      'delta' => 'menu-ihangane-admin-menu',
+      'theme' => $default_theme,
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'sidebar_first',
       'pages' => '',
       'cache' => -1,
     ),
