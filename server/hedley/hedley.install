@@ -317,7 +317,6 @@ function hedley_update_7007() {
       ->fields(array('field_nutrition_signs_value' => 'abdominal-distention'))
       ->condition('field_nutrition_signs_value', 'abdominal-disortion')
       ->execute();
-
 }
 
 /**
@@ -332,5 +331,18 @@ function hedley_update_7008() {
       ->fields(array('field_nutrition_signs_value' => 'abdominal-distension'))
       ->condition('field_nutrition_signs_value', 'abdominal-distention')
       ->execute();
+}
 
+/**
+ * Implements hook_update_N().
+ *
+ * Fix nutrition_sign in revisions table.
+ *
+ * The previous fix had its own typo, so we'll fix it again.
+ */
+function hedley_update_7009() {
+  db_update('field_revision_field_nutrition_signs')
+      ->fields(array('field_nutrition_signs_value' => 'abdominal-distension'))
+      ->condition('field_nutrition_signs_value', 'abdominal-disortion')
+      ->execute();
 }
