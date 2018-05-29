@@ -29,8 +29,12 @@ function hedley_install() {
   variable_set('date_default_timezone', 'Asia/Jerusalem');
   variable_set('date_first_day', 1);
 
-  // The Access admin menu perm is added when admin_menu is installed.
+  // Perform several of the updates that aren't handled in
+  // `hedley_standard_install`, and are needed on a fresh install
+  hedley_update_7002();
+  hedley_update_7003();
   hedley_update_7004();
+  hedley_update_7005();
 }
 
 /**
