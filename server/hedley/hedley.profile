@@ -41,7 +41,6 @@ function hedley_setup_variables() {
   $variables = array(
     //Site Variables
     'site_name' => 'E-Heza System',
-    'site_frontpage' => 'admin/content/clinics',
     // Features default export path.
     'features_default_export_path' => 'profiles/hedley/modules/custom',
     // Mime-mail.
