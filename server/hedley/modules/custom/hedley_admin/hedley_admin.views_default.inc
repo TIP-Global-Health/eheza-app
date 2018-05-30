@@ -191,6 +191,12 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['relationships']['reverse_field_clinic_node']['field'] = 'reverse_field_clinic_node';
   $handler->display->display_options['relationships']['reverse_field_clinic_node']['ui_name'] = 'Mother';
   $handler->display->display_options['relationships']['reverse_field_clinic_node']['label'] = 'Mother';
+  /* Relationship: Session */
+  $handler->display->display_options['relationships']['reverse_field_clinic_node_1']['id'] = 'reverse_field_clinic_node_1';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node_1']['table'] = 'node';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node_1']['field'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node_1']['ui_name'] = 'Session';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node_1']['label'] = 'Referencing clinic';
   $handler->display->display_options['defaults']['fields'] = FALSE;
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
@@ -206,6 +212,22 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_ubudehe']['group_type'] = 'count';
   $handler->display->display_options['fields']['field_ubudehe']['label'] = 'Mothers assigned';
   $handler->display->display_options['fields']['field_ubudehe']['separator'] = ', ';
+  /* Field: MAX(Content: Scheduled Date) */
+  $handler->display->display_options['fields']['field_scheduled_date']['id'] = 'field_scheduled_date';
+  $handler->display->display_options['fields']['field_scheduled_date']['table'] = 'field_data_field_scheduled_date';
+  $handler->display->display_options['fields']['field_scheduled_date']['field'] = 'field_scheduled_date';
+  $handler->display->display_options['fields']['field_scheduled_date']['relationship'] = 'reverse_field_clinic_node_1';
+  $handler->display->display_options['fields']['field_scheduled_date']['group_type'] = 'max';
+  $handler->display->display_options['fields']['field_scheduled_date']['label'] = 'Latest session';
+  $handler->display->display_options['fields']['field_scheduled_date']['settings'] = array(
+    'format_type' => 'custom',
+    'custom_date_format' => 'Y M d',
+    'fromto' => 'value',
+    'multiple_number' => '',
+    'multiple_from' => '',
+    'multiple_to' => '',
+    'show_remaining_days' => 0,
+  );
   /* Field: User: Name */
   $handler->display->display_options['fields']['name']['id'] = 'name';
   $handler->display->display_options['fields']['name']['table'] = 'users';
