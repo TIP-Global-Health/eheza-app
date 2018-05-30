@@ -39,7 +39,15 @@ function hedley_activity_recalculate_zscores() {
     ->propertyCondition('status', NODE_PUBLISHED)
     ->propertyOrderBy('nid', 'ASC');
 
-  do {
+  // Print total count
+  $query_count = clone $base_query;
+  $count = $query_count->count()->execute();
+  drush_print(dt('Found @count nodes.', ['@count' => $count]));
+
+  while ($offset < $count) {
+    // Free up memory.
+    drupal_static_reset();
+
     $query = clone $base_query;
 
     $result = $query
@@ -47,9 +55,15 @@ function hedley_activity_recalculate_zscores() {
       ->execute();
 
     if (empty($result['node'])) {
-      // No measurements to update.
+      drush_print('Empty batch.');
       return;
     }
+
+    drush_print(dt('Processing @low - @high of @count', [
+      '@low' => $offset + 1,
+      '@high' => min($offset + $batch_size, $count),
+      '@count' => $count
+    ]));
 
     $nids = array_keys($result['node']);
 
@@ -62,8 +76,7 @@ function hedley_activity_recalculate_zscores() {
     }
 
     $offset += $batch_size;
-    $query_count = clone $base_query;
-    $count = $query_count->count()->execute();
+  }
 
-  } while ($count > 0);
+  drush_print("Finished");
 }
