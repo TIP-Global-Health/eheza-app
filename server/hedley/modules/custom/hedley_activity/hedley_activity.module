@@ -103,7 +103,7 @@ function hedley_activity_handle_child_zscores($nid) {
   $query_count = clone $base_query;
   $count = $query_count->count()->execute();
 
-  while $offset < $count {
+  while ($offset < $count) {
     $query = clone $base_query;
 
     $result = $query

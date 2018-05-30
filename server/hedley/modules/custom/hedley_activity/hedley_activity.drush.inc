@@ -39,7 +39,7 @@ function hedley_activity_recalculate_zscores() {
     ->propertyCondition('status', NODE_PUBLISHED)
     ->propertyOrderBy('nid', 'ASC');
 
-  // Print total count
+  // Print total count.
   $query_count = clone $base_query;
   $count = $query_count->count()->execute();
   drush_print(dt('Found @count nodes.', ['@count' => $count]));
@@ -62,7 +62,7 @@ function hedley_activity_recalculate_zscores() {
     drush_print(dt('Processing @low - @high of @count', [
       '@low' => $offset + 1,
       '@high' => min($offset + $batch_size, $count),
-      '@count' => $count
+      '@count' => $count,
     ]));
 
     $nids = array_keys($result['node']);
