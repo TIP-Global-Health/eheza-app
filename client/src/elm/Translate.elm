@@ -222,7 +222,7 @@ translate lang trans =
                 ActivitiesHelp activity ->
                     case activity of
                         MotherActivity FamilyPlanning ->
-                            { english = "Every mother should be asked about her family planing method(s) each month. If a mother needs family planning, refer her to a clinic." }
+                            { english = "Every mother should be asked about her family planning method(s) each month. If a mother needs family planning, refer her to a clinic." }
 
                         ChildActivity Height ->
                             { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight." }
@@ -268,7 +268,7 @@ translate lang trans =
                 ActivitiesTitle activity ->
                     case activity of
                         MotherActivity FamilyPlanning ->
-                            { english = "Planning" }
+                            { english = "Family Planning" }
 
                         ChildActivity Height ->
                             { english = "Height" }
@@ -291,7 +291,7 @@ translate lang trans =
                 ActivityProgressReport activity ->
                     case activity of
                         MotherActivity FamilyPlanning ->
-                            { english = "Planning" }
+                            { english = "Family Planning" }
 
                         ChildActivity Height ->
                             { english = "Height" }
