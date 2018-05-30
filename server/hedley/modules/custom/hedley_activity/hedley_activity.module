@@ -89,7 +89,6 @@ function hedley_activity_handle_height($nid) {
  *   The node ID of the child.
  */
 function hedley_activity_handle_child_zscores($nid) {
-
   $batch_size = 50;
   $offset = 0;
 
@@ -101,7 +100,10 @@ function hedley_activity_handle_child_zscores($nid) {
     ->propertyCondition('status', NODE_PUBLISHED)
     ->propertyOrderBy('nid', 'ASC');
 
-  do {
+  $query_count = clone $base_query;
+  $count = $query_count->count()->execute();
+
+  while $offset < $count {
     $query = clone $base_query;
 
     $result = $query
@@ -109,7 +111,7 @@ function hedley_activity_handle_child_zscores($nid) {
       ->execute();
 
     if (empty($result['node'])) {
-      // No z-scores need updating.
+      // No more z-scores need updating.
       return;
     }
 
@@ -124,10 +126,10 @@ function hedley_activity_handle_child_zscores($nid) {
     }
 
     $offset += $batch_size;
-    $query_count = clone $base_query;
-    $count = $query_count->count()->execute();
 
-  } while ($count > 0);
+    // Free up memory.
+    drupal_static_reset();
+  }
 }
 
 /**
