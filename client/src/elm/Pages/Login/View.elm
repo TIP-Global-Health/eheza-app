@@ -123,7 +123,7 @@ viewWhenLoggedIn language login session =
                             , viewError language err
                             ]
                         , button
-                            [ class "ui fluid button"
+                            [ class "ui fluid button logout"
                             , onClick HandleLogoutClicked
                             ]
                             [ Translate.LoginPhrase Translate.Logout
@@ -134,7 +134,7 @@ viewWhenLoggedIn language login session =
 
                 _ ->
                     button
-                        [ class "ui fluid button"
+                        [ class "ui fluid button logout"
                         , onClick HandleLogoutClicked
                         ]
                         [ Translate.LoginPhrase Translate.Logout
