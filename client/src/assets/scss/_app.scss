@@ -15,6 +15,10 @@ a {
   cursor: pointer;
 }
 
+.ui.logout.button {
+  background: $color-dark-background;
+}
+
 // CSS for an overlay. So, the idea is that we have a structure that looks like
 // this:
 //
