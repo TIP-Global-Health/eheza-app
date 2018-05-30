@@ -5,11 +5,11 @@ module Measurement.View exposing (viewChild, viewMother, viewMuacIndication)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Backend.Child.Model exposing (Child, Gender)
-import Backend.Measurement.Encoder exposing (encodeNutritionSignAsString, encodeFamilyPlanningSignAsString)
+import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (applyEdit, muacIndication, mapMeasurementData)
+import Backend.Measurement.Utils exposing (applyEdit, mapMeasurementData, muacIndication)
 import EverySet exposing (EverySet)
-import Gizra.Html exposing (emptyNode, showIf, showMaybe, keyed, divKeyed, keyedDivKeyed)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
@@ -23,7 +23,7 @@ import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Round
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import Utils.Html exposing (script)
-import Utils.NominalDate exposing (diffDays, Days(..))
+import Utils.NominalDate exposing (Days(..), diffDays)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
 import ZScore.Utils exposing (viewZScore, zScoreHeightForAge, zScoreWeightForAge, zScoreWeightForHeight)
 
@@ -87,7 +87,7 @@ heightFormConfig =
     , constraints = getInputConstraintsHeight
     , unit = Trans.CentimeterShorthand
     , inputValue = .height
-    , storedValue = .value >> \(HeightInCm val) -> val
+    , storedValue = .value >> (\(HeightInCm val) -> val)
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateHeight
@@ -106,7 +106,7 @@ muacFormConfig =
     , constraints = getInputConstraintsMuac
     , unit = Trans.CentimeterShorthand
     , inputValue = .muac
-    , storedValue = .value >> \(MuacInCm val) -> val
+    , storedValue = .value >> (\(MuacInCm val) -> val)
     , dateMeasured = .dateMeasured
     , viewIndication = Just <| \language val -> viewMuacIndication language (muacIndication (MuacInCm val))
     , updateMsg = UpdateMuac
@@ -125,7 +125,7 @@ weightFormConfig =
     , constraints = getInputConstraintsWeight
     , unit = Trans.KilogramShorthand
     , inputValue = .weight
-    , storedValue = .value >> \(WeightInKg val) -> val
+    , storedValue = .value >> (\(WeightInKg val) -> val)
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateWeight
@@ -531,7 +531,7 @@ viewNutritionSignsSelector : Language -> EverySet ChildNutritionSign -> List (Ht
 viewNutritionSignsSelector language nutritionSigns =
     let
         nutrionSignsAndTranslationIdsFirst =
-            [ Edema, AbdominalDistention, DrySkin ]
+            [ Edema, AbdominalDistension, DrySkin ]
 
         nutrionSignsAndTranslationIdsSecond =
             [ Apathy, PoorAppetite, BrittleHair ]
@@ -640,7 +640,7 @@ viewFamilyPlanningSelector language familyPlanningSigns =
             [ Pill, Condoms, IUD ]
 
         familyPlanningSignSecond =
-            [ Injection, Necklace ]
+            [ Implant, Injection, Necklace ]
     in
         [ div [ class "ui grid" ]
             [ familyPlanningSignFirst

@@ -4,9 +4,9 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
-import Gizra.Json exposing (decodeFloat, decodeInt, decodeIntDict, decodeEmptyArrayAs)
+import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict)
 import Gizra.NominalDate
-import Json.Decode exposing (Decoder, andThen, at, bool, decodeValue, dict, fail, field, int, list, map, map2, nullable, string, succeed, value, oneOf)
+import Json.Decode exposing (Decoder, andThen, at, bool, decodeValue, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed, value)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (EntityId, decodeEntityId, toEntityId)
 import Utils.Json exposing (decodeEverySet)
@@ -145,10 +145,15 @@ decodeChildNutritionSign =
                     -- local storage. Should be removed a little bit
                     -- later.
                     "abdominal-disortion" ->
-                        succeed AbdominalDistention
+                        succeed AbdominalDistension
 
+                    -- We briefly used this typo as well, so also
+                    -- keeping for back-compat.
                     "abdominal-distention" ->
-                        succeed AbdominalDistention
+                        succeed AbdominalDistension
+
+                    "abdominal-distension" ->
+                        succeed AbdominalDistension
 
                     "apathy" ->
                         succeed Apathy
@@ -189,6 +194,9 @@ decodeFamilyPlanningSign =
 
                     "iud" ->
                         succeed IUD
+
+                    "implant" ->
+                        succeed Implant
 
                     "injection" ->
                         succeed Injection

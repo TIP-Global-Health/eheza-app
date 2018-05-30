@@ -11,6 +11,14 @@ implications.
   of the app, as if you were offline, even if there is a newer version
   available online).
 
+- We have some fairly strict requirements for browser compatibility at the
+  moment, for the sake of simplifying the implementation of offline support and
+  photo uploading. Basically, you need a recent version of Chrome (Chrome 60 or
+  later) -- otherwise, various things will fail, without helpful error messages.
+  We can't support Safari at the moment, because it lacks support for service
+  workers. However, service worker support is coming to Safari relatively soon,
+  so it may be possible in the future.
+
 - The app will "take over" the URL you use (e.g. ***REMOVED***)
   and serve itself from the cache. This isn't a big deal for
   ***REMOVED***, but is more of an issue for
@@ -24,4 +32,3 @@ implications.
 Eventually, we may want to deal with some of this in the app itself (i.e. ask
 the user to reload when a new version is available, and give the user a way to
 relinquish the URL from within the app itself).
-

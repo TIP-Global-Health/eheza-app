@@ -29,8 +29,11 @@ function hedley_install() {
   variable_set('date_default_timezone', 'Asia/Jerusalem');
   variable_set('date_first_day', 1);
 
-  // The Access admin menu perm is added when admin_menu is installed.
+  // Perform several of the updates that aren't handled in
+  // `hedley_standard_install`, and are needed on a fresh install
+  hedley_update_7003();
   hedley_update_7004();
+  hedley_update_7005();
 }
 
 /**
@@ -137,6 +140,16 @@ function hedley_standard_install() {
       'pages' => '',
       'cache' => -1,
     ),
+    array(
+      'module' => 'menu',
+      'delta' => 'menu-ihangane-admin-menu',
+      'theme' => $default_theme,
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'sidebar_first',
+      'pages' => '',
+      'cache' => -1,
+    ),
   );
   $query = db_insert('block')->fields(array('module', 'delta', 'theme', 'status', 'weight', 'region', 'pages', 'cache'));
   foreach ($values as $record) {
@@ -202,14 +215,6 @@ function hedley_standard_install() {
   db_insert('users_roles')
     ->fields(array('uid' => 1, 'rid' => $admin_role->rid))
     ->execute();
-
-  // Create a Home link in the main menu.
-  $item = array(
-    'link_title' => 'Home',
-    'link_path' => '<front>',
-    'menu_name' => 'main-menu',
-  );
-  menu_link_save($item);
 
   // Update the menu router information.
   variable_set('menu_rebuild_needed', TRUE);
@@ -317,5 +322,32 @@ function hedley_update_7007() {
       ->fields(array('field_nutrition_signs_value' => 'abdominal-distention'))
       ->condition('field_nutrition_signs_value', 'abdominal-disortion')
       ->execute();
+}
 
+/**
+ * Implements hook_update_7008().
+ *
+ * Fix nutrition_sign abdominal-distention to be abdominal-distension.
+ *
+ * The previous fix had its own typo, so we'll fix it again.
+ */
+function hedley_update_7008() {
+  db_update('field_data_field_nutrition_signs')
+      ->fields(array('field_nutrition_signs_value' => 'abdominal-distension'))
+      ->condition('field_nutrition_signs_value', 'abdominal-distention')
+      ->execute();
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Fix nutrition_sign in revisions table.
+ *
+ * We had previously just fixed the data table.
+ */
+function hedley_update_7009() {
+  db_update('field_revision_field_nutrition_signs')
+      ->fields(array('field_nutrition_signs_value' => 'abdominal-distension'))
+      ->condition('field_nutrition_signs_value', 'abdominal-disortion')
+      ->execute();
 }

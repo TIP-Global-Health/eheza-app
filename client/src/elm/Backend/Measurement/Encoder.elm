@@ -4,7 +4,7 @@ import Backend.Measurement.Model exposing (..)
 import EveryDict
 import EverySet
 import Gizra.NominalDate
-import Json.Encode as Encoder exposing (Value, float, int, list, string, object, bool)
+import Json.Encode as Encoder exposing (Value, bool, float, int, list, object, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (EntityId(..), encodeEntityId, fromEntityId)
 
@@ -94,7 +94,7 @@ encodeNutritionSign =
 encodeNutritionSignAsString : ChildNutritionSign -> String
 encodeNutritionSignAsString sign =
     case sign of
-        AbdominalDistention ->
+        AbdominalDistension ->
             "abdominal-distension"
 
         Apathy ->
@@ -129,6 +129,9 @@ encodeFamilyPlanningSignAsString sign =
 
         IUD ->
             "iud"
+
+        Implant ->
+            "implant"
 
         Injection ->
             "injection"

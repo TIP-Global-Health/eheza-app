@@ -1,9 +1,9 @@
 module Translate exposing (..)
 
-import Activity.Model exposing (ActivityType(..), MotherActivityType(..), ChildActivityType(..))
-import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..), MuacIndication(..))
+import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Backend.Child.Model exposing (Gender(..))
 import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
 import Date exposing (Month(..))
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (fromEntityId)
@@ -222,7 +222,7 @@ translate lang trans =
                 ActivitiesHelp activity ->
                     case activity of
                         MotherActivity FamilyPlanning ->
-                            { english = "Every mother should be asked about her family planing method(s) each month. If a mother needs family planning, refer her to a clinic." }
+                            { english = "Every mother should be asked about her family planning method(s) each month. If a mother needs family planning, refer her to a clinic." }
 
                         ChildActivity Height ->
                             { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight." }
@@ -268,7 +268,7 @@ translate lang trans =
                 ActivitiesTitle activity ->
                     case activity of
                         MotherActivity FamilyPlanning ->
-                            { english = "Planning" }
+                            { english = "Family Planning" }
 
                         ChildActivity Height ->
                             { english = "Height" }
@@ -291,7 +291,7 @@ translate lang trans =
                 ActivityProgressReport activity ->
                     case activity of
                         MotherActivity FamilyPlanning ->
-                            { english = "Planning" }
+                            { english = "Family Planning" }
 
                         ChildActivity Height ->
                             { english = "Height" }
@@ -457,8 +457,8 @@ translate lang trans =
 
                 ChildNutritionSignLabel sign ->
                     case sign of
-                        AbdominalDistention ->
-                            { english = "Abdominal Distention" }
+                        AbdominalDistension ->
+                            { english = "Abdominal Distension" }
 
                         Apathy ->
                             { english = "Apathy" }
@@ -480,8 +480,8 @@ translate lang trans =
 
                 ChildNutritionSignReport sign ->
                     case sign of
-                        AbdominalDistention ->
-                            { english = "Abdominal Distention" }
+                        AbdominalDistension ->
+                            { english = "Abdominal Distension" }
 
                         Apathy ->
                             { english = "Apathy" }
@@ -593,6 +593,9 @@ translate lang trans =
                         IUD ->
                             { english = "IUD" }
 
+                        Implant ->
+                            { english = "Implant" }
+
                         Injection ->
                             { english = "Injection" }
 
@@ -644,8 +647,8 @@ translate lang trans =
                                 AccessTokenRejected ->
                                     { english = "Your access token has expired. You will need to sign in again." }
 
-                                InternalError _ ->
-                                    { english = "An internal error occurred contacting the server." }
+                                InternalError error ->
+                                    { english = "The following error occurred contacting the server. " ++ toString error }
 
                                 NetworkError ->
                                     { english = "A network error occurred contacting the server. Are you connected to the Internet?" }
@@ -690,10 +693,10 @@ translate lang trans =
                     { english = "No Change" }
 
                 MeasurementGained amount ->
-                    { english = "Gained " ++ (toString amount) }
+                    { english = "Gained " ++ toString amount }
 
                 MeasurementLost amount ->
-                    { english = "Lost " ++ (toString amount) }
+                    { english = "Lost " ++ toString amount }
 
                 MonthAbbrev ->
                     { english = "mo" }
@@ -806,7 +809,7 @@ translate lang trans =
                     { english = "Joined in June 2017" }
 
                 PreviousFloatMeasurement value ->
-                    { english = "Previous measurement: " ++ (toString value) }
+                    { english = "Previous measurement: " ++ toString value }
 
                 ReadyToBeginSession ->
                     { english = "You are now ready to begin your session." }
@@ -824,7 +827,7 @@ translate lang trans =
                     { english = "Re-load Participant" }
 
                 ReportCompleted { pending, total } ->
-                    { english = (toString (total - pending)) ++ "/" ++ (toString total) ++ " Completed" }
+                    { english = toString (total - pending) ++ "/" ++ toString total ++ " Completed" }
 
                 ResolveMonth month ->
                     case month of

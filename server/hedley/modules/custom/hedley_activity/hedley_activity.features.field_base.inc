@@ -60,6 +60,7 @@ function hedley_activity_field_default_field_bases() {
         'iud' => 'IUD',
         'injection' => 'Injection',
         'necklace' => 'Necklace',
+        'implant' => 'Implant',
         'none' => 'None of these',
       ),
       'allowed_values_function' => '',
@@ -119,7 +120,7 @@ function hedley_activity_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'edema' => 'Edema',
-        'abdominal-distention' => 'Abdominal Distention',
+        'abdominal-distension' => 'Abdominal Distension',
         'dry-skin' => 'Dry Skin',
         'poor-appetite' => 'Poor appetite',
         'apathy' => 'Apathy',

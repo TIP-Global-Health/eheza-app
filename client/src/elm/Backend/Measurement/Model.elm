@@ -89,6 +89,7 @@ type alias Weight =
 type FamilyPlanningSign
     = Condoms
     | IUD
+    | Implant
     | Injection
     | Necklace
     | NoFamilyPlanning
@@ -100,7 +101,7 @@ type alias FamilyPlanning =
 
 
 type ChildNutritionSign
-    = AbdominalDistention
+    = AbdominalDistension
     | Apathy
     | BrittleHair
     | DrySkin
