@@ -89,27 +89,46 @@ function hedley_activity_handle_height($nid) {
  *   The node ID of the child.
  */
 function hedley_activity_handle_child_zscores($nid) {
-  $query = new EntityFieldQuery();
-  $result = $query
+  $batch_size = 50;
+  $offset = 0;
+
+  $base_query = new EntityFieldQuery();
+  $base_query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', ['height', 'weight'], 'IN')
     ->fieldCondition('field_child', 'target_id', $nid)
     ->propertyCondition('status', NODE_PUBLISHED)
-    ->execute();
+    ->propertyOrderBy('nid', 'ASC');
 
-  if (empty($result['node'])) {
-    // No z-scores need updating.
-    return;
-  }
+  $query_count = clone $base_query;
+  $count = $query_count->count()->execute();
 
-  $keys = array_keys($result['node']);
-  node_load_multiple($keys);
+  while ($offset < $count) {
+    $query = clone $base_query;
 
-  foreach ($keys as $key) {
-    // Just trigger presave ... that will do the hard work!
-    $wrapper = entity_metadata_wrapper('node', $key);
-    $wrapper->field_z_score_age->set(NULL);
-    $wrapper->save();
+    $result = $query
+      ->range($offset, $batch_size)
+      ->execute();
+
+    if (empty($result['node'])) {
+      // No more z-scores need updating.
+      return;
+    }
+
+    $keys = array_keys($result['node']);
+    node_load_multiple($keys);
+
+    foreach ($keys as $key) {
+      // Just trigger presave ... that will do the hard work!
+      $wrapper = entity_metadata_wrapper('node', $key);
+      $wrapper->field_z_score_age->set(NULL);
+      $wrapper->save();
+    }
+
+    $offset += $batch_size;
+
+    // Free up memory.
+    drupal_static_reset();
   }
 }
 
