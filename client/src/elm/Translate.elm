@@ -35,6 +35,7 @@ type TranslationId
     | ActivitiesToComplete Int
     | ActivityProgressReport ActivityType
     | ActivePage Page
+    | Admin
     | AgeWord
     | Age Int Int
     | AgeDays Int
@@ -210,6 +211,9 @@ translate lang trans =
                 AccessDenied ->
                     { english = "Access denied" }
 
+                Admin ->
+                    { english = "Administration" }
+
                 AgeWord ->
                     { english = "Age" }
 
@@ -345,11 +349,16 @@ translate lang trans =
                                 ProgressReportPage childId ->
                                     { english = "Progress Report" }
 
-                        UserPage (ClinicsPage _) ->
-                            { english = "Clinics" }
+                        UserPage userPage ->
+                            case userPage of
+                                AdminPage ->
+                                    { english = "Admin" }
 
-                        UserPage MyAccountPage ->
-                            { english = "'My Account'" }
+                                ClinicsPage _ ->
+                                    { english = "Clinics" }
+
+                                MyAccountPage ->
+                                    { english = "'My Account'" }
 
                 Age months days ->
                     { english = toString months ++ " months " ++ toString days ++ " days" }

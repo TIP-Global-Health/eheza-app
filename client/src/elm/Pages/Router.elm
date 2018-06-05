@@ -48,6 +48,9 @@ delta2url previous current =
         -- These are pages that required a logged-in user
         UserPage userPage ->
             case userPage of
+                AdminPage ->
+                    Just <| UrlChange NewEntry "#admin"
+
                 ClinicsPage clinicId ->
                     let
                         clinic =
@@ -81,6 +84,7 @@ parseUrl =
         , map (SessionPage << ProgressReportPage << toEntityId) (s "progress" </> int)
         , map (UserPage << ClinicsPage << Just << toEntityId) (s "clinics" </> int)
         , map (UserPage (ClinicsPage Nothing)) (s "clinics")
+        , map (UserPage AdminPage) (s "admin")
         , map LoginPage (s "login")
         , map (UserPage MyAccountPage) (s "my-account")
         , map (SessionPage << MotherPage << toEntityId) (s "mother" </> int)

@@ -5,6 +5,7 @@ import Config.View
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
+import Pages.Admin.View
 import Pages.Clinics.View
 import Pages.Login.View
 import Pages.MyAccount.View
@@ -89,6 +90,9 @@ viewConfiguredModel model configured =
 
                         UserPage userPage ->
                             case userPage of
+                                AdminPage ->
+                                    Pages.Admin.View.view model.language
+
                                 MyAccountPage ->
                                     Pages.MyAccount.View.view model.language login.credentials.user
 
