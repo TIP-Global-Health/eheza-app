@@ -12,4 +12,5 @@ type alias Model =
     , name : String
     , pusherKey : PusherAppKey
     , debug : Bool
+    , sandbox : Bool
     }

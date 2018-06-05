@@ -7,7 +7,6 @@ import App.Router exposing (..)
 import App.View exposing (view)
 import Gizra.Update exposing (andThenFetch)
 import RouteUrl
-import Update.Extra exposing (sequence)
 
 
 main : RouteUrl.RouteUrlProgram Flags Model Msg

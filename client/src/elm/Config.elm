@@ -12,6 +12,7 @@ import Pusher.Model exposing (Cluster(..), PusherAppKey)
     , name = "***REMOVED***"
     , pusherKey = PusherAppKey "***REMOVED***" UsEast1
     , debug = False
+    , sandbox = False
     }
 
 
@@ -21,6 +22,7 @@ import Pusher.Model exposing (Cluster(..), PusherAppKey)
     , name = "***REMOVED***"
     , pusherKey = PusherAppKey "***REMOVED***" UsEast1
     , debug = False
+    , sandbox = False
     }
 
 
@@ -30,6 +32,7 @@ livePantheon =
     , name = "livePantheon"
     , pusherKey = PusherAppKey "***REMOVED***" UsEast1
     , debug = False
+    , sandbox = False
     }
 
 
@@ -42,6 +45,7 @@ livePantheon =
     -- blank key for now.
     , pusherKey = PusherAppKey "" UsEast1
     , debug = False
+    , sandbox = True
     }
 
 
