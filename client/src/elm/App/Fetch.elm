@@ -2,6 +2,7 @@ module App.Fetch exposing (..)
 
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInModel, hasAccessToken)
+import Pages.Admin.Fetch
 import Pages.Clinics.Fetch
 import Pages.Page exposing (Page(..), UserPage(..))
 
@@ -30,6 +31,15 @@ fetch model =
                 |> Maybe.map
                     (\loggedIn ->
                         Pages.Clinics.Fetch.fetch model.currentDate clinicId loggedIn.backend
+                            |> List.map (MsgLoggedIn << MsgBackend)
+                    )
+                |> Maybe.withDefault []
+
+        UserPage AdminPage ->
+            getLoggedInModel model
+                |> Maybe.map
+                    (\loggedIn ->
+                        Pages.Admin.Fetch.fetch model.currentDate loggedIn.backend
                             |> List.map (MsgLoggedIn << MsgBackend)
                     )
                 |> Maybe.withDefault []
