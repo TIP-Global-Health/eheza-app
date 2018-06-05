@@ -43,6 +43,13 @@ class HedleyRestfulMeResource extends \RestfulEntityBaseUser {
       ],
     ];
 
+    $public_fields['roles'] = [
+      'property' => 'uid',
+      'process_callbacks' => [
+        [$this, 'rolesProcess'],
+      ],
+    ];
+
     unset($public_fields['self']);
     return $public_fields;
   }
@@ -65,6 +72,17 @@ class HedleyRestfulMeResource extends \RestfulEntityBaseUser {
    */
   public function imageProcess($value) {
     return $value['image_styles']['large'];
+  }
+
+  /**
+   * Returns a list of the current user's roles.
+   *
+   * @return [string]
+   *   A list of the current user's roles.
+   */
+  public function rolesProcess($uid) {
+    $account = user_load($uid);
+    return array_values($account->roles);
   }
 
 }

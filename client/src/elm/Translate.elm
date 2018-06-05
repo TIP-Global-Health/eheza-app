@@ -161,6 +161,7 @@ type TranslationId
     | UploadSuccessful
     | ViewProgressReport
     | WelcomeUser String
+    | YouAreNotAnAdmin
     | YouHaveACompletedSession
     | ZScoreHeightForAge
     | ZScoreMuacForAge
@@ -946,6 +947,9 @@ translate lang trans =
 
                 WelcomeUser name ->
                     { english = "Welcome " ++ name }
+
+                YouAreNotAnAdmin ->
+                    { english = "You are not logged in as an Administrator." }
 
                 YouHaveACompletedSession ->
                     { english = "You have a completed session that needs to be uploaded. Please connect to the internet and upload this session within 48 hours." }

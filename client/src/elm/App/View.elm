@@ -91,7 +91,7 @@ viewConfiguredModel model configured =
                         UserPage userPage ->
                             case userPage of
                                 AdminPage ->
-                                    Pages.Admin.View.view model.language
+                                    Pages.Admin.View.view model.language login.credentials.user
 
                                 MyAccountPage ->
                                     Pages.MyAccount.View.view model.language login.credentials.user
