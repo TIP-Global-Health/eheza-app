@@ -100,27 +100,23 @@ viewFutureSessions : Language -> List ( SessionId, Session ) -> Html Msg
 viewFutureSessions language sessions =
     table
         [ class "ui striped table" ]
-        [ thead []
-            [ tr []
-                [ th [] [ text <| translate language Translate.StartEndDate ]
-                , th [] [ text <| translate language Translate.Training ]
-                ]
-            ]
-        , tbody [] (List.map viewFutureSession sessions)
+        [ thead [] []
+        , tbody [] (List.map (viewFutureSession language) sessions)
         , tfoot [] []
         ]
 
 
-viewFutureSession : ( SessionId, Session ) -> Html Msg
-viewFutureSession ( sessionId, session ) =
+viewFutureSession : Language -> ( SessionId, Session ) -> Html Msg
+viewFutureSession language ( sessionId, session ) =
     tr []
         [ td []
             [ text <| formatYYYYMMDD session.scheduledDate.start
             , text " - "
             , text <| formatYYYYMMDD session.scheduledDate.end
-            ]
-        , td []
-            [ i [ class "check icon" ] []
-                |> showIf session.training
+            , text " "
+            , showIf session.training <|
+                span
+                    [ class "ui teal tag label training-label" ]
+                    [ text <| translate language Translate.Training ]
             ]
         ]
