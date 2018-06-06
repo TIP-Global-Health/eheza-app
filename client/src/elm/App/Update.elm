@@ -27,7 +27,7 @@ import Time exposing (minute)
 import Update.Extra exposing (sequence)
 import User.Decoder exposing (decodeUser)
 import User.Encoder exposing (encodeUser)
-import User.Model exposing (..)
+import User.Model exposing (User)
 import ZScore.Model
 import ZScore.Update
 

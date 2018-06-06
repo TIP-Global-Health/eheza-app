@@ -11,7 +11,7 @@ import Pages.Page exposing (Page)
 import RemoteData exposing (RemoteData(..))
 import Restful.Login exposing (LoginStatus(..), LoginError, Login)
 import Translate exposing (translate, Language)
-import User.Model exposing (..)
+import User.Model exposing (User, Role(Administrator))
 import Utils.Html exposing (spinner)
 import Utils.WebData exposing (viewError)
 

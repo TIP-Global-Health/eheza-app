@@ -22,7 +22,7 @@ type alias User =
 
 
 type Role
-    = AnonymousUser
-    | AuthenticatedUser
+    = Anonymous
+    | Authenticated
     | Administrator
     | Nurse

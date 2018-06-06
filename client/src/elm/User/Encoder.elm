@@ -23,10 +23,10 @@ encodeUser user =
 encodeRole : Role -> Value
 encodeRole role =
     case role of
-        AnonymousUser ->
+        Anonymous ->
             string "anonymous user"
 
-        AuthenticatedUser ->
+        Authenticated ->
             string "authenticated user"
 
         Administrator ->

@@ -25,10 +25,10 @@ decodeRole =
             (\s ->
                 case s of
                     "anonymous user" ->
-                        succeed AnonymousUser
+                        succeed Anonymous
 
                     "authenticated user" ->
-                        succeed AuthenticatedUser
+                        succeed Authenticated
 
                     "administrator" ->
                         succeed Administrator
