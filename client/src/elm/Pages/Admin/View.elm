@@ -4,6 +4,7 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelBackend)
 import Backend.Session.Model exposing (Session)
+import Config.Model as Config
 import EveryDictList exposing (EveryDictList)
 import EverySet
 import Gizra.Html exposing (showIf)
@@ -19,12 +20,12 @@ import User.Model exposing (..)
 import Utils.WebData exposing (viewOrFetch)
 
 
-view : Language -> NominalDate -> User -> ModelBackend -> Html Msg
-view language currentDate user backend =
+view : Config.Model -> Language -> NominalDate -> User -> ModelBackend -> Html Msg
+view config language currentDate user backend =
     let
         content =
             if EverySet.member Administrator user.roles then
-                contentForAdmin language currentDate backend
+                contentForAdmin config language currentDate backend
             else
                 contentForOthers language
     in
@@ -52,27 +53,27 @@ contentForOthers language =
         [ text <| translate language Translate.YouAreNotAnAdmin ]
 
 
-contentForAdmin : Language -> NominalDate -> ModelBackend -> Html Msg
-contentForAdmin language currentDate backend =
+contentForAdmin : Config.Model -> Language -> NominalDate -> ModelBackend -> Html Msg
+contentForAdmin config language currentDate backend =
     div [] <|
         viewOrFetch language
             (MsgLoggedIn <| MsgBackend Backend.Model.FetchClinics)
-            (viewLoadedClinics language currentDate backend)
+            (viewLoadedClinics config language currentDate backend)
             identity
             backend.clinics
 
 
-viewLoadedClinics : Language -> NominalDate -> ModelBackend -> EveryDictList ClinicId Clinic -> List (Html Msg)
-viewLoadedClinics language currentDate backend clinics =
+viewLoadedClinics : Config.Model -> Language -> NominalDate -> ModelBackend -> EveryDictList ClinicId Clinic -> List (Html Msg)
+viewLoadedClinics config language currentDate backend clinics =
     viewOrFetch language
         (MsgLoggedIn <| MsgBackend <| Backend.Model.FetchFutureSessions currentDate)
-        (viewLoadedSessions language clinics)
+        (viewLoadedSessions config language clinics)
         identity
         backend.futureSessions
 
 
-viewLoadedSessions : Language -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
-viewLoadedSessions language clinics ( _, futureSessions ) =
+viewLoadedSessions : Config.Model -> Language -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
+viewLoadedSessions config language clinics ( _, futureSessions ) =
     let
         futureSessionsByClinic =
             EveryDictList.groupBy (Tuple.second >> .clinicId) (EveryDictList.toList futureSessions)
