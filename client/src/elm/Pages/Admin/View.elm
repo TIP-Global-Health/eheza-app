@@ -6,6 +6,7 @@ import Backend.Model exposing (ModelBackend)
 import Backend.Session.Model exposing (Session)
 import EveryDictList exposing (EveryDictList)
 import EverySet
+import Gizra.Html exposing (showIf)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -85,14 +86,14 @@ viewLoadedSessions language clinics ( _, futureSessions ) =
                     ]
                 ]
             , tbody []
-                (List.map (viewClinicRow futureSessionsByClinic) <| EveryDictList.toList clinics)
+                (List.map (viewClinicRow language futureSessionsByClinic) <| EveryDictList.toList clinics)
             , tfoot [] []
             ]
         ]
 
 
-viewClinicRow : EveryDictList ClinicId (List ( SessionId, Session )) -> ( ClinicId, Clinic ) -> Html Msg
-viewClinicRow futureSessionsByClinic ( clinicId, clinic ) =
+viewClinicRow : Language -> EveryDictList ClinicId (List ( SessionId, Session )) -> ( ClinicId, Clinic ) -> Html Msg
+viewClinicRow language futureSessionsByClinic ( clinicId, clinic ) =
     let
         futureSessions =
             futureSessionsByClinic
@@ -102,15 +103,20 @@ viewClinicRow futureSessionsByClinic ( clinicId, clinic ) =
     in
         tr []
             [ td [] [ text clinic.name ]
-            , td [] (viewFutureSessions futureSessions)
+            , td [] (viewFutureSessions language futureSessions)
             ]
 
 
-viewFutureSessions : List ( SessionId, Session ) -> List (Html Msg)
-viewFutureSessions sessions =
+viewFutureSessions : Language -> List ( SessionId, Session ) -> List (Html Msg)
+viewFutureSessions language sessions =
     [ table
         [ class "ui table" ]
-        [ thead [] []
+        [ thead []
+            [ tr []
+                [ th [] [ text <| translate language Translate.StartEndDate ]
+                , th [] [ text <| translate language Translate.Training ]
+                ]
+            ]
         , tbody [] (List.map viewFutureSession sessions)
         , tfoot [] []
         ]
@@ -124,5 +130,9 @@ viewFutureSession ( sessionId, session ) =
             [ text <| formatYYYYMMDD session.scheduledDate.start
             , text " - "
             , text <| formatYYYYMMDD session.scheduledDate.end
+            ]
+        , td []
+            [ i [ class "check icon" ] []
+                |> showIf session.training
             ]
         ]

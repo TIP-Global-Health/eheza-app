@@ -34,6 +34,7 @@ decodeSession =
                 ]
             )
         |> optional "closed" bool False
+        |> optional "training" bool False
 
 
 {-| Decodes the JSON sent by /api/offline_sessions

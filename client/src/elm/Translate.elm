@@ -151,7 +151,9 @@ type TranslationId
     | SessionInProgress
     | SessionUnauthorized
     | SessionUnauthorized2
+    | StartEndDate
     | TitleHealthAssessment
+    | Training
     | UnableToDownload
     | UnableToUpload
     | Update
@@ -919,8 +921,14 @@ translate lang trans =
                         Please contact the Ihangane project for further instructions."""
                     }
 
+                StartEndDate ->
+                    { english = "Start - End" }
+
                 TitleHealthAssessment ->
                     { english = "2017 July Health Assessment" }
+
+                Training ->
+                    { english = "Training" }
 
                 UnableToDownload ->
                     { english = "Unable to Download" }

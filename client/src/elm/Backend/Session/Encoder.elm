@@ -20,6 +20,7 @@ encodeSession session =
     [ ( "scheduled_date", encodeDrupalRange encodeYYYYMMDD session.scheduledDate )
     , ( "clinic", encodeEntityId session.clinicId )
     , ( "closed", bool session.closed )
+    , ( "training", bool session.training )
     ]
 
 
