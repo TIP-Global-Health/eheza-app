@@ -91,7 +91,8 @@ viewConfiguredModel model configured =
                         UserPage userPage ->
                             case userPage of
                                 AdminPage ->
-                                    Pages.Admin.View.view configured.config model.language model.currentDate login.credentials.user login.data.backend
+                                    Pages.Admin.View.view configured.config model.language model.currentDate login.credentials.user login.data.backend login.data.adminPage
+                                        |> Html.map (MsgLoggedIn << MsgPageAdmin)
 
                                 MyAccountPage ->
                                     Pages.MyAccount.View.view model.language login.credentials.user

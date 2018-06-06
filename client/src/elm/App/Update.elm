@@ -11,6 +11,7 @@ import Gizra.NominalDate exposing (fromLocalDateTime)
 import Json.Decode exposing (decodeValue, bool)
 import Json.Decode exposing (oneOf)
 import Maybe.Extra
+import Pages.Admin.Update
 import Pages.Login.Model
 import Pages.Login.Update
 import Pages.Model
@@ -119,6 +120,16 @@ update msg model =
                                 ( { data | backend = backend }
                                 , Cmd.map (MsgLoggedIn << MsgBackend) cmd
                                 , List.map MsgCache cacheMsgs
+                                )
+
+                        MsgPageAdmin subMsg ->
+                            let
+                                ( newModel, cmd, appMsgs ) =
+                                    Pages.Admin.Update.update subMsg data.adminPage
+                            in
+                                ( { data | adminPage = newModel }
+                                , Cmd.map (MsgLoggedIn << MsgPageAdmin) cmd
+                                , appMsgs
                                 )
                 )
                 model

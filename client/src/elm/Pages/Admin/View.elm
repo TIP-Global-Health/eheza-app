@@ -12,7 +12,7 @@ import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import App.Model exposing (Msg(..), MsgLoggedIn(..))
+import Pages.Admin.Model exposing (..)
 import Pages.Page exposing (..)
 import Translate exposing (Language, translate)
 import Time.Date
@@ -20,8 +20,8 @@ import User.Model exposing (..)
 import Utils.WebData exposing (viewOrFetch)
 
 
-view : Config.Model -> Language -> NominalDate -> User -> ModelBackend -> Html Msg
-view config language currentDate user backend =
+view : Config.Model -> Language -> NominalDate -> User -> ModelBackend -> Model -> Html Msg
+view config language currentDate user backend model =
     let
         content =
             if EverySet.member Administrator user.roles then
@@ -57,7 +57,7 @@ contentForAdmin : Config.Model -> Language -> NominalDate -> ModelBackend -> Htm
 contentForAdmin config language currentDate backend =
     div [] <|
         viewOrFetch language
-            (MsgLoggedIn <| MsgBackend Backend.Model.FetchClinics)
+            (MsgBackend Backend.Model.FetchClinics)
             (viewLoadedClinics config language currentDate backend)
             identity
             backend.clinics
@@ -66,7 +66,7 @@ contentForAdmin config language currentDate backend =
 viewLoadedClinics : Config.Model -> Language -> NominalDate -> ModelBackend -> EveryDictList ClinicId Clinic -> List (Html Msg)
 viewLoadedClinics config language currentDate backend clinics =
     viewOrFetch language
-        (MsgLoggedIn <| MsgBackend <| Backend.Model.FetchFutureSessions currentDate)
+        (MsgBackend <| Backend.Model.FetchFutureSessions currentDate)
         (viewLoadedSessions config language clinics)
         identity
         backend.futureSessions
