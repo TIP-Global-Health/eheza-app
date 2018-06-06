@@ -89,6 +89,7 @@ type TranslationId
     | ErrorTimeout
     | FamilyPlanningSignLabel FamilyPlanningSign
     | Fetch
+    | FutureSessions
     | Gender Gender
     | GoHome
     | KilogramShorthand
@@ -620,6 +621,9 @@ translate lang trans =
 
                 Fetch ->
                     { english = "Fetch" }
+
+                FutureSessions ->
+                    { english = "Future Sessions" }
 
                 Gender gender ->
                     case gender of
