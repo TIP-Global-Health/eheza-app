@@ -71,5 +71,19 @@ viewLoadedClinics language currentDate backend clinics =
 
 viewLoadedSessions : Language -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
 viewLoadedSessions language clinics ( _, sessions ) =
-    [ div [] []
+    [ table
+        [ class "ui striped table" ]
+        [ thead []
+            [ tr [] [ text <| translate language Translate.Clinics ]
+            ]
+        , tbody []
+            (List.map viewClinicRow <| EveryDictList.toList clinics)
+        ]
     ]
+
+
+viewClinicRow : ( ClinicId, Clinic ) -> Html Msg
+viewClinicRow ( clinidId, clinic ) =
+    tr []
+        [ td [] [ text clinic.name ]
+        ]
