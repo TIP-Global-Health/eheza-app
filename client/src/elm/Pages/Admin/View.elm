@@ -77,23 +77,12 @@ viewLoadedSessions language clinics ( _, futureSessions ) =
         futureSessionsByClinic =
             EveryDictList.groupBy (Tuple.second >> .clinicId) (EveryDictList.toList futureSessions)
     in
-        [ table
-            [ class "ui striped table" ]
-            [ thead []
-                [ tr []
-                    [ th [] [ text <| translate language Translate.Clinics ]
-                    , th [] [ text <| translate language Translate.FutureSessions ]
-                    ]
-                ]
-            , tbody []
-                (List.map (viewClinicRow language futureSessionsByClinic) <| EveryDictList.toList clinics)
-            , tfoot [] []
-            ]
-        ]
+        EveryDictList.toList clinics
+            |> List.map (viewClinic language futureSessionsByClinic)
 
 
-viewClinicRow : Language -> EveryDictList ClinicId (List ( SessionId, Session )) -> ( ClinicId, Clinic ) -> Html Msg
-viewClinicRow language futureSessionsByClinic ( clinicId, clinic ) =
+viewClinic : Language -> EveryDictList ClinicId (List ( SessionId, Session )) -> ( ClinicId, Clinic ) -> Html Msg
+viewClinic language futureSessionsByClinic ( clinicId, clinic ) =
     let
         futureSessions =
             futureSessionsByClinic
@@ -101,16 +90,16 @@ viewClinicRow language futureSessionsByClinic ( clinicId, clinic ) =
                 |> Maybe.withDefault []
                 |> List.sortBy (Tuple.second >> .scheduledDate >> .start >> Time.Date.toTuple)
     in
-        tr []
-            [ td [] [ text clinic.name ]
-            , td [] (viewFutureSessions language futureSessions)
+        div []
+            [ h2 [] [ text clinic.name ]
+            , viewFutureSessions language futureSessions
             ]
 
 
-viewFutureSessions : Language -> List ( SessionId, Session ) -> List (Html Msg)
+viewFutureSessions : Language -> List ( SessionId, Session ) -> Html Msg
 viewFutureSessions language sessions =
-    [ table
-        [ class "ui table" ]
+    table
+        [ class "ui striped table" ]
         [ thead []
             [ tr []
                 [ th [] [ text <| translate language Translate.StartEndDate ]
@@ -120,7 +109,6 @@ viewFutureSessions language sessions =
         , tbody [] (List.map viewFutureSession sessions)
         , tfoot [] []
         ]
-    ]
 
 
 viewFutureSession : ( SessionId, Session ) -> Html Msg
