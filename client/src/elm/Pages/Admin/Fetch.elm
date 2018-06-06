@@ -1,6 +1,5 @@
 module Pages.Admin.Fetch exposing (fetch)
 
-import Backend.Entities exposing (..)
 import Backend.Model
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)

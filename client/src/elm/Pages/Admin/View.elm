@@ -75,13 +75,35 @@ viewLoadedClinics config language currentDate backend clinics =
 viewLoadedSessions : Config.Model -> Language -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
 viewLoadedSessions config language clinics ( _, futureSessions ) =
     let
+        buttons =
+            div []
+                [ button
+                    [ class "ui primary button small" ]
+                    [ text <| translate language <| Translate.CreateSession ]
+                , text " "
+                , button
+                    [ class "ui primary button small" ]
+                    [ text <| translate language <| Translate.CreateTrainingSessions ]
+                , text " "
+                , button
+                    [ class "ui primary button small" ]
+                    [ text <| translate language <| Translate.DeleteTrainingSessions
+                    ]
+                ]
+
         futureSessionsByClinic =
             EveryDictList.groupBy (Tuple.second >> .clinicId) (EveryDictList.toList futureSessions)
+
+        clinicList =
+            clinics
+                |> EveryDictList.sortBy .name
+                |> EveryDictList.toList
+                |> List.map (viewClinic language futureSessionsByClinic)
+                |> div []
     in
-        clinics
-            |> EveryDictList.sortBy .name
-            |> EveryDictList.toList
-            |> List.map (viewClinic language futureSessionsByClinic)
+        [ buttons
+        , clinicList
+        ]
 
 
 viewClinic : Language -> EveryDictList ClinicId (List ( SessionId, Session )) -> ( ClinicId, Clinic ) -> Html Msg
@@ -118,8 +140,15 @@ viewFutureSession language ( sessionId, session ) =
             , text <| formatYYYYMMDD session.scheduledDate.end
             , text " "
             , showIf session.training <|
-                span
-                    [ class "ui teal tag label training-label" ]
-                    [ text <| translate language Translate.Training ]
+                span []
+                    [ span
+                        [ class "ui teal tag label training-label" ]
+                        [ text <| translate language Translate.Training ]
+                    , text " "
+                    , button
+                        [ class "ui icon negative small button" ]
+                        [ i [ class "trash icon" ] []
+                        ]
+                    ]
             ]
         ]

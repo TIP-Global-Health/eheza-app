@@ -66,6 +66,9 @@ type TranslationId
     | Clinics
     | Connected
     | Continue
+    | CreateSession
+    | CreateTrainingSessions
+    | DeleteTrainingSessions
     | Dashboard
     | DataIsNowSaved
     | DateOfLastAssessment
@@ -534,6 +537,15 @@ translate lang trans =
 
                 Continue ->
                     { english = "Continue" }
+
+                CreateSession ->
+                    { english = "Create Session" }
+
+                CreateTrainingSessions ->
+                    { english = "Create All Training Sessions" }
+
+                DeleteTrainingSessions ->
+                    { english = "Delete All Training Sessions" }
 
                 Dashboard ->
                     { english = "Dashboard" }
