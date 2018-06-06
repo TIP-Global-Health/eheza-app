@@ -77,7 +77,9 @@ viewLoadedSessions language clinics ( _, futureSessions ) =
         futureSessionsByClinic =
             EveryDictList.groupBy (Tuple.second >> .clinicId) (EveryDictList.toList futureSessions)
     in
-        EveryDictList.toList clinics
+        clinics
+            |> EveryDictList.sortBy .name
+            |> EveryDictList.toList
             |> List.map (viewClinic language futureSessionsByClinic)
 
 
