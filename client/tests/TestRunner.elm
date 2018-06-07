@@ -1,8 +1,8 @@
-port module Main exposing (..)
+module TestRunner exposing (..)
 
-import Json.Encode exposing (Value)
-import Test exposing (Test, describe)
-import Test.Runner.Node exposing (TestProgram, run)
+import Expect exposing (Expectation)
+import Fuzz exposing (Fuzzer, int, list, string)
+import Test exposing (..)
 
 
 -- Register Test Stubs Here
@@ -29,11 +29,3 @@ allTests =
         , Utils.NominalDateTest.all
         , ZScore.Test.all
         ]
-
-
-main : TestProgram
-main =
-    run emit allTests
-
-
-port emit : ( String, Value ) -> Cmd msg
