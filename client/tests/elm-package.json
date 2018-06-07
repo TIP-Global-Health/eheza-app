@@ -1,10 +1,11 @@
 {
     "version": "1.0.0",
-    "summary": "Single page application example in Elm v0.17",
+    "summary": "Test Suites",
     "repository": "https://github.com/Gizra/elm-spa-exmple.git",
     "license": "BSD3",
     "source-directories": [
-        "src/elm"
+        "../src/elm",
+        "."
     ],
     "exposed-modules": [],
     "dependencies": {
@@ -16,6 +17,8 @@
         "NoRedInk/elm-decode-pipeline": "3.0.0 <= v < 4.0.0",
         "ccapndave/elm-update-extra": "3.0.0 <= v < 4.0.0",
         "eeue56/elm-all-dict": "2.0.1 <= v < 3.0.0",
+        "eeue56/elm-html-test": "5.2.0 <= v < 6.0.0",
+        "elm-community/elm-test": "4.0.0 <= v < 5.0.0",
         "elm-community/elm-time": "3.0.4 <= v < 4.0.0",
         "elm-community/intdict": "2.1.0 <= v < 3.0.0",
         "elm-community/json-extra": "2.7.0 <= v < 3.0.0",

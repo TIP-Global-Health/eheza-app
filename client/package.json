@@ -12,7 +12,7 @@
     "chance": "1.0.4",
     "csv-parse": "^1.2.4",
     "del": "1.2.1",
-    "elm-test": "0.18.2",
+    "elm-test": "^0.18.12",
     "gulp": "3.9.1",
     "gulp-autoprefixer": "2.3.1",
     "gulp-cache": "0.2.10",
@@ -52,6 +52,6 @@
     "node": ">0.10.0"
   },
   "scripts": {
-    "test": "elm-test src/elm/TestRunner.elm"
+    "test": "elm-test"
   }
 }

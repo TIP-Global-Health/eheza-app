@@ -15,7 +15,7 @@ diffDaysTest =
         today =
             fromLocalDateTime (Date.fromTime 1503920848000)
     in
-        describe "age calculation"
+        describe "diffDays"
             [ test "for newborn" <|
                 \() ->
                     Expect.equal
@@ -66,7 +66,7 @@ renderAgeMonthsDaysTest =
             fromLocalDateTime <|
                 Date.fromTime 1503920848000
     in
-        describe "age calculation"
+        describe "renderAgeMonthDays"
             [ test "for newborn" <|
                 \() ->
                     Expect.equal
