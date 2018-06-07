@@ -12,7 +12,7 @@ import Measurement.View exposing (..)
 import Restful.Endpoint exposing (toEntityId)
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
-import Test.Html.Selector as Selector exposing (class, classes, id, tag, text, className)
+import Test.Html.Selector as Selector exposing (class, classes, id, tag, text)
 import Translate exposing (..)
 
 
