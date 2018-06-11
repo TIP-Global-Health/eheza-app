@@ -2,6 +2,7 @@ module Pages.Admin.Model exposing (..)
 
 import Backend.Model
 import Backend.Session.Form exposing (SessionForm)
+import Form
 import Pages.Page exposing (Page)
 
 
@@ -18,6 +19,6 @@ emptyModel =
 
 type Msg
     = ShowCreateSessionForm Bool
-    | SaveCreatedSession
+    | MsgCreateSession Form.Msg
     | SetActivePage Page
     | MsgBackend Backend.Model.MsgBackend

@@ -8,6 +8,7 @@ import Backend.Session.Form exposing (..)
 import Config.Model as Config
 import EveryDictList exposing (EveryDictList)
 import EverySet
+import Form
 import Gizra.Html exposing (showIf)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
@@ -94,7 +95,7 @@ viewCreateSession config language model form clinics sessions =
             [ text <| translate language Translate.Cancel ]
         , button
             [ class "ui button primary"
-            , onClick <| SaveCreatedSession
+            , onClick <| MsgCreateSession Form.Submit
             ]
             [ text <| translate language Translate.Save ]
         ]

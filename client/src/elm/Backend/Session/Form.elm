@@ -52,8 +52,7 @@ emptyForm : (ClinicId -> Bool) -> NominalDateRange -> SessionForm
 emptyForm knownClinic initialDates =
     -- No default for `clinic_id`.
     Form.initial
-        [ setString clinicId ""
-        , setBool closed False
+        [ setBool closed False
         , setBool training False
         , setNominalDateRange scheduledDate initialDates
         ]
