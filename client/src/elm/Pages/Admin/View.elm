@@ -25,7 +25,7 @@ view config language currentDate user backend model =
     let
         content =
             if EverySet.member Administrator user.roles then
-                contentForAdmin config language currentDate backend
+                contentForAdmin config language currentDate backend model
             else
                 contentForOthers language
     in
@@ -53,32 +53,50 @@ contentForOthers language =
         [ text <| translate language Translate.YouAreNotAnAdmin ]
 
 
-contentForAdmin : Config.Model -> Language -> NominalDate -> ModelBackend -> Html Msg
-contentForAdmin config language currentDate backend =
+contentForAdmin : Config.Model -> Language -> NominalDate -> ModelBackend -> Model -> Html Msg
+contentForAdmin config language currentDate backend model =
     div [] <|
         viewOrFetch language
             (MsgBackend Backend.Model.FetchClinics)
-            (viewLoadedClinics config language currentDate backend)
+            (viewLoadedClinics config language currentDate backend model)
             identity
             backend.clinics
 
 
-viewLoadedClinics : Config.Model -> Language -> NominalDate -> ModelBackend -> EveryDictList ClinicId Clinic -> List (Html Msg)
-viewLoadedClinics config language currentDate backend clinics =
+viewLoadedClinics : Config.Model -> Language -> NominalDate -> ModelBackend -> Model -> EveryDictList ClinicId Clinic -> List (Html Msg)
+viewLoadedClinics config language currentDate backend model clinics =
     viewOrFetch language
         (MsgBackend <| Backend.Model.FetchFutureSessions currentDate)
-        (viewLoadedSessions config language clinics)
+        (viewLoadedSessions config language model clinics)
         identity
         backend.futureSessions
 
 
-viewLoadedSessions : Config.Model -> Language -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
-viewLoadedSessions config language clinics ( _, futureSessions ) =
+viewLoadedSessions : Config.Model -> Language -> Model -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
+viewLoadedSessions config language model clinics sessions =
+    case model.createSession of
+        Just form ->
+            [ h2 [] [ text <| translate language Translate.CreateSession ]
+            , button
+                [ class "ui button"
+                , onClick <| ShowCreateSessionForm False
+                ]
+                [ text <| translate language Translate.Cancel ]
+            ]
+
+        Nothing ->
+            viewClinicList config language model clinics sessions
+
+
+viewClinicList : Config.Model -> Language -> Model -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
+viewClinicList config language model clinics ( _, futureSessions ) =
     let
         buttons =
             div []
                 [ button
-                    [ class "ui primary button small" ]
+                    [ class "ui primary button small"
+                    , onClick <| ShowCreateSessionForm True
+                    ]
                     [ text <| translate language <| Translate.CreateSession ]
                 , text " "
                 , button

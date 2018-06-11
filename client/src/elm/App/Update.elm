@@ -125,7 +125,7 @@ update msg model =
                         MsgPageAdmin subMsg ->
                             let
                                 ( newModel, cmd, appMsgs ) =
-                                    Pages.Admin.Update.update subMsg data.adminPage
+                                    Pages.Admin.Update.update model.currentDate data.backend subMsg data.adminPage
                             in
                                 ( { data | adminPage = newModel }
                                 , Cmd.map (MsgLoggedIn << MsgPageAdmin) cmd
