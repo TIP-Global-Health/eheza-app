@@ -64,3 +64,6 @@ update date backend msg model =
                 , Cmd.none
                 , []
                 )
+
+        SaveCreatedSession ->
+            ( model, Cmd.none, [] )

@@ -4,6 +4,7 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelBackend)
 import Backend.Session.Model exposing (Session)
+import Backend.Session.Form exposing (..)
 import Config.Model as Config
 import EveryDictList exposing (EveryDictList)
 import EverySet
@@ -76,16 +77,28 @@ viewLoadedSessions : Config.Model -> Language -> Model -> EveryDictList ClinicId
 viewLoadedSessions config language model clinics sessions =
     case model.createSession of
         Just form ->
-            [ h2 [] [ text <| translate language Translate.CreateSession ]
-            , button
-                [ class "ui button"
-                , onClick <| ShowCreateSessionForm False
-                ]
-                [ text <| translate language Translate.Cancel ]
-            ]
+            viewCreateSession config language model form clinics sessions
 
         Nothing ->
             viewClinicList config language model clinics sessions
+
+
+viewCreateSession : Config.Model -> Language -> Model -> SessionForm -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
+viewCreateSession config language model form clinics sessions =
+    [ h2 [] [ text <| translate language Translate.CreateSession ]
+    , div []
+        [ button
+            [ class "ui button"
+            , onClick <| ShowCreateSessionForm False
+            ]
+            [ text <| translate language Translate.Cancel ]
+        , button
+            [ class "ui button primary"
+            , onClick <| SaveCreatedSession
+            ]
+            [ text <| translate language Translate.Save ]
+        ]
+    ]
 
 
 viewClinicList : Config.Model -> Language -> Model -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)

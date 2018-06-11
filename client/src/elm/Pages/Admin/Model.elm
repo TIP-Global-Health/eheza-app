@@ -18,5 +18,6 @@ emptyModel =
 
 type Msg
     = ShowCreateSessionForm Bool
+    | SaveCreatedSession
     | SetActivePage Page
     | MsgBackend Backend.Model.MsgBackend
