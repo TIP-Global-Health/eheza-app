@@ -142,6 +142,7 @@ type TranslationId
     | ClickTheCheckMark
     | ClinicNotFound
     | Clinics
+    | Closed
     | Connected
     | Continue
     | CreateSession
@@ -490,6 +491,9 @@ translationSet trans =
 
         Clinics ->
             { english = "Clinics" }
+
+        Closed ->
+            { english = "Closed" }
 
         Connected ->
             { english = "Connected" }

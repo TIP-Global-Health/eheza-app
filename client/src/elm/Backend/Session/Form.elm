@@ -31,9 +31,19 @@ clinicId =
     "clinic_id"
 
 
+clinicIdState : SessionForm -> FieldState ValidationError String
+clinicIdState =
+    getFieldAsString clinicId
+
+
 closed : String
 closed =
     "closed"
+
+
+closedState : SessionForm -> FieldState ValidationError Bool
+closedState =
+    getFieldAsBool closed
 
 
 training : String
@@ -41,9 +51,22 @@ training =
     "training"
 
 
+trainingState : SessionForm -> FieldState ValidationError Bool
+trainingState =
+    getFieldAsBool training
+
+
 scheduledDate : String
 scheduledDate =
     "scheduled_date"
+
+
+scheduledDateState : SessionForm -> { start : FieldState ValidationError String, end : FieldState ValidationError String }
+scheduledDateState form =
+    -- Should probably split this out into Utils.NominalDate
+    { start = getFieldAsString (scheduledDate ++ ".start") form
+    , end = getFieldAsString (scheduledDate ++ ".end") form
+    }
 
 
 {-| An empty session form, i.e. for creation.

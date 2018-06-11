@@ -9,6 +9,7 @@ import Config.Model as Config
 import EveryDictList exposing (EveryDictList)
 import EverySet
 import Form
+import Form.Input exposing (..)
 import Gizra.Html exposing (showIf)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
@@ -78,26 +79,41 @@ viewLoadedSessions : Config.Model -> Language -> Model -> EveryDictList ClinicId
 viewLoadedSessions config language model clinics sessions =
     case model.createSession of
         Just form ->
-            viewCreateSession config language model form clinics sessions
+            viewCreateSessionForm config language model form clinics sessions
 
         Nothing ->
             viewClinicList config language model clinics sessions
 
 
-viewCreateSession : Config.Model -> Language -> Model -> SessionForm -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
-viewCreateSession config language model form clinics sessions =
+viewCreateSessionForm : Config.Model -> Language -> Model -> SessionForm -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
+viewCreateSessionForm config language model form clinics sessions =
     [ h2 [] [ text <| translate language Translate.CreateSession ]
-    , div []
-        [ button
-            [ class "ui button"
-            , onClick <| ShowCreateSessionForm False
+    , div
+        [ class "ui segment" ]
+        [ div
+            [ class "ui checkbox" ]
+            [ checkboxInput (closedState form) []
+                |> Html.map MsgCreateSession
+            , label [] [ text <| translate language Translate.Closed ]
             ]
-            [ text <| translate language Translate.Cancel ]
-        , button
-            [ class "ui button primary"
-            , onClick <| MsgCreateSession Form.Submit
+        , div
+            [ class "ui checkbox" ]
+            [ checkboxInput (trainingState form) []
+                |> Html.map MsgCreateSession
+            , label [] [ text <| translate language Translate.Training ]
             ]
-            [ text <| translate language Translate.Save ]
+        , div []
+            [ button
+                [ class "ui button"
+                , onClick <| ShowCreateSessionForm False
+                ]
+                [ text <| translate language Translate.Cancel ]
+            , button
+                [ class "ui button primary"
+                , onClick <| MsgCreateSession Form.Submit
+                ]
+                [ text <| translate language Translate.Save ]
+            ]
         ]
     ]
 
