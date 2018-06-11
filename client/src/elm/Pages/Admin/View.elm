@@ -96,12 +96,13 @@ viewCreateSessionForm config language model form clinics sessions =
                 |> Html.map MsgCreateSession
             , label [] [ text <| translate language Translate.Closed ]
             ]
-        , div
-            [ class "ui checkbox" ]
-            [ checkboxInput (trainingState form) []
-                |> Html.map MsgCreateSession
-            , label [] [ text <| translate language Translate.Training ]
-            ]
+        , showIf config.sandbox <|
+            div
+                [ class "ui checkbox" ]
+                [ checkboxInput (trainingState form) []
+                    |> Html.map MsgCreateSession
+                , label [] [ text <| translate language Translate.Training ]
+                ]
         , div []
             [ button
                 [ class "ui button"
