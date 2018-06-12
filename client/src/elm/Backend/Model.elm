@@ -70,6 +70,9 @@ type alias ModelBackend =
     -- Another flag, tracking our progress in uploading edits to the backend.
     -- Again, we track which session we uploaded.
     , uploadEditsRequest : WebData SessionId
+
+    -- Tracks a request to create a new session.
+    , postSessionRequest : WebData ( SessionId, Session )
     }
 
 
@@ -79,6 +82,7 @@ emptyModelBackend =
     , futureSessions = NotAsked
     , offlineSessionRequest = NotAsked
     , uploadEditsRequest = NotAsked
+    , postSessionRequest = NotAsked
     }
 
 
@@ -95,6 +99,8 @@ type MsgBackend
     | HandleRefetchedOfflineSession (Result Error ( SessionId, OfflineSession ))
     | HandleUploadedEdits SessionId (Result Error ())
     | HandleUploadPhotoResponse Photo (Result Error Int)
+    | PostSession Session
+    | HandlePostedSession (WebData ( SessionId, Session ))
     | RefetchOfflineSession SessionId
     | ResetErrors -- reset errors to `NotAsked` when certain requests succeed, so they will retry
     | ResetOfflineSessionRequest -- resets it to `NotAsked`

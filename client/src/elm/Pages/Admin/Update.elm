@@ -43,10 +43,28 @@ update date backend msg model =
                     createSession =
                         model.createSession
                             |> Maybe.map (Form.update (validateSession knownClinic) subMsg)
+
+                    appMsgs =
+                        case subMsg of
+                            Form.Submit ->
+                                model.createSession
+                                    |> Maybe.andThen Form.getOutput
+                                    |> Maybe.map
+                                        (\session ->
+                                            [ session
+                                                |> Backend.Model.PostSession
+                                                |> App.Model.MsgBackend
+                                                |> App.Model.MsgLoggedIn
+                                            ]
+                                        )
+                                    |> Maybe.withDefault []
+
+                            _ ->
+                                []
                 in
                     ( { model | createSession = createSession }
                     , Cmd.none
-                    , []
+                    , appMsgs
                     )
 
             ShowCreateSessionForm show ->

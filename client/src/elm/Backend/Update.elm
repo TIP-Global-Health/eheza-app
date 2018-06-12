@@ -114,6 +114,38 @@ updateBackend backendUrl accessToken msg model =
                 )
                     |> resetErrorsIfSucceeded clinics
 
+            PostSession session ->
+                ( { model | postSessionRequest = Loading }
+                , crud.post sessionEndpoint session
+                    |> toCmd (RemoteData.fromResult >> HandlePostedSession)
+                , []
+                )
+
+            HandlePostedSession webdata ->
+                let
+                    newModel =
+                        case webdata of
+                            Success ( sessionId, session ) ->
+                                -- We'll unconditionally insert this into
+                                -- futureSessions at the moment, to show
+                                -- success ... if we cache data differently at
+                                -- some point we'll need to change this.
+                                let
+                                    futureSessions =
+                                        RemoteData.map
+                                            (Tuple.mapSecond (EveryDictList.insert sessionId session))
+                                            model.futureSessions
+                                in
+                                    { model
+                                        | postSessionRequest = NotAsked
+                                        , futureSessions = futureSessions
+                                    }
+
+                            _ ->
+                                { model | postSessionRequest = webdata }
+                in
+                    ( newModel, Cmd.none, [] )
+
             FetchFutureSessions date ->
                 ( { model | futureSessions = Loading }
                 , crud.select sessionEndpoint (SessionParams (Just date))
