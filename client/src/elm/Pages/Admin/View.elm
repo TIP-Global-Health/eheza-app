@@ -93,6 +93,9 @@ viewCreateSessionForm config language model form clinics sessions =
         dates =
             scheduledDateState form
 
+        errors =
+            Form.getErrors form
+
         clinic =
             clinicIdState form
 
@@ -105,7 +108,12 @@ viewCreateSessionForm config language model form clinics sessions =
     in
         [ h2 [] [ text <| translate language Translate.CreateSession ]
         , div
-            [ class "ui form" ]
+            [ classList
+                [ ( "ui", True )
+                , ( "form", True )
+                , ( "error", Form.isSubmitted form && (not (List.isEmpty errors)) )
+                ]
+            ]
             [ div
                 [ classList
                     [ ( "field", True )
@@ -174,6 +182,9 @@ viewCreateSessionForm config language model form clinics sessions =
                     ]
                     [ text <| translate language Translate.Save ]
                 ]
+            , div
+                [ class "ui error message" ]
+                [ dumpErrors form ]
             ]
         ]
 
