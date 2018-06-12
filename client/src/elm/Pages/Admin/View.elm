@@ -87,41 +87,57 @@ viewLoadedSessions config language model clinics sessions =
 
 viewCreateSessionForm : Config.Model -> Language -> Model -> SessionForm -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
 viewCreateSessionForm config language model form clinics sessions =
-    [ h2 [] [ text <| translate language Translate.CreateSession ]
-    , div
-        [ class "ui segment" ]
-        [ div
-            [ class "ui checkbox toggle admin" ]
-            [ checkboxInput (closedState form) [ id "session-closed" ]
-                |> Html.map MsgCreateSession
-            , label
-                [ for "session-closed" ]
-                [ text <| translate language Translate.Closed ]
-            ]
-        , showIf config.sandbox <|
-            div
+    let
+        dates =
+            scheduledDateState form
+    in
+        [ h2 [] [ text <| translate language Translate.CreateSession ]
+        , div
+            [ class "ui segment" ]
+            [ div
+                [ class "ui labeled input" ]
+                [ div [ class "ui label" ] [ text <| translate language Translate.StartDate ]
+                , textInput dates.start []
+                    |> Html.map MsgCreateSession
+                ]
+            , div
+                [ class "ui labeled input" ]
+                [ div [ class "ui label" ] [ text <| translate language Translate.EndDate ]
+                , textInput dates.end []
+                    |> Html.map MsgCreateSession
+                ]
+            , div
                 [ class "ui checkbox toggle admin" ]
-                [ checkboxInput (trainingState form) [ id "session-sandbox" ]
+                [ checkboxInput (closedState form) [ id "session-closed" ]
                     |> Html.map MsgCreateSession
                 , label
-                    [ for "session-sandbox" ]
-                    [ text <| translate language Translate.Training ]
+                    [ for "session-closed" ]
+                    [ text <| translate language Translate.Closed ]
                 ]
-        , p [] []
-        , div []
-            [ button
-                [ class "ui button"
-                , onClick <| ShowCreateSessionForm False
+            , showIf config.sandbox <|
+                div
+                    [ class "ui checkbox toggle admin" ]
+                    [ checkboxInput (trainingState form) [ id "session-sandbox" ]
+                        |> Html.map MsgCreateSession
+                    , label
+                        [ for "session-sandbox" ]
+                        [ text <| translate language Translate.Training ]
+                    ]
+            , p [] []
+            , div []
+                [ button
+                    [ class "ui button"
+                    , onClick <| ShowCreateSessionForm False
+                    ]
+                    [ text <| translate language Translate.Cancel ]
+                , button
+                    [ class "ui button primary"
+                    , onClick <| MsgCreateSession Form.Submit
+                    ]
+                    [ text <| translate language Translate.Save ]
                 ]
-                [ text <| translate language Translate.Cancel ]
-            , button
-                [ class "ui button primary"
-                , onClick <| MsgCreateSession Form.Submit
-                ]
-                [ text <| translate language Translate.Save ]
             ]
         ]
-    ]
 
 
 viewClinicList : Config.Model -> Language -> Model -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)

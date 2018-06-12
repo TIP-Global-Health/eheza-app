@@ -234,6 +234,8 @@ type TranslationId
     | SessionUnauthorized
     | SessionUnauthorized2
     | StartEndDate
+    | StartDate
+    | EndDate
     | TitleHealthAssessment
     | Training
     | UnableToDownload
@@ -808,6 +810,12 @@ translationSet trans =
 
         StartEndDate ->
             { english = "Start - End" }
+
+        StartDate ->
+            { english = "Start Date" }
+
+        EndDate ->
+            { english = "End Date" }
 
         TitleHealthAssessment ->
             { english = "2017 July Health Assessment" }
