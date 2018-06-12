@@ -92,38 +92,43 @@ viewCreateSessionForm config language model form clinics sessions =
             scheduledDateState form
     in
         [ h2 [] [ text <| translate language Translate.CreateSession ]
-        , div
-            [ class "ui segment" ]
+        , Html.form
+            [ class "ui form" ]
             [ div
-                [ class "ui labeled input" ]
-                [ div [ class "ui label" ] [ text <| translate language Translate.StartDate ]
+                [ class "field" ]
+                [ label [] [ text <| translate language Translate.StartDate ]
                 , textInput dates.start []
                     |> Html.map MsgCreateSession
                 ]
             , div
-                [ class "ui labeled input" ]
-                [ div [ class "ui label" ] [ text <| translate language Translate.EndDate ]
+                [ class "field" ]
+                [ label [] [ text <| translate language Translate.EndDate ]
                 , textInput dates.end []
                     |> Html.map MsgCreateSession
                 ]
             , div
-                [ class "ui checkbox toggle admin" ]
-                [ checkboxInput (closedState form) [ id "session-closed" ]
-                    |> Html.map MsgCreateSession
-                , label
-                    [ for "session-closed" ]
-                    [ text <| translate language Translate.Closed ]
+                [ class "field" ]
+                [ div
+                    [ class "ui checkbox admin" ]
+                    [ checkboxInput (closedState form) [ id "session-closed" ]
+                        |> Html.map MsgCreateSession
+                    , label
+                        [ for "session-closed" ]
+                        [ text <| translate language Translate.Closed ]
+                    ]
                 ]
             , showIf config.sandbox <|
                 div
-                    [ class "ui checkbox toggle admin" ]
-                    [ checkboxInput (trainingState form) [ id "session-sandbox" ]
-                        |> Html.map MsgCreateSession
-                    , label
-                        [ for "session-sandbox" ]
-                        [ text <| translate language Translate.Training ]
+                    [ class "field" ]
+                    [ div
+                        [ class "ui checkbox admin" ]
+                        [ checkboxInput (trainingState form) [ id "session-sandbox" ]
+                            |> Html.map MsgCreateSession
+                        , label
+                            [ for "session-sandbox" ]
+                            [ text <| translate language Translate.Training ]
+                        ]
                     ]
-            , p [] []
             , div []
                 [ button
                     [ class "ui button"
@@ -132,6 +137,7 @@ viewCreateSessionForm config language model form clinics sessions =
                     [ text <| translate language Translate.Cancel ]
                 , button
                     [ class "ui button primary"
+                    , type_ "submit"
                     , onClick <| MsgCreateSession Form.Submit
                     ]
                     [ text <| translate language Translate.Save ]
