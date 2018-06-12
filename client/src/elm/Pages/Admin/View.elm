@@ -15,6 +15,7 @@ import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Maybe.Extra exposing (isJust)
 import Pages.Admin.Model exposing (..)
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (fromEntityId)
@@ -92,6 +93,9 @@ viewCreateSessionForm config language model form clinics sessions =
         dates =
             scheduledDateState form
 
+        clinic =
+            clinicIdState form
+
         clinicOption ( clinicId, clinic ) =
             ( toString (fromEntityId clinicId), clinic.name )
 
@@ -103,20 +107,32 @@ viewCreateSessionForm config language model form clinics sessions =
         , div
             [ class "ui form" ]
             [ div
-                [ class "field" ]
-                [ selectInput clinicOptions (clinicIdState form) []
+                [ classList
+                    [ ( "field", True )
+                    , ( "error", isJust clinic.liveError )
+                    ]
+                ]
+                [ selectInput clinicOptions clinic []
                     |> Html.map MsgCreateSession
                 ]
             , div
                 [ class "two fields" ]
                 [ div
-                    [ class "field" ]
+                    [ classList
+                        [ ( "field", True )
+                        , ( "error", isJust dates.start.liveError )
+                        ]
+                    ]
                     [ label [] [ text <| translate language Translate.StartDate ]
                     , textInput dates.start []
                         |> Html.map MsgCreateSession
                     ]
                 , div
-                    [ class "field" ]
+                    [ classList
+                        [ ( "field", True )
+                        , ( "error", isJust dates.end.liveError )
+                        ]
+                    ]
                     [ label [] [ text <| translate language Translate.EndDate ]
                     , textInput dates.end []
                         |> Html.map MsgCreateSession
