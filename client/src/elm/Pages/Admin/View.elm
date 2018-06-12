@@ -91,18 +91,23 @@ viewCreateSessionForm config language model form clinics sessions =
     , div
         [ class "ui segment" ]
         [ div
-            [ class "ui checkbox" ]
-            [ checkboxInput (closedState form) []
+            [ class "ui checkbox toggle admin" ]
+            [ checkboxInput (closedState form) [ id "session-closed" ]
                 |> Html.map MsgCreateSession
-            , label [] [ text <| translate language Translate.Closed ]
+            , label
+                [ for "session-closed" ]
+                [ text <| translate language Translate.Closed ]
             ]
         , showIf config.sandbox <|
             div
-                [ class "ui checkbox" ]
-                [ checkboxInput (trainingState form) []
+                [ class "ui checkbox toggle admin" ]
+                [ checkboxInput (trainingState form) [ id "session-sandbox" ]
                     |> Html.map MsgCreateSession
-                , label [] [ text <| translate language Translate.Training ]
+                , label
+                    [ for "session-sandbox" ]
+                    [ text <| translate language Translate.Training ]
                 ]
+        , p [] []
         , div []
             [ button
                 [ class "ui button"

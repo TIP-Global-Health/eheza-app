@@ -631,7 +631,18 @@ input::placeholder {
   font-size: 1.715rem; //24px;
 }
 
-.ui.checkbox {
+.ui.checkbox.admin {
+  display: block;
+
+  label {
+    font-size: 1.57rem;
+    font-weight: 300;
+    min-height: 23px;
+    line-height: 1.2;
+  }
+}
+
+.ui.checkbox.activity {
   display: block;
   margin-bottom: 5px;
 

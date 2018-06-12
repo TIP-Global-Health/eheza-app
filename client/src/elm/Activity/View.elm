@@ -28,7 +28,7 @@ checkbox language msg activityType activityTypeFilter =
     -- Adding a wrapping div, so checkbox are below each other.
     div []
         [ div
-            [ class "ui checkbox" ]
+            [ class "ui checkbox activity" ]
             [ input
                 [ type_ "checkbox"
                 , onCheck (msg activityType)

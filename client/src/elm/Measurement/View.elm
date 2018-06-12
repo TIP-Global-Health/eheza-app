@@ -564,7 +564,7 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
         isChecked =
             EverySet.member sign nutritionSigns
     in
-        div [ class "ui checkbox" ]
+        div [ class "ui checkbox activity" ]
             [ input
                 ([ type_ "checkbox"
                  , id inputId
@@ -664,7 +664,7 @@ viewFamilyPlanningSelectorItem language familyPlanningSigns sign =
         isChecked =
             EverySet.member sign familyPlanningSigns
     in
-        div [ class "ui checkbox" ]
+        div [ class "ui checkbox activity" ]
             [ input
                 ([ type_ "checkbox"
                  , id inputId
