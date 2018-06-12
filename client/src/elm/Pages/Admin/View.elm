@@ -95,16 +95,19 @@ viewCreateSessionForm config language model form clinics sessions =
         , Html.form
             [ class "ui form" ]
             [ div
-                [ class "field" ]
-                [ label [] [ text <| translate language Translate.StartDate ]
-                , textInput dates.start []
-                    |> Html.map MsgCreateSession
-                ]
-            , div
-                [ class "field" ]
-                [ label [] [ text <| translate language Translate.EndDate ]
-                , textInput dates.end []
-                    |> Html.map MsgCreateSession
+                [ class "two fields" ]
+                [ div
+                    [ class "field" ]
+                    [ label [] [ text <| translate language Translate.StartDate ]
+                    , textInput dates.start []
+                        |> Html.map MsgCreateSession
+                    ]
+                , div
+                    [ class "field" ]
+                    [ label [] [ text <| translate language Translate.EndDate ]
+                    , textInput dates.end []
+                        |> Html.map MsgCreateSession
+                    ]
                 ]
             , div
                 [ class "field" ]
