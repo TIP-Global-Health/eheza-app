@@ -227,6 +227,7 @@ type TranslationId
     | Save
     | SaveError
     | SearchByName
+    | SelectClinic
     | SelectYourClinic
     | SessionClosed
     | SessionClosed2 SessionId
@@ -781,6 +782,9 @@ translationSet trans =
 
         SearchByName ->
             { english = "Search by Name" }
+
+        SelectClinic ->
+            { english = "Select Clinic..." }
 
         SelectYourClinic ->
             { english = "Select your clinic" }

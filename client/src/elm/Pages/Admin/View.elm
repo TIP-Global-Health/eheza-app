@@ -17,6 +17,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Admin.Model exposing (..)
 import Pages.Page exposing (..)
+import Restful.Endpoint exposing (fromEntityId)
 import Translate exposing (Language, translate)
 import Time.Date
 import User.Model exposing (..)
@@ -90,11 +91,23 @@ viewCreateSessionForm config language model form clinics sessions =
     let
         dates =
             scheduledDateState form
+
+        clinicOption ( clinicId, clinic ) =
+            ( toString (fromEntityId clinicId), clinic.name )
+
+        clinicOptions =
+            ( "", translate language Translate.SelectClinic )
+                :: (clinics |> EveryDictList.toList |> List.sortBy (Tuple.second >> .name) |> List.map clinicOption)
     in
         [ h2 [] [ text <| translate language Translate.CreateSession ]
-        , Html.form
+        , div
             [ class "ui form" ]
             [ div
+                [ class "field" ]
+                [ selectInput clinicOptions (clinicIdState form) []
+                    |> Html.map MsgCreateSession
+                ]
+            , div
                 [ class "two fields" ]
                 [ div
                     [ class "field" ]
