@@ -7,7 +7,7 @@ import EveryDictList
 import Form
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Admin.Model exposing (..)
-import RemoteData
+import RemoteData exposing (RemoteData(..))
 import Time.Date exposing (addDays)
 
 
@@ -57,7 +57,15 @@ update date backend msg model =
                                                 |> App.Model.MsgLoggedIn
                                             ]
                                         )
-                                    |> Maybe.withDefault []
+                                    -- If we submit, but can't actually submit,
+                                    -- then change the request status to
+                                    -- `NotAsked` (to reset network errors
+                                    -- etc.)
+                                    |> Maybe.withDefault
+                                        [ Backend.Model.HandlePostedSession NotAsked
+                                            |> App.Model.MsgBackend
+                                            |> App.Model.MsgLoggedIn
+                                        ]
 
                             _ ->
                                 []
