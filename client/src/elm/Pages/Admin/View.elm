@@ -10,7 +10,7 @@ import EveryDictList exposing (EveryDictList)
 import EverySet
 import Form
 import Form.Input exposing (..)
-import Gizra.Html exposing (showIf)
+import Gizra.Html exposing (showIf, emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -18,12 +18,12 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust)
 import Pages.Admin.Model exposing (..)
 import Pages.Page exposing (..)
-import RemoteData
+import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityId)
 import Translate exposing (Language, translate)
 import Time.Date
 import User.Model exposing (..)
-import Utils.WebData exposing (viewOrFetch)
+import Utils.WebData exposing (viewOrFetch, viewError)
 
 
 view : Config.Model -> Language -> NominalDate -> User -> ModelBackend -> Model -> Html Msg
@@ -106,14 +106,39 @@ viewCreateSessionForm config language backend model form clinics sessions =
         clinicOptions =
             ( "", translate language Translate.SelectClinic )
                 :: (clinics |> EveryDictList.toList |> List.sortBy (Tuple.second >> .name) |> List.map clinicOption)
+
+        requestStatus =
+            case backend.postSessionRequest of
+                Success _ ->
+                    div
+                        [ class "ui success message" ]
+                        [ div [ class "header" ] [ text <| translate language Translate.Success ]
+                        , div [] [ text <| translate language Translate.YourSessionHasBeenSaved ]
+                        ]
+
+                Failure err ->
+                    div
+                        [ class "ui warning message" ]
+                        [ div [ class "header" ] [ text <| translate language Translate.BackendError ]
+                        , viewError language err
+                        ]
+
+                Loading ->
+                    emptyNode
+
+                NotAsked ->
+                    emptyNode
     in
         [ h2 [] [ text <| translate language Translate.CreateSession ]
         , div
+            -- For the moment, we're using "error" for validation errors,
+            -- "warning" for HTTP errors.
             [ classList
                 [ ( "ui", True )
                 , ( "form", True )
                 , ( "error", Form.isSubmitted form && (not (List.isEmpty errors)) )
                 , ( "success", RemoteData.isSuccess backend.postSessionRequest )
+                , ( "warning", RemoteData.isFailure backend.postSessionRequest )
                 ]
             ]
             [ div
@@ -187,11 +212,7 @@ viewCreateSessionForm config language backend model form clinics sessions =
 
             -- Note that these are hidden by deafult by semantic-ui ... the
             -- class of the "form" controls whether they are shown.
-            , div
-                [ class "ui success message" ]
-                [ div [ class "header" ] [ text <| translate language Translate.Success ]
-                , div [] [ text <| translate language Translate.YourSessionHasBeenSaved ]
-                ]
+            , requestStatus
             , div
                 [ class "ui error message" ]
                 [ div [ class "header" ] [ text <| translate language Translate.ValidationErrors ]

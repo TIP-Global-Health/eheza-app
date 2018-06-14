@@ -129,6 +129,7 @@ type TranslationId
     | Attendance
     | Baby
     | BabyName String
+    | BackendError
     | BeginHealthAssessment
     | Born
     | Cancel
@@ -418,6 +419,9 @@ translationSet trans =
 
         BabyName name ->
             { english = "Baby: " ++ name }
+
+        BackendError ->
+            { english = "Error contacting backend" }
 
         Born ->
             { english = "Born" }
