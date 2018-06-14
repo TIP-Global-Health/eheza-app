@@ -203,7 +203,13 @@ viewCreateSessionForm config language backend model form clinics sessions =
                     ]
                     [ text <| translate language Translate.Cancel ]
                 , button
-                    [ class "ui button primary"
+                    [ classList
+                        [ ( "ui", True )
+                        , ( "button", True )
+                        , ( "primary", True )
+                        , ( "loading", RemoteData.isLoading backend.postSessionRequest )
+                        , ( "disabled", RemoteData.isLoading backend.postSessionRequest )
+                        ]
                     , type_ "submit"
                     , onClick <| MsgCreateSession Form.Submit
                     ]
