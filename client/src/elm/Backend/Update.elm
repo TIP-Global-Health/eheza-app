@@ -137,7 +137,7 @@ updateBackend backendUrl accessToken msg model =
                                             model.futureSessions
                                 in
                                     { model
-                                        | postSessionRequest = NotAsked
+                                        | postSessionRequest = webdata
                                         , futureSessions = futureSessions
                                     }
 

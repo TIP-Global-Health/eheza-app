@@ -237,6 +237,7 @@ type TranslationId
     | StartEndDate
     | StartDate
     | EndDate
+    | Success
     | TitleHealthAssessment
     | Training
     | UnableToDownload
@@ -248,10 +249,12 @@ type TranslationId
     | UploadingSession2
     | UploadSuccessful
     | ValidationError ValidationError
+    | ValidationErrors
     | ViewProgressReport
     | WelcomeUser String
     | YouAreNotAnAdmin
     | YouHaveACompletedSession
+    | YourSessionHasBeenSaved
     | ZScoreHeightForAge
     | ZScoreMuacForAge
     | ZScoreWeightForAge
@@ -821,6 +824,9 @@ translationSet trans =
         EndDate ->
             { english = "End Date" }
 
+        Success ->
+            { english = "Success" }
+
         TitleHealthAssessment ->
             { english = "2017 July Health Assessment" }
 
@@ -854,6 +860,9 @@ translationSet trans =
         ValidationError err ->
             translateValidationError err
 
+        ValidationErrors ->
+            { english = "Validation Errors" }
+
         ViewProgressReport ->
             { english = "View Progress Report" }
 
@@ -865,6 +874,9 @@ translationSet trans =
 
         YouHaveACompletedSession ->
             { english = "You have a completed session that needs to be uploaded. Please connect to the internet and upload this session within 48 hours." }
+
+        YourSessionHasBeenSaved ->
+            { english = "Your session has been saved." }
 
         ZScoreHeightForAge ->
             { english = "Z-Score Height for Age: " }

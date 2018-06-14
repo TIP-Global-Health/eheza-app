@@ -18,6 +18,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust)
 import Pages.Admin.Model exposing (..)
 import Pages.Page exposing (..)
+import RemoteData
 import Restful.Endpoint exposing (fromEntityId)
 import Translate exposing (Language, translate)
 import Time.Date
@@ -72,23 +73,23 @@ viewLoadedClinics : Config.Model -> Language -> NominalDate -> ModelBackend -> M
 viewLoadedClinics config language currentDate backend model clinics =
     viewOrFetch language
         (MsgBackend <| Backend.Model.FetchFutureSessions currentDate)
-        (viewLoadedSessions config language model clinics)
+        (viewLoadedSessions config language backend model clinics)
         identity
         backend.futureSessions
 
 
-viewLoadedSessions : Config.Model -> Language -> Model -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
-viewLoadedSessions config language model clinics sessions =
+viewLoadedSessions : Config.Model -> Language -> ModelBackend -> Model -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
+viewLoadedSessions config language backend model clinics sessions =
     case model.createSession of
         Just form ->
-            viewCreateSessionForm config language model form clinics sessions
+            viewCreateSessionForm config language backend model form clinics sessions
 
         Nothing ->
             viewClinicList config language model clinics sessions
 
 
-viewCreateSessionForm : Config.Model -> Language -> Model -> SessionForm -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
-viewCreateSessionForm config language model form clinics sessions =
+viewCreateSessionForm : Config.Model -> Language -> ModelBackend -> Model -> SessionForm -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
+viewCreateSessionForm config language backend model form clinics sessions =
     let
         dates =
             scheduledDateState form
@@ -112,6 +113,7 @@ viewCreateSessionForm config language model form clinics sessions =
                 [ ( "ui", True )
                 , ( "form", True )
                 , ( "error", Form.isSubmitted form && (not (List.isEmpty errors)) )
+                , ( "success", RemoteData.isSuccess backend.postSessionRequest )
                 ]
             ]
             [ div
@@ -182,9 +184,19 @@ viewCreateSessionForm config language model form clinics sessions =
                     ]
                     [ text <| translate language Translate.Save ]
                 ]
+
+            -- Note that these are hidden by deafult by semantic-ui ... the
+            -- class of the "form" controls whether they are shown.
+            , div
+                [ class "ui success message" ]
+                [ div [ class "header" ] [ text <| translate language Translate.Success ]
+                , div [] [ text <| translate language Translate.YourSessionHasBeenSaved ]
+                ]
             , div
                 [ class "ui error message" ]
-                [ dumpErrors form ]
+                [ div [ class "header" ] [ text <| translate language Translate.ValidationErrors ]
+                , dumpErrors form
+                ]
             ]
         ]
 
