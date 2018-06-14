@@ -1,6 +1,7 @@
 port module App.Update exposing (init, update, subscriptions)
 
 import App.Model exposing (..)
+import Backend.Model
 import Backend.Session.Model
 import Backend.Update
 import Backend.Utils exposing (withEditableSession)
@@ -175,11 +176,15 @@ update msg model =
                                     -- gets triggered first will fail silently
                                     -- ...  the second will succeed.
                                     refetch =
-                                        [ MsgSession <|
+                                        MsgSession <|
                                             Pages.Model.MsgEditableSession Backend.Session.Model.RefetchSession
-                                        ]
+
+                                    -- And, we reset errors, since the errors
+                                    -- may have been authorization errors.
+                                    resetErrors =
+                                        MsgLoggedIn <| MsgBackend <| Backend.Model.ResetErrors
                                 in
-                                    redirect ++ refetch
+                                    refetch :: resetErrors :: redirect
                             else
                                 []
                     in
