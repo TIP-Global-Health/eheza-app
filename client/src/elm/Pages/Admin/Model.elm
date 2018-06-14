@@ -18,7 +18,8 @@ emptyModel =
 
 
 type Msg
-    = ShowCreateSessionForm Bool
+    = ResetCreateSessionForm
+    | ShowCreateSessionForm Bool
     | MsgCreateSession Form.Msg
     | SetActivePage Page
     | MsgBackend Backend.Model.MsgBackend

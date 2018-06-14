@@ -39,8 +39,8 @@ fetch model =
             getLoggedInModel model
                 |> Maybe.map
                     (\loggedIn ->
-                        Pages.Admin.Fetch.fetch model.currentDate loggedIn.backend
-                            |> List.map (MsgLoggedIn << MsgBackend)
+                        Pages.Admin.Fetch.fetch model.currentDate loggedIn.backend loggedIn.adminPage
+                            |> List.map (MsgLoggedIn << MsgPageAdmin)
                     )
                 |> Maybe.withDefault []
 

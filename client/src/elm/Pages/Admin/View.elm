@@ -20,6 +20,7 @@ import Pages.Admin.Model exposing (..)
 import Pages.Page exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityId)
+import Set
 import Translate exposing (Language, translate)
 import Time.Date
 import User.Model exposing (..)
@@ -108,26 +109,30 @@ viewCreateSessionForm config language backend model form clinics sessions =
                 :: (clinics |> EveryDictList.toList |> List.sortBy (Tuple.second >> .name) |> List.map clinicOption)
 
         requestStatus =
-            case backend.postSessionRequest of
-                Success _ ->
-                    div
-                        [ class "ui success message" ]
-                        [ div [ class "header" ] [ text <| translate language Translate.Success ]
-                        , div [] [ text <| translate language Translate.YourSessionHasBeenSaved ]
-                        ]
+            -- We only show the network issues until you make changes.
+            if Set.isEmpty (Form.getChangedFields form) then
+                case backend.postSessionRequest of
+                    Success _ ->
+                        div
+                            [ class "ui success message" ]
+                            [ div [ class "header" ] [ text <| translate language Translate.Success ]
+                            , div [] [ text <| translate language Translate.YourSessionHasBeenSaved ]
+                            ]
 
-                Failure err ->
-                    div
-                        [ class "ui warning message" ]
-                        [ div [ class "header" ] [ text <| translate language Translate.BackendError ]
-                        , viewError language err
-                        ]
+                    Failure err ->
+                        div
+                            [ class "ui warning message" ]
+                            [ div [ class "header" ] [ text <| translate language Translate.BackendError ]
+                            , viewError language err
+                            ]
 
-                Loading ->
-                    emptyNode
+                    Loading ->
+                        emptyNode
 
-                NotAsked ->
-                    emptyNode
+                    NotAsked ->
+                        emptyNode
+            else
+                emptyNode
     in
         [ h2 [] [ text <| translate language Translate.CreateSession ]
         , div
@@ -159,7 +164,9 @@ viewCreateSessionForm config language backend model form clinics sessions =
                         ]
                     ]
                     [ label [] [ text <| translate language Translate.StartDate ]
-                    , textInput dates.start []
+                    , textInput dates.start
+                        [ value <| Maybe.withDefault "" dates.start.value
+                        ]
                         |> Html.map MsgCreateSession
                     ]
                 , div
@@ -169,7 +176,9 @@ viewCreateSessionForm config language backend model form clinics sessions =
                         ]
                     ]
                     [ label [] [ text <| translate language Translate.EndDate ]
-                    , textInput dates.end []
+                    , textInput dates.end
+                        [ value <| Maybe.withDefault "" dates.end.value
+                        ]
                         |> Html.map MsgCreateSession
                     ]
                 ]

@@ -67,6 +67,23 @@ update date backend msg model =
                     , appMsgs
                     )
 
+            ResetCreateSessionForm ->
+                let
+                    -- We'll default the dates to start today and finish three days later
+                    initialDates =
+                        { start = date
+                        , end = addDays 3 date
+                        }
+
+                    createSession =
+                        model.createSession
+                            |> Maybe.map (\_ -> Backend.Session.Form.emptyForm knownClinic initialDates)
+                in
+                    ( { model | createSession = createSession }
+                    , Cmd.none
+                    , []
+                    )
+
             ShowCreateSessionForm show ->
                 let
                     -- We'll default the dates to start today and finish three days later
