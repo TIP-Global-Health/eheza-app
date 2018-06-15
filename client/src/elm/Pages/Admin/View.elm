@@ -240,6 +240,21 @@ viewCreateSessionForm config language backend model form clinics sessions =
 viewClinicList : Config.Model -> Language -> Model -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
 viewClinicList config language model clinics ( _, futureSessions ) =
     let
+        sandboxButtons =
+            if config.sandbox then
+                div []
+                    [ button
+                        [ class "ui primary button small" ]
+                        [ text <| translate language <| Translate.CreateTrainingSessions ]
+                    , text " "
+                    , button
+                        [ class "ui primary button small" ]
+                        [ text <| translate language <| Translate.DeleteTrainingSessions
+                        ]
+                    ]
+            else
+                emptyNode
+
         buttons =
             div []
                 [ button
@@ -247,15 +262,7 @@ viewClinicList config language model clinics ( _, futureSessions ) =
                     , onClick <| ShowCreateSessionForm True
                     ]
                     [ text <| translate language <| Translate.CreateSession ]
-                , text " "
-                , button
-                    [ class "ui primary button small" ]
-                    [ text <| translate language <| Translate.CreateTrainingSessions ]
-                , text " "
-                , button
-                    [ class "ui primary button small" ]
-                    [ text <| translate language <| Translate.DeleteTrainingSessions
-                    ]
+                , sandboxButtons
                 ]
 
         futureSessionsByClinic =
