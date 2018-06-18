@@ -171,4 +171,20 @@ class HedleyRestfulTests extends HedleyWebTestBase {
     $this->assertEqual($results[0]['id'], $this->session->nid, 'Got correct session.');
   }
 
+  /**
+   * Tests downloading an offiline session for a clinic that has no mothers.
+   *
+   * This tests the scenario which failed at
+   * https://github.com/Gizra/ihangane/pull/627
+   */
+  public function testDownloadOfflineSessionWithoutMothers() {
+    $handler = restful_get_restful_handler('offline_sessions');
+
+    // Test authorized user.
+    $handler->setAccount($this->user);
+
+    $results = $handler->get($this->sessionWithoutMothers->nid);
+    $this->assertEqual($results[0]['id'], $this->sessionWithoutMothers->nid, 'Got correct session.');
+  }
+
 }
