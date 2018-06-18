@@ -9,3 +9,4 @@ files[] = plugins/restful/node/activity/HedleyRestfulActivityBase.class.php
 files[] = plugins/restful/node/activity/HedleyRestfulChildActivityBase.class.php
 files[] = plugins/restful/node/activity/HedleyRestfulMotherActivityBase.class.php
 files[] = plugins/restful/node/HedleyRestfulEntityBaseNode.php
+files[] = tests/HedleyRestfulTests.test

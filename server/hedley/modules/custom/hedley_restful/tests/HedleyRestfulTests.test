@@ -1,0 +1,190 @@
+<?php
+
+/**
+ * @file
+ * Contains \HedleyRestfulTests.
+ */
+
+/**
+ * HedleyRestfulTests tests.
+ */
+class HedleyRestfulTests extends HedleyWebTestBase {
+
+  /**
+   * A user object.
+   *
+   * @var \stdClass
+   */
+  protected $user;
+
+  /**
+   * Anonymous user object.
+   *
+   * @var \stdClass
+   */
+  protected $anonymousUser;
+
+  /**
+   * A clinic node.
+   *
+   * @var \stdClass
+   */
+  protected $clinic;
+
+  /**
+   * A clinic node with no mothers assigned.
+   *
+   * @var \stdClass
+   */
+  protected $clinicWithoutMothers;
+
+  /**
+   * A mother.
+   *
+   * @var \stdClass
+   */
+  protected $mother;
+
+  /**
+   * A child.
+   *
+   * @var \stdClass
+   */
+  protected $child;
+
+  /**
+   * A session node.
+   *
+   * @var \stdClass
+   */
+  protected $session;
+
+  /**
+   * A session node, with no mothers.
+   *
+   * @var \stdClass
+   */
+  protected $sessionWithoutMothers;
+
+  /**
+   * Info hook.
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'HedleyRestfulTests tests',
+      'description' => 'Tests restful endpoints.',
+      'group' => 'Hedley',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp() {
+    parent::setUp();
+
+    // Common test users for the cases.
+    $this->anonymousUser = user_load(0);
+    $this->user = $this->drupalCreateUser(['bypass node access']);
+
+    // Create two clinics.
+    $this->clinic = $this->drupalCreateNode([
+      'type' => 'clinic',
+      'title' => 'Test clinic',
+    ]);
+
+    $this->clinicWithoutMothers = $this->drupalCreateNode([
+      'type' => 'clinic',
+      'title' => 'Clinic without mothers',
+    ]);
+
+    // Create a mother for the clinic.
+    $this->mother = $this->drupalCreateNode([
+      'type' => 'mother',
+      'title' => 'A mother',
+    ]);
+
+    $mother = entity_metadata_wrapper('node', $this->mother);
+    $mother->field_date_birth->set(strtotime('1998-07-01'));
+    $mother->field_clinic->set($this->clinic->nid);
+    $mother->field_ubudehe->set(1);
+    $mother->field_education_level->set(2);
+    $mother->save();
+
+    // Create a child for the mother.
+    $this->child = $this->drupalCreateNode([
+      'type' => 'child',
+      'title' => 'A child',
+    ]);
+
+    $child = entity_metadata_wrapper('node', $this->child);
+    $child->field_mother->set($this->mother->nid);
+    $child->field_date_birth->set(strtotime('2015-06-27'));
+    $child->field_gender->set('male');
+    $child->save();
+
+    // Assign the user to the clinics.
+    $nurse = entity_metadata_wrapper('user', $this->user);
+    $nurse->field_clinics->set([
+      $this->clinic->nid,
+      $this->clinicWithoutMothers->nid,
+    ]);
+    $nurse->save();
+
+    // Create a session for the clinic.
+    $today = date('Y-m-d');
+
+    $this->session = $this->drupalCreateNode(['type' => 'session']);
+    $session = entity_metadata_wrapper('node', $this->session);
+
+    $session->field_clinic->set($this->clinic->nid);
+    $session->field_scheduled_date->set([
+      'value' => $today,
+      'value2' => $today,
+    ]);
+    $session->field_closed->set(FALSE);
+    $session->save();
+
+    // And a session for the clinic without mothers.
+    $this->sessionWithoutMothers = $this->drupalCreateNode(['type' => 'session']);
+    $sessionWithoutMothers = entity_metadata_wrapper('node', $this->sessionWithoutMothers);
+
+    $sessionWithoutMothers->field_clinic->set($this->clinicWithoutMothers->nid);
+    $sessionWithoutMothers->field_scheduled_date->set([
+      'value' => $today,
+      'value2' => $today,
+    ]);
+    $sessionWithoutMothers->field_closed->set(FALSE);
+    $sessionWithoutMothers->save();
+  }
+
+  /**
+   * Tests downloading an offiline session.
+   */
+  public function testDownloadOfflineSession() {
+    $handler = restful_get_restful_handler('offline_sessions');
+
+    // Test authorized user.
+    $handler->setAccount($this->user);
+
+    $results = $handler->get($this->session->nid);
+    $this->assertEqual($results[0]['id'], $this->session->nid, 'Got correct session.');
+  }
+
+  /**
+   * Tests downloading an offiline session for a clinic that has no mothers.
+   *
+   * This tests the scenario which failed at
+   * https://github.com/Gizra/ihangane/pull/627
+   */
+  public function testDownloadOfflineSessionWithoutMothers() {
+    $handler = restful_get_restful_handler('offline_sessions');
+
+    // Test authorized user.
+    $handler->setAccount($this->user);
+
+    $results = $handler->get($this->sessionWithoutMothers->nid);
+    $this->assertEqual($results[0]['id'], $this->sessionWithoutMothers->nid, 'Got correct session.');
+  }
+
+}

@@ -149,6 +149,7 @@ type TranslationId
     | SessionInProgress
     | SessionUnauthorized
     | SessionUnauthorized2
+    | ThisClinicHasNoMothers
     | TitleHealthAssessment
     | UnableToDownload
     | UnableToUpload
@@ -904,6 +905,9 @@ translate lang trans =
                         """A health assessment is in progress on this device, but you are not authorized to view it.
                         Please contact the Ihangane project for further instructions."""
                     }
+
+                ThisClinicHasNoMothers ->
+                    { english = "This clinic has no mothers assigned to it." }
 
                 TitleHealthAssessment ->
                     { english = "2017 July Health Assessment" }

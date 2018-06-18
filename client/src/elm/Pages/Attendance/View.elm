@@ -25,9 +25,15 @@ view : Language -> EditableSession -> Html MsgSession
 view language session =
     let
         mothers =
-            session.offlineSession.mothers
-                |> EveryDictList.map (viewMother session)
-                |> EveryDictList.values
+            if EveryDictList.isEmpty session.offlineSession.mothers then
+                [ div
+                    [ class "ui message warning" ]
+                    [ text <| translate language Translate.ThisClinicHasNoMothers ]
+                ]
+            else
+                session.offlineSession.mothers
+                    |> EveryDictList.map (viewMother session)
+                    |> EveryDictList.values
     in
         div [ class "wrap wrap-alt-2" ]
             [ div
