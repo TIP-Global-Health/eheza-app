@@ -417,15 +417,16 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       "weight" => "weights",
     ];
 
-    $activity_ids = hedley_restful_extract_ids(
-      (new EntityFieldQuery())
-        ->entityCondition('entity_type', 'node')
-        ->entityCondition('bundle', array_keys($bundles))
-        ->fieldCondition('field_session', 'target_id', $sessionId, "=")
-        ->propertyCondition('status', NODE_PUBLISHED)
-        ->range(0, 10000)
-        ->execute()
-    );
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', array_keys($bundles))
+      ->fieldCondition('field_session', 'target_id', $sessionId, "=")
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->range(0, 10000)
+      ->execute();
+
+    $activity_ids = empty($result['node']) ? [] : array_keys($result['node']);
 
     $existing = [];
     node_load_multiple($activity_ids);
