@@ -42,19 +42,6 @@ function hedley_restful_timestamp_only_date($value) {
 }
 
 /**
- * Given an EntityFieldQuery result, extract the ids, or an empty array.
- *
- * @param array $result
- *   The result of EntityFieldQuery->execute()
- *
- * @return array
- *   An array of node IDs
- */
-function hedley_restful_extract_ids(array $result) {
-  return empty($result['node']) ? [] : array_keys($result['node']);
-}
-
-/**
  * Get restful output programmatically.
  *
  * @return array

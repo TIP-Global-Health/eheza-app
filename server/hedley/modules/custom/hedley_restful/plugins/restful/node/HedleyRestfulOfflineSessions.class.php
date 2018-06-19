@@ -128,15 +128,16 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
   public function getClinicData($nid) {
     $account = $this->getAccount();
 
-    $clinic_ids = hedley_restful_extract_ids(
-      (new EntityFieldQuery())
-        ->entityCondition('entity_type', 'node')
-        ->entityCondition('bundle', 'clinic')
-        ->propertyCondition('status', NODE_PUBLISHED)
-        ->propertyOrderBy('title', 'ASC')
-        ->range(0, 1000)
-        ->execute()
-    );
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'clinic')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->propertyOrderBy('title', 'ASC')
+      ->range(0, 1000)
+      ->execute();
+
+    $clinic_ids = empty($result['node']) ? [] : array_keys($result['node']);
 
     return hedley_restful_output_from_handler('clinics', $clinic_ids, $account);
   }
@@ -165,15 +166,16 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
   public function getAllSessions($clinic_id) {
     $account = $this->getAccount();
 
-    $session_ids = hedley_restful_extract_ids(
-      (new EntityFieldQuery())
-        ->entityCondition('entity_type', 'node')
-        ->entityCondition('bundle', 'session')
-        ->propertyCondition('status', NODE_PUBLISHED)
-        ->fieldOrderBy('field_scheduled_date', 'value', 'ASC')
-        ->range(0, 20000)
-        ->execute()
-    );
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'session')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldOrderBy('field_scheduled_date', 'value', 'ASC')
+      ->range(0, 20000)
+      ->execute();
+
+    $session_ids = empty($result['node']) ? [] : array_keys($result['node']);
 
     return hedley_restful_output_from_handler('sessions', $session_ids, $account);
   }
@@ -193,29 +195,31 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     $clinic_id = entity_metadata_wrapper('node', $nid)->field_clinic->getIdentifier();
 
     // First, let us get all the mothers assigned to this clinic.
-    $mother_ids = hedley_restful_extract_ids(
-      (new EntityFieldQuery())
-        ->entityCondition('entity_type', 'node')
-        ->entityCondition('bundle', 'mother')
-        ->fieldCondition('field_clinic', 'target_id', $clinic_id)
-        ->propertyCondition('status', NODE_PUBLISHED)
-        ->propertyOrderBy('title', 'ASC')
-        ->range(0, 1000)
-        ->execute()
-    );
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'mother')
+      ->fieldCondition('field_clinic', 'target_id', $clinic_id)
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->propertyOrderBy('title', 'ASC')
+      ->range(0, 1000)
+      ->execute();
+
+    $mother_ids = empty($result['node']) ? [] : array_keys($result['node']);
 
     // Then, get all the children of all the mothers. It's more
     // efficient to do this in one query than many.
     if ($mother_ids) {
-      $child_ids = hedley_restful_extract_ids(
-        (new EntityFieldQuery())
-          ->entityCondition('entity_type', 'node')
-          ->entityCondition('bundle', 'child')
-          ->fieldCondition('field_mother', 'target_id', $mother_ids, "IN")
-          ->propertyCondition('status', NODE_PUBLISHED)
-          ->range(0, 2000)
-          ->execute()
-      );
+      $query = new EntityFieldQuery();
+      $result = $query
+        ->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', 'child')
+        ->fieldCondition('field_mother', 'target_id', $mother_ids, "IN")
+        ->propertyCondition('status', NODE_PUBLISHED)
+        ->range(0, 2000)
+        ->execute();
+
+      $child_ids = empty($result['node']) ? [] : array_keys($result['node']);
     }
     else {
       $child_ids = [];
@@ -233,16 +237,17 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     // We order the measurements by date_measured descending, since it is
     // convenient for the client to have the most recent measurements first.
     if ($child_ids) {
-      $child_activity_ids = hedley_restful_extract_ids(
-        (new EntityFieldQuery())
-          ->entityCondition('entity_type', 'node')
-          ->entityCondition('bundle', array_keys($child_bundles))
-          ->fieldCondition('field_child', 'target_id', $child_ids, "IN")
-          ->fieldOrderBy('field_date_measured', 'value', 'DESC')
-          ->propertyCondition('status', NODE_PUBLISHED)
-          ->range(0, 10000)
-          ->execute()
-      );
+      $query = new EntityFieldQuery();
+      $result = $query
+        ->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', array_keys($child_bundles))
+        ->fieldCondition('field_child', 'target_id', $child_ids, "IN")
+        ->fieldOrderBy('field_date_measured', 'value', 'DESC')
+        ->propertyCondition('status', NODE_PUBLISHED)
+        ->range(0, 10000)
+        ->execute();
+
+      $child_activity_ids = empty($result['node']) ? [] : array_keys($result['node']);
     }
     else {
       $child_activity_ids = [];
@@ -253,16 +258,17 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     ];
 
     if ($mother_ids) {
-      $mother_activity_ids = hedley_restful_extract_ids(
-        (new EntityFieldQuery())
-          ->entityCondition('entity_type', 'node')
-          ->entityCondition('bundle', array_keys($mother_bundles))
-          ->fieldCondition('field_mother', 'target_id', $mother_ids, "IN")
-          ->fieldOrderBy('field_date_measured', 'value', 'DESC')
-          ->propertyCondition('status', NODE_PUBLISHED)
-          ->range(0, 10000)
-          ->execute()
-      );
+      $query = new EntityFieldQuery();
+      $result = $query
+        ->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', array_keys($mother_bundles))
+        ->fieldCondition('field_mother', 'target_id', $mother_ids, "IN")
+        ->fieldOrderBy('field_date_measured', 'value', 'DESC')
+        ->propertyCondition('status', NODE_PUBLISHED)
+        ->range(0, 10000)
+        ->execute();
+
+      $mother_activity_ids = empty($result['node']) ? [] : array_keys($result['node']);
     }
     else {
       $mother_activity_ids = [];
