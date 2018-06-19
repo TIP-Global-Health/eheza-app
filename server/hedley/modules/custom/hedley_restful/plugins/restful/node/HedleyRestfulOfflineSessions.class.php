@@ -209,6 +209,8 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
 
     // Then, get all the children of all the mothers. It's more
     // efficient to do this in one query than many.
+    $child_ids = [];
+
     if ($mother_ids) {
       $query = new EntityFieldQuery();
       $result = $query
@@ -220,9 +222,6 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
         ->execute();
 
       $child_ids = empty($result['node']) ? [] : array_keys($result['node']);
-    }
-    else {
-      $child_ids = [];
     }
 
     // Now, let's get all the child measurements.
@@ -236,6 +235,8 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
 
     // We order the measurements by date_measured descending, since it is
     // convenient for the client to have the most recent measurements first.
+    $child_activity_ids = [];
+
     if ($child_ids) {
       $query = new EntityFieldQuery();
       $result = $query
@@ -249,13 +250,12 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
 
       $child_activity_ids = empty($result['node']) ? [] : array_keys($result['node']);
     }
-    else {
-      $child_activity_ids = [];
-    }
 
     $mother_bundles = [
       "family_planning" => "family-plannings",
     ];
+
+    $mother_activity_ids = [];
 
     if ($mother_ids) {
       $query = new EntityFieldQuery();
@@ -269,9 +269,6 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
         ->execute();
 
       $mother_activity_ids = empty($result['node']) ? [] : array_keys($result['node']);
-    }
-    else {
-      $mother_activity_ids = [];
     }
 
     // Now, provide the usual output, since that's easiest. We'll
