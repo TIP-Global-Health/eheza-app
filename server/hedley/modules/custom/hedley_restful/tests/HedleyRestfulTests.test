@@ -56,7 +56,7 @@ class HedleyRestfulTests extends HedleyWebTestBase {
   }
 
   /**
-   * Crate a mother.
+   * Create a mother.
    *
    * @param string $name
    *   The mother's name.
@@ -67,20 +67,19 @@ class HedleyRestfulTests extends HedleyWebTestBase {
    *   The node ID of the mother.
    */
   public function createMother($name, $clinic_id) {
-    // Create a mother for the clinic.
-    $mother = $this->drupalCreateNode([
+    $node = $this->drupalCreateNode([
       'type' => 'mother',
       'title' => $name,
     ]);
 
-    $mother_wrapper = entity_metadata_wrapper('node', $mother);
-    $mother_wrapper->field_date_birth->set(strtotime('1998-07-01'));
-    $mother_wrapper->field_clinic->set($clinic_id);
-    $mother_wrapper->field_ubudehe->set(1);
-    $mother_wrapper->field_education_level->set(2);
-    $mother_wrapper->save();
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_date_birth->set(strtotime('1998-07-01'));
+    $wrapper->field_clinic->set($clinic_id);
+    $wrapper->field_ubudehe->set(1);
+    $wrapper->field_education_level->set(2);
+    $wrapper->save();
 
-    return $mother->nid;
+    return $node->nid;
   }
 
   /**
