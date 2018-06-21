@@ -152,9 +152,6 @@ class HedleyRestfulTests extends HedleyWebTestBase {
 
   /**
    * Tests downloading an offiline session for a clinic that has no mothers.
-   *
-   * This tests the scenario which failed at
-   * https://github.com/Gizra/ihangane/issues/626
    */
   public function testDownloadOfflineSessionWithoutMothers() {
     $clinic_id = $this->createClinic();
