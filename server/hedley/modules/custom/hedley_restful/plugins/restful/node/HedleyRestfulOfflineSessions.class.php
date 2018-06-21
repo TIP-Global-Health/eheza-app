@@ -216,7 +216,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       $result = $query
         ->entityCondition('entity_type', 'node')
         ->entityCondition('bundle', 'child')
-        ->fieldCondition('field_mother', 'target_id', $mother_ids, "IN")
+        ->fieldCondition('field_mother', 'target_id', $mother_ids, 'IN')
         ->propertyCondition('status', NODE_PUBLISHED)
         ->range(0, 2000)
         ->execute();
@@ -226,11 +226,11 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
 
     // Now, let's get all the child measurements.
     $child_bundles = [
-      "height" => "heights",
-      "muac" => "muacs",
-      "nutrition" => "nutritions",
-      "photo" => "photos",
-      "weight" => "weights",
+      'height' => 'heights',
+      'muac' => 'muacs',
+      'nutrition' => 'nutritions',
+      'photo' => 'photos',
+      'weight' => 'weights',
     ];
 
     // We order the measurements by date_measured descending, since it is
@@ -242,7 +242,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       $result = $query
         ->entityCondition('entity_type', 'node')
         ->entityCondition('bundle', array_keys($child_bundles))
-        ->fieldCondition('field_child', 'target_id', $child_ids, "IN")
+        ->fieldCondition('field_child', 'target_id', $child_ids, 'IN')
         ->fieldOrderBy('field_date_measured', 'value', 'DESC')
         ->propertyCondition('status', NODE_PUBLISHED)
         ->range(0, 10000)
@@ -252,7 +252,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     }
 
     $mother_bundles = [
-      "family_planning" => "family-plannings",
+      'family_planning' => 'family-plannings',
     ];
 
     $mother_activity_ids = [];
@@ -262,7 +262,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       $result = $query
         ->entityCondition('entity_type', 'node')
         ->entityCondition('bundle', array_keys($mother_bundles))
-        ->fieldCondition('field_mother', 'target_id', $mother_ids, "IN")
+        ->fieldCondition('field_mother', 'target_id', $mother_ids, 'IN')
         ->fieldOrderBy('field_date_measured', 'value', 'DESC')
         ->propertyCondition('status', NODE_PUBLISHED)
         ->range(0, 10000)
@@ -294,10 +294,10 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     }
 
     return [
-      "mothers" => $mother_output,
-      "children" => $child_output,
-      "mother_activity" => $grouped_mother_activity,
-      "child_activity" => $grouped_child_activity,
+      'mothers' => $mother_output,
+      'children' => $child_output,
+      'mother_activity' => $grouped_mother_activity,
+      'child_activity' => $grouped_child_activity,
     ];
   }
 
@@ -409,19 +409,19 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
 
     // Now, let's get all the existing measurements for this session.
     $bundles = [
-      "height" => "heights",
-      "family_planning" => "family-plannings",
-      "muac" => "muacs",
-      "nutrition" => "nutritions",
-      "photo" => "photos",
-      "weight" => "weights",
+      'height' => 'heights',
+      'family_planning' => 'family-plannings',
+      'muac' => 'muacs',
+      'nutrition' => 'nutritions',
+      'photo' => 'photos',
+      'weight' => 'weights',
     ];
 
     $query = new EntityFieldQuery();
     $result = $query
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', array_keys($bundles))
-      ->fieldCondition('field_session', 'target_id', $sessionId, "=")
+      ->fieldCondition('field_session', 'target_id', $sessionId)
       ->propertyCondition('status', NODE_PUBLISHED)
       ->range(0, 10000)
       ->execute();
@@ -486,7 +486,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
 
     // We don't send back the whole offline session.
     return [
-      "id" => $sessionId,
+      'id' => $sessionId,
     ];
   }
 
@@ -517,7 +517,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
           $handler->patch($id, $edit['value']);
         }
         else {
-          $handler->post("", $edit['value']);
+          $handler->post('', $edit['value']);
         }
         break;
 
@@ -535,7 +535,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
         else {
           // This is actually an update ... perhaps the value was deleted
           // behind our back?
-          $handler->post("", $edit['edited']);
+          $handler->post('', $edit['edited']);
         }
         break;
 
