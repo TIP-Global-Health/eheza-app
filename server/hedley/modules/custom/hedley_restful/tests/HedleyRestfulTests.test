@@ -31,16 +31,16 @@ class HedleyRestfulTests extends HedleyWebTestBase {
    *   The user.
    */
   public function createNurse($clinic_id) {
-    $nurse = $this->drupalCreateUser();
+    $account = $this->drupalCreateUser();
 
     $role = user_role_load_by_name('nurse');
-    user_multiple_role_edit([$nurse->uid], "add role", $role->rid);
+    user_multiple_role_edit([$account->uid], "add role", $role->rid);
 
-    $nurse_wrapper = entity_metadata_wrapper('user', $nurse);
-    $nurse_wrapper->field_clinics->set([$clinic_id]);
-    $nurse_wrapper->save();
+    $wrapper = entity_metadata_wrapper('user', $account);
+    $wrapper->field_clinics->set([$clinic_id]);
+    $wrapper->save();
 
-    return $nurse;
+    return $account;
   }
 
   /**
