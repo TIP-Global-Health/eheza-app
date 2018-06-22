@@ -138,16 +138,26 @@ class HedleyRestfulTests extends HedleyWebTestBase {
    * Tests downloading an offiline session.
    */
   public function testDownloadOfflineSession() {
+    // Create a clinic, a session, and a nurse.
     $clinic_id = $this->createClinic();
     $this->createMother("A mother", $clinic_id);
     $nurse = $this->createNurse($clinic_id);
     $session_id = $this->createSession($clinic_id);
 
+    // Create a whole bunch of clinics, to test that our `allClinics` data
+    // actually gets all the clinics.
+    for ($x = 0; $x < 75; $x++) {
+      $this->createClinic();
+    }
+
     $handler = restful_get_restful_handler('offline_sessions');
     $handler->setAccount($nurse);
 
     $results = $handler->get($session_id);
-    $this->assertEqual($results[0]['id'], $session_id);
+    $data = $results[0];
+
+    $this->assertEqual($data['id'], $session_id);
+    $this->assertEqual(count($data['clinics']), 76);
   }
 
   /**
