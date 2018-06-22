@@ -146,15 +146,20 @@ class HedleyRestfulTests extends HedleyWebTestBase {
     // Create a whole bunch of things, to test that we actually
     // get all of them with our batched queries.
     for ($x = 0; $x < 75; $x++) {
-      // For the code that sends basic data for all clinics.
-      $this->createClinic();
-
       // For the code that gets mothers for the session's particular clinic.
       $mother_id = $this->createMother($this->randomName(), $clinic_id);
 
       // Give each mother two children.
       $this->createChild($this->randomName(), $mother_id);
       $this->createChild($this->randomName(), $mother_id);
+
+      // For the code that sends basic data for all clinics.
+      $other_clinic_id = $this->createClinic();
+
+      // Add a mother and some children for the other clinics, to test
+      // that we **don't** get those.
+      $other_mother_id = $this->createMother($this->randomName(), $other_clinic_id);
+      $this->createChild($this->randomName(), $other_mother_id);
     }
 
     $handler = restful_get_restful_handler('offline_sessions');
