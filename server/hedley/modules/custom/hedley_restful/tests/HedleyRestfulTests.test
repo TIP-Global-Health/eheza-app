@@ -144,10 +144,14 @@ class HedleyRestfulTests extends HedleyWebTestBase {
     $nurse = $this->createNurse($clinic_id);
     $session_id = $this->createSession($clinic_id);
 
-    // Create a whole bunch of clinics, to test that our `allClinics` data
-    // actually gets all the clinics.
+    // Create a whole bunch of things, to test that we actually
+    // get all of them with our batched queries.
     for ($x = 0; $x < 75; $x++) {
+      // For the code that sends basic data for all clinics.
       $this->createClinic();
+
+      // For the code that gets mothers for the session's particular clinic.
+      $this->createMother($this->randomName(), $clinic_id);
     }
 
     $handler = restful_get_restful_handler('offline_sessions');
@@ -158,6 +162,7 @@ class HedleyRestfulTests extends HedleyWebTestBase {
 
     $this->assertEqual($data['id'], $session_id);
     $this->assertEqual(count($data['clinics']), 76);
+    $this->assertEqual(count($data['participants']['mothers']), 76);
   }
 
   /**
