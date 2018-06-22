@@ -163,6 +163,58 @@ class HedleyRestfulTests extends HedleyWebTestBase {
   }
 
   /**
+   * Create a height entity.
+   *
+   * @param int $child_id
+   *   The node ID of the child.
+   * @param int $session_id
+   *   The node ID of the session.
+   * @param int $ts
+   *   The date the measurement was taken, as a unix timestamp.
+   *
+   * @return int
+   *   The node ID of the height.
+   */
+  public function createHeight($child_id, $session_id, $ts) {
+    $node = $this->drupalCreateNode(['type' => 'height']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_child->set($child_id);
+    $wrapper->field_date_measured->set($ts);
+    $wrapper->field_session->set($session_id);
+    $wrapper->field_height->set(124);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a weight entity.
+   *
+   * @param int $child_id
+   *   The node ID of the child.
+   * @param int $session_id
+   *   The node ID of the session.
+   * @param int $ts
+   *   The date the measurement was taken, as a unix timestamp.
+   *
+   * @return int
+   *   The node ID of the weight.
+   */
+  public function createWeight($child_id, $session_id, $ts) {
+    $node = $this->drupalCreateNode(['type' => 'weight']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_child->set($child_id);
+    $wrapper->field_date_measured->set($ts);
+    $wrapper->field_session->set($session_id);
+    $wrapper->field_weight->set(12);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
    * Tests downloading an offiline session.
    */
   public function testDownloadOfflineSession() {
@@ -205,6 +257,12 @@ class HedleyRestfulTests extends HedleyWebTestBase {
       foreach ($mother_ids as $mother_id) {
         $this->createFamilyPlanning($mother_id, $previous_session_id, $then);
       }
+
+      // And create a height and weight for each child.
+      foreach ($child_ids as $child_id) {
+        $this->createHeight($child_id, $previous_session_id, $then);
+        $this->createWeight($child_id, $previous_session_id, $then);
+      }
     }
 
     // Create some data for **other** clinics.
@@ -215,13 +273,17 @@ class HedleyRestfulTests extends HedleyWebTestBase {
       // Add a mother and some children for the other clinics, to test
       // that we **don't** get those.
       $other_mother_id = $this->createMother($this->randomName(), $other_clinic_id);
-      $this->createChild($this->randomName(), $other_mother_id);
+      $other_child_id = $this->createChild($this->randomName(), $other_mother_id);
 
       // Add a session for each clinic.
       $other_session_id = $this->createSession($other_clinic_id, $today);
 
       // Make a family-planning for the mother.
       $this->createFamilyPlanning($other_mother_id, $other_session_id, $today);
+
+      // Make a height and weight for the child.
+      $this->createHeight($other_child_id, $other_session_id, $today);
+      $this->createWeight($other_child_id, $other_session_id, $today);
     }
 
     $handler = restful_get_restful_handler('offline_sessions');
@@ -235,10 +297,16 @@ class HedleyRestfulTests extends HedleyWebTestBase {
     $this->assertEqual(count($data['participants']['mothers']), 75);
     $this->assertEqual(count($data['participants']['mother_activity']), 75);
     $this->assertEqual(count($data['participants']['children']), 150);
+    $this->assertEqual(count($data['participants']['child_activity']), 150);
     $this->assertEqual(count($data['all_sessions']), 100);
 
     foreach ($data['participants']['mother_activity'] as $mother_activity) {
       $this->assertEqual(count($mother_activity['family_planning']), 24);
+    }
+
+    foreach ($data['participants']['child_activity'] as $child_activity) {
+      $this->assertEqual(count($child_activity['height']), 24);
+      $this->assertEqual(count($child_activity['weight']), 24);
     }
   }
 
