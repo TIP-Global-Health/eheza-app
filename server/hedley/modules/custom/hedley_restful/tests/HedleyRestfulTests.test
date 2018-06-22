@@ -94,18 +94,18 @@ class HedleyRestfulTests extends HedleyWebTestBase {
    *   The child's node ID.
    */
   public function createChild($name, $mother_id) {
-    $child = $this->drupalCreateNode([
+    $node = $this->drupalCreateNode([
       'type' => 'child',
       'title' => $name,
     ]);
 
-    $child_wrapper = entity_metadata_wrapper('node', $child);
-    $child_wrapper->field_mother->set($mother_id);
-    $child_wrapper->field_date_birth->set(strtotime('2015-06-27'));
-    $child_wrapper->field_gender->set('male');
-    $child_wrapper->save();
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_mother->set($mother_id);
+    $wrapper->field_date_birth->set(strtotime('2015-06-27'));
+    $wrapper->field_gender->set('male');
+    $wrapper->save();
 
-    return $child->nid;
+    return $node->nid;
   }
 
   /**
@@ -120,18 +120,18 @@ class HedleyRestfulTests extends HedleyWebTestBase {
   public function createSession($clinic_id) {
     $today = date('Y-m-d');
 
-    $session = $this->drupalCreateNode(['type' => 'session']);
+    $node = $this->drupalCreateNode(['type' => 'session']);
 
-    $session_wrapper = entity_metadata_wrapper('node', $session);
-    $session_wrapper->field_clinic->set($clinic_id);
-    $session_wrapper->field_scheduled_date->set([
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_clinic->set($clinic_id);
+    $wrapper->field_scheduled_date->set([
       'value' => $today,
       'value2' => $today,
     ]);
-    $session_wrapper->field_closed->set(FALSE);
-    $session_wrapper->save();
+    $wrapper->field_closed->set(FALSE);
+    $wrapper->save();
 
-    return $session->nid;
+    return $node->nid;
   }
 
   /**
