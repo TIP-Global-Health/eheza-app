@@ -140,7 +140,6 @@ class HedleyRestfulTests extends HedleyWebTestBase {
   public function testDownloadOfflineSession() {
     // Create a clinic, a session, and a nurse.
     $clinic_id = $this->createClinic();
-    $this->createMother("A mother", $clinic_id);
     $nurse = $this->createNurse($clinic_id);
     $session_id = $this->createSession($clinic_id);
 
@@ -151,7 +150,11 @@ class HedleyRestfulTests extends HedleyWebTestBase {
       $this->createClinic();
 
       // For the code that gets mothers for the session's particular clinic.
-      $this->createMother($this->randomName(), $clinic_id);
+      $mother_id = $this->createMother($this->randomName(), $clinic_id);
+
+      // Give each mother two children.
+      $this->createChild($this->randomName(), $mother_id);
+      $this->createChild($this->randomName(), $mother_id);
     }
 
     $handler = restful_get_restful_handler('offline_sessions');
@@ -162,7 +165,8 @@ class HedleyRestfulTests extends HedleyWebTestBase {
 
     $this->assertEqual($data['id'], $session_id);
     $this->assertEqual(count($data['clinics']), 76);
-    $this->assertEqual(count($data['participants']['mothers']), 76);
+    $this->assertEqual(count($data['participants']['mothers']), 75);
+    $this->assertEqual(count($data['participants']['children']), 150);
   }
 
   /**
