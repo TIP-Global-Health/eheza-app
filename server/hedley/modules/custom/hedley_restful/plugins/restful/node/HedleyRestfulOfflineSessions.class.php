@@ -206,15 +206,20 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
 
     // Then, get all the children of all the mothers. It's more
     // efficient to do this in one query than many.
-    $child_ids = hedley_restful_extract_ids(
-      (new EntityFieldQuery())
-        ->entityCondition('entity_type', 'node')
-        ->entityCondition('bundle', 'child')
-        ->fieldCondition('field_mother', 'target_id', $mother_ids, "IN")
-        ->propertyCondition('status', NODE_PUBLISHED)
-        ->range(0, 2000)
-        ->execute()
-    );
+    if ($mother_ids) {
+      $child_ids = hedley_restful_extract_ids(
+        (new EntityFieldQuery())
+          ->entityCondition('entity_type', 'node')
+          ->entityCondition('bundle', 'child')
+          ->fieldCondition('field_mother', 'target_id', $mother_ids, "IN")
+          ->propertyCondition('status', NODE_PUBLISHED)
+          ->range(0, 2000)
+          ->execute()
+      );
+    }
+    else {
+      $child_ids = [];
+    }
 
     // Now, let's get all the child measurements.
     $child_bundles = [
@@ -227,31 +232,41 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
 
     // We order the measurements by date_measured descending, since it is
     // convenient for the client to have the most recent measurements first.
-    $child_activity_ids = hedley_restful_extract_ids(
-      (new EntityFieldQuery())
-        ->entityCondition('entity_type', 'node')
-        ->entityCondition('bundle', array_keys($child_bundles))
-        ->fieldCondition('field_child', 'target_id', $child_ids, "IN")
-        ->fieldOrderBy('field_date_measured', 'value', 'DESC')
-        ->propertyCondition('status', NODE_PUBLISHED)
-        ->range(0, 10000)
-        ->execute()
-    );
+    if ($child_ids) {
+      $child_activity_ids = hedley_restful_extract_ids(
+        (new EntityFieldQuery())
+          ->entityCondition('entity_type', 'node')
+          ->entityCondition('bundle', array_keys($child_bundles))
+          ->fieldCondition('field_child', 'target_id', $child_ids, "IN")
+          ->fieldOrderBy('field_date_measured', 'value', 'DESC')
+          ->propertyCondition('status', NODE_PUBLISHED)
+          ->range(0, 10000)
+          ->execute()
+      );
+    }
+    else {
+      $child_activity_ids = [];
+    }
 
     $mother_bundles = [
       "family_planning" => "family-plannings",
     ];
 
-    $mother_activity_ids = hedley_restful_extract_ids(
-      (new EntityFieldQuery())
-        ->entityCondition('entity_type', 'node')
-        ->entityCondition('bundle', array_keys($mother_bundles))
-        ->fieldCondition('field_mother', 'target_id', $mother_ids, "IN")
-        ->fieldOrderBy('field_date_measured', 'value', 'DESC')
-        ->propertyCondition('status', NODE_PUBLISHED)
-        ->range(0, 10000)
-        ->execute()
-    );
+    if ($mother_ids) {
+      $mother_activity_ids = hedley_restful_extract_ids(
+        (new EntityFieldQuery())
+          ->entityCondition('entity_type', 'node')
+          ->entityCondition('bundle', array_keys($mother_bundles))
+          ->fieldCondition('field_mother', 'target_id', $mother_ids, "IN")
+          ->fieldOrderBy('field_date_measured', 'value', 'DESC')
+          ->propertyCondition('status', NODE_PUBLISHED)
+          ->range(0, 10000)
+          ->execute()
+      );
+    }
+    else {
+      $mother_activity_ids = [];
+    }
 
     // Now, provide the usual output, since that's easiest. We'll
     // stitch together the structures we want on the client.

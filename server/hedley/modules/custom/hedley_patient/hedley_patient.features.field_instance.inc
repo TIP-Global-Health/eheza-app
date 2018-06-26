@@ -108,7 +108,7 @@ function hedley_patient_field_default_field_instances() {
         'label_position' => 'above',
         'no_fieldset' => 0,
         'text_parts' => array(),
-        'year_range' => '-5:+0',
+        'year_range' => '2012:+0',
       ),
       'type' => 'date_select',
       'weight' => 8,

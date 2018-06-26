@@ -239,6 +239,7 @@ type TranslationId
     | StartDate
     | EndDate
     | Success
+    | ThisClinicHasNoMothers
     | TitleHealthAssessment
     | Training
     | UnableToDownload
@@ -830,6 +831,9 @@ translationSet trans =
 
         Success ->
             { english = "Success" }
+
+        ThisClinicHasNoMothers ->
+            { english = "This clinic has no mothers assigned to it." }
 
         TitleHealthAssessment ->
             { english = "2017 July Health Assessment" }
