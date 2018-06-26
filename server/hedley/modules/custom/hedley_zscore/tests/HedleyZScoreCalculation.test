@@ -22,146 +22,182 @@ class HedleyZScoreCalculation extends DrupalWebTestCase {
   }
 
   /**
+   * A representation of the test cases.
+   *
+   * The idea is that we can copy & paste this into the Elm frontend tests as
+   * well, with very simple changes.  (What here is an array is a tuple5 in
+   * Elm).
+   */
+  public function zScoreCalculationData() {
+    return [
+      ['lfa', 0, 'male', 40.1, -3],
+      ['lfa', 0, 'male', 40.1, -3],
+      ['lfa', 0, 'male', 44.1, -3],
+      ['lfa', 0, 'male', 46.0, -2],
+      ['lfa', 0, 'male', 47.9, -1],
+      ['lfa', 0, 'male', 49.5, 0],
+      ['lfa', 0, 'male', 51.6, 1],
+      ['lfa', 0, 'male', 53.6, 2],
+      ['lfa', 0, 'male', 54.0, 3],
+      ['lfa', 0, 'male', 56.0, 3],
+
+      ['lfa', 440, 'male', 44, -3],
+      ['lfa', 440, 'male', 69, -3],
+      ['lfa', 440, 'male', 72, -2],
+      ['lfa', 440, 'male', 74, -1],
+      ['lfa', 440, 'male', 77, 0],
+      ['lfa', 440, 'male', 80, 1],
+      ['lfa', 440, 'male', 82, 2],
+      ['lfa', 440, 'male', 84, 3],
+      ['lfa', 440, 'male', 87, 3],
+
+      ['lfa', 30000, 'male', 234, NULL],
+
+      ['lfa', 0, 'female', 40, -3],
+      ['lfa', 0, 'female', 42, -3],
+      ['lfa', 0, 'female', 44, -2],
+      ['lfa', 0, 'female', 46, -1],
+      ['lfa', 0, 'female', 48, 0],
+      ['lfa', 0, 'female', 50, 1],
+      ['lfa', 0, 'female', 52, 2],
+      ['lfa', 0, 'female', 54, 3],
+      ['lfa', 0, 'female', 56, 3],
+
+      ['lfa', 440, 'female', 65, -3],
+      ['lfa', 440, 'female', 67, -3],
+      ['lfa', 440, 'female', 69, -2],
+      ['lfa', 440, 'female', 72, -1],
+      ['lfa', 440, 'female', 75, 0],
+      ['lfa', 440, 'female', 78, 1],
+      ['lfa', 440, 'female', 80, 2],
+      ['lfa', 440, 'female', 83, 3],
+      ['lfa', 440, 'female', 86, 3],
+
+      ['lfa', 30000, 'female', 234, NULL],
+
+      ['wfa', 0, 'male', 1.5, -3],
+      ['wfa', 0, 'male', 2.0, -3],
+      ['wfa', 0, 'male', 2.4, -2],
+      ['wfa', 0, 'male', 2.8, -1],
+      ['wfa', 0, 'male', 3.3, 0],
+      ['wfa', 0, 'male', 3.8, 1],
+      ['wfa', 0, 'male', 4.4, 2],
+      ['wfa', 0, 'male', 5.0, 3],
+      ['wfa', 0, 'male', 5.6, 3],
+
+      ['wfa', 440, 'male', 6, -3],
+      ['wfa', 440, 'male', 7, -3],
+      ['wfa', 440, 'male', 8, -2],
+      ['wfa', 440, 'male', 9, -1],
+      ['wfa', 440, 'male', 10, 0],
+      ['wfa', 440, 'male', 11, 1],
+      ['wfa', 440, 'male', 12, 2],
+      ['wfa', 440, 'male', 14, 3],
+      ['wfa', 440, 'male', 15, 3],
+
+      ['wfa', 30000, 'male', 234, NULL],
+
+      ['wfa', 0, 'female', 1.6, -3],
+      ['wfa', 0, 'female', 2.0, -3],
+      ['wfa', 0, 'female', 2.3, -2],
+      ['wfa', 0, 'female', 2.7, -1],
+      ['wfa', 0, 'female', 3.2, 0],
+      ['wfa', 0, 'female', 3.7, 1],
+      ['wfa', 0, 'female', 4.2, 2],
+      ['wfa', 0, 'female', 4.7, 3],
+      ['wfa', 0, 'female', 5.3, 3],
+
+      ['wfa', 440, 'female', 5, -3],
+      ['wfa', 440, 'female', 6, -3],
+      ['wfa', 440, 'female', 7, -2],
+      ['wfa', 440, 'female', 8, -1],
+      ['wfa', 440, 'female', 9, 0],
+      ['wfa', 440, 'female', 10, 1],
+      ['wfa', 440, 'female', 12, 2],
+      ['wfa', 440, 'female', 13, 3],
+      ['wfa', 440, 'female', 14, 3],
+
+      ['wfa', 30000, 'female', 234, NULL],
+
+      ['wfl', 45, 'male', 1.7, -3],
+      ['wfl', 45, 'male', 1.8, -3],
+      ['wfl', 45, 'male', 2.0, -2],
+      ['wfl', 45, 'male', 2.2, -1],
+      ['wfl', 45, 'male', 2.4, 0],
+      ['wfl', 45, 'male', 2.6, 1],
+      ['wfl', 45, 'male', 2.9, 2],
+      ['wfl', 45, 'male', 3.2, 3],
+      ['wfl', 45, 'male', 3.5, 3],
+
+      ['wfl', 98.6, 'male', 10.77, -3],
+      ['wfl', 98.6, 'male', 11.69, -3],
+      ['wfl', 98.6, 'male', 12.62, -2],
+      ['wfl', 98.6, 'male', 13.64, -1],
+      ['wfl', 98.6, 'male', 14.78, 0],
+      ['wfl', 98.6, 'male', 16.06, 1],
+      ['wfl', 98.6, 'male', 17.48, 2],
+      ['wfl', 98.6, 'male', 19.09, 3],
+      ['wfl', 98.6, 'male', 20.60, 3],
+
+      ['wfl', 30000, 'male', 234, NULL],
+
+      ['wfl', 45, 'female', 1.7, -3],
+      ['wfl', 45, 'female', 1.9, -3],
+      ['wfl', 45, 'female', 2.0, -2],
+      ['wfl', 45, 'female', 2.2, -1],
+      ['wfl', 45, 'female', 2.4, 0],
+      ['wfl', 45, 'female', 2.6, 1],
+      ['wfl', 45, 'female', 2.9, 2],
+      ['wfl', 45, 'female', 3.2, 3],
+      ['wfl', 45, 'female', 3.5, 3],
+
+      ['wfl', 98.6, 'female', 10.33, -3],
+      ['wfl', 98.6, 'female', 11.31, -3],
+      ['wfl', 98.6, 'female', 12.29, -2],
+      ['wfl', 98.6, 'female', 13.40, -1],
+      ['wfl', 98.6, 'female', 14.64, 0],
+      ['wfl', 98.6, 'female', 16.04, 1],
+      ['wfl', 98.6, 'female', 17.66, 2],
+      ['wfl', 98.6, 'female', 19.49, 3],
+      ['wfl', 98.6, 'female', 21.33, 3],
+
+      ['wfl', 30000, 'female', 234, NULL],
+    ];
+  }
+
+  /**
    * Entry point for the test.
    */
   public function testZscoreCalculations() {
-    // Length-for-age male.
-    $this->assertEqual(hedley_zscore_length_for_age(0, 'male', 40.1), -3, 'lfa 0 male 40.1 => -3');
-    $this->assertEqual(hedley_zscore_length_for_age(0, 'male', 44.1), -3, 'lfa 0 male 44.1 => -3');
-    $this->assertEqual(hedley_zscore_length_for_age(0, 'male', 46), -2, 'lfa 0 male 46 => -2');
-    $this->assertEqual(hedley_zscore_length_for_age(0, 'male', 47.9), -1, 'lfa 0 male 47.9 => -1');
-    $this->assertEqual(hedley_zscore_length_for_age(0, 'male', 49.5), 0, 'lfa 0 male 49.5 => 0');
-    $this->assertEqual(hedley_zscore_length_for_age(0, 'male', 51.6), 1, 'lfa 0 male 51.6 => 1');
-    $this->assertEqual(hedley_zscore_length_for_age(0, 'male', 53.6), 2, 'lfa 0 male 53.6 => 2');
-    $this->assertequal(hedley_zscore_length_for_age(0, 'male', 54), 3, 'lfa 0 male 54 => 3');
-    $this->assertequal(hedley_zscore_length_for_age(0, 'male', 56), 3, 'lfa 0 male 56 => 3');
+    foreach ($this->zScoreCalculationData() as $case) {
+      $func = $case[0];
+      $scale = $case[1];
+      $gender = $case[2];
+      $measurement = $case[3];
+      $expected = $case[4];
 
-    $this->assertEqual(hedley_zscore_length_for_age(440, 'male', 44), -3, 'lfa 440 male 44 => -3');
-    $this->assertEqual(hedley_zscore_length_for_age(440, 'male', 69), -3, 'lfa 440 male 69 => -3');
-    $this->assertEqual(hedley_zscore_length_for_age(440, 'male', 72), -2, 'lfa 440 male 72 => -2');
-    $this->assertEqual(hedley_zscore_length_for_age(440, 'male', 74), -1, 'lfa 440 male 74 => -1');
-    $this->assertEqual(hedley_zscore_length_for_age(440, 'male', 77), 0, 'lfa 440 male 77 => 0');
-    $this->assertEqual(hedley_zscore_length_for_age(440, 'male', 80), 1, 'lfa 440 male 80 => 1');
-    $this->assertEqual(hedley_zscore_length_for_age(440, 'male', 82), 2, 'lfa 440 male 82 => 2');
-    $this->assertequal(hedley_zscore_length_for_age(440, 'male', 84), 3, 'lfa 440 male 84 => 3');
-    $this->assertequal(hedley_zscore_length_for_age(440, 'male', 87), 3, 'lfa 440 male 87 => 3');
+      $explanation = implode(", ", $case);
 
-    $this->assertNull(hedley_zscore_length_for_age(30000, 'male', 234), "lfa 30000 male 234 => NULL");
+      switch ($func) {
+        case 'lfa':
+          $result = hedley_zscore_length_for_age($scale, $gender, $measurement);
+          $this->assertEqual($result, $expected, $explanation);
+          break;
 
-    // Length-for-age female.
-    $this->assertEqual(hedley_zscore_length_for_age(0, 'female', 40), -3, 'lfa 0 female 40 => -3');
-    $this->assertEqual(hedley_zscore_length_for_age(0, 'female', 42), -3, 'lfa 0 female 42 => -3');
-    $this->assertEqual(hedley_zscore_length_for_age(0, 'female', 44), -2, 'lfa 0 female 44 => -2');
-    $this->assertEqual(hedley_zscore_length_for_age(0, 'female', 46), -1, 'lfa 0 female 46 => -1');
-    $this->assertEqual(hedley_zscore_length_for_age(0, 'female', 48), 0, 'lfa 0 female 48 => 0');
-    $this->assertEqual(hedley_zscore_length_for_age(0, 'female', 50), 1, 'lfa 0 female 50 => 1');
-    $this->assertEqual(hedley_zscore_length_for_age(0, 'female', 52), 2, 'lfa 0 female 52 => 2');
-    $this->assertequal(hedley_zscore_length_for_age(0, 'female', 54), 3, 'lfa 0 female 54 => 3');
-    $this->assertequal(hedley_zscore_length_for_age(0, 'female', 56), 3, 'lfa 0 female 56 => 3');
+        case 'wfa':
+          $result = hedley_zscore_weight_for_age($scale, $gender, $measurement);
+          $this->assertEqual($result, $expected, $explanation);
+          break;
 
-    $this->assertEqual(hedley_zscore_length_for_age(440, 'female', 65), -3, 'lfa 440 female 65 => -3');
-    $this->assertEqual(hedley_zscore_length_for_age(440, 'female', 67), -3, 'lfa 440 female 67 => -3');
-    $this->assertEqual(hedley_zscore_length_for_age(440, 'female', 69), -2, 'lfa 440 female 69 => -2');
-    $this->assertEqual(hedley_zscore_length_for_age(440, 'female', 72), -1, 'lfa 440 female 72 => -1');
-    $this->assertEqual(hedley_zscore_length_for_age(440, 'female', 75), 0, 'lfa 440 female 75 => 0');
-    $this->assertEqual(hedley_zscore_length_for_age(440, 'female', 78), 1, 'lfa 440 female 78 => 1');
-    $this->assertEqual(hedley_zscore_length_for_age(440, 'female', 80), 2, 'lfa 440 female 80 => 2');
-    $this->assertequal(hedley_zscore_length_for_age(440, 'female', 83), 3, 'lfa 440 female 83 => 3');
-    $this->assertequal(hedley_zscore_length_for_age(440, 'female', 86), 3, 'lfa 440 female 86 => 3');
+        case 'wfl':
+          $result = hedley_zscore_weight_for_length($scale, $gender, $measurement);
+          $this->assertEqual($result, $expected, $explanation);
+          break;
 
-    $this->assertNull(hedley_zscore_length_for_age(30000, 'female', 234), "lfa 30000 female 234 => NULL");
-
-    // Weight-for-age male.
-    $this->assertEqual(hedley_zscore_weight_for_age(0, 'male', 1.5), -3, 'wfa 0 male 1.5 => -3');
-    $this->assertEqual(hedley_zscore_weight_for_age(0, 'male', 2.0), -3, 'wfa 0 male 2.0 => -3');
-    $this->assertEqual(hedley_zscore_weight_for_age(0, 'male', 2.4), -2, 'wfa 0 male 2.4 => -2');
-    $this->assertEqual(hedley_zscore_weight_for_age(0, 'male', 2.8), -1, 'wfa 0 male 2.8 => -1');
-    $this->assertEqual(hedley_zscore_weight_for_age(0, 'male', 3.3), 0, 'wfa 0 male 3.3 => 0');
-    $this->assertEqual(hedley_zscore_weight_for_age(0, 'male', 3.8), 1, 'wfa 0 male 3.8 => 1');
-    $this->assertEqual(hedley_zscore_weight_for_age(0, 'male', 4.4), 2, 'wfa 0 male 4.4 => 2');
-    $this->assertequal(hedley_zscore_weight_for_age(0, 'male', 5.0), 3, 'wfa 0 male 5.0 => 3');
-    $this->assertequal(hedley_zscore_weight_for_age(0, 'male', 5.6), 3, 'wfa 0 male 5.6 => 3');
-
-    $this->assertEqual(hedley_zscore_weight_for_age(440, 'male', 6), -3, 'wfa 440 male 6 => -3');
-    $this->assertEqual(hedley_zscore_weight_for_age(440, 'male', 7), -3, 'wfa 440 male 7 => -3');
-    $this->assertEqual(hedley_zscore_weight_for_age(440, 'male', 8), -2, 'wfa 440 male 8 => -2');
-    $this->assertEqual(hedley_zscore_weight_for_age(440, 'male', 9), -1, 'wfa 440 male 9 => -1');
-    $this->assertEqual(hedley_zscore_weight_for_age(440, 'male', 10), 0, 'wfa 440 male 10 => 0');
-    $this->assertEqual(hedley_zscore_weight_for_age(440, 'male', 11), 1, 'wfa 440 male 11 => 1');
-    $this->assertEqual(hedley_zscore_weight_for_age(440, 'male', 12), 2, 'wfa 440 male 12 => 2');
-    $this->assertequal(hedley_zscore_weight_for_age(440, 'male', 14), 3, 'wfa 440 male 14 => 3');
-    $this->assertequal(hedley_zscore_weight_for_age(440, 'male', 15), 3, 'wfa 440 male 15 => 3');
-
-    $this->assertNull(hedley_zscore_weight_for_age(30000, 'male', 234), "wfa 30000 male 234 => NULL");
-
-    // Weight-for-age female.
-    $this->assertEqual(hedley_zscore_weight_for_age(0, 'female', 1.6), -3, 'wfa 0 female 1.6 => -3');
-    $this->assertEqual(hedley_zscore_weight_for_age(0, 'female', 2.0), -3, 'wfa 0 female 2.0 => -3');
-    $this->assertEqual(hedley_zscore_weight_for_age(0, 'female', 2.3), -2, 'wfa 0 female 2.3 => -2');
-    $this->assertEqual(hedley_zscore_weight_for_age(0, 'female', 2.7), -1, 'wfa 0 female 2.7 => -1');
-    $this->assertEqual(hedley_zscore_weight_for_age(0, 'female', 3.2), 0, 'wfa 0 female 3.2 => 0');
-    $this->assertEqual(hedley_zscore_weight_for_age(0, 'female', 3.7), 1, 'wfa 0 female 3.7 => 1');
-    $this->assertEqual(hedley_zscore_weight_for_age(0, 'female', 4.2), 2, 'wfa 0 female 4.2 => 2');
-    $this->assertequal(hedley_zscore_weight_for_age(0, 'female', 4.7), 3, 'wfa 0 female 4.7 => 3');
-    $this->assertequal(hedley_zscore_weight_for_age(0, 'female', 5.3), 3, 'wfa 0 female 5.3 => 3');
-
-    $this->assertEqual(hedley_zscore_weight_for_age(440, 'female', 5), -3, 'wfa 440 female 5 => -3');
-    $this->assertEqual(hedley_zscore_weight_for_age(440, 'female', 6), -3, 'wfa 440 female 6 => -3');
-    $this->assertEqual(hedley_zscore_weight_for_age(440, 'female', 7), -2, 'wfa 440 female 7 => -2');
-    $this->assertEqual(hedley_zscore_weight_for_age(440, 'female', 8), -1, 'wfa 440 female 8 => -1');
-    $this->assertEqual(hedley_zscore_weight_for_age(440, 'female', 9), 0, 'wfa 440 female 9 => 0');
-    $this->assertEqual(hedley_zscore_weight_for_age(440, 'female', 10), 1, 'wfa 440 female 10 => 1');
-    $this->assertEqual(hedley_zscore_weight_for_age(440, 'female', 12), 2, 'wfa 440 female 12 => 2');
-    $this->assertequal(hedley_zscore_weight_for_age(440, 'female', 13), 3, 'wfa 440 female 13 => 3');
-    $this->assertequal(hedley_zscore_weight_for_age(440, 'female', 14), 3, 'wfa 440 female 14 => 3');
-
-    $this->assertNull(hedley_zscore_weight_for_age(30000, 'female', 234), "wfa 30000 female 234 => NULL");
-
-    // Weight-for-length male.
-    $this->assertEqual(hedley_zscore_weight_for_length(45, 'male', 1.7), -3, 'wfl 45 male 1.7 => -3');
-    $this->assertEqual(hedley_zscore_weight_for_length(45, 'male', 1.8), -3, 'wfl 45 male 1.8 => -3');
-    $this->assertEqual(hedley_zscore_weight_for_length(45, 'male', 2.0), -2, 'wfl 45 male 2.0 => -2');
-    $this->assertEqual(hedley_zscore_weight_for_length(45, 'male', 2.2), -1, 'wfl 45 male 2.2 => -1');
-    $this->assertEqual(hedley_zscore_weight_for_length(45, 'male', 2.4), 0, 'wfl 45 male 2.4 => 0');
-    $this->assertEqual(hedley_zscore_weight_for_length(45, 'male', 2.6), 1, 'wfl 45 male 2.6 => 1');
-    $this->assertEqual(hedley_zscore_weight_for_length(45, 'male', 2.9), 2, 'wfl 45 male 2.9 => 2');
-    $this->assertequal(hedley_zscore_weight_for_length(45, 'male', 3.2), 3, 'wfl 45 male 3.2 => 3');
-    $this->assertequal(hedley_zscore_weight_for_length(45, 'male', 3.5), 3, 'wfl 45 male 3.5 => 3');
-
-    $this->assertEqual(hedley_zscore_weight_for_length(98.6, 'male', 10.77), -3, 'wfl 98.6 male 10.77 => -3');
-    $this->assertEqual(hedley_zscore_weight_for_length(98.6, 'male', 11.69), -3, 'wfl 98.6 male 11.69 => -3');
-    $this->assertEqual(hedley_zscore_weight_for_length(98.6, 'male', 12.62), -2, 'wfl 98.6 male 12.62 => -2');
-    $this->assertEqual(hedley_zscore_weight_for_length(98.6, 'male', 13.64), -1, 'wfl 98.6 male 13.64 => -1');
-    $this->assertEqual(hedley_zscore_weight_for_length(98.6, 'male', 14.78), 0, 'wfl 98.6 male 14.78 => 0');
-    $this->assertEqual(hedley_zscore_weight_for_length(98.6, 'male', 16.06), 1, 'wfl 98.6 male 16.06 => 1');
-    $this->assertEqual(hedley_zscore_weight_for_length(98.6, 'male', 17.48), 2, 'wfl 98.6 male 17.48 => 2');
-    $this->assertequal(hedley_zscore_weight_for_length(98.6, 'male', 19.09), 3, 'wfl 98.6 male 19.09 => 3');
-    $this->assertequal(hedley_zscore_weight_for_length(98.6, 'male', 20.60), 3, 'wfl 98.6 male 20.60 => 3');
-
-    $this->assertNull(hedley_zscore_weight_for_length(30000, 'male', 234), "wfl 30000 male 234 => NULL");
-
-    // Weight-for-length female.
-    $this->assertEqual(hedley_zscore_weight_for_length(45, 'female', 1.7), -3, 'wfl 0 female 1.7 => -3');
-    $this->assertEqual(hedley_zscore_weight_for_length(45, 'female', 1.9), -3, 'wfl 0 female 1.9 => -3');
-    $this->assertEqual(hedley_zscore_weight_for_length(45, 'female', 2.0), -2, 'wfl 0 female 2.0 => -2');
-    $this->assertEqual(hedley_zscore_weight_for_length(45, 'female', 2.2), -1, 'wfl 0 female 2.2 => -1');
-    $this->assertEqual(hedley_zscore_weight_for_length(45, 'female', 2.4), 0, 'wfl 0 female 2.4 => 0');
-    $this->assertEqual(hedley_zscore_weight_for_length(45, 'female', 2.6), 1, 'wfl 0 female 2.6 => 1');
-    $this->assertEqual(hedley_zscore_weight_for_length(45, 'female', 2.9), 2, 'wfl 0 female 2.9 => 2');
-    $this->assertequal(hedley_zscore_weight_for_length(45, 'female', 3.2), 3, 'wfl 0 female 3.2 => 3');
-    $this->assertequal(hedley_zscore_weight_for_length(45, 'female', 3.5), 3, 'wfl 0 female 3.5 => 3');
-
-    $this->assertEqual(hedley_zscore_weight_for_length(98.6, 'female', 10.33), -3, 'wfl 98.6 female 10.33 => -3');
-    $this->assertEqual(hedley_zscore_weight_for_length(98.6, 'female', 11.31), -3, 'wfl 98.6 female 11.31 => -3');
-    $this->assertEqual(hedley_zscore_weight_for_length(98.6, 'female', 12.29), -2, 'wfl 98.6 female 12.29 => -2');
-    $this->assertEqual(hedley_zscore_weight_for_length(98.6, 'female', 13.40), -1, 'wfl 98.6 female 13.40 => -1');
-    $this->assertEqual(hedley_zscore_weight_for_length(98.6, 'female', 14.64), 0, 'wfl 98.6 female 14.64 => 0');
-    $this->assertEqual(hedley_zscore_weight_for_length(98.6, 'female', 16.04), 1, 'wfl 98.6 female 16.04 => 1');
-    $this->assertEqual(hedley_zscore_weight_for_length(98.6, 'female', 17.66), 2, 'wfl 98.6 female 17.66 => 2');
-    $this->assertequal(hedley_zscore_weight_for_length(98.6, 'female', 19.49), 3, 'wfl 98.6 female 19.49 => 3');
-    $this->assertequal(hedley_zscore_weight_for_length(98.6, 'female', 21.33), 3, 'wfl 98.6 female 21.33 => 3');
-
-    $this->assertNull(hedley_zscore_weight_for_length(30000, 'female', 234), "wfl 30000 female 234 => NULL");
+        default:
+          $this->fail("Unrecognized calculation: $func");
+      }
+    }
   }
 
 }
