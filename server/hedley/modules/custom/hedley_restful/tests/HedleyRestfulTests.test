@@ -67,8 +67,8 @@ class HedleyRestfulTests extends HedleyWebTestBase {
 
       // And create a height and weight for each child.
       foreach ($child_ids as $child_id) {
-        $this->createHeight($child_id, $previous_session_id, $then);
-        $this->createWeight($child_id, $previous_session_id, $then);
+        $this->createHeight($child_id, $previous_session_id, $then, 124);
+        $this->createWeight($child_id, $previous_session_id, $then, 12);
       }
     }
 
@@ -89,8 +89,8 @@ class HedleyRestfulTests extends HedleyWebTestBase {
       $this->createFamilyPlanning($other_mother_id, $other_session_id, $today);
 
       // Make a height and weight for the child.
-      $this->createHeight($other_child_id, $other_session_id, $today);
-      $this->createWeight($other_child_id, $other_session_id, $today);
+      $this->createHeight($other_child_id, $other_session_id, $today, 124);
+      $this->createWeight($other_child_id, $other_session_id, $today, 12);
     }
 
     $handler = restful_get_restful_handler('offline_sessions');

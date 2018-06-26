@@ -220,18 +220,20 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *   The node ID of the session.
    * @param int $ts
    *   The date the measurement was taken, as a unix timestamp.
+   * @param float $height
+   *   The height value.
    *
    * @return int
    *   The node ID of the height.
    */
-  public function createHeight($child_id, $session_id, $ts) {
+  public function createHeight($child_id, $session_id, $ts, $height) {
     $node = $this->drupalCreateNode(['type' => 'height']);
 
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_child->set($child_id);
     $wrapper->field_date_measured->set($ts);
     $wrapper->field_session->set($session_id);
-    $wrapper->field_height->set(124);
+    $wrapper->field_height->set($height);
     $wrapper->save();
 
     return $node->nid;
@@ -246,18 +248,20 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *   The node ID of the session.
    * @param int $ts
    *   The date the measurement was taken, as a unix timestamp.
+   * @param float $weight
+   *   The weight value.
    *
    * @return int
    *   The node ID of the weight.
    */
-  public function createWeight($child_id, $session_id, $ts) {
+  public function createWeight($child_id, $session_id, $ts, $weight) {
     $node = $this->drupalCreateNode(['type' => 'weight']);
 
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_child->set($child_id);
     $wrapper->field_date_measured->set($ts);
     $wrapper->field_session->set($session_id);
-    $wrapper->field_weight->set(12);
+    $wrapper->field_weight->set($weight);
     $wrapper->save();
 
     return $node->nid;
