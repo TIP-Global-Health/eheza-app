@@ -70,4 +70,197 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     });
   }
 
+  /**
+   * Create a nurse user, assigned to the indicated clinic.
+   *
+   * @param int $clinic_id
+   *   The node ID of the clinic the nurse is assigned to.
+   *
+   * @return \StdClass
+   *   The user.
+   */
+  public function createNurse($clinic_id) {
+    $account = $this->drupalCreateUser();
+
+    $role = user_role_load_by_name('nurse');
+    user_multiple_role_edit([$account->uid], "add role", $role->rid);
+
+    $wrapper = entity_metadata_wrapper('user', $account);
+    $wrapper->field_clinics->set([$clinic_id]);
+    $wrapper->save();
+
+    return $account;
+  }
+
+  /**
+   * Create a clinic with a random name.
+   *
+   * @return int
+   *   The node ID.
+   */
+  public function createClinic() {
+    return $this->drupalCreateNode([
+      'type' => 'clinic',
+    ]);
+  }
+
+  /**
+   * Create a mother.
+   *
+   * @param string $name
+   *   The mother's name.
+   * @param string $clinic_id
+   *   The clinic to assign the mother to.
+   *
+   * @return int
+   *   The node ID of the mother.
+   */
+  public function createMother($name, $clinic_id) {
+    $node = $this->drupalCreateNode([
+      'type' => 'mother',
+      'title' => $name,
+    ]);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_date_birth->set(strtotime('1998-07-01'));
+    $wrapper->field_clinic->set($clinic_id);
+    $wrapper->field_ubudehe->set(1);
+    $wrapper->field_education_level->set(2);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a child.
+   *
+   * @param string $name
+   *   The child's name.
+   * @param int $mother_id
+   *   The mother's node ID.
+   *
+   * @return int
+   *   The child's node ID.
+   */
+  public function createChild($name, $mother_id) {
+    $node = $this->drupalCreateNode([
+      'type' => 'child',
+      'title' => $name,
+    ]);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_mother->set($mother_id);
+    $wrapper->field_date_birth->set(strtotime('2015-06-27'));
+    $wrapper->field_gender->set('male');
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a session for the clinic, starting today.
+   *
+   * @param int $clinic_id
+   *   The node ID of the clinic.
+   * @param int $ts
+   *   The date of the session, as a unix timestamp.
+   *
+   * @return int
+   *   The node ID of the session.
+   */
+  public function createSession($clinic_id, $ts) {
+    $date = date('Y-m-d', $ts);
+
+    $node = $this->drupalCreateNode(['type' => 'session']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_clinic->set($clinic_id);
+    $wrapper->field_scheduled_date->set([
+      'value' => $date,
+      'value2' => $date,
+    ]);
+    $wrapper->field_closed->set(FALSE);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a family-planning entity.
+   *
+   * @param int $mother_id
+   *   The node ID of the mother.
+   * @param int $session_id
+   *   The node ID of the session.
+   * @param int $ts
+   *   The date the measurement was taken, as a unix timestamp.
+   *
+   * @return int
+   *   The node ID of the family-planning.
+   */
+  public function createFamilyPlanning($mother_id, $session_id, $ts) {
+    $node = $this->drupalCreateNode(['type' => 'family_planning']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_mother->set($mother_id);
+    $wrapper->field_date_measured->set($ts);
+    $wrapper->field_session->set($session_id);
+    $wrapper->field_family_planning_signs->set(["pill"]);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a height entity.
+   *
+   * @param int $child_id
+   *   The node ID of the child.
+   * @param int $session_id
+   *   The node ID of the session.
+   * @param int $ts
+   *   The date the measurement was taken, as a unix timestamp.
+   *
+   * @return int
+   *   The node ID of the height.
+   */
+  public function createHeight($child_id, $session_id, $ts) {
+    $node = $this->drupalCreateNode(['type' => 'height']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_child->set($child_id);
+    $wrapper->field_date_measured->set($ts);
+    $wrapper->field_session->set($session_id);
+    $wrapper->field_height->set(124);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a weight entity.
+   *
+   * @param int $child_id
+   *   The node ID of the child.
+   * @param int $session_id
+   *   The node ID of the session.
+   * @param int $ts
+   *   The date the measurement was taken, as a unix timestamp.
+   *
+   * @return int
+   *   The node ID of the weight.
+   */
+  public function createWeight($child_id, $session_id, $ts) {
+    $node = $this->drupalCreateNode(['type' => 'weight']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_child->set($child_id);
+    $wrapper->field_date_measured->set($ts);
+    $wrapper->field_session->set($session_id);
+    $wrapper->field_weight->set(12);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
 }
