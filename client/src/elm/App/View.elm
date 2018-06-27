@@ -47,14 +47,14 @@ viewLanguageSwitcher : Model -> Html Msg
 viewLanguageSwitcher model =
     let
         switcherClasses =
-            if model.languageSwitcherState then
+            if model.languageSwitcherDropDown then
                 "ui floating dropdown labeled search icon button active visible"
             else
                 "ui floating dropdown labeled search icon button"
     in
     div
         [ class "ui centered language-switcher"
-        , onClick <| ToggleLanguageSwitcherState
+        , onClick <| ToggleLanguageSwitcherDropDown
         ]
         [ div
             [ class switcherClasses ]

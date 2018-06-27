@@ -287,8 +287,8 @@ update msg model =
                 , Cmd.none
                 )
 
-        ToggleLanguageSwitcherState ->
-            ( { model | languageSwitcherState = not model.languageSwitcherState }
+        ToggleLanguageSwitcherDropDown ->
+            ( { model | languageSwitcherDropDown = not model.languageSwitcherDropDown }
             , Cmd.none
             )
 
