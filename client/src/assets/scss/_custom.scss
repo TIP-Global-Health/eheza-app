@@ -23,6 +23,22 @@ a {
 
 .language-switcher {
   margin: 10px 0;
+
+  .ui.dropdown {
+    cursor: pointer;
+
+    .item {
+      cursor: pointer;
+    }
+
+    &.visible {
+
+      .menu {
+        display: block;
+        z-index: 1000;
+      }
+    }
+  }
 }
 
 // Page Wraps

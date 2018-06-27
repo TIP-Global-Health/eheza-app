@@ -46,6 +46,7 @@ type alias Model =
     , configuration : RemoteData String ConfiguredModel
     , currentDate : NominalDate
     , language : Language
+    , languageSwitcherState : Bool
     , serviceWorker : ServiceWorker.Model.Model
     , offline : Bool
     , zscores : ZScore.Model.Model
@@ -140,6 +141,7 @@ type Msg
     | MsgZScore ZScore.Model.Msg
     | SetActivePage Page
     | SetLanguage Language
+    | ToggleLanguageSwitcherState
     | SetOffline Bool
     | Tick Time
 
@@ -170,6 +172,7 @@ emptyModel =
     -- with the real date.
     , currentDate = fromLocalDateTime (Date.fromTime 0)
     , language = Kinyarwanda
+    , languageSwitcherState = False
     , offline = False
     , sessionPages = Pages.Model.emptySessionPages
     , serviceWorker = ServiceWorker.Model.emptyModel

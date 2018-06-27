@@ -13,7 +13,7 @@ import Pages.PageNotFound.View
 import Pages.View exposing (viewFoundSession)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Login
-import Translate exposing (Language, translate)
+import Translate exposing (Language(..), translate)
 import User.Model exposing (User)
 import Utils.Html exposing (spinner, wrapPage)
 import Utils.WebData exposing (viewError)
@@ -42,9 +42,19 @@ view model =
 
 viewLanguageSwitcher : Model -> Html Msg
 viewLanguageSwitcher model =
-    div [ class "ui centered language-switcher" ]
+    let
+        switcherClasses =
+            if model.languageSwitcherState then
+                "ui floating dropdown labeled search icon button active visible"
+            else
+                "ui floating dropdown labeled search icon button"
+    in
+    div
+        [ class "ui centered language-switcher"
+        , onClick <| ToggleLanguageSwitcherState
+        ]
         [ div
-            [ class "ui floating dropdown labeled search icon button" ]
+            [ class switcherClasses ]
             [ i
                 [ class "world icon" ]
                 []
@@ -54,7 +64,9 @@ viewLanguageSwitcher model =
             , div
                 [ class "menu" ]
                 [ div
-                    [ class "item" ]
+                    [ class "item"
+                    , onClick <| SetLanguage English
+                    ]
                     [ i
                         [ class "gb flag" ]
                         []
@@ -63,7 +75,9 @@ viewLanguageSwitcher model =
                 , div
                     [ class "item" ]
                     [ i
-                        [ class "rw flag" ]
+                        [ class "rw flag"
+                        , onClick <| SetLanguage Kinyarwanda
+                        ]
                         []
                     , text "Kinyarwanda"
                     ]
