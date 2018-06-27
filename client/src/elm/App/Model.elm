@@ -171,7 +171,7 @@ emptyModel =
     -- trouble than it's worth ... this will almost immediately get updated
     -- with the real date.
     , currentDate = fromLocalDateTime (Date.fromTime 0)
-    , language = Kinyarwanda
+    , language = English
     , languageSwitcherState = False
     , offline = False
     , sessionPages = Pages.Model.emptySessionPages

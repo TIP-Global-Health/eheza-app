@@ -73,11 +73,11 @@ viewLanguageSwitcher model =
                     , text "English"
                     ]
                 , div
-                    [ class "item" ]
+                    [ class "item"
+                    , onClick <| SetLanguage Kinyarwanda
+                    ]
                     [ i
-                        [ class "rw flag"
-                        , onClick <| SetLanguage Kinyarwanda
-                        ]
+                        [ class "rw flag" ]
                         []
                     , text "Kinyarwanda"
                     ]
