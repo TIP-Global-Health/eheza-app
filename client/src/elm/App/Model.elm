@@ -1,4 +1,4 @@
-module App.Model exposing (emptyModel, emptyLoggedInModel, Flags, Msg(..), LoggedInModel, MsgLoggedIn(..), Model, ConfiguredModel)
+module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..), MsgLoggedIn(..), emptyLoggedInModel, emptyModel)
 
 import Backend.Model
 import Config.Model
@@ -169,7 +169,7 @@ emptyModel =
     -- trouble than it's worth ... this will almost immediately get updated
     -- with the real date.
     , currentDate = fromLocalDateTime (Date.fromTime 0)
-    , language = English
+    , language = Kinyarwanda
     , offline = False
     , sessionPages = Pages.Model.emptySessionPages
     , serviceWorker = ServiceWorker.Model.emptyModel

@@ -1447,6 +1447,9 @@ languageFromString str =
         "English" ->
             Ok English
 
+        "Kinyarwanda" ->
+            Ok Kinyarwanda
+
         _ ->
             Err "Not a language"
 
@@ -1456,6 +1459,9 @@ languageFromCode str =
     case str of
         "en" ->
             Ok English
+
+        "rw" ->
+            Ok Kinyarwanda
 
         _ ->
             Err "Not a language"

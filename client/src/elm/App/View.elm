@@ -8,12 +8,12 @@ import Html.Events exposing (onClick)
 import Pages.Clinics.View
 import Pages.Login.View
 import Pages.MyAccount.View
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
-import Pages.Page exposing (Page(..), UserPage(..), SessionPage(..))
 import Pages.View exposing (viewFoundSession)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Login
-import Translate exposing (translate, Language)
+import Translate exposing (Language, translate)
 import User.Model exposing (User)
 import Utils.Html exposing (spinner, wrapPage)
 import Utils.WebData exposing (viewError)
@@ -26,14 +26,50 @@ view model =
             Config.View.view model.language
 
         Success configuration ->
-            -- We supply the model as well as the resolved configuration ...
-            -- it's easier that way.
-            viewConfiguredModel model configuration
+            div [ class "container" ]
+                [ viewLanguageSwitcher model
+
+                -- We supply the model as well as the resolved configuration ...
+                -- it's easier that way.
+                , viewConfiguredModel model configuration
+                ]
 
         _ ->
             -- Don't show anything if config resolution is in process but
             -- hasn't failed yet.
             viewLoading
+
+
+viewLanguageSwitcher : Model -> Html Msg
+viewLanguageSwitcher model =
+    div [ class "ui centered language-switcher" ]
+        [ div
+            [ class "ui floating dropdown labeled search icon button" ]
+            [ i
+                [ class "world icon" ]
+                []
+            , span
+                [ class "text" ]
+                [ text "Select Language" ]
+            , div
+                [ class "menu" ]
+                [ div
+                    [ class "item" ]
+                    [ i
+                        [ class "gb flag" ]
+                        []
+                    , text "English"
+                    ]
+                , div
+                    [ class "item" ]
+                    [ i
+                        [ class "rw flag" ]
+                        []
+                    , text "Kinyarwanda"
+                    ]
+                ]
+            ]
+        ]
 
 
 {-| We call this after checking our config. We ask for the model itself,
