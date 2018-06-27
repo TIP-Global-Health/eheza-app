@@ -40,6 +40,9 @@ view model =
             viewLoading
 
 
+{-| The language switcher view which sets a preferred language for each user and
+saves the current language via the Update function in local storage.
+-}
 viewLanguageSwitcher : Model -> Html Msg
 viewLanguageSwitcher model =
     let
