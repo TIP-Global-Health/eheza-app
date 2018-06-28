@@ -1,8 +1,8 @@
 module Config exposing (..)
 
-import LocalConfig exposing (localConfigs)
 import Config.Model as Config exposing (Model)
 import Dict exposing (..)
+import LocalConfig exposing (localConfigs)
 import Pusher.Model exposing (Cluster(..), PusherAppKey)
 
 

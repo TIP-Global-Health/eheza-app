@@ -1,13 +1,13 @@
 module Pages.Participant.View exposing (viewChild, viewMother)
 
 import Activity.Model exposing (ActivityListItem, ActivityType(..), ChildActivityType, MotherActivityType(..))
-import Activity.Utils exposing (getActivityList, getActivityIcon, getAllChildActivities, getAllMotherActivities, motherHasPendingActivity, childHasPendingActivity, motherHasCompletedActivity, childHasCompletedActivity)
+import Activity.Utils exposing (childHasCompletedActivity, childHasPendingActivity, getActivityIcon, getActivityList, getAllChildActivities, getAllMotherActivities, motherHasCompletedActivity, motherHasPendingActivity)
 import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (EditableSession)
-import Backend.Session.Utils exposing (getChild, getMother, getMyMother, getChildren, getChildMeasurementData, getMotherMeasurementData)
-import Gizra.Html exposing (emptyNode, keyed, divKeyed, keyedDivKeyed)
+import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getChildren, getMother, getMotherMeasurementData, getMyMother)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
@@ -150,40 +150,40 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
                             form =
                                 getChildForm childId session
                         in
-                            [ Measurement.View.viewChild language currentDate child activity measurements zscores form
-                                |> Html.map MsgMeasurement
-                                |> keyed "content"
-                            ]
+                        [ Measurement.View.viewChild language currentDate child activity measurements zscores form
+                            |> Html.map MsgMeasurement
+                            |> keyed "content"
+                        ]
 
                     Nothing ->
                         []
     in
-        divKeyed [ class "wrap" ] <|
-            List.concat
-                [ [ viewHeader language |> keyed "header"
-                  , div [ class "ui unstackable items participant-page child" ]
+    divKeyed [ class "wrap" ] <|
+        List.concat
+            [ [ viewHeader language |> keyed "header"
+              , div [ class "ui unstackable items participant-page child" ]
+                    [ div
+                        [ class "item" ]
                         [ div
-                            [ class "item" ]
-                            [ div
-                                [ class "ui image" ]
-                                [ thumbnailImage "child" child.avatarUrl child.name thumbnailDimensions.height thumbnailDimensions.width ]
-                            , div
-                                [ class "content" ]
-                                [ h2
-                                    [ class "ui header" ]
-                                    [ text child.name ]
-                                , p [] <|
-                                    motherInfo
-                                        ++ [ break, dateOfBirth, break, age, break, gender ]
-                                , viewFamilyLinks childParticipant language childId session
-                                ]
+                            [ class "ui image" ]
+                            [ thumbnailImage "child" child.avatarUrl child.name thumbnailDimensions.height thumbnailDimensions.width ]
+                        , div
+                            [ class "content" ]
+                            [ h2
+                                [ class "ui header" ]
+                                [ text child.name ]
+                            , p [] <|
+                                motherInfo
+                                    ++ [ break, dateOfBirth, break, age, break, gender ]
+                            , viewFamilyLinks childParticipant language childId session
                             ]
                         ]
-                        |> keyed "child-info"
-                  ]
-                , viewActivityCards childParticipant language childId model.selectedTab selectedActivity session
-                , content
-                ]
+                    ]
+                    |> keyed "child-info"
+              ]
+            , viewActivityCards childParticipant language childId model.selectedTab selectedActivity session
+            , content
+            ]
 
 
 viewMother : Language -> MotherId -> EditableSession -> Model MotherActivityType -> Html (Msg MotherActivityType Measurement.Model.MsgMother)
@@ -216,7 +216,7 @@ viewFoundMother language ( motherId, mother ) session model =
             getChildren motherId session.offlineSession
                 |> List.indexedMap
                     (\index ( _, child ) ->
-                        text <| (translate language Trans.Baby) ++ " " ++ toString (index + 1) ++ ": " ++ child.name
+                        text <| translate language Trans.Baby ++ " " ++ toString (index + 1) ++ ": " ++ child.name
                     )
                 |> List.intersperse break
 
@@ -262,39 +262,39 @@ viewFoundMother language ( motherId, mother ) session model =
                         form =
                             getMotherForm motherId session
                     in
-                        [ Measurement.View.viewMother language activity measurements form
-                            |> Html.map MsgMeasurement
-                            |> keyed "content"
-                        ]
+                    [ Measurement.View.viewMother language activity measurements form
+                        |> Html.map MsgMeasurement
+                        |> keyed "content"
+                    ]
 
                 Nothing ->
                     []
     in
-        divKeyed [ class "wrap" ] <|
-            List.concat
-                [ [ viewHeader language |> keyed "header"
-                  , div
-                        [ class "ui unstackable items participant-page mother" ]
+    divKeyed [ class "wrap" ] <|
+        List.concat
+            [ [ viewHeader language |> keyed "header"
+              , div
+                    [ class "ui unstackable items participant-page mother" ]
+                    [ div
+                        [ class "item" ]
                         [ div
-                            [ class "item" ]
-                            [ div
-                                [ class "ui image" ]
-                                [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
-                            , div
-                                [ class "content" ]
-                                [ h2
-                                    [ class "ui header" ]
-                                    [ text mother.name ]
-                                , p [] childrenList
-                                , viewFamilyLinks motherParticipant language motherId session
-                                ]
+                            [ class "ui image" ]
+                            [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
+                        , div
+                            [ class "content" ]
+                            [ h2
+                                [ class "ui header" ]
+                                [ text mother.name ]
+                            , p [] childrenList
+                            , viewFamilyLinks motherParticipant language motherId session
                             ]
                         ]
-                        |> keyed "mother"
-                  ]
-                , viewActivityCards motherParticipant language motherId model.selectedTab selectedActivity session
-                , content
-                ]
+                    ]
+                    |> keyed "mother"
+              ]
+            , viewActivityCards motherParticipant language motherId model.selectedTab selectedActivity session
+            , content
+            ]
 
 
 viewActivityCards : Participant id value activity msg -> Language -> id -> Tab -> Maybe activity -> EditableSession -> List ( String, Html (Msg activity any) )
@@ -349,9 +349,9 @@ viewActivityCards config language participantId selectedTab selectedActivity ses
                 ]
                     ++ extraTabs
     in
-        [ tabs |> keyed "tabs"
-        , activeView |> keyed "active-view"
-        ]
+    [ tabs |> keyed "tabs"
+    , activeView |> keyed "active-view"
+    ]
 
 
 viewActivityListItem : Participant id value activity msg -> Language -> Maybe activity -> activity -> Html (Msg activity any)
@@ -428,14 +428,14 @@ viewFamilyLinks config language participantId session =
                             |> onClick
                         ]
             in
-                li attributes
-                    [ a []
-                        [ span [ class "icon-baby" ] []
-                        , span
-                            [ class "count" ]
-                            [ text <| toString (index + 1) ]
-                        ]
+            li attributes
+                [ a []
+                    [ span [ class "icon-baby" ] []
+                    , span
+                        [ class "count" ]
+                        [ text <| toString (index + 1) ]
                     ]
+                ]
 
         motherMarkup =
             Maybe.map viewMother maybeMotherId
@@ -458,12 +458,12 @@ viewFamilyLinks config language participantId session =
                             |> onClick
                         ]
             in
-                li attributes
-                    [ a []
-                        [ span [ class "icon-mother" ] []
-                        ]
+            li attributes
+                [ a []
+                    [ span [ class "icon-mother" ] []
                     ]
+                ]
     in
-        ul
-            [ class "links-body" ]
-            (motherMarkup ++ childrenMarkup)
+    ul
+        [ class "links-body" ]
+        (motherMarkup ++ childrenMarkup)

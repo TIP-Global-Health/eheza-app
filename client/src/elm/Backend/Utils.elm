@@ -1,8 +1,8 @@
 module Backend.Utils exposing (..)
 
-import Backend.Session.Model exposing (EditableSession)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (..)
+import Backend.Session.Model exposing (EditableSession)
 import Maybe.Extra
 import RemoteData
 

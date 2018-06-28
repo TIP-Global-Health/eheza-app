@@ -18,11 +18,11 @@ sequenceExtra updater msgs ( data, previousModel, previousCmd, page ) =
                 ( _, newModel, newCmd, _ ) =
                     updater eachMsg modelSoFar
             in
-                ( data
-                , newModel
-                , Cmd.batch [ cmdsSoFar, newCmd ]
-                , page
-                )
+            ( data
+            , newModel
+            , Cmd.batch [ cmdsSoFar, newCmd ]
+            , page
+            )
         )
         ( data, previousModel, previousCmd, page )
         msgs

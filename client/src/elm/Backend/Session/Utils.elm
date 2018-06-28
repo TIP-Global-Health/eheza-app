@@ -1,7 +1,7 @@
 module Backend.Session.Utils exposing (..)
 
-import Backend.Entities exposing (..)
 import Backend.Child.Model exposing (Child)
+import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
@@ -122,17 +122,17 @@ mapChildEdits func childId session =
         edits =
             session.edits
     in
-        EveryDict.get childId edits.children
-            |> Maybe.withDefault emptyChildEdits
-            |> (\childEdits ->
-                    { session
-                        | edits =
-                            { edits
-                                | children =
-                                    EveryDict.insert childId (func childEdits) edits.children
-                            }
-                    }
-               )
+    EveryDict.get childId edits.children
+        |> Maybe.withDefault emptyChildEdits
+        |> (\childEdits ->
+                { session
+                    | edits =
+                        { edits
+                            | children =
+                                EveryDict.insert childId (func childEdits) edits.children
+                        }
+                }
+           )
 
 
 mapAllChildEdits : (ChildId -> ChildEdits -> ChildEdits) -> EditableSession -> EditableSession
@@ -141,14 +141,14 @@ mapAllChildEdits func session =
         edits =
             session.edits
     in
-        edits.children
-            |> EveryDict.map func
-            |> (\childEdits ->
-                    { session
-                        | edits =
-                            { edits | children = childEdits }
-                    }
-               )
+    edits.children
+        |> EveryDict.map func
+        |> (\childEdits ->
+                { session
+                    | edits =
+                        { edits | children = childEdits }
+                }
+           )
 
 
 {-| Given a function that changes MotherEdits, apply that to the motherId.
@@ -159,17 +159,17 @@ mapMotherEdits func motherId session =
         edits =
             session.edits
     in
-        EveryDict.get motherId edits.mothers
-            |> Maybe.withDefault emptyMotherEdits
-            |> (\motherEdits ->
-                    { session
-                        | edits =
-                            { edits
-                                | mothers =
-                                    EveryDict.insert motherId (func motherEdits) edits.mothers
-                            }
-                    }
-               )
+    EveryDict.get motherId edits.mothers
+        |> Maybe.withDefault emptyMotherEdits
+        |> (\motherEdits ->
+                { session
+                    | edits =
+                        { edits
+                            | mothers =
+                                EveryDict.insert motherId (func motherEdits) edits.mothers
+                        }
+                }
+           )
 
 
 {-| Return a list of all the photo URLs we ought to cache to work with this offline.
@@ -197,7 +197,7 @@ getPhotoUrls session =
                     )
                 |> List.concat
     in
-        fromMothers ++ fromChildren ++ fromMeasurements
+    fromMothers ++ fromChildren ++ fromMeasurements
 
 
 {-| Given a file ID for the provided photo, record that in the edits in our
@@ -224,19 +224,19 @@ setPhotoFileId photo id =
                         edited =
                             change.edited
                     in
-                        if edited.value.url == photo.value.url then
-                            edited.value
-                                |> (\value ->
-                                        { edit
-                                            | photo =
-                                                Edited
-                                                    { backend = change.backend
-                                                    , edited = { edited | value = { value | fid = Just id } }
-                                                    }
-                                        }
-                                   )
-                        else
-                            edit
+                    if edited.value.url == photo.value.url then
+                        edited.value
+                            |> (\value ->
+                                    { edit
+                                        | photo =
+                                            Edited
+                                                { backend = change.backend
+                                                , edited = { edited | value = { value | fid = Just id } }
+                                                }
+                                    }
+                               )
+                    else
+                        edit
 
                 Deleted _ ->
                     edit
@@ -256,9 +256,9 @@ isClosed currentDate session =
         pastEnd =
             Time.Date.compare currentDate session.offlineSession.session.scheduledDate.end == GT
     in
-        session.offlineSession.session.closed
-            || session.edits.explicitlyClosed
-            || pastEnd
+    session.offlineSession.session.closed
+        || session.edits.explicitlyClosed
+        || pastEnd
 
 
 isAuthorized : User -> EditableSession -> Bool

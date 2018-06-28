@@ -1,12 +1,12 @@
-module Utils.WebData exposing (sendWithHandler, resetError, viewError, viewOrFetch, whenNotAsked)
+module Utils.WebData exposing (resetError, sendWithHandler, viewError, viewOrFetch, whenNotAsked)
 
-import Json.Decode exposing (Decoder, list)
 import Html exposing (..)
-import Html.Events exposing (onClick)
 import Html.Attributes exposing (class)
+import Html.Events exposing (onClick)
 import Http exposing (Error, expectJson)
 import HttpBuilder exposing (..)
-import RemoteData exposing (WebData, RemoteData(..))
+import Json.Decode exposing (Decoder, list)
+import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner)
 

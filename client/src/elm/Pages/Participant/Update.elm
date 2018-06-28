@@ -1,10 +1,10 @@
-module Pages.Participant.Update exposing (updateMother, updateChild)
+module Pages.Participant.Update exposing (updateChild, updateMother)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Measurement.Model
 import Measurement.Update
-import Pages.Participant.Model exposing (Model, Msg(..), emptyModel)
 import Pages.Page exposing (Page)
+import Pages.Participant.Model exposing (Model, Msg(..), emptyModel)
 
 
 {-| This is a bit of a variation on the usual `update` function.
@@ -39,12 +39,12 @@ updateChild msg model childForm =
                 ( subModel, subCmd, outMsg ) =
                     Measurement.Update.updateChild subMsg childForm
             in
-                ( model
-                , Cmd.map MsgMeasurement subCmd
-                , subModel
-                , outMsg
-                , Nothing
-                )
+            ( model
+            , Cmd.map MsgMeasurement subCmd
+            , subModel
+            , outMsg
+            , Nothing
+            )
 
         Redirect page ->
             ( model, Cmd.none, childForm, Nothing, Just page )
@@ -83,12 +83,12 @@ updateMother msg model motherForm =
                 ( subModel, subCmd, outMsg ) =
                     Measurement.Update.updateMother subMsg motherForm
             in
-                ( model
-                , Cmd.map MsgMeasurement subCmd
-                , subModel
-                , outMsg
-                , Nothing
-                )
+            ( model
+            , Cmd.map MsgMeasurement subCmd
+            , subModel
+            , outMsg
+            , Nothing
+            )
 
         Redirect page ->
             ( model, Cmd.none, motherForm, Nothing, Just page )

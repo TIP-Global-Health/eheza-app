@@ -4,7 +4,7 @@ import Backend.Entities exposing (..)
 import Measurement.Model
 import Measurement.Update
 import Pages.Activity.Model exposing (Model, Msg(..))
-import Pages.Page exposing (SessionPage(..), Page(..))
+import Pages.Page exposing (Page(..), SessionPage(..))
 
 
 {-| Ideally, these would be more generic, but it's easier to have
@@ -29,12 +29,12 @@ updateChild msg model childForm =
                             ( subModel, subCmd, outMsg ) =
                                 Measurement.Update.updateChild subMsg form
                         in
-                            ( model
-                            , Cmd.map MsgMeasurement subCmd
-                            , Just subModel
-                            , outMsg
-                            , Nothing
-                            )
+                        ( model
+                        , Cmd.map MsgMeasurement subCmd
+                        , Just subModel
+                        , outMsg
+                        , Nothing
+                        )
                     )
                 |> Maybe.withDefault ( model, Cmd.none, Nothing, Nothing, Nothing )
 
@@ -73,12 +73,12 @@ updateMother msg model motherForm =
                             ( subModel, subCmd, outMsg ) =
                                 Measurement.Update.updateMother subMsg form
                         in
-                            ( model
-                            , Cmd.map MsgMeasurement subCmd
-                            , Just subModel
-                            , outMsg
-                            , Nothing
-                            )
+                        ( model
+                        , Cmd.map MsgMeasurement subCmd
+                        , Just subModel
+                        , outMsg
+                        , Nothing
+                        )
                     )
                 |> Maybe.withDefault ( model, Cmd.none, Nothing, Nothing, Nothing )
 
