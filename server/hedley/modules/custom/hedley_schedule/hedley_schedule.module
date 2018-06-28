@@ -43,13 +43,13 @@ function hedley_schedule_node_delete($node) {
     }
   }
   else {
-    $has_measurements = FALSE;
     foreach ($measurement_types as $measurement_type) {
       $has_measurements = !empty(hedley_activity_get_measurements_entities_by_session($wrapper->getIdentifier(), $measurement_type)) ? TRUE : FALSE;
-    }
 
-    if ($has_measurements) {
-      throw new Exception('This session cannot be deleted because it has existing measurements');
+      // Don't allow deleting the session if it has any measurements.
+      if ($has_measurements) {
+        throw new Exception('This session cannot be deleted because it has existing measurements');
+      }
     }
   }
 }
