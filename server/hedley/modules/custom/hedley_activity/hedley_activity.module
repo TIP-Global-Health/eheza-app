@@ -270,3 +270,31 @@ function hedley_activity_weight_for_session($session_id, $child_id) {
 
   return !empty($result['node']) ? key($result['node']) : NULL;
 }
+
+/**
+ * Get a measurement by the session ID and the measurement type.
+ *
+ * @param $session_id
+ *   The session node ID.
+ * @param $measurement_bundle
+ *   The measurement node bundle.
+ *
+ * @return array|null
+ *   Node IDs if they exist or nothing if no nodes exist.
+ */
+function hedley_activity_get_measurements_entities_by_session($session_id, $measurement_bundle) {
+  if (empty($session_id) || empty($measurement_type)) {
+    return NULL;
+  }
+
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', $measurement_bundle)
+    ->fieldCondition('field_session', 'target_id', $session_id)
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->range(0, 100)
+    ->execute();
+
+  return !empty($result['node']) ? array_keys($result['node']) : NULL;
+}

@@ -1,0 +1,97 @@
+<?php
+
+/**
+ * @file
+ * Contains \HedleyScheduleIntegrity.
+ */
+
+/**
+ * HedleyScheduleIntegrity tests.
+ */
+class HedleyScheduleIntegrity extends HedleyWebTestBase {
+
+  /**
+   * A user object.
+   *
+   * @var \stdClass
+   */
+  protected $user;
+
+  /**
+   * Anonymous user object.
+   *
+   * @var \stdClass
+   */
+  protected $anonymousUser;
+
+  /**
+   * A clinic entity.
+   *
+   * @var \stdClass
+   */
+  protected $clinic;
+
+  /**
+   * Info hook.
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'HedleyScheduleIntegrity tests',
+      'description' => 'Tests rules for maintaining integrity of session entities.',
+      'group' => 'Hedley',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp() {
+    parent::setUp();
+
+    // Common test users for the cases.
+    $this->anonymousUser = user_load(0);
+    $this->user = $this->drupalCreateUser(['bypass node access']);
+
+    $this->clinic = $this->drupalCreateNode([
+      'title' => 'Test clinic',
+      'type' => 'clinic',
+    ]);
+  }
+
+  /**
+   * Test creating a session and then deleting it.
+   */
+  public function testDeleteEmptySession() {
+    $this->drupalLogin($this->user);
+
+    $session_node = $this->drupalCreateNode([
+      'type' => 'session',
+    ]);
+
+    $session = entity_metadata_wrapper('node', $session_node);
+
+    $session->field_training = FALSE;
+    $session->field_closed = FALSE;
+
+    $today = date("Y-m-d");
+    $session->field_scheduled_date->set([
+      'value' => $today,
+      'value2' => $today,
+    ]);
+
+    $session->save();
+
+    $session_id = $session->getIdentifier();
+
+    // Make sure we can get it now.
+    $this->drupalGet("/node/{$session_id}");
+    $this->assertResponse(200, "Should retrieve session we just created.");
+
+    $session->delete();
+
+    // Make wure we really deleted it.
+    $this->drupalGet("/node/{$session_id}");
+    $this->assertResponse(404, "Session should no longer exist.");
+  }
+
+}
