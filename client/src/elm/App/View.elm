@@ -51,6 +51,12 @@ viewLanguageSwitcher model =
                 "ui floating dropdown labeled search icon button active visible"
             else
                 "ui floating dropdown labeled search icon button"
+
+        languageIconClass =
+            if model.language == English then
+                "language-icon gb flag"
+            else
+                "language-icon rw flag"
     in
     div
         [ class "ui centered language-switcher"
@@ -59,11 +65,11 @@ viewLanguageSwitcher model =
         [ div
             [ class switcherClasses ]
             [ i
-                [ class "world icon" ]
+                [ class languageIconClass ]
                 []
             , span
                 [ class "text" ]
-                [ text "Select Language" ]
+                [ text <| translate model.language Translate.SelectLanguage ]
             , div
                 [ class "menu" ]
                 [ div

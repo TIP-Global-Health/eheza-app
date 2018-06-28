@@ -146,6 +146,7 @@ type TranslationId
     | Save
     | SaveError
     | SearchByName
+    | SelectLanguage
     | SelectYourClinic
     | SessionClosed
     | SessionClosed2 SessionId
@@ -1309,6 +1310,11 @@ translate lang trans =
                 SearchByName ->
                     { english = "Search by Name"
                     , kinyarwanda = Just "Gushakisha izina"
+                    }
+
+                SelectLanguage ->
+                    { english = "Select language"
+                    , kinyarwanda = Nothing
                     }
 
                 SelectYourClinic ->
