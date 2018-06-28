@@ -274,16 +274,16 @@ function hedley_activity_weight_for_session($session_id, $child_id) {
 /**
  * Get a measurement by the session ID and the measurement type.
  *
- * @param $session_id
+ * @param int $session_id
  *   The session node ID.
- * @param $measurement_bundle
+ * @param string $measurement_bundle
  *   The measurement node bundle.
  *
  * @return array|null
  *   Node IDs if they exist or nothing if no nodes exist.
  */
 function hedley_activity_get_measurements_entities_by_session($session_id, $measurement_bundle) {
-  if (empty($session_id) || empty($measurement_type)) {
+  if (empty($session_id) || empty($measurement_bundle)) {
     return NULL;
   }
 
