@@ -20,7 +20,7 @@ in the UI.
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (MeasurementEdits, Photo)
-import Backend.Session.Model exposing (OfflineSession, EditableSession, Session, MsgEditableSession)
+import Backend.Session.Model exposing (EditableSession, MsgEditableSession, OfflineSession, Session)
 import CacheStorage.Model
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)

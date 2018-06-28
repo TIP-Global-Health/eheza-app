@@ -3,8 +3,8 @@ module Pages.Activity.Test exposing (all)
 import Date
 import Dict
 import Expect
-import Pages.Activity.Model exposing (emptyModel)
 import Fixtures exposing (..)
+import Pages.Activity.Model exposing (emptyModel)
 import Participant.Model
 import Restful.Endpoint exposing (toEntityId)
 import Test exposing (Test, describe, test)

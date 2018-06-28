@@ -97,7 +97,7 @@ fetch currentDate clinicId backend =
                     -- the sessions yet.
                     Nothing
     in
-        List.filterMap identity
-            [ fetchClinics
-            , fetchSessions
-            ]
+    List.filterMap identity
+        [ fetchClinics
+        , fetchSessions
+        ]

@@ -13,8 +13,8 @@ module Utils.Json
 
 import Date exposing (Date)
 import Dict exposing (Dict)
-import Gizra.Json exposing (decodeInt)
 import EverySet exposing (EverySet)
+import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (Decoder, andThen, dict, fail, field, float, index, int, list, map, map2, nullable, oneOf, string, succeed, value)
 import Json.Decode.Extra exposing (date)
 
@@ -34,10 +34,10 @@ decodeEmptyArrayAsEmptyDict =
                     length =
                         List.length list
                 in
-                    if length == 0 then
-                        succeed Dict.empty
-                    else
-                        fail <| "Expected an empty array, not an array with length: " ++ toString length
+                if length == 0 then
+                    succeed Dict.empty
+                else
+                    fail <| "Expected an empty array, not an array with length: " ++ toString length
             )
 
 

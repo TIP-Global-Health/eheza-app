@@ -10,7 +10,7 @@ actually want here, and use ports to implement.
 -}
 
 import Json.Encode exposing (Value)
-import RemoteData exposing (WebData, RemoteData(..))
+import RemoteData exposing (RemoteData(..), WebData)
 
 
 type alias Url =

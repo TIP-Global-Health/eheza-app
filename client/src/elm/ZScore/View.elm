@@ -20,7 +20,7 @@ import RemoteData
 import Round
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Translate exposing (translate, Language, TranslationId(ChartPhrase), ChartPhrase(..))
+import Translate exposing (ChartPhrase(..), Language, TranslationId(ChartPhrase), translate)
 import Utils.NominalDate exposing (Days(..))
 import ZScore.Model exposing (..)
 
@@ -162,11 +162,11 @@ plotData config data =
                 - ((y - config.input.minY) * scaleY)
                 |> clamp config.output.minY config.output.maxY
     in
-        data
-            |> List.map
-                (\{ x, y } ->
-                    Round.round 1 (plotX x) ++ "," ++ Round.round 1 (plotY y)
-                )
+    data
+        |> List.map
+            (\{ x, y } ->
+                Round.round 1 (plotX x) ++ "," ++ Round.round 1 (plotY y)
+            )
 
 
 plotReferenceData : PlotConfig x y -> IntDict ZScoreEntry -> Svg any
@@ -186,13 +186,13 @@ plotReferenceData config data =
                                 , y = accessor entry
                                 }
                         in
-                            -- We have more data in the numeric tables than we
-                            -- chart, so don't plot points that are out of
-                            -- bounds
-                            if result.x >= config.input.minX && result.x <= config.input.maxX then
-                                Just result
-                            else
-                                Nothing
+                        -- We have more data in the numeric tables than we
+                        -- chart, so don't plot points that are out of
+                        -- bounds
+                        if result.x >= config.input.minX && result.x <= config.input.maxX then
+                            Just result
+                        else
+                            Nothing
                     )
 
         -- We need the neg3 and neg2 points both to draw a line and to draw a polygon
@@ -267,25 +267,25 @@ plotReferenceData config data =
                             []
                    )
     in
-        [ Just fillBelowNegativeThree
-        , Just fillAboveNegativeTwo
-        , Just fillBetweenNegTwoAndNegThree
-        , Just <| makeLine neg3points "three-line-new"
-        , Just <| makeLine neg2points "two-line-new"
-        , if config.drawSD1 then
-            Just <| makeLine (getPoints .sd1neg) "one-line-new"
-          else
-            Nothing
-        , Just <| makeLine (getPoints .sd0) "zero-line-new"
-        , if config.drawSD1 then
-            Just <| makeLine (getPoints .sd1) "one-line-new"
-          else
-            Nothing
-        , Just <| makeLine (getPoints .sd2) "two-line-new"
-        , Just <| makeLine (getPoints .sd3) "three-line-new"
-        ]
-            |> List.filterMap identity
-            |> g []
+    [ Just fillBelowNegativeThree
+    , Just fillAboveNegativeTwo
+    , Just fillBetweenNegTwoAndNegThree
+    , Just <| makeLine neg3points "three-line-new"
+    , Just <| makeLine neg2points "two-line-new"
+    , if config.drawSD1 then
+        Just <| makeLine (getPoints .sd1neg) "one-line-new"
+      else
+        Nothing
+    , Just <| makeLine (getPoints .sd0) "zero-line-new"
+    , if config.drawSD1 then
+        Just <| makeLine (getPoints .sd1) "one-line-new"
+      else
+        Nothing
+    , Just <| makeLine (getPoints .sd2) "two-line-new"
+    , Just <| makeLine (getPoints .sd3) "three-line-new"
+    ]
+        |> List.filterMap identity
+        |> g []
 
 
 plotChildData : PlotConfig x y -> List ( x, y ) -> Svg any
@@ -304,11 +304,11 @@ plotChildData config data =
                 |> String.join " "
                 |> points
     in
-        polyline
-            [ class "child-data"
-            , pointList
-            ]
-            []
+    polyline
+        [ class "child-data"
+        , pointList
+        ]
+        []
 
 
 viewWeightForAgeBoys : Language -> Model -> List ( Days, Kilograms ) -> Html any

@@ -1,14 +1,14 @@
 module Pages.Activities.View exposing (view)
 
-import Activity.Utils exposing (getActivityList, getActivityIcon)
+import Activity.Utils exposing (getActivityIcon, getActivityList)
 import Backend.Session.Model exposing (EditableSession)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List as List
 import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
-import Pages.Page exposing (SessionPage(..), Page(..), UserPage(..))
-import Translate as Trans exposing (translate, Language)
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
 
 
@@ -19,10 +19,10 @@ view language session model =
             getActivityList session
 
         pendingActivities =
-            List.filter (\activity -> (activity.totals.pending > 0)) allActivityList
+            List.filter (\activity -> activity.totals.pending > 0) allActivityList
 
         noPendingActivities =
-            List.filter (\activity -> (activity.totals.pending == 0)) allActivityList
+            List.filter (\activity -> activity.totals.pending == 0) allActivityList
 
         pendingTabTitle =
             translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities
@@ -96,53 +96,53 @@ view language session model =
                 Completed ->
                     ( noPendingActivities, translate language Trans.NoActivitiesCompleted )
     in
-        div
-            [ class "wrap wrap-alt-2" ]
-            [ div
-                [ class "ui basic head segment" ]
-                [ h1
-                    [ class "ui header" ]
-                    [ text <| translate language Trans.Activities ]
-                , a
-                    [ class "link-back"
-                    , onClick <| SetRedirectPage <| UserPage <| ClinicsPage <| Just session.offlineSession.session.clinicId
-                    ]
-                    [ span [ class "icon-back" ] []
-                    , span [] []
-                    ]
-                , ul [ class "links-head" ]
-                    [ li
-                        [ onClick <| SetRedirectPage <| SessionPage AttendancePage ]
-                        [ a [] [ span [ class "icon-completed" ] [] ] ]
-                    , li
-                        [ onClick <| SetRedirectPage <| SessionPage ParticipantsPage ]
-                        [ a [] [ span [ class "icon-mother" ] [] ] ]
-                    , li
-                        [ class "active" ]
-                        [ a [] [ span [ class "icon-measurements" ] [] ] ]
-                    ]
+    div
+        [ class "wrap wrap-alt-2" ]
+        [ div
+            [ class "ui basic head segment" ]
+            [ h1
+                [ class "ui header" ]
+                [ text <| translate language Trans.Activities ]
+            , a
+                [ class "link-back"
+                , onClick <| SetRedirectPage <| UserPage <| ClinicsPage <| Just session.offlineSession.session.clinicId
                 ]
-            , tabs
-            , div
-                [ class "ui full segment" ]
-                [ div
-                    [ class "full content" ]
-                    [ div [ class "wrap-cards" ]
-                        [ div [ class "ui four cards" ] <|
-                            if List.isEmpty selectedActivities then
-                                [ span [] [ text emptySectionMessage ] ]
-                            else
-                                List.map (viewCard language) selectedActivities
-                        ]
-                    ]
-                , div
-                    [ class "actions" ]
-                    [ button
-                        [ class "ui fluid primary button"
-                        , onClick <| ShowEndSessionDialog True
-                        ]
-                        [ text <| translate language Trans.EndSession ]
-                    ]
+                [ span [ class "icon-back" ] []
+                , span [] []
                 ]
-            , viewModal endSessionDialog
+            , ul [ class "links-head" ]
+                [ li
+                    [ onClick <| SetRedirectPage <| SessionPage AttendancePage ]
+                    [ a [] [ span [ class "icon-completed" ] [] ] ]
+                , li
+                    [ onClick <| SetRedirectPage <| SessionPage ParticipantsPage ]
+                    [ a [] [ span [ class "icon-mother" ] [] ] ]
+                , li
+                    [ class "active" ]
+                    [ a [] [ span [ class "icon-measurements" ] [] ] ]
+                ]
             ]
+        , tabs
+        , div
+            [ class "ui full segment" ]
+            [ div
+                [ class "full content" ]
+                [ div [ class "wrap-cards" ]
+                    [ div [ class "ui four cards" ] <|
+                        if List.isEmpty selectedActivities then
+                            [ span [] [ text emptySectionMessage ] ]
+                        else
+                            List.map (viewCard language) selectedActivities
+                    ]
+                ]
+            , div
+                [ class "actions" ]
+                [ button
+                    [ class "ui fluid primary button"
+                    , onClick <| ShowEndSessionDialog True
+                    ]
+                    [ text <| translate language Trans.EndSession ]
+                ]
+            ]
+        , viewModal endSessionDialog
+        ]

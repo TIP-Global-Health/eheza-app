@@ -1,8 +1,8 @@
 module Pages.MyAccount.View exposing (view)
 
-import Html exposing (a, div, h2, i, p, text, img, Html)
+import Html exposing (Html, a, div, h2, i, img, p, text)
 import Html.Attributes exposing (class, href, src)
-import Translate as Trans exposing (translate, Language)
+import Translate as Trans exposing (Language, translate)
 import User.Model exposing (..)
 
 
