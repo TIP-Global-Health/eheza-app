@@ -1441,13 +1441,10 @@ translate lang trans =
     case lang of
         English ->
             .english translationSet
-<<<<<<< HEAD
 
         Kinyarwanda ->
             .kinyarwanda translationSet
                 |> Maybe.withDefault (.english translationSet)
-=======
->>>>>>> origin/master
 
 
 languageFromString : String -> Result String Language
