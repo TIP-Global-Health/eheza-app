@@ -1,4 +1,4 @@
-port module App.Update exposing (init, subscriptions, update)
+port module App.Update exposing (init, loginConfig, subscriptions, update)
 
 import App.Model exposing (..)
 import Backend.Session.Model

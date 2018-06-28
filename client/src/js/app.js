@@ -92,7 +92,7 @@ elmApp.ports.deleteEditableSession.subscribe(function () {
 });
 
 elmApp.ports.setLanguage.subscribe(function(language) {
-    // Set the choosen languge in the switcher to the local storage.
+    // Set the choosen language in the switcher to the local storage.
     localStorage.setItem('language', language);
 });
 
