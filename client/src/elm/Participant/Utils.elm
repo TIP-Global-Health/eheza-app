@@ -1,7 +1,7 @@
 module Participant.Utils exposing (..)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType, MotherActivityType)
-import Activity.Utils exposing (childHasPendingActivity, motherHasPendingActivity, motherHasAnyPendingActivity, childHasAnyPendingActivity, getAllChildActivities, getAllMotherActivities)
+import Activity.Utils exposing (childHasAnyPendingActivity, childHasPendingActivity, getAllChildActivities, getAllMotherActivities, motherHasAnyPendingActivity, motherHasPendingActivity)
 import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)

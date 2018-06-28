@@ -1,14 +1,14 @@
 module Pages.Participants.View exposing (view)
 
-import Activity.Utils exposing (getTotalsNumberPerActivity, motherOrAnyChildHasAnyPendingActivity, isCheckedIn)
-import Backend.Session.Model exposing (OfflineSession, EditableSession)
+import Activity.Utils exposing (getTotalsNumberPerActivity, isCheckedIn, motherOrAnyChildHasAnyPendingActivity)
+import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import EveryDictList
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Pages.Page exposing (Page(..), UserPage(..), SessionPage(..))
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participants.Model exposing (Model, Msg(..), Tab(..))
-import Translate as Trans exposing (translate, Language)
+import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
 
 
@@ -41,10 +41,10 @@ view language editableSession model =
                         |> Trans.ActivitiesCompleted
                         |> translate language
             in
-                div [ class "ui tabular menu" ]
-                    [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
-                    , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
-                    ]
+            div [ class "ui tabular menu" ]
+                [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
+                , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
+                ]
 
         mothers =
             let
@@ -81,12 +81,12 @@ view language editableSession model =
                             |> List.sortBy (\( _, mother ) -> mother.name)
                             |> List.map viewMotherCard
             in
-                div [ class "full content" ]
-                    [ div [ class "wrap-cards" ]
-                        [ div [ class "ui four cards" ]
-                            mothersCards
-                        ]
+            div [ class "full content" ]
+                [ div [ class "wrap-cards" ]
+                    [ div [ class "ui four cards" ]
+                        mothersCards
                     ]
+                ]
 
         endSessionDialog =
             if model.showEndSessionDialog then
@@ -160,10 +160,10 @@ view language editableSession model =
                 [ class "ui full segment" ]
                 [ mothers, endSessionButton ]
     in
-        div
-            [ class "wrap wrap-alt-2 page-participants" ]
-            [ header
-            , tabs
-            , content
-            , viewModal endSessionDialog
-            ]
+    div
+        [ class "wrap wrap-alt-2 page-participants" ]
+        [ header
+        , tabs
+        , content
+        , viewModal endSessionDialog
+        ]

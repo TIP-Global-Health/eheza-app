@@ -11,10 +11,10 @@ module ZScore.Utils
 -}
 
 import Backend.Child.Model exposing (Gender(..))
-import Utils.NominalDate exposing (Days(..))
 import IntDict exposing (IntDict)
 import RemoteData
-import ZScore.Model exposing (Model, Centimetres(..), Kilograms(..), ZScore(..), ZScoreEntry)
+import Utils.NominalDate exposing (Days(..))
+import ZScore.Model exposing (Centimetres(..), Kilograms(..), Model, ZScore(..), ZScoreEntry)
 
 
 {-| Calculates the ZScore from the provided data.
@@ -33,9 +33,9 @@ zScoreHeightForAge model (Days age) gender (Centimetres cm) =
                 Female ->
                     .heightForAgeGirls
     in
-        source model
-            |> RemoteData.toMaybe
-            |> Maybe.andThen (zScoreFromEntries age cm)
+    source model
+        |> RemoteData.toMaybe
+        |> Maybe.andThen (zScoreFromEntries age cm)
 
 
 {-| Calculates the ZScore from the provided data.
@@ -54,9 +54,9 @@ zScoreWeightForAge model (Days age) gender (Kilograms kg) =
                 Female ->
                     .weightForAgeGirls
     in
-        source model
-            |> RemoteData.toMaybe
-            |> Maybe.andThen (zScoreFromEntries age kg)
+    source model
+        |> RemoteData.toMaybe
+        |> Maybe.andThen (zScoreFromEntries age kg)
 
 
 {-| Calculates the ZScore from the provided data.
@@ -81,9 +81,9 @@ zScoreWeightForHeight model (Centimetres cm) gender (Kilograms kg) =
                 Female ->
                     .weightForHeightGirls
     in
-        source model
-            |> RemoteData.toMaybe
-            |> Maybe.andThen (zScoreFromEntries integerMillimetres kg)
+    source model
+        |> RemoteData.toMaybe
+        |> Maybe.andThen (zScoreFromEntries integerMillimetres kg)
 
 
 {-| Convert the ZScore to a string for display purposes.
