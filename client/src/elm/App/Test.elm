@@ -2,10 +2,10 @@ module App.Test exposing (all)
 
 import App.Model exposing (..)
 import App.View exposing (view)
-import Test exposing (describe, test, Test)
-import Test.Html.Query as Query
-import Test.Html.Selector exposing (text, tag)
 import RemoteData exposing (RemoteData(..))
+import Test exposing (Test, describe, test)
+import Test.Html.Query as Query
+import Test.Html.Selector exposing (tag, text)
 
 
 viewConfigErrorTest : Test

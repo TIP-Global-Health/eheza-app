@@ -1,10 +1,10 @@
-port module CacheStorage.Update exposing (update, subscriptions)
+port module CacheStorage.Update exposing (subscriptions, update)
 
 {-| Interact with the `CacheStorage` APIs.
 -}
 
 import CacheStorage.Model exposing (..)
-import Json.Decode exposing (Decoder, decodeValue, field, fail)
+import Json.Decode exposing (Decoder, decodeValue, fail, field)
 import Json.Encode exposing (Value, object)
 import RemoteData exposing (RemoteData(..))
 
@@ -34,7 +34,7 @@ update msg model =
                                 "Error decoding message from port: "
                                     ++ err
                     in
-                        ( model, Cmd.none )
+                    ( model, Cmd.none )
 
 
 subscriptions : Sub Msg

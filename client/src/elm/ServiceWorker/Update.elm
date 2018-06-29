@@ -1,4 +1,4 @@
-port module ServiceWorker.Update exposing (update, subscriptions)
+port module ServiceWorker.Update exposing (subscriptions, update)
 
 {-| Interact with service workers.
 
@@ -8,9 +8,9 @@ via sending messages through the `update` function.
 -}
 
 import Json.Decode exposing (Value, decodeValue)
-import ServiceWorker.Model exposing (..)
 import ServiceWorker.Decoder exposing (decodeMsg)
 import ServiceWorker.Encoder exposing (encodeMsg)
+import ServiceWorker.Model exposing (..)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -28,7 +28,7 @@ update msg model =
                                 "Error decoding message from port: "
                                     ++ err
                     in
-                        ( model, Cmd.none )
+                    ( model, Cmd.none )
 
         SetActive value ->
             ( { model | active = value }

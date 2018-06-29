@@ -5,12 +5,11 @@ user to click on clinics the user is assigned to, to see the sessions which are
 available for data-entry.
 -}
 
-import Html exposing (..)
 import App.Model exposing (Msg(..), MsgLoggedIn(..))
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (ClinicId, SessionId)
-import Backend.Model exposing (MsgBackend(..), ModelBackend, ModelCached)
-import Backend.Session.Model exposing (Session, EditableSession)
+import Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..))
+import Backend.Session.Model exposing (EditableSession, Session)
 import Backend.Session.Utils
 import EveryDictList exposing (EveryDictList)
 import Gizra.Html exposing (showMaybe)
@@ -19,15 +18,15 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra
-import Pages.Page exposing (Page(..), UserPage(..), SessionPage(..))
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date exposing (delta)
 import Translate exposing (Language(..), TranslationId, translate)
 import User.Model exposing (User)
 import User.Utils exposing (assignedToClinic)
-import Utils.Html exposing (viewModal, spinner)
-import Utils.WebData exposing (viewOrFetch, viewError)
+import Utils.Html exposing (spinner, viewModal)
+import Utils.WebData exposing (viewError, viewOrFetch)
 
 
 {-| To make things simpler, we just supply the whole state of the backend ... the view
@@ -74,21 +73,21 @@ viewClinicList language user clinicData cache =
                         identity
                         clinicData
     in
-        div [ class "wrap wrap-alt-2" ]
-            [ div
-                [ class "ui basic head segment" ]
-                [ h1 [ class "ui header" ]
-                    [ text <| translate language Translate.Clinics ]
-                , a
-                    [ class "link-back"
-                    , onClick <| SetActivePage LoginPage
-                    ]
-                    [ span [ class "icon-back" ] []
-                    , span [] []
-                    ]
+    div [ class "wrap wrap-alt-2" ]
+        [ div
+            [ class "ui basic head segment" ]
+            [ h1 [ class "ui header" ]
+                [ text <| translate language Translate.Clinics ]
+            , a
+                [ class "link-back"
+                , onClick <| SetActivePage LoginPage
                 ]
-            , div [ class "ui basic segment" ] content
+                [ span [ class "icon-back" ] []
+                , span [] []
+                ]
             ]
+        , div [ class "ui basic segment" ] content
+        ]
 
 
 {-| This is the "inner" view function ... we get here if all the data was actually available.
@@ -108,7 +107,7 @@ viewLoadedClinicList language user clinics =
                 |> EveryDictList.toList
                 |> List.map (viewClinicButton user)
     in
-        title :: clinicView
+    title :: clinicView
 
 
 viewClinicButton : User -> ( ClinicId, Clinic ) -> Html Msg
@@ -120,11 +119,11 @@ viewClinicButton user ( clinicId, clinic ) =
             else
                 class "ui fluid primary dark disabled button"
     in
-        button
-            [ classAttr
-            , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just clinicId
-            ]
-            [ text clinic.name ]
+    button
+        [ classAttr
+        , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just clinicId
+        ]
+        [ text clinic.name ]
 
 
 {-| View a specific clinic ...
@@ -155,46 +154,46 @@ viewClinic language currentDate clinicId backend cache =
                 |> RemoteData.toMaybe
                 |> Maybe.Extra.join
     in
-        case cachedSession of
-            Just ( sessionId, session ) ->
-                -- If we do have a cached session, then show something that depends on its status
-                viewClinicWithCachedSession language clinicId backend cache sessionId session
+    case cachedSession of
+        Just ( sessionId, session ) ->
+            -- If we do have a cached session, then show something that depends on its status
+            viewClinicWithCachedSession language clinicId backend cache sessionId session
 
-            Nothing ->
-                -- If we don't have a cached session, show the UI for getting one/
-                -- TODO: Make this less awkward
-                let
-                    wrapError html =
-                        [ div
-                            [ class "ui basic head segment" ]
-                            [ h1
-                                [ class "ui header" ]
-                                [ text <| translate language Translate.ClinicNotFound ]
-                            , a
-                                [ class "link-back"
-                                , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
-                                ]
-                                [ span [ class "icon-back" ] []
-                                , span [] []
-                                ]
+        Nothing ->
+            -- If we don't have a cached session, show the UI for getting one/
+            -- TODO: Make this less awkward
+            let
+                wrapError html =
+                    [ div
+                        [ class "ui basic head segment" ]
+                        [ h1
+                            [ class "ui header" ]
+                            [ text <| translate language Translate.ClinicNotFound ]
+                        , a
+                            [ class "link-back"
+                            , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
                             ]
-                        , div [ class "ui basic wide segment" ] html
+                            [ span [ class "icon-back" ] []
+                            , span [] []
+                            ]
                         ]
+                    , div [ class "ui basic wide segment" ] html
+                    ]
 
-                    content =
-                        viewOrFetch language
-                            (MsgLoggedIn <| MsgBackend <| Backend.Model.FetchClinics)
-                            (\clinics ->
-                                viewOrFetch language
-                                    (MsgLoggedIn <| MsgBackend <| Backend.Model.FetchFutureSessions currentDate)
-                                    (\sessions -> viewLoadedClinic language currentDate clinicId clinics backend cache sessions)
-                                    wrapError
-                                    backend.futureSessions
-                            )
-                            wrapError
-                            backend.clinics
-                in
-                    div [ class "wrap wrap-alt-2" ] content
+                content =
+                    viewOrFetch language
+                        (MsgLoggedIn <| MsgBackend <| Backend.Model.FetchClinics)
+                        (\clinics ->
+                            viewOrFetch language
+                                (MsgLoggedIn <| MsgBackend <| Backend.Model.FetchFutureSessions currentDate)
+                                (\sessions -> viewLoadedClinic language currentDate clinicId clinics backend cache sessions)
+                                wrapError
+                                backend.futureSessions
+                        )
+                        wrapError
+                        backend.clinics
+            in
+            div [ class "wrap wrap-alt-2" ] content
 
 
 viewLoadedClinic : Language -> NominalDate -> ClinicId -> EveryDictList ClinicId Clinic -> ModelBackend -> ModelCached -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
@@ -248,25 +247,25 @@ viewFoundClinic language currentDate clinicId clinic backend cache sessions =
                 [ text <| translate language <| Translate.DownloadHealthAssessment ]
             ]
     in
-        [ showMaybe <| Maybe.map (viewDownloadProgress language backend.offlineSessionRequest cache.cacheStorage.cachedPhotos) validSession
-        , viewUploadProgress language backend.uploadEditsRequest
-        , div
-            [ class "ui basic head segment" ]
-            [ h1
-                [ class "ui header" ]
-                [ text clinic.name ]
-            , a
-                [ class "link-back"
-                , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
-                ]
-                [ span [ class "icon-back" ] []
-                , span [] []
-                ]
+    [ showMaybe <| Maybe.map (viewDownloadProgress language backend.offlineSessionRequest cache.cacheStorage.cachedPhotos) validSession
+    , viewUploadProgress language backend.uploadEditsRequest
+    , div
+        [ class "ui basic head segment" ]
+        [ h1
+            [ class "ui header" ]
+            [ text clinic.name ]
+        , a
+            [ class "link-back"
+            , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
             ]
-        , div
-            [ class "ui basic wide segment" ]
-            content
+            [ span [ class "icon-back" ] []
+            , span [] []
+            ]
         ]
+    , div
+        [ class "ui basic wide segment" ]
+        content
+    ]
 
 
 {-| The `WebData SessionId` represents a request to download the offline session.
@@ -472,23 +471,23 @@ viewClinicWithCachedSession language clinicId backend cache sessionId session =
                 |> Maybe.map .name
                 |> Maybe.withDefault (translate language Translate.ClinicNotFound)
     in
-        div [ class "wrap wrap-alt-2" ]
-            [ viewDownloadProgress language backend.offlineSessionRequest cache.cacheStorage.cachedPhotos sessionId
-            , viewUploadProgress language backend.uploadEditsRequest
-            , div
-                [ class "ui basic head segment" ]
-                [ h1
-                    [ class "ui header" ]
-                    [ text clinicName ]
-                , a
-                    [ class "link-back"
-                    , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
-                    ]
-                    [ span [ class "icon-back" ] []
-                    , span [] []
-                    ]
+    div [ class "wrap wrap-alt-2" ]
+        [ viewDownloadProgress language backend.offlineSessionRequest cache.cacheStorage.cachedPhotos sessionId
+        , viewUploadProgress language backend.uploadEditsRequest
+        , div
+            [ class "ui basic head segment" ]
+            [ h1
+                [ class "ui header" ]
+                [ text clinicName ]
+            , a
+                [ class "link-back"
+                , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
                 ]
-            , div
-                [ class "ui basic wide segment" ]
-                content
+                [ span [ class "icon-back" ] []
+                , span [] []
+                ]
             ]
+        , div
+            [ class "ui basic wide segment" ]
+            content
+        ]

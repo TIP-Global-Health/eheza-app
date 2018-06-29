@@ -10,7 +10,7 @@ module ZScore.Model
         )
 
 import IntDict exposing (IntDict)
-import RemoteData exposing (WebData, RemoteData(..))
+import RemoteData exposing (RemoteData(..), WebData)
 
 
 {-| This represents the data that we use to calculate ZScores.

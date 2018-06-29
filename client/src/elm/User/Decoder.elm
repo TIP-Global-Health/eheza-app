@@ -1,10 +1,10 @@
 module User.Decoder exposing (decodeUser)
 
+import EverySet
 import Gizra.Json exposing (decodeInt)
-import Json.Decode exposing (nullable, string, list, map, andThen, succeed, fail, Decoder)
+import Json.Decode exposing (Decoder, andThen, fail, list, map, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (decode, optional, required)
 import Restful.Endpoint exposing (decodeEntityId)
-import EverySet
 import User.Model exposing (..)
 
 

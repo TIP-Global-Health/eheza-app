@@ -1,9 +1,9 @@
 module User.Encoder exposing (encodeUser)
 
 import EverySet exposing (EverySet)
-import Json.Encode exposing (Value, int, string, object, list)
+import Json.Encode exposing (Value, int, list, object, string)
 import Restful.Endpoint exposing (encodeEntityId)
-import User.Model exposing (User, Role(..))
+import User.Model exposing (Role(..), User)
 
 
 {-| This is mostly for caching the user in local storage.

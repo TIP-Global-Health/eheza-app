@@ -42,19 +42,6 @@ function hedley_restful_timestamp_only_date($value) {
 }
 
 /**
- * Given an EntityFieldQuery result, extract the ids, or an empty array.
- *
- * @param array $result
- *   The result of EntityFieldQuery->execute()
- *
- * @return array
- *   An array of node IDs
- */
-function hedley_restful_extract_ids(array $result) {
-  return empty($result['node']) ? [] : array_keys($result['node']);
-}
-
-/**
  * Get restful output programmatically.
  *
  * @return array
@@ -95,4 +82,54 @@ function hedley_restful_output_for_bundles($bundleHandlers, array $nids, $accoun
   }
 
   return $output;
+}
+
+/**
+ * Run a query in batches.
+ *
+ * Given a base query, performs the query in batches and calls a callback
+ * function with each batch of results.
+ *
+ * Before calling the callback for each batch, we do a `noad_load_multiple`,
+ * so you don't have to.
+ *
+ * After the callback returns, we reset the cache for the specific IDs in
+ * that batch. So, this is good for cases where you only need to access
+ * each entity once, and don't want the cache to grow. (We don't clear the
+ * cache completely, so any pre-existing nodes will remain).
+ *
+ * @param \EntityFieldQuery $base_query
+ *   The base query. We will clone this query and adjust the offset to
+ *    get the results in batches.
+ * @param int $batch_size
+ *   The size of each batch.
+ * @param callable $function
+ *   The callback to execute. It will be called with the three parameters.
+ *    - The current offset
+ *    - The total number of items.
+ *    - An array of node IDs, being the current batch of query results.
+ */
+function hedley_restful_query_in_batches(\EntityFieldQuery $base_query, $batch_size, callable $function) {
+  $offset = 0;
+
+  $query_count = clone $base_query;
+  $count = $query_count->count()->execute();
+
+  while ($offset < $count) {
+    $query = clone $base_query;
+    $result = $query->range($offset, $batch_size)->execute();
+
+    if (empty($result['node'])) {
+      // None left.
+      return;
+    }
+
+    $keys = array_keys($result['node']);
+    node_load_multiple($keys);
+
+    call_user_func($function, $offset, $count, $keys);
+
+    $offset += $batch_size;
+    entity_get_controller('node')->resetCache($keys);
+  }
 }

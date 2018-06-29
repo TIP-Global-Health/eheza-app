@@ -4,17 +4,14 @@ module Utils.NominalDate exposing (..)
 Gizra.NominalDate.
 -}
 
-import Date exposing (Date)
-import Date.Extra exposing (fromParts, diff, Interval(Day))
-import Date.Extra exposing (fromParts, diff, Interval(Day), numberToMonth)
+import Date.Extra exposing (Interval(Day), diff, fromParts, numberToMonth)
 import Form.Field exposing (Field)
 import Form.Init exposing (setGroup, setString)
 import Form.Validate as Validate exposing (Validation, field)
-import Gizra.NominalDate exposing (NominalDate, NominalDateRange, fromLocalDateTime, toLocalDateTime, diffCalendarMonthsAndDays, formatYYYYMMDD)
+import Gizra.NominalDate exposing (NominalDate, NominalDateRange, diffCalendarMonthsAndDays, formatYYYYMMDD, fromLocalDateTime, toLocalDateTime)
 import Html exposing (Html)
-import Time.Date exposing (year, month, day, date, delta, daysInMonth)
-import Time.Date exposing (year, month, day, delta, daysInMonth)
-import Translate exposing (translate, Language)
+import Time.Date exposing (date, day, daysInMonth, delta, month, year)
+import Translate exposing (Language, translate)
 
 
 {-| A wrapper for an integer representing days.
@@ -69,22 +66,22 @@ renderAgeMonthsDays language birthDate now =
         months =
             diff.months
     in
-        if (days == 1 && months == 0) then
-            translate language <| Translate.AgeSingleDayWithoutMonth months days
-        else if (months == 0) then
-            translate language <| Translate.AgeDays days
-        else if (months == 1 && days == 0) then
-            translate language <| Translate.AgeSingleMonthWithoutDay months
-        else if (months > 1 && days == 0) then
-            translate language <| Translate.AgeMonthsWithoutDay months
-        else if (months == 1 && days == 1) then
-            translate language <| Translate.AgeSingleBoth months days
-        else if (days == 1) then
-            translate language <| Translate.AgeSingleDayWithMonth months days
-        else if (months == 1 && days /= 0) then
-            translate language <| Translate.AgeSingleMonth months days
-        else
-            translate language <| Translate.Age months days
+    if days == 1 && months == 0 then
+        translate language <| Translate.AgeSingleDayWithoutMonth months days
+    else if months == 0 then
+        translate language <| Translate.AgeDays days
+    else if months == 1 && days == 0 then
+        translate language <| Translate.AgeSingleMonthWithoutDay months
+    else if months > 1 && days == 0 then
+        translate language <| Translate.AgeMonthsWithoutDay months
+    else if months == 1 && days == 1 then
+        translate language <| Translate.AgeSingleBoth months days
+    else if days == 1 then
+        translate language <| Translate.AgeSingleDayWithMonth months days
+    else if months == 1 && days /= 0 then
+        translate language <| Translate.AgeSingleMonth months days
+    else
+        translate language <| Translate.Age months days
 
 
 renderAgeMonthsDaysAbbrev : Language -> NominalDate -> NominalDate -> String
@@ -121,9 +118,9 @@ renderAgeMonthsDaysAbbrev language birthDate now =
                         ++ " "
                         ++ translate language Translate.MonthAbbrev
     in
-        [ monthPart, dayPart ]
-            |> List.filterMap identity
-            |> String.join " "
+    [ monthPart, dayPart ]
+        |> List.filterMap identity
+        |> String.join " "
 
 
 renderAgeMonthsDaysHtml : Language -> NominalDate -> NominalDate -> List (Html any)
@@ -160,10 +157,10 @@ renderAgeMonthsDaysHtml language birthDate now =
                         ++ " "
                         ++ translate language Translate.MonthAbbrev
     in
-        [ monthPart, dayPart ]
-            |> List.filterMap identity
-            |> List.map Html.text
-            |> List.intersperse (Html.br [] [])
+    [ monthPart, dayPart ]
+        |> List.filterMap identity
+        |> List.map Html.text
+        |> List.intersperse (Html.br [] [])
 
 
 renderDate : Language -> NominalDate -> String
@@ -181,15 +178,15 @@ renderDate language date =
         year =
             Time.Date.year date
     in
-        (if day < 10 then
-            "0" ++ toString day
-         else
-            toString day
-        )
-            ++ " "
-            ++ month
-            ++ " "
-            ++ toString year
+    (if day < 10 then
+        "0" ++ toString day
+     else
+        toString day
+    )
+        ++ " "
+        ++ month
+        ++ " "
+        ++ toString year
 
 
 {-| Validates a NominalDate.

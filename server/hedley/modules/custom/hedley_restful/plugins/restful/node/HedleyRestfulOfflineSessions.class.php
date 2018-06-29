@@ -126,19 +126,21 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
    *   Array with the RESTful output.
    */
   public function getClinicData($nid) {
-    $account = $this->getAccount();
+    $query = new EntityFieldQuery();
+    $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'clinic')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->propertyOrderBy('title', 'ASC');
 
-    $clinic_ids = hedley_restful_extract_ids(
-      (new EntityFieldQuery())
-        ->entityCondition('entity_type', 'node')
-        ->entityCondition('bundle', 'clinic')
-        ->propertyCondition('status', NODE_PUBLISHED)
-        ->propertyOrderBy('title', 'ASC')
-        ->range(0, 1000)
-        ->execute()
-    );
+    $output = [];
 
-    return hedley_restful_output_from_handler('clinics', $clinic_ids, $account);
+    hedley_restful_query_in_batches($query, 50, function ($offset, $count, $clinic_ids) use (&$output) {
+      $batch = hedley_restful_output_from_handler('clinics', $clinic_ids, $this->getAccount());
+      $output = array_merge($output, $batch);
+    });
+
+    return $output;
   }
 
   /**
@@ -163,19 +165,52 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
    *   Array with the RESTful output.
    */
   public function getAllSessions($clinic_id) {
-    $account = $this->getAccount();
+    $query = new EntityFieldQuery();
+    $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'session')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldOrderBy('field_scheduled_date', 'value', 'ASC');
 
-    $session_ids = hedley_restful_extract_ids(
-      (new EntityFieldQuery())
-        ->entityCondition('entity_type', 'node')
-        ->entityCondition('bundle', 'session')
-        ->propertyCondition('status', NODE_PUBLISHED)
-        ->fieldOrderBy('field_scheduled_date', 'value', 'ASC')
-        ->range(0, 20000)
-        ->execute()
-    );
+    $output = [];
 
-    return hedley_restful_output_from_handler('sessions', $session_ids, $account);
+    hedley_restful_query_in_batches($query, 50, function ($offset, $count, $session_ids) use (&$output) {
+      $batch = hedley_restful_output_from_handler('sessions', $session_ids, $this->getAccount());
+      $output = array_merge($output, $batch);
+    });
+
+    return $output;
+  }
+
+  /**
+   * Associate child measurement bundles and their handlers.
+   *
+   * @return array
+   *   Array where they key is the bundle name and the value is the name of the
+   *    handler.
+   */
+  public function getChildMeasurementBundles() {
+    return [
+      'height' => 'heights',
+      'muac' => 'muacs',
+      'nutrition' => 'nutritions',
+      'photo' => 'photos',
+      'weight' => 'weights',
+    ];
+  }
+
+  /**
+   * Associate mother measurement bundles and their handlers.
+   *
+   * @return array
+   *   Array where they key is the bundle name and the value is the name of the
+   *    handler.
+   */
+  public function getMotherMeasurementBundles() {
+    // There will eventually be more of these.
+    return [
+      'family_planning' => 'family-plannings',
+    ];
   }
 
   /**
@@ -188,114 +223,88 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
    *   Array with the RESTful output.
    */
   public function getParticipantData($nid) {
-    $account = $this->getAccount();
-
     $clinic_id = entity_metadata_wrapper('node', $nid)->field_clinic->getIdentifier();
 
-    // First, let us get all the mothers assigned to this clinic.
-    $mother_ids = hedley_restful_extract_ids(
-      (new EntityFieldQuery())
+    $output = [
+      'mothers' => [],
+      'children' => [],
+      'mother_activity' => [],
+      'child_activity' => [],
+    ];
+
+    $mother_query = new EntityFieldQuery();
+    $mother_query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'mother')
+      ->fieldCondition('field_clinic', 'target_id', $clinic_id)
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->propertyOrderBy('title', 'ASC');
+
+    hedley_restful_query_in_batches($mother_query, 50, function ($offset, $count, $mother_ids) use (&$output) {
+      $mother_batch = hedley_restful_output_from_handler('mothers', $mother_ids, $this->getAccount());
+      $output['mothers'] = array_merge($output['mothers'], $mother_batch);
+
+      $child_query = new EntityFieldQuery();
+      $child_query
         ->entityCondition('entity_type', 'node')
-        ->entityCondition('bundle', 'mother')
-        ->fieldCondition('field_clinic', 'target_id', $clinic_id)
-        ->propertyCondition('status', NODE_PUBLISHED)
-        ->propertyOrderBy('title', 'ASC')
-        ->range(0, 1000)
-        ->execute()
-    );
+        ->entityCondition('bundle', 'child')
+        ->fieldCondition('field_mother', 'target_id', $mother_ids, 'IN')
+        ->propertyCondition('status', NODE_PUBLISHED);
 
-    // Then, get all the children of all the mothers. It's more
-    // efficient to do this in one query than many.
-    if ($mother_ids) {
-      $child_ids = hedley_restful_extract_ids(
-        (new EntityFieldQuery())
+      hedley_restful_query_in_batches($child_query, 50, function ($offset, $count, $child_ids) use (&$output) {
+        $child_batch = hedley_restful_output_from_handler('children', $child_ids, $this->getAccount());
+        $output['children'] = array_merge($output['children'], $child_batch);
+
+        // We order the measurements by date_measured descending, since it is
+        // convenient for the client to have the most recent measurements first.
+        $child_activity_query = new EntityFieldQuery();
+        $child_activity_query
           ->entityCondition('entity_type', 'node')
-          ->entityCondition('bundle', 'child')
-          ->fieldCondition('field_mother', 'target_id', $mother_ids, "IN")
-          ->propertyCondition('status', NODE_PUBLISHED)
-          ->range(0, 2000)
-          ->execute()
-      );
-    }
-    else {
-      $child_ids = [];
-    }
-
-    // Now, let's get all the child measurements.
-    $child_bundles = [
-      "height" => "heights",
-      "muac" => "muacs",
-      "nutrition" => "nutritions",
-      "photo" => "photos",
-      "weight" => "weights",
-    ];
-
-    // We order the measurements by date_measured descending, since it is
-    // convenient for the client to have the most recent measurements first.
-    if ($child_ids) {
-      $child_activity_ids = hedley_restful_extract_ids(
-        (new EntityFieldQuery())
-          ->entityCondition('entity_type', 'node')
-          ->entityCondition('bundle', array_keys($child_bundles))
-          ->fieldCondition('field_child', 'target_id', $child_ids, "IN")
+          ->entityCondition('bundle', array_keys($this->getChildMeasurementBundles()))
+          ->fieldCondition('field_child', 'target_id', $child_ids, 'IN')
           ->fieldOrderBy('field_date_measured', 'value', 'DESC')
-          ->propertyCondition('status', NODE_PUBLISHED)
-          ->range(0, 10000)
-          ->execute()
-      );
-    }
-    else {
-      $child_activity_ids = [];
-    }
+          ->propertyCondition('status', NODE_PUBLISHED);
 
-    $mother_bundles = [
-      "family_planning" => "family-plannings",
-    ];
+        hedley_restful_query_in_batches($child_activity_query, 50, function ($offset, $count, $child_activity_ids) use (&$output) {
+          $child_activity_batch = hedley_restful_output_for_bundles($this->getChildMeasurementBundles(), $child_activity_ids, $this->getAccount());
 
-    if ($mother_ids) {
-      $mother_activity_ids = hedley_restful_extract_ids(
-        (new EntityFieldQuery())
-          ->entityCondition('entity_type', 'node')
-          ->entityCondition('bundle', array_keys($mother_bundles))
-          ->fieldCondition('field_mother', 'target_id', $mother_ids, "IN")
-          ->fieldOrderBy('field_date_measured', 'value', 'DESC')
-          ->propertyCondition('status', NODE_PUBLISHED)
-          ->range(0, 10000)
-          ->execute()
-      );
-    }
-    else {
-      $mother_activity_ids = [];
-    }
+          // We group the mother mesaurements and child measurements by the
+          // mother or child, and the type of the measurement, because it's
+          // really easy to do that here, and it makes the decoder on the
+          // client side simpler.
+          foreach ($child_activity_batch as $activity) {
+            // The `if` is silly, but otherwise coder thinks $activity is
+            // unused, for some reason.
+            if ($activity) {
+              $output['child_activity'][$activity['child']][$activity['type']][] = $activity;
+            }
+          }
+        });
+      });
 
-    // Now, provide the usual output, since that's easiest. We'll
-    // stitch together the structures we want on the client.
-    $mother_output = hedley_restful_output_from_handler('mothers', $mother_ids, $account);
-    $child_output = hedley_restful_output_from_handler('children', $child_ids, $account);
+      $mother_activity_query = new EntityFieldQuery();
+      $mother_activity_query
+        ->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', array_keys($this->getMotherMeasurementBundles()))
+        ->fieldCondition('field_mother', 'target_id', $mother_ids, 'IN')
+        ->fieldOrderBy('field_date_measured', 'value', 'DESC')
+        ->propertyCondition('status', NODE_PUBLISHED);
 
-    $mother_activity_output = hedley_restful_output_for_bundles($mother_bundles, $mother_activity_ids, $account);
-    $child_activity_output = hedley_restful_output_for_bundles($child_bundles, $child_activity_ids, $account);
+      hedley_restful_query_in_batches($mother_activity_query, 50, function ($offset, $count, $mother_activity_ids) use (&$output) {
+        $mother_activity_batch = hedley_restful_output_for_bundles($this->getMotherMeasurementBundles(), $mother_activity_ids, $this->getAccount());
 
-    $grouped_mother_activity = [];
-    $grouped_child_activity = [];
+        // Group the activities in a way that makes things easy for the client.
+        foreach ($mother_activity_batch as $activity) {
+          // The `if` is silly, but otherwise coder thinks $activity is unused,
+          // for some reason.
+          if ($activity) {
+            $output['mother_activity'][$activity['mother']][$activity['type']][] = $activity;
+          }
+        }
+      });
+    });
 
-    // We group the mother mesaurements and child measurements by the mother or
-    // child, and the type of the measurement, because it's really easy to do
-    // that here, and it makes the decoder on the client side simpler.
-    foreach ($mother_activity_output as $activity) {
-      $grouped_mother_activity[$activity['mother']][$activity['type']][] = $activity;
-    }
-
-    foreach ($child_activity_output as $activity) {
-      $grouped_child_activity[$activity['child']][$activity['type']][] = $activity;
-    }
-
-    return [
-      "mothers" => $mother_output,
-      "children" => $child_output,
-      "mother_activity" => $grouped_mother_activity,
-      "child_activity" => $grouped_child_activity,
-    ];
+    return $output;
   }
 
   /**
@@ -406,23 +415,24 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
 
     // Now, let's get all the existing measurements for this session.
     $bundles = [
-      "height" => "heights",
-      "family_planning" => "family-plannings",
-      "muac" => "muacs",
-      "nutrition" => "nutritions",
-      "photo" => "photos",
-      "weight" => "weights",
+      'height' => 'heights',
+      'family_planning' => 'family-plannings',
+      'muac' => 'muacs',
+      'nutrition' => 'nutritions',
+      'photo' => 'photos',
+      'weight' => 'weights',
     ];
 
-    $activity_ids = hedley_restful_extract_ids(
-      (new EntityFieldQuery())
-        ->entityCondition('entity_type', 'node')
-        ->entityCondition('bundle', array_keys($bundles))
-        ->fieldCondition('field_session', 'target_id', $sessionId, "=")
-        ->propertyCondition('status', NODE_PUBLISHED)
-        ->range(0, 10000)
-        ->execute()
-    );
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', array_keys($bundles))
+      ->fieldCondition('field_session', 'target_id', $sessionId)
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->range(0, 10000)
+      ->execute();
+
+    $activity_ids = empty($result['node']) ? [] : array_keys($result['node']);
 
     $existing = [];
     node_load_multiple($activity_ids);
@@ -482,7 +492,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
 
     // We don't send back the whole offline session.
     return [
-      "id" => $sessionId,
+      'id' => $sessionId,
     ];
   }
 
@@ -513,7 +523,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
           $handler->patch($id, $edit['value']);
         }
         else {
-          $handler->post("", $edit['value']);
+          $handler->post('', $edit['value']);
         }
         break;
 
@@ -531,7 +541,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
         else {
           // This is actually an update ... perhaps the value was deleted
           // behind our back?
-          $handler->post("", $edit['edited']);
+          $handler->post('', $edit['edited']);
         }
         break;
 

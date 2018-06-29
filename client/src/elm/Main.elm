@@ -2,8 +2,8 @@ module Main exposing (..)
 
 import App.Fetch exposing (fetch)
 import App.Model exposing (Flags, Model, Msg)
-import App.Update exposing (init, update, subscriptions)
 import App.Router exposing (..)
+import App.Update exposing (init, subscriptions, update)
 import App.View exposing (view)
 import Gizra.Update exposing (andThenFetch)
 import RouteUrl

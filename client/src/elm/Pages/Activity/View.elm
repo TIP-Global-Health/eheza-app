@@ -1,9 +1,9 @@
 module Pages.Activity.View exposing (view)
 
-import Activity.Utils exposing (getActivityIcon, onlyCheckedIn, childHasPendingActivity, motherHasPendingActivity)
+import Activity.Utils exposing (childHasPendingActivity, getActivityIcon, motherHasPendingActivity, onlyCheckedIn)
 import Backend.Session.Model exposing (EditableSession)
 import EveryDict exposing (EveryDict)
-import Gizra.Html exposing (emptyNode, keyed, divKeyed, keyedDivKeyed)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -12,7 +12,7 @@ import List as List
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Activity.Utils exposing (selectParticipantForTab)
 import Participant.Model exposing (Participant)
-import Translate exposing (translate, Language)
+import Translate exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage)
 import ZScore.Model
 
@@ -57,10 +57,10 @@ view config language currentDate zscores selectedActivity fullSession model =
                         |> Translate.ActivitiesCompleted
                         |> translate language
             in
-                div [ class "ui tabular menu" ]
-                    [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
-                    , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
-                    ]
+            div [ class "ui tabular menu" ]
+                [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
+                , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
+                ]
 
         -- We compute this so that it's consistent with the tab
         selectedParticipant =
@@ -87,21 +87,21 @@ view config language currentDate zscores selectedActivity fullSession model =
                         imageView =
                             thumbnailImage (config.iconClass ++ " rounded") imageSrc name thumbnailDimensions.height thumbnailDimensions.width
                     in
-                        div
-                            [ classList
-                                [ ( "participant card", True )
-                                , ( "active", Just participantId == selectedParticipant )
-                                ]
-                            , Just participantId
-                                |> SetSelectedParticipant
-                                |> onClick
+                    div
+                        [ classList
+                            [ ( "participant card", True )
+                            , ( "active", Just participantId == selectedParticipant )
                             ]
-                            [ div
-                                [ class "image" ]
-                                [ imageView ]
-                            , div [ class "content" ]
-                                [ p [] [ text <| config.getName participant ] ]
-                            ]
+                        , Just participantId
+                            |> SetSelectedParticipant
+                            |> onClick
+                        ]
+                        [ div
+                            [ class "image" ]
+                            [ imageView ]
+                        , div [ class "content" ]
+                            [ p [] [ text <| config.getName participant ] ]
+                        ]
 
                 participantsCards =
                     if EveryDict.size selectedParticipants == 0 then
@@ -112,11 +112,11 @@ view config language currentDate zscores selectedActivity fullSession model =
                             |> List.sortBy (Tuple.second >> config.getName)
                             |> List.map viewParticipantCard
             in
-                div
-                    [ class "ui participant segment" ]
-                    [ div [ class "ui four participant cards" ]
-                        participantsCards
-                    ]
+            div
+                [ class "ui participant segment" ]
+                [ div [ class "ui four participant cards" ]
+                    participantsCards
+                ]
 
         measurementsForm =
             case selectedParticipant of
@@ -145,11 +145,11 @@ view config language currentDate zscores selectedActivity fullSession model =
                     [ span [ class "icon-back" ] [] ]
                 ]
     in
-        divKeyed
-            [ class "wrap" ]
-            [ header |> keyed "header"
-            , activityDescription |> keyed "activity-description"
-            , tabs |> keyed "tabs"
-            , participants |> keyed "participants"
-            , measurementsForm |> keyed "measurements-form"
-            ]
+    divKeyed
+        [ class "wrap" ]
+        [ header |> keyed "header"
+        , activityDescription |> keyed "activity-description"
+        , tabs |> keyed "tabs"
+        , participants |> keyed "participants"
+        , measurementsForm |> keyed "measurements-form"
+        ]
