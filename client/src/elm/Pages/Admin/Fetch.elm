@@ -50,8 +50,8 @@ fetch currentDate backend model =
                 _ ->
                     Nothing
     in
-        List.filterMap identity
-            [ fetchClinics
-            , fetchSessions
-            , resetPostSession
-            ]
+    List.filterMap identity
+        [ fetchClinics
+        , fetchSessions
+        , resetPostSession
+        ]

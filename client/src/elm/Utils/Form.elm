@@ -13,4 +13,4 @@ onError callback validation field =
             Ok a
 
         Err err ->
-            (callback err) field
+            callback err field

@@ -25,98 +25,98 @@ update date backend msg model =
                 |> RemoteData.map (EveryDictList.member clinicId)
                 |> RemoteData.withDefault True
     in
-        case msg of
-            SetActivePage page ->
-                ( model
-                , Cmd.none
-                , [ App.Model.SetActivePage page ]
-                )
+    case msg of
+        SetActivePage page ->
+            ( model
+            , Cmd.none
+            , [ App.Model.SetActivePage page ]
+            )
 
-            MsgBackend subMsg ->
-                ( model
-                , Cmd.none
-                , [ App.Model.MsgLoggedIn (App.Model.MsgBackend subMsg) ]
-                )
+        MsgBackend subMsg ->
+            ( model
+            , Cmd.none
+            , [ App.Model.MsgLoggedIn (App.Model.MsgBackend subMsg) ]
+            )
 
-            MsgCreateSession subMsg ->
-                let
-                    createSession =
-                        model.createSession
-                            |> Maybe.map (Form.update (validateSession knownClinic) subMsg)
+        MsgCreateSession subMsg ->
+            let
+                createSession =
+                    model.createSession
+                        |> Maybe.map (Form.update (validateSession knownClinic) subMsg)
 
-                    appMsgs =
-                        case subMsg of
-                            Form.Submit ->
-                                model.createSession
-                                    |> Maybe.andThen Form.getOutput
-                                    |> Maybe.map
-                                        (\session ->
-                                            [ session
-                                                |> Backend.Model.PostSession
-                                                |> App.Model.MsgBackend
-                                                |> App.Model.MsgLoggedIn
-                                            ]
-                                        )
-                                    -- If we submit, but can't actually submit,
-                                    -- then change the request status to
-                                    -- `NotAsked` (to reset network errors
-                                    -- etc.)
-                                    |> Maybe.withDefault
-                                        [ Backend.Model.HandlePostedSession NotAsked
+                appMsgs =
+                    case subMsg of
+                        Form.Submit ->
+                            model.createSession
+                                |> Maybe.andThen Form.getOutput
+                                |> Maybe.map
+                                    (\session ->
+                                        [ session
+                                            |> Backend.Model.PostSession
                                             |> App.Model.MsgBackend
                                             |> App.Model.MsgLoggedIn
                                         ]
+                                    )
+                                -- If we submit, but can't actually submit,
+                                -- then change the request status to
+                                -- `NotAsked` (to reset network errors
+                                -- etc.)
+                                |> Maybe.withDefault
+                                    [ Backend.Model.HandlePostedSession NotAsked
+                                        |> App.Model.MsgBackend
+                                        |> App.Model.MsgLoggedIn
+                                    ]
 
-                            _ ->
-                                []
-                in
-                    ( { model | createSession = createSession }
-                    , Cmd.none
-                    , appMsgs
-                    )
+                        _ ->
+                            []
+            in
+            ( { model | createSession = createSession }
+            , Cmd.none
+            , appMsgs
+            )
 
-            ResetCreateSessionForm ->
-                let
-                    -- We'll default the dates to start today and finish three days later
-                    initialDates =
-                        { start = date
-                        , end = addDays 3 date
-                        }
+        ResetCreateSessionForm ->
+            let
+                -- We'll default the dates to start today and finish three days later
+                initialDates =
+                    { start = date
+                    , end = addDays 3 date
+                    }
 
-                    createSession =
-                        model.createSession
-                            |> Maybe.map (\_ -> Backend.Session.Form.emptyForm knownClinic initialDates)
-                in
-                    ( { model | createSession = createSession }
-                    , Cmd.none
-                    , []
-                    )
+                createSession =
+                    model.createSession
+                        |> Maybe.map (\_ -> Backend.Session.Form.emptyForm knownClinic initialDates)
+            in
+            ( { model | createSession = createSession }
+            , Cmd.none
+            , []
+            )
 
-            ShowCreateSessionForm show ->
-                let
-                    -- We'll default the dates to start today and finish three days later
-                    initialDates =
-                        { start = date
-                        , end = addDays 3 date
-                        }
+        ShowCreateSessionForm show ->
+            let
+                -- We'll default the dates to start today and finish three days later
+                initialDates =
+                    { start = date
+                    , end = addDays 3 date
+                    }
 
-                    newModel =
-                        case model.createSession of
-                            Just form ->
-                                if show then
-                                    model
-                                else
-                                    { model | createSession = Nothing }
+                newModel =
+                    case model.createSession of
+                        Just form ->
+                            if show then
+                                model
+                            else
+                                { model | createSession = Nothing }
 
-                            Nothing ->
-                                if show then
-                                    { model
-                                        | createSession = Just <| Backend.Session.Form.emptyForm knownClinic initialDates
-                                    }
-                                else
-                                    model
-                in
-                    ( newModel
-                    , Cmd.none
-                    , []
-                    )
+                        Nothing ->
+                            if show then
+                                { model
+                                    | createSession = Just <| Backend.Session.Form.emptyForm knownClinic initialDates
+                                }
+                            else
+                                model
+            in
+            ( newModel
+            , Cmd.none
+            , []
+            )
