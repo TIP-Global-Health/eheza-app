@@ -957,9 +957,9 @@ translate lang trans =
                 ZScoreWeightForHeight ->
                     { english = "Z-Score Weight for Height: " }
     in
-        case lang of
-            English ->
-                .english translationSet
+    case lang of
+        English ->
+            .english translationSet
 
 
 languageFromString : String -> Result String Language

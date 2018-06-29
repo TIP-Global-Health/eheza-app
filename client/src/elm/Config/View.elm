@@ -1,8 +1,8 @@
 module Config.View exposing (..)
 
-import Html exposing (div, h2, text, Html)
+import Html exposing (Html, div, h2, text)
 import Html.Attributes exposing (class)
-import Translate as Trans exposing (translate, Language)
+import Translate as Trans exposing (Language, translate)
 
 
 -- A plain function that always returns the error message

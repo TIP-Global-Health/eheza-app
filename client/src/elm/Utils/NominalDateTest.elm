@@ -3,7 +3,7 @@ module Utils.NominalDateTest exposing (all)
 import Date
 import Expect
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
-import Test exposing (describe, test, Test)
+import Test exposing (Test, describe, test)
 import Time.Date exposing (date)
 import Translate exposing (Language(English))
 import Utils.NominalDate exposing (Days(..), diffDays, renderAgeMonthsDays, renderDate)
@@ -15,48 +15,48 @@ diffDaysTest =
         today =
             fromLocalDateTime (Date.fromTime 1503920848000)
     in
-        describe "diffDays"
-            [ test "for newborn" <|
-                \() ->
-                    Expect.equal
-                        (diffDays
-                            (fromLocalDateTime <| Date.fromTime 1503834862000)
-                            today
-                        )
-                        (Days 1)
-            , test "for a week old newborn" <|
-                \() ->
-                    Expect.equal
-                        (diffDays
-                            (fromLocalDateTime <| Date.fromTime 1503316462000)
-                            today
-                        )
-                        (Days 7)
-            , test "for a one month old baby" <|
-                \() ->
-                    Expect.equal
-                        (diffDays
-                            (fromLocalDateTime <| Date.fromTime 1501156048000)
-                            today
-                        )
-                        (Days 32)
-            , test "for a thirteen months old baby" <|
-                \() ->
-                    Expect.equal
-                        (diffDays
-                            (fromLocalDateTime <| Date.fromTime 1469101648000)
-                            today
-                        )
-                        (Days 403)
-            , test "for a 30 years old mother" <|
-                \() ->
-                    Expect.equal
-                        (diffDays
-                            (fromLocalDateTime <| Date.fromTime 557840848000)
-                            today
-                        )
-                        (Days 10950)
-            ]
+    describe "diffDays"
+        [ test "for newborn" <|
+            \() ->
+                Expect.equal
+                    (diffDays
+                        (fromLocalDateTime <| Date.fromTime 1503834862000)
+                        today
+                    )
+                    (Days 1)
+        , test "for a week old newborn" <|
+            \() ->
+                Expect.equal
+                    (diffDays
+                        (fromLocalDateTime <| Date.fromTime 1503316462000)
+                        today
+                    )
+                    (Days 7)
+        , test "for a one month old baby" <|
+            \() ->
+                Expect.equal
+                    (diffDays
+                        (fromLocalDateTime <| Date.fromTime 1501156048000)
+                        today
+                    )
+                    (Days 32)
+        , test "for a thirteen months old baby" <|
+            \() ->
+                Expect.equal
+                    (diffDays
+                        (fromLocalDateTime <| Date.fromTime 1469101648000)
+                        today
+                    )
+                    (Days 403)
+        , test "for a 30 years old mother" <|
+            \() ->
+                Expect.equal
+                    (diffDays
+                        (fromLocalDateTime <| Date.fromTime 557840848000)
+                        today
+                    )
+                    (Days 10950)
+        ]
 
 
 renderAgeMonthsDaysTest : Test
@@ -66,56 +66,56 @@ renderAgeMonthsDaysTest =
             fromLocalDateTime <|
                 Date.fromTime 1503920848000
     in
-        describe "renderAgeMonthDays"
-            [ test "for newborn" <|
-                \() ->
-                    Expect.equal
-                        (renderAgeMonthsDays English
-                            (fromLocalDateTime <| Date.fromTime 1503834862000)
-                            today
-                        )
-                        "1 day"
-            , test "for a week old newborn" <|
-                \() ->
-                    Expect.equal
-                        (renderAgeMonthsDays English
-                            (fromLocalDateTime <| Date.fromTime 1503316462000)
-                            today
-                        )
-                        "7 days"
-            , test "for a one month old baby" <|
-                \() ->
-                    Expect.equal
-                        (renderAgeMonthsDays English
-                            (fromLocalDateTime <| Date.fromTime 1501242448000)
-                            today
-                        )
-                        "1 month"
-            , test "for a one month, one day old baby" <|
-                \() ->
-                    Expect.equal
-                        (renderAgeMonthsDays English
-                            (fromLocalDateTime <| Date.fromTime 1501156048000)
-                            today
-                        )
-                        "1 month 1 day"
-            , test "for a thirteen months old baby" <|
-                \() ->
-                    Expect.equal
-                        (renderAgeMonthsDays English
-                            (fromLocalDateTime <| Date.fromTime 1469101648000)
-                            today
-                        )
-                        "13 months 7 days"
-            , test "for a 30 years old mother" <|
-                \() ->
-                    Expect.equal
-                        (renderAgeMonthsDays English
-                            (fromLocalDateTime <| Date.fromTime 557840848000)
-                            today
-                        )
-                        "359 months 23 days"
-            ]
+    describe "renderAgeMonthDays"
+        [ test "for newborn" <|
+            \() ->
+                Expect.equal
+                    (renderAgeMonthsDays English
+                        (fromLocalDateTime <| Date.fromTime 1503834862000)
+                        today
+                    )
+                    "1 day"
+        , test "for a week old newborn" <|
+            \() ->
+                Expect.equal
+                    (renderAgeMonthsDays English
+                        (fromLocalDateTime <| Date.fromTime 1503316462000)
+                        today
+                    )
+                    "7 days"
+        , test "for a one month old baby" <|
+            \() ->
+                Expect.equal
+                    (renderAgeMonthsDays English
+                        (fromLocalDateTime <| Date.fromTime 1501242448000)
+                        today
+                    )
+                    "1 month"
+        , test "for a one month, one day old baby" <|
+            \() ->
+                Expect.equal
+                    (renderAgeMonthsDays English
+                        (fromLocalDateTime <| Date.fromTime 1501156048000)
+                        today
+                    )
+                    "1 month 1 day"
+        , test "for a thirteen months old baby" <|
+            \() ->
+                Expect.equal
+                    (renderAgeMonthsDays English
+                        (fromLocalDateTime <| Date.fromTime 1469101648000)
+                        today
+                    )
+                    "13 months 7 days"
+        , test "for a 30 years old mother" <|
+            \() ->
+                Expect.equal
+                    (renderAgeMonthsDays English
+                        (fromLocalDateTime <| Date.fromTime 557840848000)
+                        today
+                    )
+                    "359 months 23 days"
+        ]
 
 
 renderDateTest : Test

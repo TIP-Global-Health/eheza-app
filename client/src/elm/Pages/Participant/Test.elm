@@ -3,8 +3,8 @@ module Pages.Participant.Test exposing (all)
 import Date
 import Dict
 import Expect
-import Pages.Participant.Model exposing (emptyModel)
 import Fixtures exposing (..)
+import Pages.Participant.Model exposing (emptyModel)
 import Participant.Model
 import Test exposing (Test, describe, test)
 

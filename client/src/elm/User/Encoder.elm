@@ -1,6 +1,6 @@
 module User.Encoder exposing (encodeUser)
 
-import Json.Encode exposing (Value, int, string, object, list)
+import Json.Encode exposing (Value, int, list, object, string)
 import Restful.Endpoint exposing (encodeEntityId)
 import User.Model exposing (User)
 

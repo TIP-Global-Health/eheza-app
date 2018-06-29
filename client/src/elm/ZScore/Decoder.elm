@@ -39,6 +39,6 @@ decodeZScoreEntriesByHeight =
             field "Length" float
                 |> map ((*) 10 >> round)
     in
-        map2 (,) decodeIntegerMillimetres decodeZScoreEntry
-            |> list
-            |> map IntDict.fromList
+    map2 (,) decodeIntegerMillimetres decodeZScoreEntry
+        |> list
+        |> map IntDict.fromList
