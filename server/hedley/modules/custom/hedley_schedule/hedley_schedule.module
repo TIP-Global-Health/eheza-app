@@ -5,6 +5,15 @@
  * Code for the Hedley Schedule feature.
  */
 
+define('HEDLEY_SCHEDULE_MEASUREMENT_CONTENT_TYPES', [
+  'family_planning',
+  'height',
+  'muac',
+  'nutrition',
+  'photo',
+  'weight',
+]);
+
 include_once 'hedley_schedule.features.inc';
 
 /**
@@ -28,23 +37,14 @@ function hedley_schedule_node_delete($node) {
   $session_nid = $wrapper->getIdentifier();
   // We need to delete the sessions measurements if the session is valid for
   // deletion.
-  $measurement_types = [
-    'family_planning',
-    'height',
-    'muac',
-    'nutrition',
-    'photo',
-    'weight',
-  ];
-
   if ($wrapper->field_training->value()) {
-    foreach ($measurement_types as $measurement_type) {
+    foreach (HEDLEY_SCHEDULE_MEASUREMENT_CONTENT_TYPES as $measurement_type) {
       $measurement_nodes = hedley_activity_get_measurements_entities_by_session($session_nid, $measurement_type);
       node_delete_multiple($measurement_nodes);
     }
   }
   else {
-    foreach ($measurement_types as $measurement_type) {
+    foreach (HEDLEY_SCHEDULE_MEASUREMENT_CONTENT_TYPES as $measurement_type) {
       $has_measurements = !empty(hedley_activity_get_measurements_entities_by_session($wrapper->getIdentifier(), $measurement_type)) ? TRUE : FALSE;
 
       if ($has_measurements) {
