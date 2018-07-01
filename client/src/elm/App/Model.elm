@@ -46,7 +46,6 @@ type alias Model =
     , configuration : RemoteData String ConfiguredModel
     , currentDate : NominalDate
     , language : Language
-    , languageSwitcherDropDown : Bool
     , serviceWorker : ServiceWorker.Model.Model
     , offline : Bool
     , zscores : ZScore.Model.Model
@@ -143,7 +142,6 @@ type Msg
     | SetLanguage Language
     | SetOffline Bool
     | Tick Time
-    | ToggleLanguageSwitcherDropDown
 
 
 {-| Messages we can only handle if we're logged in.
@@ -173,7 +171,6 @@ emptyModel =
     -- with the real date.
     , currentDate = fromLocalDateTime (Date.fromTime 0)
     , language = English
-    , languageSwitcherDropDown = False
     , offline = False
     , sessionPages = Pages.Model.emptySessionPages
     , serviceWorker = ServiceWorker.Model.emptyModel

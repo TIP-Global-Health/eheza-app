@@ -287,11 +287,6 @@ update msg model =
                 , Cmd.none
                 )
 
-        ToggleLanguageSwitcherDropDown ->
-            ( { model | languageSwitcherDropDown = not model.languageSwitcherDropDown }
-            , Cmd.none
-            )
-
 
 {-| Convenience function to process a msg which depends on having a configuration.
 

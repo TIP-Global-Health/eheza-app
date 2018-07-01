@@ -24,43 +24,16 @@ a {
 .language-switcher {
   margin: 10px 0;
 
-  .ui.dropdown {
-    background-color: white;
-    cursor: pointer;
-    color: $color-primary;
+  .button {
 
-    .language-icon {
-      position: absolute;
-      height: 100%;
-      line-height: 2.3;
-      border-radius: 0;
-      border-top-left-radius: inherit;
-      border-bottom-left-radius: inherit;
-      text-align: center;
-      margin: 0;
-      width: 2.57142857em;
-      background-color: rgba(0,0,0,.05);
-      color: '';
-      box-shadow: -1px 0 0 0 transparent inset;
-      top: 0;
-      left: 0;
+    i {
+      vertical-align: 3px;
     }
 
-    > span.text {
-      cursor: pointer;
-    }
-
-    &.visible {
-
-      .menu {
-        display: block;
-        z-index: 1000;
-      }
-    }
-
-    &:hover {
-      background-color: $color-dark-background;
-      color: white;
+    &:hover,
+    &.active:hover,
+    &.active {
+      color: $color-secondary;
     }
   }
 }

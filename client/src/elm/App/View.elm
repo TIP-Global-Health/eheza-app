@@ -3,7 +3,7 @@ module App.View exposing (view)
 import App.Model exposing (..)
 import Config.View
 import Html exposing (..)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
 import Pages.Clinics.View
 import Pages.Login.View
@@ -45,52 +45,31 @@ saves the current language via the Update function in local storage.
 -}
 viewLanguageSwitcher : Model -> Html Msg
 viewLanguageSwitcher model =
-    let
-        switcherClasses =
-            if model.languageSwitcherDropDown then
-                "ui floating dropdown labeled search icon button active visible"
-            else
-                "ui floating dropdown labeled search icon button"
-
-        languageIconClass =
-            if model.language == English then
-                "language-icon gb flag"
-            else
-                "language-icon rw flag"
-    in
     div
-        [ class "ui centered language-switcher"
-        , onClick <| ToggleLanguageSwitcherDropDown
-        ]
-        [ div
-            [ class switcherClasses ]
-            [ i
-                [ class languageIconClass ]
-                []
-            , span
-                [ class "text" ]
-                [ text <| translate model.language Translate.SelectLanguage ]
-            , div
-                [ class "menu" ]
-                [ div
-                    [ class "item"
-                    , onClick <| SetLanguage English
-                    ]
-                    [ i
-                        [ class "gb flag" ]
-                        []
-                    , text "English"
-                    ]
-                , div
-                    [ class "item"
-                    , onClick <| SetLanguage Kinyarwanda
-                    ]
-                    [ i
-                        [ class "rw flag" ]
-                        []
-                    , text "Kinyarwanda"
-                    ]
+        [ class "ui centered language-switcher" ]
+        [ button
+            [ classList
+                [ ( "ui left attached button", True )
+                , ( "active", model.language == English )
                 ]
+            , onClick <| SetLanguage English
+            ]
+            [ i
+                [ class "gb flag" ]
+                []
+            , text "English"
+            ]
+        , button
+            [ classList
+                [ ( "ui right attached button", True )
+                , ( "active", model.language == Kinyarwanda )
+                ]
+            , onClick <| SetLanguage Kinyarwanda
+            ]
+            [ i
+                [ class "rw flag" ]
+                []
+            , text "Kinyarwanda"
             ]
         ]
 
