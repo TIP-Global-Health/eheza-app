@@ -1,4 +1,4 @@
-module Backend.Session.Model exposing (EditableSession, OfflineSession, Session, MsgEditableSession(..))
+module Backend.Session.Model exposing (EditableSession, MsgEditableSession(..), OfflineSession, Session)
 
 {-| A "session" refers to an editing session ... that is, an occasion on
 which measurements are taken.

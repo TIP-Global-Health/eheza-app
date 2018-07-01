@@ -1,7 +1,7 @@
 port module Measurement.Update exposing (updateChild, updateMother)
 
 import Backend.Entities exposing (ChildId, MotherId)
-import Backend.Measurement.Model exposing (FamilyPlanningSign(..), ChildNutritionSign(..), PhotoValue)
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), PhotoValue)
 import Config.Model exposing (BackendUrl)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
@@ -55,10 +55,10 @@ updateChild msg model =
                         -- any signs.
                         EverySet.remove sign model.nutritionSigns
             in
-                ( { model | nutritionSigns = nutritionSignsUpdated }
-                , Cmd.none
-                , Nothing
-                )
+            ( { model | nutritionSigns = nutritionSignsUpdated }
+            , Cmd.none
+            , Nothing
+            )
 
         SendOutMsgChild outMsg ->
             ( model
@@ -118,10 +118,10 @@ updateMother msg model =
                         -- any signs.
                         EverySet.remove sign model.familyPlanningSigns
             in
-                ( { model | familyPlanningSigns = signsUpdated }
-                , Cmd.none
-                , Nothing
-                )
+            ( { model | familyPlanningSigns = signsUpdated }
+            , Cmd.none
+            , Nothing
+            )
 
         SendOutMsgMother outMsg ->
             ( model

@@ -1,4 +1,4 @@
-module App.Model exposing (emptyModel, emptyLoggedInModel, Flags, Msg(..), LoggedInModel, MsgLoggedIn(..), Model, ConfiguredModel)
+module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..), MsgLoggedIn(..), emptyLoggedInModel, emptyModel)
 
 import Backend.Model
 import Config.Model

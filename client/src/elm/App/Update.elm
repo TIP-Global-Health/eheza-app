@@ -1,4 +1,4 @@
-port module App.Update exposing (init, update, subscriptions)
+port module App.Update exposing (init, subscriptions, update)
 
 import App.Model exposing (..)
 import Backend.Model
@@ -9,8 +9,7 @@ import Config
 import Date
 import Dict
 import Gizra.NominalDate exposing (fromLocalDateTime)
-import Json.Decode exposing (decodeValue, bool)
-import Json.Decode exposing (oneOf)
+import Json.Decode exposing (bool, decodeValue, oneOf)
 import Maybe.Extra
 import Pages.Admin.Update
 import Pages.Login.Model
@@ -18,10 +17,9 @@ import Pages.Login.Update
 import Pages.Model
 import Pages.Page exposing (Page(..), UserPage(ClinicsPage))
 import Pages.Update
-import Pages.Update
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (decodeSingleDrupalEntity)
-import Restful.Login exposing (LoginStatus(..), Login, Credentials, checkCachedCredentials)
+import Restful.Login exposing (Credentials, Login, LoginStatus(..), checkCachedCredentials)
 import ServiceWorker.Model
 import ServiceWorker.Update
 import Task
@@ -82,13 +80,13 @@ init flags =
                     , login = loginStatus
                     }
             in
-                ( { emptyModel | configuration = Success configuredModel }
-                , cmd
-                )
-                    |> sequence update
-                        [ MsgServiceWorker ServiceWorker.Model.Register
-                        , MsgZScore ZScore.Model.FetchAll
-                        ]
+            ( { emptyModel | configuration = Success configuredModel }
+            , cmd
+            )
+                |> sequence update
+                    [ MsgServiceWorker ServiceWorker.Model.Register
+                    , MsgZScore ZScore.Model.FetchAll
+                    ]
 
         Nothing ->
             ( { emptyModel | configuration = Failure <| "No config found for: " ++ flags.hostname }
@@ -104,10 +102,10 @@ update msg model =
                 ( subModel, subCmd, extraMsgs ) =
                     Backend.Update.updateCache model.currentDate subMsg model.cache
             in
-                ( { model | cache = subModel }
-                , Cmd.map MsgCache subCmd
-                )
-                    |> sequence update (List.map (MsgLoggedIn << MsgBackend) extraMsgs)
+            ( { model | cache = subModel }
+            , Cmd.map MsgCache subCmd
+            )
+                |> sequence update (List.map (MsgLoggedIn << MsgBackend) extraMsgs)
 
         MsgLoggedIn loggedInMsg ->
             updateLoggedIn
@@ -118,20 +116,20 @@ update msg model =
                                 ( backend, cmd, cacheMsgs ) =
                                     Backend.Update.updateBackend credentials.backendUrl credentials.accessToken subMsg data.backend
                             in
-                                ( { data | backend = backend }
-                                , Cmd.map (MsgLoggedIn << MsgBackend) cmd
-                                , List.map MsgCache cacheMsgs
-                                )
+                            ( { data | backend = backend }
+                            , Cmd.map (MsgLoggedIn << MsgBackend) cmd
+                            , List.map MsgCache cacheMsgs
+                            )
 
                         MsgPageAdmin subMsg ->
                             let
                                 ( newModel, cmd, appMsgs ) =
                                     Pages.Admin.Update.update model.currentDate data.backend subMsg data.adminPage
                             in
-                                ( { data | adminPage = newModel }
-                                , Cmd.map (MsgLoggedIn << MsgPageAdmin) cmd
-                                , appMsgs
-                                )
+                            ( { data | adminPage = newModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageAdmin) cmd
+                            , appMsgs
+                            )
                 )
                 model
 
@@ -184,14 +182,14 @@ update msg model =
                                     resetErrors =
                                         MsgLoggedIn <| MsgBackend <| Backend.Model.ResetErrors
                                 in
-                                    refetch :: resetErrors :: redirect
+                                refetch :: resetErrors :: redirect
                             else
                                 []
                     in
-                        ( { configured | login = subModel }
-                        , cmd
-                        , extraMsgs
-                        )
+                    ( { configured | login = subModel }
+                    , cmd
+                    , extraMsgs
+                    )
                 )
                 model
 
@@ -219,10 +217,10 @@ update msg model =
                                                 SetActivePage page
                                     )
                     in
-                        ( { configured | loginPage = subModel }
-                        , Cmd.map MsgPageLogin subCmd
-                        , extraMsgs
-                        )
+                    ( { configured | loginPage = subModel }
+                    , Cmd.map MsgPageLogin subCmd
+                    , extraMsgs
+                    )
                 )
                 model
 
@@ -231,9 +229,9 @@ update msg model =
                 ( subModel, subCmd ) =
                     ServiceWorker.Update.update subMsg model.serviceWorker
             in
-                ( { model | serviceWorker = subModel }
-                , Cmd.map MsgServiceWorker subCmd
-                )
+            ( { model | serviceWorker = subModel }
+            , Cmd.map MsgServiceWorker subCmd
+            )
 
         MsgSession subMsg ->
             -- TODO: Should ideally reflect the fact that an EditableSession is
@@ -244,10 +242,10 @@ update msg model =
                         ( subModel, subCmd, extraMsgs ) =
                             Pages.Update.updateSession session subMsg model.sessionPages
                     in
-                        ( { model | sessionPages = subModel }
-                        , Cmd.map MsgSession subCmd
-                        )
-                            |> sequence update extraMsgs
+                    ( { model | sessionPages = subModel }
+                    , Cmd.map MsgSession subCmd
+                    )
+                        |> sequence update extraMsgs
                 )
                 model.cache
 
@@ -256,9 +254,9 @@ update msg model =
                 ( subModel, subCmd ) =
                     ZScore.Update.update subMsg model.zscores
             in
-                ( { model | zscores = subModel }
-                , Cmd.map MsgZScore subCmd
-                )
+            ( { model | zscores = subModel }
+            , Cmd.map MsgZScore subCmd
+            )
 
         SetActivePage page ->
             -- TODO: There may be some additinoal logic needed here ... we'll see.
@@ -281,16 +279,16 @@ update msg model =
                 nominalDate =
                     fromLocalDateTime (Date.fromTime time)
             in
-                -- We don't update the model at all if the date hasn't
-                -- changed ...  this should be a small optimization, since
-                -- the new model will be referentially equal to the
-                -- previous one.
-                if nominalDate == model.currentDate then
-                    ( model, Cmd.none )
-                else
-                    ( { model | currentDate = nominalDate }
-                    , Cmd.none
-                    )
+            -- We don't update the model at all if the date hasn't
+            -- changed ...  this should be a small optimization, since
+            -- the new model will be referentially equal to the
+            -- previous one.
+            if nominalDate == model.currentDate then
+                ( model, Cmd.none )
+            else
+                ( { model | currentDate = nominalDate }
+                , Cmd.none
+                )
 
 
 {-| Convenience function to process a msg which depends on having a configuration.
@@ -307,11 +305,11 @@ updateConfigured func model =
                     ( subModel, cmd, extraMsgs ) =
                         func configured
                 in
-                    sequence update
-                        extraMsgs
-                        ( { model | configuration = Success subModel }
-                        , cmd
-                        )
+                sequence update
+                    extraMsgs
+                    ( { model | configuration = Success subModel }
+                    , cmd
+                    )
             )
         |> RemoteData.withDefault ( model, Cmd.none )
 
@@ -339,10 +337,10 @@ updateLoggedIn func model =
                         ( subModel, cmd, extraMsgs ) =
                             func login.credentials login.data
                     in
-                        ( { configured | login = LoggedIn { login | data = subModel } }
-                        , cmd
-                        , extraMsgs
-                        )
+                    ( { configured | login = LoggedIn { login | data = subModel } }
+                    , cmd
+                    , extraMsgs
+                    )
         )
         model
 

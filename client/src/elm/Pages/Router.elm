@@ -1,10 +1,10 @@
 module Pages.Router exposing (delta2url, parseUrl)
 
-import Activity.Utils exposing (encodeActivityTypeAsString, decodeActivityTypeFromString, defaultActivityType)
+import Activity.Utils exposing (decodeActivityTypeFromString, defaultActivityType, encodeActivityTypeAsString)
 import Pages.Page exposing (..)
-import Restful.Endpoint exposing (toEntityId, fromEntityId)
+import Restful.Endpoint exposing (fromEntityId, toEntityId)
 import RouteUrl exposing (HistoryEntry(..), UrlChange)
-import UrlParser exposing (Parser, map, parseHash, s, oneOf, (</>), int, string, top)
+import UrlParser exposing ((</>), Parser, int, map, oneOf, parseHash, s, string, top)
 
 
 {-| For now, we're given just the previous and current page ...if
@@ -55,10 +55,10 @@ delta2url previous current =
                     let
                         clinic =
                             clinicId
-                                |> Maybe.map (\id -> "/" ++ toString (fromEntityId (id)))
+                                |> Maybe.map (\id -> "/" ++ toString (fromEntityId id))
                                 |> Maybe.withDefault ""
                     in
-                        Just <| UrlChange NewEntry ("#clinics" ++ clinic)
+                    Just <| UrlChange NewEntry ("#clinics" ++ clinic)
 
                 MyAccountPage ->
                     Just <| UrlChange NewEntry "#my-account"

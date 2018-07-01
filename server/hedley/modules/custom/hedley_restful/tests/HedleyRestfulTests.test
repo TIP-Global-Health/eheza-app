@@ -11,62 +11,6 @@
 class HedleyRestfulTests extends HedleyWebTestBase {
 
   /**
-   * A user object.
-   *
-   * @var \stdClass
-   */
-  protected $user;
-
-  /**
-   * Anonymous user object.
-   *
-   * @var \stdClass
-   */
-  protected $anonymousUser;
-
-  /**
-   * A clinic node.
-   *
-   * @var \stdClass
-   */
-  protected $clinic;
-
-  /**
-   * A clinic node with no mothers assigned.
-   *
-   * @var \stdClass
-   */
-  protected $clinicWithoutMothers;
-
-  /**
-   * A mother.
-   *
-   * @var \stdClass
-   */
-  protected $mother;
-
-  /**
-   * A child.
-   *
-   * @var \stdClass
-   */
-  protected $child;
-
-  /**
-   * A session node.
-   *
-   * @var \stdClass
-   */
-  protected $session;
-
-  /**
-   * A session node, with no mothers.
-   *
-   * @var \stdClass
-   */
-  protected $sessionWithoutMothers;
-
-  /**
    * Info hook.
    */
   public static function getInfo() {
@@ -78,113 +22,116 @@ class HedleyRestfulTests extends HedleyWebTestBase {
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function setUp() {
-    parent::setUp();
-
-    // Common test users for the cases.
-    $this->anonymousUser = user_load(0);
-    $this->user = $this->drupalCreateUser(['bypass node access']);
-
-    // Create two clinics.
-    $this->clinic = $this->drupalCreateNode([
-      'type' => 'clinic',
-      'title' => 'Test clinic',
-    ]);
-
-    $this->clinicWithoutMothers = $this->drupalCreateNode([
-      'type' => 'clinic',
-      'title' => 'Clinic without mothers',
-    ]);
-
-    // Create a mother for the clinic.
-    $this->mother = $this->drupalCreateNode([
-      'type' => 'mother',
-      'title' => 'A mother',
-    ]);
-
-    $mother = entity_metadata_wrapper('node', $this->mother);
-    $mother->field_date_birth->set(strtotime('1998-07-01'));
-    $mother->field_clinic->set($this->clinic->nid);
-    $mother->field_ubudehe->set(1);
-    $mother->field_education_level->set(2);
-    $mother->save();
-
-    // Create a child for the mother.
-    $this->child = $this->drupalCreateNode([
-      'type' => 'child',
-      'title' => 'A child',
-    ]);
-
-    $child = entity_metadata_wrapper('node', $this->child);
-    $child->field_mother->set($this->mother->nid);
-    $child->field_date_birth->set(strtotime('2015-06-27'));
-    $child->field_gender->set('male');
-    $child->save();
-
-    // Assign the user to the clinics.
-    $nurse = entity_metadata_wrapper('user', $this->user);
-    $nurse->field_clinics->set([
-      $this->clinic->nid,
-      $this->clinicWithoutMothers->nid,
-    ]);
-    $nurse->save();
-
-    // Create a session for the clinic.
-    $today = date('Y-m-d');
-
-    $this->session = $this->drupalCreateNode(['type' => 'session']);
-    $session = entity_metadata_wrapper('node', $this->session);
-
-    $session->field_clinic->set($this->clinic->nid);
-    $session->field_scheduled_date->set([
-      'value' => $today,
-      'value2' => $today,
-    ]);
-    $session->field_closed->set(FALSE);
-    $session->save();
-
-    // And a session for the clinic without mothers.
-    $this->sessionWithoutMothers = $this->drupalCreateNode(['type' => 'session']);
-    $sessionWithoutMothers = entity_metadata_wrapper('node', $this->sessionWithoutMothers);
-
-    $sessionWithoutMothers->field_clinic->set($this->clinicWithoutMothers->nid);
-    $sessionWithoutMothers->field_scheduled_date->set([
-      'value' => $today,
-      'value2' => $today,
-    ]);
-    $sessionWithoutMothers->field_closed->set(FALSE);
-    $sessionWithoutMothers->save();
-  }
-
-  /**
    * Tests downloading an offiline session.
    */
   public function testDownloadOfflineSession() {
+    $today = time();
+    $day = 24 * 60 * 60;
+
+    // Make an array of 24 previous days.
+    $previous_days = [];
+    for ($x = 1; $x < 25; $x++) {
+      $previous_days[] = $today - ($x * $day);
+    }
+
+    // Create a clinic, a session, and a nurse -- these are the ones we'll
+    // focus on.
+    $clinic_id = $this->createClinic();
+    $nurse = $this->createNurse($clinic_id);
+    $session_id = $this->createSession($clinic_id, $today);
+
+    // Create a bunch of test data for our selected clinic.
+    $mother_ids = [];
+    $child_ids = [];
+
+    for ($x = 0; $x < 75; $x++) {
+      // For the code that gets mothers for the session's particular clinic.
+      $mother_id = $this->createMother($this->randomName(), $clinic_id);
+      $mother_ids[] = $mother_id;
+
+      // Give each mother two children.
+      $child1 = $this->createChild($this->randomName(), $mother_id);
+      $child2 = $this->createChild($this->randomName(), $mother_id);
+
+      array_push($child_ids, $child1, $child2);
+    }
+
+    // Create 24 old sessions for our clinic.
+    foreach ($previous_days as $then) {
+      $previous_session_id = $this->createSession($clinic_id, $then);
+
+      // For each mother, make a family-planning in the old session.
+      foreach ($mother_ids as $mother_id) {
+        $this->createFamilyPlanning($mother_id, $previous_session_id, $then);
+      }
+
+      // And create a height and weight for each child.
+      foreach ($child_ids as $child_id) {
+        $this->createHeight($child_id, $previous_session_id, $then, 124);
+        $this->createWeight($child_id, $previous_session_id, $then, 12);
+      }
+    }
+
+    // Create some data for **other** clinics.
+    for ($x = 0; $x < 75; $x++) {
+      // For the code that sends basic data for all clinics.
+      $other_clinic_id = $this->createClinic();
+
+      // Add a mother and some children for the other clinics, to test
+      // that we **don't** get those.
+      $other_mother_id = $this->createMother($this->randomName(), $other_clinic_id);
+      $other_child_id = $this->createChild($this->randomName(), $other_mother_id);
+
+      // Add a session for each clinic.
+      $other_session_id = $this->createSession($other_clinic_id, $today);
+
+      // Make a family-planning for the mother.
+      $this->createFamilyPlanning($other_mother_id, $other_session_id, $today);
+
+      // Make a height and weight for the child.
+      $this->createHeight($other_child_id, $other_session_id, $today, 124);
+      $this->createWeight($other_child_id, $other_session_id, $today, 12);
+    }
+
     $handler = restful_get_restful_handler('offline_sessions');
+    $handler->setAccount($nurse);
 
-    // Test authorized user.
-    $handler->setAccount($this->user);
+    $results = $handler->get($session_id);
+    $data = $results[0];
 
-    $results = $handler->get($this->session->nid);
-    $this->assertEqual($results[0]['id'], $this->session->nid, 'Got correct session.');
+    $this->assertEqual($data['id'], $session_id);
+    $this->assertEqual(count($data['clinics']), 76);
+    $this->assertEqual(count($data['participants']['mothers']), 75);
+    $this->assertEqual(count($data['participants']['mother_activity']), 75);
+    $this->assertEqual(count($data['participants']['children']), 150);
+    $this->assertEqual(count($data['participants']['child_activity']), 150);
+    $this->assertEqual(count($data['all_sessions']), 100);
+
+    foreach ($data['participants']['mother_activity'] as $mother_activity) {
+      $this->assertEqual(count($mother_activity['family_planning']), 24);
+    }
+
+    foreach ($data['participants']['child_activity'] as $child_activity) {
+      $this->assertEqual(count($child_activity['height']), 24);
+      $this->assertEqual(count($child_activity['weight']), 24);
+    }
   }
 
   /**
    * Tests downloading an offiline session for a clinic that has no mothers.
-   *
-   * This tests the scenario which failed at
-   * https://github.com/Gizra/ihangane/pull/627
    */
   public function testDownloadOfflineSessionWithoutMothers() {
+    $today = time();
+
+    $clinic_id = $this->createClinic();
+    $nurse = $this->createNurse($clinic_id);
+    $session_id = $this->createSession($clinic_id, $today);
+
     $handler = restful_get_restful_handler('offline_sessions');
+    $handler->setAccount($nurse);
 
-    // Test authorized user.
-    $handler->setAccount($this->user);
-
-    $results = $handler->get($this->sessionWithoutMothers->nid);
-    $this->assertEqual($results[0]['id'], $this->sessionWithoutMothers->nid, 'Got correct session.');
+    $results = $handler->get($session_id);
+    $this->assertEqual($results[0]['id'], $session_id);
   }
 
 }

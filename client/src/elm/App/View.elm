@@ -9,12 +9,12 @@ import Pages.Admin.View
 import Pages.Clinics.View
 import Pages.Login.View
 import Pages.MyAccount.View
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
-import Pages.Page exposing (Page(..), UserPage(..), SessionPage(..))
 import Pages.View exposing (viewFoundSession)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Login
-import Translate exposing (translate, Language)
+import Translate exposing (Language, translate)
 import User.Model exposing (User)
 import Utils.Html exposing (spinner, wrapPage)
 import Utils.WebData exposing (viewError)

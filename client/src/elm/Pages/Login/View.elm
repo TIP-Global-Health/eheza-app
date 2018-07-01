@@ -9,9 +9,9 @@ import Html.Events exposing (onClick, onInput, onSubmit)
 import Pages.Login.Model exposing (..)
 import Pages.Page exposing (Page)
 import RemoteData exposing (RemoteData(..))
-import Restful.Login exposing (LoginStatus(..), LoginError, Login)
-import Translate exposing (translate, Language)
-import User.Model exposing (User, Role(Administrator))
+import Restful.Login exposing (Login, LoginError, LoginStatus(..))
+import Translate exposing (Language, translate)
+import User.Model exposing (Role(Administrator), User)
 import Utils.Html exposing (spinner)
 import Utils.WebData exposing (viewError)
 
@@ -71,7 +71,7 @@ viewContent language activePage loginStatus model session =
                         loginForm =
                             viewLoginForm language activePage loginStatus model
                     in
-                        message :: viewSession :: loginForm
+                    message :: viewSession :: loginForm
 
                 Nothing ->
                     -- We're logged in, and, as far as we know, our access
@@ -154,26 +154,26 @@ viewWhenLoggedIn language login session =
                             |> text
                         ]
     in
-        div []
-            [ p []
-                [ Translate.LoginPhrase Translate.LoggedInAs
-                    |> translate language
-                    |> text
-                , text <| ": " ++ login.credentials.user.name
-                ]
-
-            -- At the moment of successful login, we'll actually transition somewhere.
-            -- But, if the user **deliberately** comes back here while logged in, we
-            -- should give the user some userful options ... we may want to compute
-            -- which of these options are actually the most likely at some point
-            , button
-                [ class "ui fluid primary button"
-                , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.ClinicsPage Nothing
-                ]
-                [ text <| translate language Translate.SelectYourClinic ]
-            , showMaybe administrationButton
-            , logoutButton
+    div []
+        [ p []
+            [ Translate.LoginPhrase Translate.LoggedInAs
+                |> translate language
+                |> text
+            , text <| ": " ++ login.credentials.user.name
             ]
+
+        -- At the moment of successful login, we'll actually transition somewhere.
+        -- But, if the user **deliberately** comes back here while logged in, we
+        -- should give the user some userful options ... we may want to compute
+        -- which of these options are actually the most likely at some point
+        , button
+            [ class "ui fluid primary button"
+            , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.ClinicsPage Nothing
+            ]
+            [ text <| translate language Translate.SelectYourClinic ]
+        , showMaybe administrationButton
+        , logoutButton
+        ]
 
 
 {-| Shows the login form itself, i.e. with inputs for username and password.
@@ -208,60 +208,60 @@ viewLoginForm language activePage loginStatus model =
                 |> Maybe.map (viewLoginError language)
                 |> Maybe.withDefault emptyNode
     in
-        [ activePageMsg
-        , Html.form
-            [ onSubmit HandleLoginClicked
-            , action "javascript:void(0);"
-            ]
+    [ activePageMsg
+    , Html.form
+        [ onSubmit HandleLoginClicked
+        , action "javascript:void(0);"
+        ]
+        [ div
+            [ class "ui login form" ]
             [ div
-                [ class "ui login form" ]
-                [ div
-                    [ class "ui transparent left icon input" ]
-                    [ input
-                        [ placeholder <| translateLogin Translate.Username
-                        , type_ "text"
-                        , name "username"
-                        , onInput SetName
-                        , value model.name
-                        , autofocus True
-                        ]
-                        []
-                    , i [ class "icon icon-username" ] []
+                [ class "ui transparent left icon input" ]
+                [ input
+                    [ placeholder <| translateLogin Translate.Username
+                    , type_ "text"
+                    , name "username"
+                    , onInput SetName
+                    , value model.name
+                    , autofocus True
                     ]
-                , div [ class "ui fitted divider" ] []
-                , div
-                    [ class "ui transparent left icon input" ]
-                    [ input
-                        [ placeholder <| translateLogin Translate.Password
-                        , type_ "password"
-                        , name "password"
-                        , onInput SetPassword
-                        , value model.pass
-                        ]
-                        []
-                    , i [ class "icon icon-password" ] []
+                    []
+                , i [ class "icon icon-username" ] []
+                ]
+            , div [ class "ui fitted divider" ] []
+            , div
+                [ class "ui transparent left icon input" ]
+                [ input
+                    [ placeholder <| translateLogin Translate.Password
+                    , type_ "password"
+                    , name "password"
+                    , onInput SetPassword
+                    , value model.pass
                     ]
-                ]
-            , button
-                [ class "ui fluid primary button"
-                , disabled disableSubmitButton
-                , type_ "submit"
-                ]
-                [ span
-                    [ hidden <| not isLoading ]
-                    [ spinner ]
-                , span
-                    [ hidden isLoading ]
-                    [ text <| translateLogin Translate.SignIn ]
+                    []
+                , i [ class "icon icon-password" ] []
                 ]
             ]
-        , error
-        , p []
-            [ text <| translateLogin Translate.ForgotPassword1
-            , br [] []
-            , text <| translateLogin Translate.ForgotPassword2
+        , button
+            [ class "ui fluid primary button"
+            , disabled disableSubmitButton
+            , type_ "submit"
+            ]
+            [ span
+                [ hidden <| not isLoading ]
+                [ spinner ]
+            , span
+                [ hidden isLoading ]
+                [ text <| translateLogin Translate.SignIn ]
             ]
         ]
+    , error
+    , p []
+        [ text <| translateLogin Translate.ForgotPassword1
+        , br [] []
+        , text <| translateLogin Translate.ForgotPassword2
+        ]
+    ]
 
 
 viewLoginError : Language -> LoginError -> Html any
@@ -279,16 +279,16 @@ viewLogo language =
         appName =
             translate language Translate.AppName
     in
-        div
-            [ class "logo" ]
-            [ img
-                [ alt appName
-                , class "img-logo"
-                , height 245
-                , width 245
-                , src "assets/images/logo-app.svg"
-                ]
-                []
-            , br [] []
-            , text appName
+    div
+        [ class "logo" ]
+        [ img
+            [ alt appName
+            , class "img-logo"
+            , height 245
+            , width 245
+            , src "assets/images/logo-app.svg"
             ]
+            []
+        , br [] []
+        , text appName
+        ]

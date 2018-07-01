@@ -3,10 +3,10 @@ module Pages.ProgressReport.View exposing (view)
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
 import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (Height, Weight, HeightInCm(..), WeightInKg(..), MuacInCm(..), MuacIndication(..))
-import Backend.Measurement.Utils exposing (mapMeasurementData, currentValue, currentValueWithId, muacIndication)
+import Backend.Measurement.Model exposing (Height, HeightInCm(..), MuacInCm(..), MuacIndication(..), Weight, WeightInKg(..))
+import Backend.Measurement.Utils exposing (currentValue, currentValueWithId, mapMeasurementData, muacIndication)
 import Backend.Session.Model exposing (EditableSession)
-import Backend.Session.Utils exposing (getChildHistoricalMeasurements, getChildMeasurementData, getChild, getMother)
+import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother)
 import EveryDict
 import EveryDictList
 import EverySet
@@ -20,9 +20,9 @@ import Pages.Page exposing (Page(..), SessionPage(..))
 import Pages.PageNotFound.View
 import Translate exposing (Language(..), translate)
 import Utils.Html exposing (thumbnailImage)
-import Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, renderDate, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml)
+import Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore(..))
-import ZScore.Utils exposing (zScoreWeightForAge, zScoreHeightForAge)
+import ZScore.Utils exposing (zScoreHeightForAge, zScoreWeightForAge)
 import ZScore.View
 
 
@@ -299,7 +299,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                                     value =
                                         toString cm ++ translate language Translate.CentimeterShorthand
                                 in
-                                    span indication [ text value ]
+                                span indication [ text value ]
 
                             viewWeightWithIndication weight =
                                 let
@@ -319,7 +319,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                                     value =
                                         toString kg ++ translate language Translate.KilogramShorthand
                                 in
-                                    span indication [ text value ]
+                                span indication [ text value ]
 
                             weights =
                                 groupOfTwelve
@@ -334,11 +334,11 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                                     |> (::) weightCell
                                     |> tr []
                         in
-                            [ ages
-                            , heights
-                            , weights
-                            , muacs
-                            ]
+                        [ ages
+                        , heights
+                        , weights
+                        , muacs
+                        ]
                     )
                 |> List.concat
                 |> tbody []
@@ -413,22 +413,22 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                 historicalValues =
                     func3 historical
             in
-                case currentValue of
-                    Nothing ->
-                        -- No current value, so just use historical
-                        List.map Tuple.second historicalValues
+            case currentValue of
+                Nothing ->
+                    -- No current value, so just use historical
+                    List.map Tuple.second historicalValues
 
-                    Just ( Nothing, currentValue ) ->
-                        -- We have a new current value, so use it
-                        currentValue :: List.map Tuple.second historicalValues
+                Just ( Nothing, currentValue ) ->
+                    -- We have a new current value, so use it
+                    currentValue :: List.map Tuple.second historicalValues
 
-                    Just ( Just currentId, currentValue ) ->
-                        -- We've edited an old value, so use the edited version
-                        -- and leave out the old one.
-                        historicalValues
-                            |> List.filter (\( id, _ ) -> id /= currentId)
-                            |> List.map Tuple.second
-                            |> List.append [ currentValue ]
+                Just ( Just currentId, currentValue ) ->
+                    -- We've edited an old value, so use the edited version
+                    -- and leave out the old one.
+                    historicalValues
+                        |> List.filter (\( id, _ ) -> id /= currentId)
+                        |> List.map Tuple.second
+                        |> List.append [ currentValue ]
 
         heightValues =
             getValues .height .height .heights
@@ -491,19 +491,19 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                 , weightForHeight language zscores weightForHeightData
                 ]
     in
-        div [ class "page-report" ]
-            [ div
-                [ class "wrap-report" ]
-                [ backIcon
-                , title
-                , subtitle
-                , childInfo
-                , nutritionSigns
-                , heightWeightMuacTable
-                , photos
-                , charts
-                ]
+    div [ class "page-report" ]
+        [ div
+            [ class "wrap-report" ]
+            [ backIcon
+            , title
+            , subtitle
+            , childInfo
+            , nutritionSigns
+            , heightWeightMuacTable
+            , photos
+            , charts
             ]
+        ]
 
 
 type Indication

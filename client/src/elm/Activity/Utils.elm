@@ -6,9 +6,9 @@ module Activity.Utils
         , decodeActivityTypeFromString
         , defaultActivityType
         , encodeActivityTypeAsString
+        , getActivityIcon
         , getActivityList
         , getActivityTypeList
-        , getActivityIcon
         , getAllChildActivities
         , getAllMotherActivities
         , getTotalsNumberPerActivity
@@ -18,8 +18,8 @@ module Activity.Utils
         , hasCompletedChildActivity
         , hasCompletedMotherActivity
         , isCheckedIn
-        , motherHasCompletedActivity
         , motherHasAnyPendingActivity
+        , motherHasCompletedActivity
         , motherHasPendingActivity
         , motherOrAnyChildHasAnyCompletedActivity
         , motherOrAnyChildHasAnyPendingActivity
@@ -32,7 +32,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (applyEdit)
 import Backend.Session.Model exposing (..)
-import Backend.Session.Utils exposing (getMother, getMotherMeasurementData, getChildMeasurementData, mapMotherEdits, getMyMother)
+import Backend.Session.Utils exposing (getChildMeasurementData, getMother, getMotherMeasurementData, getMyMother, mapMotherEdits)
 import EveryDict
 import EveryDictList
 import Maybe.Extra exposing (isJust, isNothing)
@@ -119,7 +119,7 @@ getActivityTypeList =
         mothersActivities =
             List.map MotherActivity getAllMotherActivities
     in
-        childrenActivities ++ mothersActivities
+    childrenActivities ++ mothersActivities
 
 
 {-| Get the pending and completed activities.
@@ -203,9 +203,9 @@ getTotalsNumberPerActivity activityType session =
                         |> EveryDict.filter (\childId _ -> hasCompletedChildActivity childType (getChildMeasurementData childId session))
                         |> EveryDict.size
             in
-                { pending = total - completed
-                , total = total
-                }
+            { pending = total - completed
+            , total = total
+            }
 
         MotherActivity motherType ->
             let
@@ -223,9 +223,9 @@ getTotalsNumberPerActivity activityType session =
                         |> EveryDictList.filter (\motherId _ -> hasCompletedMotherActivity motherType (getMotherMeasurementData motherId session))
                         |> EveryDictList.size
             in
-                { pending = total - completed
-                , total = total
-                }
+            { pending = total - completed
+            , total = total
+            }
 
 
 hasCompletedChildActivity : ChildActivityType -> MeasurementData ChildMeasurements ChildEdits -> Bool
@@ -304,25 +304,25 @@ isPending edit =
 hasAnyPendingMotherActivity : MeasurementData MotherMeasurements MotherEdits -> Bool
 hasAnyPendingMotherActivity measurements =
     getAllMotherActivities
-        |> List.any ((flip hasCompletedMotherActivity) measurements >> not)
+        |> List.any (flip hasCompletedMotherActivity measurements >> not)
 
 
 hasAnyCompletedMotherActivity : MeasurementData MotherMeasurements MotherEdits -> Bool
 hasAnyCompletedMotherActivity measurements =
     getAllMotherActivities
-        |> List.any ((flip hasCompletedMotherActivity) measurements)
+        |> List.any (flip hasCompletedMotherActivity measurements)
 
 
 hasAnyPendingChildActivity : MeasurementData ChildMeasurements ChildEdits -> Bool
 hasAnyPendingChildActivity measurements =
     getAllChildActivities
-        |> List.any ((flip hasCompletedChildActivity) measurements >> not)
+        |> List.any (flip hasCompletedChildActivity measurements >> not)
 
 
 hasAnyCompletedChildActivity : MeasurementData ChildMeasurements ChildEdits -> Bool
 hasAnyCompletedChildActivity measurements =
     getAllChildActivities
-        |> List.any ((flip hasCompletedChildActivity) measurements)
+        |> List.any (flip hasCompletedChildActivity measurements)
 
 
 {-| See whether either the mother, or any of her children, has a pending activity.
@@ -345,7 +345,7 @@ motherOrAnyChildHasAnyPendingActivity motherId session =
                     )
                 |> Maybe.withDefault False
     in
-        motherHasOne || anyChildHasOne
+    motherHasOne || anyChildHasOne
 
 
 {-| See whether either the mother, or any of her children, has any completed activity.
@@ -368,7 +368,7 @@ motherOrAnyChildHasAnyCompletedActivity motherId session =
                     )
                 |> Maybe.withDefault False
     in
-        motherHasOne || anyChildHasOne
+    motherHasOne || anyChildHasOne
 
 
 {-| Has the mother been marked as checked in?
@@ -388,7 +388,7 @@ isCheckedIn motherId session =
         hasCompletedActivity =
             motherOrAnyChildHasAnyCompletedActivity motherId session
     in
-        explicitlyCheckedIn || hasCompletedActivity
+    explicitlyCheckedIn || hasCompletedActivity
 
 
 setCheckedIn : Bool -> MotherId -> EditableSession -> EditableSession
@@ -428,9 +428,9 @@ onlyCheckedIn session =
             )
                 session.offlineSession
     in
-        -- For now, at least, we don't bother filtering the measurements ... we just
-        -- filter the mothers and children.
-        { session | offlineSession = offlineSession }
+    -- For now, at least, we don't bother filtering the measurements ... we just
+    -- filter the mothers and children.
+    { session | offlineSession = offlineSession }
 
 
 {-| Does the mother herself have any pending activity?
@@ -480,4 +480,4 @@ hasAnyCompletedActivity session =
                 |> EveryDictList.toList
                 |> List.any (\( id, _ ) -> motherHasAnyCompletedActivity id session)
     in
-        forChildren || forMothers
+    forChildren || forMothers

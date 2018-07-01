@@ -3,14 +3,14 @@ module Pages.Admin.View exposing (view)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelBackend)
-import Backend.Session.Model exposing (Session)
 import Backend.Session.Form exposing (..)
+import Backend.Session.Model exposing (Session)
 import Config.Model as Config
 import EveryDictList exposing (EveryDictList)
 import EverySet
 import Form
 import Form.Input exposing (..)
-import Gizra.Html exposing (showIf, emptyNode)
+import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -21,10 +21,10 @@ import Pages.Page exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityId)
 import Set
-import Translate exposing (Language, translate)
 import Time.Date
+import Translate exposing (Language, translate)
 import User.Model exposing (..)
-import Utils.WebData exposing (viewOrFetch, viewError)
+import Utils.WebData exposing (viewError, viewOrFetch)
 
 
 view : Config.Model -> Language -> NominalDate -> User -> ModelBackend -> Model -> Html Msg
@@ -36,22 +36,22 @@ view config language currentDate user backend model =
             else
                 contentForOthers language
     in
-        div [ class "wrap wrap-alt-2 admin-page" ]
-            [ div
-                [ class "ui basic head segment" ]
-                [ h1
-                    [ class "ui header" ]
-                    [ text <| translate language Translate.Admin ]
-                , a
-                    [ class "link-back"
-                    , onClick <| SetActivePage LoginPage
-                    ]
-                    [ span [ class "icon-back" ] []
-                    , span [] []
-                    ]
+    div [ class "wrap wrap-alt-2 admin-page" ]
+        [ div
+            [ class "ui basic head segment" ]
+            [ h1
+                [ class "ui header" ]
+                [ text <| translate language Translate.Admin ]
+            , a
+                [ class "link-back"
+                , onClick <| SetActivePage LoginPage
                 ]
-            , div [ class "ui basic segment" ] [ content ]
+                [ span [ class "icon-back" ] []
+                , span [] []
+                ]
             ]
+        , div [ class "ui basic segment" ] [ content ]
+        ]
 
 
 contentForOthers : Language -> Html Msg
@@ -134,107 +134,107 @@ viewCreateSessionForm config language backend model form clinics sessions =
             else
                 emptyNode
     in
-        [ h2 [] [ text <| translate language Translate.CreateSession ]
-        , div
-            -- For the moment, we're using "error" for validation errors,
-            -- "warning" for HTTP errors.
+    [ h2 [] [ text <| translate language Translate.CreateSession ]
+    , div
+        -- For the moment, we're using "error" for validation errors,
+        -- "warning" for HTTP errors.
+        [ classList
+            [ ( "ui", True )
+            , ( "form", True )
+            , ( "error", Form.isSubmitted form && not (List.isEmpty errors) )
+            , ( "success", RemoteData.isSuccess backend.postSessionRequest )
+            , ( "warning", RemoteData.isFailure backend.postSessionRequest )
+            ]
+        ]
+        [ div
             [ classList
-                [ ( "ui", True )
-                , ( "form", True )
-                , ( "error", Form.isSubmitted form && (not (List.isEmpty errors)) )
-                , ( "success", RemoteData.isSuccess backend.postSessionRequest )
-                , ( "warning", RemoteData.isFailure backend.postSessionRequest )
+                [ ( "field", True )
+                , ( "error", isJust clinic.liveError )
                 ]
             ]
+            [ selectInput clinicOptions clinic []
+                |> Html.map MsgCreateSession
+            ]
+        , div
+            [ class "two fields" ]
             [ div
                 [ classList
                     [ ( "field", True )
-                    , ( "error", isJust clinic.liveError )
+                    , ( "error", isJust dates.start.liveError )
                     ]
                 ]
-                [ selectInput clinicOptions clinic []
+                [ label [] [ text <| translate language Translate.StartDate ]
+                , textInput dates.start
+                    [ value <| Maybe.withDefault "" dates.start.value
+                    ]
                     |> Html.map MsgCreateSession
                 ]
             , div
-                [ class "two fields" ]
-                [ div
-                    [ classList
-                        [ ( "field", True )
-                        , ( "error", isJust dates.start.liveError )
-                        ]
-                    ]
-                    [ label [] [ text <| translate language Translate.StartDate ]
-                    , textInput dates.start
-                        [ value <| Maybe.withDefault "" dates.start.value
-                        ]
-                        |> Html.map MsgCreateSession
-                    ]
-                , div
-                    [ classList
-                        [ ( "field", True )
-                        , ( "error", isJust dates.end.liveError )
-                        ]
-                    ]
-                    [ label [] [ text <| translate language Translate.EndDate ]
-                    , textInput dates.end
-                        [ value <| Maybe.withDefault "" dates.end.value
-                        ]
-                        |> Html.map MsgCreateSession
+                [ classList
+                    [ ( "field", True )
+                    , ( "error", isJust dates.end.liveError )
                     ]
                 ]
-            , div
+                [ label [] [ text <| translate language Translate.EndDate ]
+                , textInput dates.end
+                    [ value <| Maybe.withDefault "" dates.end.value
+                    ]
+                    |> Html.map MsgCreateSession
+                ]
+            ]
+        , div
+            [ class "field" ]
+            [ div
+                [ class "ui checkbox admin" ]
+                [ checkboxInput (closedState form) [ id "session-closed" ]
+                    |> Html.map MsgCreateSession
+                , label
+                    [ for "session-closed" ]
+                    [ text <| translate language Translate.Closed ]
+                ]
+            ]
+        , showIf config.sandbox <|
+            div
                 [ class "field" ]
                 [ div
                     [ class "ui checkbox admin" ]
-                    [ checkboxInput (closedState form) [ id "session-closed" ]
+                    [ checkboxInput (trainingState form) [ id "session-sandbox" ]
                         |> Html.map MsgCreateSession
                     , label
-                        [ for "session-closed" ]
-                        [ text <| translate language Translate.Closed ]
+                        [ for "session-sandbox" ]
+                        [ text <| translate language Translate.Training ]
                     ]
                 ]
-            , showIf config.sandbox <|
-                div
-                    [ class "field" ]
-                    [ div
-                        [ class "ui checkbox admin" ]
-                        [ checkboxInput (trainingState form) [ id "session-sandbox" ]
-                            |> Html.map MsgCreateSession
-                        , label
-                            [ for "session-sandbox" ]
-                            [ text <| translate language Translate.Training ]
-                        ]
-                    ]
-            , div []
-                [ button
-                    [ class "ui button"
-                    , onClick <| ShowCreateSessionForm False
-                    ]
-                    [ text <| translate language Translate.Cancel ]
-                , button
-                    [ classList
-                        [ ( "ui", True )
-                        , ( "button", True )
-                        , ( "primary", True )
-                        , ( "loading", RemoteData.isLoading backend.postSessionRequest )
-                        , ( "disabled", RemoteData.isLoading backend.postSessionRequest )
-                        ]
-                    , type_ "submit"
-                    , onClick <| MsgCreateSession Form.Submit
-                    ]
-                    [ text <| translate language Translate.Save ]
+        , div []
+            [ button
+                [ class "ui button"
+                , onClick <| ShowCreateSessionForm False
                 ]
+                [ text <| translate language Translate.Cancel ]
+            , button
+                [ classList
+                    [ ( "ui", True )
+                    , ( "button", True )
+                    , ( "primary", True )
+                    , ( "loading", RemoteData.isLoading backend.postSessionRequest )
+                    , ( "disabled", RemoteData.isLoading backend.postSessionRequest )
+                    ]
+                , type_ "submit"
+                , onClick <| MsgCreateSession Form.Submit
+                ]
+                [ text <| translate language Translate.Save ]
+            ]
 
-            -- Note that these are hidden by deafult by semantic-ui ... the
-            -- class of the "form" controls whether they are shown.
-            , requestStatus
-            , div
-                [ class "ui error message" ]
-                [ div [ class "header" ] [ text <| translate language Translate.ValidationErrors ]
-                , dumpErrors form
-                ]
+        -- Note that these are hidden by deafult by semantic-ui ... the
+        -- class of the "form" controls whether they are shown.
+        , requestStatus
+        , div
+            [ class "ui error message" ]
+            [ div [ class "header" ] [ text <| translate language Translate.ValidationErrors ]
+            , dumpErrors form
             ]
         ]
+    ]
 
 
 viewClinicList : Config.Model -> Language -> Model -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
@@ -275,9 +275,9 @@ viewClinicList config language model clinics ( _, futureSessions ) =
                 |> List.map (viewClinic language futureSessionsByClinic)
                 |> div []
     in
-        [ buttons
-        , clinicList
-        ]
+    [ buttons
+    , clinicList
+    ]
 
 
 viewClinic : Language -> EveryDictList ClinicId (List ( SessionId, Session )) -> ( ClinicId, Clinic ) -> Html Msg
@@ -289,10 +289,10 @@ viewClinic language futureSessionsByClinic ( clinicId, clinic ) =
                 |> Maybe.withDefault []
                 |> List.sortBy (Tuple.second >> .scheduledDate >> .start >> Time.Date.toTuple)
     in
-        div []
-            [ h2 [] [ text clinic.name ]
-            , viewFutureSessions language futureSessions
-            ]
+    div []
+        [ h2 [] [ text clinic.name ]
+        , viewFutureSessions language futureSessions
+        ]
 
 
 viewFutureSessions : Language -> List ( SessionId, Session ) -> Html Msg

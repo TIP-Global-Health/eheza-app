@@ -1,11 +1,11 @@
 module Pages.PageNotFound.View exposing (view, viewPage)
 
 import App.Model exposing (Msg(..))
-import Html exposing (a, div, h2, h4, text, button, Html)
+import Html exposing (Html, a, button, div, h2, h4, text)
 import Html.Attributes exposing (class, href)
 import Html.Events exposing (onClick)
 import Pages.Page exposing (Page(..))
-import Translate as Trans exposing (translate, Language)
+import Translate as Trans exposing (Language, translate)
 
 
 {-| Shows page not found message for a URL we could not interpret.

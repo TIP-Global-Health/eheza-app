@@ -5,14 +5,14 @@ import Backend.Child.Model exposing (Child)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Decoder exposing (decodeHistoricalMeasurements)
-import Backend.Measurement.Model exposing (Measurement, emptyMeasurements, MotherMeasurementList, MotherMeasurements, ChildMeasurementList, ChildMeasurements)
+import Backend.Measurement.Model exposing (ChildMeasurementList, ChildMeasurements, Measurement, MotherMeasurementList, MotherMeasurements, emptyMeasurements)
 import Backend.Mother.Decoder exposing (decodeMother)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (..)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (decodeDrupalRange, decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, bool, andThen, dict, fail, field, int, list, map, map2, nullable, string, succeed, at, oneOf)
+import Json.Decode exposing (Decoder, andThen, at, bool, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (decodeEntityId)
 import Time.Date
@@ -94,10 +94,10 @@ splitHistoricalMeasurements sessionId session =
             , children = EveryDict.map (always .previous) children
             }
     in
-        { session
-            | currentMeasurements = currentMeasurements
-            , previousMeasurements = previousMeasurements
-        }
+    { session
+        | currentMeasurements = currentMeasurements
+        , previousMeasurements = previousMeasurements
+    }
 
 
 splitMotherMeasurements : SessionId -> EveryDict MotherId MotherMeasurementList -> EveryDict MotherId { current : MotherMeasurements, previous : MotherMeasurements }
@@ -108,13 +108,13 @@ splitMotherMeasurements sessionId =
                 familyPlanning =
                     getCurrentAndPrevious sessionId list.familyPlannings
             in
-                { current =
-                    { familyPlanning = familyPlanning.current
-                    }
-                , previous =
-                    { familyPlanning = familyPlanning.previous
-                    }
+            { current =
+                { familyPlanning = familyPlanning.current
                 }
+            , previous =
+                { familyPlanning = familyPlanning.previous
+                }
+            }
         )
 
 
@@ -138,21 +138,21 @@ splitChildMeasurements sessionId =
                 photo =
                     getCurrentAndPrevious sessionId list.photos
             in
-                { current =
-                    { height = height.current
-                    , weight = weight.current
-                    , muac = muac.current
-                    , nutrition = nutrition.current
-                    , photo = photo.current
-                    }
-                , previous =
-                    { height = height.previous
-                    , weight = weight.previous
-                    , muac = muac.previous
-                    , nutrition = nutrition.previous
-                    , photo = photo.previous
-                    }
+            { current =
+                { height = height.current
+                , weight = weight.current
+                , muac = muac.current
+                , nutrition = nutrition.current
+                , photo = photo.current
                 }
+            , previous =
+                { height = height.previous
+                , weight = weight.previous
+                , muac = muac.previous
+                , nutrition = nutrition.previous
+                , photo = photo.previous
+                }
+            }
         )
 
 
@@ -179,10 +179,10 @@ getCurrentAndPrevious sessionId =
                         else
                             acc
     in
-        List.foldl go
-            { current = Nothing
-            , previous = Nothing
-            }
+    List.foldl go
+        { current = Nothing
+        , previous = Nothing
+        }
 
 
 decodeMothers : Decoder (EveryDictList MotherId Mother)

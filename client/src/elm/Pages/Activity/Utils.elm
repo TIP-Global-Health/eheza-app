@@ -4,7 +4,7 @@ import Activity.Model exposing (ChildActivityType(..), MotherActivityType(..))
 import Activity.Utils exposing (onlyCheckedIn)
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
-import Backend.Session.Utils exposing (getChild, getMother, getChildMeasurementData, getMotherMeasurementData)
+import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getMother, getMotherMeasurementData)
 import EveryDict
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -32,13 +32,13 @@ viewChildMeasurements language currentDate zscores childId activity session =
         form =
             getChildForm childId session
     in
-        getChild childId session.offlineSession
-            |> Maybe.map
-                (\child ->
-                    Measurement.View.viewChild language currentDate child activity measurements zscores form
-                        |> Html.map MsgMeasurement
-                )
-            |> Maybe.withDefault emptyNode
+    getChild childId session.offlineSession
+        |> Maybe.map
+            (\child ->
+                Measurement.View.viewChild language currentDate child activity measurements zscores form
+                    |> Html.map MsgMeasurement
+            )
+        |> Maybe.withDefault emptyNode
 
 
 viewMotherMeasurements : Language -> NominalDate -> MotherId -> MotherActivityType -> EditableSession -> Html (Msg MotherId Measurement.Model.MsgMother)
@@ -50,8 +50,8 @@ viewMotherMeasurements language currentDate motherId activity session =
         form =
             getMotherForm motherId session
     in
-        Measurement.View.viewMother language activity measurements form
-            |> Html.map MsgMeasurement
+    Measurement.View.viewMother language activity measurements form
+        |> Html.map MsgMeasurement
 
 
 {-| This chooses an appropriate participant, given the participant the user selected
@@ -72,25 +72,25 @@ selectParticipantForTab config tab activity session userSelection =
                 |> List.map Tuple.first
                 |> List.partition (\id -> config.hasPendingActivity id activity checkedIn)
     in
-        case tab of
-            Completed ->
-                userSelection
-                    |> Maybe.andThen
-                        (\id ->
-                            if config.hasPendingActivity id activity session then
-                                Nothing
-                            else
-                                Just id
-                        )
-                    |> Maybe.Extra.orElse (List.head completedParticipants)
+    case tab of
+        Completed ->
+            userSelection
+                |> Maybe.andThen
+                    (\id ->
+                        if config.hasPendingActivity id activity session then
+                            Nothing
+                        else
+                            Just id
+                    )
+                |> Maybe.Extra.orElse (List.head completedParticipants)
 
-            Pending ->
-                userSelection
-                    |> Maybe.andThen
-                        (\id ->
-                            if config.hasPendingActivity id activity session then
-                                Just id
-                            else
-                                Nothing
-                        )
-                    |> Maybe.Extra.orElse (List.head pendingParticipants)
+        Pending ->
+            userSelection
+                |> Maybe.andThen
+                    (\id ->
+                        if config.hasPendingActivity id activity session then
+                            Just id
+                        else
+                            Nothing
+                    )
+                |> Maybe.Extra.orElse (List.head pendingParticipants)

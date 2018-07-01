@@ -12,7 +12,7 @@ module Utils.Html
 
 import Config.Model exposing (Model)
 import Gizra.Html exposing (showIf, showMaybe)
-import Html exposing (Html, a, div, h5, img, span, text, i, node)
+import Html exposing (Html, a, div, h5, i, img, node, span, text)
 import Html.Attributes exposing (attribute, class, classList, id, src, style)
 import Html.Events exposing (onClick)
 
@@ -88,8 +88,8 @@ thumbnailImage subClass maybeAvatarUrl label height width =
             span
                 [ class <| "icon-participant " ++ subClass
                 , style
-                    [ ( "height", (toString height) ++ "px" )
-                    , ( "width", (toString width) ++ "px" )
+                    [ ( "height", toString height ++ "px" )
+                    , ( "width", toString width ++ "px" )
                     ]
                 ]
                 []
@@ -99,8 +99,8 @@ thumbnailImage subClass maybeAvatarUrl label height width =
                 [ src source
                 , attribute "alt" label
                 , style
-                    [ ( "height", (toString height) ++ "px" )
-                    , ( "width", (toString width) ++ "px" )
+                    [ ( "height", toString height ++ "px" )
+                    , ( "width", toString width ++ "px" )
                     ]
                 , class <| "photo-participant " ++ subClass
                 ]
