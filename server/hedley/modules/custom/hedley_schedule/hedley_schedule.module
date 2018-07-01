@@ -48,7 +48,8 @@ function hedley_schedule_node_delete($node) {
       $has_measurements = !empty(hedley_activity_get_measurements_entities_by_session($wrapper->getIdentifier(), $measurement_type)) ? TRUE : FALSE;
 
       if ($has_measurements) {
-        throw new Exception('This session cannot be deleted because it has existing measurements');
+        drupal_set_message('This session cannot be deleted because it has existing measurements.', 'error');
+        drupal_goto("node/$node->nid/edit");
       }
     }
   }

@@ -22,13 +22,6 @@ class HedleyScheduleIntegrity extends HedleyWebTestBase {
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function setUp() {
-    parent::setUp();
-  }
-
-  /**
    * Test creating a session and then deleting it.
    */
   public function testDeleteEmptySession() {
