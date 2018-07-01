@@ -17,6 +17,39 @@ define('HEDLEY_SCHEDULE_MEASUREMENT_CONTENT_TYPES', [
 include_once 'hedley_schedule.features.inc';
 
 /**
+ * Implements hook_node_presave().
+ *
+ * @throws \Exception
+ *   Doesn't allow saving a session if there's already a session with the same
+ *   clinic and start date.
+ */
+function hedley_schedule_node_presave($node) {
+  if ($node->type != 'session') {
+    // Handles only "session" nodes saves.
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $clinic = $wrapper->field_clinic->value();
+  $scheduled_dates = $wrapper->field_scheduled_date->value();
+
+  $filter_fields = [
+    'field_clinic' => [
+      'column' => 'target_id',
+      'value' => $clinic->nid,
+    ],
+    'field_scheduled_date' => [
+      'column' => 'value',
+      'value' => $scheduled_dates['value'],
+    ],
+  ];
+
+  if (!empty(hedley_schedule_get_sessions(1, $filter_fields))) {
+    throw new Exception('This session cannot be saved, there is already a session with the same starting date and same clinic.');
+  }
+}
+
+/**
  * Implements hook_node_delete().
  *
  * When deleting a "session" node, check if it's a training session and delete
@@ -48,9 +81,46 @@ function hedley_schedule_node_delete($node) {
       $has_measurements = !empty(hedley_activity_get_measurements_entities_by_session($wrapper->getIdentifier(), $measurement_type)) ? TRUE : FALSE;
 
       if ($has_measurements) {
-        drupal_set_message('This session cannot be deleted because it has existing measurements.', 'error');
-        drupal_goto("node/$node->nid/edit");
+        throw new Exception('This session cannot be deleted because it has existing measurements');
       }
     }
   }
+}
+
+/**
+ * Get sessions with a range and with the option of filtering by fields.
+ *
+ * This API function gives the option to filter by any field in the content
+ * type.
+ *
+ * @param $range
+ *   The desired range for the entities.
+ * @param array $fields
+ *   The filtering fields, example of usage:
+ *   [
+ *    'field_name' => [
+ *    'column' => 'value',
+ *    'value' => 'foo',
+ *   ]
+ *
+ * @return array|null
+ *   Node IDs if they exist or nothing if no nodes exist.
+ */
+function hedley_schedule_get_sessions($range, array $fields = []) {
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'session')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->range(0, $range);
+
+  if (!empty($fields)) {
+    foreach ($fields as $field_name => $field) {
+      $query->fieldCondition($field_name, $field['column'], $field['value']);
+    }
+  }
+
+  $result = $query->execute();
+
+  return !empty($result['node']) ? array_keys($result['node']) : NULL;
 }
