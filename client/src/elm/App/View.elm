@@ -49,7 +49,7 @@ viewLanguageSwitcher model =
         [ class "ui centered language-switcher" ]
         [ button
             [ classList
-                [ ( "ui left attached button", True )
+                [ ( "ui english left attached button", True )
                 , ( "active", model.language == English )
                 ]
             , onClick <| SetLanguage English
@@ -61,7 +61,7 @@ viewLanguageSwitcher model =
             ]
         , button
             [ classList
-                [ ( "ui right attached button", True )
+                [ ( "ui kinyarwanda right attached button", True )
                 , ( "active", model.language == Kinyarwanda )
                 ]
             , onClick <| SetLanguage Kinyarwanda

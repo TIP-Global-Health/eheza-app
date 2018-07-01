@@ -33,14 +33,16 @@ viewLanguageSwitcherTest =
             \() ->
                 view { emptyModel | configuration = Success testConfigModel }
                     |> Query.fromHtml
-                    |> Query.find [ Selector.class "language-icon" ]
-                    |> Query.has [ Selector.class "gb" ]
+                    |> Query.find [ Selector.class "language-switcher" ]
+                    |> Query.find [ Selector.class "english" ]
+                    |> Query.has [ Selector.class "active" ]
         , test "The language switcher appears with the Kinyarwanda language" <|
             \() ->
                 view { emptyModel | configuration = Success testConfigModel, language = Kinyarwanda }
                     |> Query.fromHtml
-                    |> Query.find [ Selector.class "language-icon" ]
-                    |> Query.has [ Selector.class "rw" ]
+                    |> Query.find [ Selector.class "language-switcher" ]
+                    |> Query.find [ Selector.class "kinyarwanda" ]
+                    |> Query.has [ Selector.class "active" ]
         ]
 
 
