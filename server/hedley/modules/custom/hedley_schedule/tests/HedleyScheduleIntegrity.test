@@ -26,7 +26,7 @@ class HedleyScheduleIntegrity extends HedleyWebTestBase {
    */
   public function testDeleteEmptySession() {
     $clinic_nid = $this->createClinic();
-    $session_nid = $this->createSession($clinic_nid, REQUEST_TIME);
+    $session_nid = $this->createSession($clinic_nid);
 
     // Make sure we can get it the session now.
     $session_node = node_load($session_nid);
@@ -37,7 +37,7 @@ class HedleyScheduleIntegrity extends HedleyWebTestBase {
 
     // Make sure we really deleted it.
     $session_node = node_load($session_nid);
-    $this->assertTrue(!$session_node, "Session should no longer exist.");
+    $this->assertFalse($session_node, "Session should no longer exist.");
   }
 
 }

@@ -162,14 +162,15 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *
    * @param int $clinic_id
    *   The node ID of the clinic.
-   * @param int $ts
-   *   The date of the session, as a unix timestamp.
+   * @param int $timestamp
+   *   Optional; The date of the session, as a unix timestamp, defaults to the
+   *   time of the request.
    *
    * @return int
    *   The node ID of the session.
    */
-  public function createSession($clinic_id, $ts) {
-    $date = date('Y-m-d', $ts);
+  public function createSession($clinic_id, $timestamp = REQUEST_TIME) {
+    $date = date('Y-m-d', $timestamp);
 
     $node = $this->drupalCreateNode(['type' => 'session']);
 
