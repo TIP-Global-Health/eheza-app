@@ -33,18 +33,7 @@ function hedley_schedule_node_presave($node) {
   $clinic = $wrapper->field_clinic->value();
   $scheduled_dates = $wrapper->field_scheduled_date->value();
 
-  $filter_fields = [
-    'field_clinic' => [
-      'column' => 'target_id',
-      'value' => $clinic->nid,
-    ],
-    'field_scheduled_date' => [
-      'column' => 'value',
-      'value' => $scheduled_dates['value'],
-    ],
-  ];
-
-  if (!empty(hedley_schedule_get_sessions(1, $filter_fields))) {
+  if (!empty(hedley_schedule_clinic_has_sessions($clinic->nid, $scheduled_dates['value']))) {
     throw new Exception('This session cannot be saved, there is already a session with the same starting date and same clinic.');
   }
 }
@@ -88,39 +77,24 @@ function hedley_schedule_node_delete($node) {
 }
 
 /**
- * Get sessions with a range and with the option of filtering by fields.
+ * Check if a clinic has sessions for a specific dates.
  *
- * This API function gives the option to filter by any field in the content
- * type.
+ * @param $clinic_nid
+ *   The clinic node ID.
+ * @param $scheduled_date
+ *   The starting date for the session.
  *
- * @param $range
- *   The desired range for the entities.
- * @param array $fields
- *   The filtering fields, example of usage:
- *   [
- *    'field_name' => [
- *    'column' => 'value',
- *    'value' => 'foo',
- *   ]
- *
- * @return array|null
- *   Node IDs if they exist or nothing if no nodes exist.
+ * @return int
+ *   The count of sessions.
  */
-function hedley_schedule_get_sessions($range, array $fields = []) {
+function hedley_schedule_clinic_has_sessions($clinic_nid, $scheduled_date) {
   $query = new EntityFieldQuery();
-  $query
+  return $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'session')
     ->propertyCondition('status', NODE_PUBLISHED)
-    ->range(0, $range);
-
-  if (!empty($fields)) {
-    foreach ($fields as $field_name => $field) {
-      $query->fieldCondition($field_name, $field['column'], $field['value']);
-    }
-  }
-
-  $result = $query->execute();
-
-  return !empty($result['node']) ? array_keys($result['node']) : NULL;
+    ->fieldCondition('field_clinic', 'target_id', $clinic_nid)
+    ->fieldCondition('field_scheduled_date', 'value', $scheduled_date)
+    ->execute()
+    ->count();
 }
