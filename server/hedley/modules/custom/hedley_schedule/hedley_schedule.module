@@ -33,7 +33,7 @@ function hedley_schedule_node_presave($node) {
   $clinic = $wrapper->field_clinic->value();
   $scheduled_dates = $wrapper->field_scheduled_date->value();
 
-  if (!empty(hedley_schedule_clinic_has_sessions($clinic->nid, $scheduled_dates['value']))) {
+  if (isset($clinic->nid) && isset($scheduled_dates['value']) && hedley_schedule_clinic_has_sessions($clinic->nid, $scheduled_dates['value'])) {
     throw new Exception('This session cannot be saved, there is already a session with the same starting date and same clinic.');
   }
 }
@@ -89,12 +89,13 @@ function hedley_schedule_node_delete($node) {
  */
 function hedley_schedule_clinic_has_sessions($clinic_nid, $scheduled_date) {
   $query = new EntityFieldQuery();
+
   return $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'session')
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_clinic', 'target_id', $clinic_nid)
     ->fieldCondition('field_scheduled_date', 'value', $scheduled_date)
-    ->execute()
-    ->count();
+    ->count()
+    ->execute();
 }
