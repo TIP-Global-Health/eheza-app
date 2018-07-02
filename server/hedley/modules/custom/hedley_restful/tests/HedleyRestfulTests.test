@@ -67,7 +67,7 @@ class HedleyRestfulTests extends HedleyWebTestBase {
 
       // And create a height and weight for each child.
       foreach ($child_ids as $child_id) {
-        $this->createHeight($child_id, $previous_session_id,124, $then);
+        $this->createHeight($child_id, $previous_session_id, 124, $then);
         $this->createWeight($child_id, $previous_session_id, 12, $then);
       }
     }
