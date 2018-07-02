@@ -66,6 +66,7 @@ class HedleyUserAccess extends HedleyWebTestBase {
     // Login with the user or use anonymous.
     if ($account === NULL) {
       $name = 'anonymous';
+      $this->drupalLogout();
     }
     else {
       $name = $account->name;
