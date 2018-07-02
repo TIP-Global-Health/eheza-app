@@ -165,11 +165,14 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    * @param int $timestamp
    *   Optional; The date of the session, as a unix timestamp, defaults to the
    *   time of the request.
+   * @param bool $is_training
+   *   Optional; Whether the session is a training session or not, defaults to
+   *   FALSE.
    *
    * @return int
    *   The node ID of the session.
    */
-  public function createSession($clinic_id, $timestamp = REQUEST_TIME) {
+  public function createSession($clinic_id, $timestamp = REQUEST_TIME, $is_training = FALSE) {
     $date = date('Y-m-d', $timestamp);
 
     $node = $this->drupalCreateNode(['type' => 'session']);
@@ -181,6 +184,11 @@ class HedleyWebTestBase extends DrupalWebTestCase {
       'value2' => $date,
     ]);
     $wrapper->field_closed->set(FALSE);
+
+    if ($is_training) {
+      $wrapper->field_training->set(TRUE);
+    }
+
     $wrapper->save();
 
     return $node->nid;
@@ -193,18 +201,19 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *   The node ID of the mother.
    * @param int $session_id
    *   The node ID of the session.
-   * @param int $ts
-   *   The date the measurement was taken, as a unix timestamp.
+   * @param int $timestamp
+   *   Optional; The date the measurement was taken, as a unix timestamp,
+   *   defaults to the time of the request.
    *
    * @return int
    *   The node ID of the family-planning.
    */
-  public function createFamilyPlanning($mother_id, $session_id, $ts) {
+  public function createFamilyPlanning($mother_id, $session_id, $timestamp = REQUEST_TIME) {
     $node = $this->drupalCreateNode(['type' => 'family_planning']);
 
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_mother->set($mother_id);
-    $wrapper->field_date_measured->set($ts);
+    $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_session->set($session_id);
     $wrapper->field_family_planning_signs->set(["pill"]);
     $wrapper->save();
@@ -219,20 +228,21 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *   The node ID of the child.
    * @param int $session_id
    *   The node ID of the session.
-   * @param int $ts
-   *   The date the measurement was taken, as a unix timestamp.
    * @param float $height
    *   The height value.
+   * @param int $timestamp
+   *   Optional; The date the measurement was taken, as a unix timestamp,
+   *   defaults to the time of the request.
    *
    * @return int
    *   The node ID of the height.
    */
-  public function createHeight($child_id, $session_id, $ts, $height) {
+  public function createHeight($child_id, $session_id, $height, $timestamp = REQUEST_TIME) {
     $node = $this->drupalCreateNode(['type' => 'height']);
 
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_child->set($child_id);
-    $wrapper->field_date_measured->set($ts);
+    $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_session->set($session_id);
     $wrapper->field_height->set($height);
     $wrapper->save();
@@ -247,20 +257,21 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *   The node ID of the child.
    * @param int $session_id
    *   The node ID of the session.
-   * @param int $ts
-   *   The date the measurement was taken, as a unix timestamp.
    * @param float $weight
    *   The weight value.
+   * @param int $timestamp
+   *   Optional; The date the measurement was taken, as a unix timestamp,
+   *   defaults to the time of the request.
    *
    * @return int
    *   The node ID of the weight.
    */
-  public function createWeight($child_id, $session_id, $ts, $weight) {
+  public function createWeight($child_id, $session_id, $weight, $timestamp = REQUEST_TIME) {
     $node = $this->drupalCreateNode(['type' => 'weight']);
 
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_child->set($child_id);
-    $wrapper->field_date_measured->set($ts);
+    $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_session->set($session_id);
     $wrapper->field_weight->set($weight);
     $wrapper->save();
