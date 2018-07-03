@@ -100,6 +100,7 @@ type MsgBackend
     | HandleUploadedEdits SessionId (Result Error ())
     | HandleUploadPhotoResponse Photo (Result Error Int)
     | PostSession Session
+    | PostTrainingSessions NominalDate
     | HandlePostedSession (WebData ( SessionId, Session ))
     | RefetchOfflineSession SessionId
     | ResetErrors -- reset errors to `NotAsked` when certain requests succeed, so they will retry

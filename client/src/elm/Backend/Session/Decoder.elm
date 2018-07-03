@@ -18,6 +18,13 @@ import Restful.Endpoint exposing (decodeEntityId)
 import Time.Date
 
 
+{-| Decodes the JSON sent by /api/training_sessions
+-}
+decodeTrainingSession : Decoder (EveryDictList SessionId Session)
+decodeTrainingSession =
+    EveryDictList.decodeArray2 (field "id" decodeEntityId) decodeSession
+
+
 {-| Decodes the JSON sent by /api/sessions
 -}
 decodeSession : Decoder Session

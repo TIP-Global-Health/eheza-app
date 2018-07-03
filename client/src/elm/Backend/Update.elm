@@ -15,7 +15,7 @@ import Backend.Measurement.Encoder exposing (encodeMeasurementEdits)
 import Backend.Measurement.Model exposing (Edit(..))
 import Backend.Measurement.Utils exposing (backendValue, getPhotosToUpload, mapMeasurementData)
 import Backend.Model exposing (..)
-import Backend.Session.Decoder exposing (decodeOfflineSession, decodeSession)
+import Backend.Session.Decoder exposing (decodeOfflineSession, decodeSession, decodeTrainingSession)
 import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession)
 import Backend.Session.Model exposing (EditableSession, MsgEditableSession(..), OfflineSession, Session)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData, getPhotoUrls, makeEditableSession, mapChildEdits, mapMotherEdits, setPhotoFileId)
@@ -24,7 +24,7 @@ import CacheStorage.Model exposing (cachePhotos, clearCachedPhotos)
 import CacheStorage.Update
 import Config.Model exposing (BackendUrl)
 import EveryDict
-import EveryDictList
+import EveryDictList exposing (EveryDictList)
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -64,6 +64,12 @@ sessionEndpoint =
     drupalEndpoint "api/sessions" decodeSession
         |> withValueEncoder (object << encodeSession)
         |> withParamsEncoder encodeSessionParams
+
+
+trainingSessionsEndpoint : ReadWriteEndPoint Error SessionId (EveryDictList SessionId Session) Session ()
+trainingSessionsEndpoint =
+    drupalEndpoint "api/training_sessions" decodeTrainingSession
+        |> withValueEncoder (object << encodeSession)
 
 
 offlineSessionEndpoint : ReadWriteEndPoint Error SessionId OfflineSession OfflineSession ()
@@ -118,6 +124,13 @@ updateBackend backendUrl accessToken msg model =
             ( { model | postSessionRequest = Loading }
             , crud.post sessionEndpoint session
                 |> toCmd (RemoteData.fromResult >> HandlePostedSession)
+            , []
+            )
+
+        PostTrainingSessions date ->
+            ( { model | postSessionRequest = Loading }
+            , crud.post trainingSessionsEndpoint
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedSessions date)
             , []
             )
 
