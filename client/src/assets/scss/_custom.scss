@@ -21,6 +21,23 @@ a {
   color: $color-primary;
 }
 
+.language-switcher {
+  margin: 10px 0;
+
+  .button {
+
+    i {
+      vertical-align: 3px;
+    }
+
+    &:hover,
+    &.active:hover,
+    &.active {
+      color: $color-secondary;
+    }
+  }
+}
+
 // Page Wraps
 
 .wrap {
@@ -160,7 +177,7 @@ a {
   background: #fff;
   border: 0;
   padding: 0.6em 1.8em;
-  height: 48px; 
+  height: 48px;
   position: relative;
   margin-right: 20px;
   box-shadow: -2px -2px 5px 0 rgba(0,0,0,0.12);
@@ -1017,7 +1034,7 @@ input::placeholder {
 }
 
 
-// Lists 
+// Lists
 
 .ui.list {
   margin-top: 1.5em;

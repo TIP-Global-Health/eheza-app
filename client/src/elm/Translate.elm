@@ -12,16 +12,19 @@ import Restful.Login exposing (LoginError(..))
 
 type Language
     = English
+    | Kinyarwanda
 
 
 allLanguages : List Language
 allLanguages =
     [ English
+    , Kinyarwanda
     ]
 
 
 type alias TranslationSet =
     { english : String
+    , kinyarwanda : Maybe String
     }
 
 
@@ -143,6 +146,7 @@ type TranslationId
     | Save
     | SaveError
     | SearchByName
+    | SelectLanguage
     | SelectYourClinic
     | SessionClosed
     | SessionClosed2 SessionId
@@ -209,682 +213,1119 @@ translate lang trans =
         translationSet =
             case trans of
                 AccessDenied ->
-                    { english = "Access denied" }
+                    { english = "Access denied"
+                    , kinyarwanda = Just "Kwinjira ntibyemera"
+                    }
 
                 AgeWord ->
-                    { english = "Age" }
+                    { english = "Age"
+                    , kinyarwanda = Just "Imyaka"
+                    }
 
                 Activities ->
-                    { english = "Activities" }
+                    { english = "Activities"
+                    , kinyarwanda = Just "Ibikorwa"
+                    }
 
                 ActivitiesCompleted count ->
-                    { english = "Completed (" ++ toString count ++ ")" }
+                    { english = "Completed (" ++ toString count ++ ")"
+                    , kinyarwanda = Nothing
+                    }
 
                 ActivitiesHelp activity ->
                     case activity of
                         MotherActivity FamilyPlanning ->
-                            { english = "Every mother should be asked about her family planning method(s) each month. If a mother needs family planning, refer her to a clinic." }
+                            { english = "Every mother should be asked about her family planning method(s) each month. If a mother needs family planning, refer her to a clinic."
+                            , kinyarwanda = Just "Buri mubyeyi agomba kubazwa uburyo bwo kuboneza urubyaro akoresha buri kwezi. Niba umubyeyi akeneye kuboneza urubyaro mwohereze ku kigo nderabuzima k'ubishinzwe"
+                            }
 
                         ChildActivity Height ->
-                            { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight." }
+                            { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight."
+                            , kinyarwanda = Just "Saba Umubyeyi guhagarara inyuma y’umwana we agaramye, afata umutwe ku gice cy’amatwi. Sunikira akabaho ku buryo gakora mu bworo by’ibirenge byombi."
+                            }
 
                         ChildActivity Muac ->
-                            { english = "Make sure to measure at the center of the baby’s upper arm." }
+                            { english = "Make sure to measure at the center of the baby’s upper arm."
+                            , kinyarwanda = Just "Ibuka gupima icya kabiri cy'akaboko ko hejuru kugira bigufashe guoima ikizigira cy'akaboko"
+                            }
 
                         ChildActivity NutritionSigns ->
-                            { english = "Explain to the mother how to check the malnutrition signs for their own child." }
+                            { english = "Explain to the mother how to check the malnutrition signs for their own child."
+                            , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye"
+                            }
 
                         ChildActivity ChildPicture ->
-                            { english = "Take each baby’s photo at each health assessment. Photos should show the entire body of each child." }
+                            { english = "Take each baby’s photo at each health assessment. Photos should show the entire body of each child."
+                            , kinyarwanda = Just "Fata ifoto ya buri mwana kuri buri bikorwa by'ipimwa Ifoto igomba kwerekana ibice by'umubiri wose by'umwana"
+                            }
 
                         ChildActivity ProgressReport ->
-                            { english = "" }
+                            { english = "Progress report"
+                            , kinyarwanda = Nothing
+                            }
 
                         ChildActivity Weight ->
-                            { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on." }
+                            { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on."
+                            , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
+                            }
 
                 ActivitiesLabel activity ->
                     case activity of
                         MotherActivity FamilyPlanning ->
-                            { english = "Which, if any, of the following methods do you use?" }
+                            { english = "Which, if any, of the following methods do you use?"
+                            , kinyarwanda = Just "Ni ubuhe buryo, niba hari ubuhari, mu buryo bukurikira bwo kuboneza urubyaro ukoresha? Muri ubu buryo bukurikira bwo kuboneza urubyaro, ni ubuhe buryo mukoresha?"
+                            }
 
                         ChildActivity Height ->
-                            { english = "Height:" }
+                            { english = "Height:"
+                            , kinyarwanda = Just "Uburere:"
+                            }
 
                         ChildActivity Muac ->
-                            { english = "MUAC:" }
+                            { english = "MUAC:"
+                            , kinyarwanda = Just "Ikizigira cy'akaboko:"
+                            }
 
                         ChildActivity NutritionSigns ->
-                            { english = "Select all signs that are present:" }
+                            { english = "Select all signs that are present:"
+                            , kinyarwanda = Just "Hitamo ibimenyetso by'imirire byose bishoboka umwana afite:"
+                            }
 
                         ChildActivity ChildPicture ->
-                            { english = "Photo:" }
+                            { english = "Photo:"
+                            , kinyarwanda = Just "Ifoto"
+                            }
 
                         ChildActivity ProgressReport ->
-                            { english = "Progress Report" }
+                            { english = "Progress Report"
+                            , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
+                            }
 
                         ChildActivity Weight ->
-                            { english = "Weight:" }
+                            { english = "Weight:"
+                            , kinyarwanda = Just "Ibiro:"
+                            }
 
                 ActivitiesTitle activity ->
                     case activity of
                         MotherActivity FamilyPlanning ->
-                            { english = "Family Planning" }
+                            { english = "Family Planning"
+                            , kinyarwanda = Just "Kuboneza Urubyaro? nticyaza muri raporo yimikurire yumwana"
+                            }
 
                         ChildActivity Height ->
-                            { english = "Height" }
+                            { english = "Height"
+                            , kinyarwanda = Just "Uburebure"
+                            }
 
                         ChildActivity Muac ->
-                            { english = "MUAC" }
+                            { english = "MUAC"
+                            , kinyarwanda = Just "Ikizigira cy'akaboko"
+                            }
 
                         ChildActivity NutritionSigns ->
-                            { english = "Nutrition" }
+                            { english = "Nutrition"
+                            , kinyarwanda = Just "Imirire"
+                            }
 
                         ChildActivity ChildPicture ->
-                            { english = "Photo" }
+                            { english = "Photo"
+                            , kinyarwanda = Just "Ifoto"
+                            }
 
                         ChildActivity ProgressReport ->
-                            { english = "Progress Report" }
+                            { english = "Progress Report"
+                            , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
+                            }
 
                         ChildActivity Weight ->
-                            { english = "Weight" }
+                            { english = "Weight"
+                            , kinyarwanda = Just "Ibiro"
+                            }
 
                 ActivityProgressReport activity ->
                     case activity of
                         MotherActivity FamilyPlanning ->
-                            { english = "Family Planning" }
+                            { english = "Family Planning"
+                            , kinyarwanda = Just "Kuboneza Urubyaro? nticyaza muri raporo yimikurire yumwana"
+                            }
 
                         ChildActivity Height ->
-                            { english = "Height" }
+                            { english = "Height"
+                            , kinyarwanda = Just "Uburebure"
+                            }
 
                         ChildActivity Muac ->
-                            { english = "MUAC" }
+                            { english = "MUAC"
+                            , kinyarwanda = Just "Ikizigira cy'akaboko"
+                            }
 
                         ChildActivity NutritionSigns ->
-                            { english = "Nutrition Signs" }
+                            { english = "Nutrition Signs"
+                            , kinyarwanda = Just "Ibimenyetso by'imirire"
+                            }
 
                         ChildActivity ChildPicture ->
-                            { english = "Photo" }
+                            { english = "Photo"
+                            , kinyarwanda = Just "Ifoto"
+                            }
 
                         ChildActivity ProgressReport ->
-                            { english = "Progress Report" }
+                            { english = "Progress Report"
+                            , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
+                            }
 
                         ChildActivity Weight ->
-                            { english = "Weight" }
+                            { english = "Weight"
+                            , kinyarwanda = Just "Ibiro"
+                            }
 
                 ActivitiesToComplete count ->
-                    { english = "To Do (" ++ toString count ++ ")" }
+                    { english = "To Do (" ++ toString count ++ ")"
+                    , kinyarwanda = Just "Ibisabwa gukora"
+                    }
 
                 ActivePage page ->
                     case page of
                         LoginPage ->
-                            { english = "Login" }
+                            { english = "Login"
+                            , kinyarwanda = Just "Kwinjira"
+                            }
 
                         PageNotFound url ->
-                            { english = "Missing" }
+                            { english = "Missing"
+                            , kinyarwanda = Just "Ibibura"
+                            }
 
                         SessionPage sessionPage ->
                             case sessionPage of
                                 ActivitiesPage ->
-                                    { english = "Activities" }
+                                    { english = "Activities"
+                                    , kinyarwanda = Just "Ibikorwa"
+                                    }
 
                                 ActivityPage activityType ->
-                                    { english = "Activity" }
+                                    { english = "Activity"
+                                    , kinyarwanda = Just "Igikorwa"
+                                    }
 
                                 AttendancePage ->
-                                    { english = "Attendance" }
+                                    { english = "Attendance"
+                                    , kinyarwanda = Just "Ubwitabire"
+                                    }
 
                                 ParticipantsPage ->
-                                    { english = "Participants" }
+                                    { english = "Participants"
+                                    , kinyarwanda = Just "Abagenerwabikorwa"
+                                    }
 
                                 ChildPage childId ->
-                                    { english = "Child" }
+                                    { english = "Child"
+                                    , kinyarwanda = Just "Umwana"
+                                    }
 
                                 MotherPage motherId ->
-                                    { english = "Mother" }
+                                    { english = "Mother"
+                                    , kinyarwanda = Just "Umubyeyi"
+                                    }
 
                                 ProgressReportPage childId ->
-                                    { english = "Progress Report" }
+                                    { english = "Progress Report"
+                                    , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
+                                    }
 
                         UserPage (ClinicsPage _) ->
-                            { english = "Clinics" }
+                            { english = "Clinics"
+                            , kinyarwanda = Just "Ibigo nderabuzima"
+                            }
 
                         UserPage MyAccountPage ->
-                            { english = "'My Account'" }
+                            { english = "'My Account'"
+                            , kinyarwanda = Just "Compte"
+                            }
 
                 Age months days ->
-                    { english = toString months ++ " months " ++ toString days ++ " days" }
+                    { english = toString months ++ " months " ++ toString days ++ " days"
+                    , kinyarwanda = Just <| toString months ++ "Amezi" ++ toString days ++ "iminsi"
+                    }
 
                 AgeDays days ->
-                    { english = toString days ++ " days" }
+                    { english = toString days ++ " days"
+                    , kinyarwanda = Just <| toString days ++ "Iminsi"
+                    }
 
                 AgeMonthsWithoutDay months ->
-                    { english = toString months ++ " month" }
+                    { english = toString months ++ " month"
+                    , kinyarwanda = Just <| toString months ++ "Ukwezi"
+                    }
 
                 AgeSingleBoth months days ->
-                    { english = toString months ++ " month " ++ toString days ++ " day" }
+                    { english = toString months ++ " month " ++ toString days ++ " day"
+                    , kinyarwanda = Just <| toString months ++ "Ukwezi" ++ toString days ++ "Umunsi"
+                    }
 
                 AgeSingleMonth months days ->
-                    { english = toString months ++ " month " ++ toString days ++ " days" }
+                    { english = toString months ++ " month " ++ toString days ++ " days"
+                    , kinyarwanda = Just <| toString months ++ "Ukwezi" ++ toString days ++ "Iminsi"
+                    }
 
                 AgeSingleDayWithMonth months days ->
-                    { english = toString months ++ " months " ++ toString days ++ " day" }
+                    { english = toString months ++ " months " ++ toString days ++ " day"
+                    , kinyarwanda = Just <| toString months ++ "Amezi" ++ toString days ++ "Umunsi"
+                    }
 
                 AgeSingleDayWithoutMonth months days ->
-                    { english = toString days ++ " day" }
+                    { english = toString days ++ " day"
+                    , kinyarwanda = Just <| toString days ++ "Umunsi"
+                    }
 
                 AgeSingleMonthWithoutDay month ->
-                    { english = toString month ++ " month" }
+                    { english = toString month ++ " month"
+                    , kinyarwanda = Just <| toString month ++ "Ukwezi"
+                    }
 
                 AppName ->
-                    { english = "E-Heza System" }
+                    { english = "E-Heza System"
+                    , kinyarwanda = Just "E-heza sisiteme"
+                    }
 
                 AreYouSure ->
-                    { english = "Are you sure?" }
+                    { english = "Are you sure?"
+                    , kinyarwanda = Just "Urabyizeye?"
+                    }
 
                 Assessment ->
-                    { english = "Assessment" }
+                    { english = "Assessment"
+                    , kinyarwanda = Just "Ipimwa"
+                    }
 
                 Attendance ->
-                    { english = "Attendance" }
+                    { english = "Attendance"
+                    , kinyarwanda = Just "Ubwitabire"
+                    }
 
                 Baby ->
-                    { english = "Baby" }
+                    { english = "Baby"
+                    , kinyarwanda = Just "Umwana"
+                    }
 
                 BabyName name ->
-                    { english = "Baby: " ++ name }
+                    { english = "Baby: " ++ name
+                    , kinyarwanda = Just <| "Umwana:" ++ name
+                    }
 
                 Born ->
-                    { english = "Born" }
+                    { english = "Born"
+                    , kinyarwanda = Just "Kuvuka/ itariki y'amavuko"
+                    }
 
                 BeginHealthAssessment ->
-                    { english = "Begin Health Assessment" }
+                    { english = "Begin Health Assessment"
+                    , kinyarwanda = Just "Gutangira ibikorwa by'ipima"
+                    }
 
                 Cancel ->
-                    { english = "Cancel" }
+                    { english = "Cancel"
+                    , kinyarwanda = Just "Guhagarika"
+                    }
 
                 CentimeterShorthand ->
-                    { english = "cm" }
+                    { english = "cm"
+                    , kinyarwanda = Just "cm"
+                    }
 
                 ChartPhrase phrase ->
                     case phrase of
                         AgeCompletedMonthsYears ->
-                            { english = "Age (completed months and years)" }
+                            { english = "Age (completed months and years)"
+                            , kinyarwanda = Just "Imyaka uzuza amazi n'imyaka"
+                            }
 
                         Birth ->
-                            { english = "Birth" }
+                            { english = "Birth"
+                            , kinyarwanda = Just "kuvuka"
+                            }
 
                         BirthToTwoYears ->
-                            { english = "Birth to 2 years (z-scores)" }
+                            { english = "Birth to 2 years (z-scores)"
+                            , kinyarwanda = Just "kuvuka (Kuva avutse)  kugeza ku myaka 2 Z-score"
+                            }
 
                         LengthCm ->
-                            { english = "Length (cm)" }
+                            { english = "Length (cm)"
+                            , kinyarwanda = Just "Uburere cm"
+                            }
 
                         LengthForAgeBoys ->
-                            { english = "Length-for-age BOYS" }
+                            { english = "Length-for-age BOYS"
+                            , kinyarwanda = Just "Uburebure ku myaka/ umuhungu"
+                            }
 
                         LengthForAgeGirls ->
-                            { english = "Length-for-age GIRLS" }
+                            { english = "Length-for-age GIRLS"
+                            , kinyarwanda = Just "uburebure ku myaka umukobwa"
+                            }
 
                         Months ->
-                            { english = "Months" }
+                            { english = "Months"
+                            , kinyarwanda = Just "Amezi"
+                            }
 
                         OneYear ->
-                            { english = "1 year" }
+                            { english = "1 year"
+                            , kinyarwanda = Just "Umwaka umwe"
+                            }
 
                         TwoYears ->
-                            { english = "2 years" }
+                            { english = "2 years"
+                            , kinyarwanda = Just "Imyaka 2"
+                            }
 
                         WeightForAgeBoys ->
-                            { english = "Weight-for-age BOYS" }
+                            { english = "Weight-for-age BOYS"
+                            , kinyarwanda = Just "Ibiro ku myaka umuhungu"
+                            }
 
                         WeightForAgeGirls ->
-                            { english = "Weight-for-age GIRLS" }
+                            { english = "Weight-for-age GIRLS"
+                            , kinyarwanda = Just "ibiro ku myaka umukobwa"
+                            }
 
                         WeightForLengthBoys ->
-                            { english = "Weight-for-length BOYS" }
+                            { english = "Weight-for-length BOYS"
+                            , kinyarwanda = Just "Ibiro ku Uburebure umuhungu"
+                            }
 
                         WeightForLengthGirls ->
-                            { english = "Weight-for-length GIRLS" }
+                            { english = "Weight-for-length GIRLS"
+                            , kinyarwanda = Just "ibiro ku uburebure umukobwa"
+                            }
 
                         WeightKg ->
-                            { english = "Weight (kg)" }
+                            { english = "Weight (kg)"
+                            , kinyarwanda = Just "Ibiro kg"
+                            }
 
                         ZScoreChartsAvailableAt ->
-                            { english = "Z-score charts available at" }
+                            { english = "Z-score charts available at"
+                            , kinyarwanda = Just "Raporo ku mikurire y'umwana"
+                            }
 
                 CheckIn ->
-                    { english = "Check in:" }
+                    { english = "Check in:"
+                    , kinyarwanda = Just "Kureba abaje"
+                    }
 
                 ChildNutritionSignLabel sign ->
                     case sign of
                         AbdominalDistension ->
-                            { english = "Abdominal Distension" }
+                            { english = "Abdominal Distension"
+                            , kinyarwanda = Just "Kubyimba inda"
+                            }
 
                         Apathy ->
-                            { english = "Apathy" }
+                            { english = "Apathy"
+                            , kinyarwanda = Just "Kwigunga"
+                            }
 
                         BrittleHair ->
-                            { english = "Brittle Hair" }
+                            { english = "Brittle Hair"
+                            , kinyarwanda = Just "Gucurama no guhindura ibara ku misatsi"
+                            }
 
                         DrySkin ->
-                            { english = "Dry Skin" }
+                            { english = "Dry Skin"
+                            , kinyarwanda = Just "Uruhu ryumye"
+                            }
 
                         Edema ->
-                            { english = "Edema" }
+                            { english = "Edema"
+                            , kinyarwanda = Just "Kubyimba"
+                            }
 
                         None ->
-                            { english = "None of these" }
+                            { english = "None of these"
+                            , kinyarwanda = Just "Nta bimenyetso "
+                            }
 
                         PoorAppetite ->
-                            { english = "Poor Appetite" }
+                            { english = "Poor Appetite"
+                            , kinyarwanda = Just "Kubura apeti /kunanirwa kurya"
+                            }
 
                 ChildNutritionSignReport sign ->
                     case sign of
                         AbdominalDistension ->
-                            { english = "Abdominal Distension" }
+                            { english = "Abdominal Distension"
+                            , kinyarwanda = Just "Kubyimba inda"
+                            }
 
                         Apathy ->
-                            { english = "Apathy" }
+                            { english = "Apathy"
+                            , kinyarwanda = Just "Kwigunga"
+                            }
 
                         BrittleHair ->
-                            { english = "Brittle Hair" }
+                            { english = "Brittle Hair"
+                            , kinyarwanda = Just "Gucurama umusatsi"
+                            }
 
                         DrySkin ->
-                            { english = "Dry Skin" }
+                            { english = "Dry Skin"
+                            , kinyarwanda = Just "Uruhu ryumye"
+                            }
 
                         Edema ->
-                            { english = "Edema" }
+                            { english = "Edema"
+                            , kinyarwanda = Just "Kubyimba"
+                            }
 
                         None ->
-                            { english = "None" }
+                            { english = "None"
+                            , kinyarwanda = Just "Nta bimenyetso "
+                            }
 
                         PoorAppetite ->
-                            { english = "Poor Appetite" }
+                            { english = "Poor Appetite"
+                            , kinyarwanda = Just "kubura apeti(kunanirwa kurya)"
+                            }
 
                 Children ->
-                    { english = "Children" }
+                    { english = "Children"
+                    , kinyarwanda = Just "Abana"
+                    }
 
                 ChildOf ->
-                    { english = "Child of" }
+                    { english = "Child of"
+                    , kinyarwanda = Just "Umwana wa"
+                    }
 
                 ClickTheCheckMark ->
-                    { english = "Click the check mark if the mother is in attendance. The check mark will appear green when a mother has been signed in." }
+                    { english = "Click the check mark if the mother is in attendance. The check mark will appear green when a mother has been signed in."
+                    , kinyarwanda = Just "Kanda (kuri) ku kazu niba umubyeyi ahari. Ku kazu harahita hahindura ibara habe icyaytsi niba wemeje ko umubyeyi ahari"
+                    }
 
                 ClinicNotFound ->
-                    { english = "Clinic not found" }
+                    { english = "Clinic not found"
+                    , kinyarwanda = Just "Ikigo nderabuzima nticyabonetse"
+                    }
 
                 Clinics ->
-                    { english = "Clinics" }
+                    { english = "Clinics"
+                    , kinyarwanda = Just "Ibigo nderebuzima"
+                    }
 
                 Connected ->
-                    { english = "Connected" }
+                    { english = "Connected"
+                    , kinyarwanda = Just "Ufite interineti ( murandasi)"
+                    }
 
                 Continue ->
-                    { english = "Continue" }
+                    { english = "Continue"
+                    , kinyarwanda = Just "Gukomeza"
+                    }
 
                 Dashboard ->
-                    { english = "Dashboard" }
+                    { english = "Dashboard"
+                    , kinyarwanda = Just "Tabeau de bord"
+                    }
 
                 DataIsNowSaved ->
-                    { english = "Data is now saved on the server." }
+                    { english = "Data is now saved on the server."
+                    , kinyarwanda = Just "Amakuru ubu abitswe kri seriveri."
+                    }
 
                 DateOfLastAssessment ->
-                    { english = "Date of last Assessment" }
+                    { english = "Date of last Assessment"
+                    , kinyarwanda = Just "Amakuru y'ipimwa ry'ubushize"
+                    }
 
                 Day ->
-                    { english = "day" }
+                    { english = "day"
+                    , kinyarwanda = Just "Umunsi"
+                    }
 
                 Days ->
-                    { english = "days" }
+                    { english = "days"
+                    , kinyarwanda = Just "Iminsi"
+                    }
 
                 DownloadHealthAssessment ->
-                    { english = "Download Health Assessment" }
+                    { english = "Download Health Assessment"
+                    , kinyarwanda = Just "Gukurura Health assessment (ibikorwa by'ubuzima)"
+                    }
 
                 DownloadSuccessful ->
-                    { english = "Download Successful" }
+                    { english = "Download Successful"
+                    , kinyarwanda = Just "Gukurura Health assessment byagenze neza"
+                    }
 
                 DownloadingSession1 ->
-                    { english = "Downloading…" }
+                    { english = "Downloading…"
+                    , kinyarwanda = Just "Uri gukurura Health assessment(gukurura amakuru y'ipima)"
+                    }
 
                 DownloadingSession2 ->
-                    { english = "Downloading may take a few minutes, or a few hours. Do not leave this page while data is downloading." }
+                    { english = "Downloading may take a few minutes, or a few hours. Do not leave this page while data is downloading."
+                    , kinyarwanda = Just "Gukurura Health Assessment bishobora gutwara iminota mike cg amasaha make. Ub uretse gufunga iyi paji mu gihe ugikurura amakuru."
+                    }
 
                 DropzoneDefaultMessage ->
-                    { english = "Touch here to take a photo, or drop a photo file here." }
+                    { english = "Touch here to take a photo, or drop a photo file here."
+                    , kinyarwanda = Just "Kanda hano niba ushaka gufotora cg ukure ifoto mu bubiko hano."
+                    }
 
                 DownloadSession1 ->
-                    { english = "You have no sessions loaded to this device. Your next session will be available for download the day before it is scheduled to begin." }
+                    { english = "You have no sessions loaded to this device. Your next session will be available for download the day before it is scheduled to begin."
+                    , kinyarwanda = Just "Nta bikirwa ry'ipimwa byinjijwe kuri tablet, ibikorwa by'ipimwa bikurikira bazaboneka kuba byakurwa kuri internet umunsi ubanziriza ipima. "
+                    }
 
                 DownloadSession2 ->
-                    { english = "You must be connected to the internet to download a session." }
+                    { english = "You must be connected to the internet to download a session."
+                    , kinyarwanda = Just "Ugomba gukoresha internet (murandasi) kugirango ubone amakuru y'ipima."
+                    }
 
                 EndSession ->
-                    { english = "End Session" }
+                    { english = "End Session"
+                    , kinyarwanda = Just "Kurangiza ipima (gupima)"
+                    }
 
                 ErrorBadUrl ->
-                    { english = "URL is not valid." }
+                    { english = "URL is not valid."
+                    , kinyarwanda = Nothing
+                    }
 
                 ErrorBadPayload ->
-                    { english = "The server responded with data of an unexpected type." }
+                    { english = "The server responded with data of an unexpected type."
+                    , kinyarwanda = Nothing
+                    }
 
                 ErrorBadStatus ->
-                    { english = "The server indicated the following error:" }
+                    { english = "The server indicated the following error:"
+                    , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira:"
+                    }
 
                 ErrorCheckLocalConfig ->
-                    { english = "Check your LocalConfig.elm file and make sure you have defined the enviorement properly" }
+                    { english = "Check your LocalConfig.elm file and make sure you have defined the enviorement properly"
+                    , kinyarwanda = Nothing
+                    }
 
                 ErrorConfigurationError ->
-                    { english = "Configuration error" }
+                    { english = "Configuration error"
+                    , kinyarwanda = Just "Ikosa mu igena miterere"
+                    }
 
                 ErrorFetchingCachedSession ->
-                    { english = "There was an error fetchhing the session stored on this device." }
+                    { english = "There was an error fetchhing the session stored on this device."
+                    , kinyarwanda = Nothing
+                    }
 
                 ErrorNetworkError ->
-                    { english = "A network error occurred contacting the server. Are you connected to the Internet?" }
+                    { english = "A network error occurred contacting the server. Are you connected to the Internet?"
+                    , kinyarwanda = Nothing
+                    }
 
                 ErrorTimeout ->
-                    { english = "The network request timed out." }
+                    { english = "The network request timed out."
+                    , kinyarwanda = Nothing
+                    }
 
                 FamilyPlanningSignLabel sign ->
                     case sign of
                         Condoms ->
-                            { english = "Condoms" }
+                            { english = "Condoms"
+                            , kinyarwanda = Just "Udukingirizo"
+                            }
 
                         IUD ->
-                            { english = "IUD" }
+                            { english = "IUD"
+                            , kinyarwanda = Just "Akapira ko mu mura(agapira ko munda ibyara)"
+                            }
 
                         Implant ->
-                            { english = "Implant" }
+                            { english = "Implant"
+                            , kinyarwanda = Just "Akapira ko mu kaboko"
+                            }
 
                         Injection ->
-                            { english = "Injection" }
+                            { english = "Injection"
+                            , kinyarwanda = Just "Urushinge"
+                            }
 
                         Necklace ->
-                            { english = "Necklace" }
+                            { english = "Necklace"
+                            , kinyarwanda = Just "Urunigi"
+                            }
 
                         Pill ->
-                            { english = "Pill" }
+                            { english = "Pill"
+                            , kinyarwanda = Just "Ibinini"
+                            }
 
                         NoFamilyPlanning ->
-                            { english = "None of these" }
+                            { english = "None of these"
+                            , kinyarwanda = Just "nta buryo bwo kuboneza urubyaro akoresha"
+                            }
 
                 Fetch ->
-                    { english = "Fetch" }
+                    { english = "Fetch"
+                    , kinyarwanda = Just "Gushakisha"
+                    }
 
                 Gender gender ->
                     case gender of
                         Male ->
-                            { english = "Male" }
+                            { english = "Male"
+                            , kinyarwanda = Just "Gabo"
+                            }
 
                         Female ->
-                            { english = "Female" }
+                            { english = "Female"
+                            , kinyarwanda = Just "Gore"
+                            }
 
                 GoHome ->
-                    { english = "Go to main page" }
+                    { english = "Go to main page"
+                    , kinyarwanda = Just "Kujya ahabanza"
+                    }
 
                 KilogramShorthand ->
-                    { english = "kg" }
+                    { english = "kg"
+                    , kinyarwanda = Just "kg"
+                    }
 
                 LinkToMother ->
-                    { english = "Link to mother" }
+                    { english = "Link to mother"
+                    , kinyarwanda = Just "Guhuza n'amakuru y'umubyeyi"
+                    }
 
                 LoginPhrase phrase ->
                     case phrase of
                         CheckingCachedCredentials ->
-                            { english = "Checking cached credentials" }
+                            { english = "Checking cached credentials"
+                            , kinyarwanda = Nothing
+                            }
 
                         ForgotPassword1 ->
-                            { english = "Forgot your password?" }
+                            { english = "Forgot your password?"
+                            , kinyarwanda = Just "Wibagiwe ijambo ry'ibanga?"
+                            }
 
                         ForgotPassword2 ->
-                            { english = "Call The Ihangane Project at +250 788 817 542" }
+                            { english = "Call The Ihangane Project at +250 788 817 542"
+                            , kinyarwanda = Just "Hamagara The Ihangane Project kuri +250 788 817 542(Hamagara kumushinga wa ihangane"
+                            }
 
                         LoggedInAs ->
-                            { english = "Logged in as" }
+                            { english = "Logged in as"
+                            , kinyarwanda = Just "Kwinjira nka …"
+                            }
 
                         LoginError error ->
                             case error of
                                 AccessTokenRejected ->
-                                    { english = "Your access token has expired. You will need to sign in again." }
+                                    { english = "Your access token has expired. You will need to sign in again."
+                                    , kinyarwanda = Just "Igihe cyo gukoresha sisitemu cyarangiye . Ongera winjore muri sisitemu"
+                                    }
 
                                 InternalError error ->
-                                    { english = "The following error occurred contacting the server. " ++ toString error }
+                                    { english = "The following error occurred contacting the server. " ++ toString error
+                                    , kinyarwanda = Just <| "Aya makosa yagaragaye hamagara kuri seriveri." ++ toString error
+                                    }
 
                                 NetworkError ->
-                                    { english = "A network error occurred contacting the server. Are you connected to the Internet?" }
+                                    { english = "A network error occurred contacting the server. Are you connected to the Internet?"
+                                    , kinyarwanda = Just "hari ikibazo cya reseau hamagara kuri seriveri. ufite intereneti?(murandasi)"
+                                    }
 
                                 PasswordRejected ->
-                                    { english = "The server rejected your username or password." }
+                                    { english = "The server rejected your username or password."
+                                    , kinyarwanda = Just "Seriveri yanze ijambo ryo kwinjira cg ijambo ry'ibanga"
+                                    }
 
                                 Timeout ->
-                                    { english = "The request to the server timed out." }
+                                    { english = "The request to the server timed out."
+                                    , kinyarwanda = Just "Ibyo wasabye kuri seriveri byarengeje igihe."
+                                    }
 
                         LoginOrWorkOffline ->
-                            { english = "Either login below, or work offline without logging in." }
+                            { english = "Either login below, or work offline without logging in."
+                            , kinyarwanda = Nothing
+                            }
 
                         Logout ->
-                            { english = "Logout" }
+                            { english = "Logout"
+                            , kinyarwanda = Just "Gufunga"
+                            }
 
                         LogoutInProgress ->
-                            { english = "Logout in progress ..." }
+                            { english = "Logout in progress ..."
+                            , kinyarwanda = Just "sisitemi irikwifunga"
+                            }
 
                         LogoutFailed ->
-                            { english = "Logout Failed" }
+                            { english = "Logout Failed"
+                            , kinyarwanda = Just "Gufunga byanze"
+                            }
 
                         Password ->
-                            { english = "Password" }
+                            { english = "Password"
+                            , kinyarwanda = Just "Ijambo ry'ibanga"
+                            }
 
                         SignIn ->
-                            { english = "Sign In" }
+                            { english = "Sign In"
+                            , kinyarwanda = Just "Kwinjira"
+                            }
 
                         Username ->
-                            { english = "Username" }
+                            { english = "Username"
+                            , kinyarwanda = Just "Izina ryo kwinjira"
+                            }
 
                         WorkOffline ->
-                            { english = "Work Offline" }
+                            { english = "Work Offline"
+                            , kinyarwanda = Just "Gukora nta internet"
+                            }
 
                         YouMustLoginBefore ->
-                            { english = "You must sign in before you can access the" }
+                            { english = "You must sign in before you can access the"
+                            , kinyarwanda = Just "Ugomba kubanza kwinjira muri sisitemi mbere yuko ubona"
+                            }
 
                 MakeSureYouAreConnected ->
-                    { english = "Make sure you are connected to the internet. If the issue continues, call The Ihangane Project at +250 788 817 542." }
+                    { english = "Make sure you are connected to the internet. If the issue continues, call The Ihangane Project at +250 788 817 542."
+                    , kinyarwanda = Just "Banza urebe ko ufite interineti. Ikibazo nigikomeza, hamagara The Ihangane Project kuri +250 788 817 542"
+                    }
 
                 MeasurementNoChange ->
-                    { english = "No Change" }
+                    { english = "No Change"
+                    , kinyarwanda = Just "nta cyahindutse"
+                    }
 
                 MeasurementGained amount ->
-                    { english = "Gained " ++ toString amount }
+                    { english = "Gained " ++ toString amount
+                    , kinyarwanda = Just <| "Kwiyongera" ++ toString amount
+                    }
 
                 MeasurementLost amount ->
-                    { english = "Lost " ++ toString amount }
+                    { english = "Lost " ++ toString amount
+                    , kinyarwanda = Just <| "Kwiyongera" ++ toString amount
+                    }
 
                 MonthAbbrev ->
-                    { english = "mo" }
+                    { english = "mo"
+                    , kinyarwanda = Just "amezi"
+                    }
 
                 MonthsOld ->
-                    { english = "months old" }
+                    { english = "months old"
+                    , kinyarwanda = Just "Amezi"
+                    }
 
                 Mother ->
-                    { english = "Mother" }
+                    { english = "Mother"
+                    , kinyarwanda = Just "Umubyeyi"
+                    }
 
                 MotherName name ->
-                    { english = "Mother: " ++ name }
+                    { english = "Mother: " ++ name
+                    , kinyarwanda = Just <| "Umubyeyi" ++ name
+                    }
 
                 Mothers ->
-                    { english = "Mothers" }
+                    { english = "Mothers"
+                    , kinyarwanda = Just "Ababyeyi"
+                    }
 
                 MuacIndication indication ->
                     case indication of
                         MuacRed ->
-                            { english = "red" }
+                            { english = "red"
+                            , kinyarwanda = Just "Umutuku"
+                            }
 
                         MuacYellow ->
-                            { english = "yellow" }
+                            { english = "yellow"
+                            , kinyarwanda = Just "Umuhondo"
+                            }
 
                         MuacGreen ->
-                            { english = "green" }
+                            { english = "green"
+                            , kinyarwanda = Just "Icyatsi"
+                            }
 
                 MyAccount ->
-                    { english = "My Account" }
+                    { english = "My Account"
+                    , kinyarwanda = Just "Konti yanjye"
+                    }
 
                 NoActiveIncidents ->
-                    { english = "No active incidents!" }
+                    { english = "No active incidents!"
+                    , kinyarwanda = Nothing
+                    }
 
                 NoActivitiesCompleted ->
-                    { english = "No activities are entirely completed for the attending participants." }
+                    { english = "No activities are entirely completed for the attending participants."
+                    , kinyarwanda = Just "Nta gikorwa cyarangiye cyose kubitabiriye "
+                    }
 
                 NoActivitiesPending ->
-                    { english = "All activities are completed for the attending participants." }
+                    { english = "All activities are completed for the attending participants."
+                    , kinyarwanda = Just "Ibikorwa byose byarangiye kubitabiriye."
+                    }
 
                 NoActivitiesCompletedForThisParticipant ->
-                    { english = "No activities are completed for this participant." }
+                    { english = "No activities are completed for this participant."
+                    , kinyarwanda = Just "Nta gikorwa cyarangiye kubitabiriye."
+                    }
 
                 NoActivitiesPendingForThisParticipant ->
-                    { english = "All activities are completed for this participant." }
+                    { english = "All activities are completed for this participant."
+                    , kinyarwanda = Just "Ibikorwa byose byarangiye kubitabiriye."
+                    }
 
                 NoParticipantsCompleted ->
-                    { english = "No participants have completed all their activities yet." }
+                    { english = "No participants have completed all their activities yet."
+                    , kinyarwanda = Just "Ntagikorwa nakimwe kirarangira kubitabiriye."
+                    }
 
                 NoParticipantsPending ->
-                    { english = "All attending participants have completed their activities." }
+                    { english = "All attending participants have completed their activities."
+                    , kinyarwanda = Just "Abaje bose barangirijwe"
+                    }
 
                 NoParticipantsCompletedForThisActivity ->
-                    { english = "No participants have completed this activity yet." }
+                    { english = "No participants have completed this activity yet."
+                    , kinyarwanda = Just "Ntawaje warangirijwe kukorerwa."
+                    }
 
                 NoParticipantsPendingForThisActivity ->
-                    { english = "All attending participants have completed this activitity." }
+                    { english = "All attending participants have completed this activitity."
+                    , kinyarwanda = Just "Ababje bose barangirijwe."
+                    }
 
                 NoCachedSession ->
-                    { english = "No session was found on this device." }
+                    { english = "No session was found on this device."
+                    , kinyarwanda = Nothing
+                    }
 
                 NoChildrenRegisteredInTheSystem ->
-                    { english = "No children registered in the system" }
+                    { english = "No children registered in the system"
+                    , kinyarwanda = Just "Ntamwana wanditswe muriyi sisiteme"
+                    }
 
                 NoParticipantsFound ->
-                    { english = "No participants found" }
+                    { english = "No participants found"
+                    , kinyarwanda = Just "Ntamuntu ugaragaye"
+                    }
 
                 NotAvailable ->
-                    { english = "not available" }
+                    { english = "not available"
+                    , kinyarwanda = Just "Ntibiboneste"
+                    }
 
                 NotConnected ->
-                    { english = "Not Connected" }
+                    { english = "Not Connected"
+                    , kinyarwanda = Just "Ntamurandasi"
+                    }
 
                 OK ->
-                    { english = "OK" }
+                    { english = "OK"
+                    , kinyarwanda = Just "Nibyo ,yego"
+                    }
 
                 Old ->
-                    { english = "old" }
+                    { english = "old"
+                    , kinyarwanda = Just "imyaka"
+                    }
 
                 OnceYouEndYourSession ->
-                    { english = "Once you end your session, you will no longer be able to edit or add data. Remember to upload this session within the next 48 hours." }
+                    { english = "Once you end your session, you will no longer be able to edit or add data. Remember to upload this session within the next 48 hours."
+                    , kinyarwanda = Just "Igihe igikorwa cyawe ukirangije,ntubasha guhindura cyangwa kongera kubipimo,ibka kubyohereza mumasaha 48"
+                    }
 
                 Page ->
-                    { english = "Page" }
+                    { english = "Page"
+                    , kinyarwanda = Just "Paji"
+                    }
 
                 Page404 ->
-                    { english = "404 page" }
+                    { english = "404 page"
+                    , kinyarwanda = Just "404 paji"
+                    }
 
                 PageNotFoundMsg ->
-                    { english = "Sorry, nothing found in this URL." }
+                    { english = "Sorry, nothing found in this URL."
+                    , kinyarwanda = Just "Mutwihanganire ntabwo ubufasha mwasabye mubashije kuboneka."
+                    }
 
                 Participants ->
-                    { english = "Participants" }
+                    { english = "Participants"
+                    , kinyarwanda = Just "Ubwitabire"
+                    }
 
                 ParticipantSummary ->
-                    { english = "Participant Summary" }
+                    { english = "Participant Summary"
+                    , kinyarwanda = Nothing
+                    }
 
                 PlaceholderEnterHeight ->
-                    { english = "Enter height here…" }
+                    { english = "Enter height here…"
+                    , kinyarwanda = Just "Andika uburebure hano…"
+                    }
 
                 PlaceholderEnterMUAC ->
-                    { english = "Enter muac here…" }
+                    { english = "Enter MUAC here…"
+                    , kinyarwanda = Just "Andika uburebure hano…"
+                    }
 
                 PlaceholderEnterWeight ->
-                    { english = "Enter weight here…" }
+                    { english = "Enter weight here…"
+                    , kinyarwanda = Just "Andika ibiro hano…"
+                    }
 
                 PlaceholderTextGroupDate ->
-                    { english = "Group Date" }
+                    { english = "Group Date"
+                    , kinyarwanda = Just "Itariki y'itsinda"
+                    }
 
                 PlaceholderTextJoined ->
-                    { english = "Joined in June 2017" }
+                    { english = "Joined in June 2017"
+                    , kinyarwanda = Just "Yinjiye muri kamena 2017"
+                    }
 
                 PreviousFloatMeasurement value ->
-                    { english = "Previous measurement: " ++ toString value }
+                    { english = "Previous measurement: " ++ toString value
+                    , kinyarwanda = Just <| "Ibipimo by'ubushize:" ++ toString value
+                    }
 
                 ReadyToBeginSession ->
-                    { english = "You are now ready to begin your session." }
+                    { english = "You are now ready to begin your session."
+                    , kinyarwanda = Just "Ubu ushobora gutangira ibikorwa byawe."
+                    }
 
                 ReportAge age ->
-                    { english = "Age: " ++ age }
+                    { english = "Age: " ++ age
+                    , kinyarwanda = Just <| "Imyaka" ++ age
+                    }
 
                 ReportDOB dob ->
-                    { english = "DOB: " ++ dob }
+                    { english = "DOB: " ++ dob
+                    , kinyarwanda = Just <| "Itariki y'amavuko" ++ dob
+                    }
 
                 ReportRemaining remaining ->
-                    { english = toString remaining ++ " remaning" }
+                    { english = toString remaining ++ " remaning"
+                    , kinyarwanda = Just <| toString remaining ++ "iyibutswa rya raporo"
+                    }
 
                 ReloadParticipant ->
-                    { english = "Re-load Participant" }
+                    { english = "Re-load Participant"
+                    , kinyarwanda = Just "Ishakisha ryabaritabira"
+                    }
 
                 ReportCompleted { pending, total } ->
-                    { english = toString (total - pending) ++ "/" ++ toString total ++ " Completed" }
+                    { english = toString (total - pending) ++ "/" ++ toString total ++ " Completed"
+                    , kinyarwanda = Just <| toString (total - pending) ++ "/" ++ toString total ++ " Raporo irarangiye"
+                    }
 
                 ResolveMonth month ->
                     case month of
                         Jan ->
-                            { english = "January" }
+                            { english = "January"
+                            , kinyarwanda = Just "Mutarama"
+                            }
 
                         Feb ->
-                            { english = "February" }
+                            { english = "February"
+                            , kinyarwanda = Just "Gashyantare"
+                            }
 
                         Mar ->
-                            { english = "March" }
+                            { english = "March"
+                            , kinyarwanda = Just "Werurwe"
+                            }
 
                         Apr ->
-                            { english = "April" }
+                            { english = "April"
+                            , kinyarwanda = Just "Mata"
+                            }
 
                         May ->
-                            { english = "May" }
+                            { english = "May"
+                            , kinyarwanda = Just "Gicurasi"
+                            }
 
                         Jun ->
-                            { english = "June" }
+                            { english = "June"
+                            , kinyarwanda = Just "Kamena"
+                            }
 
                         Jul ->
-                            { english = "July" }
+                            { english = "July"
+                            , kinyarwanda = Just "Nyakanga"
+                            }
 
                         Aug ->
-                            { english = "August" }
+                            { english = "August"
+                            , kinyarwanda = Just "Kanama"
+                            }
 
                         Sep ->
-                            { english = "September" }
+                            { english = "September"
+                            , kinyarwanda = Just "Nzeri"
+                            }
 
                         Oct ->
-                            { english = "October" }
+                            { english = "October"
+                            , kinyarwanda = Just "Ukwakira"
+                            }
 
                         Nov ->
-                            { english = "November" }
+                            { english = "November"
+                            , kinyarwanda = Just "Ugushyingo"
+                            }
 
                         Dec ->
-                            { english = "December" }
+                            { english = "December"
+                            , kinyarwanda = Just "Ukuboza"
+                            }
 
                 Retry ->
-                    { english = "Retry" }
+                    { english = "Retry"
+                    , kinyarwanda = Just "Kongera kugerageza"
+                    }
 
                 Save ->
-                    { english = "Save" }
+                    { english = "Save"
+                    , kinyarwanda = Just "Kubika"
+                    }
 
                 SaveError ->
-                    { english = "Save Error" }
+                    { english = "Save Error"
+                    , kinyarwanda = Just "Kubika error (ikosa mu kubika)"
+                    }
 
                 SearchByName ->
-                    { english = "Search by Name" }
+                    { english = "Search by Name"
+                    , kinyarwanda = Just "Gushakisha izina"
+                    }
+
+                SelectLanguage ->
+                    { english = "Select language"
+                    , kinyarwanda = Nothing
+                    }
 
                 SelectYourClinic ->
-                    { english = "Select your clinic" }
+                    { english = "Select your clinic"
+                    , kinyarwanda = Just "Guhitamo ikigo nderabuzima"
+                    }
 
                 SessionClosed ->
-                    { english = "Session closed" }
+                    { english = "Session closed"
+                    , kinyarwanda = Just "igikorwa kirafunze:"
+                    }
 
                 SessionClosed2 sessionId ->
                     { english =
@@ -892,74 +1333,118 @@ translate lang trans =
                             ++ toString (fromEntityId sessionId)
                             ++ ", but it was not uploaded to the server and the session is closed. "
                             ++ "Please contact the Ihangane project for further instructions."
+                    , kinyarwanda = Nothing
                     }
 
                 SessionInProgress ->
-                    { english = "A health assessment is already in progress for another clinic." }
+                    { english = "A health assessment is already in progress for another clinic."
+                    , kinyarwanda = Nothing
+                    }
 
                 SessionUnauthorized ->
-                    { english = "Session unauthorized" }
+                    { english = "Session unauthorized"
+                    , kinyarwanda = Nothing
+                    }
 
                 SessionUnauthorized2 ->
                     { english =
                         """A health assessment is in progress on this device, but you are not authorized to view it.
                         Please contact the Ihangane project for further instructions."""
+                    , kinyarwanda = Nothing
                     }
 
                 ThisClinicHasNoMothers ->
-                    { english = "This clinic has no mothers assigned to it." }
+                    { english = "This clinic has no mothers assigned to it."
+                    , kinyarwanda = Nothing
+                    }
 
                 TitleHealthAssessment ->
-                    { english = "2017 July Health Assessment" }
+                    { english = "2017 July Health Assessment"
+                    , kinyarwanda = Just "Igikorwa kipima ,kamena2017"
+                    }
 
                 UnableToDownload ->
-                    { english = "Unable to Download" }
+                    { english = "Unable to Download"
+                    , kinyarwanda = Just "ntibishoboka gukurura"
+                    }
 
                 UnableToUpload ->
-                    { english = "Unable to Upload" }
+                    { english = "Unable to Upload"
+                    , kinyarwanda = Just "Kwohereza health assessment ntibikunda(kohereza ntibikunda)"
+                    }
 
                 Update ->
-                    { english = "Update" }
+                    { english = "Update"
+                    , kinyarwanda = Just "Kuvugurura"
+                    }
 
                 UpdateError ->
-                    { english = "Update Error" }
+                    { english = "Update Error"
+                    , kinyarwanda = Just "ikosa mwivugurura"
+                    }
 
                 UploadHealthAssessment ->
-                    { english = "Upload Health Assessment" }
+                    { english = "Upload Health Assessment"
+                    , kinyarwanda = Just "Kwohereza health assessment"
+                    }
 
                 UploadingSession1 ->
-                    { english = "Uploading…" }
+                    { english = "Uploading…"
+                    , kinyarwanda = Just "Kohereza"
+                    }
 
                 UploadingSession2 ->
-                    { english = "Uploading may take a few minutes, or a few hours. Do not leave this page while data is uploading." }
+                    { english = "Uploading may take a few minutes, or a few hours. Do not leave this page while data is uploading."
+                    , kinyarwanda = Nothing
+                    }
 
                 UploadSuccessful ->
-                    { english = "Upload Successful" }
+                    { english = "Upload Successful"
+                    , kinyarwanda = Just "Kwohereza byagenze neza"
+                    }
 
                 ViewProgressReport ->
-                    { english = "View Progress Report" }
+                    { english = "View Progress Report"
+                    , kinyarwanda = Just "Garagaza uruhererekane rw'imikurire y'umwana"
+                    }
 
                 WelcomeUser name ->
-                    { english = "Welcome " ++ name }
+                    { english = "Welcome " ++ name
+                    , kinyarwanda = Just <| "Murakaza neza" ++ name
+                    }
 
                 YouHaveACompletedSession ->
-                    { english = "You have a completed session that needs to be uploaded. Please connect to the internet and upload this session within 48 hours." }
+                    { english = "You have a completed session that needs to be uploaded. Please connect to the internet and upload this session within 48 hours."
+                    , kinyarwanda = Nothing
+                    }
 
                 ZScoreHeightForAge ->
-                    { english = "Z-Score Height for Age: " }
+                    { english = "Z-Score Height for Age: "
+                    , kinyarwanda = Just "Z-score Uburebure ku myaka:"
+                    }
 
                 ZScoreMuacForAge ->
-                    { english = "Z-Score MUAC for Age: " }
+                    { english = "MUAC for Age: "
+                    , kinyarwanda = Just "MUAC ku myaka"
+                    }
 
                 ZScoreWeightForAge ->
-                    { english = "Z-Score Weight for Age: " }
+                    { english = "Z-Score Weight for Age: "
+                    , kinyarwanda = Just "Z-score Ibiro ku myaka"
+                    }
 
                 ZScoreWeightForHeight ->
-                    { english = "Z-Score Weight for Height: " }
+                    { english = "Z-Score Weight for Height: "
+                    , kinyarwanda = Just "Z-score Ibiro ku uburebure"
+                    }
     in
     case lang of
         English ->
             .english translationSet
+
+        Kinyarwanda ->
+            .kinyarwanda translationSet
+                |> Maybe.withDefault (.english translationSet)
 
 
 languageFromString : String -> Result String Language
@@ -967,6 +1452,9 @@ languageFromString str =
     case str of
         "English" ->
             Ok English
+
+        "Kinyarwanda" ->
+            Ok Kinyarwanda
 
         _ ->
             Err "Not a language"
@@ -978,6 +1466,9 @@ languageFromCode str =
         "en" ->
             Ok English
 
+        "rw" ->
+            Ok Kinyarwanda
+
         _ ->
             Err "Not a language"
 
@@ -987,3 +1478,6 @@ languageToCode lang =
     case lang of
         English ->
             "en"
+
+        Kinyarwanda ->
+            "rw"
