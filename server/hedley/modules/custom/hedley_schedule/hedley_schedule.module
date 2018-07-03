@@ -116,9 +116,9 @@ function hedley_schedule_clinic_has_sessions($clinic_nid, $scheduled_starting_da
 /**
  * Get a clinic sessions by the starting date.
  *
- * @param $clinic_nid
+ * @param int $clinic_nid
  *   The clinic node ID.
- * @param $scheduled_starting_date
+ * @param string $scheduled_starting_date
  *   The starting date.
  * @param int $range
  *   Optional; Range of nodes to get.
