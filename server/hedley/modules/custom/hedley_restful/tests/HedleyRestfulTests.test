@@ -46,12 +46,12 @@ class HedleyRestfulTests extends HedleyWebTestBase {
 
     for ($x = 0; $x < 75; $x++) {
       // For the code that gets mothers for the session's particular clinic.
-      $mother_id = $this->createMother($this->randomName(), $clinic_id);
+      $mother_id = $this->createMother($clinic_id);
       $mother_ids[] = $mother_id;
 
       // Give each mother two children.
-      $child1 = $this->createChild($this->randomName(), $mother_id);
-      $child2 = $this->createChild($this->randomName(), $mother_id);
+      $child1 = $this->createChild($mother_id);
+      $child2 = $this->createChild($mother_id);
 
       array_push($child_ids, $child1, $child2);
     }
@@ -79,8 +79,8 @@ class HedleyRestfulTests extends HedleyWebTestBase {
 
       // Add a mother and some children for the other clinics, to test
       // that we **don't** get those.
-      $other_mother_id = $this->createMother($this->randomName(), $other_clinic_id);
-      $other_child_id = $this->createChild($this->randomName(), $other_mother_id);
+      $other_mother_id = $this->createMother($other_clinic_id);
+      $other_child_id = $this->createChild($other_mother_id);
 
       // Add a session for each clinic.
       $other_session_id = $this->createSession($other_clinic_id, $today);

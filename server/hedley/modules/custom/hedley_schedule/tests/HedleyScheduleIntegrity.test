@@ -30,14 +30,16 @@ class HedleyScheduleIntegrity extends HedleyWebTestBase {
 
     // Make sure we can get it the session now.
     $session_node = node_load($session_nid);
-    $this->assertTrue($session_node, "Should retrieve session we just created.");
+    // Should retrieve session we just created.
+    $this->assertTrue($session_node);
 
     // Delete the session node.
     node_delete($session_nid);
 
     // Make sure we really deleted it.
     $session_node = node_load($session_nid);
-    $this->assertFalse($session_node, "Session should no longer exist.");
+    // Session should no longer exist.
+    $this->assertFalse($session_node);
   }
 
   /**
@@ -46,8 +48,8 @@ class HedleyScheduleIntegrity extends HedleyWebTestBase {
   public function testDeleteTrainingSessionWithMeasurements() {
     $clinic_nid = $this->createClinic();
     $session_nid = $this->createSession($clinic_nid, REQUEST_TIME, TRUE);
-    $mother_nid = $this->createMother($this->randomName(), $clinic_nid);
-    $child_nid = $this->createChild($this->randomName(), $mother_nid);
+    $mother_nid = $this->createMother($clinic_nid);
+    $child_nid = $this->createChild($mother_nid);
 
     // Create measurements.
     $height_nid = $this->createHeight($child_nid, $session_nid, 125);
@@ -55,7 +57,8 @@ class HedleyScheduleIntegrity extends HedleyWebTestBase {
 
     // Make sure we can get it the session now.
     $session_node = node_load($session_nid);
-    $this->assertTrue($session_node, "Should retrieve session we just created.");
+    // Should retrieve session we just created.
+    $this->assertTrue($session_node);
 
     // Delete the session node.
     node_delete($session_nid);
@@ -64,9 +67,12 @@ class HedleyScheduleIntegrity extends HedleyWebTestBase {
     $session_node = node_load($session_nid);
     $height_node = node_load($height_nid);
     $weight_node = node_load($weight_nid);
-    $this->assertFalse($session_node, "Session should no longer exist.");
-    $this->assertFalse($height_node, "Height measurement should no longer exist.");
-    $this->assertFalse($weight_node, "Weight measurement should no longer exist.");
+    // Session should no longer exist.
+    $this->assertFalse($session_node);
+    // Height measurement should no longer exist.
+    $this->assertFalse($height_node);
+    // Weight measurement should no longer exist.
+    $this->assertFalse($weight_node);
   }
 
 }
