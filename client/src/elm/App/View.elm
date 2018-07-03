@@ -3,7 +3,7 @@ module App.View exposing (view)
 import App.Model exposing (..)
 import Config.View
 import Html exposing (..)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
 import Pages.Clinics.View
 import Pages.Login.View
@@ -13,7 +13,7 @@ import Pages.PageNotFound.View
 import Pages.View exposing (viewFoundSession)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Login
-import Translate exposing (Language, translate)
+import Translate exposing (Language(..), translate)
 import User.Model exposing (User)
 import Utils.Html exposing (spinner, wrapPage)
 import Utils.WebData exposing (viewError)
@@ -26,14 +26,52 @@ view model =
             Config.View.view model.language
 
         Success configuration ->
-            -- We supply the model as well as the resolved configuration ...
-            -- it's easier that way.
-            viewConfiguredModel model configuration
+            div [ class "container" ]
+                [ viewLanguageSwitcher model
+
+                -- We supply the model as well as the resolved configuration ...
+                -- it's easier that way.
+                , viewConfiguredModel model configuration
+                ]
 
         _ ->
             -- Don't show anything if config resolution is in process but
             -- hasn't failed yet.
             viewLoading
+
+
+{-| The language switcher view which sets a preferred language for each user and
+saves the current language via the Update function in local storage.
+-}
+viewLanguageSwitcher : Model -> Html Msg
+viewLanguageSwitcher model =
+    div
+        [ class "ui centered language-switcher" ]
+        [ button
+            [ classList
+                [ ( "ui english left attached button", True )
+                , ( "active", model.language == English )
+                ]
+            , onClick <| SetLanguage English
+            ]
+            [ i
+                [ class "gb flag" ]
+                []
+            , text "English"
+            ]
+        , button
+            [ classList
+                [ ( "ui kinyarwanda right attached button", True )
+                , ( "active", model.language == Kinyarwanda )
+                ]
+            , onClick <| SetLanguage Kinyarwanda
+            ]
+            [ i
+                [ class "rw flag" ]
+                []
+            , text "Kinyarwanda"
+            ]
+        ]
 
 
 {-| We call this after checking our config. We ask for the model itself,
