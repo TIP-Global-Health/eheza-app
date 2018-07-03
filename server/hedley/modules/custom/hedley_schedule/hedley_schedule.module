@@ -5,13 +5,6 @@
  * Code for the Hedley Schedule feature.
  */
 
-define('HEDLEY_SCHEDULE_FAMILY_PLANNING_CONTENT_TYPE', 'family_planning');
-define('HEDLEY_SCHEDULE_HEIGHT_CONTENT_TYPE', 'height');
-define('HEDLEY_SCHEDULE_MUAC_CONTENT_TYPE', 'muac');
-define('HEDLEY_SCHEDULE_NUTRITION_CONTENT_TYPE', 'nutrition');
-define('HEDLEY_SCHEDULE_PHOTO_CONTENT_TYPE', 'photo');
-define('HEDLEY_SCHEDULE_WEIGHT_CONTENT_TYPE', 'weight');
-
 include_once 'hedley_schedule.features.inc';
 
 /**
@@ -28,10 +21,10 @@ function hedley_schedule_node_presave($node) {
   }
 
   $wrapper = entity_metadata_wrapper('node', $node);
-  $clinic = $wrapper->field_clinic->value();
+  $clinic_node = $wrapper->field_clinic->value();
   $scheduled_dates = $wrapper->field_scheduled_date->value();
 
-  if (isset($clinic->nid) && isset($scheduled_dates['value']) && hedley_schedule_clinic_has_sessions($clinic->nid, $scheduled_dates['value'])) {
+  if (hedley_schedule_clinic_has_sessions($clinic_node->nid, $scheduled_dates['value'])) {
     throw new Exception('This session cannot be saved, there is already a session with the same starting date and same clinic.');
   }
 }
@@ -57,14 +50,7 @@ function hedley_schedule_node_delete($node) {
   $session_nid = $wrapper->getIdentifier();
 
   // The measurements content types.
-  $measurements = [
-    HEDLEY_SCHEDULE_FAMILY_PLANNING_CONTENT_TYPE,
-    HEDLEY_SCHEDULE_HEIGHT_CONTENT_TYPE,
-    HEDLEY_SCHEDULE_MUAC_CONTENT_TYPE,
-    HEDLEY_SCHEDULE_NUTRITION_CONTENT_TYPE,
-    HEDLEY_SCHEDULE_PHOTO_CONTENT_TYPE,
-    HEDLEY_SCHEDULE_WEIGHT_CONTENT_TYPE,
-  ];
+  $measurements = hedley_activity_get_measurements_content_types();
 
   // We need to delete the sessions measurements if the session is valid for
   // deletion.
