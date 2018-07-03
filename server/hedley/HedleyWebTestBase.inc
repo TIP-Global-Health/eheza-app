@@ -107,18 +107,16 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create a mother.
    *
-   * @param string $name
-   *   The mother's name.
    * @param string $clinic_id
    *   The clinic to assign the mother to.
    *
    * @return int
    *   The node ID of the mother.
    */
-  public function createMother($name, $clinic_id) {
+  public function createMother($clinic_id) {
     $node = $this->drupalCreateNode([
       'type' => 'mother',
-      'title' => $name,
+      'title' => $this->randomName(),
     ]);
 
     $wrapper = entity_metadata_wrapper('node', $node);
@@ -134,18 +132,16 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create a child.
    *
-   * @param string $name
-   *   The child's name.
    * @param int $mother_id
    *   The mother's node ID.
    *
    * @return int
    *   The child's node ID.
    */
-  public function createChild($name, $mother_id) {
+  public function createChild($mother_id) {
     $node = $this->drupalCreateNode([
       'type' => 'child',
-      'title' => $name,
+      'title' => $this->randomName(),
     ]);
 
     $wrapper = entity_metadata_wrapper('node', $node);

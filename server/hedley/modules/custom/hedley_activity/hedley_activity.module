@@ -7,6 +7,31 @@
 
 include_once 'hedley_activity.features.inc';
 
+// Define the measurements content types.
+define('HEDLEY_ACTIVITY_FAMILY_PLANNING_CONTENT_TYPE', 'family_planning');
+define('HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE', 'height');
+define('HEDLEY_ACTIVITY_MUAC_CONTENT_TYPE', 'muac');
+define('HEDLEY_ACTIVITY_NUTRITION_CONTENT_TYPE', 'nutrition');
+define('HEDLEY_ACTIVITY_PHOTO_CONTENT_TYPE', 'photo');
+define('HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE', 'weight');
+
+/**
+ * Get the measurements content types.
+ *
+ * @return array
+ *   All the measurements content types.
+ */
+function hedley_activity_get_measurements_content_types() {
+  return [
+    HEDLEY_ACTIVITY_FAMILY_PLANNING_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_MUAC_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NUTRITION_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_PHOTO_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE,
+  ];
+}
+
 /**
  * Return the activity related node types and RESTful resource handler name.
  *
