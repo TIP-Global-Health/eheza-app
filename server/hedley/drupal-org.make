@@ -54,6 +54,12 @@ projects[jquery_update][version] = "2.4"
 projects[libraries][subdir] = "contrib"
 projects[libraries][version] = "2.3"
 
+projects[logs_rollbar][type] = "module"
+projects[logs_rollbar][subdir] = "contrib"
+projects[logs_rollbar][download][type] = "git"
+projects[logs_rollbar][download][branch] = "master"
+projects[logs_rollbar][download][url] = "https://github.com/Gizra/logs_rollbar.git"
+
 projects[mailsystem][version] = 2.34
 projects[mailsystem][subdir] = "contrib"
 

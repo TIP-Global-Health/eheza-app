@@ -72,8 +72,9 @@ drush vset preprocess_js 0
 drush vset preprocess_css 0
 
 echo
-echo -e "${LBLUE} > Disabling logs HTTP API (Loggly).${RESTORE}"
-drush vset logs_http_enabled 0
+echo -e "Disable the logs_rollbar module"
+drush vset logs_rollbar_enabled 0
+drush vdel backoffice_use_rollbar_on_client -y
 
 echo
 echo -e "${LBLUE} > Clearing all cache.${RESTORE}"
