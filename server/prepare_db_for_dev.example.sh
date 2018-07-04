@@ -74,7 +74,6 @@ drush vset preprocess_css 0
 echo
 echo -e "Disable the logs_rollbar module"
 drush vset logs_rollbar_enabled 0
-drush vdel backoffice_use_rollbar_on_client -y
 
 echo
 echo -e "${LBLUE} > Clearing all cache.${RESTORE}"
