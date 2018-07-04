@@ -35,3 +35,4 @@ features[variable][] = node_preview_clinic
 features[variable][] = node_preview_session
 features[variable][] = node_submitted_clinic
 features[variable][] = node_submitted_session
+files[] = tests/HedleyScheduleIntegrity.test

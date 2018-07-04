@@ -46,12 +46,12 @@ class HedleyRestfulTests extends HedleyWebTestBase {
 
     for ($x = 0; $x < 75; $x++) {
       // For the code that gets mothers for the session's particular clinic.
-      $mother_id = $this->createMother($this->randomName(), $clinic_id);
+      $mother_id = $this->createMother($clinic_id);
       $mother_ids[] = $mother_id;
 
       // Give each mother two children.
-      $child1 = $this->createChild($this->randomName(), $mother_id);
-      $child2 = $this->createChild($this->randomName(), $mother_id);
+      $child1 = $this->createChild($mother_id);
+      $child2 = $this->createChild($mother_id);
 
       array_push($child_ids, $child1, $child2);
     }
@@ -67,8 +67,8 @@ class HedleyRestfulTests extends HedleyWebTestBase {
 
       // And create a height and weight for each child.
       foreach ($child_ids as $child_id) {
-        $this->createHeight($child_id, $previous_session_id, $then, 124);
-        $this->createWeight($child_id, $previous_session_id, $then, 12);
+        $this->createHeight($previous_session_id, $child_id, 124, $then);
+        $this->createWeight($previous_session_id, $child_id, 12, $then);
       }
     }
 
@@ -79,8 +79,8 @@ class HedleyRestfulTests extends HedleyWebTestBase {
 
       // Add a mother and some children for the other clinics, to test
       // that we **don't** get those.
-      $other_mother_id = $this->createMother($this->randomName(), $other_clinic_id);
-      $other_child_id = $this->createChild($this->randomName(), $other_mother_id);
+      $other_mother_id = $this->createMother($other_clinic_id);
+      $other_child_id = $this->createChild($other_mother_id);
 
       // Add a session for each clinic.
       $other_session_id = $this->createSession($other_clinic_id, $today);
@@ -89,8 +89,8 @@ class HedleyRestfulTests extends HedleyWebTestBase {
       $this->createFamilyPlanning($other_mother_id, $other_session_id, $today);
 
       // Make a height and weight for the child.
-      $this->createHeight($other_child_id, $other_session_id, $today, 124);
-      $this->createWeight($other_child_id, $other_session_id, $today, 12);
+      $this->createHeight($other_session_id, $other_child_id, 124, $today);
+      $this->createWeight($other_session_id, $other_child_id, 12, $today);
     }
 
     $handler = restful_get_restful_handler('offline_sessions');
