@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulTrainingSessions.
  */
-class HedleyRestfulTrainingSessions extends HedleyRestfulOfflineSessions {
+class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
 
   /**
    * Overrides \RestfulDataProviderEFQ::controllersInfo().
@@ -41,18 +41,29 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulOfflineSessions {
     }
 
     // Get all clinics.
-    $all_clinics = $this->getClinicData();
+    $query = new EntityFieldQuery();
+    $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'clinic')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->propertyOrderBy('title', 'ASC');
+
+    $clinic_nids = [];
+
+    hedley_restful_query_in_batches($query, 50, function ($offset, $count, $batch_ids) use (&$clinic_nids) {
+      $clinic_nids = array_merge($clinic_nids, $batch_ids);
+    });
     $scheduled_date = date('Y-m-d', REQUEST_TIME);
 
-    foreach ($all_clinics as $clinic) {
-      if (hedley_schedule_clinic_has_sessions($clinic['id'], $scheduled_date)) {
+    foreach ($clinic_nids as $clinic_nid) {
+      if (hedley_schedule_clinic_has_sessions($clinic_nid, $scheduled_date)) {
         // Clinic has an active session for today, no need to create a session
         // for it.
         continue;
       }
 
       $request = [
-        'clinic' => $clinic['id'],
+        'clinic' => $clinic_nid,
         'training' => TRUE,
         'scheduled_date' => [
           'value' => $scheduled_date,
