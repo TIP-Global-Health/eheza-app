@@ -307,7 +307,7 @@ function hedley_activity_weight_for_session($session_id, $child_id) {
  * @return array|null
  *   Node IDs if they exist or nothing if no nodes exist.
  */
-function hedley_activity_get_measurements_entities_by_session($session_id, $measurement_bundle) {
+function hedley_activity_get_measurements_by_session($session_id, $measurement_bundle) {
   $query = new EntityFieldQuery();
   $result = $query
     ->entityCondition('entity_type', 'node')
