@@ -90,4 +90,5 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
   protected function checkTrainingSessionsAccess() {
     return user_access('administer nodes', $this->getAccount());
   }
+
 }
