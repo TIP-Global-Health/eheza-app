@@ -35,7 +35,7 @@ import Json.Encode exposing (Value, object)
 import Maybe.Extra exposing (toList)
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityId, decodeSingleDrupalEntity, drupalEndpoint, encodeEntityId, fromEntityId, toCmd, toEntityId, withParamsEncoder, withValueEncoder, withoutDecoder)
+import Restful.Endpoint exposing (ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityId, decodeSingleDrupalEntity, drupalEndpoint, encodeEntityId, fromEntityId, toCmd, toEntityId, withParamsEncoder, withValueEncoder, withoutDecoder)
 import Utils.WebData exposing (resetError)
 
 
@@ -52,10 +52,22 @@ type alias SessionParams =
     }
 
 
+type alias TrainingSessionParams =
+    { action : Maybe TrainingSessionAction
+    }
+
+
 encodeSessionParams : SessionParams -> List ( String, String )
 encodeSessionParams params =
     params.openAfter
         |> Maybe.map (\open -> ( "open_after", Gizra.NominalDate.formatYYYYMMDD open ))
+        |> Maybe.Extra.toList
+
+
+encodeTraininsSessionParams : TrainingSessionParams -> List ( String, String )
+encodeTraininsSessionParams params =
+    params.action
+        |> Maybe.map (\action -> ( "action", toString action ))
         |> Maybe.Extra.toList
 
 
@@ -66,10 +78,10 @@ sessionEndpoint =
         |> withParamsEncoder encodeSessionParams
 
 
-trainingSessionsEndpoint : ReadWriteEndPoint Error SessionId (EveryDictList SessionId Session) Session ()
+trainingSessionsEndpoint : ReadOnlyEndPoint Error SessionId (EveryDictList SessionId Session) TrainingSessionParams
 trainingSessionsEndpoint =
     drupalEndpoint "api/training_sessions" decodeTrainingSession
-        |> withValueEncoder (object << encodeSession)
+        |> withParamsEncoder encodeTraininsSessionParams
 
 
 offlineSessionEndpoint : ReadWriteEndPoint Error SessionId OfflineSession OfflineSession ()
@@ -127,10 +139,10 @@ updateBackend backendUrl accessToken msg model =
             , []
             )
 
-        PostTrainingSessions date ->
+        UpdateTrainingSessions action date ->
             ( { model | postSessionRequest = Loading }
-            , crud.post trainingSessionsEndpoint
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedSessions date)
+            , crud.select trainingSessionsEndpoint (TrainingSessionParams (Just action))
+                |> FetchFutureSessions date
             , []
             )
 

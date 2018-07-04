@@ -100,12 +100,12 @@ type MsgBackend
     | HandleUploadedEdits SessionId (Result Error ())
     | HandleUploadPhotoResponse Photo (Result Error Int)
     | PostSession Session
-    | PostTrainingSessions NominalDate
     | HandlePostedSession (WebData ( SessionId, Session ))
     | RefetchOfflineSession SessionId
     | ResetErrors -- reset errors to `NotAsked` when certain requests succeed, so they will retry
     | ResetOfflineSessionRequest -- resets it to `NotAsked`
     | ResetUploadEditsRequest
+    | UpdateTrainingSessions TrainingSessionAction NominalDate
     | UploadEdits SessionId MeasurementEdits
     | UploadPhoto Photo
 
@@ -158,6 +158,11 @@ emptyModelCached =
     { cacheStorage = CacheStorage.Model.emptyModel
     , editableSession = NotAsked
     }
+
+
+type TrainingSessionAction
+    = CreateAll
+    | DeleteAll
 
 
 {-| These are all the messages related to getting things from the cache and
