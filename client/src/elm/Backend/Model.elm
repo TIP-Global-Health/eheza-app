@@ -75,7 +75,7 @@ type alias ModelBackend =
     , postSessionRequest : WebData ( SessionId, Session )
 
     -- Tracks a request to handle training sessions.
-    , postTraininsSessionRequest : WebData TrainingSessions
+    , postTraininsSessionRequest : WebData ( TrainingSessionId, TrainingSessions )
     }
 
 
@@ -106,7 +106,7 @@ type MsgBackend
     | PostSession Session
     | PostTrainingSessions TrainingSessionAction
     | HandlePostedSession (WebData ( SessionId, Session ))
-    | HandleTrainingSessionResponse TrainingSessionAction (WebData ( SessionId, TrainingSessions ))
+    | HandleTrainingSessionResponse TrainingSessionAction (WebData ( TrainingSessionId, TrainingSessions ))
     | RefetchOfflineSession SessionId
     | ResetErrors -- reset errors to `NotAsked` when certain requests succeed, so they will retry
     | ResetOfflineSessionRequest -- resets it to `NotAsked`

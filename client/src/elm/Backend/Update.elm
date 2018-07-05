@@ -35,7 +35,7 @@ import Json.Encode exposing (Value, object)
 import Maybe.Extra exposing (toList)
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (EntityId, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityId, decodeSingleDrupalEntity, drupalEndpoint, encodeEntityId, fromEntityId, toCmd, toEntityId, withParamsEncoder, withValueEncoder, withoutDecoder)
+import Restful.Endpoint exposing (ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityId, decodeSingleDrupalEntity, drupalEndpoint, encodeEntityId, fromEntityId, toCmd, toEntityId, withParamsEncoder, withValueEncoder, withoutDecoder)
 import Utils.WebData exposing (resetError)
 
 
@@ -66,7 +66,7 @@ sessionEndpoint =
         |> withParamsEncoder encodeSessionParams
 
 
-trainingSessionsEndpoint : ReadWriteEndPoint Error (EntityId a) TrainingSessions TrainingSessions ()
+trainingSessionsEndpoint : ReadWriteEndPoint Error TrainingSessionId TrainingSessions TrainingSessions ()
 trainingSessionsEndpoint =
     drupalEndpoint "api/training_sessions" decodeTrainingSessions
         |> withValueEncoder encodeTraininsSessions
@@ -135,10 +135,23 @@ updateBackend backendUrl accessToken msg model =
             )
 
         HandleTrainingSessionResponse action webdata ->
-            ( { model | postTraininsSessionRequest = NotAsked, futureSessions = NotAsked }
-            , Cmd.none
-            , []
-            )
+            let
+                newModel =
+                    case webdata of
+                        Success ( trainingSessionId, trainingSession ) ->
+                            let
+                                futureSessions =
+                                    NotAsked
+                            in
+                            { model
+                                | postTraininsSessionRequest = webdata
+                                , futureSessions = futureSessions
+                            }
+
+                        _ ->
+                            { model | postTraininsSessionRequest = webdata }
+            in
+            ( newModel, Cmd.none, [] )
 
         HandlePostedSession webdata ->
             let

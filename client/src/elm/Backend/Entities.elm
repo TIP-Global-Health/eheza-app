@@ -184,6 +184,10 @@ type alias SessionId =
     EntityId SessionIdType
 
 
+type alias TrainingSessionId =
+    EntityId ()
+
+
 type SessionIdType
     = SessionIdType
 
