@@ -24,7 +24,7 @@ import CacheStorage.Model exposing (cachePhotos, clearCachedPhotos)
 import CacheStorage.Update
 import Config.Model exposing (BackendUrl)
 import EveryDict
-import EveryDictList exposing (EveryDictList)
+import EveryDictList
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -35,7 +35,7 @@ import Json.Encode exposing (Value, object)
 import Maybe.Extra exposing (toList)
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (EntityId, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityId, decodeSingleDrupalEntity, drupalEndpoint, encodeEntityId, fromEntityId, toCmd, toEntityId, toTask, withParamsEncoder, withValueEncoder, withoutDecoder)
+import Restful.Endpoint exposing (EntityId, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityId, decodeSingleDrupalEntity, drupalEndpoint, encodeEntityId, fromEntityId, toCmd, toEntityId, withParamsEncoder, withValueEncoder, withoutDecoder)
 import Utils.WebData exposing (resetError)
 
 

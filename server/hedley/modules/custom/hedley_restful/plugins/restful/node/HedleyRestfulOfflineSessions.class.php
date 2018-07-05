@@ -52,10 +52,6 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       ],
     ];
 
-    $public_fields['training'] = [
-      'property' => 'field_training',
-    ];
-
     $public_fields['clinic'] = [
       'property' => 'field_clinic',
       'resource' => [
@@ -123,10 +119,13 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
    * it's convenient to provide everything needed for an offline session at
    * once.
    *
+   * @param int $nid
+   *   The session node ID (not actually used, since we're getting all clinics).
+   *
    * @return array
    *   Array with the RESTful output.
    */
-  public function getClinicData() {
+  public function getClinicData($nid) {
     $query = new EntityFieldQuery();
     $query
       ->entityCondition('entity_type', 'node')
