@@ -22,9 +22,11 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
   }
 
   /**
-   * @todo: Add docs.
+   * Handle the action for creating/deleting taining sessions.
    *
    * @return array
+   *   The type of action carried out.
+   *
    * @throws \RestfulBadRequestException
    */
   public function performAction() {
@@ -37,7 +39,7 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
     if ($request['action'] == 'create_all') {
       $result = $this->createTrainingEntities();
     }
-    else if ($request['action'] == 'delete_all') {
+    elseif ($request['action'] == 'delete_all') {
       $result = $this->deleteTrainingEntities();
     }
     else {
