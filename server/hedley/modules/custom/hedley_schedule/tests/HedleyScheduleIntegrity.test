@@ -52,8 +52,8 @@ class HedleyScheduleIntegrity extends HedleyWebTestBase {
     $child_nid = $this->createChild($mother_nid);
 
     // Create measurements.
-    $height_nid = $this->createHeight($child_nid, $session_nid, 125);
-    $weight_nid = $this->createWeight($child_nid, $session_nid, 25);
+    $height_nid = $this->createHeight($session_nid, $child_nid, 125);
+    $weight_nid = $this->createWeight($session_nid, $child_nid, 25);
 
     // Make sure we can get it the session now.
     $session_node = node_load($session_nid);

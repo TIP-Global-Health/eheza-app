@@ -71,7 +71,7 @@ function hedley_schedule_node_delete($node) {
   if ($wrapper->field_training->value()) {
     $measurement_nodes = [];
     foreach ($measurement_types as $measurement_type) {
-      if ($add_measurement_nodes = hedley_activity_get_measurements_entities_by_session($session_nid, $measurement_type)) {
+      if ($add_measurement_nodes = hedley_activity_get_measurements_by_session($session_nid, $measurement_type)) {
         $measurement_nodes = array_merge($add_measurement_nodes, $measurement_nodes);
       }
     }
@@ -80,7 +80,7 @@ function hedley_schedule_node_delete($node) {
   }
   else {
     foreach ($measurement_types as $measurement_type) {
-      $has_measurements = !empty(hedley_activity_get_measurements_entities_by_session($wrapper->getIdentifier(), $measurement_type));
+      $has_measurements = !empty(hedley_activity_get_measurements_by_session($wrapper->getIdentifier(), $measurement_type));
 
       if ($has_measurements) {
         throw new Exception('This session cannot be deleted because it has existing measurements');

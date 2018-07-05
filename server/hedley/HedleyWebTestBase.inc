@@ -220,10 +220,10 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create a height entity.
    *
-   * @param int $child_id
-   *   The node ID of the child.
    * @param int $session_id
    *   The node ID of the session.
+   * @param int $child_id
+   *   The node ID of the child.
    * @param float $height
    *   The height value.
    * @param int $timestamp
@@ -233,7 +233,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    * @return int
    *   The node ID of the height.
    */
-  public function createHeight($child_id, $session_id, $height, $timestamp = REQUEST_TIME) {
+  public function createHeight($session_id, $child_id, $height, $timestamp = REQUEST_TIME) {
     $node = $this->drupalCreateNode(['type' => 'height']);
 
     $wrapper = entity_metadata_wrapper('node', $node);
@@ -249,10 +249,10 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create a weight entity.
    *
-   * @param int $child_id
-   *   The node ID of the child.
    * @param int $session_id
    *   The node ID of the session.
+   * @param int $child_id
+   *   The node ID of the child.
    * @param float $weight
    *   The weight value.
    * @param int $timestamp
@@ -262,7 +262,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    * @return int
    *   The node ID of the weight.
    */
-  public function createWeight($child_id, $session_id, $weight, $timestamp = REQUEST_TIME) {
+  public function createWeight($session_id, $child_id, $weight, $timestamp = REQUEST_TIME) {
     $node = $this->drupalCreateNode(['type' => 'weight']);
 
     $wrapper = entity_metadata_wrapper('node', $node);
