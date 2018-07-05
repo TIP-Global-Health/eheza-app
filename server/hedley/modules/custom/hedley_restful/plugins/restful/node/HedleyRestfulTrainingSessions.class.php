@@ -37,6 +37,12 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
     if ($request['action'] == 'create_all') {
       $result = $this->createTrainingEntities();
     }
+    else if ($request['action'] == 'delete_all') {
+      $result = $this->deleteTrainingEntities();
+    }
+    else {
+      $result = ['action' => 'invalid'];
+    }
 
     return $result;
   }
@@ -85,6 +91,7 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
         'training' => TRUE,
         'scheduled_date' => [
           'value' => $scheduled_date,
+          'value2' => date('Y-m-d', strtotime('+1 day')),
         ],
       ];
 
@@ -100,6 +107,43 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
     }
 
     return $sessions_created ? ['action' => 'created'] : ['action' => 'no_creation'];
+  }
+
+  /**
+   * Delete all existing training sessions.
+   *
+   * This would be used by administrators on the sandbox website for deleting
+   * all training sessions for meaning they will be all deleted when admin
+   * clicks on the "Delete all training sessions" button, it will delete all
+   * training session even if it's an old session opened on a past day.
+   */
+  public function deleteTrainingEntities() {
+    if (!$this->checkTrainingSessionsAccess()) {
+      // Check access, only admins should be able to preform this action.
+      return;
+    }
+
+    // Get all sessions.
+    $query = new EntityFieldQuery();
+    $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'session')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldCondition('field_training', 'value', TRUE)
+      ->fieldOrderBy('field_scheduled_date', 'value', 'ASC');
+
+    $session_nids = [];
+
+    hedley_restful_query_in_batches($query, 50, function ($offset, $count, $batch_ids) use (&$session_nids) {
+      $session_nids = array_merge($session_nids, $batch_ids);
+    });
+
+    // Delete all training sessions.
+    foreach ($session_nids as $session_nid) {
+      $this->deleteEntity($session_nid);
+    }
+
+    return ['action' => 'deleted'];
   }
 
   /**

@@ -26,6 +26,9 @@ encodeTraininsSessions trainingSession =
 
                 DeleteAll ->
                     string "delete_all"
+
+                Invalid ->
+                    string "invalid"
     in
     object <|
         [ ( "action", action ) ]

@@ -250,7 +250,9 @@ viewClinicList config language model clinics ( _, futureSessions ) =
                         [ text <| translate language <| Translate.CreateTrainingSessions ]
                     , text " "
                     , button
-                        [ class "ui primary button small" ]
+                        [ class "ui primary button small"
+                        , onClick <| MsgBackend (Backend.Model.PostTrainingSessions DeleteAll)
+                        ]
                         [ text <| translate language <| Translate.DeleteTrainingSessions
                         ]
                     ]

@@ -173,6 +173,7 @@ type alias TrainingSessions =
 type TrainingSessionAction
     = CreateAll
     | DeleteAll
+    | Invalid
 
 
 {-| These are all the messages related to getting things from the cache and

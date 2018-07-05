@@ -39,6 +39,9 @@ decodeTrainingSessionAction =
                     "deleted" ->
                         succeed DeleteAll
 
+                    "invalid" ->
+                        succeed Invalid
+
                     _ ->
                         fail <|
                             "action '"
