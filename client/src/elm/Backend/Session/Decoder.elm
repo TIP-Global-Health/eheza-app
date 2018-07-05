@@ -6,6 +6,7 @@ import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Decoder exposing (decodeHistoricalMeasurements)
 import Backend.Measurement.Model exposing (ChildMeasurementList, ChildMeasurements, Measurement, MotherMeasurementList, MotherMeasurements, emptyMeasurements)
+import Backend.Model exposing (TrainingSessionAction(..), TrainingSessions)
 import Backend.Mother.Decoder exposing (decodeMother)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (..)
@@ -20,9 +21,30 @@ import Time.Date
 
 {-| Decodes the JSON sent by /api/training_sessions
 -}
-decodeTrainingSession : Decoder (EveryDictList SessionId Session)
-decodeTrainingSession =
-    EveryDictList.decodeArray2 (field "id" decodeEntityId) decodeSession
+decodeTrainingSessions : Decoder TrainingSessions
+decodeTrainingSessions =
+    decode TrainingSessions
+        |> required "action" decodeTrainingSessionAction
+
+
+decodeTrainingSessionAction : Decoder TrainingSessionAction
+decodeTrainingSessionAction =
+    string
+        |> andThen
+            (\action ->
+                case action of
+                    "created" ->
+                        succeed CreateAll
+
+                    "deleted" ->
+                        succeed DeleteAll
+
+                    _ ->
+                        fail <|
+                            "action '"
+                                ++ action
+                                ++ "' is not a valid action"
+            )
 
 
 {-| Decodes the JSON sent by /api/sessions

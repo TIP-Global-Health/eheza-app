@@ -73,6 +73,9 @@ type alias ModelBackend =
 
     -- Tracks a request to create a new session.
     , postSessionRequest : WebData ( SessionId, Session )
+
+    -- Tracks a request to handle training sessions.
+    , postTraininsSessionRequest : WebData TrainingSessions
     }
 
 
@@ -83,6 +86,7 @@ emptyModelBackend =
     , offlineSessionRequest = NotAsked
     , uploadEditsRequest = NotAsked
     , postSessionRequest = NotAsked
+    , postTraininsSessionRequest = NotAsked
     }
 
 
@@ -100,12 +104,13 @@ type MsgBackend
     | HandleUploadedEdits SessionId (Result Error ())
     | HandleUploadPhotoResponse Photo (Result Error Int)
     | PostSession Session
+    | PostTrainingSessions TrainingSessionAction
     | HandlePostedSession (WebData ( SessionId, Session ))
+    | HandleTrainingSessionResponse TrainingSessionAction (WebData ( SessionId, TrainingSessions ))
     | RefetchOfflineSession SessionId
     | ResetErrors -- reset errors to `NotAsked` when certain requests succeed, so they will retry
     | ResetOfflineSessionRequest -- resets it to `NotAsked`
     | ResetUploadEditsRequest
-    | UpdateTrainingSessions TrainingSessionAction NominalDate
     | UploadEdits SessionId MeasurementEdits
     | UploadPhoto Photo
 
@@ -157,6 +162,11 @@ emptyModelCached : ModelCached
 emptyModelCached =
     { cacheStorage = CacheStorage.Model.emptyModel
     , editableSession = NotAsked
+    }
+
+
+type alias TrainingSessions =
+    { action : TrainingSessionAction
     }
 
 

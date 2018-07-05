@@ -2,7 +2,7 @@ module Pages.Admin.View exposing (view)
 
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelBackend)
+import Backend.Model exposing (ModelBackend, TrainingSessionAction(..))
 import Backend.Session.Form exposing (..)
 import Backend.Session.Model exposing (Session)
 import Config.Model as Config
@@ -244,7 +244,9 @@ viewClinicList config language model clinics ( _, futureSessions ) =
             if config.sandbox then
                 div []
                     [ button
-                        [ class "ui primary button small" ]
+                        [ class "ui primary button small"
+                        , onClick <| MsgBackend (Backend.Model.PostTrainingSessions CreateAll)
+                        ]
                         [ text <| translate language <| Translate.CreateTrainingSessions ]
                     , text " "
                     , button

@@ -15,8 +15,8 @@ import Backend.Measurement.Encoder exposing (encodeMeasurementEdits)
 import Backend.Measurement.Model exposing (Edit(..))
 import Backend.Measurement.Utils exposing (backendValue, getPhotosToUpload, mapMeasurementData)
 import Backend.Model exposing (..)
-import Backend.Session.Decoder exposing (decodeOfflineSession, decodeSession, decodeTrainingSession)
-import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession)
+import Backend.Session.Decoder exposing (decodeOfflineSession, decodeSession, decodeTrainingSessions)
+import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession, encodeTraininsSessions)
 import Backend.Session.Model exposing (EditableSession, MsgEditableSession(..), OfflineSession, Session)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData, getPhotoUrls, makeEditableSession, mapChildEdits, mapMotherEdits, setPhotoFileId)
 import Backend.Utils exposing (withEditableSession)
@@ -35,7 +35,7 @@ import Json.Encode exposing (Value, object)
 import Maybe.Extra exposing (toList)
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityId, decodeSingleDrupalEntity, drupalEndpoint, encodeEntityId, fromEntityId, toCmd, toEntityId, withParamsEncoder, withValueEncoder, withoutDecoder)
+import Restful.Endpoint exposing (EntityId, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityId, decodeSingleDrupalEntity, drupalEndpoint, encodeEntityId, fromEntityId, toCmd, toEntityId, toTask, withParamsEncoder, withValueEncoder, withoutDecoder)
 import Utils.WebData exposing (resetError)
 
 
@@ -52,22 +52,10 @@ type alias SessionParams =
     }
 
 
-type alias TrainingSessionParams =
-    { action : Maybe TrainingSessionAction
-    }
-
-
 encodeSessionParams : SessionParams -> List ( String, String )
 encodeSessionParams params =
     params.openAfter
         |> Maybe.map (\open -> ( "open_after", Gizra.NominalDate.formatYYYYMMDD open ))
-        |> Maybe.Extra.toList
-
-
-encodeTraininsSessionParams : TrainingSessionParams -> List ( String, String )
-encodeTraininsSessionParams params =
-    params.action
-        |> Maybe.map (\action -> ( "action", toString action ))
         |> Maybe.Extra.toList
 
 
@@ -78,10 +66,10 @@ sessionEndpoint =
         |> withParamsEncoder encodeSessionParams
 
 
-trainingSessionsEndpoint : ReadOnlyEndPoint Error SessionId (EveryDictList SessionId Session) TrainingSessionParams
+trainingSessionsEndpoint : ReadWriteEndPoint Error (EntityId a) TrainingSessions TrainingSessions ()
 trainingSessionsEndpoint =
-    drupalEndpoint "api/training_sessions" decodeTrainingSession
-        |> withParamsEncoder encodeTraininsSessionParams
+    drupalEndpoint "api/training_sessions" decodeTrainingSessions
+        |> withValueEncoder encodeTraininsSessions
 
 
 offlineSessionEndpoint : ReadWriteEndPoint Error SessionId OfflineSession OfflineSession ()
@@ -139,10 +127,16 @@ updateBackend backendUrl accessToken msg model =
             , []
             )
 
-        UpdateTrainingSessions action date ->
-            ( { model | postSessionRequest = Loading }
-            , crud.select trainingSessionsEndpoint (TrainingSessionParams (Just action))
-                |> FetchFutureSessions date
+        PostTrainingSessions action ->
+            ( { model | postTraininsSessionRequest = Loading }
+            , crud.post trainingSessionsEndpoint { action = action }
+                |> toCmd (RemoteData.fromResult >> HandleTrainingSessionResponse action)
+            , []
+            )
+
+        HandleTrainingSessionResponse action webdata ->
+            ( { model | postTraininsSessionRequest = NotAsked, futureSessions = NotAsked }
+            , Cmd.none
             , []
             )
 

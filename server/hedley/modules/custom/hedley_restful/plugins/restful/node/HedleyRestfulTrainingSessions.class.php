@@ -16,12 +16,29 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
   public static function controllersInfo() {
     return [
       '' => [
-        \RestfulInterface::POST => 'createTrainingEntities',
-      ],
-      '^.*$' => [
-        \RestfulInterface::DELETE => 'deleteTrainingEntities',
+        \RestfulInterface::POST => 'performAction',
       ],
     ];
+  }
+
+  /**
+   * @todo: Add docs.
+   *
+   * @return array
+   * @throws \RestfulBadRequestException
+   */
+  public function performAction() {
+    $request = $this->getRequest();
+
+    if (!isset($request['action']) || empty($request['action'])) {
+      throw new RestfulBadRequestException('Action is not specified');
+    }
+
+    if ($request['action'] == 'create_all') {
+      $result = $this->createTrainingEntities();
+    }
+
+    return $result;
   }
 
   /**
@@ -32,12 +49,12 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
    * day of creating them, meaning they will be open for the same day the admin
    * clicks on the "Create all training sessions" button.
    *
-   * @throws \RestfulForbiddenException
+   * @throws \RestfulException
    */
-  public function createTrainingEntities() {
+  protected function createTrainingEntities() {
     if (!$this->checkTrainingSessionsAccess()) {
       // Check access, only admins should be able to preform this action.
-      return;
+      return FALSE;
     }
 
     // Get all clinics.
@@ -55,6 +72,7 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
     });
     $scheduled_date = date('Y-m-d', REQUEST_TIME);
 
+    $sessions_created = FALSE;
     foreach ($clinic_nids as $clinic_nid) {
       if (hedley_schedule_clinic_has_sessions($clinic_nid, $scheduled_date)) {
         // Clinic has an active session for today, no need to create a session
@@ -74,11 +92,14 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
 
       try {
         $this->createEntity();
+        $sessions_created = TRUE;
       }
       catch (Exception $e) {
-        throw new RestfulForbiddenException($e);
+        throw new RestfulException($e);
       }
     }
+
+    return $sessions_created ? ['action' => 'created'] : ['action' => 'no_creation'];
   }
 
   /**
