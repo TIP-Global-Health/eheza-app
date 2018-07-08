@@ -24,12 +24,12 @@ import Time.Date
 decodeTrainingSessions : Decoder TrainingSessions
 decodeTrainingSessions =
     decode TrainingSessions
-        |> required "action" decodeTrainingSessionAction
+        |> custom decodeTrainingSessionAction
 
 
 decodeTrainingSessionAction : Decoder TrainingSessionAction
 decodeTrainingSessionAction =
-    string
+    field "action" string
         |> andThen
             (\action ->
                 case action of

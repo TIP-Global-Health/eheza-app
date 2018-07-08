@@ -46,7 +46,7 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
       $result = ['action' => 'invalid'];
     }
 
-    return $result;
+    return [$result];
   }
 
   /**
@@ -118,11 +118,15 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
    * all training sessions for meaning they will be all deleted when admin
    * clicks on the "Delete all training sessions" button, it will delete all
    * training session even if it's an old session opened on a past day.
+   *
+   * @return array|bool
+   * @throws \EntityFieldQueryException
+   * @throws \RestfulException
    */
   public function deleteTrainingEntities() {
     if (!$this->checkTrainingSessionsAccess()) {
       // Check access, only admins should be able to preform this action.
-      return;
+      return FALSE;
     }
 
     // Get all sessions.
@@ -142,7 +146,12 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
 
     // Delete all training sessions.
     foreach ($session_nids as $session_nid) {
-      $this->deleteEntity($session_nid);
+      try {
+        $this->deleteEntity($session_nid);
+      }
+      catch (Exception $e) {
+        throw new RestfulException($e);
+      }
     }
 
     return ['action' => 'deleted'];
