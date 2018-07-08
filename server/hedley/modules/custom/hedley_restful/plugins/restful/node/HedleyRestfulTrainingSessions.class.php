@@ -57,7 +57,9 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
    * day of creating them, meaning they will be open for the same day the admin
    * clicks on the "Create all training sessions" button.
    *
-   * @throws \RestfulException
+   * @return array|bool
+   *   Whether training sessions were created or not and FALSE if user doesn't
+   *   have access.
    */
   protected function createTrainingEntities() {
     if (!$this->checkTrainingSessionsAccess()) {
@@ -99,13 +101,8 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
 
       $this->setRequest($request);
 
-      try {
-        $this->createEntity();
-        $sessions_created = TRUE;
-      }
-      catch (Exception $e) {
-        throw new RestfulException($e);
-      }
+      $this->createEntity();
+      $sessions_created = TRUE;
     }
 
     return $sessions_created ? ['action' => 'created'] : ['action' => 'no_creation'];
@@ -120,8 +117,9 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
    * training session even if it's an old session opened on a past day.
    *
    * @return array|bool
+   *   Training sessions were deleted or FALSE if user doesn't have access.
+   *
    * @throws \EntityFieldQueryException
-   * @throws \RestfulException
    */
   public function deleteTrainingEntities() {
     if (!$this->checkTrainingSessionsAccess()) {
@@ -146,13 +144,11 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
 
     // Delete all training sessions.
     foreach ($session_nids as $session_nid) {
-      try {
-        $this->deleteEntity($session_nid);
-      }
-      catch (Exception $e) {
-        throw new RestfulException($e);
-      }
+      $this->deleteEntity($session_nid);
     }
+
+    // Override Settings the HTTP headers because we want to return the action.
+    $this->setHttpHeaders('Status', 200);
 
     return ['action' => 'deleted'];
   }
