@@ -46,13 +46,13 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
       $result = 'invalid';
     }
 
-
     // @todo: Fix this.
     return [
       0 => [
-      'id' => 0,
-      'action' => $result,
-    ]];
+        'id' => 0,
+        'action' => $result,
+      ],
+    ];
   }
 
   /**
