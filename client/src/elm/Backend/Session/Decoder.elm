@@ -23,13 +23,18 @@ import Time.Date
 -}
 decodeTrainingSessions : Decoder TrainingSessions
 decodeTrainingSessions =
-    decode TrainingSessions
-        |> custom decodeTrainingSessionAction
+    decode makeIntoTrainingSessionsRecord
+        |> requiredAt [ "action" ] decodeTrainingSessionAction
+
+
+makeIntoTrainingSessionsRecord : TrainingSessionAction -> TrainingSessions
+makeIntoTrainingSessionsRecord trainingSessionAction =
+    { action = trainingSessionAction }
 
 
 decodeTrainingSessionAction : Decoder TrainingSessionAction
 decodeTrainingSessionAction =
-    field "action" string
+    string
         |> andThen
             (\action ->
                 case action of
@@ -40,13 +45,10 @@ decodeTrainingSessionAction =
                         succeed DeleteAll
 
                     "invalid" ->
-                        succeed Invalid
+                        fail "Invalid action was sent to the endpoint"
 
                     _ ->
-                        fail <|
-                            "action '"
-                                ++ action
-                                ++ "' is not a valid action"
+                        fail "An error occurred while trying to handle training sessions"
             )
 
 

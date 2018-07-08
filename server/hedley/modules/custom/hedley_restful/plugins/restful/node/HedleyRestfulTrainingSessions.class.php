@@ -43,10 +43,16 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
       $result = $this->deleteTrainingEntities();
     }
     else {
-      $result = ['action' => 'invalid'];
+      $result = 'invalid';
     }
 
-    return [$result];
+
+    // @todo: Fix this.
+    return [
+      0 => [
+      'id' => 0,
+      'action' => $result,
+    ]];
   }
 
   /**
@@ -57,7 +63,7 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
    * day of creating them, meaning they will be open for the same day the admin
    * clicks on the "Create all training sessions" button.
    *
-   * @return array|bool
+   * @return string|bool
    *   Whether training sessions were created or not and FALSE if user doesn't
    *   have access.
    */
@@ -105,7 +111,7 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
       $sessions_created = TRUE;
     }
 
-    return $sessions_created ? ['action' => 'created'] : ['action' => 'no_creation'];
+    return $sessions_created ? 'created' : 'no_creation';
   }
 
   /**
@@ -116,7 +122,7 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
    * clicks on the "Delete all training sessions" button, it will delete all
    * training session even if it's an old session opened on a past day.
    *
-   * @return array|bool
+   * @return string|bool
    *   Training sessions were deleted or FALSE if user doesn't have access.
    *
    * @throws \EntityFieldQueryException
@@ -150,7 +156,7 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
     // Override Settings the HTTP headers because we want to return the action.
     $this->setHttpHeaders('Status', 200);
 
-    return ['action' => 'deleted'];
+    return 'deleted';
   }
 
   /**
