@@ -4,7 +4,6 @@ module Restful.Login
         , Config
         , Credentials
         , Login
-        , LoginError(..)
         , LoginProgress(..)
         , LoginStatus(..)
         , Msg
@@ -100,21 +99,10 @@ type alias Credentials user =
     facilitates forgetting that data when we logout ... it's baked into the type.
     If you don't want to bother with that, you can use a Tuple0 here.
 
-  - CheckingCachedCredentials
-
-    We might have some cached credentials, and we're currently trying to
-    validate them against the backend.
-
-      - If we don't have any cached credentials, we'll transition to `Anonymous`
-
-      - If we have cached credentials, we'll transition to `LoggedIn` even if we
-        can't validate them with the backend. A validation failure will be reflected
-        in the `relogin` field.
-
   - Anonymous
 
-    We don't have credentials. The `LoginProgress` parameter indicates whatever
-    progress we might be making towards having credentials.
+    We don't have credentials (yet). The `LoginProgress` parameter indicates
+    whatever progress we might be making towards having credentials.
 
     We could parameterize this to add some data that only anonymous users use.
     However, it's probably the case that any such data would also be relevant
@@ -129,79 +117,65 @@ type alias Credentials user =
     thrown away upon logout).
 
 -}
-type LoginStatus user data
-    = Anonymous LoginProgress
-    | CheckingCachedCredentials
-    | LoggedIn (Login user data)
+type LoginStatus user data msg
+    = Anonymous (Maybe (LoginProgress msg))
+    | LoggedIn (Login user data msg)
 
 
-{-| Is there currently something in progress to advance the
-login process, or are we at rest?
+{-| Is there currently something in progress to advance the login process, or
+are we at rest?
 -}
-isProgressing : LoginStatus user data -> Bool
+isProgressing : LoginStatus user data msg -> Bool
 isProgressing model =
     case model of
         Anonymous progress ->
-            loginProgressIsProgressing progress
-
-        CheckingCachedCredentials ->
-            True
+            Maybe.map loginProgressIsProgressing progress
+                |> Maybe.withDefault False
 
         LoggedIn login ->
             Maybe.map loginProgressIsProgressing login.relogin
                 |> Maybe.withDefault False
 
 
-loginProgressIsProgressing : LoginProgress -> Bool
+loginProgressIsProgressing : LoginProgress msg -> Bool
 loginProgressIsProgressing loginProgress =
     case loginProgress of
-        LoginFailed _ ->
-            False
-
-        LoginRequired ->
-            False
-
-        TryingPassword ->
+        Checking _ ->
             True
+
+        LoginError _ ->
+            False
 
 
 {-| Do we have an error to report?
 -}
-getError : LoginStatus user data -> Maybe LoginError
+getError : LoginStatus user data msg -> Maybe (LoginError msg)
 getError model =
-    case model of
-        Anonymous progress ->
-            loginProgressToError progress
+    Maybe.andThen loginProgressToError <|
+        case model of
+            Anonymous progress ->
+                progress
 
-        CheckingCachedCredentials ->
-            Nothing
-
-        LoggedIn login ->
-            Maybe.andThen loginProgressToError login.relogin
+            LoggedIn login ->
+                login.relogin
 
 
-loginProgressToError : LoginProgress -> Maybe LoginError
+loginProgressToError : LoginProgress msg -> Maybe (LoginError msg)
 loginProgressToError loginProgress =
     case loginProgress of
-        LoginFailed err ->
+        Checking _ ->
+            Nothing
+
+        LoginError err ->
             Just err
-
-        LoginRequired ->
-            Nothing
-
-        TryingPassword ->
-            Nothing
 
 
 {-| Extract the data as a Maybe, which will be `Just` if the user is logged in.
 -}
-maybeData : LoginStatus user data -> Maybe data
+maybeData : LoginStatus user data msg -> Maybe data
 maybeData model =
     case model of
         Anonymous _ ->
-            Nothing
-
-        CheckingCachedCredentials ->
             Nothing
 
         LoggedIn login ->
@@ -210,82 +184,61 @@ maybeData model =
 
 {-| Map over the data, if the user is logged in.
 -}
-mapData : (data -> data) -> LoginStatus user data -> LoginStatus user data
+mapData : (data -> data) -> LoginStatus user data msg -> LoginStatus user data msg
 mapData func model =
     case model of
         Anonymous _ ->
-            model
-
-        CheckingCachedCredentials ->
             model
 
         LoggedIn login ->
             LoggedIn { login | data = func login.data }
 
 
-{-| If we have no credentials, are we currently doing anything to get them?
+{-| Represents the status of an attempt to login.
 
-  - LoginRequired
+  - Checking
 
-    Nothing is in progress ... if the user wants to login, they'll need
-    to enter a password.
+    We have sent a request to the backend and are waiting for a response. The
+    `LoginMethod` indicates whether we're checking an acccess token or a
+    username/password combination.
 
-  - TryingPassword
+  - LoginError
 
-    We've sent a request to the backend with a password, and are waiting to
-    see if it succeeds.
-
-  - FailedPassword
-
-    We sent a request to the backend with a password, and it failed wih the
-    specified error. Note that the error may or may not mean that the password
-    is bad ... for instance, it might be a transient network error. So, you'll
-    need to interpret the error.
-
-  - FailedAccessToken
-
-    We sent a request to the backend with an access token, and it failed with
-    the specified error.
+    We got a response from the backend with an error.
 
 -}
-type LoginProgress
-    = LoginFailed LoginError
-    | LoginRequired
-    | TryingPassword
+type LoginProgress msg
+    = Checking LoginMethod
+    | LoginError (LoginError msg)
 
 
-{-| Represents an error which occured while trying to login.
+{-| An error which has occurred in the login process.
 
-  - PasswordRejected
+  - Rejected
 
-    We successfully contacted the server, and it indicated that our username/password
-    combination was rejected.
+    We got a definite response from the backend rejecting our login request ...
+    that is, our access token or username/password was firmly rejected.
 
-  - AccessTokenRejected
+  - HttpError
 
-    We successfully contacted the server, but it rejected our access token.
-
-  - Timeout
-
-    The login request timed out.
-
-  - NetworkError
-
-    There was some other kind of network error.
-
-  - InternalError
-
-    Some other kind of problem occurred, which probably represents a bug in the logic
-    of the app or the backend. We include the original `Http.Error` for further
-    diagnosis.
+    We got some other HTTP error. That is, the backend did not definitely
+    indicate that our credentials are invalid, but some other sort of HTTP
+    error occurred. If the error might be transient ... that is, if
+    retrying might help ... then we include a `msg` you can send in
+    order to retry.
 
 -}
-type LoginError
-    = AccessTokenRejected
-    | InternalError Error
-    | NetworkError
-    | PasswordRejected
-    | Timeout
+type LoginError msg
+    = Rejected LoginMethod
+    | HttpError LoginMethod Error (Maybe msg)
+
+
+{-| How are we trying to login? Are we checking an access token, or are we sending
+a username and password?
+-}
+type LoginMethod
+    = ByAccessToken
+    | ByPassword
 
 
 {-| Represents the data we have if we're logged in.
@@ -318,10 +271,10 @@ type LoginError
     throw away when the user logs out.
 
 -}
-type alias Login user data =
+type alias Login user data msg =
     { credentials : Credentials user
     , logout : WebData ()
-    , relogin : Maybe LoginProgress
+    , relogin : Maybe (LoginProgress msg)
     , data : data
     }
 
@@ -336,14 +289,11 @@ However, if you are `LoggedIn`, this will make `relogin` a `Just` ...
 that is, it will record that relogin is necessary.
 
 -}
-setProgress : LoginProgress -> LoginStatus user data -> LoginStatus user data
+setProgress : LoginProgress msg -> LoginStatus user data msg -> LoginStatus user data msg
 setProgress progress model =
     case model of
         Anonymous _ ->
-            Anonymous progress
-
-        CheckingCachedCredentials ->
-            model
+            Anonymous (Just progress)
 
         LoggedIn login ->
             LoggedIn
@@ -354,18 +304,10 @@ setProgress progress model =
 to generate initial data if we didn't have some already (i.e. if this isn't
 a re-login). If it is a re-login, we just keep the data.
 -}
-setCredentials : Config user data msg -> Credentials user -> LoginStatus user data -> LoginStatus user data
+setCredentials : Config user data msg -> Credentials user -> LoginStatus user data msg -> LoginStatus user data msg
 setCredentials config credentials model =
     case model of
         Anonymous _ ->
-            LoggedIn
-                { credentials = credentials
-                , logout = NotAsked
-                , relogin = Nothing
-                , data = config.initialData credentials.user
-                }
-
-        CheckingCachedCredentials ->
             LoggedIn
                 { credentials = credentials
                 , logout = NotAsked
@@ -392,42 +334,43 @@ Note that you should use `logout` to actually perform the action of logging
 out, since that will also clear the cached credentials.
 
 -}
-loggedOut : LoginStatus user data
+loggedOut : LoginStatus user data msg
 loggedOut =
-    Anonymous LoginRequired
+    Anonymous Nothing
 
 
-{-| Initializes a LoginStatus by indicating that we're checking the cache for
-credentials, and return a `Cmd` that will do that.
+{-| Initializes a LoginStatus by indicating that we're checking cached credentials
+against the backend, and return a `Cmd` that will do that.
 
   - BackendUrl is the backend to check the cached credentials against.
 
-  - Value is the JSON string which your `cacheCredentials` function (from Config)
-    has cached. So, it's up to you to fetch that value somehow, either via
-    flags at startup, or via ports. If you've cached credentials for multiple backends,
-    it's up to you to match your backendURL and your credentials.
+  - The `String` parameter is the JSON string which your `cacheCredentials`
+    function (from Config) has cached. So, it's up to you to fetch that value
+    somehow, either via flags at startup, or via ports. If you've cached
+    credentials for multiple backends, it's up to you to match your backendURL
+    and your credentials.
 
-The LoginStatus will start as `CheckingCachedCredentials`. At this point, your UI
-should treat the login process as unresolved ... it will soon resolve one way
-or another. So, you might show a "checking for cached login" message, or just
-nothing.
+The LoginStatus will start as `Anonymous (Just (Checking ByAccessToken))`. At this
+point, your UI should treat the login process as unresolved ... it will soon
+resolve one way or another. So, you might show a "checking for cached login"
+message, or just nothing.
 
   - If we can decode the credentials, we'll try to use the access token against
     the backend to get updated user information. Whether or not that succeeds,
     we'll be in `LoggedIn` state ... the result of checking the credentials will
     affect whether `relogin` is required.
 
-  - If we can't decode the credentials, we'll be in `Anonymous LoginRequired`
-    state.
+  - If we can't decode the credentials, we'll be in `Anonymous (Just progress)`
+    state, where `progress` will indicate the error we received.
 
 -}
-checkCachedCredentials : Config user data msg -> BackendUrl -> String -> ( LoginStatus user data, Cmd msg )
+checkCachedCredentials : Config user data msg -> BackendUrl -> String -> ( LoginStatus user data msg, Cmd msg )
 checkCachedCredentials config backendUrl value =
     let
         -- The third return parameter will necessarily be false, since we're
         -- just kicking off the credential check here.
         ( loginStatus, cmd, _ ) =
-            update config (CheckCachedCredentials backendUrl value) CheckingCachedCredentials
+            update config (CheckCachedCredentials backendUrl value) (Anonymous (Just (Checking ByAccessToken)))
     in
     ( loginStatus, cmd )
 
@@ -549,8 +492,8 @@ them with the `update` function.
 -}
 type Msg user
     = CheckCachedCredentials BackendUrl String
-    | HandleAccessTokenCheck (Credentials user) (Result Error user)
-    | HandleLoginAttempt (Result Error (Credentials user))
+    | HandleAccessTokenCheck (Msg user) (Credentials user) (Result Error user)
+    | HandleLoginAttempt (Msg user) (Result Error (Credentials user))
     | HandleLogoutAttempt (Result Error ())
     | Logout
     | TryLogin BackendUrl String String
@@ -572,33 +515,29 @@ logout =
 
 {-| Specializes an HTTP error to our `LoginError` type.
 
-The first parameter is the `LoginError` we ought to use if the attempt to
-authenticate reached the server, and we got a response, but the response was a
-rejection. So, typically `PasswordRejected` or `AccessTokenRejected`, depending
-on which we were trying.
+The first parameter is a `msg` we could send to retry the request.
 
 -}
-classifyHttpError : LoginError -> Error -> LoginProgress
-classifyHttpError rejected error =
-    LoginFailed <|
-        case error of
-            Http.BadUrl _ ->
-                InternalError error
+classifyHttpError : Maybe msg -> LoginMethod -> Error -> LoginError msg
+classifyHttpError retry method error =
+    case error of
+        Http.BadUrl _ ->
+            HttpError method error Nothing
 
-            Http.Timeout ->
-                Timeout
+        Http.Timeout ->
+            HttpError method error retry
 
-            Http.NetworkError ->
-                NetworkError
+        Http.NetworkError ->
+            HttpError method error retry
 
-            Http.BadStatus response ->
-                if response.status.code == 401 then
-                    rejected
-                else
-                    InternalError error
+        Http.BadStatus response ->
+            if response.status.code == 401 then
+                Rejected method
+            else
+                HttpError method error Nothing
 
-            Http.BadPayload _ _ ->
-                InternalError error
+        Http.BadPayload _ _ ->
+            HttpError method error Nothing
 
 
 {-| Our update function. Note that the `Cmd` we return is in terms of
@@ -613,16 +552,13 @@ not reflecting state, but instead a kind of notification that we've
 just logged in.
 
 -}
-update : Config user data msg -> Msg user -> LoginStatus user data -> ( LoginStatus user data, Cmd msg, Bool )
+update : Config user data msg -> Msg user -> LoginStatus user data msg -> ( LoginStatus user data msg, Cmd msg, Bool )
 update config msg model =
-    -- Ultimately, it might be easier to work in the **caller's** `Msg` type,
-    -- and have a "mapper" in the `Config` so we can do some internal messages.
-    -- But we'll start this way and see how it goes.
     case msg of
-        HandleLoginAttempt result ->
+        HandleLoginAttempt retry result ->
             case result of
                 Err err ->
-                    ( setProgress (classifyHttpError PasswordRejected err) model
+                    ( setProgress (LoginError (classifyHttpError (Just <| config.tag retry) ByPassword err)) model
                     , Cmd.none
                     , False
                     )
@@ -662,20 +598,20 @@ update config msg model =
                 cmd =
                     requestAccessToken
                         |> Task.andThen requestUser
-                        |> Task.attempt HandleLoginAttempt
+                        |> Task.attempt (HandleLoginAttempt msg)
             in
-            ( setProgress TryingPassword model
+            ( setProgress (Checking ByPassword) model
             , Cmd.map config.tag cmd
             , False
             )
 
-        HandleAccessTokenCheck credentials result ->
+        HandleAccessTokenCheck retry credentials result ->
             case result of
                 Err err ->
                     -- This is actually a kind of successful login, in that we have
                     -- credentials ... we just mark them as needing relogin.
                     ( setCredentials config credentials model
-                        |> accessTokenRejected err
+                        |> accessTokenRejected (Just <| config.tag retry) err
                     , Cmd.none
                     , True
                     )
@@ -712,24 +648,16 @@ update config msg model =
                                 |> withQueryParams [ ( "access_token", credentials.accessToken ) ]
                                 |> withExpect (expectJson config.decodeUser)
                                 |> HttpBuilder.toTask
-                                |> Task.attempt (HandleAccessTokenCheck credentials)
+                                |> Task.attempt (HandleAccessTokenCheck msg credentials)
                                 |> Cmd.map config.tag
                     in
-                    ( CheckingCachedCredentials, cmd, False )
+                    -- We're still anonymous, until we get the second answer
+                    ( Anonymous (Just (Checking ByAccessToken)), cmd, False )
 
         Logout ->
             case model of
                 Anonymous _ ->
                     ( loggedOut
-                    , Cmd.none
-                    , False
-                    )
-
-                CheckingCachedCredentials ->
-                    -- TODO: Do something sensible here. But it's not entirely
-                    -- clear what that would be. Ideally, people shouldn't
-                    -- logout while we're checking credentials...
-                    ( model
                     , Cmd.none
                     , False
                     )
@@ -830,13 +758,10 @@ decodeCredentials config backendUrl =
 If we don't know yet, we indicate `False`.
 
 -}
-hasValidAccessToken : LoginStatus user data -> Bool
+hasValidAccessToken : LoginStatus user data msg -> Bool
 hasValidAccessToken status =
     case status of
         Anonymous _ ->
-            False
-
-        CheckingCachedCredentials ->
             False
 
         LoggedIn login ->
@@ -848,13 +773,10 @@ hasValidAccessToken status =
 If we're still checking, we say `False`.
 
 -}
-hasAccessToken : LoginStatus user data -> Bool
+hasAccessToken : LoginStatus user data msg -> Bool
 hasAccessToken status =
     case status of
         Anonymous _ ->
-            False
-
-        CheckingCachedCredentials ->
             False
 
         LoggedIn login ->
@@ -867,9 +789,9 @@ If we're in a `LoggedIn` state, we'll stay in that state ... we'll
 merely record that re-login is required.
 
 -}
-accessTokenRejected : Error -> LoginStatus user data -> LoginStatus user data
-accessTokenRejected =
-    setProgress << classifyHttpError AccessTokenRejected
+accessTokenRejected : Maybe msg -> Error -> LoginStatus user data msg -> LoginStatus user data msg
+accessTokenRejected retry error =
+    setProgress (LoginError <| classifyHttpError retry ByAccessToken error)
 
 
 {-| If you previously recorded `accessTokenRejected` but it was a transient
@@ -883,15 +805,12 @@ it only resets `LoggedIn` (if that's what we are) to show that `relogin`
 is not required.
 
 -}
-accessTokenAccepted : LoginStatus user data -> LoginStatus user data
+accessTokenAccepted : LoginStatus user data msg -> LoginStatus user data msg
 accessTokenAccepted status =
     -- We return `status` unchanged as often as possible, for the sake of
     -- preserving referential equality where we can.
     case status of
         Anonymous _ ->
-            status
-
-        CheckingCachedCredentials ->
             status
 
         LoggedIn login ->
