@@ -7,8 +7,8 @@ module Restful.Login
         , LoginError(..)
         , LoginMethod(..)
         , LoginProgress(..)
-        , LoginStatus(..)
         , Msg
+        , UserStatusAndData(..)
         , accessTokenAccepted
         , accessTokenRejected
         , checkCachedCredentials
@@ -36,7 +36,7 @@ can be handled here.
 
 ## Types
 
-@docs LoginStatus, Credentials, Login, LoginProgress, LoginError
+@docs UserStatusAndData, Credentials, Login, LoginProgress, LoginError
 
 
 ## Initialization
@@ -119,7 +119,7 @@ type alias Credentials user =
     thrown away upon logout).
 
 -}
-type LoginStatus user data
+type UserStatusAndData user data
     = Anonymous (Maybe (LoginProgress user))
     | LoggedIn (Login user data)
 
@@ -127,7 +127,7 @@ type LoginStatus user data
 {-| Is there currently something in progress to advance the login process, or
 are we at rest?
 -}
-isProgressing : LoginStatus user data -> Bool
+isProgressing : UserStatusAndData user data -> Bool
 isProgressing model =
     case model of
         Anonymous progress ->
@@ -151,7 +151,7 @@ loginProgressIsProgressing loginProgress =
 
 {-| Do we have an error to report?
 -}
-getError : LoginStatus user data -> Maybe (LoginError user)
+getError : UserStatusAndData user data -> Maybe (LoginError user)
 getError model =
     Maybe.andThen loginProgressToError <|
         case model of
@@ -174,7 +174,7 @@ loginProgressToError loginProgress =
 
 {-| Extract the data as a Maybe, which will be `Just` if the user is logged in.
 -}
-maybeData : LoginStatus user data -> Maybe data
+maybeData : UserStatusAndData user data -> Maybe data
 maybeData model =
     case model of
         Anonymous _ ->
@@ -186,7 +186,7 @@ maybeData model =
 
 {-| Map over the data, if the user is logged in.
 -}
-mapData : (data -> data) -> LoginStatus user data -> LoginStatus user data
+mapData : (data -> data) -> UserStatusAndData user data -> UserStatusAndData user data
 mapData func model =
     case model of
         Anonymous _ ->
@@ -291,7 +291,7 @@ However, if you are `LoggedIn`, this will make `relogin` a `Just` ...
 that is, it will record that relogin is necessary.
 
 -}
-setProgress : LoginProgress user -> LoginStatus user data -> LoginStatus user data
+setProgress : LoginProgress user -> UserStatusAndData user data -> UserStatusAndData user data
 setProgress progress model =
     case model of
         Anonymous _ ->
@@ -306,7 +306,7 @@ setProgress progress model =
 to generate initial data if we didn't have some already (i.e. if this isn't
 a re-login). If it is a re-login, we just keep the data.
 -}
-setCredentials : Config user data msg -> Credentials user -> LoginStatus user data -> LoginStatus user data
+setCredentials : Config user data msg -> Credentials user -> UserStatusAndData user data -> UserStatusAndData user data
 setCredentials config credentials model =
     case model of
         Anonymous _ ->
@@ -329,19 +329,19 @@ setCredentials config credentials model =
 {-| A constant which represents the state in which the user is logged out, and
 no progress is currently being made towards login.
 
-This is one possible "starting point" for initializing the LoginStatus. The other
+This is one possible "starting point" for initializing the UserStatusAndData. The other
 main starting point would be `checkCachedCredentials`.
 
 Note that you should use `logout` to actually perform the action of logging
 out, since that will also clear the cached credentials.
 
 -}
-loggedOut : LoginStatus user data
+loggedOut : UserStatusAndData user data
 loggedOut =
     Anonymous Nothing
 
 
-{-| Initializes a LoginStatus by indicating that we're checking cached credentials
+{-| Initializes a UserStatusAndData by indicating that we're checking cached credentials
 against the backend, and return a `Cmd` that will do that.
 
   - BackendUrl is the backend to check the cached credentials against.
@@ -352,7 +352,7 @@ against the backend, and return a `Cmd` that will do that.
     credentials for multiple backends, it's up to you to match your backendURL
     and your credentials.
 
-The LoginStatus will start as `Anonymous (Just (Checking ByAccessToken))`. At this
+The UserStatusAndData will start as `Anonymous (Just (Checking ByAccessToken))`. At this
 point, your UI should treat the login process as unresolved ... it will soon
 resolve one way or another. So, you might show a "checking for cached login"
 message, or just nothing.
@@ -366,15 +366,15 @@ message, or just nothing.
     state, where `progress` will indicate the error we received.
 
 -}
-checkCachedCredentials : Config user data msg -> BackendUrl -> String -> ( LoginStatus user data, Cmd msg )
+checkCachedCredentials : Config user data msg -> BackendUrl -> String -> ( UserStatusAndData user data, Cmd msg )
 checkCachedCredentials config backendUrl value =
     let
         -- The third return parameter will necessarily be false, since we're
         -- just kicking off the credential check here.
-        ( loginStatus, cmd, _ ) =
+        ( userStatus, cmd, _ ) =
             update config (CheckCachedCredentials backendUrl value) (Anonymous (Just (Checking ByAccessToken)))
     in
-    ( loginStatus, cmd )
+    ( userStatus, cmd )
 
 
 {-| Some static configuration which we need to integrate with your app.
@@ -554,7 +554,7 @@ not reflecting state, but instead a kind of notification that we've
 just logged in.
 
 -}
-update : Config user data msg -> Msg user -> LoginStatus user data -> ( LoginStatus user data, Cmd msg, Bool )
+update : Config user data msg -> Msg user -> UserStatusAndData user data -> ( UserStatusAndData user data, Cmd msg, Bool )
 update config msg model =
     case msg of
         HandleLoginAttempt retry result ->
@@ -760,7 +760,7 @@ decodeCredentials config backendUrl =
 If we don't know yet, we indicate `False`.
 
 -}
-hasValidAccessToken : LoginStatus user data -> Bool
+hasValidAccessToken : UserStatusAndData user data -> Bool
 hasValidAccessToken status =
     case status of
         Anonymous _ ->
@@ -775,7 +775,7 @@ hasValidAccessToken status =
 If we're still checking, we say `False`.
 
 -}
-hasAccessToken : LoginStatus user data -> Bool
+hasAccessToken : UserStatusAndData user data -> Bool
 hasAccessToken status =
     case status of
         Anonymous _ ->
@@ -791,7 +791,7 @@ If we're in a `LoggedIn` state, we'll stay in that state ... we'll
 merely record that re-login is required.
 
 -}
-accessTokenRejected : Error -> LoginStatus user data -> LoginStatus user data
+accessTokenRejected : Error -> UserStatusAndData user data -> UserStatusAndData user data
 accessTokenRejected =
     retryAccessTokenRejected Nothing
 
@@ -799,7 +799,7 @@ accessTokenRejected =
 {-| Internal version of accessTokenRejected that will keep track of a msg
 we can use to retry.
 -}
-retryAccessTokenRejected : Maybe (Msg user) -> Error -> LoginStatus user data -> LoginStatus user data
+retryAccessTokenRejected : Maybe (Msg user) -> Error -> UserStatusAndData user data -> UserStatusAndData user data
 retryAccessTokenRejected retry error =
     setProgress (LoginError <| classifyHttpError retry ByAccessToken error)
 
@@ -815,7 +815,7 @@ it only resets `LoggedIn` (if that's what we are) to show that `relogin`
 is not required.
 
 -}
-accessTokenAccepted : LoginStatus user data -> LoginStatus user data
+accessTokenAccepted : UserStatusAndData user data -> UserStatusAndData user data
 accessTokenAccepted status =
     -- We return `status` unchanged as often as possible, for the sake of
     -- preserving referential equality where we can.

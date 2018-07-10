@@ -8,7 +8,7 @@ import Pages.Login.Model
 import Pages.Model
 import Pages.Page exposing (Page(LoginPage))
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Login exposing (LoginStatus)
+import Restful.Login exposing (UserStatusAndData)
 import ServiceWorker.Model
 import Time exposing (Time)
 import Translate exposing (Language(..))
@@ -70,7 +70,7 @@ since we need a UI for logging in.
 type alias ConfiguredModel =
     { config : Config.Model.Model
     , loginPage : Pages.Login.Model.Model
-    , login : LoginStatus User LoggedInModel
+    , login : UserStatusAndData User LoggedInModel
     }
 
 

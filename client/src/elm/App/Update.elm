@@ -17,7 +17,7 @@ import Pages.Page exposing (Page(..), UserPage(ClinicsPage))
 import Pages.Update
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (decodeSingleDrupalEntity)
-import Restful.Login exposing (Credentials, Login, LoginStatus(..), checkCachedCredentials)
+import Restful.Login exposing (Credentials, Login, UserStatusAndData(..), checkCachedCredentials)
 import ServiceWorker.Model
 import ServiceWorker.Update
 import Task
