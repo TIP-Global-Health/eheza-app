@@ -5,9 +5,10 @@ import Backend.Child.Model exposing (Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
 import Date exposing (Month(..))
+import Http
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (fromEntityId)
-import Restful.Login exposing (LoginError(..))
+import Restful.Login exposing (LoginMethod(..))
 
 
 type Language
@@ -177,7 +178,8 @@ type LoginPhrase
     | ForgotPassword1
     | ForgotPassword2
     | LoggedInAs
-    | LoginError LoginError
+    | LoginError Http.Error
+    | LoginRejected LoginMethod
     | LoginOrWorkOffline
     | Logout
     | LogoutInProgress
@@ -921,31 +923,33 @@ translate lang trans =
                             , kinyarwanda = Just "Kwinjira nka …"
                             }
 
-                        LoginError error ->
-                            case error of
-                                AccessTokenRejected ->
+                        LoginRejected method ->
+                            case method of
+                                ByAccessToken ->
                                     { english = "Your access token has expired. You will need to sign in again."
                                     , kinyarwanda = Just "Igihe cyo gukoresha sisitemu cyarangiye . Ongera winjore muri sisitemu"
                                     }
 
-                                InternalError error ->
-                                    { english = "The following error occurred contacting the server. " ++ toString error
-                                    , kinyarwanda = Just <| "Aya makosa yagaragaye hamagara kuri seriveri." ++ toString error
-                                    }
-
-                                NetworkError ->
-                                    { english = "A network error occurred contacting the server. Are you connected to the Internet?"
-                                    , kinyarwanda = Just "hari ikibazo cya reseau hamagara kuri seriveri. ufite intereneti?(murandasi)"
-                                    }
-
-                                PasswordRejected ->
+                                ByPassword ->
                                     { english = "The server rejected your username or password."
                                     , kinyarwanda = Just "Seriveri yanze ijambo ryo kwinjira cg ijambo ry'ibanga"
                                     }
 
-                                Timeout ->
+                        LoginError error ->
+                            case error of
+                                Http.NetworkError ->
+                                    { english = "A network error occurred contacting the server. Are you connected to the Internet?"
+                                    , kinyarwanda = Just "hari ikibazo cya reseau hamagara kuri seriveri. ufite intereneti?(murandasi)"
+                                    }
+
+                                Http.Timeout ->
                                     { english = "The request to the server timed out."
                                     , kinyarwanda = Just "Ibyo wasabye kuri seriveri byarengeje igihe."
+                                    }
+
+                                _ ->
+                                    { english = "The following error occurred contacting the server. " ++ toString error
+                                    , kinyarwanda = Just <| "Aya makosa yagaragaye hamagara kuri seriveri." ++ toString error
                                     }
 
                         LoginOrWorkOffline ->

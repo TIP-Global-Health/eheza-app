@@ -5,6 +5,7 @@ module Restful.Login
         , Credentials
         , Login
         , LoginError(..)
+        , LoginMethod(..)
         , LoginProgress(..)
         , LoginStatus(..)
         , Msg
