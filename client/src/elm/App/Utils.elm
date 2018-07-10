@@ -2,7 +2,7 @@ module App.Utils exposing (..)
 
 import App.Model exposing (..)
 import RemoteData
-import Restful.Login exposing (maybeData)
+import Restful.Login exposing (maybeAuthenticatedData)
 
 
 {-| Returns the logged in model if we're logged in.
@@ -11,7 +11,7 @@ getLoggedInModel : Model -> Maybe LoggedInModel
 getLoggedInModel model =
     model.configuration
         |> RemoteData.toMaybe
-        |> Maybe.andThen (.login >> maybeData)
+        |> Maybe.andThen (.login >> maybeAuthenticatedData)
 
 
 {-| Do we think we have a valid access token?

@@ -15,7 +15,7 @@ import Utils.Html exposing (spinner)
 import Utils.WebData exposing (viewError)
 
 
-view : Language -> Page -> UserStatusAndData User data -> Model -> Maybe EditableSession -> Html Msg
+view : Language -> Page -> UserStatusAndData User () data -> Model -> Maybe EditableSession -> Html Msg
 view language activePage loginStatus model session =
     -- We always show the wrapper and the logo. Then, we call `viewContent`
     -- to supply the rest, depending on our params.
@@ -29,14 +29,14 @@ view language activePage loginStatus model session =
 {-| Here, we differentiate based on whether we're logged in or not ... and
 show something appropriate based on that.
 -}
-viewContent : Language -> Page -> UserStatusAndData User data -> Model -> Maybe EditableSession -> List (Html Msg)
+viewContent : Language -> Page -> UserStatusAndData User () data -> Model -> Maybe EditableSession -> List (Html Msg)
 viewContent language activePage loginStatus model session =
     case loginStatus of
         -- Perhaps this case could be integrated into `viewLoginForm` now
-        AnonymousUser (Just (Checking ByAccessToken)) ->
+        AnonymousUser (Just (Checking ByAccessToken)) _ ->
             [ viewCheckingCachedCredentials language ]
 
-        AnonymousUser _ ->
+        AnonymousUser _ _ ->
             -- If we're here and we're anonymous, then we'll show the login
             -- form ... so, we'll see the fields and the form will take into
             -- account progress and error conditions.
@@ -166,7 +166,7 @@ viewWhenLoggedIn language login session =
 
 {-| Shows the login form itself, i.e. with inputs for username and password.
 -}
-viewLoginForm : Language -> Page -> UserStatusAndData User data -> Model -> List (Html Msg)
+viewLoginForm : Language -> Page -> UserStatusAndData User () data -> Model -> List (Html Msg)
 viewLoginForm language activePage loginStatus model =
     let
         -- A convenience for translating a `LoginPhrase`

@@ -31,7 +31,7 @@ import ZScore.Model
 import ZScore.Update
 
 
-loginConfig : Restful.Login.Config User LoggedInModel Msg
+loginConfig : Restful.Login.Config User () LoggedInModel Msg
 loginConfig =
     -- The `oneOf` below is necessary because how the backend sends the user is
     -- a little different from how we encode it for local storage ... this
@@ -39,7 +39,8 @@ loginConfig =
     Restful.Login.drupalConfig
         { decodeUser = oneOf [ decodeSingleDrupalEntity decodeUser, decodeUser ]
         , encodeUser = encodeUser
-        , initialData = \_ -> emptyLoggedInModel
+        , initialAnonymousData = ()
+        , initialAuthenticatedData = \_ -> emptyLoggedInModel
         , cacheCredentials = curry cacheCredentials
         , tag = MsgLogin
         }
@@ -323,7 +324,7 @@ updateLoggedIn func model =
             -- TODO: Perhaps we should Debug.log some errors in cases where we get
             -- messages we can't handle ...
             case configured.login of
-                AnonymousUser _ ->
+                AnonymousUser _ _ ->
                     ( configured, Cmd.none, [] )
 
                 AuthenticatedUser login ->

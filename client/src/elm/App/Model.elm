@@ -70,7 +70,7 @@ since we need a UI for logging in.
 type alias ConfiguredModel =
     { config : Config.Model.Model
     , loginPage : Pages.Login.Model.Model
-    , login : UserStatusAndData User LoggedInModel
+    , login : UserStatusAndData User () LoggedInModel
     }
 
 
