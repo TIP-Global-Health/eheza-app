@@ -17,7 +17,7 @@ import Pages.Page exposing (Page(..), UserPage(ClinicsPage))
 import Pages.Update
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (decodeSingleDrupalEntity)
-import Restful.Login exposing (Credentials, Login, UserStatusAndData(..), checkCachedCredentials)
+import Restful.Login exposing (Authenticated, Credentials, UserStatusAndData(..), checkCachedCredentials)
 import ServiceWorker.Model
 import ServiceWorker.Update
 import Task
@@ -323,15 +323,15 @@ updateLoggedIn func model =
             -- TODO: Perhaps we should Debug.log some errors in cases where we get
             -- messages we can't handle ...
             case configured.login of
-                Anonymous _ ->
+                AnonymousUser _ ->
                     ( configured, Cmd.none, [] )
 
-                LoggedIn login ->
+                AuthenticatedUser login ->
                     let
                         ( subModel, cmd, extraMsgs ) =
                             func login.credentials login.data
                     in
-                    ( { configured | login = LoggedIn { login | data = subModel } }
+                    ( { configured | login = AuthenticatedUser { login | data = subModel } }
                     , cmd
                     , extraMsgs
                     )

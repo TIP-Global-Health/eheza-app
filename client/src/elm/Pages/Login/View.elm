@@ -8,7 +8,7 @@ import Html.Events exposing (onClick, onInput, onSubmit)
 import Pages.Login.Model exposing (..)
 import Pages.Page exposing (Page)
 import RemoteData exposing (RemoteData(..))
-import Restful.Login exposing (Login, LoginError(..), LoginMethod(..), LoginProgress(..), UserStatusAndData(..))
+import Restful.Login exposing (Authenticated, LoginError(..), LoginMethod(..), LoginProgress(..), UserStatusAndData(..))
 import Translate exposing (Language, translate)
 import User.Model exposing (..)
 import Utils.Html exposing (spinner)
@@ -33,16 +33,16 @@ viewContent : Language -> Page -> UserStatusAndData User data -> Model -> Maybe 
 viewContent language activePage loginStatus model session =
     case loginStatus of
         -- Perhaps this case could be integrated into `viewLoginForm` now
-        Anonymous (Just (Checking ByAccessToken)) ->
+        AnonymousUser (Just (Checking ByAccessToken)) ->
             [ viewCheckingCachedCredentials language ]
 
-        Anonymous _ ->
+        AnonymousUser _ ->
             -- If we're here and we're anonymous, then we'll show the login
             -- form ... so, we'll see the fields and the form will take into
             -- account progress and error conditions.
             viewLoginForm language activePage loginStatus model
 
-        LoggedIn login ->
+        AuthenticatedUser login ->
             case login.relogin of
                 Just progress ->
                     -- We have some login information, but we need to re-login
@@ -103,7 +103,7 @@ opportunity to logout, or do something else. Note that you won't get here
 usually, because if your active page was elsewhere, you'll transition
 there automatically once you login.
 -}
-viewWhenLoggedIn : Language -> Login User data -> Maybe EditableSession -> Html Msg
+viewWhenLoggedIn : Language -> Authenticated User data -> Maybe EditableSession -> Html Msg
 viewWhenLoggedIn language login session =
     let
         logoutButton =

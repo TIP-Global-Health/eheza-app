@@ -89,13 +89,13 @@ viewConfiguredModel model configured =
     case model.cache.editableSession of
         Success session ->
             case configured.login of
-                RL.Anonymous (Just (RL.Checking RL.ByAccessToken)) ->
+                RL.AnonymousUser (Just (RL.Checking RL.ByAccessToken)) ->
                     -- If we're checking cached credentials, show the login page ...
                     -- that's the logical place for some UI related to this.
                     Pages.Login.View.view model.language model.activePage configured.login configured.loginPage (Maybe.map Tuple.second session)
                         |> Html.map MsgPageLogin
 
-                RL.Anonymous progress ->
+                RL.AnonymousUser progress ->
                     case model.activePage of
                         PageNotFound url ->
                             Pages.PageNotFound.View.view model.language url
@@ -104,7 +104,7 @@ viewConfiguredModel model configured =
                             Pages.Login.View.view model.language model.activePage configured.login configured.loginPage (Maybe.map Tuple.second session)
                                 |> Html.map MsgPageLogin
 
-                RL.LoggedIn login ->
+                RL.AuthenticatedUser login ->
                     -- If we're logged in, then we consult the `activePage` to
                     -- determine what the user wants to see. Note that this will
                     -- magically do a "redirect" to the user's desired page once the

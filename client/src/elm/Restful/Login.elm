@@ -1,9 +1,9 @@
 module Restful.Login
     exposing
         ( AppConfig
+        , Authenticated
         , Config
         , Credentials
-        , Login
         , LoginError(..)
         , LoginMethod(..)
         , LoginProgress(..)
@@ -36,7 +36,7 @@ can be handled here.
 
 ## Types
 
-@docs UserStatusAndData, Credentials, Login, LoginProgress, LoginError
+@docs UserStatusAndData, Credentials, Authenticated, LoginProgress, LoginMethod, LoginError
 
 
 ## Initialization
@@ -101,7 +101,7 @@ type alias Credentials user =
     facilitates forgetting that data when we logout ... it's baked into the type.
     If you don't want to bother with that, you can use a Tuple0 here.
 
-  - Anonymous
+  - AnonymousUser
 
     We don't have credentials (yet). The `LoginProgress` parameter indicates
     whatever progress we might be making towards having credentials.
@@ -111,7 +111,7 @@ type alias Credentials user =
     for logged-in users, so it's probably not necessary -- it can be handled
     at a higher level.
 
-  - LoggedIn
+  - AuthenticatedUser
 
     We've got credentials. In addition to the credentials themsevles, we track
     what we know about the validity of the credentials, and any app-specific
@@ -120,8 +120,8 @@ type alias Credentials user =
 
 -}
 type UserStatusAndData user data
-    = Anonymous (Maybe (LoginProgress user))
-    | LoggedIn (Login user data)
+    = AnonymousUser (Maybe (LoginProgress user))
+    | AuthenticatedUser (Authenticated user data)
 
 
 {-| Is there currently something in progress to advance the login process, or
@@ -130,11 +130,11 @@ are we at rest?
 isProgressing : UserStatusAndData user data -> Bool
 isProgressing model =
     case model of
-        Anonymous progress ->
+        AnonymousUser progress ->
             Maybe.map loginProgressIsProgressing progress
                 |> Maybe.withDefault False
 
-        LoggedIn login ->
+        AuthenticatedUser login ->
             Maybe.map loginProgressIsProgressing login.relogin
                 |> Maybe.withDefault False
 
@@ -155,10 +155,10 @@ getError : UserStatusAndData user data -> Maybe (LoginError user)
 getError model =
     Maybe.andThen loginProgressToError <|
         case model of
-            Anonymous progress ->
+            AnonymousUser progress ->
                 progress
 
-            LoggedIn login ->
+            AuthenticatedUser login ->
                 login.relogin
 
 
@@ -177,10 +177,10 @@ loginProgressToError loginProgress =
 maybeData : UserStatusAndData user data -> Maybe data
 maybeData model =
     case model of
-        Anonymous _ ->
+        AnonymousUser _ ->
             Nothing
 
-        LoggedIn login ->
+        AuthenticatedUser login ->
             Just login.data
 
 
@@ -189,11 +189,11 @@ maybeData model =
 mapData : (data -> data) -> UserStatusAndData user data -> UserStatusAndData user data
 mapData func model =
     case model of
-        Anonymous _ ->
+        AnonymousUser _ ->
             model
 
-        LoggedIn login ->
-            LoggedIn { login | data = func login.data }
+        AuthenticatedUser login ->
+            AuthenticatedUser { login | data = func login.data }
 
 
 {-| Represents the status of an attempt to login.
@@ -258,7 +258,7 @@ type LoginMethod
   - relogin
 
     Do we need to re-login? If our credentials are rejected, we don't
-    transition back to `Anonymous` immediately, since that would prematurely
+    transition back to `AnonymousUser` immediately, since that would prematurely
     throw away some information that we may want to keep. Instead, we mark that
     relogin is `Just LoginRequired`. We can then track the relogin process
     without disturbing the other data.
@@ -273,7 +273,7 @@ type LoginMethod
     throw away when the user logs out.
 
 -}
-type alias Login user data =
+type alias Authenticated user data =
     { credentials : Credentials user
     , logout : WebData ()
     , relogin : Maybe (LoginProgress user)
@@ -284,21 +284,21 @@ type alias Login user data =
 {-| Given that some progress has been made towards login (or re-login),
 reflect that progress in our model.
 
-This won't flip you from `Anonymous` to `LoggedIn` or vice-versa ... it
+This won't flip you from `AnonymousUser` to `AuthenticatedUser` or vice-versa ... it
 only records **partial** progress.
 
-However, if you are `LoggedIn`, this will make `relogin` a `Just` ...
+However, if you are `AuthenticatedUser`, this will make `relogin` a `Just` ...
 that is, it will record that relogin is necessary.
 
 -}
 setProgress : LoginProgress user -> UserStatusAndData user data -> UserStatusAndData user data
 setProgress progress model =
     case model of
-        Anonymous _ ->
-            Anonymous (Just progress)
+        AnonymousUser _ ->
+            AnonymousUser (Just progress)
 
-        LoggedIn login ->
-            LoggedIn
+        AuthenticatedUser login ->
+            AuthenticatedUser
                 { login | relogin = Just progress }
 
 
@@ -309,16 +309,16 @@ a re-login). If it is a re-login, we just keep the data.
 setCredentials : Config user data msg -> Credentials user -> UserStatusAndData user data -> UserStatusAndData user data
 setCredentials config credentials model =
     case model of
-        Anonymous _ ->
-            LoggedIn
+        AnonymousUser _ ->
+            AuthenticatedUser
                 { credentials = credentials
                 , logout = NotAsked
                 , relogin = Nothing
                 , data = config.initialData credentials.user
                 }
 
-        LoggedIn login ->
-            LoggedIn
+        AuthenticatedUser login ->
+            AuthenticatedUser
                 { credentials = credentials
                 , logout = NotAsked
                 , relogin = Nothing
@@ -338,7 +338,7 @@ out, since that will also clear the cached credentials.
 -}
 loggedOut : UserStatusAndData user data
 loggedOut =
-    Anonymous Nothing
+    AnonymousUser Nothing
 
 
 {-| Initializes a UserStatusAndData by indicating that we're checking cached credentials
@@ -352,17 +352,17 @@ against the backend, and return a `Cmd` that will do that.
     credentials for multiple backends, it's up to you to match your backendURL
     and your credentials.
 
-The UserStatusAndData will start as `Anonymous (Just (Checking ByAccessToken))`. At this
+The UserStatusAndData will start as `AnonymousUser (Just (Checking ByAccessToken))`. At this
 point, your UI should treat the login process as unresolved ... it will soon
 resolve one way or another. So, you might show a "checking for cached login"
 message, or just nothing.
 
   - If we can decode the credentials, we'll try to use the access token against
     the backend to get updated user information. Whether or not that succeeds,
-    we'll be in `LoggedIn` state ... the result of checking the credentials will
+    we'll be in `AuthenticatedUser` state ... the result of checking the credentials will
     affect whether `relogin` is required.
 
-  - If we can't decode the credentials, we'll be in `Anonymous (Just progress)`
+  - If we can't decode the credentials, we'll be in `AnonymousUser (Just progress)`
     state, where `progress` will indicate the error we received.
 
 -}
@@ -372,7 +372,7 @@ checkCachedCredentials config backendUrl value =
         -- The third return parameter will necessarily be false, since we're
         -- just kicking off the credential check here.
         ( userStatus, cmd, _ ) =
-            update config (CheckCachedCredentials backendUrl value) (Anonymous (Just (Checking ByAccessToken)))
+            update config (CheckCachedCredentials backendUrl value) (AnonymousUser (Just (Checking ByAccessToken)))
     in
     ( userStatus, cmd )
 
@@ -654,23 +654,23 @@ update config msg model =
                                 |> Cmd.map config.tag
                     in
                     -- We're still anonymous, until we get the second answer
-                    ( Anonymous (Just (Checking ByAccessToken)), cmd, False )
+                    ( AnonymousUser (Just (Checking ByAccessToken)), cmd, False )
 
         Logout ->
             case model of
-                Anonymous _ ->
+                AnonymousUser _ ->
                     ( loggedOut
                     , Cmd.none
                     , False
                     )
 
-                LoggedIn login ->
+                AuthenticatedUser login ->
                     case config.logoutPath of
                         Just logoutPath ->
                             -- See comment below ... in this case, we can't
                             -- really logout unless we send a request to the
                             -- backend to do so.
-                            ( LoggedIn { login | logout = Loading }
+                            ( AuthenticatedUser { login | logout = Loading }
                             , HttpBuilder.get (login.credentials.backendUrl </> logoutPath)
                                 |> withQueryParams [ ( "access_token", login.credentials.accessToken ) ]
                                 |> HttpBuilder.toTask
@@ -710,7 +710,7 @@ update config msg model =
                             result
             in
             case ( adjustedResult, model ) of
-                ( Ok _, LoggedIn login ) ->
+                ( Ok _, AuthenticatedUser login ) ->
                     -- We tell the app to cache credentials consisting of an empty object.
                     -- This is simpler than telling the app to delete credentials.
                     ( loggedOut
@@ -718,9 +718,9 @@ update config msg model =
                     , False
                     )
 
-                ( Err err, LoggedIn login ) ->
+                ( Err err, AuthenticatedUser login ) ->
                     -- Just record the error
-                    ( LoggedIn { login | logout = Failure err }
+                    ( AuthenticatedUser { login | logout = Failure err }
                     , Cmd.none
                     , False
                     )
@@ -763,10 +763,10 @@ If we don't know yet, we indicate `False`.
 hasValidAccessToken : UserStatusAndData user data -> Bool
 hasValidAccessToken status =
     case status of
-        Anonymous _ ->
+        AnonymousUser _ ->
             False
 
-        LoggedIn login ->
+        AuthenticatedUser login ->
             login.relogin == Nothing
 
 
@@ -778,16 +778,16 @@ If we're still checking, we say `False`.
 hasAccessToken : UserStatusAndData user data -> Bool
 hasAccessToken status =
     case status of
-        Anonymous _ ->
+        AnonymousUser _ ->
             False
 
-        LoggedIn login ->
+        AuthenticatedUser login ->
             True
 
 
 {-| Record the fact that our access token was rejected.
 
-If we're in a `LoggedIn` state, we'll stay in that state ... we'll
+If we're in a `AuthenticatedUser` state, we'll stay in that state ... we'll
 merely record that re-login is required.
 
 -}
@@ -810,8 +810,8 @@ problem, and now it has been accepted, you can record that with this function.
 You don't need to call this every time the access token is accepted (though
 it won't do any harm, either).
 
-Note that this doesn't switch our state from `Anonymous` to `LoggedIn` ...
-it only resets `LoggedIn` (if that's what we are) to show that `relogin`
+Note that this doesn't switch our state from `AnonymousUser` to `AuthenticatedUser` ...
+it only resets `AuthenticatedUser` (if that's what we are) to show that `relogin`
 is not required.
 
 -}
@@ -820,13 +820,13 @@ accessTokenAccepted status =
     -- We return `status` unchanged as often as possible, for the sake of
     -- preserving referential equality where we can.
     case status of
-        Anonymous _ ->
+        AnonymousUser _ ->
             status
 
-        LoggedIn login ->
+        AuthenticatedUser login ->
             case login.relogin of
                 Just _ ->
-                    LoggedIn { login | relogin = Nothing }
+                    AuthenticatedUser { login | relogin = Nothing }
 
                 Nothing ->
                     status
