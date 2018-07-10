@@ -345,11 +345,8 @@ where we don't need to show any progress.
 viewLoading : Html any
 viewLoading =
     div
-        [ class "wrap wrap-alt-2" ]
-        [ div
-            [ class "ui segment center aligned" ]
-            [ spinner ]
-        ]
+        [ class "ui basic segment" ]
+        [ spinner ]
 
 
 {-| Show messages when creating/deleting training sessions.
@@ -361,25 +358,29 @@ viewPostTrainingSessionsMessage config language backend =
             case backend.postTraininsSessionRequest of
                 Success ( trainingsSessionId, trainingSession ) ->
                     let
-                        ( messageClass, messageType ) =
+                        ( messageClass, messageType, message ) =
                             case trainingSession.action of
                                 CreateAll ->
-                                    ( "success", Translate.TrainingSessionCreateSuccessMessage )
+                                    ( "success", Translate.Success, Translate.TrainingSessionCreateSuccessMessage )
 
                                 DeleteAll ->
-                                    ( "success", Translate.TrainingSessionDeleteSuccessMessage )
+                                    ( "success", Translate.Success, Translate.TrainingSessionDeleteSuccessMessage )
 
                                 Invalid ->
-                                    ( "error", Translate.TrainingSessionInvalidMessage )
+                                    ( "error", Translate.ErrorBadStatus, Translate.TrainingSessionInvalidMessage )
                     in
                     div
                         [ class <| "ui message " ++ messageClass ]
-                        [ text <| translate language <| messageType ]
+                        [ div [ class "header" ] [ text <| translate language messageType ]
+                        , div [ class "small text" ] [ text <| translate language message ]
+                        ]
 
                 Failure err ->
                     div
                         [ class "ui error message" ]
-                        [ text <| translate language <| Translate.TrainingSessionRequestErrorMessage <| toString err ]
+                        [ div [ class "header" ] [ text <| translate language Translate.ErrorBadStatus ]
+                        , div [ class "small text" ] [ text <| toString err ]
+                        ]
 
                 Loading ->
                     emptyNode

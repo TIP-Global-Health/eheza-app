@@ -242,7 +242,6 @@ type TranslationId
     | ThisClinicHasNoMothers
     | TitleHealthAssessment
     | Training
-    | TrainingSessionRequestErrorMessage String
     | TrainingSessionCreateSuccessMessage
     | TrainingSessionDeleteSuccessMessage
     | TrainingSessionInvalidMessage
@@ -845,14 +844,11 @@ translationSet trans =
         Training ->
             { english = "Training" }
 
-        TrainingSessionRequestErrorMessage error ->
-            { english = "Training sessions could not be updated, message from server: " ++ error }
-
         TrainingSessionCreateSuccessMessage ->
-            { english = "Training sessions were created successfully." }
+            { english = "Training sessions were created." }
 
         TrainingSessionDeleteSuccessMessage ->
-            { english = "Training sessions were deleted successfully." }
+            { english = "Training sessions were deleted." }
 
         TrainingSessionInvalidMessage ->
             { english = "Invalid training sessions action was sent." }
