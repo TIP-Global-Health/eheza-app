@@ -38,7 +38,7 @@ loginConfig =
     -- could possibly be solved another way.
     Restful.Login.drupalConfig
         { decodeUser = oneOf [ decodeSingleDrupalEntity decodeUser, decodeUser ]
-        , encodeUser = encodeUser
+        , encodeUser = Just encodeUser
         , initialAnonymousData = ()
         , initialAuthenticatedData = \_ -> emptyLoggedInModel
         , cacheCredentials = curry cacheCredentials

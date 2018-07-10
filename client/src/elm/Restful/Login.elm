@@ -69,7 +69,7 @@ can be handled here.
 import Base64
 import Http exposing (Error(..), expectJson)
 import HttpBuilder exposing (withExpect, withHeader, withQueryParams)
-import Json.Decode exposing (Decoder, field)
+import Json.Decode as JD exposing (Decoder, field)
 import Json.Encode exposing (Value)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing ((</>), AccessToken, BackendUrl)
@@ -95,6 +95,29 @@ type alias Credentials user =
     , backendUrl : BackendUrl
     , user : user
     }
+
+
+{-| We don't necessarily cache the full credentials record ... we only cache
+the user if our config has an `encodeUser`. So, this represents what we might
+get from the cache.
+-}
+type alias CachedCredentials user =
+    { accessToken : AccessToken
+    , backendUrl : BackendUrl
+    , user : Maybe user
+    }
+
+
+maybeCredentials : CachedCredentials user -> Maybe (Credentials user)
+maybeCredentials cached =
+    Maybe.map
+        (\user ->
+            { accessToken = cached.accessToken
+            , backendUrl = cached.backendUrl
+            , user = user
+            }
+        )
+        cached.user
 
 
 {-| Models the state of the login process, from beginning to end.
@@ -403,6 +426,18 @@ setCredentials config credentials model =
                 }
 
 
+{-| Use the supplied cached credentials, which may or may not have a cached user.
+-}
+setCachedCredentials : Config user anonymous authenticated msg -> CachedCredentials user -> UserStatusAndData user anonymous authenticated -> UserStatusAndData user anonymous authenticated
+setCachedCredentials config cached model =
+    case maybeCredentials cached of
+        Just credentials ->
+            setCredentials config credentials model
+
+        Nothing ->
+            model
+
+
 {-| A status which represents the state in which the user is logged out,
 no progress is currently being made towards login, and we start with the
 initial data specified in our config.
@@ -498,7 +533,11 @@ where needed.
 
   - encodeUser
 
-    A function that will produce JSON that `decodeUser` can decode.
+    A function that will produce JSON that `decodeUser` can decode. This is
+    used to cache the `user` object in local storage along with the access
+    token. This would mainly be useful if you want to remember who was last
+    logged in when your app is offline. If you don't need to do that, you could
+    supply `Nothing` here.
 
   - initialAuthenticatedData
 
@@ -535,7 +574,7 @@ type alias Config user anonymous authenticated msg =
     , userPath : String
     , decodeAccessToken : Decoder AccessToken
     , decodeUser : Decoder user
-    , encodeUser : user -> Value
+    , encodeUser : Maybe (user -> Value)
     , initialAuthenticatedData : user -> authenticated
     , initialAnonymousData : anonymous
     , cacheCredentials : BackendUrl -> String -> Cmd msg
@@ -547,7 +586,7 @@ type alias Config user anonymous authenticated msg =
 -}
 type alias AppConfig user anonymous authenticated msg =
     { decodeUser : Decoder user
-    , encodeUser : user -> Value
+    , encodeUser : Maybe (user -> Value)
     , initialAuthenticatedData : user -> authenticated
     , initialAnonymousData : anonymous
     , cacheCredentials : BackendUrl -> String -> Cmd msg
@@ -563,7 +602,7 @@ drupalConfig appConfig =
     { loginPath = "api/login-token"
     , logoutPath = Just "user/logout"
     , userPath = "api/me"
-    , decodeAccessToken = field "access_token" Json.Decode.string
+    , decodeAccessToken = field "access_token" JD.string
     , decodeUser = appConfig.decodeUser
     , encodeUser = appConfig.encodeUser
     , initialAnonymousData = appConfig.initialAnonymousData
@@ -579,7 +618,7 @@ them with the `update` function.
 -}
 type Msg user
     = CheckCachedCredentials BackendUrl String
-    | HandleAccessTokenCheck (Msg user) (Credentials user) (Result Error user)
+    | HandleAccessTokenCheck (Msg user) (CachedCredentials user) (Result Error user)
     | HandleLoginAttempt (Msg user) (Result Error (Credentials user))
     | HandleLogoutAttempt (Result Error ())
     | Logout
@@ -704,33 +743,25 @@ update config msg model =
         HandleAccessTokenCheck retry credentials result ->
             case result of
                 Err err ->
-                    -- This is actually a kind of successful login, in that we have
-                    -- credentials ... we just mark them as needing relogin.
-                    ( setCredentials config credentials model
+                    ( setCachedCredentials config credentials model
                         |> retryAccessTokenRejected (Just retry) err
                     , Cmd.none
                     , True
                     )
 
                 Ok user ->
-                    ( setCredentials config { credentials | user = user } model
+                    ( setCachedCredentials config { credentials | user = Just user } model
                     , Cmd.none
                     , True
                     )
 
         CheckCachedCredentials backendUrl cachedValue ->
-            case Json.Decode.decodeString (decodeCredentials config backendUrl) cachedValue of
+            case JD.decodeString (decodeCachedCredentials config backendUrl) cachedValue of
                 Err _ ->
                     -- If we can't decode the cached credentials, we just
                     -- give up and say that login is needed. This will, for
                     -- instance, happen where we had logged out and cleared
                     -- the cached credentials.
-                    --
-                    -- It could also happen if our user decoder has changed
-                    -- (i.e. a new version of the program is in place). We can
-                    -- either handle that in the user decoder itself (i.e. by
-                    -- using `oneOf` and detecting versions), or just failing
-                    -- here isn't so bad, as it just means we have to log in.
                     ( setProgress Nothing model
                     , Cmd.none
                     , False
@@ -832,24 +863,45 @@ encodeCredentials config credentials =
     -- We only encode the accessToken and the user ... we provide the
     -- backendURL separately, so the app can decide whether to record
     -- this separately for different configured backends etc.
-    Json.Encode.encode 0 <|
-        Json.Encode.object
-            [ ( "access_token", Json.Encode.string credentials.accessToken )
-            , ( "user", config.encodeUser credentials.user )
-            ]
+    --
+    -- We only encode the user if our config has an `encodeUser` ... otherwise,
+    -- we leave it out. So, you can decide whether to store the user in local
+    -- storage or not ... if not, you can't get a user until you're online and
+    -- can contact the backend.
+    let
+        encodedAccessToken =
+            Just ( "access_token", Json.Encode.string credentials.accessToken )
+
+        encodedUser =
+            Maybe.map (\encoder -> ( "user", encoder credentials.user )) config.encodeUser
+    in
+    [ encodedAccessToken, encodedUser ]
+        |> List.filterMap identity
+        |> Json.Encode.object
+        |> Json.Encode.encode 0
 
 
-decodeCredentials : Config user anonymous authenticated msg -> BackendUrl -> Decoder (Credentials user)
-decodeCredentials config backendUrl =
-    Json.Decode.map2
+decodeCachedCredentials : Config user anonymous authenticated msg -> BackendUrl -> Decoder (CachedCredentials user)
+decodeCachedCredentials config backendUrl =
+    let
+        decodeAccessToken =
+            field "access_token" JD.string
+
+        decodeUser =
+            JD.oneOf
+                [ JD.map Just <| field "user" config.decodeUser
+                , JD.succeed Nothing
+                ]
+    in
+    JD.map2
         (\accessToken user ->
             { backendUrl = backendUrl
             , accessToken = accessToken
             , user = user
             }
         )
-        (field "access_token" Json.Decode.string)
-        (field "user" config.decodeUser)
+        decodeAccessToken
+        decodeUser
 
 
 {-| As far as we know, do we have a still-valid access token?
