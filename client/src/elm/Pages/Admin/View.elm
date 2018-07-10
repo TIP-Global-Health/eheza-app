@@ -251,13 +251,13 @@ viewClinicList config language backend model clinics ( _, futureSessions ) =
                 div []
                     [ button
                         [ class "ui primary button small"
-                        , onClick <| MsgBackend (Backend.Model.PostTrainingSessions CreateAll)
+                        , onClick <| MsgBackend <| Backend.Model.PostTrainingSessions CreateAll
                         ]
                         [ text <| translate language <| Translate.CreateTrainingSessions ]
                     , text " "
                     , button
                         [ class "ui primary button small"
-                        , onClick <| MsgBackend (Backend.Model.PostTrainingSessions DeleteAll)
+                        , onClick <| MsgBackend <| Backend.Model.PostTrainingSessions DeleteAll
                         ]
                         [ text <| translate language <| Translate.DeleteTrainingSessions
                         ]

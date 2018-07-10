@@ -140,6 +140,7 @@ updateBackend backendUrl accessToken msg model =
                     case webdata of
                         Success ( trainingSessionId, trainingSession ) ->
                             let
+                                -- This will lazy load the created sessions.
                                 futureSessions =
                                     NotAsked
                             in

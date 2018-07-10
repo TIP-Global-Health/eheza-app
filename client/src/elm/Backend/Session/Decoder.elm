@@ -23,13 +23,8 @@ import Time.Date
 -}
 decodeTrainingSessions : Decoder TrainingSessions
 decodeTrainingSessions =
-    decode makeIntoTrainingSessionsRecord
+    decode TrainingSessions
         |> requiredAt [ "action" ] decodeTrainingSessionAction
-
-
-makeIntoTrainingSessionsRecord : TrainingSessionAction -> TrainingSessions
-makeIntoTrainingSessionsRecord trainingSessionAction =
-    { action = trainingSessionAction }
 
 
 decodeTrainingSessionAction : Decoder TrainingSessionAction
