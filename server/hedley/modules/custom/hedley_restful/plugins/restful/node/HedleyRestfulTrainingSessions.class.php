@@ -64,8 +64,7 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
    * clicks on the "Create all training sessions" button.
    *
    * @return string|bool
-   *   Whether training sessions were created or not and FALSE if user doesn't
-   *   have access.
+   *   Training sessions were created or FALSE if user doesn't have access.
    */
   protected function createTrainingEntities() {
     if (!$this->checkTrainingSessionsAccess()) {
@@ -88,7 +87,6 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
     });
     $scheduled_date = date('Y-m-d', REQUEST_TIME);
 
-    $sessions_created = FALSE;
     foreach ($clinic_nids as $clinic_nid) {
       if (hedley_schedule_clinic_has_sessions($clinic_nid, $scheduled_date)) {
         // Clinic has an active session for today, no need to create a session
@@ -108,10 +106,9 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
       $this->setRequest($request);
 
       $this->createEntity();
-      $sessions_created = TRUE;
     }
 
-    return $sessions_created ? 'created' : 'no_creation';
+    return 'created';
   }
 
   /**
