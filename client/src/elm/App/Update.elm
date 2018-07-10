@@ -205,7 +205,7 @@ update msg model =
                                     (\out ->
                                         case out of
                                             Pages.Login.Model.TryLogin name pass ->
-                                                Restful.Login.tryLogin configured.config.backendUrl name pass
+                                                Restful.Login.tryLogin configured.config.backendUrl [] name pass
                                                     |> MsgLogin
 
                                             Pages.Login.Model.Logout ->

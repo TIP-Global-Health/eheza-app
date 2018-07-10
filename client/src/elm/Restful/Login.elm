@@ -583,12 +583,20 @@ type Msg user
     | HandleLoginAttempt (Msg user) (Result Error (Credentials user))
     | HandleLogoutAttempt (Result Error ())
     | Logout
-    | TryLogin BackendUrl String String
+    | TryLogin BackendUrl (List ( String, String )) String String
 
 
 {-| Message which will try logging in against the specified backendUrl
+
+  - The second parameter is a list of query params to add the URL. (Typically,
+    you won't need this, so you can supply an empty list.
+
+  - The third parameter is the username.
+
+  - The fourth parameter is the password.
+
 -}
-tryLogin : BackendUrl -> String -> String -> Msg user
+tryLogin : BackendUrl -> List ( String, String ) -> String -> String -> Msg user
 tryLogin =
     TryLogin
 
@@ -656,7 +664,7 @@ update config msg model =
                     , True
                     )
 
-        TryLogin backendUrl name password ->
+        TryLogin backendUrl params name password ->
             let
                 -- TODO: Perhaps the login method ought to be parameterized in the config,
                 -- with this as a default?
@@ -666,6 +674,7 @@ update config msg model =
                 requestAccessToken =
                     HttpBuilder.get (backendUrl </> config.loginPath)
                         |> withHeader "Authorization" ("Basic " ++ credentials)
+                        |> withQueryParams params
                         |> withExpect (expectJson config.decodeAccessToken)
                         |> HttpBuilder.toTask
 
