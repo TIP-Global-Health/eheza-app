@@ -101,7 +101,7 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
         'training' => TRUE,
         'scheduled_date' => [
           'value' => $scheduled_date,
-          'value2' => date('Y-m-d', strtotime('+1 day')),
+          'value2' => $scheduled_date,
         ],
       ];
 
