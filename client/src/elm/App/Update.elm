@@ -326,9 +326,6 @@ updateLoggedIn func model =
                 Anonymous _ ->
                     ( configured, Cmd.none, [] )
 
-                CheckingCachedCredentials ->
-                    ( configured, Cmd.none, [] )
-
                 LoggedIn login ->
                     let
                         ( subModel, cmd, extraMsgs ) =

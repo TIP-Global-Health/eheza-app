@@ -8,7 +8,7 @@ import Html.Events exposing (onClick, onInput, onSubmit)
 import Pages.Login.Model exposing (..)
 import Pages.Page exposing (Page)
 import RemoteData exposing (RemoteData(..))
-import Restful.Login exposing (Login, LoginError, LoginStatus(..))
+import Restful.Login exposing (Login, LoginError(..), LoginMethod(..), LoginProgress(..), LoginStatus(..))
 import Translate exposing (Language, translate)
 import User.Model exposing (..)
 import Utils.Html exposing (spinner)
@@ -32,7 +32,8 @@ show something appropriate based on that.
 viewContent : Language -> Page -> LoginStatus User data -> Model -> Maybe EditableSession -> List (Html Msg)
 viewContent language activePage loginStatus model session =
     case loginStatus of
-        CheckingCachedCredentials ->
+        -- Perhaps this case could be integrated into `viewLoginForm` now
+        Anonymous (Just (Checking ByAccessToken)) ->
             [ viewCheckingCachedCredentials language ]
 
         Anonymous _ ->
@@ -251,11 +252,20 @@ viewLoginForm language activePage loginStatus model =
     ]
 
 
-viewLoginError : Language -> LoginError -> Html any
+viewLoginError : Language -> LoginError user -> Html any
 viewLoginError language error =
+    let
+        translationId =
+            case error of
+                Rejected method ->
+                    Translate.LoginRejected method
+
+                HttpError _ error _ ->
+                    Translate.LoginError error
+    in
     div
         [ class "ui error message" ]
-        [ text <| translate language <| Translate.LoginPhrase <| Translate.LoginError error ]
+        [ text <| translate language <| Translate.LoginPhrase translationId ]
 
 
 {-| Show the logo and name of the app.
