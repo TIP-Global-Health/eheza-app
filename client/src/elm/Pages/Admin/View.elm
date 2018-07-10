@@ -24,6 +24,7 @@ import Set
 import Time.Date
 import Translate exposing (Language, translate)
 import User.Model exposing (..)
+import Utils.Html exposing (spinner)
 import Utils.WebData exposing (viewError, viewOrFetch)
 
 
@@ -50,7 +51,12 @@ view config language currentDate user backend model =
                 , span [] []
                 ]
             ]
-        , div [ class "ui basic segment" ] [ content ]
+        , case backend.postTraininsSessionRequest of
+            Loading ->
+                viewLoading
+
+            _ ->
+                div [ class "ui basic segment" ] [ content ]
         ]
 
 
@@ -86,7 +92,7 @@ viewLoadedSessions config language backend model clinics sessions =
             viewCreateSessionForm config language backend model form clinics sessions
 
         Nothing ->
-            viewClinicList config language model clinics sessions
+            viewClinicList config language backend model clinics sessions
 
 
 viewCreateSessionForm : Config.Model -> Language -> ModelBackend -> Model -> SessionForm -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
@@ -127,7 +133,7 @@ viewCreateSessionForm config language backend model form clinics sessions =
                             ]
 
                     Loading ->
-                        emptyNode
+                        viewLoading
 
                     NotAsked ->
                         emptyNode
@@ -237,8 +243,8 @@ viewCreateSessionForm config language backend model form clinics sessions =
     ]
 
 
-viewClinicList : Config.Model -> Language -> Model -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
-viewClinicList config language model clinics ( _, futureSessions ) =
+viewClinicList : Config.Model -> Language -> ModelBackend -> Model -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
+viewClinicList config language backend model clinics ( _, futureSessions ) =
     let
         sandboxButtons =
             if config.sandbox then
@@ -280,6 +286,7 @@ viewClinicList config language model clinics ( _, futureSessions ) =
                 |> div []
     in
     [ buttons
+    , viewPostTrainingSessionsMessage config language backend
     , clinicList
     ]
 
@@ -330,3 +337,54 @@ viewFutureSession language ( sessionId, session ) =
                     ]
             ]
         ]
+
+
+{-| Just show a generic loading indicator, for cases that will resolve soon,
+where we don't need to show any progress.
+-}
+viewLoading : Html any
+viewLoading =
+    div
+        [ class "wrap wrap-alt-2" ]
+        [ div
+            [ class "ui segment center aligned" ]
+            [ spinner ]
+        ]
+
+
+{-| Show messages when creating/deleting training sessions.
+-}
+viewPostTrainingSessionsMessage : Config.Model -> Language -> ModelBackend -> Html Msg
+viewPostTrainingSessionsMessage config language backend =
+    let
+        trainingSessionRequestMessage =
+            case backend.postTraininsSessionRequest of
+                Success ( trainingsSessionId, trainingSession ) ->
+                    let
+                        ( messageClass, messageType ) =
+                            case trainingSession.action of
+                                CreateAll ->
+                                    ( "success", Translate.TrainingSessionCreateSuccessMessage )
+
+                                DeleteAll ->
+                                    ( "success", Translate.TrainingSessionDeleteSuccessMessage )
+
+                                Invalid ->
+                                    ( "error", Translate.TrainingSessionInvalidMessage )
+                    in
+                    div
+                        [ class <| "ui message " ++ messageClass ]
+                        [ text <| translate language <| messageType ]
+
+                Failure err ->
+                    div
+                        [ class "ui error message" ]
+                        [ text <| translate language <| Translate.TrainingSessionRequestErrorMessage <| toString err ]
+
+                Loading ->
+                    emptyNode
+
+                NotAsked ->
+                    emptyNode
+    in
+    trainingSessionRequestMessage
