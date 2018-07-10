@@ -4,7 +4,8 @@
     "repository": "https://github.com/Gizra/elm-spa-exmple.git",
     "license": "BSD3",
     "source-directories": [
-        "src/elm"
+        "src/elm",
+        "src/generated"
     ],
     "exposed-modules": [],
     "dependencies": {

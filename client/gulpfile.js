@@ -16,6 +16,7 @@ var browserSync = require("browser-sync");
 var elm  = require('gulp-elm');
 
 var fs = require('fs');
+var path = require('path');
 var csvParse = require('csv-parse');
 
 // merge is used to merge the output from two different streams into the same stream
@@ -91,9 +92,24 @@ gulp.task("zscore", [], function () {
         });
       });
     })).pipe($.rename({extname: '.json'}))
+    // Copy the JSON to a place the Elm client can get it via HTTP
     .pipe(gulp.dest('serve/assets/z-score/'))
-    .pipe(gulp.dest('../server/hedley/modules/custom/hedley_zscore/json/'));
+    // And copy it to a place where the backend can also get it
+    .pipe(gulp.dest('../server/hedley/modules/custom/hedley_zscore/json/'))
+    // And turn the JSON into an Elm fixture for testing
+    .pipe($.transform('utf8', function (content, file) {
+      var moduleName = capitalize(path.basename(file.path, '.json'));
+      return `module ZScore.Fixture.${moduleName} exposing (..)\n\n\njson : String\njson =\n    """${content}"""`;
+    })).pipe($.rename(function (path) {
+      path.basename = capitalize(path.basename);
+      path.extname = '.elm';
+    })).pipe(gulp.dest('src/generated/ZScore/Fixture/'))
+    ;
 });
+
+function capitalize (input) {
+  return input.charAt(0).toUpperCase() + input.slice(1);
+}
 
 // Optimizes the images that exists
 gulp.task("images", function () {
