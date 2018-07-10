@@ -612,7 +612,7 @@ update config msg model =
                     -- This is actually a kind of successful login, in that we have
                     -- credentials ... we just mark them as needing relogin.
                     ( setCredentials config credentials model
-                        |> accessTokenRejected (Just retry) err
+                        |> retryAccessTokenRejected (Just retry) err
                     , Cmd.none
                     , True
                     )
@@ -790,8 +790,16 @@ If we're in a `LoggedIn` state, we'll stay in that state ... we'll
 merely record that re-login is required.
 
 -}
-accessTokenRejected : Maybe (Msg user) -> Error -> LoginStatus user data -> LoginStatus user data
-accessTokenRejected retry error =
+accessTokenRejected : Error -> LoginStatus user data -> LoginStatus user data
+accessTokenRejected =
+    retryAccessTokenRejected Nothing
+
+
+{-| Internal version of accessTokenRejected that will keep track of a msg
+we can use to retry.
+-}
+retryAccessTokenRejected : Maybe (Msg user) -> Error -> LoginStatus user data -> LoginStatus user data
+retryAccessTokenRejected retry error =
     setProgress (LoginError <| classifyHttpError retry ByAccessToken error)
 
 
