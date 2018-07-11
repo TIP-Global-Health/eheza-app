@@ -22,6 +22,17 @@ class HedleyRestfulTests extends HedleyWebTestBase {
   }
 
   /**
+   * Overrides \DrupalWebTestCase::setUp().
+   */
+  public function setUp() {
+    parent::setUp();
+
+    // This module is creating exception messages because of "Undefined index",
+    // we don't need it, so just disabling it for the tests.
+    module_disable(['restful_token_auth']);
+  }
+
+  /**
    * Tests downloading an offline session.
    */
   public function testDownloadOfflineSession() {
@@ -138,10 +149,6 @@ class HedleyRestfulTests extends HedleyWebTestBase {
    * Tests access for training sessions for sandbox website.
    */
   public function testAccessTrainingSessions() {
-    // This module is creating exception messages because of "Undefined index",
-    // we don't need it, so just disabling it for the tests.
-    module_disable(['restful_token_auth']);
-
     $clinic_node = $this->createClinic();
     $account = $this->createNurse($clinic_node->nid);
 
@@ -155,8 +162,6 @@ class HedleyRestfulTests extends HedleyWebTestBase {
    * Tests creating/deleting training sessions for sandbox website.
    */
   public function testHandlingTrainingSessions() {
-    module_disable(['restful_token_auth']);
-
     // Create a clinic to create a training session on it.
     $clinic_node = $this->createClinic();
     $account = $this->createAdministrator();
