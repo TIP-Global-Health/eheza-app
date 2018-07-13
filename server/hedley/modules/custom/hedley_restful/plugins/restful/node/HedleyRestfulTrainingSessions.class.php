@@ -37,20 +37,21 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
     }
 
     if ($request['action'] == 'create_all') {
-      $result = $this->createTrainingEntities();
+      $this->createTrainingEntities();
     }
     elseif ($request['action'] == 'delete_all') {
-      $result = $this->deleteTrainingEntities();
+      $this->deleteTrainingEntities();
     }
     else {
-      $result = 'invalid';
+      throw new RestfulBadRequestException('Action is invalid');
     }
 
-    // @todo: Fix this.
+    // Conceptually, we've created an "action" and might queue it for
+    // execution. For now, we just excecute it immediately, and return a
+    // simulation of what we'd return if the action were itself an entity.
     return [
       0 => [
-        'id' => 0,
-        'action' => $result,
+        'action' => $request['action'],
       ],
     ];
   }
@@ -63,52 +64,43 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
    * day of creating them, meaning they will be open for the same day the admin
    * clicks on the "Create all training sessions" button.
    *
-   * @return string|bool
-   *   Training sessions were created or FALSE if user doesn't have access.
+   * @throws \RestfulForbiddenException
    */
   protected function createTrainingEntities() {
-    if (!$this->checkTrainingSessionsAccess()) {
-      // Check access, only admins should be able to preform this action.
-      return FALSE;
-    }
+    $this->checkTrainingSessionsAccess();
 
     // Get all clinics.
     $query = new EntityFieldQuery();
     $query
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', 'clinic')
-      ->propertyCondition('status', NODE_PUBLISHED)
-      ->propertyOrderBy('title', 'ASC');
+      ->propertyCondition('status', NODE_PUBLISHED);
 
-    $clinic_nids = [];
-
-    hedley_restful_query_in_batches($query, 50, function ($offset, $count, $batch_ids) use (&$clinic_nids) {
-      $clinic_nids = array_merge($clinic_nids, $batch_ids);
-    });
     $scheduled_date = date('Y-m-d', REQUEST_TIME);
 
-    foreach ($clinic_nids as $clinic_nid) {
-      if (hedley_schedule_clinic_has_sessions($clinic_nid, $scheduled_date)) {
-        // Clinic has an active session for today, no need to create a session
-        // for it.
-        continue;
+    // Eventually, should switch to queuing the action, or use db_select etc.
+    hedley_restful_query_in_batches($query, 50, function ($offset, $count, $clinic_nids) use ($scheduled_date) {
+      foreach ($clinic_nids as $clinic_nid) {
+        if (hedley_schedule_clinic_has_sessions($clinic_nid, $scheduled_date)) {
+          // Clinic has an active session for today, no need to create a session
+          // for it.
+          continue;
+        }
+
+        $request = [
+          'clinic' => $clinic_nid,
+          'training' => TRUE,
+          'scheduled_date' => [
+            'value' => $scheduled_date,
+            'value2' => $scheduled_date,
+          ],
+        ];
+
+        $this->setRequest($request);
+
+        $this->createEntity();
       }
-
-      $request = [
-        'clinic' => $clinic_nid,
-        'training' => TRUE,
-        'scheduled_date' => [
-          'value' => $scheduled_date,
-          'value2' => $scheduled_date,
-        ],
-      ];
-
-      $this->setRequest($request);
-
-      $this->createEntity();
-    }
-
-    return 'created';
+    });
   }
 
   /**
@@ -119,16 +111,10 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
    * clicks on the "Delete all training sessions" button, it will delete all
    * training session even if it's an old session opened on a past day.
    *
-   * @return string|bool
-   *   Training sessions were deleted or FALSE if user doesn't have access.
-   *
-   * @throws \EntityFieldQueryException
+   * @throws \RestfulForbiddenException
    */
   public function deleteTrainingEntities() {
-    if (!$this->checkTrainingSessionsAccess()) {
-      // Check access, only admins should be able to preform this action.
-      return FALSE;
-    }
+    $this->checkTrainingSessionsAccess();
 
     // Get all sessions.
     $query = new EntityFieldQuery();
@@ -136,34 +122,27 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', 'session')
       ->propertyCondition('status', NODE_PUBLISHED)
-      ->fieldCondition('field_training', 'value', TRUE)
-      ->fieldOrderBy('field_scheduled_date', 'value', 'ASC');
+      ->fieldCondition('field_training', 'value', TRUE);
 
-    $session_nids = [];
-
-    hedley_restful_query_in_batches($query, 50, function ($offset, $count, $batch_ids) use (&$session_nids) {
-      $session_nids = array_merge($session_nids, $batch_ids);
+    // Eventually, should switch to queuing the action, or use db_select and
+    // db_delete.
+    hedley_restful_query_in_batches($query, 50, function ($offset, $count, $session_nids) {
+      // Delete all training sessions.
+      foreach ($session_nids as $session_nid) {
+        $this->deleteEntity($session_nid);
+      }
     });
-
-    // Delete all training sessions.
-    foreach ($session_nids as $session_nid) {
-      $this->deleteEntity($session_nid);
-    }
-
-    // Override Settings the HTTP headers because we want to return the action.
-    $this->setHttpHeaders('Status', 200);
-
-    return 'deleted';
   }
 
   /**
    * Check if the current user has permissions to administer nodes.
    *
-   * @return bool
-   *   Boolean TRUE if the user has the requested permission.
+   * @throws \RestfulForbiddenException
    */
   protected function checkTrainingSessionsAccess() {
-    return user_access('administer nodes', $this->getAccount());
+    if (!user_access('administer nodes', $this->getAccount())) {
+      throw new \RestfulForbiddenException('You are not permitted to administer training sessions.');
+    }
   }
 
 }

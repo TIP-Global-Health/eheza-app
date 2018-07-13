@@ -152,10 +152,13 @@ class HedleyRestfulTests extends HedleyWebTestBase {
     $clinic_node = $this->createClinic();
     $account = $this->createNurse($clinic_node->nid);
 
-    $results = $this->handleTrainingSessions($account, 'create_all');
-
-    // Assert that the user didn't have access to perform the action.
-    $this->assertEqual($results[0]['action'], FALSE);
+    try {
+      $this->handleTrainingSessions($account, 'create_all');
+      $this->fail("Expected a RestfulForbiddenException");
+    }
+    catch (RestfulForbiddenException $e) {
+      $this->pass("Caught the expected exception");
+    }
   }
 
   /**
