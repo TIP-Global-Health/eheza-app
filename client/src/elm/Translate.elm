@@ -244,7 +244,6 @@ type TranslationId
     | Training
     | TrainingSessionCreateSuccessMessage
     | TrainingSessionDeleteSuccessMessage
-    | TrainingSessionInvalidMessage
     | UnableToDownload
     | UnableToUpload
     | Update
@@ -849,9 +848,6 @@ translationSet trans =
 
         TrainingSessionDeleteSuccessMessage ->
             { english = "Training sessions were deleted." }
-
-        TrainingSessionInvalidMessage ->
-            { english = "Invalid training sessions action was sent." }
 
         UnableToDownload ->
             { english = "Unable to Download" }

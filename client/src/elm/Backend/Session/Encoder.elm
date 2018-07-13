@@ -4,7 +4,7 @@ import Backend.Child.Encoder exposing (encodeChild)
 import Backend.Clinic.Encoder exposing (encodeClinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeChildMeasurementList, encodeMotherMeasurementList)
-import Backend.Model exposing (TrainingSessionAction(..), TrainingSessions)
+import Backend.Model exposing (TrainingSessionAction(..), TrainingSessionRequest)
 import Backend.Mother.Encoder exposing (encodeMother)
 import Backend.Session.Model exposing (..)
 import EveryDict
@@ -14,24 +14,23 @@ import Json.Encode exposing (..)
 import Restful.Endpoint exposing (encodeEntityId, fromEntityId)
 
 
-{-| Encodes a `TrainingSessions`.
+encodeTrainingSessionRequest : TrainingSessionRequest -> Value
+encodeTrainingSessionRequest req =
+    object
+        [ ( "action", encodeTrainingSessionAction req.action )
+        ]
+
+
+{-| Encodes a `TrainingSessionAction`.
 -}
-encodeTraininsSessions : TrainingSessions -> Value
-encodeTraininsSessions trainingSession =
-    let
-        action =
-            case trainingSession.action of
-                CreateAll ->
-                    string "create_all"
+encodeTrainingSessionAction : TrainingSessionAction -> Value
+encodeTrainingSessionAction action =
+    case action of
+        CreateAll ->
+            string "create_all"
 
-                DeleteAll ->
-                    string "delete_all"
-
-                Invalid ->
-                    string "invalid"
-    in
-    object <|
-        [ ( "action", action ) ]
+        DeleteAll ->
+            string "delete_all"
 
 
 {-| Encodes a `Session`.

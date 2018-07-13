@@ -6,7 +6,7 @@ import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Decoder exposing (decodeHistoricalMeasurements)
 import Backend.Measurement.Model exposing (ChildMeasurementList, ChildMeasurements, Measurement, MotherMeasurementList, MotherMeasurements, emptyMeasurements)
-import Backend.Model exposing (TrainingSessionAction(..), TrainingSessions)
+import Backend.Model exposing (TrainingSessionAction(..), TrainingSessionRequest)
 import Backend.Mother.Decoder exposing (decodeMother)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (..)
@@ -19,12 +19,10 @@ import Restful.Endpoint exposing (decodeEntityId)
 import Time.Date
 
 
-{-| Decodes the JSON sent by /api/training_sessions
--}
-decodeTrainingSessions : Decoder TrainingSessions
-decodeTrainingSessions =
-    decode TrainingSessions
-        |> requiredAt [ "action" ] decodeTrainingSessionAction
+decodeTrainingSessionRequest : Decoder TrainingSessionRequest
+decodeTrainingSessionRequest =
+    succeed TrainingSessionRequest
+        |> required "action" decodeTrainingSessionAction
 
 
 decodeTrainingSessionAction : Decoder TrainingSessionAction
@@ -39,11 +37,8 @@ decodeTrainingSessionAction =
                     "deleted" ->
                         succeed DeleteAll
 
-                    "invalid" ->
-                        fail "Invalid action was sent to the endpoint"
-
                     _ ->
-                        fail "An error occurred while trying to handle training sessions"
+                        fail <| action ++ " is not a recognized TrainingSessionAction"
             )
 
 

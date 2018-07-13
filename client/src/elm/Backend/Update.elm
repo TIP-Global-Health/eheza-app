@@ -15,8 +15,8 @@ import Backend.Measurement.Encoder exposing (encodeMeasurementEdits)
 import Backend.Measurement.Model exposing (Edit(..))
 import Backend.Measurement.Utils exposing (backendValue, getPhotosToUpload, mapMeasurementData)
 import Backend.Model exposing (..)
-import Backend.Session.Decoder exposing (decodeOfflineSession, decodeSession, decodeTrainingSessions)
-import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession, encodeTraininsSessions)
+import Backend.Session.Decoder exposing (decodeOfflineSession, decodeSession, decodeTrainingSessionRequest)
+import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession, encodeTrainingSessionRequest)
 import Backend.Session.Model exposing (EditableSession, MsgEditableSession(..), OfflineSession, Session)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData, getPhotoUrls, makeEditableSession, mapChildEdits, mapMotherEdits, setPhotoFileId)
 import Backend.Utils exposing (withEditableSession)
@@ -30,12 +30,12 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Http exposing (Error)
 import HttpBuilder
-import Json.Decode exposing (field)
+import Json.Decode exposing (field, succeed)
 import Json.Encode exposing (Value, object)
 import Maybe.Extra exposing (toList)
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityId, decodeSingleDrupalEntity, drupalEndpoint, encodeEntityId, fromEntityId, toCmd, toEntityId, withParamsEncoder, withValueEncoder, withoutDecoder)
+import Restful.Endpoint exposing (ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityId, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityId, endpoint, fromEntityId, toCmd, toEntityId, withParamsEncoder, withValueEncoder, withoutDecoder)
 import Utils.WebData exposing (resetError)
 
 
@@ -66,10 +66,16 @@ sessionEndpoint =
         |> withParamsEncoder encodeSessionParams
 
 
-trainingSessionsEndpoint : ReadWriteEndPoint Error TrainingSessionId TrainingSessions TrainingSessions ()
+trainingSessionsEndpoint : ReadWriteEndPoint Error () TrainingSessionRequest TrainingSessionRequest ()
 trainingSessionsEndpoint =
-    drupalEndpoint "api/training_sessions" decodeTrainingSessions
-        |> withValueEncoder encodeTraininsSessions
+    -- This one is a little different because we're not expecting a key. So, we
+    -- just decode the key successfully as `()`. We can't use `drupalEndpont`
+    -- directly, because it assumes the key is some kind of `EntityId` (which
+    -- is normally convenient). This could change in future if the backend
+    -- were to queue the request and give it an ID, instead of executing it
+    -- immediately.
+    endpoint "api/training_sessions" (succeed ()) decodeTrainingSessionRequest drupalBackend
+        |> withValueEncoder encodeTrainingSessionRequest
 
 
 offlineSessionEndpoint : ReadWriteEndPoint Error SessionId OfflineSession OfflineSession ()
@@ -127,30 +133,32 @@ updateBackend backendUrl accessToken msg model =
             , []
             )
 
-        PostTrainingSessions action ->
+        PostTrainingSessionRequest request ->
             ( { model | postTrainingSessionRequest = Loading }
-            , crud.post trainingSessionsEndpoint { action = action }
-                |> toCmd (RemoteData.fromResult >> HandleTrainingSessionResponse action)
+            , crud.post trainingSessionsEndpoint request
+                -- We use the Tuple.second becausw we're only interested the
+                -- value ... the backend doesn't (currently) send a key.
+                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.second >> HandleTrainingSessionResponse)
             , []
             )
 
-        HandleTrainingSessionResponse action webdata ->
+        HandleTrainingSessionResponse webdata ->
             let
-                newModel =
+                futureSessions =
                     case webdata of
-                        Success ( trainingSessionId, trainingSession ) ->
-                            let
-                                -- This will lazy load the created sessions.
-                                futureSessions =
-                                    NotAsked
-                            in
-                            { model
-                                | postTrainingSessionRequest = webdata
-                                , futureSessions = futureSessions
-                            }
+                        Success _ ->
+                            -- This will trigger the lazy load of the created sessions
+                            -- (or the sessions remaining after deletion).
+                            NotAsked
 
                         _ ->
-                            { model | postTrainingSessionRequest = webdata }
+                            model.futureSessions
+
+                newModel =
+                    { model
+                        | postTrainingSessionRequest = webdata
+                        , futureSessions = futureSessions
+                    }
             in
             ( newModel, Cmd.none, [] )
 

@@ -251,13 +251,13 @@ viewClinicList config language backend model clinics ( _, futureSessions ) =
                 div []
                     [ button
                         [ class "ui primary button small"
-                        , onClick <| MsgBackend <| Backend.Model.PostTrainingSessions CreateAll
+                        , onClick <| MsgBackend <| Backend.Model.PostTrainingSessionRequest { action = CreateAll }
                         ]
                         [ text <| translate language <| Translate.CreateTrainingSessions ]
                     , text " "
                     , button
                         [ class "ui primary button small"
-                        , onClick <| MsgBackend <| Backend.Model.PostTrainingSessions DeleteAll
+                        , onClick <| MsgBackend <| Backend.Model.PostTrainingSessionRequest { action = DeleteAll }
                         ]
                         [ text <| translate language <| Translate.DeleteTrainingSessions
                         ]
@@ -356,18 +356,15 @@ viewPostTrainingSessionsMessage config language backend =
     let
         trainingSessionRequestMessage =
             case backend.postTrainingSessionRequest of
-                Success ( trainingsSessionId, trainingSession ) ->
+                Success { action } ->
                     let
                         ( messageClass, messageType, message ) =
-                            case trainingSession.action of
+                            case action of
                                 CreateAll ->
                                     ( "success", Translate.Success, Translate.TrainingSessionCreateSuccessMessage )
 
                                 DeleteAll ->
                                     ( "success", Translate.Success, Translate.TrainingSessionDeleteSuccessMessage )
-
-                                Invalid ->
-                                    ( "error", Translate.ErrorBadStatus, Translate.TrainingSessionInvalidMessage )
                     in
                     div
                         [ class <| "ui message " ++ messageClass ]
