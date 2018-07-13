@@ -31,10 +31,10 @@ decodeTrainingSessionAction =
         |> andThen
             (\action ->
                 case action of
-                    "created" ->
+                    "create_all" ->
                         succeed CreateAll
 
-                    "deleted" ->
+                    "delete_all" ->
                         succeed DeleteAll
 
                     _ ->
