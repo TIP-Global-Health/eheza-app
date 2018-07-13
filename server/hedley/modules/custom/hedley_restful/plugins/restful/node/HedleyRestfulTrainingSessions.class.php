@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulTrainingSessions.
  */
-class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
+class HedleyRestfulTrainingSessions extends HedleyRestfulEntityBaseNode {
 
   /**
    * Overrides \RestfulDataProviderEFQ::controllersInfo().
@@ -87,18 +87,20 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
           continue;
         }
 
-        $request = [
-          'clinic' => $clinic_nid,
-          'training' => TRUE,
-          'scheduled_date' => [
+        $node = entity_create('node', [
+          'type' => 'session'
+        ]);
+
+        $wrapper = entity_metadata_wrapper('node', $node);
+
+        $wrapper->field_clinic->set($clinic_nid);
+        $wrapper->field_training->set(TRUE);
+        $wrapper->field_scheduled_date->set([
             'value' => $scheduled_date,
             'value2' => $scheduled_date,
-          ],
-        ];
+        ]);
 
-        $this->setRequest($request);
-
-        $this->createEntity();
+        $wrapper->save();
       }
     });
   }
