@@ -51,7 +51,7 @@ view config language currentDate user backend model =
                 , span [] []
                 ]
             ]
-        , case backend.postTraininsSessionRequest of
+        , case backend.postTrainingSessionRequest of
             Loading ->
                 viewLoading
 
@@ -355,7 +355,7 @@ viewPostTrainingSessionsMessage : Config.Model -> Language -> ModelBackend -> Ht
 viewPostTrainingSessionsMessage config language backend =
     let
         trainingSessionRequestMessage =
-            case backend.postTraininsSessionRequest of
+            case backend.postTrainingSessionRequest of
                 Success ( trainingsSessionId, trainingSession ) ->
                     let
                         ( messageClass, messageType, message ) =

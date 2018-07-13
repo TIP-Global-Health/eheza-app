@@ -75,7 +75,7 @@ type alias ModelBackend =
     , postSessionRequest : WebData ( SessionId, Session )
 
     -- Tracks a request to handle training sessions.
-    , postTraininsSessionRequest : WebData ( TrainingSessionId, TrainingSessions )
+    , postTrainingSessionRequest : WebData ( TrainingSessionId, TrainingSessions )
     }
 
 
@@ -86,7 +86,7 @@ emptyModelBackend =
     , offlineSessionRequest = NotAsked
     , uploadEditsRequest = NotAsked
     , postSessionRequest = NotAsked
-    , postTraininsSessionRequest = NotAsked
+    , postTrainingSessionRequest = NotAsked
     }
 
 

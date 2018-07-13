@@ -128,7 +128,7 @@ updateBackend backendUrl accessToken msg model =
             )
 
         PostTrainingSessions action ->
-            ( { model | postTraininsSessionRequest = Loading }
+            ( { model | postTrainingSessionRequest = Loading }
             , crud.post trainingSessionsEndpoint { action = action }
                 |> toCmd (RemoteData.fromResult >> HandleTrainingSessionResponse action)
             , []
@@ -145,12 +145,12 @@ updateBackend backendUrl accessToken msg model =
                                     NotAsked
                             in
                             { model
-                                | postTraininsSessionRequest = webdata
+                                | postTrainingSessionRequest = webdata
                                 , futureSessions = futureSessions
                             }
 
                         _ ->
-                            { model | postTraininsSessionRequest = webdata }
+                            { model | postTrainingSessionRequest = webdata }
             in
             ( newModel, Cmd.none, [] )
 
