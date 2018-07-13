@@ -105,7 +105,8 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_clinics->set([$clinic_id]);
     $wrapper->save();
 
-    return $account;
+    // Load the user to update the roles.
+    return user_load($account->uid);
   }
 
   /**
