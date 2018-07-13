@@ -127,10 +127,7 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulSessions {
     // Eventually, should switch to queuing the action, or use db_select and
     // db_delete.
     hedley_restful_query_in_batches($query, 50, function ($offset, $count, $session_nids) {
-      // Delete all training sessions.
-      foreach ($session_nids as $session_nid) {
-        $this->deleteEntity($session_nid);
-      }
+      entity_delete_multiple('node', $session_nids);
     });
   }
 
