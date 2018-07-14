@@ -88,7 +88,7 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulEntityBaseNode {
         }
 
         $node = entity_create('node', [
-          'type' => 'session'
+          'type' => 'session',
         ]);
 
         $wrapper = entity_metadata_wrapper('node', $node);
@@ -96,8 +96,8 @@ class HedleyRestfulTrainingSessions extends HedleyRestfulEntityBaseNode {
         $wrapper->field_clinic->set($clinic_nid);
         $wrapper->field_training->set(TRUE);
         $wrapper->field_scheduled_date->set([
-            'value' => $scheduled_date,
-            'value2' => $scheduled_date,
+          'value' => $scheduled_date,
+          'value2' => $scheduled_date,
         ]);
 
         $wrapper->save();
