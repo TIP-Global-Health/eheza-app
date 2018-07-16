@@ -59,6 +59,7 @@ projects[logs_rollbar][subdir] = "contrib"
 projects[logs_rollbar][download][type] = "git"
 projects[logs_rollbar][download][branch] = "master"
 projects[logs_rollbar][download][url] = "https://github.com/Gizra/logs_rollbar.git"
+projects[logs_rollbar][download][revision] = 8248ae1780c0608bf7a44a7c35cc4faa69f433cb
 
 projects[mailsystem][version] = 2.34
 projects[mailsystem][subdir] = "contrib"
