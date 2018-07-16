@@ -74,7 +74,7 @@ trainingSessionsEndpoint =
     -- is normally convenient). This could change in future if the backend
     -- were to queue the request and give it an ID, instead of executing it
     -- immediately.
-    endpoint "api/training_sessions" (succeed ()) decodeTrainingSessionRequest drupalBackend
+    endpoint "api/training_session_actions" (succeed ()) decodeTrainingSessionRequest drupalBackend
         |> withValueEncoder encodeTrainingSessionRequest
 
 
