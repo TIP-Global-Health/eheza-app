@@ -193,7 +193,7 @@ class HedleyRestfulTests extends HedleyWebTestBase {
    *   The result from the training sessions endpoint.
    */
   protected function handleTrainingSessions($account, $action) {
-    $handler = restful_get_restful_handler('training_sessions');
+    $handler = restful_get_restful_handler('training_session_actions');
     $handler->setAccount($account);
     $request = ['action' => $action];
 
