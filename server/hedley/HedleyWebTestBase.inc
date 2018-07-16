@@ -71,6 +71,22 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   }
 
   /**
+   * Create an admin user.
+   *
+   * @return \StdClass
+   *   The user.
+   */
+  public function createAdministrator() {
+    $account = $this->drupalCreateUser();
+
+    $role = user_role_load_by_name('administrator');
+    user_multiple_role_edit([$account->uid], 'add_role', $role->rid);
+
+    // Load the user to update the roles.
+    return user_load($account->uid);
+  }
+
+  /**
    * Create a nurse user, assigned to the indicated clinic.
    *
    * @param int $clinic_id
@@ -83,13 +99,14 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $account = $this->drupalCreateUser();
 
     $role = user_role_load_by_name('nurse');
-    user_multiple_role_edit([$account->uid], "add role", $role->rid);
+    user_multiple_role_edit([$account->uid], 'add_role', $role->rid);
 
     $wrapper = entity_metadata_wrapper('user', $account);
     $wrapper->field_clinics->set([$clinic_id]);
     $wrapper->save();
 
-    return $account;
+    // Load the user to update the roles.
+    return user_load($account->uid);
   }
 
   /**

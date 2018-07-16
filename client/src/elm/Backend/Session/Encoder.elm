@@ -4,6 +4,7 @@ import Backend.Child.Encoder exposing (encodeChild)
 import Backend.Clinic.Encoder exposing (encodeClinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeChildMeasurementList, encodeMotherMeasurementList)
+import Backend.Model exposing (TrainingSessionAction(..), TrainingSessionRequest)
 import Backend.Mother.Encoder exposing (encodeMother)
 import Backend.Session.Model exposing (..)
 import EveryDict
@@ -11,6 +12,25 @@ import EveryDictList
 import Gizra.NominalDate exposing (encodeDrupalRange, encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Restful.Endpoint exposing (encodeEntityId, fromEntityId)
+
+
+encodeTrainingSessionRequest : TrainingSessionRequest -> Value
+encodeTrainingSessionRequest req =
+    object
+        [ ( "action", encodeTrainingSessionAction req.action )
+        ]
+
+
+{-| Encodes a `TrainingSessionAction`.
+-}
+encodeTrainingSessionAction : TrainingSessionAction -> Value
+encodeTrainingSessionAction action =
+    case action of
+        CreateAll ->
+            string "create_all"
+
+        DeleteAll ->
+            string "delete_all"
 
 
 {-| Encodes a `Session`.

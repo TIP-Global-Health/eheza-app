@@ -2,7 +2,7 @@ module Pages.Admin.View exposing (view)
 
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelBackend)
+import Backend.Model exposing (ModelBackend, TrainingSessionAction(..))
 import Backend.Session.Form exposing (..)
 import Backend.Session.Model exposing (Session)
 import Config.Model as Config
@@ -24,6 +24,7 @@ import Set
 import Time.Date
 import Translate exposing (Language, translate)
 import User.Model exposing (..)
+import Utils.Html exposing (spinner)
 import Utils.WebData exposing (viewError, viewOrFetch)
 
 
@@ -50,7 +51,12 @@ view config language currentDate user backend model =
                 , span [] []
                 ]
             ]
-        , div [ class "ui basic segment" ] [ content ]
+        , case backend.postTrainingSessionRequest of
+            Loading ->
+                viewLoading
+
+            _ ->
+                div [ class "ui basic segment" ] [ content ]
         ]
 
 
@@ -86,7 +92,7 @@ viewLoadedSessions config language backend model clinics sessions =
             viewCreateSessionForm config language backend model form clinics sessions
 
         Nothing ->
-            viewClinicList config language model clinics sessions
+            viewClinicList config language backend model clinics sessions
 
 
 viewCreateSessionForm : Config.Model -> Language -> ModelBackend -> Model -> SessionForm -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
@@ -127,7 +133,7 @@ viewCreateSessionForm config language backend model form clinics sessions =
                             ]
 
                     Loading ->
-                        emptyNode
+                        viewLoading
 
                     NotAsked ->
                         emptyNode
@@ -237,18 +243,22 @@ viewCreateSessionForm config language backend model form clinics sessions =
     ]
 
 
-viewClinicList : Config.Model -> Language -> Model -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
-viewClinicList config language model clinics ( _, futureSessions ) =
+viewClinicList : Config.Model -> Language -> ModelBackend -> Model -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
+viewClinicList config language backend model clinics ( _, futureSessions ) =
     let
         sandboxButtons =
             if config.sandbox then
                 div []
                     [ button
-                        [ class "ui primary button small" ]
+                        [ class "ui primary button small"
+                        , onClick <| MsgBackend <| Backend.Model.PostTrainingSessionRequest { action = CreateAll }
+                        ]
                         [ text <| translate language <| Translate.CreateTrainingSessions ]
                     , text " "
                     , button
-                        [ class "ui primary button small" ]
+                        [ class "ui primary button small"
+                        , onClick <| MsgBackend <| Backend.Model.PostTrainingSessionRequest { action = DeleteAll }
+                        ]
                         [ text <| translate language <| Translate.DeleteTrainingSessions
                         ]
                     ]
@@ -276,6 +286,7 @@ viewClinicList config language model clinics ( _, futureSessions ) =
                 |> div []
     in
     [ buttons
+    , viewPostTrainingSessionsMessage config language backend
     , clinicList
     ]
 
@@ -326,3 +337,52 @@ viewFutureSession language ( sessionId, session ) =
                     ]
             ]
         ]
+
+
+{-| Just show a generic loading indicator, for cases that will resolve soon,
+where we don't need to show any progress.
+-}
+viewLoading : Html any
+viewLoading =
+    div
+        [ class "ui basic segment" ]
+        [ spinner ]
+
+
+{-| Show messages when creating/deleting training sessions.
+-}
+viewPostTrainingSessionsMessage : Config.Model -> Language -> ModelBackend -> Html Msg
+viewPostTrainingSessionsMessage config language backend =
+    let
+        trainingSessionRequestMessage =
+            case backend.postTrainingSessionRequest of
+                Success { action } ->
+                    let
+                        ( messageClass, messageType, message ) =
+                            case action of
+                                CreateAll ->
+                                    ( "success", Translate.Success, Translate.TrainingSessionCreateSuccessMessage )
+
+                                DeleteAll ->
+                                    ( "success", Translate.Success, Translate.TrainingSessionDeleteSuccessMessage )
+                    in
+                    div
+                        [ class <| "ui message " ++ messageClass ]
+                        [ div [ class "header" ] [ text <| translate language messageType ]
+                        , div [ class "small text" ] [ text <| translate language message ]
+                        ]
+
+                Failure err ->
+                    div
+                        [ class "ui error message" ]
+                        [ div [ class "header" ] [ text <| translate language Translate.ErrorBadStatus ]
+                        , div [ class "small text" ] [ text <| toString err ]
+                        ]
+
+                Loading ->
+                    emptyNode
+
+                NotAsked ->
+                    emptyNode
+    in
+    trainingSessionRequestMessage
