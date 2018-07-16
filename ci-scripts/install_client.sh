@@ -19,6 +19,7 @@ npm install -g elm@~0.18.0
 npm install -g elm-test@0.18.12
 
 cd "$TRAVIS_BUILD_DIR"/client
+npm install
 elm-package install -y
 
 # Getting elm-make to run quicker.

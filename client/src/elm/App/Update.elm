@@ -1,4 +1,4 @@
-port module App.Update exposing (init, subscriptions, update)
+port module App.Update exposing (init, loginConfig, subscriptions, update)
 
 import App.Model exposing (..)
 import Backend.Model
@@ -24,6 +24,7 @@ import ServiceWorker.Model
 import ServiceWorker.Update
 import Task
 import Time exposing (minute)
+import Translate exposing (Language(..), languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
 import User.Decoder exposing (decodeUser)
 import User.Encoder exposing (encodeUser)
@@ -48,50 +49,62 @@ loginConfig =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    case Dict.get flags.hostname Config.configs of
-        Just config ->
-            let
-                ( loginStatus, loginCmd ) =
-                    -- We kick off the process of checking the cached credentials which
-                    -- we were provided.
-                    checkCachedCredentials loginConfig config.backendUrl flags.credentials
+    let
+        activeLanguage =
+            case languageFromCode flags.activeLanguage of
+                Ok language ->
+                    language
 
-                cmd =
-                    -- We always check the cache for an offline session, since that affects
-                    -- the UI we'll offer to show at a basic level. (An alternative would be
-                    -- to fetch it only when we really, really need it).
-                    Cmd.batch
-                        [ -- We'll leave out the pusherKey for the moment, until we're
-                          -- actually using it.
-                          {- pusherKey
-                             ( config.pusherKey.key
-                             , getClusterName config.pusherKey.cluster
-                             , Pusher.Model.eventNames
-                             )
-                          -}
-                          Task.perform Tick Time.now
-                        , loginCmd
-                        , Backend.Update.fetchEditableSession ()
-                        ]
+                Err msg ->
+                    English
 
-                configuredModel =
-                    { config = config
-                    , loginPage = Pages.Login.Model.emptyModel
-                    , login = loginStatus
-                    }
-            in
-            ( { emptyModel | configuration = Success configuredModel }
-            , cmd
-            )
-                |> sequence update
-                    [ MsgServiceWorker ServiceWorker.Model.Register
-                    , MsgZScore ZScore.Model.FetchAll
-                    ]
+        ( updatedModel, cmd ) =
+            case Dict.get flags.hostname Config.configs of
+                Just config ->
+                    let
+                        ( loginStatus, loginCmd ) =
+                            -- We kick off the process of checking the cached credentials which
+                            -- we were provided.
+                            checkCachedCredentials loginConfig config.backendUrl flags.credentials
 
-        Nothing ->
-            ( { emptyModel | configuration = Failure <| "No config found for: " ++ flags.hostname }
-            , Cmd.none
-            )
+                        cmd =
+                            -- We always check the cache for an offline session, since that affects
+                            -- the UI we'll offer to show at a basic level. (An alternative would be
+                            -- to fetch it only when we really, really need it).
+                            Cmd.batch
+                                [ -- We'll leave out the pusherKey for the moment, until we're
+                                  -- actually using it.
+                                  {- pusherKey
+                                     ( config.pusherKey.key
+                                     , getClusterName config.pusherKey.cluster
+                                     , Pusher.Model.eventNames
+                                     )
+                                  -}
+                                  Task.perform Tick Time.now
+                                , loginCmd
+                                , Backend.Update.fetchEditableSession ()
+                                ]
+
+                        configuredModel =
+                            { config = config
+                            , loginPage = Pages.Login.Model.emptyModel
+                            , login = loginStatus
+                            }
+                    in
+                    ( { emptyModel | configuration = Success configuredModel }
+                    , cmd
+                    )
+                        |> sequence update
+                            [ MsgServiceWorker ServiceWorker.Model.Register
+                            , MsgZScore ZScore.Model.FetchAll
+                            ]
+
+                Nothing ->
+                    ( { emptyModel | configuration = Failure <| "No config found for: " ++ flags.hostname }
+                    , Cmd.none
+                    )
+    in
+    ( { updatedModel | language = activeLanguage }, cmd )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -266,7 +279,7 @@ update msg model =
 
         SetLanguage language ->
             ( { model | language = language }
-            , Cmd.none
+            , setLanguage <| languageToCode language
             )
 
         SetOffline offline ->
@@ -368,3 +381,8 @@ port pusherKey : ( String, String, List String ) -> Cmd msg
 {-| Get a signal if internet connection is lost or regained.
 -}
 port offline : (Bool -> msg) -> Sub msg
+
+
+{-| Set the user's current language.
+-}
+port setLanguage : String -> Cmd msg

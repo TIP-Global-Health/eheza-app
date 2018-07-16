@@ -38,7 +38,8 @@ if (location.hostname.endsWith('pantheonsite.io') && location.protocol == 'http:
 // enough.
 var elmApp = Elm.Main.fullscreen({
     credentials: localStorage.getItem('credentials') || '{}',
-    hostname: window.location.hostname
+    hostname: window.location.hostname,
+    activeLanguage : localStorage.getItem('language') || ''
 });
 
 elmApp.ports.cacheCredentials.subscribe(function(params) {
@@ -88,6 +89,11 @@ elmApp.ports.deleteEditableSession.subscribe(function () {
     // Delete the session and edits in local storage
     localStorage.setItem('session', "");
     localStorage.setItem('edits', "");
+});
+
+elmApp.ports.setLanguage.subscribe(function(language) {
+    // Set the choosen language in the switcher to the local storage.
+    localStorage.setItem('language', language);
 });
 
 Offline.on('down', function() {

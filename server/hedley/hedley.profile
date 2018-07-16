@@ -55,6 +55,9 @@ function hedley_setup_variables() {
     'restful_file_upload' => 1,
     // Files settings.
     'file_default_scheme' => 'public',
+    // Rollbar settings.
+    'logs_rollbar_enabled' => TRUE,
+    'logs_rollbar_rollbar_access_token' => '4cd2c323d59d422bb838f87a8bc84ba7',
   );
 
   foreach ($variables as $key => $value) {

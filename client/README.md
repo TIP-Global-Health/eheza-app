@@ -31,6 +31,9 @@ The unit tests are written in Elm via [Elm Test](https://github.com/elm-communit
 npm test
 ```
 
+Note that the `npm test` automatically does a `gulp zscore` to setup the JSON
+data needed to test our Z-Score code.
+
 ## WebdriverIO tests
 
 1. Run `gulp`
@@ -40,3 +43,17 @@ npm test
 
 Beware that you do not need to (should not) execute a standalone Selenium Server alongside WDIO to run the tests.
 To simulate Travis test execution, see `../ci-scripts/README.md`
+
+## Z-Scores
+
+Our `gulpfile.js` has a task `gulp zscore` which converts the raw Z-Score tables we
+downloaded from the WHO web site into three formats:
+
+- A JSON representation the client can download via an HTTP request (and
+  cache).
+- A JSON representation that the backend can load (to calculate Z-Scores on the
+  backend.
+- An Elm module which contains the JSON representation as a string, so we can
+  unit-test the Elm code.
+
+This should all happen automatically when you run `gulp`.

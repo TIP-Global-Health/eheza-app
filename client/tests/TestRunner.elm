@@ -1,18 +1,18 @@
 module TestRunner exposing (..)
 
-import Expect exposing (Expectation)
-import Fuzz exposing (Fuzzer, int, list, string)
-import Test exposing (..)
-
-
--- Register Test Stubs Here
+{-| This module includes all of the tests in the "main" source
+tree, so that the `elm-test` command will find them.
+-}
 
 import App.Test
 import Backend.Measurement.Test
+import Expect exposing (Expectation)
+import Fuzz exposing (Fuzzer, int, list, string)
 import Measurement.Test
 import Pages.Activity.Test
 import Pages.Participant.Test
 import Pages.ProgressReport.Test
+import Test exposing (..)
 import Utils.NominalDateTest
 import ZScore.Test
 
