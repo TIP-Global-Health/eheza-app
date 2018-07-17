@@ -204,14 +204,14 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title']['field'] = 'title';
   $handler->display->display_options['fields']['title']['label'] = 'Clinic name';
   $handler->display->display_options['fields']['title']['link_to_node'] = FALSE;
-  /* Field: COUNT(Content: Ubudehe) */
-  $handler->display->display_options['fields']['field_ubudehe']['id'] = 'field_ubudehe';
-  $handler->display->display_options['fields']['field_ubudehe']['table'] = 'field_data_field_ubudehe';
-  $handler->display->display_options['fields']['field_ubudehe']['field'] = 'field_ubudehe';
-  $handler->display->display_options['fields']['field_ubudehe']['relationship'] = 'reverse_field_clinic_node';
-  $handler->display->display_options['fields']['field_ubudehe']['group_type'] = 'count';
-  $handler->display->display_options['fields']['field_ubudehe']['label'] = 'Mothers assigned';
-  $handler->display->display_options['fields']['field_ubudehe']['separator'] = ', ';
+  /* Field: COUNT(DISTINCT Content: Date birth) */
+  $handler->display->display_options['fields']['field_date_birth']['id'] = 'field_date_birth';
+  $handler->display->display_options['fields']['field_date_birth']['table'] = 'field_data_field_date_birth';
+  $handler->display->display_options['fields']['field_date_birth']['field'] = 'field_date_birth';
+  $handler->display->display_options['fields']['field_date_birth']['relationship'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['fields']['field_date_birth']['group_type'] = 'count_distinct';
+  $handler->display->display_options['fields']['field_date_birth']['label'] = 'Mothers assigned';
+  $handler->display->display_options['fields']['field_date_birth']['separator'] = ', ';
   /* Field: MAX(Content: Scheduled Date) */
   $handler->display->display_options['fields']['field_scheduled_date']['id'] = 'field_scheduled_date';
   $handler->display->display_options['fields']['field_scheduled_date']['table'] = 'field_data_field_scheduled_date';
