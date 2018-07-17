@@ -329,11 +329,6 @@ viewFutureSession language ( sessionId, session ) =
                     [ span
                         [ class "ui teal tag label training-label" ]
                         [ text <| translate language Translate.Training ]
-                    , text " "
-                    , button
-                        [ class "ui icon negative small button" ]
-                        [ i [ class "trash icon" ] []
-                        ]
                     ]
             ]
         ]
