@@ -1,8 +1,9 @@
 module User.Encoder exposing (encodeUser)
 
+import EverySet exposing (EverySet)
 import Json.Encode exposing (Value, int, list, object, string)
 import Restful.Endpoint exposing (encodeEntityId)
-import User.Model exposing (User)
+import User.Model exposing (Role(..), User)
 
 
 {-| This is mostly for caching the user in local storage.
@@ -15,4 +16,21 @@ encodeUser user =
         , ( "label", string user.name )
         , ( "avatar_url", string user.avatarUrl )
         , ( "clinics", list (List.map encodeEntityId user.clinics) )
+        , ( "roles", list (List.map encodeRole (EverySet.toList user.roles)) )
         ]
+
+
+encodeRole : Role -> Value
+encodeRole role =
+    case role of
+        Anonymous ->
+            string "anonymous user"
+
+        Authenticated ->
+            string "authenticated user"
+
+        Administrator ->
+            string "administrator"
+
+        Nurse ->
+            string "nurse"

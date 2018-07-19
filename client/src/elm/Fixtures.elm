@@ -2,6 +2,7 @@ module Fixtures exposing (..)
 
 import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Mother.Model exposing (Mother)
+import EverySet
 import Time.Date exposing (date)
 import User.Model exposing (User)
 
@@ -28,6 +29,7 @@ exampleUser =
     , name = "aya"
     , avatarUrl = "http://example.com/avatar.jpg"
     , clinics = []
+    , roles = EverySet.empty
     }
 
 

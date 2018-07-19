@@ -6,6 +6,7 @@ import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Decoder exposing (decodeHistoricalMeasurements)
 import Backend.Measurement.Model exposing (ChildMeasurementList, ChildMeasurements, Measurement, MotherMeasurementList, MotherMeasurements, emptyMeasurements)
+import Backend.Model exposing (TrainingSessionAction(..), TrainingSessionRequest)
 import Backend.Mother.Decoder exposing (decodeMother)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (..)
@@ -16,6 +17,29 @@ import Json.Decode exposing (Decoder, andThen, at, bool, dict, fail, field, int,
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (decodeEntityId)
 import Time.Date
+
+
+decodeTrainingSessionRequest : Decoder TrainingSessionRequest
+decodeTrainingSessionRequest =
+    succeed TrainingSessionRequest
+        |> required "action" decodeTrainingSessionAction
+
+
+decodeTrainingSessionAction : Decoder TrainingSessionAction
+decodeTrainingSessionAction =
+    string
+        |> andThen
+            (\action ->
+                case action of
+                    "create_all" ->
+                        succeed CreateAll
+
+                    "delete_all" ->
+                        succeed DeleteAll
+
+                    _ ->
+                        fail <| action ++ " is not a recognized TrainingSessionAction"
+            )
 
 
 {-| Decodes the JSON sent by /api/sessions
@@ -34,6 +58,7 @@ decodeSession =
                 ]
             )
         |> optional "closed" bool False
+        |> optional "training" bool False
 
 
 {-| Decodes the JSON sent by /api/offline_sessions

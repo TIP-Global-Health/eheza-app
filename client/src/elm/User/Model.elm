@@ -1,6 +1,7 @@
 module User.Model exposing (..)
 
 import Backend.Entities exposing (..)
+import EverySet exposing (EverySet)
 
 
 type alias UserId =
@@ -14,4 +15,14 @@ type alias User =
 
     -- Which clinics is this user assigned to?
     , clinics : List ClinicId
+
+    -- What roles does the user have assigned?
+    , roles : EverySet Role
     }
+
+
+type Role
+    = Anonymous
+    | Authenticated
+    | Administrator
+    | Nurse

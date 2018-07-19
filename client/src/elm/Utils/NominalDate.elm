@@ -5,7 +5,10 @@ Gizra.NominalDate.
 -}
 
 import Date.Extra exposing (Interval(Day), diff, fromParts, numberToMonth)
-import Gizra.NominalDate exposing (NominalDate, diffCalendarMonthsAndDays, fromLocalDateTime, toLocalDateTime)
+import Form.Field exposing (Field)
+import Form.Init exposing (setGroup, setString)
+import Form.Validate as Validate exposing (Validation, field)
+import Gizra.NominalDate exposing (NominalDate, NominalDateRange, diffCalendarMonthsAndDays, formatYYYYMMDD, fromLocalDateTime, toLocalDateTime)
 import Html exposing (Html)
 import Time.Date exposing (date, day, daysInMonth, delta, month, year)
 import Translate exposing (Language, translate)
@@ -184,3 +187,50 @@ renderDate language date =
         ++ month
         ++ " "
         ++ toString year
+
+
+{-| Validates a NominalDate.
+-}
+validateNominalDate : Validation e NominalDate
+validateNominalDate =
+    -- It might be nice to do something more predictable than what `date` does,
+    -- but it's certainly convenient.
+    Validate.map fromLocalDateTime Validate.date
+
+
+{-| Validates a `NominalDateRange`, on the assumption that it is represented
+by a field group, which has the sub-fields `start` and `end`.
+-}
+validateNominalDateRange : Validation e NominalDateRange
+validateNominalDateRange =
+    Validate.succeed NominalDateRange
+        |> Validate.andMap (field startField validateNominalDate)
+        |> Validate.andMap (field endField validateNominalDate)
+
+
+{-| The name of the field we use for the start date.
+-}
+startField : String
+startField =
+    "start"
+
+
+{-| The name of the field we use for the end date.
+-}
+endField : String
+endField =
+    "end"
+
+
+{-| For an initial grouped field. The string parameter is your name for the
+grouped field ... we'll supply the `start` and `end` field names for the inner
+fields.
+-}
+setNominalDateRange : String -> NominalDateRange -> ( String, Field )
+setNominalDateRange fieldName range =
+    setGroup fieldName
+        -- I suppose this ought to be locale-dependent in some way, but we'll
+        -- just start with YYYY-MM-DD
+        [ setString startField (formatYYYYMMDD range.start)
+        , setString endField (formatYYYYMMDD range.end)
+        ]

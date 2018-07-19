@@ -5,6 +5,7 @@ import Config.View
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
+import Pages.Admin.View
 import Pages.Clinics.View
 import Pages.Login.View
 import Pages.MyAccount.View
@@ -127,6 +128,10 @@ viewConfiguredModel model configured =
 
                         UserPage userPage ->
                             case userPage of
+                                AdminPage ->
+                                    Pages.Admin.View.view configured.config model.language model.currentDate login.credentials.user login.data.backend login.data.adminPage
+                                        |> Html.map (MsgLoggedIn << MsgPageAdmin)
+
                                 MyAccountPage ->
                                     Pages.MyAccount.View.view model.language login.credentials.user
 

@@ -24,6 +24,10 @@ class HedleyRestfulSessions extends HedleyRestfulEntityBaseNode {
       'property' => 'field_closed',
     ];
 
+    $public_fields['training'] = [
+      'property' => 'field_training',
+    ];
+
     $public_fields['scheduled_date'] = [
       'property' => 'field_scheduled_date',
       'process_callbacks' => [

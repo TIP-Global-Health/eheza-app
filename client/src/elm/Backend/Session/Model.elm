@@ -28,6 +28,7 @@ type alias Session =
     { scheduledDate : NominalDateRange
     , clinicId : ClinicId
     , closed : Bool
+    , training : Bool
     }
 
 

@@ -11,6 +11,7 @@ local =
     , name = "local"
     , pusherKey = PusherAppKey "" UsEast1
     , debug = True
+    , sandbox = False
     }
 
 
