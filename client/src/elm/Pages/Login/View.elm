@@ -9,14 +9,14 @@ import Html.Events exposing (onClick, onInput, onSubmit)
 import Pages.Login.Model exposing (..)
 import Pages.Page exposing (Page)
 import RemoteData exposing (RemoteData(..))
-import Restful.Login exposing (Authenticated, LoginError(..), LoginMethod(..), LoginProgress(..), UserStatusAndData(..))
+import Restful.Login exposing (AuthenticatedUser, LoginError(..), LoginMethod(..), LoginProgress(..), UserAndData(..))
 import Translate exposing (Language, translate)
 import User.Model exposing (Role(Administrator), User)
 import Utils.Html exposing (spinner)
 import Utils.WebData exposing (viewError)
 
 
-view : Language -> Page -> UserStatusAndData User () data -> Model -> Maybe EditableSession -> Html Msg
+view : Language -> Page -> UserAndData anonData User data -> Model -> Maybe EditableSession -> Html Msg
 view language activePage loginStatus model session =
     -- We always show the wrapper and the logo. Then, we call `viewContent`
     -- to supply the rest, depending on our params.
@@ -30,20 +30,22 @@ view language activePage loginStatus model session =
 {-| Here, we differentiate based on whether we're logged in or not ... and
 show something appropriate based on that.
 -}
-viewContent : Language -> Page -> UserStatusAndData User () data -> Model -> Maybe EditableSession -> List (Html Msg)
+viewContent : Language -> Page -> UserAndData anonData User data -> Model -> Maybe EditableSession -> List (Html Msg)
 viewContent language activePage loginStatus model session =
     case loginStatus of
         -- Perhaps this case could be integrated into `viewLoginForm` now
-        AnonymousUser (Just (Checking ByAccessToken)) _ ->
-            [ viewCheckingCachedCredentials language ]
+        Anonymous { progress } ->
+            case progress of
+                Just (Checking ByAccessToken) ->
+                    [ viewCheckingCachedCredentials language ]
 
-        AnonymousUser _ _ ->
-            -- If we're here and we're anonymous, then we'll show the login
-            -- form ... so, we'll see the fields and the form will take into
-            -- account progress and error conditions.
-            viewLoginForm language activePage loginStatus model
+                _ ->
+                    -- If we're here and we're anonymous, then we'll show the login
+                    -- form ... so, we'll see the fields and the form will take into
+                    -- account progress and error conditions.
+                    viewLoginForm language activePage loginStatus model
 
-        AuthenticatedUser login ->
+        Authenticated login ->
             case login.relogin of
                 Just progress ->
                     -- We have some login information, but we need to re-login
@@ -104,7 +106,7 @@ opportunity to logout, or do something else. Note that you won't get here
 usually, because if your active page was elsewhere, you'll transition
 there automatically once you login.
 -}
-viewWhenLoggedIn : Language -> Authenticated User data -> Maybe EditableSession -> Html Msg
+viewWhenLoggedIn : Language -> AuthenticatedUser User data -> Maybe EditableSession -> Html Msg
 viewWhenLoggedIn language login session =
     let
         administrationButton =
@@ -179,7 +181,7 @@ viewWhenLoggedIn language login session =
 
 {-| Shows the login form itself, i.e. with inputs for username and password.
 -}
-viewLoginForm : Language -> Page -> UserStatusAndData User () data -> Model -> List (Html Msg)
+viewLoginForm : Language -> Page -> UserAndData anonData User data -> Model -> List (Html Msg)
 viewLoginForm language activePage loginStatus model =
     let
         -- A convenience for translating a `LoginPhrase`
@@ -187,7 +189,7 @@ viewLoginForm language activePage loginStatus model =
             translate language << Translate.LoginPhrase
 
         isLoading =
-            Restful.Login.isProgressing loginStatus
+            Restful.Login.isChecking loginStatus
 
         disableSubmitButton =
             isLoading || model.name == "" || model.pass == ""

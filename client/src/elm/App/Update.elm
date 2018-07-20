@@ -19,7 +19,7 @@ import Pages.Page exposing (Page(..), UserPage(ClinicsPage))
 import Pages.Update
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (decodeSingleDrupalEntity)
-import Restful.Login exposing (Authenticated, Credentials, UserStatusAndData(..), checkCachedCredentials)
+import Restful.Login exposing (AuthenticatedUser, Credentials, LoginEvent(..), UserAndData(..), checkCachedCredentials)
 import ServiceWorker.Model
 import ServiceWorker.Update
 import Task
@@ -33,7 +33,7 @@ import ZScore.Model
 import ZScore.Update
 
 
-loginConfig : Restful.Login.Config User () LoggedInModel Msg
+loginConfig : Restful.Login.Config () User LoggedInModel Msg
 loginConfig =
     -- The `oneOf` below is necessary because how the backend sends the user is
     -- a little different from how we encode it for local storage ... this
@@ -42,7 +42,7 @@ loginConfig =
         { decodeUser = oneOf [ decodeSingleDrupalEntity decodeUser, decodeUser ]
         , encodeUser = Just encodeUser
         , initialAnonymousData = ()
-        , initialAuthenticatedData = \_ -> emptyLoggedInModel
+        , initialAuthenticatedData = \_ _ -> emptyLoggedInModel
         , cacheCredentials = curry cacheCredentials
         , tag = MsgLogin
         }
@@ -66,7 +66,7 @@ init flags =
                         ( loginStatus, loginCmd ) =
                             -- We kick off the process of checking the cached credentials which
                             -- we were provided.
-                            checkCachedCredentials loginConfig config.backendUrl flags.credentials
+                            checkCachedCredentials loginConfig config.backendUrl (Just flags.credentials)
 
                         cmd =
                             -- We always check the cache for an offline session, since that affects
@@ -157,7 +157,7 @@ update msg model =
                         extraMsgs =
                             -- This will be true only at the very moment of
                             -- successful login.
-                            if loggedIn then
+                            if loggedIn == Just LoggedIn then
                                 let
                                     -- Transition away from the `LoginPage` if
                                     -- that's where we are. We don't want to
@@ -340,15 +340,15 @@ updateLoggedIn func model =
             -- TODO: Perhaps we should Debug.log some errors in cases where we get
             -- messages we can't handle ...
             case configured.login of
-                AnonymousUser _ _ ->
+                Anonymous _ ->
                     ( configured, Cmd.none, [] )
 
-                AuthenticatedUser login ->
+                Authenticated login ->
                     let
                         ( subModel, cmd, extraMsgs ) =
                             func login.credentials login.data
                     in
-                    ( { configured | login = AuthenticatedUser { login | data = subModel } }
+                    ( { configured | login = Authenticated { login | data = subModel } }
                     , cmd
                     , extraMsgs
                     )
