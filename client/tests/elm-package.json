@@ -43,7 +43,8 @@
         "stoeffel/editable": "2.0.0 <= v < 3.0.0",
         "terezka/elm-plot": "5.1.0 <= v < 6.0.0",
         "truqu/elm-base64": "2.0.3 <= v < 3.0.0",
-        "abadi199/datetimepicker": "6.0.1 <= v < 7.0.0"
+        "abadi199/datetimepicker": "6.0.1 <= v < 7.0.0",
+        "Gizra/elm-restful": "2.0.0 <= v < 3.0.0"
     },
     "elm-version": "0.18.0 <= v < 0.19.0"
 }

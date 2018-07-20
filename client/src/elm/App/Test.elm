@@ -58,7 +58,7 @@ testConfigModel =
             }
 
         ( loginStatus, cmd ) =
-            checkCachedCredentials loginConfig testConfig.backendUrl ""
+            checkCachedCredentials loginConfig testConfig.backendUrl (Just "")
     in
     { config = testConfig
     , loginPage = Pages.Login.Model.emptyModel
