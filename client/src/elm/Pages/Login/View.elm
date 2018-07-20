@@ -1,6 +1,7 @@
 module Pages.Login.View exposing (view)
 
 import Backend.Session.Model exposing (EditableSession)
+import EverySet
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -10,7 +11,7 @@ import Pages.Page exposing (Page)
 import RemoteData exposing (RemoteData(..))
 import Restful.Login exposing (Authenticated, LoginError(..), LoginMethod(..), LoginProgress(..), UserStatusAndData(..))
 import Translate exposing (Language, translate)
-import User.Model exposing (..)
+import User.Model exposing (Role(Administrator), User)
 import Utils.Html exposing (spinner)
 import Utils.WebData exposing (viewError)
 
@@ -106,6 +107,17 @@ there automatically once you login.
 viewWhenLoggedIn : Language -> Authenticated User data -> Maybe EditableSession -> Html Msg
 viewWhenLoggedIn language login session =
     let
+        administrationButton =
+            if EverySet.member Administrator login.credentials.user.roles then
+                Just <|
+                    button
+                        [ class "ui fluid primary button"
+                        , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage Pages.Page.AdminPage
+                        ]
+                        [ text <| translate language Translate.Admin ]
+            else
+                Nothing
+
         logoutButton =
             case login.logout of
                 Loading ->
@@ -160,6 +172,7 @@ viewWhenLoggedIn language login session =
             , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.ClinicsPage Nothing
             ]
             [ text <| translate language Translate.SelectYourClinic ]
+        , showMaybe administrationButton
         , logoutButton
         ]
 

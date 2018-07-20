@@ -54,6 +54,7 @@ testConfigModel =
             , name = "local"
             , pusherKey = PusherAppKey "" UsEast1
             , debug = True
+            , sandbox = False
             }
 
         ( loginStatus, cmd ) =

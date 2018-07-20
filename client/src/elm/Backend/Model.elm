@@ -70,6 +70,15 @@ type alias ModelBackend =
     -- Another flag, tracking our progress in uploading edits to the backend.
     -- Again, we track which session we uploaded.
     , uploadEditsRequest : WebData SessionId
+
+    -- Tracks a request to create a new session.
+    , postSessionRequest : WebData ( SessionId, Session )
+
+    -- Tracks a request to handle training session actions. Note that the
+    -- backend currently doesn't supply a key, so we don't track one here.
+    -- (That might change if the backend actually queued these requests, rather
+    -- than processing them immediately).
+    , postTrainingSessionRequest : WebData TrainingSessionRequest
     }
 
 
@@ -79,6 +88,8 @@ emptyModelBackend =
     , futureSessions = NotAsked
     , offlineSessionRequest = NotAsked
     , uploadEditsRequest = NotAsked
+    , postSessionRequest = NotAsked
+    , postTrainingSessionRequest = NotAsked
     }
 
 
@@ -95,6 +106,10 @@ type MsgBackend
     | HandleRefetchedOfflineSession (Result Error ( SessionId, OfflineSession ))
     | HandleUploadedEdits SessionId (Result Error ())
     | HandleUploadPhotoResponse Photo (Result Error Int)
+    | PostSession Session
+    | PostTrainingSessionRequest TrainingSessionRequest
+    | HandlePostedSession (WebData ( SessionId, Session ))
+    | HandleTrainingSessionResponse (WebData TrainingSessionRequest)
     | RefetchOfflineSession SessionId
     | ResetErrors -- reset errors to `NotAsked` when certain requests succeed, so they will retry
     | ResetOfflineSessionRequest -- resets it to `NotAsked`
@@ -151,6 +166,40 @@ emptyModelCached =
     { cacheStorage = CacheStorage.Model.emptyModel
     , editableSession = NotAsked
     }
+
+
+{-| This represents a request sent to /api/training_sessions, which is an
+endpoint that represents certain actions that can be taken with respect to
+training sessions as a whole. So, "creating" a request there is like queueing
+up an action for the backend to take.
+
+As a simplification, the backend currently executes the action immediately, but
+you might imagine it queuing it up, in which case we could have an ID field
+here, to use in future requests. (For instance, DELETE might cancel the
+request).
+
+-}
+type alias TrainingSessionRequest =
+    { action : TrainingSessionAction
+    }
+
+
+{-| An action we can ask /api/training_sessions to perform.
+
+  - CreateAll will create a new training session, for today, for every clinic
+    that doesn't already have a training session starting today.
+
+  - DeleteAll will delete all training sessions.
+
+A training session is just like a regular session, except that you can delete
+it with `DeleteAll` here. So, it facilitates having some "permanent" sessions
+(for pre-existing data), and some sessions you create and delete as training
+occurs.
+
+-}
+type TrainingSessionAction
+    = CreateAll
+    | DeleteAll
 
 
 {-| These are all the messages related to getting things from the cache and

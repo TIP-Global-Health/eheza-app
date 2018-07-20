@@ -1,6 +1,7 @@
 port module App.Update exposing (init, loginConfig, subscriptions, update)
 
 import App.Model exposing (..)
+import Backend.Model
 import Backend.Session.Model
 import Backend.Update
 import Backend.Utils exposing (withEditableSession)
@@ -10,6 +11,7 @@ import Dict
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Maybe.Extra
+import Pages.Admin.Update
 import Pages.Login.Model
 import Pages.Login.Update
 import Pages.Model
@@ -26,7 +28,7 @@ import Translate exposing (Language(..), languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
 import User.Decoder exposing (decodeUser)
 import User.Encoder exposing (encodeUser)
-import User.Model exposing (..)
+import User.Model exposing (User)
 import ZScore.Model
 import ZScore.Update
 
@@ -132,6 +134,16 @@ update msg model =
                             , Cmd.map (MsgLoggedIn << MsgBackend) cmd
                             , List.map MsgCache cacheMsgs
                             )
+
+                        MsgPageAdmin subMsg ->
+                            let
+                                ( newModel, cmd, appMsgs ) =
+                                    Pages.Admin.Update.update model.currentDate data.backend subMsg data.adminPage
+                            in
+                            ( { data | adminPage = newModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageAdmin) cmd
+                            , appMsgs
+                            )
                 )
                 model
 
@@ -176,11 +188,15 @@ update msg model =
                                     -- gets triggered first will fail silently
                                     -- ...  the second will succeed.
                                     refetch =
-                                        [ MsgSession <|
+                                        MsgSession <|
                                             Pages.Model.MsgEditableSession Backend.Session.Model.RefetchSession
-                                        ]
+
+                                    -- And, we reset errors, since the errors
+                                    -- may have been authorization errors.
+                                    resetErrors =
+                                        MsgLoggedIn <| MsgBackend <| Backend.Model.ResetErrors
                                 in
-                                redirect ++ refetch
+                                refetch :: resetErrors :: redirect
                             else
                                 []
                     in

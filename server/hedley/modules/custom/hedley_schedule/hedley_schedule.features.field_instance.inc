@@ -150,16 +150,65 @@ The end date is the last day on which data entry will be allowed for this sessio
     ),
   );
 
+  // Exported field_instance: 'node-session-field_training'.
+  $field_instances['node-session-field_training'] = array(
+    'bundle' => 'session',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => 'If checked, indicates that this is a "training" session that should be deleted when deleting all training sessions. (Other sessions in the training site would remain, to populate the progress report).
+
+This should not be used on the "live" site -- it is only intended for the "sandbox" site.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 3,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_training',
+    'label' => 'Training',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 0,
+    ),
+  );
+
   // Translatables
   // Included for use with string extractors like potx.
   t('Clinic');
   t('Closed');
   t('Enter the clinic for which data-entry is being scheduled.');
   t('Has the session been explicitly closed by the user?');
+  t('If checked, indicates that this is a "training" session that should be deleted when deleting all training sessions. (Other sessions in the training site would remain, to populate the progress report).
+
+This should not be used on the "live" site -- it is only intended for the "sandbox" site.');
   t('Scheduled Date');
   t('The start date is the date on which the data entry is scheduled.
 
 The end date is the last day on which data entry will be allowed for this session through the client app (for editing, or measurements that are taken later). After this date, the session will be considered closed.');
+  t('Training');
 
   return $field_instances;
 }

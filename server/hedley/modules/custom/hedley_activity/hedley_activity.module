@@ -7,6 +7,31 @@
 
 include_once 'hedley_activity.features.inc';
 
+// Define the measurements content types.
+define('HEDLEY_ACTIVITY_FAMILY_PLANNING_CONTENT_TYPE', 'family_planning');
+define('HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE', 'height');
+define('HEDLEY_ACTIVITY_MUAC_CONTENT_TYPE', 'muac');
+define('HEDLEY_ACTIVITY_NUTRITION_CONTENT_TYPE', 'nutrition');
+define('HEDLEY_ACTIVITY_PHOTO_CONTENT_TYPE', 'photo');
+define('HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE', 'weight');
+
+/**
+ * Get the measurements content types.
+ *
+ * @return array
+ *   All the measurements content types.
+ */
+function hedley_activity_get_measurements_content_types() {
+  return [
+    HEDLEY_ACTIVITY_FAMILY_PLANNING_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_MUAC_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NUTRITION_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_PHOTO_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE,
+  ];
+}
+
 /**
  * Return the activity related node types and RESTful resource handler name.
  *
@@ -269,4 +294,28 @@ function hedley_activity_weight_for_session($session_id, $child_id) {
     ->execute();
 
   return !empty($result['node']) ? key($result['node']) : NULL;
+}
+
+/**
+ * Get a measurement by the session ID and the measurement type.
+ *
+ * @param int $session_id
+ *   The session node ID.
+ * @param string $measurement_bundle
+ *   The measurement node bundle.
+ *
+ * @return array|null
+ *   Node IDs if they exist or nothing if no nodes exist.
+ */
+function hedley_activity_get_measurements_by_session($session_id, $measurement_bundle) {
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', $measurement_bundle)
+    ->fieldCondition('field_session', 'target_id', $session_id)
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->range(0, 100)
+    ->execute();
+
+  return !empty($result['node']) ? array_keys($result['node']) : NULL;
 }

@@ -4,6 +4,7 @@ import Backend.Model
 import Config.Model
 import Date
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
+import Pages.Admin.Model
 import Pages.Login.Model
 import Pages.Model
 import Pages.Page exposing (Page(LoginPage))
@@ -85,12 +86,14 @@ it at the appropriate moment.
 -}
 type alias LoggedInModel =
     { backend : Backend.Model.ModelBackend
+    , adminPage : Pages.Admin.Model.Model
     }
 
 
 emptyLoggedInModel : LoggedInModel
 emptyLoggedInModel =
     { backend = Backend.Model.emptyModelBackend
+    , adminPage = Pages.Admin.Model.emptyModel
     }
 
 
@@ -148,6 +151,7 @@ type Msg
 -}
 type MsgLoggedIn
     = MsgBackend Backend.Model.MsgBackend
+    | MsgPageAdmin Pages.Admin.Model.Msg
 
 
 type alias Flags =

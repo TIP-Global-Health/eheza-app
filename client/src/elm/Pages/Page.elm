@@ -83,7 +83,8 @@ type Page
 the login page instead.
 -}
 type UserPage
-    = ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
+    = AdminPage -- a page that shows administrative tasks
+    | ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
     | MyAccountPage -- shows information about the logged-in user
 
 

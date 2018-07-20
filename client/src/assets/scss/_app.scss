@@ -15,6 +15,16 @@ a {
   cursor: pointer;
 }
 
+.admin-page {
+  table {
+    font-size: 1.2rem !important;
+  }
+
+  h2 {
+    margin-top: 1.0rem;
+  }
+}
+
 .ui.logout.button {
   background: $color-dark-background;
 }
