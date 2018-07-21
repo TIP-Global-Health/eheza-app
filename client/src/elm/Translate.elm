@@ -163,6 +163,7 @@ type TranslationId
     | Children
     | ClickTheCheckMark
     | ClinicNotFound
+    | Clinic
     | Clinics
     | Closed
     | Connected
@@ -194,6 +195,7 @@ type TranslationId
     | FamilyPlanningSignLabel FamilyPlanningSign
     | Fetch
     | FormError (ErrorValue ValidationError)
+    | FormField String
     | FutureSessions
     | Gender Gender
     | GoHome
@@ -249,6 +251,7 @@ type TranslationId
     | Retry
     | Save
     | SaveError
+    | ScheduledDate
     | SearchByName
     | SelectClinic
     | SelectLanguage
@@ -668,6 +671,11 @@ translationSet trans =
             , kinyarwanda = Just "Ikigo nderabuzima nticyabonetse"
             }
 
+        Clinic ->
+            { english = "Clinic"
+            , kinyarwanda = Just "Ikigo nderabuzima"
+            }
+
         Clinics ->
             { english = "Clinics"
             , kinyarwanda = Just "Ibigo nderebuzima"
@@ -852,6 +860,9 @@ translationSet trans =
 
         FormError errorValue ->
             translateFormError errorValue
+
+        FormField field ->
+            translateFormField field
 
         FutureSessions ->
             { english = "Future Sessions"
@@ -1141,6 +1152,11 @@ translationSet trans =
         SaveError ->
             { english = "Save Error"
             , kinyarwanda = Just "Kubika error (ikosa mu kubika)"
+            }
+
+        ScheduledDate ->
+            { english = "Scheduled Date"
+            , kinyarwanda = Nothing
             }
 
         SearchByName ->
@@ -1726,3 +1742,27 @@ translateFormError error =
 
         CustomError e ->
             translateValidationError e
+
+
+{-| This one is hampered by the fact that the field names in etaque/elm-form
+are untyped strings, but we do our best.
+-}
+translateFormField : String -> TranslationSet
+translateFormField field =
+    case field of
+        "clinic_id" ->
+            translationSet Clinic
+
+        "closed" ->
+            translationSet Closed
+
+        "training" ->
+            translationSet Clinic
+
+        "scheduled_date" ->
+            translationSet ScheduledDate
+
+        _ ->
+            { english = field
+            , kinyarwanda = Nothing
+            }
