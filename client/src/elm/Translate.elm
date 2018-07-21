@@ -5,6 +5,7 @@ import Backend.Child.Model exposing (Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
 import Date exposing (Month(..))
+import Form.Error exposing (ErrorValue(..))
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (fromEntityId)
 import Restful.Login exposing (LoginError(..))
@@ -192,6 +193,7 @@ type TranslationId
     | ErrorTimeout
     | FamilyPlanningSignLabel FamilyPlanningSign
     | Fetch
+    | FormError (ErrorValue ValidationError)
     | FutureSessions
     | Gender Gender
     | GoHome
@@ -273,7 +275,6 @@ type TranslationId
     | UploadingSession1
     | UploadingSession2
     | UploadSuccessful
-    | ValidationError ValidationError
     | ValidationErrors
     | ViewProgressReport
     | WelcomeUser String
@@ -849,6 +850,9 @@ translationSet trans =
             , kinyarwanda = Just "Gushakisha"
             }
 
+        FormError errorValue ->
+            translateFormError errorValue
+
         FutureSessions ->
             { english = "Future Sessions"
             , kinyarwanda = Nothing
@@ -1275,9 +1279,6 @@ translationSet trans =
             , kinyarwanda = Just "Kwohereza byagenze neza"
             }
 
-        ValidationError err ->
-            translateValidationError err
-
         ValidationErrors ->
             { english = "Validation Errors"
             , kinyarwanda = Nothing
@@ -1640,6 +1641,88 @@ translateValidationError : ValidationError -> TranslationSet
 translateValidationError id =
     case id of
         UnknownClinic ->
-            { english = "Unknown clinic"
+            { english = "is not a known clinic"
             , kinyarwanda = Nothing
             }
+
+
+translateFormError : ErrorValue ValidationError -> TranslationSet
+translateFormError error =
+    case error of
+        Empty ->
+            { english = "should not be empty"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidString ->
+            { english = "is not a valid string"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidEmail ->
+            { english = "is not a valid email"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidFormat ->
+            { english = "is not a valid format"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidInt ->
+            { english = "is not a valid integer"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidFloat ->
+            { english = "is not a valid number"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidBool ->
+            { english = "is not a valid boolean"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidDate ->
+            { english = "is not a valid date"
+            , kinyarwanda = Nothing
+            }
+
+        SmallerIntThan int ->
+            { english = "must be smaller than " ++ toString int
+            , kinyarwanda = Nothing
+            }
+
+        GreaterIntThan int ->
+            { english = "must be larger than " ++ toString int
+            , kinyarwanda = Nothing
+            }
+
+        SmallerFloatThan float ->
+            { english = "must be smaller than " ++ toString float
+            , kinyarwanda = Nothing
+            }
+
+        GreaterFloatThan float ->
+            { english = "must be larger than " ++ toString float
+            , kinyarwanda = Nothing
+            }
+
+        ShorterStringThan int ->
+            { english = "must have fewer than " ++ toString int ++ " characters"
+            , kinyarwanda = Nothing
+            }
+
+        LongerStringThan int ->
+            { english = "must have more than " ++ toString int ++ " characters"
+            , kinyarwanda = Nothing
+            }
+
+        NotIncludedIn ->
+            { english = "was not among the valid options"
+            , kinyarwanda = Nothing
+            }
+
+        CustomError e ->
+            translateValidationError e
