@@ -240,6 +240,7 @@ type TranslationId
     | PlaceholderEnterWeight
     | PlaceholderTextGroupDate
     | PlaceholderTextJoined
+    | PleaseSelectClinic
     | PreviousFloatMeasurement Float
     | ReadyToBeginSession
     | ReportAge String
@@ -1098,6 +1099,11 @@ translationSet trans =
         PlaceholderTextJoined ->
             { english = "Joined in June 2017"
             , kinyarwanda = Just "Yinjiye muri kamena 2017"
+            }
+
+        PleaseSelectClinic ->
+            { english = "Please select the relevant clinic for the new session"
+            , kinyarwanda = Nothing
             }
 
         PreviousFloatMeasurement value ->

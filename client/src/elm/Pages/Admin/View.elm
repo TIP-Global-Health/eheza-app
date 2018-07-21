@@ -248,11 +248,16 @@ viewCreateSessionForm config language backend model form clinics sessions =
 
 viewFormError : Language -> ( String, ErrorValue ValidationError ) -> Html msg
 viewFormError language ( path, error ) =
-    li []
-        [ text <| translate language <| Translate.FormField path
-        , text " "
-        , text <| translate language <| Translate.FormError error
-        ]
+    if path == clinicId then
+        -- We special-case this one because it's common, to get a nicer
+        -- customaized message
+        li [] [ text <| translate language Translate.PleaseSelectClinic ]
+    else
+        li []
+            [ text <| translate language <| Translate.FormField path
+            , text " "
+            , text <| translate language <| Translate.FormError error
+            ]
 
 
 viewClinicList : Config.Model -> Language -> ModelBackend -> Model -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
