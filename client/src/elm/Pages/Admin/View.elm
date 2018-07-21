@@ -9,6 +9,7 @@ import Config.Model as Config
 import EveryDictList exposing (EveryDictList)
 import EverySet
 import Form
+import Form.Error exposing (ErrorValue)
 import Form.Input exposing (..)
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
@@ -22,7 +23,7 @@ import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityId)
 import Set
 import Time.Date
-import Translate exposing (Language, translate)
+import Translate exposing (Language, ValidationError, translate)
 import User.Model exposing (..)
 import Utils.Html exposing (spinner)
 import Utils.WebData exposing (viewError, viewOrFetch)
@@ -237,10 +238,20 @@ viewCreateSessionForm config language backend model form clinics sessions =
         , div
             [ class "ui error message" ]
             [ div [ class "header" ] [ text <| translate language Translate.ValidationErrors ]
-            , dumpErrors form
+            , List.map (viewFormError language) errors
+                |> ul []
             ]
         ]
     ]
+
+
+viewFormError : Language -> ( String, ErrorValue ValidationError ) -> Html msg
+viewFormError language ( path, error ) =
+    li []
+        [ text <| translate language <| Translate.FormField path
+        , text " "
+        , text <| translate language <| Translate.FormError error
+        ]
 
 
 viewClinicList : Config.Model -> Language -> ModelBackend -> Model -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
