@@ -251,7 +251,6 @@ type TranslationId
     | Retry
     | Save
     | SaveError
-    | ScheduledDate
     | SearchByName
     | SelectClinic
     | SelectLanguage
@@ -1154,11 +1153,6 @@ translationSet trans =
             , kinyarwanda = Just "Kubika error (ikosa mu kubika)"
             }
 
-        ScheduledDate ->
-            { english = "Scheduled Date"
-            , kinyarwanda = Nothing
-            }
-
         SearchByName ->
             { english = "Search by Name"
             , kinyarwanda = Just "Gushakisha izina"
@@ -1759,8 +1753,11 @@ translateFormField field =
         "training" ->
             translationSet Clinic
 
-        "scheduled_date" ->
-            translationSet ScheduledDate
+        "scheduled_date.start" ->
+            translationSet StartDate
+
+        "scheduled_date.end" ->
+            translationSet EndDate
 
         _ ->
             { english = field
