@@ -159,7 +159,8 @@ viewCreateSessionForm config language backend model form clinics sessions =
                 , ( "error", isJust clinic.liveError )
                 ]
             ]
-            [ selectInput clinicOptions clinic []
+            [ label [] [ text <| translate language Translate.Clinic ]
+            , selectInput clinicOptions clinic []
                 |> Html.map MsgCreateSession
             ]
         , div
