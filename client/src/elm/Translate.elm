@@ -1310,22 +1310,22 @@ translationSet trans =
 
         ZScoreHeightForAge ->
             { english = "Z-Score Height for Age: "
-            , kinyarwanda = Just "Z-score Uburebure ku myaka:"
+            , kinyarwanda = Just "Z-score Uburebure ku myaka: "
             }
 
         ZScoreMuacForAge ->
             { english = "MUAC for Age: "
-            , kinyarwanda = Just "MUAC ku myaka"
+            , kinyarwanda = Just "MUAC ku myaka: "
             }
 
         ZScoreWeightForAge ->
             { english = "Z-Score Weight for Age: "
-            , kinyarwanda = Just "Z-score Ibiro ku myaka"
+            , kinyarwanda = Just "Z-score Ibiro ku myaka: "
             }
 
         ZScoreWeightForHeight ->
             { english = "Z-Score Weight for Height: "
-            , kinyarwanda = Just "Z-score Ibiro ku uburebure"
+            , kinyarwanda = Just "Z-score Ibiro ku uburebure: "
             }
 
 
