@@ -278,10 +278,21 @@ update msg model =
             )
 
         SetActivePage page ->
-            -- TODO: There may be some additinoal logic needed here ... we'll see.
-            ( { model | activePage = page }
-            , Cmd.none
-            )
+            let
+                -- We reset certain successful requests if we're actually
+                -- navigating, so that we don't continue to show "success"
+                -- messages.
+                resetSuccess =
+                    if page /= model.activePage then
+                        [ MsgLoggedIn <| MsgBackend <| Backend.Model.ResetSuccess ]
+                    else
+                        []
+            in
+            sequence update
+                resetSuccess
+                ( { model | activePage = page }
+                , Cmd.none
+                )
 
         SetLanguage language ->
             ( { model | language = language }
