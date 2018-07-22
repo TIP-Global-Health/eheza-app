@@ -36,7 +36,7 @@ import Maybe.Extra exposing (toList)
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityId, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityId, endpoint, fromEntityId, toCmd, toEntityId, withParamsEncoder, withValueEncoder, withoutDecoder)
-import Utils.WebData exposing (resetError)
+import Utils.WebData exposing (resetError, resetSuccess)
 
 
 clinicEndpoint : ReadWriteEndPoint Error ClinicId Clinic Clinic ()
@@ -271,6 +271,18 @@ updateBackend backendUrl accessToken msg model =
             ( { model
                 | clinics = resetError model.clinics
                 , futureSessions = resetError model.futureSessions
+              }
+            , Cmd.none
+            , []
+            )
+
+        ResetSuccess ->
+            -- Reset some successful requests to `NotAsked`. This is for
+            -- requests where we're showing a `Sucess` indication in the UI,
+            -- and we want to stop doing that at certain moments.
+            ( { model
+                | postSessionRequest = resetSuccess model.postSessionRequest
+                , postTrainingSessionRequest = resetSuccess model.postTrainingSessionRequest
               }
             , Cmd.none
             , []

@@ -112,6 +112,7 @@ type MsgBackend
     | HandleTrainingSessionResponse (WebData TrainingSessionRequest)
     | RefetchOfflineSession SessionId
     | ResetErrors -- reset errors to `NotAsked` when certain requests succeed, so they will retry
+    | ResetSuccess -- resets certain requests to `NotAsked` if successful ... upon navigation
     | ResetOfflineSessionRequest -- resets it to `NotAsked`
     | ResetUploadEditsRequest
     | UploadEdits SessionId MeasurementEdits
