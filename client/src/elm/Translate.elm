@@ -164,6 +164,7 @@ type TranslationId
     | ClinicNotFound
     | Clinics
     | Closed
+    | ConfirmDeleteTrainingSessions
     | Connected
     | Continue
     | CreateSession
@@ -260,6 +261,7 @@ type TranslationId
     | StartDate
     | EndDate
     | Success
+    | ThisActionCannotBeUndone
     | ThisClinicHasNoMothers
     | TitleHealthAssessment
     | Training
@@ -674,6 +676,11 @@ translationSet trans =
 
         Closed ->
             { english = "Closed"
+            , kinyarwanda = Nothing
+            }
+
+        ConfirmDeleteTrainingSessions ->
+            { english = "Are you sure you want to delete all training sessions?"
             , kinyarwanda = Nothing
             }
 
@@ -1207,6 +1214,11 @@ translationSet trans =
 
         Success ->
             { english = "Success"
+            , kinyarwanda = Nothing
+            }
+
+        ThisActionCannotBeUndone ->
+            { english = "This action cannot be undone."
             , kinyarwanda = Nothing
             }
 
