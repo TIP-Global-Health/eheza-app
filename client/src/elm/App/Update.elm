@@ -8,6 +8,7 @@ import Backend.Utils exposing (withEditableSession)
 import Config
 import Date
 import Dict
+import EverySet
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Maybe.Extra
@@ -15,7 +16,7 @@ import Pages.Admin.Update
 import Pages.Login.Model
 import Pages.Login.Update
 import Pages.Model
-import Pages.Page exposing (Page(..), UserPage(ClinicsPage))
+import Pages.Page exposing (Page(..), UserPage(AdminPage, ClinicsPage))
 import Pages.Update
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (decodeSingleDrupalEntity)
@@ -28,7 +29,7 @@ import Translate exposing (Language(..), languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
 import User.Decoder exposing (decodeUser)
 import User.Encoder exposing (encodeUser)
-import User.Model exposing (User)
+import User.Model exposing (Role(Administrator), User)
 import ZScore.Model
 import ZScore.Update
 
@@ -168,10 +169,15 @@ update msg model =
                                     redirect =
                                         case model.activePage of
                                             LoginPage ->
-                                                -- For now, just tranition to the
-                                                -- clinics page ... we'll need to
-                                                -- make more choices eventually.
-                                                [ SetActivePage <| UserPage <| ClinicsPage Nothing ]
+                                                case subModel of
+                                                    LoggedIn { credentials } ->
+                                                        if EverySet.member Administrator credentials.user.roles then
+                                                            [ SetActivePage <| UserPage AdminPage ]
+                                                        else
+                                                            [ SetActivePage <| UserPage <| ClinicsPage Nothing ]
+
+                                                    _ ->
+                                                        []
 
                                             _ ->
                                                 -- If we were showing the LoginPage
