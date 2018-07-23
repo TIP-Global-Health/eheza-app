@@ -37,6 +37,16 @@ view config language currentDate user backend model =
                 contentForAdmin config language currentDate backend model
             else
                 contentForOthers language
+
+        goBackMsg =
+            -- If we're showing a create session form, then the back link
+            -- hides the form. Otherwise, it goes back to the LoginPage.
+            case model.createSession of
+                Just _ ->
+                    ShowCreateSessionForm False
+
+                Nothing ->
+                    SetActivePage LoginPage
     in
     div [ class "wrap wrap-alt-2 admin-page" ]
         [ div
@@ -46,7 +56,7 @@ view config language currentDate user backend model =
                 [ text <| translate language Translate.Admin ]
             , a
                 [ class "link-back"
-                , onClick <| SetActivePage LoginPage
+                , onClick goBackMsg
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []

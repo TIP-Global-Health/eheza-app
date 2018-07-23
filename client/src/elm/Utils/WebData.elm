@@ -1,4 +1,4 @@
-module Utils.WebData exposing (resetError, sendWithHandler, viewError, viewOrFetch, whenNotAsked)
+module Utils.WebData exposing (resetError, resetSuccess, sendWithHandler, viewError, viewOrFetch, whenNotAsked)
 
 import Html exposing (..)
 import Html.Attributes exposing (class)
@@ -102,6 +102,16 @@ resetError : RemoteData e a -> RemoteData e a
 resetError data =
     case data of
         Failure _ ->
+            NotAsked
+
+        _ ->
+            data
+
+
+resetSuccess : RemoteData e a -> RemoteData e a
+resetSuccess data =
+    case data of
+        Success _ ->
             NotAsked
 
         _ ->
