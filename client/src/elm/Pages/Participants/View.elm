@@ -103,14 +103,14 @@ view language editableSession model =
                         , div
                             [ class "actions" ]
                             [ div
-                                [ class "two primary ui buttons" ]
+                                [ class "two ui buttons" ]
                                 [ button
                                     [ class "ui fluid button"
                                     , onClick <| ShowEndSessionDialog False
                                     ]
                                     [ text <| translate language Trans.Cancel ]
                                 , button
-                                    [ class "ui fluid button"
+                                    [ class "ui primary fluid button"
                                     , onClick CloseSession
                                     ]
                                     [ text <| translate language Trans.Continue ]
