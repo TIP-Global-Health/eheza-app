@@ -5,6 +5,7 @@ import Backend.Child.Model exposing (Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
 import Date exposing (Month(..))
+import Form.Error exposing (ErrorValue(..))
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (fromEntityId)
 import Restful.Login exposing (LoginError(..))
@@ -162,6 +163,7 @@ type TranslationId
     | Children
     | ClickTheCheckMark
     | ClinicNotFound
+    | Clinic
     | Clinics
     | Closed
     | ConfirmDeleteTrainingSessions
@@ -193,6 +195,8 @@ type TranslationId
     | ErrorTimeout
     | FamilyPlanningSignLabel FamilyPlanningSign
     | Fetch
+    | FormError (ErrorValue ValidationError)
+    | FormField String
     | FutureSessions
     | Gender Gender
     | GoHome
@@ -237,6 +241,7 @@ type TranslationId
     | PlaceholderEnterWeight
     | PlaceholderTextGroupDate
     | PlaceholderTextJoined
+    | PleaseSelectClinic
     | PreviousFloatMeasurement Float
     | ReadyToBeginSession
     | ReportAge String
@@ -275,7 +280,6 @@ type TranslationId
     | UploadingSession1
     | UploadingSession2
     | UploadSuccessful
-    | ValidationError ValidationError
     | ValidationErrors
     | ViewProgressReport
     | WelcomeUser String
@@ -669,6 +673,11 @@ translationSet trans =
             , kinyarwanda = Just "Ikigo nderabuzima nticyabonetse"
             }
 
+        Clinic ->
+            { english = "Clinic"
+            , kinyarwanda = Just "Ikigo nderabuzima"
+            }
+
         Clinics ->
             { english = "Clinics"
             , kinyarwanda = Just "Ibigo nderebuzima"
@@ -856,6 +865,12 @@ translationSet trans =
             , kinyarwanda = Just "Gushakisha"
             }
 
+        FormError errorValue ->
+            translateFormError errorValue
+
+        FormField field ->
+            translateFormField field
+
         FutureSessions ->
             { english = "Future Sessions"
             , kinyarwanda = Nothing
@@ -1030,7 +1045,7 @@ translationSet trans =
 
         OK ->
             { english = "OK"
-            , kinyarwanda = Just "Nibyo ,yego"
+            , kinyarwanda = Just "Nibyo, yego"
             }
 
         Old ->
@@ -1040,7 +1055,7 @@ translationSet trans =
 
         OnceYouEndYourSession ->
             { english = "Once you end your session, you will no longer be able to edit or add data. Remember to upload this session within the next 48 hours."
-            , kinyarwanda = Just "Igihe igikorwa cyawe ukirangije,ntubasha guhindura cyangwa kongera kubipimo,ibka kubyohereza mumasaha 48"
+            , kinyarwanda = Just "Igihe igikorwa cyawe ukirangije,ntubasha guhindura cyangwa kongera kubipimo, ibka kubyohereza mumasaha 48"
             }
 
         Page ->
@@ -1093,6 +1108,11 @@ translationSet trans =
             , kinyarwanda = Just "Yinjiye muri kamena 2017"
             }
 
+        PleaseSelectClinic ->
+            { english = "Please select the relevant clinic for the new session"
+            , kinyarwanda = Nothing
+            }
+
         PreviousFloatMeasurement value ->
             { english = "Previous measurement: " ++ toString value
             , kinyarwanda = Just <| "Ibipimo by'ubushize: " ++ toString value
@@ -1124,8 +1144,8 @@ translationSet trans =
             }
 
         ReportCompleted { pending, total } ->
-            { english = toString (total - pending) ++ " / " ++ toString total ++ "Completed"
-            , kinyarwanda = Just <| toString (total - pending) ++ " / " ++ toString total ++ "Raporo irarangiye"
+            { english = toString (total - pending) ++ " / " ++ toString total ++ " Completed"
+            , kinyarwanda = Just <| toString (total - pending) ++ " / " ++ toString total ++ " Raporo irarangiye"
             }
 
         ResolveMonth month ->
@@ -1254,7 +1274,7 @@ translationSet trans =
 
         UnableToUpload ->
             { english = "Unable to Upload"
-            , kinyarwanda = Just "Kwohereza health assessment ntibikunda(kohereza ntibikunda)"
+            , kinyarwanda = Just "Kwohereza health assessment ntibikunda (kohereza ntibikunda)"
             }
 
         Update ->
@@ -1286,9 +1306,6 @@ translationSet trans =
             { english = "Upload Successful"
             , kinyarwanda = Just "Kwohereza byagenze neza"
             }
-
-        ValidationError err ->
-            translateValidationError err
 
         ValidationErrors ->
             { english = "Validation Errors"
@@ -1322,22 +1339,22 @@ translationSet trans =
 
         ZScoreHeightForAge ->
             { english = "Z-Score Height for Age: "
-            , kinyarwanda = Just "Z-score Uburebure ku myaka:"
+            , kinyarwanda = Just "Z-score Uburebure ku myaka: "
             }
 
         ZScoreMuacForAge ->
             { english = "MUAC for Age: "
-            , kinyarwanda = Just "MUAC ku myaka"
+            , kinyarwanda = Just "MUAC ku myaka: "
             }
 
         ZScoreWeightForAge ->
             { english = "Z-Score Weight for Age: "
-            , kinyarwanda = Just "Z-score Ibiro ku myaka"
+            , kinyarwanda = Just "Z-score Ibiro ku myaka: "
             }
 
         ZScoreWeightForHeight ->
             { english = "Z-Score Weight for Height: "
-            , kinyarwanda = Just "Z-score Ibiro ku uburebure"
+            , kinyarwanda = Just "Z-score Ibiro ku uburebure: "
             }
 
 
@@ -1508,7 +1525,7 @@ translateLoginPhrase phrase =
 
         LoggedInAs ->
             { english = "Logged in as"
-            , kinyarwanda = Just "Kwinjira nka …"
+            , kinyarwanda = Just "Kwinjira nka"
             }
 
         LoginError error ->
@@ -1652,6 +1669,115 @@ translateValidationError : ValidationError -> TranslationSet
 translateValidationError id =
     case id of
         UnknownClinic ->
-            { english = "Unknown clinic"
+            { english = "is not a known clinic"
+            , kinyarwanda = Nothing
+            }
+
+
+translateFormError : ErrorValue ValidationError -> TranslationSet
+translateFormError error =
+    case error of
+        Empty ->
+            { english = "should not be empty"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidString ->
+            { english = "is not a valid string"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidEmail ->
+            { english = "is not a valid email"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidFormat ->
+            { english = "is not a valid format"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidInt ->
+            { english = "is not a valid integer"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidFloat ->
+            { english = "is not a valid number"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidBool ->
+            { english = "is not a valid boolean"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidDate ->
+            { english = "is not a valid date"
+            , kinyarwanda = Nothing
+            }
+
+        SmallerIntThan int ->
+            { english = "must be smaller than " ++ toString int
+            , kinyarwanda = Nothing
+            }
+
+        GreaterIntThan int ->
+            { english = "must be larger than " ++ toString int
+            , kinyarwanda = Nothing
+            }
+
+        SmallerFloatThan float ->
+            { english = "must be smaller than " ++ toString float
+            , kinyarwanda = Nothing
+            }
+
+        GreaterFloatThan float ->
+            { english = "must be larger than " ++ toString float
+            , kinyarwanda = Nothing
+            }
+
+        ShorterStringThan int ->
+            { english = "must have fewer than " ++ toString int ++ " characters"
+            , kinyarwanda = Nothing
+            }
+
+        LongerStringThan int ->
+            { english = "must have more than " ++ toString int ++ " characters"
+            , kinyarwanda = Nothing
+            }
+
+        NotIncludedIn ->
+            { english = "was not among the valid options"
+            , kinyarwanda = Nothing
+            }
+
+        CustomError e ->
+            translateValidationError e
+
+
+{-| This one is hampered by the fact that the field names in etaque/elm-form
+are untyped strings, but we do our best.
+-}
+translateFormField : String -> TranslationSet
+translateFormField field =
+    case field of
+        "clinic_id" ->
+            translationSet Clinic
+
+        "closed" ->
+            translationSet Closed
+
+        "training" ->
+            translationSet Clinic
+
+        "scheduled_date.start" ->
+            translationSet StartDate
+
+        "scheduled_date.end" ->
+            translationSet EndDate
+
+        _ ->
+            { english = field
             , kinyarwanda = Nothing
             }
