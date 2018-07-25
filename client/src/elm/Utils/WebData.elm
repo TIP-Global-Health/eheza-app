@@ -5,10 +5,27 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Http exposing (Error, expectJson)
 import HttpBuilder exposing (..)
-import Json.Decode exposing (Decoder, list)
+import Json.Decode exposing (Decoder, field, list)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner)
+
+
+{-| Represents the "body" sent by Drupal with an HTTP error.
+-}
+type alias DrupalError =
+    { type_ : String
+    , title : String
+    , status : Int
+    }
+
+
+decodeDrupalError : Decoder DrupalError
+decodeDrupalError =
+    Json.Decode.map3 DrupalError
+        (field "type" Json.Decode.string)
+        (field "title" Json.Decode.string)
+        (field "status" Json.Decode.int)
 
 
 {-| Provide some `Html` to view an error message.
@@ -32,9 +49,19 @@ viewError language error =
             div [] [ text <| translate language Translate.ErrorTimeout ]
 
         Http.BadStatus response ->
+            let
+                decodedBody =
+                    case Json.Decode.decodeString decodeDrupalError response.body of
+                        Ok decoded ->
+                            decoded.title
+
+                        Err err ->
+                            response.body
+            in
             div []
                 [ div [] [ text <| translate language Translate.ErrorBadStatus ]
-                , div [] [ text response.status.message ]
+                , p [] [ text response.status.message ]
+                , p [] [ text decodedBody ]
                 ]
 
 
