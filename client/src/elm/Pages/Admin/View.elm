@@ -126,30 +126,30 @@ viewCreateSessionForm config language backend model form clinics sessions =
                 :: (clinics |> EveryDictList.toList |> List.sortBy (Tuple.second >> .name) |> List.map clinicOption)
 
         requestStatus =
-            -- We only show the network issues until you make changes.
-            if Set.isEmpty (Form.getChangedFields form) then
-                case backend.postSessionRequest of
-                    Success _ ->
+            case backend.postSessionRequest of
+                Success _ ->
+                    -- We only show the success message until you make changes.
+                    if Set.isEmpty (Form.getChangedFields form) then
                         div
                             [ class "ui success message" ]
                             [ div [ class "header" ] [ text <| translate language Translate.Success ]
                             , div [] [ text <| translate language Translate.YourSessionHasBeenSaved ]
                             ]
-
-                    Failure err ->
-                        div
-                            [ class "ui warning message" ]
-                            [ div [ class "header" ] [ text <| translate language Translate.BackendError ]
-                            , viewError language err
-                            ]
-
-                    Loading ->
-                        viewLoading
-
-                    NotAsked ->
+                    else
                         emptyNode
-            else
-                emptyNode
+
+                Failure err ->
+                    div
+                        [ class "ui warning message" ]
+                        [ div [ class "header" ] [ text <| translate language Translate.BackendError ]
+                        , viewError language err
+                        ]
+
+                Loading ->
+                    viewLoading
+
+                NotAsked ->
+                    emptyNode
     in
     [ h2 [] [ text <| translate language Translate.CreateSession ]
     , div
@@ -397,8 +397,8 @@ viewPostTrainingSessionsMessage config language backend =
                 Failure err ->
                     div
                         [ class "ui error message" ]
-                        [ div [ class "header" ] [ text <| translate language Translate.ErrorBadStatus ]
-                        , div [ class "small text" ] [ text <| toString err ]
+                        [ div [ class "header" ] [ text <| translate language Translate.BackendError ]
+                        , viewError language err
                         ]
 
                 Loading ->
