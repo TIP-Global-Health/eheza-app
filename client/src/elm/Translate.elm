@@ -1038,7 +1038,7 @@ translationSet trans =
 
         OK ->
             { english = "OK"
-            , kinyarwanda = Just "Nibyo ,yego"
+            , kinyarwanda = Just "Nibyo, yego"
             }
 
         Old ->
@@ -1048,7 +1048,7 @@ translationSet trans =
 
         OnceYouEndYourSession ->
             { english = "Once you end your session, you will no longer be able to edit or add data. Remember to upload this session within the next 48 hours."
-            , kinyarwanda = Just "Igihe igikorwa cyawe ukirangije,ntubasha guhindura cyangwa kongera kubipimo,ibka kubyohereza mumasaha 48"
+            , kinyarwanda = Just "Igihe igikorwa cyawe ukirangije,ntubasha guhindura cyangwa kongera kubipimo, ibka kubyohereza mumasaha 48"
             }
 
         Page ->
@@ -1137,8 +1137,8 @@ translationSet trans =
             }
 
         ReportCompleted { pending, total } ->
-            { english = toString (total - pending) ++ " / " ++ toString total ++ "Completed"
-            , kinyarwanda = Just <| toString (total - pending) ++ " / " ++ toString total ++ "Raporo irarangiye"
+            { english = toString (total - pending) ++ " / " ++ toString total ++ " Completed"
+            , kinyarwanda = Just <| toString (total - pending) ++ " / " ++ toString total ++ " Raporo irarangiye"
             }
 
         ResolveMonth month ->
@@ -1262,7 +1262,7 @@ translationSet trans =
 
         UnableToUpload ->
             { english = "Unable to Upload"
-            , kinyarwanda = Just "Kwohereza health assessment ntibikunda(kohereza ntibikunda)"
+            , kinyarwanda = Just "Kwohereza health assessment ntibikunda (kohereza ntibikunda)"
             }
 
         Update ->
@@ -1513,7 +1513,7 @@ translateLoginPhrase phrase =
 
         LoggedInAs ->
             { english = "Logged in as"
-            , kinyarwanda = Just "Kwinjira nka …"
+            , kinyarwanda = Just "Kwinjira nka"
             }
 
         LoginError error ->
