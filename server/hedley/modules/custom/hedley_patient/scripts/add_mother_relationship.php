@@ -1,11 +1,14 @@
 <?php
+
 /**
  * @file
- * Triggering the process of adding a mother "relationship" to all the existing
- * "mother" entities.
+ * Triggering the process of adding a mother "relationship".
+ *
+ * Adding this value to to all the existing "mother" entities.
  *
  * @run: drush scr profiles/hedley/modules/custom/hedley_patient/scripts/add_mother_relationship.php
  */
+
 // Get the last node id.
 $nid = drush_get_option('nid', 0);
 // Get the number of nodes to be processed.
@@ -68,10 +71,10 @@ while ($i < $count) {
     '@max' => $count,
   );
   drush_print(format_string('Process entities from id @start to id @end. Batch state: @iterator/@max', $params));
-  if (round(memory_get_usage()/1048576) >= $memory_limit) {
+  if (round(memory_get_usage() / 1048576) >= $memory_limit) {
     $params = array(
-      '@memory' => round(memory_get_usage()/1048576),
-      '@max_memory' => memory_get_usage(TRUE)/1048576,
+      '@memory' => round(memory_get_usage() / 1048576),
+      '@max_memory' => memory_get_usage(TRUE) / 1048576,
     );
     drush_print(format_string('Stopped before out of memory. Start process from the node ID @nid', array('@nid' => end($ids))), 'error');
     return;
