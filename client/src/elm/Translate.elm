@@ -1543,7 +1543,7 @@ translateLoginPhrase phrase =
                     }
 
                 _ ->
-                    { english = "The following error occurred contacting the server. " ++ toString error
+                    { english = "The following error occurred while contacting the server. " ++ toString error
                     , kinyarwanda = Just <| "Aya makosa yagaragaye hamagara kuri seriveri. " ++ toString error
                     }
 
