@@ -384,6 +384,43 @@ function hedley_patient_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-mother-field_relationship'.
+  $field_instances['node-mother-field_relationship'] = array(
+    'bundle' => 'mother',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_relationship',
+    'label' => 'Relationship',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 10,
+    ),
+  );
+
   // Exported field_instance: 'node-mother-field_ubudehe'.
   $field_instances['node-mother-field_ubudehe'] = array(
     'bundle' => 'mother',
@@ -430,6 +467,7 @@ function hedley_patient_field_default_field_instances() {
   t('Gender');
   t('Mother');
   t('Profile photo');
+  t('Relationship');
   t('Ubudehe');
   t('What is the highest level of education you have completed?');
 
