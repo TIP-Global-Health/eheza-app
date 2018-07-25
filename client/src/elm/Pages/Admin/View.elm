@@ -9,6 +9,7 @@ import Config.Model as Config
 import EveryDictList exposing (EveryDictList)
 import EverySet
 import Form
+import Form.Error exposing (ErrorValue)
 import Form.Input exposing (..)
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
@@ -22,7 +23,7 @@ import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityId)
 import Set
 import Time.Date
-import Translate exposing (Language, translate)
+import Translate exposing (Language, ValidationError, translate)
 import User.Model exposing (..)
 import Utils.Html exposing (spinner)
 import Utils.WebData exposing (viewError, viewOrFetch)
@@ -36,6 +37,16 @@ view config language currentDate user backend model =
                 contentForAdmin config language currentDate backend model
             else
                 contentForOthers language
+
+        goBackMsg =
+            -- If we're showing a create session form, then the back link
+            -- hides the form. Otherwise, it goes back to the LoginPage.
+            case model.createSession of
+                Just _ ->
+                    ShowCreateSessionForm False
+
+                Nothing ->
+                    SetActivePage LoginPage
     in
     div [ class "wrap wrap-alt-2 admin-page" ]
         [ div
@@ -45,7 +56,7 @@ view config language currentDate user backend model =
                 [ text <| translate language Translate.Admin ]
             , a
                 [ class "link-back"
-                , onClick <| SetActivePage LoginPage
+                , onClick goBackMsg
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []
@@ -158,7 +169,8 @@ viewCreateSessionForm config language backend model form clinics sessions =
                 , ( "error", isJust clinic.liveError )
                 ]
             ]
-            [ selectInput clinicOptions clinic []
+            [ label [] [ text <| translate language Translate.Clinic ]
+            , selectInput clinicOptions clinic []
                 |> Html.map MsgCreateSession
             ]
         , div
@@ -237,10 +249,25 @@ viewCreateSessionForm config language backend model form clinics sessions =
         , div
             [ class "ui error message" ]
             [ div [ class "header" ] [ text <| translate language Translate.ValidationErrors ]
-            , dumpErrors form
+            , List.map (viewFormError language) errors
+                |> ul []
             ]
         ]
     ]
+
+
+viewFormError : Language -> ( String, ErrorValue ValidationError ) -> Html msg
+viewFormError language ( path, error ) =
+    if path == clinicId then
+        -- We special-case this one because it's common, to get a nicer
+        -- customaized message
+        li [] [ text <| translate language Translate.PleaseSelectClinic ]
+    else
+        li []
+            [ text <| translate language <| Translate.FormField path
+            , text " "
+            , text <| translate language <| Translate.FormError error
+            ]
 
 
 viewClinicList : Config.Model -> Language -> ModelBackend -> Model -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)

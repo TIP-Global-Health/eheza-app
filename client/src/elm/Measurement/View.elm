@@ -428,7 +428,15 @@ viewPhoto language measurement photo =
                     , class "eight wide column dropzone"
                     , on "dropzonecomplete" (Json.Decode.map DropZoneComplete decodeDropZoneFile)
                     ]
-                    []
+                    [ div
+                        [ class "dz-message"
+                        , attribute "data-dz-message" ""
+                        ]
+                        [ span
+                            []
+                            [ text <| translate language Trans.DropzoneDefaultMessage ]
+                        ]
+                    ]
                     |> keyed "dropzone"
 
                 -- This runs the function from our `app.js` at the precise moment this gets
