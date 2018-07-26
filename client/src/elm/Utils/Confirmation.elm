@@ -31,8 +31,8 @@ To integrate this into `Foo.Model`, you'd want something like:
 -}
 
 import Gizra.Html exposing (emptyNode)
-import Html exposing (Html, a, div, h2, text)
-import Html.Attributes exposing (class)
+import Html exposing (Html, a, button, div, h2, p, text)
+import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
 
 
@@ -161,27 +161,33 @@ view model =
             emptyNode
 
         InProgress dialog ->
-            div [ class "ui dimmer modals page transition visible active" ]
+            div [ class "overlay" ]
                 [ div
-                    [ class "ui modal center transition visible active" ]
+                    [ class "ui active modal" ]
                     [ div
                         [ class "header" ]
                         [ h2 [] [ text dialog.title ] ]
                     , div
-                        [ class "clearfix content" ]
-                        [ text dialog.body ]
+                        [ class "content" ]
+                        [ p
+                            [ style [ ( "color", "black" ) ] ]
+                            [ text dialog.body ]
+                        ]
                     , div
                         [ class "actions" ]
-                        [ a
-                            [ onClick <| Cancel dialog.cancelMsg
-                            , class "ui button"
+                        [ div
+                            [ class "two ui buttons" ]
+                            [ button
+                                [ onClick <| Cancel dialog.cancelMsg
+                                , class "ui fluid button"
+                                ]
+                                [ text dialog.cancelButton ]
+                            , button
+                                [ onClick <| Confirm dialog.confirmMsg
+                                , class "ui fluid button primary"
+                                ]
+                                [ text dialog.okButton ]
                             ]
-                            [ text dialog.cancelButton ]
-                        , a
-                            [ onClick <| Confirm dialog.confirmMsg
-                            , class "ui button primary"
-                            ]
-                            [ text dialog.okButton ]
                         ]
                     ]
                 ]

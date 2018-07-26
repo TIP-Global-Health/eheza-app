@@ -179,6 +179,7 @@ type TranslationId
     | DateOfLastAssessment
     | Day
     | Days
+    | Delete
     | DownloadHealthAssessment
     | DownloadSession1
     | DownloadSession2
@@ -743,6 +744,11 @@ translationSet trans =
         Days ->
             { english = "days"
             , kinyarwanda = Just "Iminsi"
+            }
+
+        Delete ->
+            { english = "Delete"
+            , kinyarwanda = Nothing
             }
 
         DownloadHealthAssessment ->

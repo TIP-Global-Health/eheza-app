@@ -291,7 +291,7 @@ viewClinicList config language backend model clinics ( _, futureSessions ) =
                             , confirmMsg = MsgBackend <| Backend.Model.PostTrainingSessionRequest { action = DeleteAll }
                             , cancelMsg = Nothing
                             , cancelButton = translate language Translate.Cancel
-                            , okButton = translate language Translate.DeleteTrainingSessions
+                            , okButton = translate language Translate.Delete
                             }
                             |> MsgConfirmation
                             |> onClick
