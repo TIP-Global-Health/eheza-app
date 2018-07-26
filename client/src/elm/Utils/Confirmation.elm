@@ -51,6 +51,7 @@ type alias ConfirmationDialog msg =
     , body : String
     , okButton : String
     , confirmMsg : msg
+    , cancelButton : String
     , cancelMsg : Maybe msg
     }
 
@@ -144,9 +145,7 @@ do something roughly like this:
                     , msg = DeleteSubject subject.id
                     }
         ]
-        [ i
-            [ class "unioicon-trash" ]
-            []
+        [ i [ class "unioicon-trash" ] []
         , text "Delete"
         ]
 
@@ -177,7 +176,7 @@ view model =
                             [ onClick <| Cancel dialog.cancelMsg
                             , class "ui button"
                             ]
-                            [ text "Cancel" ]
+                            [ text dialog.cancelButton ]
                         , a
                             [ onClick <| Confirm dialog.confirmMsg
                             , class "ui button primary"

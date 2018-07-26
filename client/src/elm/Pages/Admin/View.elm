@@ -290,6 +290,7 @@ viewClinicList config language backend model clinics ( _, futureSessions ) =
                             , body = translate language Translate.ThisActionCannotBeUndone
                             , confirmMsg = MsgBackend <| Backend.Model.PostTrainingSessionRequest { action = DeleteAll }
                             , cancelMsg = Nothing
+                            , cancelButton = translate language Translate.Cancel
                             , okButton = translate language Translate.DeleteTrainingSessions
                             }
                             |> MsgConfirmation
