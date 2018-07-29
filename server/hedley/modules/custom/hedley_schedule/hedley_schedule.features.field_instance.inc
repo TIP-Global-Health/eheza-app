@@ -10,6 +10,126 @@
 function hedley_schedule_field_default_field_instances() {
   $field_instances = array();
 
+  // Exported field_instance: 'node-counseling_topic-field_english_title'.
+  $field_instances['node-counseling_topic-field_english_title'] = array(
+    'bundle' => 'counseling_topic',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Use carefully your edit credentials, avoid any substantial changes. Any change will affect past (saved) data as well. If possible, create a new topic and connect to the relevant counseling meeting.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_english_title',
+    'label' => 'English Title',
+    'required' => 1,
+    'settings' => array(
+      'hide_label' => array(
+        'entity' => 0,
+        'page' => 0,
+      ),
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => -5,
+    ),
+  );
+
+  // Exported field_instance: 'node-counseling_topic-field_kinyarwanda_title'.
+  $field_instances['node-counseling_topic-field_kinyarwanda_title'] = array(
+    'bundle' => 'counseling_topic',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 1,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_kinyarwanda_title',
+    'label' => 'Kinyarwanda Title',
+    'required' => 1,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => -4,
+    ),
+  );
+
+  // Exported field_instance: 'node-counseling_topic-field_timing'.
+  $field_instances['node-counseling_topic-field_timing'] = array(
+    'bundle' => 'counseling_topic',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 2,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_timing',
+    'label' => 'Timing',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => -3,
+    ),
+  );
+
   // Exported field_instance: 'node-session-field_clinic'.
   $field_instances['node-session-field_clinic'] = array(
     'bundle' => 'session',
@@ -199,16 +319,20 @@ This should not be used on the "live" site -- it is only intended for the "sandb
   // Included for use with string extractors like potx.
   t('Clinic');
   t('Closed');
+  t('English Title');
   t('Enter the clinic for which data-entry is being scheduled.');
   t('Has the session been explicitly closed by the user?');
   t('If checked, indicates that this is a "training" session that should be deleted when deleting all training sessions. (Other sessions in the training site would remain, to populate the progress report).
 
 This should not be used on the "live" site -- it is only intended for the "sandbox" site.');
+  t('Kinyarwanda Title');
   t('Scheduled Date');
   t('The start date is the date on which the data entry is scheduled.
 
 The end date is the last day on which data entry will be allowed for this session through the client app (for editing, or measurements that are taken later). After this date, the session will be considered closed.');
+  t('Timing');
   t('Training');
+  t('Use carefully your edit credentials, avoid any substantial changes. Any change will affect past (saved) data as well. If possible, create a new topic and connect to the relevant counseling meeting.');
 
   return $field_instances;
 }
