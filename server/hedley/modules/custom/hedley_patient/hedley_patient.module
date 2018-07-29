@@ -63,3 +63,14 @@ function hedley_patient_trigger_pusher_on_item_data_change($node) {
 
   hedley_pusher_trigger_event('general', $event_name, $data[0]);
 }
+
+/**
+ * Implements hook_query_TAG_alter().
+ *
+ * Add to a query which needs to get all entities without a 'field_relationship'
+ * value (is null).
+ */
+function hedley_patient_query_exclude_existing_relationships_alter(QueryAlterableInterface $query) {
+  $query->leftJoin('field_data_field_relationship', 'r', 'node.nid = r.entity_id');
+  $query->isNull('r.field_relationship_value');
+}

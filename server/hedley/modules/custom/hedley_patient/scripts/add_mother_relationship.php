@@ -21,6 +21,7 @@ $base_query
   ->entityCondition('entity_type', 'node')
   ->propertyCondition('type', 'mother')
   ->propertyOrderBy('nid', 'ASC')
+  ->addTag('exclude_existing_relationships')
   ->addTag('DANGEROUS_ACCESS_CHECK_OPT_OUT');
 if ($nid) {
   $base_query->propertyCondition('nid', $nid, '>');
@@ -28,6 +29,17 @@ if ($nid) {
 
 $query_count = clone $base_query;
 $count = $query_count->count()->execute();
+
+if ($count) {
+  drush_print(format_string('Found @count nodes with a missing relationship, updating those nodes with a "mother" relationship.', [
+    '@count' => $count,
+  ]));
+}
+else {
+  drush_print(format_string('Did NOT find any node that needs setting a relationship, stopping the process.'));
+  return;
+}
+
 while ($i < $count) {
   // Free up memory.
   drupal_static_reset();
