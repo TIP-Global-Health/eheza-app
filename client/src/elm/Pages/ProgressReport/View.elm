@@ -125,7 +125,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                             , strong []
                                 [ maybeMother
                                     |> Maybe.map .name
-                                    |> Maybe.withDefault "Unknown"
+                                    |> Maybe.withDefault (translate language Translate.Unknown)
                                     |> text
                                 ]
                             ]

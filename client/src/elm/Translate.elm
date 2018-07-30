@@ -278,6 +278,7 @@ type TranslationId
     | TrainingSessionDeleteSuccessMessage
     | UnableToDownload
     | UnableToUpload
+    | Unknown
     | Update
     | UpdateError
     | UploadHealthAssessment
@@ -1289,6 +1290,11 @@ translationSet trans =
         UnableToUpload ->
             { english = "Unable to Upload"
             , kinyarwanda = Just "Kwohereza health assessment ntibikunda (kohereza ntibikunda)"
+            }
+
+        Unknown ->
+            { english = "Unknown"
+            , kinyarwanda = Nothing
             }
 
         Update ->
