@@ -81,6 +81,7 @@ projects[og][version] = 2.x
 
 projects[prepopulate][subdir] = "contrib"
 projects[prepopulate][version] = 2.1
+projects[prepopulate][patch][] = "https://www.drupal.org/files/issues/prepopulate-2679839-55.patch"
 
 projects[restful][subdir] = "contrib"
 projects[restful][version] = "1.8"

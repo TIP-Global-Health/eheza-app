@@ -173,10 +173,11 @@ function hedley_admin_menu_default_menu_links() {
     'router_path' => 'node/add',
     'link_title' => 'Create caregiver',
     'options' => array(
-      'attributes' => array(
-        'title' => '',
-      ),
+      'attributes' => array(),
       'identifier' => 'menu-ihangane-admin-menu_create-caregiver:node/add/mother',
+      'query' => array(
+        'edit[field_relationship][und]' => 'caregiver',
+      ),
     ),
     'module' => 'menu',
     'hidden' => 0,
