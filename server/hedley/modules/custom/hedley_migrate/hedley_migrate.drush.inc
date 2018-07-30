@@ -21,7 +21,7 @@ function hedley_migrate_drush_command() {
 
   // This is a drush command so you can easily create sample sessions for today.
   $items['create-sessions-today'] = [
-    'callback' => 'hedley_create_sessions_today',
+    'callback' => 'hedley_migrate_create_sessions_today',
     'description' => 'Create a session for today for all clinics (for devel)',
     'arguments' => [],
     'options' => [],
@@ -36,7 +36,7 @@ function hedley_migrate_drush_command() {
  *
  * This is for devel purposes (and possibly useful for testing).
  */
-function hedley_create_sessions_today() {
+function hedley_migrate_create_sessions_today() {
   // Get all the clinic IDs.
   $clinic_query = new EntityFieldQuery();
   $clinic_result = $clinic_query
