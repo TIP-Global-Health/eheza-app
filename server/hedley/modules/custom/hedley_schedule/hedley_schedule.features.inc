@@ -28,8 +28,8 @@ Each mother is assigned to a clinic.'),
       'title_label' => t('Title'),
       'help' => '',
     ),
-    'counseling' => array(
-      'name' => t('Counseling'),
+    'counseling_session' => array(
+      'name' => t('Counseling Session'),
       'base' => 'node_content',
       'description' => t('This new entity will analogue to the other "measurement"/examination entities (muac, photo, height, weight etc.)'),
       'has_title' => '1',

@@ -10,9 +10,9 @@
 function hedley_schedule_field_default_field_instances() {
   $field_instances = array();
 
-  // Exported field_instance: 'node-counseling-field_child'.
-  $field_instances['node-counseling-field_child'] = array(
-    'bundle' => 'counseling',
+  // Exported field_instance: 'node-counseling_session-field_child'.
+  $field_instances['node-counseling_session-field_child'] = array(
+    'bundle' => 'counseling_session',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -25,7 +25,7 @@ function hedley_schedule_field_default_field_instances() {
           'link' => FALSE,
         ),
         'type' => 'entityreference_label',
-        'weight' => 0,
+        'weight' => 2,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -54,9 +54,9 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-counseling-field_date_measured'.
-  $field_instances['node-counseling-field_date_measured'] = array(
-    'bundle' => 'counseling',
+  // Exported field_instance: 'node-counseling_session-field_date_measured'.
+  $field_instances['node-counseling_session-field_date_measured'] = array(
+    'bundle' => 'counseling_session',
     'deleted' => 0,
     'description' => '',
     'display' => array(
@@ -72,7 +72,7 @@ function hedley_schedule_field_default_field_instances() {
           'show_remaining_days' => FALSE,
         ),
         'type' => 'date_default',
-        'weight' => 1,
+        'weight' => 3,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -109,9 +109,9 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-counseling-field_session'.
-  $field_instances['node-counseling-field_session'] = array(
-    'bundle' => 'counseling',
+  // Exported field_instance: 'node-counseling_session-field_session'.
+  $field_instances['node-counseling_session-field_session'] = array(
+    'bundle' => 'counseling_session',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -124,7 +124,7 @@ function hedley_schedule_field_default_field_instances() {
           'link' => FALSE,
         ),
         'type' => 'entityreference_label',
-        'weight' => 2,
+        'weight' => 4,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -149,13 +149,13 @@ function hedley_schedule_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 4,
+      'weight' => 3,
     ),
   );
 
-  // Exported field_instance: 'node-counseling-field_topics'.
-  $field_instances['node-counseling-field_topics'] = array(
-    'bundle' => 'counseling',
+  // Exported field_instance: 'node-counseling_session-field_topics'.
+  $field_instances['node-counseling_session-field_topics'] = array(
+    'bundle' => 'counseling_session',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -168,7 +168,7 @@ function hedley_schedule_field_default_field_instances() {
           'link' => FALSE,
         ),
         'type' => 'entityreference_label',
-        'weight' => 3,
+        'weight' => 1,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -193,7 +193,7 @@ function hedley_schedule_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 5,
+      'weight' => 4,
     ),
   );
 

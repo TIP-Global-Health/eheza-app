@@ -11,7 +11,7 @@
 class HedleyMigrateCounselingSessions extends HedleyMigrateBase {
 
   protected $entityType = 'node';
-  protected $bundle = 'counseling';
+  protected $bundle = 'counseling_session';
   protected $csvColumns = [
     'id',
     'topics',
@@ -37,10 +37,10 @@ class HedleyMigrateCounselingSessions extends HedleyMigrateBase {
   /**
    * Add reference values to the entity.
    *
-   * @todo: Convert the child & session migration to a csv migration.
-   *
    * @param object $entity
    *   The entity.
+   *
+   * @todo: Convert the child & session migration to a csv migration.
    */
   public function prepare($entity) {
     // Get one random child to reference in this counseling session.

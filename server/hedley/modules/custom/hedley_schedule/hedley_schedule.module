@@ -52,7 +52,7 @@ function hedley_schedule_node_presave($node) {
     }
   }
 
-  if ($node->type == 'counseling') {
+  if ($node->type == 'counseling_session') {
     // Handles only "counseling" nodes saves.
     if ($node->title) {
       // No need to set title if it exists.
