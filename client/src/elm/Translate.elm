@@ -168,6 +168,7 @@ type TranslationId
     | Clinic
     | Clinics
     | Closed
+    | ConfirmDeleteTrainingSessions
     | Connected
     | Continue
     | CreateSession
@@ -178,6 +179,7 @@ type TranslationId
     | DateOfLastAssessment
     | Day
     | Days
+    | Delete
     | DownloadHealthAssessment
     | DownloadSession1
     | DownloadSession2
@@ -267,6 +269,7 @@ type TranslationId
     | StartDate
     | EndDate
     | Success
+    | ThisActionCannotBeUndone
     | ThisClinicHasNoMothers
     | TitleHealthAssessment
     | Training
@@ -688,6 +691,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        ConfirmDeleteTrainingSessions ->
+            { english = "Are you sure you want to delete all training sessions?"
+            , kinyarwanda = Nothing
+            }
+
         Connected ->
             { english = "Connected"
             , kinyarwanda = Just "Ufite interineti (murandasi)"
@@ -736,6 +744,11 @@ translationSet trans =
         Days ->
             { english = "days"
             , kinyarwanda = Just "Iminsi"
+            }
+
+        Delete ->
+            { english = "Delete"
+            , kinyarwanda = Nothing
             }
 
         DownloadHealthAssessment ->
@@ -1229,6 +1242,11 @@ translationSet trans =
 
         Success ->
             { english = "Success"
+            , kinyarwanda = Nothing
+            }
+
+        ThisActionCannotBeUndone ->
+            { english = "This action cannot be undone."
             , kinyarwanda = Nothing
             }
 
