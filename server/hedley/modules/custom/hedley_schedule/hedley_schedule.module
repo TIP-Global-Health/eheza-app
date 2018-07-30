@@ -15,7 +15,7 @@ include_once 'hedley_schedule.features.inc';
  *
  * @see hedley_schedule_node_presave()
  */
-function hedley_schedule_form_counseling_node_form_alter(&$form, &$form_state) {
+function hedley_schedule_form_counseling_session_node_form_alter(&$form, &$form_state) {
   $form['title']['#access'] = FALSE;
 }
 
