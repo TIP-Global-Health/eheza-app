@@ -267,6 +267,7 @@ type TranslationId
     | StartDate
     | EndDate
     | Success
+    | TakenCareOfBy
     | ThisClinicHasNoMothers
     | TitleHealthAssessment
     | Training
@@ -1229,6 +1230,11 @@ translationSet trans =
 
         Success ->
             { english = "Success"
+            , kinyarwanda = Nothing
+            }
+
+        TakenCareOfBy ->
+            { english = "Taken care of by"
             , kinyarwanda = Nothing
             }
 
