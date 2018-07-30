@@ -146,6 +146,23 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'field_bundle_settings_node__counseling';
+  $strongarm->value = array(
+    'view_modes' => array(),
+    'extra_fields' => array(
+      'form' => array(
+        'title' => array(
+          'weight' => '-5',
+        ),
+      ),
+      'display' => array(),
+    ),
+  );
+  $export['field_bundle_settings_node__counseling'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__family_planning';
   $strongarm->value = array(
     'view_modes' => array(),
@@ -261,6 +278,15 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'menu_options_counseling';
+  $strongarm->value = array(
+    0 => 'main-menu',
+  );
+  $export['menu_options_counseling'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'menu_options_family_planning';
   $strongarm->value = array(
     0 => 'main-menu',
@@ -315,6 +341,13 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'menu_parent_counseling';
+  $strongarm->value = 'main-menu:0';
+  $export['menu_parent_counseling'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'menu_parent_family_planning';
   $strongarm->value = 'main-menu:0';
   $export['menu_parent_family_planning'] = $strongarm;
@@ -353,6 +386,16 @@ function hedley_activity_strongarm() {
   $strongarm->name = 'menu_parent_weight';
   $strongarm->value = 'main-menu:0';
   $export['menu_parent_weight'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'node_options_counseling';
+  $strongarm->value = array(
+    0 => 'status',
+    1 => 'promote',
+  );
+  $export['node_options_counseling'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -415,6 +458,13 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'node_preview_counseling';
+  $strongarm->value = '1';
+  $export['node_preview_counseling'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'node_preview_family_planning';
   $strongarm->value = '1';
   $export['node_preview_family_planning'] = $strongarm;
@@ -453,6 +503,13 @@ function hedley_activity_strongarm() {
   $strongarm->name = 'node_preview_weight';
   $strongarm->value = '1';
   $export['node_preview_weight'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'node_submitted_counseling';
+  $strongarm->value = 1;
+  $export['node_submitted_counseling'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
