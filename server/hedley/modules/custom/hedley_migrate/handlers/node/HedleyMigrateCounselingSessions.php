@@ -35,12 +35,12 @@ class HedleyMigrateCounselingSessions extends HedleyMigrateBase {
   }
 
   /**
-   * Add reference values to the entity.
+   * Temporary; Add random reference values to the entity.
    *
    * @param object $entity
    *   The entity.
    *
-   * @todo: Convert the child & session migration to a csv migration.
+   * @todo: Remove when converting randomly generated data to CSV data.
    */
   public function prepare($entity) {
     // Get one random child to reference in this counseling session.
