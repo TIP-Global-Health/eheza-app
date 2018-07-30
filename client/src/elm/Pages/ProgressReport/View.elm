@@ -80,7 +80,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
             child.motherId
                 |> Maybe.andThen (\motherId -> getMother motherId session.offlineSession)
 
-        motherRelationText =
+        relationText =
             maybeMother
                 |> Maybe.map .relation
                 -- In case if mother is Nothing, we will show `Child of`.
@@ -120,7 +120,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                             , text " "
                             , strong [] [ text <| renderDate language child.birthDate ]
                             , br [] []
-                            , text <| translate language motherRelationText
+                            , text <| translate language relationText
                             , text " "
                             , strong []
                                 [ maybeMother
