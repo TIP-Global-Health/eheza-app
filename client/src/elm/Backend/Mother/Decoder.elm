@@ -25,3 +25,21 @@ decodeMother =
             )
         |> required "children" (oneOf [ list decodeEntityId, decodeNullAsEmptyArray ])
         |> required "date_birth" decodeYYYYMMDD
+        |> optional "relation" decodeChildrenRelation MotherRelation
+
+
+decodeChildrenRelation : Decoder ChildrenRelationType
+decodeChildrenRelation =
+    string
+        |> andThen
+            (\relation ->
+                case relation of
+                    "mother" ->
+                        succeed MotherRelation
+
+                    "caregiver" ->
+                        succeed CaregiverRelation
+
+                    _ ->
+                        fail <| relation ++ " is not a recognized ChildrenRelationType"
+            )
