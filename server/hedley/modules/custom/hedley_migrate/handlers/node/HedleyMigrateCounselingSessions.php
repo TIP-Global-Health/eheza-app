@@ -37,12 +37,13 @@ class HedleyMigrateCounselingSessions extends HedleyMigrateBase {
   /**
    * Add reference values to the entity.
    *
+   * @todo: Convert the child & session migration to a csv migration.
+   *
    * @param object $entity
    *   The entity.
    */
   public function prepare($entity) {
     // Get one random child to reference in this counseling session.
-    // @todo: Convert the child & session migration to a csv migration.
     $child_query = new EntityFieldQuery();
     $child_result = $child_query
       ->entityCondition('entity_type', 'node')
@@ -56,6 +57,7 @@ class HedleyMigrateCounselingSessions extends HedleyMigrateBase {
       $entity->field_child[LANGUAGE_NONE][0]['target_id'] = key($child_result['node']);
     }
 
+    // Get one random session to reference in this counseling session.
     $today = date('Y-m-d');
     $session_query = new EntityFieldQuery();
     $session_result = $session_query
