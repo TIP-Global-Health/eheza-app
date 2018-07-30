@@ -17,4 +17,5 @@ class HedleyMigrateClinics extends HedleyMigrateBase {
     'id',
     'title',
   ];
+
 }

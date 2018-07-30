@@ -83,7 +83,6 @@ abstract class HedleyMigrateBase extends Migration {
 
   }
 
-
   /**
    * Returns the migrate directory.
    *

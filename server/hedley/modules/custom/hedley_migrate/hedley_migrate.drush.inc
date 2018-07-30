@@ -54,18 +54,7 @@ function hedley_migrate_create_sessions_today() {
   // Pick out the IDs.
   $clinic_ids = array_keys($clinic_result['node']);
 
-  $today = date("Y-m-d");
-
-  // Get all the existing sessions that start today already. We only
-  // store the date, rather than a time, so the "=" should work.
-  $session_query = new EntityFieldQuery();
-  $session_result = $session_query
-    ->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', 'session')
-    ->propertyCondition('status', NODE_PUBLISHED)
-    ->fieldCondition('field_scheduled_date', 'value', $today, '=')
-    ->range(0, 200)
-    ->execute();
+  $session_result = hedley_schedule_get_today_sessions(200);
 
   // Now, remove all the clinicIds that already have a session today.
   // There is probably a more efficient way to do this.
@@ -87,6 +76,7 @@ function hedley_migrate_create_sessions_today() {
     $wrapper->field_clinic->set($clinic_id);
 
     // For now, just permit data entry today.
+    $today = date("Y-m-d");
     $wrapper->field_scheduled_date->set([
       'value' => $today,
       'value2' => $today,
