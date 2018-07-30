@@ -12,7 +12,7 @@ function hedley_install() {
   ini_set('auto_detect_line_endings', TRUE);
 
   // Enable our themes.
-  theme_enable(array('bartik'));
+  theme_enable(['bartik']);
 
   // Set the default theme.
   variable_set('theme_default', 'bartik');
@@ -41,66 +41,66 @@ function hedley_install() {
  */
 function hedley_standard_install() {
   // Add text formats.
-  $filtered_html_format = array(
+  $filtered_html_format = [
     'format' => 'filtered_html',
     'name' => 'Filtered HTML',
     'weight' => 0,
-    'filters' => array(
+    'filters' => [
       // URL filter.
-      'filter_url' => array(
+      'filter_url' => [
         'weight' => 0,
         'status' => 1,
-      ),
+      ],
       // HTML filter.
-      'filter_html' => array(
+      'filter_html' => [
         'weight' => 1,
         'status' => 1,
-      ),
+      ],
       // Line break filter.
-      'filter_autop' => array(
+      'filter_autop' => [
         'weight' => 2,
         'status' => 1,
-      ),
+      ],
       // HTML corrector filter.
-      'filter_htmlcorrector' => array(
+      'filter_htmlcorrector' => [
         'weight' => 10,
         'status' => 1,
-      ),
-    ),
-  );
+      ],
+    ],
+  ];
   $filtered_html_format = (object) $filtered_html_format;
   filter_format_save($filtered_html_format);
 
-  $full_html_format = array(
+  $full_html_format = [
     'format' => 'full_html',
     'name' => 'Full HTML',
     'weight' => 1,
-    'filters' => array(
+    'filters' => [
       // URL filter.
-      'filter_url' => array(
+      'filter_url' => [
         'weight' => 0,
         'status' => 1,
-      ),
+      ],
       // Line break filter.
-      'filter_autop' => array(
+      'filter_autop' => [
         'weight' => 1,
         'status' => 1,
-      ),
+      ],
       // HTML corrector filter.
-      'filter_htmlcorrector' => array(
+      'filter_htmlcorrector' => [
         'weight' => 10,
         'status' => 1,
-      ),
-    ),
-  );
+      ],
+    ],
+  ];
   $full_html_format = (object) $full_html_format;
   filter_format_save($full_html_format);
 
   // Enable some standard blocks.
   $default_theme = variable_get('theme_default', 'bartik');
 
-  $values = array(
-    array(
+  $values = [
+    [
       'module' => 'system',
       'delta' => 'main',
       'theme' => $default_theme,
@@ -109,8 +109,8 @@ function hedley_standard_install() {
       'region' => 'content',
       'pages' => '',
       'cache' => -1,
-    ),
-    array(
+    ],
+    [
       'module' => 'search',
       'delta' => 'form',
       'theme' => $default_theme,
@@ -119,8 +119,8 @@ function hedley_standard_install() {
       'region' => 'search_box',
       'pages' => '',
       'cache' => -1,
-    ),
-    array(
+    ],
+    [
       'module' => 'user',
       'delta' => 'login',
       'theme' => $default_theme,
@@ -129,8 +129,8 @@ function hedley_standard_install() {
       'region' => 'sidebar_first',
       'pages' => '',
       'cache' => -1,
-    ),
-    array(
+    ],
+    [
       'module' => 'system',
       'delta' => 'help',
       'theme' => $default_theme,
@@ -139,8 +139,8 @@ function hedley_standard_install() {
       'region' => 'help',
       'pages' => '',
       'cache' => -1,
-    ),
-    array(
+    ],
+    [
       'module' => 'menu',
       'delta' => 'menu-ihangane-admin-menu',
       'theme' => $default_theme,
@@ -149,9 +149,18 @@ function hedley_standard_install() {
       'region' => 'sidebar_first',
       'pages' => '',
       'cache' => -1,
-    ),
-  );
-  $query = db_insert('block')->fields(array('module', 'delta', 'theme', 'status', 'weight', 'region', 'pages', 'cache'));
+    ],
+  ];
+  $query = db_insert('block')->fields([
+    'module',
+    'delta',
+    'theme',
+    'status',
+    'weight',
+    'region',
+    'pages',
+    'cache',
+  ]);
   foreach ($values as $record) {
     $query->values($record);
   }
@@ -167,12 +176,12 @@ function hedley_standard_install() {
   variable_set('user_register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL);
 
   // Enable default permissions for system roles.
-  $permissions = array(
+  $permissions = [
     'access content',
     // "View user profiles" is for viewing the task_assignee field.
     'access user profiles',
     filter_permission_name($filtered_html_format),
-  );
+  ];
   user_role_grant_permissions(DRUPAL_AUTHENTICATED_RID, $permissions);
 
   // Create a default role for site administrators, with all available
@@ -213,7 +222,7 @@ function hedley_standard_install() {
 
   // Assign user 1 the "administrator" role.
   db_insert('users_roles')
-    ->fields(array('uid' => 1, 'rid' => $admin_role->rid))
+    ->fields(['uid' => 1, 'rid' => $admin_role->rid])
     ->execute();
 
   // Update the menu router information.
@@ -298,7 +307,7 @@ function hedley_update_7004() {
  * CSV download.
  */
 function hedley_update_7005() {
-  $modules = array('date_views', 'vbo_export');
+  $modules = ['date_views', 'vbo_export'];
   module_enable($modules);
 }
 
@@ -319,9 +328,9 @@ function hedley_update_7006() {
  */
 function hedley_update_7007() {
   db_update('field_data_field_nutrition_signs')
-      ->fields(array('field_nutrition_signs_value' => 'abdominal-distention'))
-      ->condition('field_nutrition_signs_value', 'abdominal-disortion')
-      ->execute();
+    ->fields(['field_nutrition_signs_value' => 'abdominal-distention'])
+    ->condition('field_nutrition_signs_value', 'abdominal-disortion')
+    ->execute();
 }
 
 /**
@@ -333,9 +342,9 @@ function hedley_update_7007() {
  */
 function hedley_update_7008() {
   db_update('field_data_field_nutrition_signs')
-      ->fields(array('field_nutrition_signs_value' => 'abdominal-distension'))
-      ->condition('field_nutrition_signs_value', 'abdominal-distention')
-      ->execute();
+    ->fields(['field_nutrition_signs_value' => 'abdominal-distension'])
+    ->condition('field_nutrition_signs_value', 'abdominal-distention')
+    ->execute();
 }
 
 /**
@@ -347,7 +356,7 @@ function hedley_update_7008() {
  */
 function hedley_update_7009() {
   db_update('field_revision_field_nutrition_signs')
-      ->fields(array('field_nutrition_signs_value' => 'abdominal-distension'))
-      ->condition('field_nutrition_signs_value', 'abdominal-disortion')
-      ->execute();
+    ->fields(['field_nutrition_signs_value' => 'abdominal-distension'])
+    ->condition('field_nutrition_signs_value', 'abdominal-disortion')
+    ->execute();
 }
