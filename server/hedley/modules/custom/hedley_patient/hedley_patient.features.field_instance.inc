@@ -182,7 +182,7 @@ function hedley_patient_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_mother',
-    'label' => 'Mother',
+    'label' => 'Mother / Caregiver',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
