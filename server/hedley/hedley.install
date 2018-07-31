@@ -360,3 +360,13 @@ function hedley_update_7009() {
     ->condition('field_nutrition_signs_value', 'abdominal-disortion')
     ->execute();
 }
+
+/**
+ * Implements hook_update_N().
+ *
+ * Enable new prepopulate module.
+ */
+function hedley_update_7010() {
+  $modules = ['prepopulate'];
+  module_enable($modules);
+}
