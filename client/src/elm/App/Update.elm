@@ -173,7 +173,8 @@ update msg model =
                                                 case subModel of
                                                     Authenticated { credentials } ->
                                                         if EverySet.member Administrator credentials.user.roles then
-                                                            [ SetActivePage <| UserPage AdminPage ]
+                                                            -- We leave admins on the login page
+                                                            []
                                                         else
                                                             [ SetActivePage <| UserPage <| ClinicsPage Nothing ]
 
