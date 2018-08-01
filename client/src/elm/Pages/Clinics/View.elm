@@ -296,7 +296,6 @@ viewDownloadProgress language request photos validSession =
                         ]
 
             Failure err ->
-                -- TODO: We could do something with the err ...
                 Just <|
                     div
                         [ class "ui tiny inverted active modal" ]
@@ -306,6 +305,7 @@ viewDownloadProgress language request photos validSession =
                         , div
                             [ class "content" ]
                             [ p [] [ text <| translate language Translate.MakeSureYouAreConnected ]
+                            , viewError language err
                             ]
                         , div
                             [ class "actions" ]
