@@ -66,6 +66,6 @@ exampleMother =
     { name = "Sebabive Gahiji"
     , avatarUrl = Just "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , children = []
-    , birthDate = date 2016 8 28
+    , birthDate = Just <| date 2016 8 28
     , relation = MotherRelation
     }
