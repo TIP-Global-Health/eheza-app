@@ -30,6 +30,7 @@ import Activity.Model exposing (ActivityListItem, ActivityType(..), ChildActivit
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (applyEdit)
+import Backend.Mother.Model exposing (ChildrenRelationType(..), Mother)
 import Backend.Session.Model exposing (..)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMother, getMotherMeasurementData, getMyMother, mapMotherEdits)
 import EveryDict
@@ -178,6 +179,26 @@ getAllMotherActivities =
     [ FamilyPlanning ]
 
 
+getAllCaregiverActivities : List MotherActivityType
+getAllCaregiverActivities =
+    []
+
+
+getAllActivitiesForMother : Mother -> List MotherActivityType
+getAllActivitiesForMother mother =
+    case mother.relation of
+        MotherRelation ->
+            getAllMotherActivities
+
+        CaregiverRelation ->
+            getAllCaregiverActivities
+
+
+expectMotherActivity : MotherActivityType -> Mother -> Bool
+expectMotherActivity activityType mother =
+    List.member activityType (getAllActivitiesForMother mother)
+
+
 {-| Given an activity, how many of those measurements should we expect, and how
 many are still pending?
 
@@ -208,17 +229,20 @@ getTotalsNumberPerActivity activityType session =
 
         MotherActivity motherType ->
             let
-                mothersInAttendance =
+                expectedMothers =
                     session.offlineSession.mothers
-                        |> EveryDictList.filter (\motherId _ -> isCheckedIn motherId session)
+                        |> EveryDictList.filter
+                            (\motherId mother ->
+                                isCheckedIn motherId session && expectMotherActivity motherType mother
+                            )
 
                 total =
-                    EveryDictList.size mothersInAttendance
+                    EveryDictList.size expectedMothers
 
                 -- It's actually eaiser to count the completed ones, so we do that and
                 -- just subtract to get pending.
                 completed =
-                    mothersInAttendance
+                    expectedMothers
                         |> EveryDictList.filter (\motherId _ -> hasCompletedMotherActivity motherType (getMotherMeasurementData motherId session))
                         |> EveryDictList.size
             in
