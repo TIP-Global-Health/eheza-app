@@ -398,6 +398,10 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title']['label'] = 'Name';
   $handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
   $handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
+  /* Field: Content: Relationship */
+  $handler->display->display_options['fields']['field_relationship']['id'] = 'field_relationship';
+  $handler->display->display_options['fields']['field_relationship']['table'] = 'field_data_field_relationship';
+  $handler->display->display_options['fields']['field_relationship']['field'] = 'field_relationship';
   /* Field: COUNT(Content: Gender) */
   $handler->display->display_options['fields']['field_gender']['id'] = 'field_gender';
   $handler->display->display_options['fields']['field_gender']['table'] = 'field_data_field_gender';
@@ -898,6 +902,10 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title']['field'] = 'title';
   $handler->display->display_options['fields']['title']['label'] = 'Name';
   $handler->display->display_options['fields']['title']['link_to_node'] = FALSE;
+  /* Field: Content: Relationship */
+  $handler->display->display_options['fields']['field_relationship']['id'] = 'field_relationship';
+  $handler->display->display_options['fields']['field_relationship']['table'] = 'field_data_field_relationship';
+  $handler->display->display_options['fields']['field_relationship']['field'] = 'field_relationship';
   /* Field: COUNT(Content: Gender) */
   $handler->display->display_options['fields']['field_gender']['id'] = 'field_gender';
   $handler->display->display_options['fields']['field_gender']['table'] = 'field_data_field_gender';
