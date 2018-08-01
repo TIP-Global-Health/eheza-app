@@ -368,10 +368,17 @@ function hedley_update_7009() {
  *
  */
 function hedley_update_7010() {
+  node_type_delete('examination');
+  node_type_delete('group');
+
   $modules = [
     'hedley_group',
     'hedley_examination',
   ];
+
   module_disable($modules);
   drupal_uninstall_modules($modules);
+
+  node_types_rebuild();
+  menu_rebuild();
 }
