@@ -1,6 +1,6 @@
 module Pages.Participants.View exposing (view)
 
-import Activity.Utils exposing (getTotalsNumberPerActivity, isCheckedIn, motherOrAnyChildHasAnyPendingActivity)
+import Activity.Utils exposing (isCheckedIn, motherOrAnyChildHasAnyPendingActivity)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import EveryDictList
 import Html exposing (..)
