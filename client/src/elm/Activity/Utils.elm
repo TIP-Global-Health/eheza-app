@@ -11,7 +11,6 @@ module Activity.Utils
         , getActivityTypeList
         , getAllChildActivities
         , getAllMotherActivities
-        , getTotalsNumberPerActivity
         , hasAnyCompletedActivity
         , hasAnyPendingChildActivity
         , hasAnyPendingMotherActivity
