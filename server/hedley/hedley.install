@@ -360,3 +360,18 @@ function hedley_update_7009() {
     ->condition('field_nutrition_signs_value', 'abdominal-disortion')
     ->execute();
 }
+
+/**
+ * Implements hook_update_N().
+ *
+ * Remove the unused "hedley_examination" and "hedley_group" modules.
+ *
+ */
+function hedley_update_7010() {
+  $modules = [
+    'hedley_group',
+    'hedley_examination',
+  ];
+  module_disable($modules);
+  drupal_uninstall_modules($modules);
+}
