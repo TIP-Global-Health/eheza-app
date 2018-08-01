@@ -17,7 +17,7 @@ childParticipant : Participant ChildId Child ChildActivityType Measurement.Model
 childParticipant =
     { activities = getAllChildActivities
     , getAvatarUrl = .avatarUrl
-    , getBirthDate = .birthDate
+    , getBirthDate = .birthDate >> Just
     , getMotherId = \childId session -> getMyMother childId session.offlineSession |> Maybe.map Tuple.first
     , getName = .name
     , getParticipants = \session -> session.offlineSession.children

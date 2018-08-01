@@ -13,6 +13,6 @@ type alias Mother =
     { name : String
     , avatarUrl : Maybe String
     , children : List ChildId
-    , birthDate : NominalDate
+    , birthDate : Maybe NominalDate
     , relation : ChildrenRelationType
     }
