@@ -100,7 +100,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_1']['table'] = 'node';
   $handler->display->display_options['fields']['title_1']['field'] = 'title';
   $handler->display->display_options['fields']['title_1']['relationship'] = 'field_mother_target_id';
-  $handler->display->display_options['fields']['title_1']['label'] = 'Mother';
+  $handler->display->display_options['fields']['title_1']['label'] = 'Mother / Caregiver';
   /* Field: Content: Clinic */
   $handler->display->display_options['fields']['field_clinic']['id'] = 'field_clinic';
   $handler->display->display_options['fields']['field_clinic']['table'] = 'field_data_field_clinic';
@@ -149,7 +149,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_1']['table'] = 'node_revision';
   $handler->display->display_options['fields']['title_1']['field'] = 'title';
   $handler->display->display_options['fields']['title_1']['relationship'] = 'field_mother_target_id';
-  $handler->display->display_options['fields']['title_1']['label'] = 'Mother';
+  $handler->display->display_options['fields']['title_1']['label'] = 'Mother / Caregiver';
   $handler->display->display_options['fields']['title_1']['link_to_node'] = TRUE;
   /* Field: MIN(Content: Clinic) */
   $handler->display->display_options['fields']['field_clinic']['id'] = 'field_clinic';
