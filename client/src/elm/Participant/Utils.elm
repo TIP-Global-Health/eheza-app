@@ -1,7 +1,7 @@
 module Participant.Utils exposing (..)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType, MotherActivityType)
-import Activity.Utils exposing (childHasAnyPendingActivity, childHasPendingActivity, getAllChildActivities, getAllMotherActivities, motherHasAnyPendingActivity, motherHasPendingActivity)
+import Activity.Utils exposing (childHasAnyPendingActivity, childHasPendingActivity, expectedMotherActivities, getAllChildActivities, getAllMotherActivities, motherHasAnyPendingActivity, motherHasPendingActivity)
 import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
@@ -15,7 +15,7 @@ import Participant.Model exposing (Participant)
 
 childParticipant : Participant ChildId Child ChildActivityType Measurement.Model.MsgChild
 childParticipant =
-    { activities = getAllChildActivities
+    { expectedActivities = always getAllChildActivities
     , getAvatarUrl = .avatarUrl
     , getBirthDate = .birthDate >> Just
     , getMotherId = \childId session -> getMyMother childId session.offlineSession |> Maybe.map Tuple.first
@@ -36,7 +36,7 @@ motherParticipant =
     -- TODO: getParticipants is inefficient ... should make the children and
     -- mothers match, and either pre-sort in EveryDictList or sort each time in
     -- EveryDict
-    { activities = getAllMotherActivities
+    { expectedActivities = expectedMotherActivities
     , getAvatarUrl = .avatarUrl
     , getBirthDate = .birthDate
     , getMotherId = \motherId session -> Just motherId

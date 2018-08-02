@@ -1,7 +1,7 @@
 module Pages.Participant.View exposing (viewChild, viewMother)
 
 import Activity.Model exposing (ActivityListItem, ActivityType(..), ChildActivityType, MotherActivityType(..))
-import Activity.Utils exposing (childHasCompletedActivity, childHasPendingActivity, getActivityIcon, getActivityList, getAllChildActivities, getAllMotherActivities, motherHasCompletedActivity, motherHasPendingActivity)
+import Activity.Utils exposing (childHasCompletedActivity, childHasPendingActivity, expectedMotherActivities, getActivityIcon, getActivityList, getAllChildActivities, getAllMotherActivities, motherHasCompletedActivity, motherHasPendingActivity)
 import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
@@ -181,7 +181,7 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
                     ]
                     |> keyed "child-info"
               ]
-            , viewActivityCards childParticipant language childId model.selectedTab selectedActivity session
+            , viewActivityCards childParticipant language ( childId, child ) model.selectedTab selectedActivity session
             , content
             ]
 
@@ -221,7 +221,7 @@ viewFoundMother language ( motherId, mother ) session model =
                 |> List.intersperse break
 
         ( pendingActivities, completedActivities ) =
-            List.partition (\activity -> motherHasPendingActivity motherId activity session) getAllMotherActivities
+            List.partition (\activity -> motherHasPendingActivity motherId activity session) (expectedMotherActivities mother)
 
         selectedActivity =
             case model.selectedTab of
@@ -292,16 +292,16 @@ viewFoundMother language ( motherId, mother ) session model =
                     ]
                     |> keyed "mother"
               ]
-            , viewActivityCards motherParticipant language motherId model.selectedTab selectedActivity session
+            , viewActivityCards motherParticipant language ( motherId, mother ) model.selectedTab selectedActivity session
             , content
             ]
 
 
-viewActivityCards : Participant id value activity msg -> Language -> id -> Tab -> Maybe activity -> EditableSession -> List ( String, Html (Msg activity any) )
-viewActivityCards config language participantId selectedTab selectedActivity session =
+viewActivityCards : Participant id value activity msg -> Language -> ( id, value ) -> Tab -> Maybe activity -> EditableSession -> List ( String, Html (Msg activity any) )
+viewActivityCards config language ( participantId, participant ) selectedTab selectedActivity session =
     let
         ( pendingActivities, completedActivities ) =
-            List.partition (\activity -> config.hasPendingActivity participantId activity session) config.activities
+            List.partition (\activity -> config.hasPendingActivity participantId activity session) (config.expectedActivities participant)
 
         pendingActivitiesView =
             if List.isEmpty pendingActivities then

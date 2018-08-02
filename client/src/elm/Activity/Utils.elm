@@ -6,6 +6,7 @@ module Activity.Utils
         , decodeActivityTypeFromString
         , defaultActivityType
         , encodeActivityTypeAsString
+        , expectedMotherActivities
         , getActivityIcon
         , getActivityList
         , getActivityTypeList
@@ -184,8 +185,8 @@ getAllCaregiverActivities =
     []
 
 
-getAllActivitiesForMother : Mother -> List MotherActivityType
-getAllActivitiesForMother mother =
+expectedMotherActivities : Mother -> List MotherActivityType
+expectedMotherActivities mother =
     case mother.relation of
         MotherRelation ->
             getAllMotherActivities
@@ -196,7 +197,7 @@ getAllActivitiesForMother mother =
 
 expectMotherActivity : MotherActivityType -> Mother -> Bool
 expectMotherActivity activityType mother =
-    List.member activityType (getAllActivitiesForMother mother)
+    List.member activityType (expectedMotherActivities mother)
 
 
 {-| Given an activity, how many of those measurements should we expect, and how

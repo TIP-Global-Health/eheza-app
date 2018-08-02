@@ -32,6 +32,7 @@ view config language currentDate zscores selectedActivity fullSession model =
 
         ( pendingParticipants, completedParticipants ) =
             config.getParticipants checkedIn
+                |> EveryDict.filter (\_ participant -> List.member selectedActivity (config.expectedActivities participant))
                 |> EveryDict.partition (\id _ -> config.hasPendingActivity id selectedActivity checkedIn)
 
         activityDescription =
