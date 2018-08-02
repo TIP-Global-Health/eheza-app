@@ -465,7 +465,7 @@ function hedley_patient_field_default_field_instances() {
   t('Date birth');
   t('Education Level');
   t('Gender');
-  t('Mother');
+  t('Mother / Caregiver');
   t('Profile photo');
   t('Relationship');
   t('Ubudehe');
