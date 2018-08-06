@@ -276,13 +276,13 @@ updateBackend backendUrl accessToken msg model =
             , []
             )
 
-        ResetSuccess ->
-            -- Reset some successful requests to `NotAsked`. This is for
-            -- requests where we're showing a `Sucess` indication in the UI,
-            -- and we want to stop doing that at certain moments.
+        ResetSessionRequests ->
+            -- Reset session requests to `NotAsked` if `Error` or `Success`.
+            -- This is for requests where we're showing an  indication in the
+            -- UI, and we want to stop doing that at certain moments.
             ( { model
-                | postSessionRequest = resetSuccess model.postSessionRequest
-                , postTrainingSessionRequest = resetSuccess model.postTrainingSessionRequest
+                | postSessionRequest = resetError <| resetSuccess model.postSessionRequest
+                , postTrainingSessionRequest = resetError <| resetSuccess model.postTrainingSessionRequest
               }
             , Cmd.none
             , []
