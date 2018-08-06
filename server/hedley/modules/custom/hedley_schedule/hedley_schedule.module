@@ -53,24 +53,13 @@ function hedley_schedule_node_presave($node) {
   }
 
   if ($node->type == 'counseling_session') {
-    // Handles only "counseling" nodes saves.
-    if ($node->title) {
-      // No need to set title if it exists.
-      return;
-    }
+    // Handles only "counseling_session" nodes saves.
+    _hedley_schedule_set_entity_title_by_field($node, 'field_child', 'entity_reference');
+  }
 
-    $wrapper = entity_metadata_wrapper('node', $node);
-    if (!$child_name = $wrapper->field_child->value()) {
-      // Don't set the title if the child is empty, something is wrong, set a
-      // message.
-      drupal_set_message(t('The counseling node cannot be without a child reference.'), 'error');
-      return;
-    }
-
-    $child_name = $wrapper->field_child->label();
-    $title = "Counseling session for $child_name";
-
-    $wrapper->title->set($title);
+  if ($node->type == 'counseling_schedule') {
+    // Handles only "counseling_schedule" nodes saves.
+    _hedley_schedule_set_entity_title_by_field($node, 'field_timing', 'list');
   }
 }
 
@@ -194,4 +183,59 @@ function hedley_schedule_get_today_sessions($range = 50) {
     ->execute();
 
   return !empty($result['node']) ? array_keys($result['node']) : NULL;
+}
+
+/**
+ * Set the title of the node according to a field in the node.
+ *
+ * @param $node
+ *   The node object.
+ *
+ * @param $field_name
+ *   The name of the field to add to the title.
+ * @param $field_type
+ *   The type of the field to add to the title.
+ *   Can be one of the following:
+ *   1. entity_reference
+ *   2. term_reference
+ *   3. text
+ *   4. list
+ */
+function _hedley_schedule_set_entity_title_by_field($node, $field_name, $field_type) {
+  if (isset($node->title) && $node->title) {
+    // No need to set title if it exists.
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  switch ($field_type) {
+    case 'entity_reference':
+    case 'term_reference':
+      $value = $wrapper->{$field_name}->label();
+      break;
+    case 'text':
+    case 'list':
+      $value = $wrapper->{$field_name}->value();
+      break;
+    default:
+      $value = $wrapper->{$field_name}->value();
+      break;
+  }
+
+  if (!$value) {
+    // Don't set the title if the timing is empty, something is wrong, set a
+    // message.
+    drupal_set_message(format_string('The @entity_type node cannot be without a @field_name filled.', [
+      '@entity_type' => $node->type,
+      '@field_name' => $field_name,
+    ]), 'error');
+    return;
+  }
+
+  $readable_entity_type = ucwords(str_replace('_', ' ', $node->type));
+
+  $title = "$readable_entity_type for $value";
+
+  $wrapper->title->set($title);
 }

@@ -11,5 +11,6 @@ dependencies[] = migrate_extras
 files[] = handlers/HedleyMigrateBase.php
 files[] = handlers/user/HedleyMigrateUsers.php
 files[] = handlers/node/HedleyMigrateClinics.php
+files[] = handlers/node/HedleyMigrateCounselingSchedules.php
 files[] = handlers/node/HedleyMigrateCounselingSessions.php
 files[] = handlers/node/HedleyMigrateCounselingTopics.php

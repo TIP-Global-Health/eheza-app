@@ -14,7 +14,11 @@ class HedleyMigrateCounselingSessions extends HedleyMigrateBase {
   protected $bundle = 'counseling_session';
   protected $csvColumns = [
     'id',
-    'topics',
+    'field_date_measured',
+    'field_topics',
+  ];
+  protected $simpleMappings = [
+    'field_date_measured',
   ];
 
   /**
@@ -29,7 +33,7 @@ class HedleyMigrateCounselingSessions extends HedleyMigrateBase {
     ];
 
     $this
-      ->addFieldMapping('field_topics', 'topics')
+      ->addFieldMapping('field_topics', 'field_topics')
       ->separator('|')
       ->sourceMigration('HedleyMigrateCounselingTopics');
   }

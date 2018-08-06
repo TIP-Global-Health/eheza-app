@@ -1,4 +1,4 @@
-id,topics
-counseling_session1,counseling_topic1|counseling_topic2|counseling_topic3
-counseling_session2,counseling_topic4
-counseling_session3,counseling_topic5|counseling_topic6
+id,field_date_measured,field_topics
+counseling_session1,2020-01-01 06:00:00,counseling_topic1|counseling_topic2|counseling_topic3
+counseling_session2,2020-02-01 06:00:00,counseling_topic4
+counseling_session3,2020-03-01 06:00:00,counseling_topic5|counseling_topic6
