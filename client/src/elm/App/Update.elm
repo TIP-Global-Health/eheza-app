@@ -281,17 +281,16 @@ update msg model =
 
         SetActivePage page ->
             let
-                -- We reset certain successful requests if we're actually
-                -- navigating, so that we don't continue to show "success"
-                -- messages.
-                resetSuccess =
-                    if page /= model.activePage then
-                        [ MsgLoggedIn <| MsgBackend <| Backend.Model.ResetSuccess ]
+                -- We reset certain requests if we're navigating to the admin
+                -- page from elsewhere.
+                resetSessionRequests =
+                    if page == UserPage AdminPage && page /= model.activePage then
+                        [ MsgLoggedIn <| MsgBackend <| Backend.Model.ResetSessionRequests ]
                     else
                         []
             in
             sequence update
-                resetSuccess
+                resetSessionRequests
                 ( { model | activePage = page }
                 , Cmd.none
                 )
