@@ -188,18 +188,17 @@ function hedley_schedule_get_today_sessions($range = 50) {
 /**
  * Set the title of the node according to a field in the node.
  *
- * @param $node
+ * @param object $node
  *   The node object.
- *
- * @param $field_name
+ * @param string $field_name
  *   The name of the field to add to the title.
- * @param $field_type
+ * @param string $field_type
  *   The type of the field to add to the title.
  *   Can be one of the following:
  *   1. entity_reference
  *   2. term_reference
  *   3. text
- *   4. list
+ *   4. list.
  */
 function _hedley_schedule_set_entity_title_by_field($node, $field_name, $field_type) {
   if (isset($node->title) && $node->title) {
@@ -214,10 +213,12 @@ function _hedley_schedule_set_entity_title_by_field($node, $field_name, $field_t
     case 'term_reference':
       $value = $wrapper->{$field_name}->label();
       break;
+
     case 'text':
     case 'list':
       $value = $wrapper->{$field_name}->value();
       break;
+
     default:
       $value = $wrapper->{$field_name}->value();
       break;
