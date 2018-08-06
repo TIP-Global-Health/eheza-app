@@ -114,10 +114,9 @@ update date backend msg model =
                     , end = addDays 3 date
                     }
 
-                -- We reset certain successful request if we're opening or
-                -- closing the form.
-                resetSuccess =
-                    Backend.Model.ResetSuccess
+                -- We reset certain successful request if we're opening the form.
+                resetSessionRequests =
+                    Backend.Model.ResetSessionRequests
                         |> App.Model.MsgBackend
                         |> App.Model.MsgLoggedIn
 
@@ -128,13 +127,13 @@ update date backend msg model =
                                 ( model, [] )
                             else
                                 ( { model | createSession = Nothing }
-                                , [ resetSuccess ]
+                                , []
                                 )
 
                         Nothing ->
                             if show then
                                 ( { model | createSession = Just <| Backend.Session.Form.emptyForm knownClinic initialDates }
-                                , [ resetSuccess ]
+                                , [ resetSessionRequests ]
                                 )
                             else
                                 ( model, [] )
