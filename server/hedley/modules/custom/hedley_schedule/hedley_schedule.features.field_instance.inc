@@ -10,6 +10,87 @@
 function hedley_schedule_field_default_field_instances() {
   $field_instances = array();
 
+  // Exported field_instance: 'node-counseling_schedule-field_timing'.
+  $field_instances['node-counseling_schedule-field_timing'] = array(
+    'bundle' => 'counseling_schedule',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'At which point should these topics be addressed?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 0,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_timing',
+    'label' => 'Timing',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => -3,
+    ),
+  );
+
+  // Exported field_instance: 'node-counseling_schedule-field_topics'.
+  $field_instances['node-counseling_schedule-field_topics'] = array(
+    'bundle' => 'counseling_schedule',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Which topics should be addressed?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 1,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_topics',
+    'label' => 'Topics',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => -1,
+    ),
+  );
+
   // Exported field_instance: 'node-counseling_session-field_child'.
   $field_instances['node-counseling_session-field_child'] = array(
     'bundle' => 'counseling_session',
@@ -280,43 +361,6 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-counseling_topic-field_timing'.
-  $field_instances['node-counseling_topic-field_timing'] = array(
-    'bundle' => 'counseling_topic',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 2,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_timing',
-    'label' => 'Timing',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_buttons',
-      'weight' => -3,
-    ),
-  );
-
   // Exported field_instance: 'node-session-field_clinic'.
   $field_instances['node-session-field_clinic'] = array(
     'bundle' => 'session',
@@ -504,6 +548,7 @@ This should not be used on the "live" site -- it is only intended for the "sandb
 
   // Translatables
   // Included for use with string extractors like potx.
+  t('At which point should these topics be addressed?');
   t('Child');
   t('Clinic');
   t('Closed');
@@ -524,6 +569,7 @@ The end date is the last day on which data entry will be allowed for this sessio
   t('Topics');
   t('Training');
   t('Use carefully your edit credentials, avoid any substantial changes. Any change will affect past (saved) data as well. If possible, create a new topic and connect to the relevant counseling meeting.');
+  t('Which topics should be addressed?');
 
   return $field_instances;
 }
