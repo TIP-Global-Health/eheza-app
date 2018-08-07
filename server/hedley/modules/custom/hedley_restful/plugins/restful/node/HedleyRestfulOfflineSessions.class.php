@@ -487,7 +487,8 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
           }
         }
       }
-    } catch (Exception $e) {
+    }
+    catch (Exception $e) {
       $transaction->rollback();
       throw $e;
     }
