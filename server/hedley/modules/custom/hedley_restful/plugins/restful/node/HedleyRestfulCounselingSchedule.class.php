@@ -22,6 +22,12 @@ class HedleyRestfulCounselingSchedule extends HedleyRestfulEntityBaseNode {
 
     $public_fields['topics'] = [
       'property' => 'field_topics',
+      'resource' => [
+        'counseling_topic' => [
+          'name' => 'counseling-topics',
+          'full_view' => TRUE,
+        ],
+      ],
     ];
 
     return $public_fields;
