@@ -13,4 +13,6 @@ encodeMother mother =
     , ( "avatar", maybe string mother.avatarUrl )
     , ( "children", list (List.map encodeEntityId mother.children) )
     , ( "date_birth", encodeYYYYMMDD mother.birthDate )
+    , ( "ubudehe", maybe string mother.ubudehe )
+    , ( "education_level", maybe string mother.educationLevel )
     ]

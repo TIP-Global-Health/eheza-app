@@ -286,6 +286,7 @@ viewFoundMother language ( motherId, mother ) session model =
                                 [ class "ui header" ]
                                 [ text mother.name ]
                             , p [] childrenList
+                            , pre [] [ text <| toString mother ]
                             , viewFamilyLinks motherParticipant language motherId session
                             ]
                         ]

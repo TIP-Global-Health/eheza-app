@@ -25,3 +25,5 @@ decodeMother =
             )
         |> required "children" (oneOf [ list decodeEntityId, decodeNullAsEmptyArray ])
         |> required "date_birth" decodeYYYYMMDD
+        |> optional "ubudehe" (nullable string) Nothing
+        |> optional "education_level" (nullable string) Nothing
