@@ -18,7 +18,6 @@ class HedleyMigrateCounselingTopics extends HedleyMigrateBase {
     'field_kinyarwanda_title',
   ];
   protected $simpleMappings = [
-    'title_field',
     'field_kinyarwanda_title',
   ];
 
