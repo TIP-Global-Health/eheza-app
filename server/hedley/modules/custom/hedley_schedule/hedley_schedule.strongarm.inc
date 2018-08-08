@@ -14,7 +14,7 @@ function hedley_schedule_strongarm() {
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_node_counseling_topic';
-  $strongarm->value = '1';
+  $strongarm->value = '0';
   $export['auto_entitylabel_node_counseling_topic'] = $strongarm;
 
   $strongarm = new stdClass();
@@ -28,7 +28,7 @@ function hedley_schedule_strongarm() {
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_pattern_node_counseling_topic';
-  $strongarm->value = '[node:field_english_title]';
+  $strongarm->value = '';
   $export['auto_entitylabel_pattern_node_counseling_topic'] = $strongarm;
 
   $strongarm = new stdClass();

@@ -14,11 +14,11 @@ class HedleyMigrateCounselingTopics extends HedleyMigrateBase {
   protected $bundle = 'counseling_topic';
   protected $csvColumns = [
     'id',
-    'field_english_title',
+    'title_field',
     'field_kinyarwanda_title',
   ];
   protected $simpleMappings = [
-    'field_english_title',
+    'title_field',
     'field_kinyarwanda_title',
   ];
 

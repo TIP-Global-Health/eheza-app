@@ -278,49 +278,6 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-counseling_topic-field_english_title'.
-  $field_instances['node-counseling_topic-field_english_title'] = array(
-    'bundle' => 'counseling_topic',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => 'Use carefully your edit credentials, avoid any substantial changes. Any change will affect past (saved) data as well. If possible, create a new topic and connect to the relevant counseling meeting.',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_english_title',
-    'label' => 'English Title',
-    'required' => 1,
-    'settings' => array(
-      'hide_label' => array(
-        'entity' => 0,
-        'page' => 0,
-      ),
-      'text_processing' => 0,
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'text',
-      'settings' => array(
-        'size' => 60,
-      ),
-      'type' => 'text_textfield',
-      'weight' => -5,
-    ),
-  );
-
   // Exported field_instance: 'node-counseling_topic-field_kinyarwanda_title'.
   $field_instances['node-counseling_topic-field_kinyarwanda_title'] = array(
     'bundle' => 'counseling_topic',
@@ -357,7 +314,50 @@ function hedley_schedule_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => -4,
+      'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance: 'node-counseling_topic-title_field'.
+  $field_instances['node-counseling_topic-title_field'] = array(
+    'bundle' => 'counseling_topic',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 2,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'title_field',
+    'label' => 'English Title',
+    'required' => 1,
+    'settings' => array(
+      'hide_label' => array(
+        'entity' => 0,
+        'page' => 0,
+      ),
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => -5,
     ),
   );
 
@@ -568,7 +568,6 @@ The end date is the last day on which data entry will be allowed for this sessio
   t('Timing');
   t('Topics');
   t('Training');
-  t('Use carefully your edit credentials, avoid any substantial changes. Any change will affect past (saved) data as well. If possible, create a new topic and connect to the relevant counseling meeting.');
   t('Which topics should be addressed?');
 
   return $field_instances;
