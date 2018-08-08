@@ -56,5 +56,5 @@ decodeEducationLevel =
                     _ ->
                         fail <|
                             educationLevel
-                                ++ " is not a recognized ChildNutritionSign"
+                                ++ " is not a recognized EducationLevel"
             )

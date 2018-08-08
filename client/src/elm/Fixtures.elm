@@ -1,7 +1,7 @@
 module Fixtures exposing (..)
 
 import Backend.Child.Model exposing (Child, Gender(..))
-import Backend.Mother.Model exposing (Mother)
+import Backend.Mother.Model exposing (EducationLevel(..), Mother)
 import EverySet
 import Time.Date exposing (date)
 import User.Model exposing (User)
@@ -67,4 +67,6 @@ exampleMother =
     , avatarUrl = Just "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , children = []
     , birthDate = date 2016 8 28
+    , ubudehe = Just "1"
+    , educationLevel = NoSchooling
     }
