@@ -10,5 +10,14 @@ type alias Mother =
     , children : List ChildId
     , birthDate : NominalDate
     , ubudehe : Maybe String
-    , educationLevel : Maybe String
+    , educationLevel : EducationLevel
     }
+
+
+type EducationLevel
+    = NoSchooling
+    | PrimarySchool
+    | VocationalTrainingSchool
+    | SecondarySchool
+    | DiplomaProgram
+    | HigherEducation

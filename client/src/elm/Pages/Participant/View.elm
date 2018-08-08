@@ -7,7 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getChildren, getMother, getMotherMeasurementData, getMyMother)
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
@@ -285,8 +285,20 @@ viewFoundMother language ( motherId, mother ) session model =
                             [ h2
                                 [ class "ui header" ]
                                 [ text mother.name ]
+                            , p [ class "education-level-wrapper" ]
+                                [ label [] [ text <| translate language Trans.LevelOfEducationLabel ]
+                                , span [] [ text <| translate language <| Trans.LevelOfEducation mother.educationLevel ]
+                                ]
+                            , showMaybe <|
+                                Maybe.map
+                                    (\ubudehe ->
+                                        p [ class "ubudehe-wrapper" ]
+                                            [ label [] [ text <| translate language Trans.UbudeheLabel ]
+                                            , span [] [ text ubudehe ]
+                                            ]
+                                    )
+                                    mother.ubudehe
                             , p [] childrenList
-                            , pre [] [ text <| toString mother ]
                             , viewFamilyLinks motherParticipant language motherId session
                             ]
                         ]

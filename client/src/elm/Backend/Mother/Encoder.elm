@@ -14,5 +14,27 @@ encodeMother mother =
     , ( "children", list (List.map encodeEntityId mother.children) )
     , ( "date_birth", encodeYYYYMMDD mother.birthDate )
     , ( "ubudehe", maybe string mother.ubudehe )
-    , ( "education_level", maybe string mother.educationLevel )
+    , ( "education_level", encodeEducationLevel mother.educationLevel )
     ]
+
+
+encodeEducationLevel : EducationLevel -> Value
+encodeEducationLevel educationLevel =
+    case educationLevel of
+        NoSchooling ->
+            string "0"
+
+        PrimarySchool ->
+            string "1"
+
+        VocationalTrainingSchool ->
+            string "2"
+
+        SecondarySchool ->
+            string "3"
+
+        DiplomaProgram ->
+            string "4"
+
+        HigherEducation ->
+            string "5"

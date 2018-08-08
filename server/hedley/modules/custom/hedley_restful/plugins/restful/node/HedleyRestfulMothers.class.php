@@ -64,9 +64,6 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
 
     $public_fields['education_level'] = [
       'property' => 'field_education_level',
-      'process_callbacks' => [
-        [$this, 'getEducationLevel'],
-      ],
     ];
 
     return $public_fields;
@@ -80,11 +77,6 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
    */
   protected static function getType() {
     return 'mother';
-  }
-
-  protected function getEducationLevel($value) {
-    $options = list_allowed_values(field_info_field('field_education_level'));
-    return $options[$value];
   }
 
   /**
