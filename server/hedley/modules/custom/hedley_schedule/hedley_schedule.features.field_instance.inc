@@ -323,7 +323,7 @@ function hedley_schedule_field_default_field_instances() {
     'bundle' => 'counseling_topic',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'Once you have created a "Counseling Topic" and it has been used, make only minor edits -- any edit will affect the historical data of which topics have been discussed with participants. If an edit would represent a different topic, then create a new topic instead. You can remove an unused topic from the relevant "Counseling Schedule" -- but do not delete the unused topic, since that would also affect the historical data.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -560,6 +560,7 @@ This should not be used on the "live" site -- it is only intended for the "sandb
 
 This should not be used on the "live" site -- it is only intended for the "sandbox" site.');
   t('Kinyarwanda Title');
+  t('Once you have created a "Counseling Topic" and it has been used, make only minor edits -- any edit will affect the historical data of which topics have been discussed with participants. If an edit would represent a different topic, then create a new topic instead. You can remove an unused topic from the relevant "Counseling Schedule" -- but do not delete the unused topic, since that would also affect the historical data.');
   t('Scheduled Date');
   t('Session');
   t('The start date is the date on which the data entry is scheduled.
