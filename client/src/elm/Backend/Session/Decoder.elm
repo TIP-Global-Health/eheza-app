@@ -214,8 +214,8 @@ decodeMothers =
     EveryDictList.decodeArray2 (field "id" decodeEntityId) decodeMother
 
 
-decodeChildren : Decoder (EveryDict ChildId Child)
+decodeChildren : Decoder (EveryDictList ChildId Child)
 decodeChildren =
     map2 (,) (field "id" decodeEntityId) decodeChild
         |> list
-        |> map EveryDict.fromList
+        |> map EveryDictList.fromList

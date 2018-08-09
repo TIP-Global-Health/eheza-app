@@ -70,7 +70,7 @@ encodeOfflineSession offline =
                     |> list
               )
             , ( "children"
-              , EveryDict.toList offline.children
+              , EveryDictList.toList offline.children
                     |> List.map (\( id, child ) -> object (( "id", encodeEntityId id ) :: encodeChild child))
                     |> list
               )

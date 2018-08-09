@@ -1,6 +1,6 @@
 module Pages.Participant.Update exposing (updateChild, updateMother)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
+import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import Measurement.Model
 import Measurement.Update
 import Pages.Page exposing (Page)
@@ -28,10 +28,10 @@ construct a list of messages for the caller to handle?
 
 -}
 updateChild :
-    Msg ChildActivityType Measurement.Model.MsgChild
-    -> Model ChildActivityType
+    Msg ChildActivity Measurement.Model.MsgChild
+    -> Model ChildActivity
     -> Measurement.Model.ModelChild
-    -> ( Model ChildActivityType, Cmd (Msg ChildActivityType Measurement.Model.MsgChild), Measurement.Model.ModelChild, Maybe Measurement.Model.OutMsgChild, Maybe Page )
+    -> ( Model ChildActivity, Cmd (Msg ChildActivity Measurement.Model.MsgChild), Measurement.Model.ModelChild, Maybe Measurement.Model.OutMsgChild, Maybe Page )
 updateChild msg model childForm =
     case msg of
         MsgMeasurement subMsg ->
@@ -72,10 +72,10 @@ updateChild msg model childForm =
 {-| See comments on `updateChild` ... this has a similar structure.
 -}
 updateMother :
-    Msg MotherActivityType Measurement.Model.MsgMother
-    -> Model MotherActivityType
+    Msg MotherActivity Measurement.Model.MsgMother
+    -> Model MotherActivity
     -> Measurement.Model.ModelMother
-    -> ( Model MotherActivityType, Cmd (Msg MotherActivityType Measurement.Model.MsgMother), Measurement.Model.ModelMother, Maybe Measurement.Model.OutMsgMother, Maybe Page )
+    -> ( Model MotherActivity, Cmd (Msg MotherActivity Measurement.Model.MsgMother), Measurement.Model.ModelMother, Maybe Measurement.Model.OutMsgMother, Maybe Page )
 updateMother msg model motherForm =
     case msg of
         MsgMeasurement subMsg ->

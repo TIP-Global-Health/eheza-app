@@ -3,7 +3,7 @@ module Measurement.View exposing (viewChild, viewMother, viewMuacIndication)
 {-| This module provides a form for entering measurements.
 -}
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
+import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import Backend.Child.Model exposing (Child, Gender)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
@@ -31,7 +31,7 @@ import ZScore.Utils exposing (viewZScore, zScoreHeightForAge, zScoreWeightForAge
 {-| We need the current date in order to immediately construct a ZScore for the
 child when we enter something.
 -}
-viewChild : Language -> NominalDate -> Child -> ChildActivityType -> MeasurementData ChildMeasurements ChildEdits -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewChild : Language -> NominalDate -> Child -> ChildActivity -> MeasurementData ChildMeasurements ChildEdits -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewChild language currentDate child activity measurements zscores model =
     case activity of
         ChildPicture ->
@@ -49,18 +49,13 @@ viewChild language currentDate child activity measurements zscores model =
         Weight ->
             viewWeight language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .weight) .weight measurements) zscores model
 
-        ProgressReport ->
-            -- TODO: Show something here? Possibly with a button to indicate that we've completed the "activity"
-            -- of showing the mother the progress report?
-            emptyNode
-
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
 different types of `Float` inputs.
 -}
 type alias FloatFormConfig value =
     { blockName : String
-    , activity : ActivityType
+    , activity : Activity
     , placeholderText : TranslationId
     , zScoreLabelForAge : TranslationId
     , zScoreForAge : Maybe (ZScore.Model.Model -> Days -> Gender -> Float -> Maybe ZScore)
@@ -600,7 +595,7 @@ type alias MotherMeasurementData =
     }
 
 
-viewMother : Language -> MotherActivityType -> MeasurementData MotherMeasurements MotherEdits -> ModelMother -> Html MsgMother
+viewMother : Language -> MotherActivity -> MeasurementData MotherMeasurements MotherEdits -> ModelMother -> Html MsgMother
 viewMother language activity measurements model =
     case activity of
         FamilyPlanning ->

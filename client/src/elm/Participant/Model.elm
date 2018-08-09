@@ -10,10 +10,10 @@ with Child and ChildActivity.
 
 -}
 
-import Activity.Model exposing (ActivityType)
+import Activity.Model exposing (Activity, CompletedAndPending)
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
-import EveryDict exposing (EveryDict)
+import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html)
 import Pages.Activity.Model
@@ -28,16 +28,16 @@ things here that it needs. But this is faster for the moment.
 
 -}
 type alias Participant id value activity msg =
-    { expectedActivities : value -> List activity
-    , getAvatarUrl : value -> Maybe String
+    { getAvatarUrl : value -> Maybe String
     , getBirthDate : value -> Maybe NominalDate
     , getMotherId : id -> EditableSession -> Maybe MotherId
     , getName : value -> String
-    , getParticipants : EditableSession -> EveryDict id value
-    , hasPendingActivity : id -> activity -> EditableSession -> Bool
+    , getParticipants : EditableSession -> EveryDictList id value
     , iconClass : String
     , showProgressReportTab : Bool
-    , tagActivityType : activity -> ActivityType
+    , summarizeActivitiesForParticipant : id -> EditableSession -> CompletedAndPending (List activity)
+    , summarizeParticipantsForActivity : activity -> EditableSession -> CompletedAndPending (EveryDictList id value)
+    , tagActivity : activity -> Activity
     , toChildId : id -> Maybe ChildId
     , toMotherId : id -> Maybe MotherId
     , viewMeasurements : Language -> NominalDate -> ZScore.Model.Model -> id -> activity -> EditableSession -> Html (Pages.Activity.Model.Msg id msg)
