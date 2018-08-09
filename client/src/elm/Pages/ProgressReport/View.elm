@@ -1,6 +1,6 @@
 module Pages.ProgressReport.View exposing (view)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
+import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (Height, HeightInCm(..), MuacInCm(..), MuacIndication(..), Weight, WeightInKg(..))

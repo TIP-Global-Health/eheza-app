@@ -1,6 +1,6 @@
 module Measurement.Test exposing (all)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
+import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import Backend.Measurement.Model exposing (MuacIndication(..))
 import Date
 import Expect

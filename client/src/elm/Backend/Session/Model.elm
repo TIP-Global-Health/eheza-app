@@ -52,9 +52,11 @@ type alias OfflineSession =
     -- least present a limited UI on clinic pages that includes their name.
     , clinics : EveryDictList ClinicId Clinic
 
-    -- We'll sort by mother's name
+    -- We'll sort by mother's name. The children's sort order doesn't really
+    -- mean anything, but it's easier to work with mothers and children as
+    -- "participants" if we're using the same structure here for both.
     , mothers : EveryDictList MotherId Mother
-    , children : EveryDict ChildId Child
+    , children : EveryDictList ChildId Child
 
     -- These are all the measurements which have been saved to the backend.
     , historicalMeasurements : HistoricalMeasurements
