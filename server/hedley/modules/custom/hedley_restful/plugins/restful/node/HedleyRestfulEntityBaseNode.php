@@ -75,6 +75,7 @@ abstract class HedleyRestfulEntityBaseNode extends \RestfulEntityBaseNode {
    */
   protected function renderCounselingSchedule() {
     $handler = restful_get_restful_handler('counseling-schedule');
+    $handler->setAccount($this->getAccount());
 
     return $handler->get();
   }
