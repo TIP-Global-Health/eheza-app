@@ -16,7 +16,7 @@ class HedleyRestfulCounselingTopics extends HedleyRestfulEntityBaseNode {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    // The english is in the "label" field
+    // The english is in the "label" field.
     $public_fields['kinyarwanda_title'] = [
       'property' => 'field_kinyarwanda_title',
     ];
