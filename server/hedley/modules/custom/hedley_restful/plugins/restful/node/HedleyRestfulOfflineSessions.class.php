@@ -200,6 +200,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       'nutrition' => 'nutritions',
       'photo' => 'photos',
       'weight' => 'weights',
+      'counseling_session' => 'counseling-sessions',
     ];
   }
 
