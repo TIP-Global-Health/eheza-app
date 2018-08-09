@@ -278,49 +278,6 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-counseling_topic-field_english_title'.
-  $field_instances['node-counseling_topic-field_english_title'] = array(
-    'bundle' => 'counseling_topic',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => 'Use carefully your edit credentials, avoid any substantial changes. Any change will affect past (saved) data as well. If possible, create a new topic and connect to the relevant counseling meeting.',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_english_title',
-    'label' => 'English Title',
-    'required' => 1,
-    'settings' => array(
-      'hide_label' => array(
-        'entity' => 0,
-        'page' => 0,
-      ),
-      'text_processing' => 0,
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'text',
-      'settings' => array(
-        'size' => 60,
-      ),
-      'type' => 'text_textfield',
-      'weight' => -5,
-    ),
-  );
-
   // Exported field_instance: 'node-counseling_topic-field_kinyarwanda_title'.
   $field_instances['node-counseling_topic-field_kinyarwanda_title'] = array(
     'bundle' => 'counseling_topic',
@@ -345,7 +302,7 @@ function hedley_schedule_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_kinyarwanda_title',
     'label' => 'Kinyarwanda Title',
-    'required' => 1,
+    'required' => 0,
     'settings' => array(
       'text_processing' => 0,
       'user_register_form' => FALSE,
@@ -357,7 +314,50 @@ function hedley_schedule_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => -4,
+      'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance: 'node-counseling_topic-title_field'.
+  $field_instances['node-counseling_topic-title_field'] = array(
+    'bundle' => 'counseling_topic',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Once you have created a "Counseling Topic" and it has been used, make only minor edits -- any edit will affect the historical data of which topics have been discussed with participants. If an edit would represent a different topic, then create a new topic instead. You can remove an unused topic from the relevant "Counseling Schedule" -- but do not delete the unused topic, since that would also affect the historical data.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 2,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'title_field',
+    'label' => 'English Title',
+    'required' => 1,
+    'settings' => array(
+      'hide_label' => array(
+        'entity' => 0,
+        'page' => 0,
+      ),
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => -5,
     ),
   );
 
@@ -560,6 +560,7 @@ This should not be used on the "live" site -- it is only intended for the "sandb
 
 This should not be used on the "live" site -- it is only intended for the "sandbox" site.');
   t('Kinyarwanda Title');
+  t('Once you have created a "Counseling Topic" and it has been used, make only minor edits -- any edit will affect the historical data of which topics have been discussed with participants. If an edit would represent a different topic, then create a new topic instead. You can remove an unused topic from the relevant "Counseling Schedule" -- but do not delete the unused topic, since that would also affect the historical data.');
   t('Scheduled Date');
   t('Session');
   t('The start date is the date on which the data entry is scheduled.
@@ -568,7 +569,6 @@ The end date is the last day on which data entry will be allowed for this sessio
   t('Timing');
   t('Topics');
   t('Training');
-  t('Use carefully your edit credentials, avoid any substantial changes. Any change will affect past (saved) data as well. If possible, create a new topic and connect to the relevant counseling meeting.');
   t('Which topics should be addressed?');
 
   return $field_instances;

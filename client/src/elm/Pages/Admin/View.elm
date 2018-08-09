@@ -25,6 +25,7 @@ import Set
 import Time.Date
 import Translate exposing (Language, ValidationError, translate)
 import User.Model exposing (..)
+import Utils.Confirmation as Confirmation
 import Utils.Html exposing (spinner)
 import Utils.WebData exposing (viewError, viewOrFetch)
 
@@ -284,10 +285,21 @@ viewClinicList config language backend model clinics ( _, futureSessions ) =
                     , text " "
                     , button
                         [ class "ui primary button small"
-                        , onClick <| MsgBackend <| Backend.Model.PostTrainingSessionRequest { action = DeleteAll }
+                        , Confirmation.Open
+                            { title = translate language Translate.ConfirmDeleteTrainingSessions
+                            , body = translate language Translate.ThisActionCannotBeUndone
+                            , confirmMsg = MsgBackend <| Backend.Model.PostTrainingSessionRequest { action = DeleteAll }
+                            , cancelMsg = Nothing
+                            , cancelButton = translate language Translate.Cancel
+                            , okButton = translate language Translate.Delete
+                            }
+                            |> MsgConfirmation
+                            |> onClick
                         ]
                         [ text <| translate language <| Translate.DeleteTrainingSessions
                         ]
+                    , Confirmation.view model.confirmation
+                        |> Html.map MsgConfirmation
                     ]
             else
                 emptyNode

@@ -54,15 +54,13 @@ function hedley_migrate_create_sessions_today() {
   // Pick out the IDs.
   $clinic_ids = array_keys($clinic_result['node']);
 
-  $session_result = hedley_schedule_get_today_sessions(200);
+  $session_ids = hedley_schedule_get_today_sessions(200);
 
   // Now, remove all the clinicIds that already have a session today.
   // There is probably a more efficient way to do this.
-  if ($session_result['node']) {
-    foreach (node_load_multiple(array_keys($session_result['node'])) as $session) {
-      $wrapper = entity_metadata_wrapper('node', $session);
-      $clinic_ids = array_diff($clinic_ids, [$wrapper->field_clinic->getIdentifier()]);
-    }
+  foreach (node_load_multiple($session_ids) as $session_id) {
+    $wrapper = entity_metadata_wrapper('node', $session_id);
+    $clinic_ids = array_diff($clinic_ids, [$wrapper->field_clinic->getIdentifier()]);
   }
 
   // Finally, actually create the new Session for each clinic that didn't

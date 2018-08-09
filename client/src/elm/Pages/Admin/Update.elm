@@ -6,9 +6,11 @@ import Backend.Session.Form exposing (validateSession)
 import EveryDictList
 import Form
 import Gizra.NominalDate exposing (NominalDate)
+import Gizra.Update exposing (sequenceExtra)
 import Pages.Admin.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Time.Date exposing (addDays)
+import Utils.Confirmation as Confirmation
 
 
 {-| For simplicity's sake, we just pass in the whole backend. In theory, we
@@ -37,6 +39,18 @@ update date backend msg model =
             , Cmd.none
             , [ App.Model.MsgLoggedIn (App.Model.MsgBackend subMsg) ]
             )
+
+        MsgConfirmation subMsg ->
+            let
+                ( subModel, subCmd, msgs ) =
+                    Confirmation.update subMsg model.confirmation
+            in
+            sequenceExtra (update date backend)
+                msgs
+                ( { model | confirmation = subModel }
+                , Cmd.map MsgConfirmation subCmd
+                , []
+                )
 
         MsgCreateSession subMsg ->
             let
@@ -100,10 +114,9 @@ update date backend msg model =
                     , end = addDays 3 date
                     }
 
-                -- We reset certain successful request if we're opening or
-                -- closing the form.
-                resetSuccess =
-                    Backend.Model.ResetSuccess
+                -- We reset certain successful request if we're opening the form.
+                resetSessionRequests =
+                    Backend.Model.ResetSessionRequests
                         |> App.Model.MsgBackend
                         |> App.Model.MsgLoggedIn
 
@@ -114,13 +127,13 @@ update date backend msg model =
                                 ( model, [] )
                             else
                                 ( { model | createSession = Nothing }
-                                , [ resetSuccess ]
+                                , []
                                 )
 
                         Nothing ->
                             if show then
                                 ( { model | createSession = Just <| Backend.Session.Form.emptyForm knownClinic initialDates }
-                                , [ resetSuccess ]
+                                , [ resetSessionRequests ]
                                 )
                             else
                                 ( model, [] )
