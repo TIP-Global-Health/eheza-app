@@ -1,0 +1,4 @@
+id,field_timing,field_topics
+counseling_schedule1,entry,counseling_topic1|counseling_topic2|counseling_topic3
+counseling_schedule2,midpoint,counseling_topic4
+counseling_schedule3,exit,counseling_topic5|counseling_topic6

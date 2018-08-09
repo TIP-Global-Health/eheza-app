@@ -274,6 +274,7 @@ function import_demo_content {
 # the 'taxonomy_vocabulary' table.
 ##
 function generate_demo_content {
+  # @todo: Replace this with CSV generated data.
   echo -e "${LBLUE}> Starting the process of generating demo content using the devel_generate module.${RESTORE}"
   cd "$ROOT"/www
 
@@ -315,6 +316,10 @@ function generate_demo_content {
 
   # Add some sessions for today
   drush create-sessions-today
+
+  # After all of this is done, we need to update the "Counseling Sessions" because it's dependent on the randomly
+  # generated content above. (Temporary until all of the randomly generated content is replaced with csv migration).
+  drush mi HedleyMigrateCounselingSessions --update
 
   cd "$ROOT"
   echo
