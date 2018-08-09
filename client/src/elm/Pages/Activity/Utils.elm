@@ -4,16 +4,13 @@ import Activity.Model exposing (ChildActivity(..), MotherActivity(..))
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getMother, getMotherMeasurementData)
-import EveryDict
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html)
-import Maybe.Extra
 import Measurement.Model
 import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Measurement.View
 import Pages.Activity.Model exposing (..)
-import Participant.Model exposing (Participant)
 import Translate exposing (Language)
 import ZScore.Model
 
