@@ -11,6 +11,8 @@ with the other measurements.
 -}
 
 import Backend.Entities exposing (..)
+import EveryDict exposing (EveryDict)
+import EveryDictList exposing (EveryDictList)
 
 
 {-| For the moment, the only information we track about the topic itself
@@ -30,9 +32,17 @@ type CounselingTiming
     | Exit
 
 
-{-| Reflects a scheduling object from the backend.
+{-| This combines all the `CounselingSchedule` entities we receive from the
+backend into one dictionary, where the keys are the timing, and the values are
+a dict-list of topicIDs and topics.
+
+(We're not really interested in the CounselingSchedulieId itself, because we're
+not modifying the schedule on the client, at least for now.
+
+We won't plan to have more than one `CounselingSchedule` entity on the backend
+for each `CounselingTiming`. If it turns out that we do, we'll just combine
+them on the client.
+
 -}
-type alias CounselingSchedule =
-    { timing : CounselingTiming
-    , topics : List CounselingTopicId
-    }
+type alias EveryCounselingSchedule =
+    EveryDict CounselingTiming (EveryDictList CounselingTopicId CounselingTopic)
