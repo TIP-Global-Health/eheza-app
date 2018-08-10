@@ -32,6 +32,14 @@ type CounselingTiming
     | Exit
 
 
+{-| A single counseling schedule entity, as sent from the backend.
+-}
+type alias CounselingSchedule =
+    { timing : CounselingTiming
+    , topics : EveryDictList CounselingTopicId CounselingTopic
+    }
+
+
 {-| This combines all the `CounselingSchedule` entities we receive from the
 backend into one dictionary, where the keys are the timing, and the values are
 a dict-list of topicIDs and topics.
