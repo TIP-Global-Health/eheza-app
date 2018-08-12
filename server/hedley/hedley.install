@@ -370,3 +370,13 @@ function hedley_update_7010() {
   $modules = ['title'];
   module_enable($modules);
 }
+
+/**
+ * Implements hook_update_N().
+ *
+ * Adds counseling_session permission for nurses.
+ */
+function hedley_update_7011() {
+  $content_types = ['counseling_session'];
+  hedley_add_nurse_permissions_for_content_type($content_types);
+}
