@@ -52,6 +52,9 @@ encodeActivityAsString activity =
                 ChildPicture ->
                     "picture"
 
+                Counseling ->
+                    "counseling"
+
                 Height ->
                     "height"
 
@@ -77,6 +80,9 @@ decodeActivityFromString s =
     case s of
         "picture" ->
             Just <| ChildActivity ChildPicture
+
+        "counseling" ->
+            Just <| ChildActivity Counseling
 
         "height" ->
             Just <| ChildActivity Height
@@ -113,6 +119,9 @@ getActivityIcon activity =
             case childActivity of
                 ChildPicture ->
                     "photo"
+
+                Counseling ->
+                    "counseling"
 
                 Height ->
                     "height"
@@ -351,6 +360,9 @@ hasCompletedChildActivity activityType measurements =
     case activityType of
         ChildPicture ->
             isCompleted measurements.edits.photo (Maybe.map Tuple.second measurements.current.photo)
+
+        Counseling ->
+            isCompleted measurements.edits.counseling (Maybe.map Tuple.second measurements.current.counselingSession)
 
         Height ->
             isCompleted measurements.edits.height (Maybe.map Tuple.second measurements.current.height)

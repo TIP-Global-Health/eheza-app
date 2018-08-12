@@ -25,6 +25,7 @@ type Activity
 
 type ChildActivity
     = ChildPicture
+    | Counseling
     | Height
     | Muac
     | NutritionSigns

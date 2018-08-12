@@ -82,6 +82,7 @@ decodeChildMeasurementList =
         |> optional "nutrition" (list (decodeWithEntityId decodeNutrition)) []
         |> optional "photo" (list (decodeWithEntityId decodePhoto)) []
         |> optional "weight" (list (decodeWithEntityId decodeWeight)) []
+        |> optional "counseling_session" (list (decodeWithEntityId decodeCounselingSession)) []
 
 
 {-| The `oneOf` provides some back-compat for locally stored values.
@@ -131,6 +132,13 @@ decodeNutrition : Decoder ChildNutrition
 decodeNutrition =
     decodeEverySet decodeChildNutritionSign
         |> field "nutrition_signs"
+        |> decodeChildMeasurement
+
+
+decodeCounselingSession : Decoder CounselingSession
+decodeCounselingSession =
+    decodeEverySet decodeEntityId
+        |> field "topics"
         |> decodeChildMeasurement
 
 
@@ -234,6 +242,7 @@ decodeChildEdits =
         |> required "nutrition" (decodeEdit decodeNutrition)
         |> required "photo" (decodeEdit decodePhoto)
         |> required "weight" (decodeEdit decodeWeight)
+        |> required "counseling" (decodeEdit decodeCounselingSession)
 
 
 {-| Decodes what `encodeChildEdits` produces.

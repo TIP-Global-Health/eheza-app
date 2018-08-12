@@ -5,6 +5,7 @@ module Measurement.View exposing (viewChild, viewMother, viewMuacIndication)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import Backend.Child.Model exposing (Child, Gender)
+import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (applyEdit, mapMeasurementData, muacIndication)
@@ -45,6 +46,9 @@ viewChild language currentDate child activity measurements zscores model =
 
         NutritionSigns ->
             viewNutritionSigns language (mapMeasurementData (Maybe.map Tuple.second << .nutrition) .nutrition measurements) model.nutritionSigns
+
+        Counseling ->
+            viewCounselingSession language (mapMeasurementData (Maybe.map Tuple.second << .counselingSession) .counseling measurements) model.counseling
 
         Weight ->
             viewWeight language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .weight) .weight measurements) zscores model
@@ -584,6 +588,40 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
             []
         , label [ for inputId ]
             [ text <| translate language (Trans.ChildNutritionSignLabel sign) ]
+        ]
+
+
+viewCounselingSession : Language -> MeasurementData (Maybe CounselingSession) (Edit CounselingSession) -> EverySet CounselingTopicId -> Html MsgChild
+viewCounselingSession language measurement topics =
+    let
+        activity =
+            ChildActivity Counseling
+
+        saveMsg =
+            -- TODO
+            Nothing
+    in
+    div
+        [ class "ui full segment counseling"
+        , id "counselingSessionEntryForm"
+        ]
+        [ div [ class "content" ]
+            [ h3 [ class "ui header" ]
+                [ text <| translate language (Trans.ActivitiesTitle activity)
+                ]
+            , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+            , div
+                [ class "ui form" ]
+              <|
+                [ p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
+                ]
+            ]
+        , div [ class "actions" ] <|
+            saveButton
+                language
+                saveMsg
+                measurement
+                Nothing
         ]
 
 

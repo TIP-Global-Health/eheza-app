@@ -4,6 +4,7 @@ module Measurement.Model exposing (..)
 participant.
 -}
 
+import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
 
@@ -36,6 +37,7 @@ type alias ModelChild =
     , nutritionSigns : EverySet ChildNutritionSign
     , photo : Maybe PhotoValue
     , weight : String
+    , counseling : EverySet CounselingTopicId
     }
 
 
@@ -100,6 +102,7 @@ emptyModelChild =
     , nutritionSigns = EverySet.empty
     , photo = Nothing
     , weight = ""
+    , counseling = EverySet.empty
     }
 
 

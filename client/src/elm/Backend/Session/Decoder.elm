@@ -164,6 +164,9 @@ splitChildMeasurements sessionId =
 
                 photo =
                     getCurrentAndPrevious sessionId list.photos
+
+                counselingSession =
+                    getCurrentAndPrevious sessionId list.counselingSessions
             in
             { current =
                 { height = height.current
@@ -171,6 +174,7 @@ splitChildMeasurements sessionId =
                 , muac = muac.current
                 , nutrition = nutrition.current
                 , photo = photo.current
+                , counselingSession = counselingSession.current
                 }
             , previous =
                 { height = height.previous
@@ -178,6 +182,7 @@ splitChildMeasurements sessionId =
                 , muac = muac.previous
                 , nutrition = nutrition.previous
                 , photo = photo.previous
+                , counselingSession = counselingSession.previous
                 }
             }
         )

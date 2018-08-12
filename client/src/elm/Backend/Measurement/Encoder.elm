@@ -55,6 +55,18 @@ encodeNutrition =
         )
 
 
+encodeCounselingSession : CounselingSession -> List ( String, Value )
+encodeCounselingSession =
+    encodeChildMeasurement
+        (\topics ->
+            ( "topics"
+            , EverySet.toList topics
+                |> List.map encodeEntityId
+                |> list
+            )
+        )
+
+
 encodeFamilyPlanning : FamilyPlanning -> List ( String, Value )
 encodeFamilyPlanning =
     encodeMotherMeasurement
@@ -185,6 +197,7 @@ encodeChildEdits edits =
         [ ( "height", encodeEdit (object << encodeHeight) edits.height )
         , ( "muac", encodeEdit (object << encodeMuac) edits.muac )
         , ( "nutrition", encodeEdit (object << encodeNutrition) edits.nutrition )
+        , ( "counseling", encodeEdit (object << encodeCounselingSession) edits.counseling )
         , ( "photo", encodeEdit (object << encodePhoto) edits.photo )
         , ( "weight", encodeEdit (object << encodeWeight) edits.weight )
         ]
@@ -232,6 +245,11 @@ encodeChildMeasurementList measurements =
         , ( "nutrition"
           , measurements.nutritions
                 |> List.map (encodeEntity encodeNutrition)
+                |> list
+          )
+        , ( "counseling_session"
+          , measurements.counselingSessions
+                |> List.map (encodeEntity encodeCounselingSession)
                 |> list
           )
         , ( "photo"

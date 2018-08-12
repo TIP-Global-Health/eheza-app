@@ -55,6 +55,12 @@ fromChildMeasurementData data =
             |> currentValue
             |> Maybe.map .value
             |> Maybe.withDefault EverySet.empty
+    , counseling =
+        data
+            |> mapMeasurementData .counselingSession .counseling
+            |> currentValue
+            |> Maybe.map .value
+            |> Maybe.withDefault EverySet.empty
     , photo =
         data
             |> mapMeasurementData .photo .photo
