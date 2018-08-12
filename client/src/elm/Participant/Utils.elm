@@ -1,51 +1,46 @@
 module Participant.Utils exposing (..)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType, MotherActivityType)
-import Activity.Utils exposing (childHasAnyPendingActivity, childHasPendingActivity, getAllChildActivities, getAllMotherActivities, motherHasAnyPendingActivity, motherHasPendingActivity)
+import Activity.Model exposing (Activity(..), ChildActivity, MotherActivity)
+import Activity.Utils exposing (summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
 import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Utils exposing (getMyMother)
-import EveryDict exposing (EveryDict)
-import EveryDictList
 import Measurement.Model
 import Pages.Activity.Utils exposing (viewChildMeasurements, viewMotherMeasurements)
 import Participant.Model exposing (Participant)
 
 
-childParticipant : Participant ChildId Child ChildActivityType Measurement.Model.MsgChild
+childParticipant : Participant ChildId Child ChildActivity Measurement.Model.MsgChild
 childParticipant =
-    { activities = getAllChildActivities
-    , getAvatarUrl = .avatarUrl
-    , getBirthDate = .birthDate
+    { getAvatarUrl = .avatarUrl
+    , getBirthDate = .birthDate >> Just
     , getMotherId = \childId session -> getMyMother childId session.offlineSession |> Maybe.map Tuple.first
     , getName = .name
     , getParticipants = \session -> session.offlineSession.children
-    , hasPendingActivity = childHasPendingActivity
     , iconClass = "child"
     , showProgressReportTab = True
-    , tagActivityType = ChildActivity
+    , summarizeActivitiesForParticipant = summarizeChildParticipant
+    , summarizeParticipantsForActivity = summarizeChildActivity
+    , tagActivity = ChildActivity
     , toChildId = Just
     , toMotherId = always Nothing
     , viewMeasurements = viewChildMeasurements
     }
 
 
-motherParticipant : Participant MotherId Mother MotherActivityType Measurement.Model.MsgMother
+motherParticipant : Participant MotherId Mother MotherActivity Measurement.Model.MsgMother
 motherParticipant =
-    -- TODO: getParticipants is inefficient ... should make the children and
-    -- mothers match, and either pre-sort in EveryDictList or sort each time in
-    -- EveryDict
-    { activities = getAllMotherActivities
-    , getAvatarUrl = .avatarUrl
+    { getAvatarUrl = .avatarUrl
     , getBirthDate = .birthDate
     , getMotherId = \motherId session -> Just motherId
     , getName = .name
-    , getParticipants = \session -> session.offlineSession.mothers |> EveryDictList.toList |> EveryDict.fromList
-    , hasPendingActivity = motherHasPendingActivity
+    , getParticipants = \session -> session.offlineSession.mothers
     , iconClass = "mother"
     , showProgressReportTab = False
-    , tagActivityType = MotherActivity
+    , summarizeActivitiesForParticipant = summarizeMotherParticipant
+    , summarizeParticipantsForActivity = summarizeMotherActivity
+    , tagActivity = MotherActivity
     , toChildId = always Nothing
     , toMotherId = Just
     , viewMeasurements = \language date zscores -> viewMotherMeasurements language date
