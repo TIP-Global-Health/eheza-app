@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains HedleyRestfulMotherss.
+ * Contains HedleyRestfulMothers.
  */
 
 /**

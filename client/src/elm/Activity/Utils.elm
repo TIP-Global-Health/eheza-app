@@ -244,6 +244,9 @@ summarizeByActivity session =
     }
 
 
+{-| This summarizes our summary, by counting, for the given activity, how many participants
+are completed or pending.
+-}
 getParticipantCountForActivity : SummaryByActivity -> Activity -> CompletedAndPending Int
 getParticipantCountForActivity summary activity =
     case activity of
@@ -325,7 +328,12 @@ summarizeByParticipant session =
     }
 
 
-{-| This includes activities for children of the mother.
+{-| This summarizes our summary, by counting how many activities have been
+completed for the given mother.
+
+It includes ativities for children of the mother, since we navigate from mother
+to child.
+
 -}
 getActivityCountForMother : MotherId -> Mother -> SummaryByParticipant -> CompletedAndPending Int
 getActivityCountForMother id mother summary =
