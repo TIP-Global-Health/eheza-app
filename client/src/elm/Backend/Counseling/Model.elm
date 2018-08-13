@@ -20,7 +20,7 @@ is the text for the checkboxes, in both languages.
 -}
 type alias CounselingTopic =
     { english : String
-    , kinyarwanda : String
+    , kinyarwanda : Maybe String
     }
 
 

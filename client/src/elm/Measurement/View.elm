@@ -5,10 +5,14 @@ module Measurement.View exposing (viewChild, viewMother, viewMuacIndication)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import Backend.Child.Model exposing (Child, Gender)
+import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (applyEdit, mapMeasurementData, muacIndication)
+import Backend.Session.Model exposing (EditableSession)
+import EveryDict
+import EveryDictList exposing (EveryDictList)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
@@ -21,6 +25,7 @@ import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
 import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
+import Restful.Endpoint exposing (fromEntityId)
 import Round
 import Translate as Trans exposing (Language(..), TranslationId, translate)
 import Utils.Html exposing (script)
@@ -32,8 +37,8 @@ import ZScore.Utils exposing (viewZScore, zScoreHeightForAge, zScoreWeightForAge
 {-| We need the current date in order to immediately construct a ZScore for the
 child when we enter something.
 -}
-viewChild : Language -> NominalDate -> Child -> ChildActivity -> MeasurementData ChildMeasurements ChildEdits -> ZScore.Model.Model -> ModelChild -> Html MsgChild
-viewChild language currentDate child activity measurements zscores model =
+viewChild : Language -> NominalDate -> Child -> ChildActivity -> MeasurementData ChildMeasurements ChildEdits -> ZScore.Model.Model -> EditableSession -> ModelChild -> Html MsgChild
+viewChild language currentDate child activity measurements zscores session model =
     case activity of
         ChildPicture ->
             viewPhoto language (mapMeasurementData (Maybe.map Tuple.second << .photo) .photo measurements) model.photo
@@ -48,7 +53,7 @@ viewChild language currentDate child activity measurements zscores model =
             viewNutritionSigns language (mapMeasurementData (Maybe.map Tuple.second << .nutrition) .nutrition measurements) model.nutritionSigns
 
         Counseling ->
-            viewCounselingSession language (mapMeasurementData (Maybe.map Tuple.second << .counselingSession) .counseling measurements) model.counseling
+            viewCounselingSession language (mapMeasurementData (Maybe.map Tuple.second << .counselingSession) .counseling measurements) session model.counseling
 
         Weight ->
             viewWeight language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .weight) .weight measurements) zscores model
@@ -573,33 +578,34 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
     in
     div [ class "ui checkbox activity" ]
         [ input
-            ([ type_ "checkbox"
-             , id inputId
-             , name inputId
-             , onClick <| SelectNutritionSign (not isChecked) sign
-             , checked isChecked
-             ]
-                ++ (if isChecked then
-                        [ class "checked" ]
-                    else
-                        []
-                   )
-            )
+            [ type_ "checkbox"
+            , id inputId
+            , name inputId
+            , onClick <| SelectNutritionSign (not isChecked) sign
+            , checked isChecked
+            , classList [ ( "checked", isChecked ) ]
+            ]
             []
         , label [ for inputId ]
             [ text <| translate language (Trans.ChildNutritionSignLabel sign) ]
         ]
 
 
-viewCounselingSession : Language -> MeasurementData (Maybe CounselingSession) (Edit CounselingSession) -> EverySet CounselingTopicId -> Html MsgChild
-viewCounselingSession language measurement topics =
+viewCounselingSession : Language -> MeasurementData (Maybe CounselingSession) (Edit CounselingSession) -> EditableSession -> EverySet CounselingTopicId -> Html MsgChild
+viewCounselingSession language measurement session topics =
     let
         activity =
             ChildActivity Counseling
 
         saveMsg =
-            -- TODO
-            Nothing
+            Just <| SendOutMsgChild <| SaveCounselingSession topics
+
+        expected =
+            -- TODO: We'll need a function with real logic for figuring out
+            -- which topics are expected.
+            session.offlineSession.everyCounselingSchedule
+                |> EveryDict.get Entry
+                |> Maybe.withDefault EveryDictList.empty
     in
     div
         [ class "ui full segment counseling"
@@ -610,11 +616,9 @@ viewCounselingSession language measurement topics =
                 [ text <| translate language (Trans.ActivitiesTitle activity)
                 ]
             , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
-            , div
-                [ class "ui form" ]
-              <|
-                [ p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
-                ]
+            , div [ class "ui form" ] <|
+                p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
+                    :: viewCounselingTopics language expected topics
             ]
         , div [ class "actions" ] <|
             saveButton
@@ -623,6 +627,37 @@ viewCounselingSession language measurement topics =
                 measurement
                 Nothing
         ]
+
+
+viewCounselingTopics : Language -> EveryDictList CounselingTopicId CounselingTopic -> EverySet CounselingTopicId -> List (Html MsgChild)
+viewCounselingTopics language expectedTopics selectedTopics =
+    expectedTopics
+        |> EveryDictList.map
+            (\topicId topic ->
+                let
+                    inputId =
+                        "counseling-checkbox-" ++ toString (fromEntityId topicId)
+
+                    isChecked =
+                        EverySet.member topicId selectedTopics
+                in
+                div
+                    [ class "ui checkbox activity" ]
+                    [ input
+                        [ type_ "checkbox"
+                        , id inputId
+                        , name inputId
+                        , onClick <| SelectCounselingTopic (not isChecked) topicId
+                        , checked isChecked
+                        , classList [ ( "checked", isChecked ) ]
+                        ]
+                        []
+                    , label
+                        [ for inputId ]
+                        [ text <| translate language (Trans.CounselingTopic topic) ]
+                    ]
+            )
+        |> EveryDictList.values
 
 
 type alias MotherMeasurementData =

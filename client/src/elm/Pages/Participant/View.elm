@@ -150,7 +150,7 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
                             form =
                                 getChildForm childId session
                         in
-                        [ Measurement.View.viewChild language currentDate child activity measurements zscores form
+                        [ Measurement.View.viewChild language currentDate child activity measurements zscores session form
                             |> Html.map MsgMeasurement
                             |> keyed "content"
                         ]

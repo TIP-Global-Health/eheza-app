@@ -34,7 +34,7 @@ viewChildMeasurements language currentDate zscores childId activity session =
     getChild childId session.offlineSession
         |> Maybe.map
             (\child ->
-                Measurement.View.viewChild language currentDate child activity measurements zscores form
+                Measurement.View.viewChild language currentDate child activity measurements zscores session form
                     |> Html.map MsgMeasurement
             )
         |> Maybe.withDefault emptyNode

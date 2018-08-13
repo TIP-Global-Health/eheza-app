@@ -2,6 +2,7 @@ module Translate exposing (..)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import Backend.Child.Model exposing (Gender(..))
+import Backend.Counseling.Model exposing (CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
 import Date exposing (Month(..))
@@ -171,6 +172,7 @@ type TranslationId
     | ConfirmDeleteTrainingSessions
     | Connected
     | Continue
+    | CounselingTopic CounselingTopic
     | CreateSession
     | CreateTrainingSessions
     | DeleteTrainingSessions
@@ -705,6 +707,11 @@ translationSet trans =
         Continue ->
             { english = "Continue"
             , kinyarwanda = Just "Gukomeza"
+            }
+
+        CounselingTopic topic ->
+            { english = topic.english
+            , kinyarwanda = topic.kinyarwanda
             }
 
         CreateSession ->

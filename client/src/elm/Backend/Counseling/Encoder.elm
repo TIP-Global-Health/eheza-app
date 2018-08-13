@@ -4,13 +4,14 @@ import Backend.Counseling.Model exposing (..)
 import EveryDict
 import EveryDictList
 import Json.Encode exposing (..)
+import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityId)
 
 
 encodeCounselingTopic : CounselingTopic -> List ( String, Value )
 encodeCounselingTopic topic =
     [ ( "label", string topic.english )
-    , ( "kinyarwanda_title", string topic.kinyarwanda )
+    , ( "kinyarwanda_title", maybe string topic.kinyarwanda )
     ]
 
 
