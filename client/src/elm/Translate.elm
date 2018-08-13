@@ -650,7 +650,7 @@ translationSet trans =
             }
 
         ClickTheCheckMark ->
-            { english = "Click the check mark if the mother is in attendance. The check mark will appear green when a mother has been signed in."
+            { english = "Click the check mark if the mother / caregiver is in attendance. The check mark will appear green when a mother / caregiver has been signed in."
             , kinyarwanda = Just "Kanda (kuri) ku kazu niba umubyeyi ahari. Ku kazu harahita hahindura ibara habe icyaytsi niba wemeje ko umubyeyi ahari"
             }
 
@@ -933,7 +933,7 @@ translationSet trans =
             }
 
         MotherName name ->
-            { english = "Mother: " ++ name
+            { english = "Mother/Caregiver: " ++ name
             , kinyarwanda = Just <| "Umubyeyi: " ++ name
             }
 
