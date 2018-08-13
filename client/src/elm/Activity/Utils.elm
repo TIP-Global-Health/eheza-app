@@ -151,7 +151,7 @@ getAllActivities =
 
 getAllChildActivities : List ChildActivity
 getAllChildActivities =
-    [ Height, Muac, NutritionSigns, Weight, ChildPicture ]
+    [ Height, Muac, NutritionSigns, Weight, ChildPicture, Counseling ]
 
 
 getAllMotherActivities : List MotherActivity
