@@ -68,5 +68,5 @@ exampleMother =
     , children = []
     , birthDate = date 2016 8 28
     , ubudehe = Just "1"
-    , educationLevel = NoSchooling
+    , educationLevel = Just NoSchooling
     }
