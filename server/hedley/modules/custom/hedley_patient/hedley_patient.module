@@ -74,3 +74,24 @@ function hedley_patient_query_exclude_existing_relationships_alter(QueryAlterabl
   $query->leftJoin('field_data_field_relationship', 'r', 'node.nid = r.entity_id');
   $query->isNull('r.field_relationship_value');
 }
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function hedley_patient_form_mother_node_form_alter(&$form, &$form_state, $form_id) {
+  $form['#validate'][] = 'hedley_patient_mother_birth_date_validation';
+}
+
+/**
+ * Validation callback for mother node form.
+ * When the mother node is a caregiver, date of birth is not required.
+ */
+function hedley_patient_mother_birth_date_validation($form, &$form_state) {
+
+  $relationship_value = $form_state['values']['field_relationship'][LANGUAGE_NONE][0]['value'];
+  $birth_date_value = $form_state['values']['field_date_birth'][LANGUAGE_NONE][0]['value'];
+
+  if ($relationship_value == 'mother' && empty($birth_date_value)) {
+    form_set_error('field_date_birth', t('The date of birth field is required when adding a mother.'));
+  }
+}
