@@ -305,7 +305,7 @@ translationSet trans =
 
         Admin ->
             { english = "Administration"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Abakuriye"
             }
 
         AgeWord ->
