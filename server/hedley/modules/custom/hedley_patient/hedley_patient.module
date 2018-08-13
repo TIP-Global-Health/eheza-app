@@ -84,6 +84,7 @@ function hedley_patient_form_mother_node_form_alter(&$form, &$form_state, $form_
 
 /**
  * Validation callback for mother node form.
+ *
  * When the mother node is a caregiver, date of birth is not required.
  */
 function hedley_patient_mother_birth_date_validation($form, &$form_state) {
