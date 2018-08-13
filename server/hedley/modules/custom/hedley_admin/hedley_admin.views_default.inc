@@ -373,10 +373,10 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['menu']['context'] = 0;
   $handler->display->display_options['menu']['context_only_inline'] = 0;
 
-  /* Display: Mother */
-  $handler = $view->new_display('page', 'Mother', 'page_3');
+  /* Display: Mother / Caregiver */
+  $handler = $view->new_display('page', 'Mother / Caregiver', 'page_3');
   $handler->display->display_options['defaults']['title'] = FALSE;
-  $handler->display->display_options['title'] = 'Mothers';
+  $handler->display->display_options['title'] = 'Mothers / Caregivers';
   $handler->display->display_options['defaults']['relationships'] = FALSE;
   /* Relationship: Child */
   $handler->display->display_options['relationships']['reverse_field_mother_node']['id'] = 'reverse_field_mother_node';
@@ -474,7 +474,7 @@ function hedley_admin_views_default_views() {
   );
   $handler->display->display_options['path'] = 'admin/content/mothers';
   $handler->display->display_options['menu']['type'] = 'normal';
-  $handler->display->display_options['menu']['title'] = 'Mothers';
+  $handler->display->display_options['menu']['title'] = 'Mothers / Caregivers';
   $handler->display->display_options['menu']['weight'] = '4';
   $handler->display->display_options['menu']['name'] = 'main-menu';
   $handler->display->display_options['menu']['context'] = 0;
