@@ -23,9 +23,9 @@ function hedley_user_menu_alter(&$menu) {
  * Access callback; Determines if the user may create or edit the node.
  *
  * @param string $op
- *   The operation to be performed on the node. Possible values are:
- *   - "update"
- *   - "create"
+ *   The operation to be performed on the node. Those are the possible values.
+ *   - "update".
+ *   - "create".
  * @param object $node
  *   The node object on which the operation is to be performed, or node type
  *   (e.g. 'forum') for "create" operation.
