@@ -67,6 +67,7 @@ type alias DropZoneFile =
 
 type MsgChild
     = SelectNutritionSign Bool ChildNutritionSign
+    | SelectCounselingTopic Bool CounselingTopicId
     | SendOutMsgChild OutMsgChild
     | UpdateHeight String
     | UpdateMuac String
@@ -87,6 +88,7 @@ type OutMsgChild
     = SaveHeight HeightInCm
     | SaveWeight WeightInKg
     | SaveMuac MuacInCm
+    | SaveCounselingSession (EverySet CounselingTopicId)
     | SaveChildNutritionSigns (EverySet ChildNutritionSign)
     | SavePhoto PhotoValue
 

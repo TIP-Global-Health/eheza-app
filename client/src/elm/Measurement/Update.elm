@@ -29,6 +29,19 @@ updateChild msg model =
             , Nothing
             )
 
+        SelectCounselingTopic selected topicId ->
+            let
+                counseling =
+                    if selected then
+                        EverySet.insert topicId model.counseling
+                    else
+                        EverySet.remove topicId model.counseling
+            in
+            ( { model | counseling = counseling }
+            , Cmd.none
+            , Nothing
+            )
+
         SelectNutritionSign selected sign ->
             let
                 nutritionSignsUpdated =
