@@ -13,7 +13,6 @@ import Pages.Model exposing (..)
 import Pages.Participant.Model
 import Pages.Participant.Update
 import Pages.Participants.Update
-import Participant.Utils exposing (childParticipant, motherParticipant)
 
 
 {-| We need the editableSession in order to pass on some needed data. But we
