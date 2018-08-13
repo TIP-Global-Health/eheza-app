@@ -285,10 +285,15 @@ viewFoundMother language ( motherId, mother ) session model =
                             [ h2
                                 [ class "ui header" ]
                                 [ text mother.name ]
-                            , p [ class "education-level-wrapper" ]
-                                [ label [] [ text <| translate language Trans.LevelOfEducationLabel ]
-                                , span [] [ text <| translate language <| Trans.LevelOfEducation mother.educationLevel ]
-                                ]
+                            , showMaybe <|
+                                Maybe.map
+                                    (\educationLevel ->
+                                        p [ class "education-level-wrapper" ]
+                                            [ label [] [ text <| translate language Trans.LevelOfEducationLabel ]
+                                            , span [] [ text <| translate language <| Trans.LevelOfEducation educationLevel ]
+                                            ]
+                                    )
+                                    mother.educationLevel
                             , showMaybe <|
                                 Maybe.map
                                     (\ubudehe ->

@@ -14,7 +14,7 @@ encodeMother mother =
     , ( "children", list (List.map encodeEntityId mother.children) )
     , ( "date_birth", encodeYYYYMMDD mother.birthDate )
     , ( "ubudehe", maybe string mother.ubudehe )
-    , ( "education_level", encodeEducationLevel mother.educationLevel )
+    , ( "education_level", maybe encodeEducationLevel mother.educationLevel )
     ]
 
 
@@ -38,3 +38,6 @@ encodeEducationLevel educationLevel =
 
         HigherEducation ->
             string "5"
+
+        AdvancedDiploma ->
+            string "6"

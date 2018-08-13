@@ -947,6 +947,11 @@ translationSet trans =
                     , kinyarwanda = Just "(A0)"
                     }
 
+                AdvancedDiploma ->
+                    { english = "HAdvanced Diploma"
+                    , kinyarwanda = Just "(A1)"
+                    }
+
         LinkToMother ->
             { english = "Link to mother"
             , kinyarwanda = Just "Guhuza n'amakuru y'umubyeyi"

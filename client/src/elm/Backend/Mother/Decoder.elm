@@ -26,7 +26,7 @@ decodeMother =
         |> required "children" (oneOf [ list decodeEntityId, decodeNullAsEmptyArray ])
         |> required "date_birth" decodeYYYYMMDD
         |> optional "ubudehe" (nullable string) Nothing
-        |> required "education_level" decodeEducationLevel
+        |> optional "education_level" (nullable decodeEducationLevel) Nothing
 
 
 decodeEducationLevel : Decoder EducationLevel
@@ -52,6 +52,9 @@ decodeEducationLevel =
 
                     "5" ->
                         succeed HigherEducation
+
+                    "6" ->
+                        succeed AdvancedDiploma
 
                     _ ->
                         fail <|
