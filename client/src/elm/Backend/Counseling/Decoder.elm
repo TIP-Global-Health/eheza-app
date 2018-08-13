@@ -12,7 +12,7 @@ decodeCounselingTopic : Decoder CounselingTopic
 decodeCounselingTopic =
     map2 CounselingTopic
         (field "label" string)
-        (nullable (field "kinyarwanda_title" string))
+        (field "kinyarwanda_title" (nullable string))
 
 
 decodeCounselingTiming : Decoder CounselingTiming
