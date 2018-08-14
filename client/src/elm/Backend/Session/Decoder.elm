@@ -220,10 +220,10 @@ getCurrentAndPrevious sessionId =
 decodeMothers : Decoder (EveryDictList MotherId Mother)
 decodeMothers =
     EveryDictList.decodeArray2 (field "id" decodeEntityId) decodeMother
+        |> map (EveryDictList.sortBy .name)
 
 
 decodeChildren : Decoder (EveryDictList ChildId Child)
 decodeChildren =
-    map2 (,) (field "id" decodeEntityId) decodeChild
-        |> list
-        |> map EveryDictList.fromList
+    EveryDictList.decodeArray2 (field "id" decodeEntityId) decodeChild
+        |> map (EveryDictList.sortBy .name)

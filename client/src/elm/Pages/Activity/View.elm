@@ -131,7 +131,6 @@ view config language currentDate zscores selectedActivity session model =
                     else
                         selectedParticipants
                             |> EveryDictList.toList
-                            |> List.sortBy (Tuple.second >> config.getName)
                             |> List.map viewParticipantCard
             in
             div
