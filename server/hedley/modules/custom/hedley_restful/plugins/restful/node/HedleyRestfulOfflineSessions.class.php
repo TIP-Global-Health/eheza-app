@@ -494,7 +494,12 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
             $this->handleEdit($handler, $edit, $previous);
           }
           else {
-            throw new RestfulBadRequestException("Entity $activity is unknown.");
+            // We can ignore the `checked_in` activity since we don't track it
+            // on the backend. If sent another unrecognized activity, throw an
+            // error.
+            if ($activity != 'checked_in') {
+              throw new RestfulBadRequestException("Entity $activity is unknown.");
+            }
           }
         }
       }
