@@ -83,11 +83,7 @@ function hedley_patient_form_mother_node_form_alter(&$form, &$form_state, $form_
 
   $params = drupal_get_query_parameters();
 
-  if (!isset($params['type'])) {
-    return;
-  }
-
-  if ($params['type'] != 'caregiver') {
+  if (!isset($params['type']) || $params['type'] != 'caregiver') {
     return;
   }
 
