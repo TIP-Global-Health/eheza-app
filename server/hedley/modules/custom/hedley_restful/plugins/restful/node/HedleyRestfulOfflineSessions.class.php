@@ -478,6 +478,9 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
 
             $this->handleEdit($handler, $edit, $previous);
           }
+          else {
+            throw new RestfulBadRequestException("Entity $activity is unknown.");
+          }
         }
       }
 
@@ -489,6 +492,9 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
             $previous = $existing[$motherId][$activity];
 
             $this->handleEdit($handler, $edit, $previous);
+          }
+          else {
+            throw new RestfulBadRequestException("Entity $activity is unknown.");
           }
         }
       }
