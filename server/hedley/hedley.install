@@ -208,6 +208,7 @@ function hedley_standard_install() {
     'nutrition',
     'photo',
     'weight',
+    'counseling_session',
   ];
 
   foreach ($nurse_permitted_types as $type) {
