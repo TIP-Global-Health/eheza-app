@@ -117,7 +117,7 @@ function hedley_admin_menu_default_menu_links() {
     'menu_name' => 'main-menu',
     'link_path' => 'admin/content/mothers',
     'router_path' => 'admin/content/mothers',
-    'link_title' => 'Mothers',
+    'link_title' => 'Mothers / Caregivers',
     'options' => array(
       'identifier' => 'main-menu_mothers:admin/content/mothers',
     ),
@@ -303,7 +303,7 @@ function hedley_admin_menu_default_menu_links() {
   t('Historical Mother');
   t('Home');
   t('Measurements');
-  t('Mothers');
+  t('Mothers / Caregivers');
   t('Sessions');
 
   return $menu_links;
