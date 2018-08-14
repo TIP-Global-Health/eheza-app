@@ -176,7 +176,7 @@ function hedley_admin_menu_default_menu_links() {
       'attributes' => array(),
       'identifier' => 'menu-ihangane-admin-menu_create-caregiver:node/add/mother',
       'query' => array(
-        'edit[field_relationship][und]' => 'caregiver',
+        'type' => 'caregiver',
       ),
     ),
     'module' => 'menu',
