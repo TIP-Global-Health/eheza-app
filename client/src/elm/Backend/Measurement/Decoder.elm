@@ -233,6 +233,10 @@ decodeMeasurementEdits =
 
 
 {-| Decodes what `encodeChildEdits` produces.
+
+The keys should match the machine name of the entity on the backend, in order
+for the upload mechanism to work as expected.
+
 -}
 decodeChildEdits : Decoder ChildEdits
 decodeChildEdits =
@@ -242,7 +246,7 @@ decodeChildEdits =
         |> required "nutrition" (decodeEdit decodeNutrition)
         |> required "photo" (decodeEdit decodePhoto)
         |> required "weight" (decodeEdit decodeWeight)
-        |> required "counseling" (decodeEdit decodeCounselingSession)
+        |> required "counseling_session" (decodeEdit decodeCounselingSession)
 
 
 {-| Decodes what `encodeChildEdits` produces.

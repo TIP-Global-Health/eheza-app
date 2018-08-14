@@ -191,13 +191,16 @@ encodeMotherEdits edits =
         ]
 
 
+{-| The keys should match the machine name of the entity on the backend, in
+order for the upload mechanism to work as expected.
+-}
 encodeChildEdits : ChildEdits -> Value
 encodeChildEdits edits =
     object
         [ ( "height", encodeEdit (object << encodeHeight) edits.height )
         , ( "muac", encodeEdit (object << encodeMuac) edits.muac )
         , ( "nutrition", encodeEdit (object << encodeNutrition) edits.nutrition )
-        , ( "counseling", encodeEdit (object << encodeCounselingSession) edits.counseling )
+        , ( "counseling_session", encodeEdit (object << encodeCounselingSession) edits.counseling )
         , ( "photo", encodeEdit (object << encodePhoto) edits.photo )
         , ( "weight", encodeEdit (object << encodeWeight) edits.weight )
         ]
