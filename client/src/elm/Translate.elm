@@ -939,7 +939,7 @@ translationSet trans =
 
                 DiplomaProgram ->
                     { english = "Diploma Program (2 years of University)"
-                    , kinyarwanda = Just "Diploma Program (2 years of University)"
+                    , kinyarwanda = Just "Amashuri 2 ya Kaminuza"
                     }
 
                 HigherEducation ->

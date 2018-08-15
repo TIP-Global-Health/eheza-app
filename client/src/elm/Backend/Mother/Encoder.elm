@@ -13,31 +13,47 @@ encodeMother mother =
     , ( "avatar", maybe string mother.avatarUrl )
     , ( "children", list (List.map encodeEntityId mother.children) )
     , ( "date_birth", encodeYYYYMMDD mother.birthDate )
-    , ( "ubudehe", maybe string mother.ubudehe )
+    , ( "ubudehe", maybe encodeUbudehe mother.ubudehe )
     , ( "education_level", maybe encodeEducationLevel mother.educationLevel )
     ]
+
+
+encodeUbudehe : Ubudehe -> Value
+encodeUbudehe ubudehe =
+    case ubudehe of
+        Ubudehe1 ->
+            int 1
+
+        Ubudehe2 ->
+            int 2
+
+        Ubudehe3 ->
+            int 3
+
+        Ubudehe4 ->
+            int 4
 
 
 encodeEducationLevel : EducationLevel -> Value
 encodeEducationLevel educationLevel =
     case educationLevel of
         NoSchooling ->
-            string "0"
+            int 0
 
         PrimarySchool ->
-            string "1"
+            int 1
 
         VocationalTrainingSchool ->
-            string "2"
+            int 2
 
         SecondarySchool ->
-            string "3"
+            int 3
 
         DiplomaProgram ->
-            string "4"
+            int 4
 
         HigherEducation ->
-            string "5"
+            int 5
 
         AdvancedDiploma ->
-            string "6"
+            int 6

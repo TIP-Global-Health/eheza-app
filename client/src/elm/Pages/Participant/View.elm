@@ -4,7 +4,7 @@ import Activity.Model exposing (ActivityListItem, ActivityType(..), ChildActivit
 import Activity.Utils exposing (childHasCompletedActivity, childHasPendingActivity, getActivityIcon, getActivityList, getAllChildActivities, getAllMotherActivities, motherHasCompletedActivity, motherHasPendingActivity)
 import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Entities exposing (..)
-import Backend.Mother.Model exposing (Mother)
+import Backend.Mother.Model exposing (Mother, Ubudehe(..))
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getChildren, getMother, getMotherMeasurementData, getMyMother)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
@@ -299,7 +299,7 @@ viewFoundMother language ( motherId, mother ) session model =
                                     (\ubudehe ->
                                         p [ class "ubudehe-wrapper" ]
                                             [ label [] [ text <| translate language Trans.UbudeheLabel ]
-                                            , span [] [ text ubudehe ]
+                                            , span [] [ text <| viewUbudehe ubudehe ]
                                             ]
                                     )
                                     mother.ubudehe
@@ -485,3 +485,19 @@ viewFamilyLinks config language participantId session =
     ul
         [ class "links-body" ]
         (motherMarkup ++ childrenMarkup)
+
+
+viewUbudehe : Ubudehe -> String
+viewUbudehe ubudehe =
+    case ubudehe of
+        Ubudehe1 ->
+            "1"
+
+        Ubudehe2 ->
+            "2"
+
+        Ubudehe3 ->
+            "3"
+
+        Ubudehe4 ->
+            "4"

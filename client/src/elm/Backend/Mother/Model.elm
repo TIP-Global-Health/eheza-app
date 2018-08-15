@@ -9,9 +9,16 @@ type alias Mother =
     , avatarUrl : Maybe String
     , children : List ChildId
     , birthDate : NominalDate
-    , ubudehe : Maybe String
+    , ubudehe : Maybe Ubudehe
     , educationLevel : Maybe EducationLevel
     }
+
+
+type Ubudehe
+    = Ubudehe1
+    | Ubudehe2
+    | Ubudehe3
+    | Ubudehe4
 
 
 type EducationLevel
