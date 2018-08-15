@@ -34,17 +34,22 @@ decodeUbudehe : Decoder Ubudehe
 decodeUbudehe =
     decodeInt
         |> andThen
-            (\i ->
-                if i == 1 then
-                    succeed Ubudehe1
-                else if i == 2 then
-                    succeed Ubudehe2
-                else if i == 3 then
-                    succeed Ubudehe3
-                else if i == 4 then
-                    succeed Ubudehe4
-                else
-                    fail <| toString i ++ " is out of range for Ubudehe"
+            (\ubudehe ->
+                case ubudehe of
+                    1 ->
+                        succeed Ubudehe1
+
+                    2 ->
+                        succeed Ubudehe2
+
+                    3 ->
+                        succeed Ubudehe3
+
+                    4 ->
+                        succeed Ubudehe4
+
+                    _ ->
+                        fail <| toString ubudehe ++ " is out of range for Ubudehe"
             )
 
 
