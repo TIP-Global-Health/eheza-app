@@ -4,6 +4,7 @@ import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherA
 import Backend.Child.Model exposing (Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
+import Backend.Mother.Model exposing (EducationLevel(..))
 import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
@@ -204,6 +205,8 @@ type TranslationId
     | Gender Gender
     | GoHome
     | KilogramShorthand
+    | LevelOfEducationLabel
+    | LevelOfEducation EducationLevel
     | LinkToMother
     | LoginPhrase LoginPhrase
     | MakeSureYouAreConnected
@@ -275,6 +278,7 @@ type TranslationId
     | Training
     | TrainingSessionCreateSuccessMessage
     | TrainingSessionDeleteSuccessMessage
+    | UbudeheLabel
     | UnableToDownload
     | UnableToUpload
     | Update
@@ -906,6 +910,48 @@ translationSet trans =
             , kinyarwanda = Just "kg"
             }
 
+        LevelOfEducationLabel ->
+            { english = "Level of Education: "
+            , kinyarwanda = Just <| "Amashuri wize: "
+            }
+
+        LevelOfEducation educationLevel ->
+            case educationLevel of
+                NoSchooling ->
+                    { english = "No Schooling"
+                    , kinyarwanda = Just "Ntayo"
+                    }
+
+                PrimarySchool ->
+                    { english = "Primary School"
+                    , kinyarwanda = Just "Abanza"
+                    }
+
+                VocationalTrainingSchool ->
+                    { english = "Vocational Training School"
+                    , kinyarwanda = Just "Imyuga"
+                    }
+
+                SecondarySchool ->
+                    { english = "Secondary School"
+                    , kinyarwanda = Just "Ayisumbuye"
+                    }
+
+                DiplomaProgram ->
+                    { english = "Diploma Program (2 years of University)"
+                    , kinyarwanda = Just "Amashuri 2 ya Kaminuza"
+                    }
+
+                HigherEducation ->
+                    { english = "Higher Education (University)"
+                    , kinyarwanda = Just "(A0)"
+                    }
+
+                AdvancedDiploma ->
+                    { english = "HAdvanced Diploma"
+                    , kinyarwanda = Just "(A1)"
+                    }
+
         LinkToMother ->
             { english = "Link to mother"
             , kinyarwanda = Just "Guhuza n'amakuru y'umubyeyi"
@@ -1272,6 +1318,11 @@ translationSet trans =
 
         TrainingSessionDeleteSuccessMessage ->
             { english = "Training sessions were deleted."
+            , kinyarwanda = Nothing
+            }
+
+        UbudeheLabel ->
+            { english = "Ubudehe: "
             , kinyarwanda = Nothing
             }
 
