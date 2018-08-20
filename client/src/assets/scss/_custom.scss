@@ -389,6 +389,10 @@ h3.ui.header {
   background-size: 66px 73px;
 }
 
+.icon-task-counseling {
+  background-image: url(#{$img-path}icon-counseling-active.svg);
+}
+
 .icon-task-muac {
   background-image: url(#{$img-path}icon-muac-active.svg);
   background-size: 80px 73px;
@@ -543,6 +547,10 @@ h3.ui.header {
 .icon-item-height {
   background-image: url(#{$img-path}icon-height-blue.svg);
   background-size: 118px 131px;
+}
+
+.icon-item-counseling {
+  background-image: url(#{$img-path}icon-counseling-blue.svg);
 }
 
 .icon-item-muac {
@@ -997,6 +1005,16 @@ input::placeholder {
   &:after {
     background-image: url(#{$img-path}icon-height.svg);
     background-size: 49px 54px;
+  }
+}
+
+.icon-counseling {
+  .active &:after {
+    background-image: url(#{$img-path}icon-counseling-active.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-counseling.svg);
   }
 }
 
