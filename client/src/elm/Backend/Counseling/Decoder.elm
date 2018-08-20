@@ -23,8 +23,14 @@ decodeCounselingTiming =
                 "entry" ->
                     succeed Entry
 
+                "before-midpoint" ->
+                    succeed BeforeMidpoint
+
                 "midpoint" ->
                     succeed MidPoint
+
+                "before-exit" ->
+                    succeed BeforeExit
 
                 "exit" ->
                     succeed Exit

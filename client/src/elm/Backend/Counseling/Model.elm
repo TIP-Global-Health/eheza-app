@@ -24,11 +24,21 @@ type alias CounselingTopic =
     }
 
 
-{-| The different stages counseling.
+{-| The different stages for counseling sessions.
+
+The `Before...` stage is the stage at which we warn the mother that the next
+session will have that kind of counseling session. It fits quite nicely into
+the UI if we just conceive of that as a counseling session itself. (That is, it
+is less work than making it something special). And, it makes sense from a
+data-modeling point of view, because these are mutuall exclusive possibilities
+(we'd never show more than one of these in a session).
+
 -}
 type CounselingTiming
     = Entry
+    | BeforeMidpoint
     | MidPoint
+    | BeforeExit
     | Exit
 
 

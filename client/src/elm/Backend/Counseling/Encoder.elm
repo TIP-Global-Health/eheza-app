@@ -21,8 +21,14 @@ encodeCounselingTiming timing =
         Entry ->
             string "entry"
 
+        BeforeMidpoint ->
+            string "before-midpoint"
+
         MidPoint ->
             string "midpoint"
+
+        BeforeExit ->
+            string "before-exit"
 
         Exit ->
             string "exit"
