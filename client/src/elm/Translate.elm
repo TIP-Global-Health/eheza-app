@@ -565,7 +565,7 @@ translationSet trans =
 
         BeginHealthAssessment ->
             { english = "Begin Health Assessment"
-            , kinyarwanda = Just "Gutangira ibikorwa by'ipima"
+            , kinyarwanda = Just "Gutangira igikorwa cy'ipima"
             }
 
         Cancel ->
@@ -757,7 +757,7 @@ translationSet trans =
 
         DownloadHealthAssessment ->
             { english = "Download Health Assessment"
-            , kinyarwanda = Just "Gukurura Igikorwa cy’ipima (ibikorwa by'ubuzima)"
+            , kinyarwanda = Just "Gukurura Igikorwa cy’ipima"
             }
 
         DownloadSuccessful ->
@@ -948,7 +948,7 @@ translationSet trans =
                     }
 
                 AdvancedDiploma ->
-                    { english = "HAdvanced Diploma"
+                    { english = "Advanced Diploma"
                     , kinyarwanda = Just "(A1)"
                     }
 
@@ -1333,7 +1333,7 @@ translationSet trans =
 
         UnableToUpload ->
             { english = "Unable to Upload"
-            , kinyarwanda = Just "Kwohereza health assessment ntibikunda (kohereza ntibikunda)"
+            , kinyarwanda = Just "Kwohereza ntibikunda"
             }
 
         Update ->
