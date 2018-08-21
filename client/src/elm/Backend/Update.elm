@@ -760,7 +760,7 @@ makeChildEdit currentDate childId outMsg sessionId session =
             in
             mapChildEdits (\edits -> { edits | muac = edit }) childId session
 
-        SaveCounselingSession topics ->
+        SaveCounselingSession timing topics ->
             let
                 backend =
                     mapMeasurementData .counselingSession .counseling data
@@ -771,7 +771,7 @@ makeChildEdit currentDate childId outMsg sessionId session =
                         Just value ->
                             Edited
                                 { backend = value
-                                , edited = { value | value = topics }
+                                , edited = { value | value = ( timing, topics ) }
                                 }
 
                         Nothing ->
@@ -779,7 +779,7 @@ makeChildEdit currentDate childId outMsg sessionId session =
                                 { participantId = childId
                                 , sessionId = Just sessionId
                                 , dateMeasured = currentDate
-                                , value = topics
+                                , value = ( timing, topics )
                                 }
             in
             mapChildEdits (\edits -> { edits | counseling = edit }) childId session

@@ -26,6 +26,10 @@ class HedleyRestfulCounselingSessions extends HedleyRestfulChildActivityBase {
       ],
     ];
 
+    $public_fields['timing'] = [
+      'property' => 'field_timing',
+    ];
+
     return $public_fields;
   }
 

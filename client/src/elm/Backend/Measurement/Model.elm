@@ -4,6 +4,7 @@ module Backend.Measurement.Model exposing (..)
 and cached in local storage.
 -}
 
+import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import EveryDict exposing (EveryDict)
 import EverySet exposing (EverySet)
@@ -115,7 +116,7 @@ type alias ChildNutrition =
 
 
 type alias CounselingSession =
-    Measurement ChildId (EverySet CounselingTopicId)
+    Measurement ChildId ( CounselingTiming, EverySet CounselingTopicId )
 
 
 

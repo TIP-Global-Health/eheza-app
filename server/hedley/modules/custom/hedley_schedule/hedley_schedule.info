@@ -26,6 +26,7 @@ features[field_instance][] = node-counseling_schedule-field_topics
 features[field_instance][] = node-counseling_session-field_child
 features[field_instance][] = node-counseling_session-field_date_measured
 features[field_instance][] = node-counseling_session-field_session
+features[field_instance][] = node-counseling_session-field_timing
 features[field_instance][] = node-counseling_session-field_topics
 features[field_instance][] = node-counseling_topic-field_kinyarwanda_title
 features[field_instance][] = node-counseling_topic-title_field

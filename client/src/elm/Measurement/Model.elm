@@ -4,6 +4,7 @@ module Measurement.Model exposing (..)
 participant.
 -}
 
+import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
@@ -37,7 +38,7 @@ type alias ModelChild =
     , nutritionSigns : EverySet ChildNutritionSign
     , photo : Maybe PhotoValue
     , weight : String
-    , counseling : EverySet CounselingTopicId
+    , counseling : Maybe ( CounselingTiming, EverySet CounselingTopicId )
     }
 
 
@@ -88,7 +89,7 @@ type OutMsgChild
     = SaveHeight HeightInCm
     | SaveWeight WeightInKg
     | SaveMuac MuacInCm
-    | SaveCounselingSession (EverySet CounselingTopicId)
+    | SaveCounselingSession CounselingTiming (EverySet CounselingTopicId)
     | SaveChildNutritionSigns (EverySet ChildNutritionSign)
     | SavePhoto PhotoValue
 
@@ -104,7 +105,7 @@ emptyModelChild =
     , nutritionSigns = EverySet.empty
     , photo = Nothing
     , weight = ""
-    , counseling = EverySet.empty
+    , counseling = Nothing
     }
 
 

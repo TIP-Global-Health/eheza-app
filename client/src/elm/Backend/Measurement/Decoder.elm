@@ -1,5 +1,6 @@
 module Backend.Measurement.Decoder exposing (..)
 
+import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Dict exposing (Dict)
@@ -137,9 +138,10 @@ decodeNutrition =
 
 decodeCounselingSession : Decoder CounselingSession
 decodeCounselingSession =
-    decodeEverySet decodeEntityId
-        |> field "topics"
-        |> decodeChildMeasurement
+    decodeChildMeasurement <|
+        map2 (,)
+            (field "timing" decodeCounselingTiming)
+            (field "topics" (decodeEverySet decodeEntityId))
 
 
 decodeChildNutritionSign : Decoder ChildNutritionSign

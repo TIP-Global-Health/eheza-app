@@ -591,42 +591,45 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
         ]
 
 
-viewCounselingSession : Language -> MeasurementData (Maybe CounselingSession) (Edit CounselingSession) -> EditableSession -> EverySet CounselingTopicId -> Html MsgChild
-viewCounselingSession language measurement session topics =
-    let
-        activity =
-            ChildActivity Counseling
+viewCounselingSession : Language -> MeasurementData (Maybe CounselingSession) (Edit CounselingSession) -> EditableSession -> Maybe ( CounselingTiming, EverySet CounselingTopicId ) -> Html MsgChild
+viewCounselingSession language measurement session value =
+    case value of
+        Nothing ->
+            emptyNode
 
-        saveMsg =
-            Just <| SendOutMsgChild <| SaveCounselingSession topics
+        Just ( timing, topics ) ->
+            let
+                activity =
+                    ChildActivity Counseling
 
-        expected =
-            -- TODO: We'll need a function with real logic for figuring out
-            -- which topics are expected.
-            session.offlineSession.everyCounselingSchedule
-                |> EveryDict.get Entry
-                |> Maybe.withDefault EveryDictList.empty
-    in
-    div
-        [ class "ui full segment counseling"
-        , id "counselingSessionEntryForm"
-        ]
-        [ div [ class "content" ]
-            [ h3 [ class "ui header" ]
-                [ text <| translate language (Trans.ActivitiesTitle activity)
+                saveMsg =
+                    Just <| SendOutMsgChild <| SaveCounselingSession timing topics
+
+                expected =
+                    session.offlineSession.everyCounselingSchedule
+                        |> EveryDict.get timing
+                        |> Maybe.withDefault EveryDictList.empty
+            in
+            div
+                [ class "ui full segment counseling"
+                , id "counselingSessionEntryForm"
                 ]
-            , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
-            , div [ class "ui form" ] <|
-                p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
-                    :: viewCounselingTopics language expected topics
-            ]
-        , div [ class "actions" ] <|
-            saveButton
-                language
-                saveMsg
-                measurement
-                Nothing
-        ]
+                [ div [ class "content" ]
+                    [ h3 [ class "ui header" ]
+                        [ text <| translate language (Trans.ActivitiesTitle activity)
+                        ]
+                    , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+                    , div [ class "ui form" ] <|
+                        p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
+                            :: viewCounselingTopics language expected topics
+                    ]
+                , div [ class "actions" ] <|
+                    saveButton
+                        language
+                        saveMsg
+                        measurement
+                        Nothing
+                ]
 
 
 viewCounselingTopics : Language -> EveryDictList CounselingTopicId CounselingTopic -> EverySet CounselingTopicId -> List (Html MsgChild)

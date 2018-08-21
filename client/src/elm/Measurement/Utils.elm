@@ -1,5 +1,6 @@
 module Measurement.Utils exposing (..)
 
+import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValue, mapMeasurementData)
@@ -60,7 +61,6 @@ fromChildMeasurementData data =
             |> mapMeasurementData .counselingSession .counseling
             |> currentValue
             |> Maybe.map .value
-            |> Maybe.withDefault EverySet.empty
     , photo =
         data
             |> mapMeasurementData .photo .photo

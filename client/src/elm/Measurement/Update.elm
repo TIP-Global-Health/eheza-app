@@ -33,9 +33,9 @@ updateChild msg model =
             let
                 counseling =
                     if selected then
-                        EverySet.insert topicId model.counseling
+                        Maybe.map (Tuple.mapSecond (EverySet.insert topicId)) model.counseling
                     else
-                        EverySet.remove topicId model.counseling
+                        Maybe.map (Tuple.mapSecond (EverySet.remove topicId)) model.counseling
             in
             ( { model | counseling = counseling }
             , Cmd.none
