@@ -1,7 +1,18 @@
 id,title_field,kinyarwanda_title
-counseling_topic1,Ask the mother how she is enjoying the sessions.,Kinyarwanda for: Ask the mother how she is enjoying the sessions.
-counseling_topic2,Ask the mother about the child's eating habits.,
-counseling_topic3,Ask the mother about the child's medicine.,Kinyarwanda for: Ask the mother about the child's medicine.
-counseling_topic4,Advise the mother about the child's diet.,
-counseling_topic5,Advise the mother about the child's exposure to the sun.,Kinyarwanda for: Advise the mother about the child's exposure to the sun.
-counseling_topic6,Ask the mother about the child's hair washing.,Kinyarwanda for: Ask the mother about the child's hair washing.
+topic1,Explained the Ministry of Health Guidelines and TIP NHI Program,
+topic2,Gave information on food / A-Heza prep and breast-feeding guidelines,
+topic3,Ensured that mother has access to ARVs and understands importance of taking them,
+topic4,Gave information on safe water preparation and general hygiene,
+topic5,Provided information on birth control and HIV transmission prevention,
+topic6,Assisted participant in reading and signing Rights & Responsibilities and Grievance Procedures,
+topic7,Provided information on project's income generation plans like farming cooperative,
+topic8,Encouraged participant to attend CNPB at least 10 times a year,
+topic9,Identified and addressed participant's concerns,
+topic10,Discussed changes in programming,
+topic11,Reviewed food and water preparation guidelines,
+topic12,Reviewed information on birth control and HIV transmission prevention,
+topic13,Evaluated child's health to ensure they are not malnourished,
+topic14,Provided information on other resources, such as TIP farming and women's co-op programs,
+topic15,Reviewed information on birth control and HIV transmission prevention,
+topic16,Had participant complete Program Feedback Questionnaire,
+topic17,"Inform mother that she will have a counseling session on her next visit, which may make her visit longer than it usually is",
