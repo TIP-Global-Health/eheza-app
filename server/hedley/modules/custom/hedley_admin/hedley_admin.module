@@ -71,12 +71,12 @@ function hedley_admin_block_view($delta) {
     return;
   }
 
-  $q = db_select('menu_links', 'm');
-  $q->fields('m', ['link_path', 'link_title', 'options']);
-  $q->condition('menu_name', 'menu-ihangane-admin-menu');
-  $q->orderBy('weight');
+  $query = db_select('menu_links', 'm');
+  $query->fields('m', ['link_path', 'link_title', 'options']);
+  $query->condition('menu_name', 'menu-ihangane-admin-menu');
+  $query->orderBy('weight');
 
-  $results = $q->execute()->fetchAll();
+  $results = $query->execute()->fetchAll();
 
   $links = [];
   foreach ($results as $result) {
@@ -89,10 +89,10 @@ function hedley_admin_block_view($delta) {
         $class = ' class="active"';
       }
 
-      $links[] = '<a href="' . url($result->link_path, unserialize($result->options)) . '"' . $class . '>' . $result->link_title . '</a>';
+      $links[] = '<a href="' . url($result->link_path, unserialize($result->options)) . '"' . $class . '>' . t($result->link_title) . '</a>';
     }
     else {
-      $links[] = l($result->link_title, $result->link_path, unserialize($result->options));
+      $links[] = l(($result->link_title), $result->link_path, unserialize($result->options));
     }
   }
 
@@ -102,7 +102,7 @@ function hedley_admin_block_view($delta) {
       '#theme' => 'item_list',
       '#items' => $links,
       '#type' => 'ul',
-    ]
+    ],
   ];
 
   return $block;
