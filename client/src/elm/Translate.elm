@@ -4,6 +4,7 @@ import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(
 import Backend.Child.Model exposing (Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
+import Backend.Mother.Model exposing (EducationLevel(..))
 import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
@@ -204,6 +205,8 @@ type TranslationId
     | Gender Gender
     | GoHome
     | KilogramShorthand
+    | LevelOfEducationLabel
+    | LevelOfEducation EducationLevel
     | LinkToMother
     | LoginPhrase LoginPhrase
     | MakeSureYouAreConnected
@@ -277,6 +280,7 @@ type TranslationId
     | Training
     | TrainingSessionCreateSuccessMessage
     | TrainingSessionDeleteSuccessMessage
+    | UbudeheLabel
     | UnableToDownload
     | UnableToUpload
     | Unknown
@@ -544,7 +548,7 @@ translationSet trans =
 
         BeginHealthAssessment ->
             { english = "Begin Health Assessment"
-            , kinyarwanda = Just "Gutangira ibikorwa by'ipima"
+            , kinyarwanda = Just "Gutangira igikorwa cy'ipima"
             }
 
         Cancel ->
@@ -736,7 +740,7 @@ translationSet trans =
 
         DownloadHealthAssessment ->
             { english = "Download Health Assessment"
-            , kinyarwanda = Just "Gukurura Igikorwa cy’ipima (ibikorwa by'ubuzima)"
+            , kinyarwanda = Just "Gukurura Igikorwa cy’ipima"
             }
 
         DownloadSuccessful ->
@@ -888,6 +892,48 @@ translationSet trans =
             { english = "kg"
             , kinyarwanda = Just "kg"
             }
+
+        LevelOfEducationLabel ->
+            { english = "Level of Education: "
+            , kinyarwanda = Just <| "Amashuri wize: "
+            }
+
+        LevelOfEducation educationLevel ->
+            case educationLevel of
+                NoSchooling ->
+                    { english = "No Schooling"
+                    , kinyarwanda = Just "Ntayo"
+                    }
+
+                PrimarySchool ->
+                    { english = "Primary School"
+                    , kinyarwanda = Just "Abanza"
+                    }
+
+                VocationalTrainingSchool ->
+                    { english = "Vocational Training School"
+                    , kinyarwanda = Just "Imyuga"
+                    }
+
+                SecondarySchool ->
+                    { english = "Secondary School"
+                    , kinyarwanda = Just "Ayisumbuye"
+                    }
+
+                DiplomaProgram ->
+                    { english = "Diploma Program (2 years of University)"
+                    , kinyarwanda = Just "Amashuri 2 ya Kaminuza"
+                    }
+
+                HigherEducation ->
+                    { english = "Higher Education (University)"
+                    , kinyarwanda = Just "(A0)"
+                    }
+
+                AdvancedDiploma ->
+                    { english = "Advanced Diploma"
+                    , kinyarwanda = Just "(A1)"
+                    }
 
         LinkToMother ->
             { english = "Link to mother"
@@ -1268,6 +1314,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        UbudeheLabel ->
+            { english = "Ubudehe: "
+            , kinyarwanda = Nothing
+            }
+
         UnableToDownload ->
             { english = "Unable to Download"
             , kinyarwanda = Just "ntibishoboka gukurura"
@@ -1275,7 +1326,7 @@ translationSet trans =
 
         UnableToUpload ->
             { english = "Unable to Upload"
-            , kinyarwanda = Just "Kwohereza health assessment ntibikunda (kohereza ntibikunda)"
+            , kinyarwanda = Just "Kwohereza ntibikunda"
             }
 
         Unknown ->

@@ -62,6 +62,14 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       'property' => 'field_relationship',
     ];
 
+    $public_fields['ubudehe'] = [
+      'property' => 'field_ubudehe',
+    ];
+
+    $public_fields['education_level'] = [
+      'property' => 'field_education_level',
+    ];
+
     return $public_fields;
   }
 

@@ -80,6 +80,14 @@ function hedley_patient_query_exclude_existing_relationships_alter(QueryAlterabl
  */
 function hedley_patient_form_mother_node_form_alter(&$form, &$form_state, $form_id) {
   $form['#validate'][] = 'hedley_patient_mother_birth_date_validation';
+
+  $params = drupal_get_query_parameters();
+
+  if (!isset($params['type']) || $params['type'] != 'caregiver') {
+    return;
+  }
+
+  $form['field_relationship'][LANGUAGE_NONE]['#default_value'] = ['caregiver'];
 }
 
 /**
@@ -88,7 +96,6 @@ function hedley_patient_form_mother_node_form_alter(&$form, &$form_state, $form_
  * When the mother node is a caregiver, date of birth is not required.
  */
 function hedley_patient_mother_birth_date_validation($form, &$form_state) {
-
   $relationship_value = $form_state['values']['field_relationship'][LANGUAGE_NONE][0]['value'];
   $birth_date_value = $form_state['values']['field_date_birth'][LANGUAGE_NONE][0]['value'];
 

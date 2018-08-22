@@ -204,22 +204,13 @@ function hedley_standard_install() {
   $nurse_permitted_types = [
     'family_planning',
     'height',
-    'mother',
     'muac',
     'nutrition',
     'photo',
     'weight',
   ];
 
-  foreach ($nurse_permitted_types as $type) {
-    $permissions[] = "create {$type} content";
-    $permissions[] = "edit any {$type} content";
-    $permissions[] = "edit own {$type} content";
-    $permissions[] = "delete any {$type} content";
-    $permissions[] = "delete own {$type} content";
-  }
-
-  user_role_grant_permissions($nurse_role->rid, $permissions);
+  hedley_add_nurse_permissions_for_content_type($nurse_permitted_types);
 
   // Assign user 1 the "administrator" role.
   db_insert('users_roles')
@@ -244,8 +235,6 @@ function hedley_add_nurse_permissions_for_content_type(array $content_types) {
     $permissions[] = "create {$type} content";
     $permissions[] = "edit any {$type} content";
     $permissions[] = "edit own {$type} content";
-    $permissions[] = "delete any {$type} content";
-    $permissions[] = "delete own {$type} content";
   }
 
   $nurse_role = user_role_load_by_name('nurse');

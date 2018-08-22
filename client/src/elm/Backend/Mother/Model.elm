@@ -15,4 +15,23 @@ type alias Mother =
     , children : List ChildId
     , birthDate : Maybe NominalDate
     , relation : ChildrenRelationType
+    , ubudehe : Maybe Ubudehe
+    , educationLevel : Maybe EducationLevel
     }
+
+
+type Ubudehe
+    = Ubudehe1
+    | Ubudehe2
+    | Ubudehe3
+    | Ubudehe4
+
+
+type EducationLevel
+    = NoSchooling
+    | PrimarySchool
+    | VocationalTrainingSchool
+    | SecondarySchool
+    | DiplomaProgram
+    | HigherEducation
+    | AdvancedDiploma
