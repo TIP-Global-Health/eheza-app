@@ -88,6 +88,20 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['relationships']['field_mother_target_id']['id'] = 'field_mother_target_id';
   $handler->display->display_options['relationships']['field_mother_target_id']['table'] = 'field_data_field_mother';
   $handler->display->display_options['relationships']['field_mother_target_id']['field'] = 'field_mother_target_id';
+  /* Relationship: Clinic */
+  $handler->display->display_options['relationships']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['relationship'] = 'field_mother_target_id';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['ui_name'] = 'Clinic';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'Clinic';
+  /* Relationship: Session */
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['id'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['table'] = 'node';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['field'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['relationship'] = 'field_clinic_target_id';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['ui_name'] = 'Session';
+  $handler->display->display_options['relationships']['reverse_field_clinic_node']['label'] = 'Session';
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
   $handler->display->display_options['fields']['title']['table'] = 'node';
@@ -133,6 +147,39 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['type']['value'] = array(
     'child' => 'child',
   );
+  /* Filter criterion: Child name */
+  $handler->display->display_options['filters']['title']['id'] = 'title';
+  $handler->display->display_options['filters']['title']['table'] = 'node';
+  $handler->display->display_options['filters']['title']['field'] = 'title';
+  $handler->display->display_options['filters']['title']['ui_name'] = 'Child name';
+  $handler->display->display_options['filters']['title']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['title']['expose']['operator_id'] = 'title_op';
+  $handler->display->display_options['filters']['title']['expose']['label'] = 'Child name';
+  $handler->display->display_options['filters']['title']['expose']['operator'] = 'title_op';
+  $handler->display->display_options['filters']['title']['expose']['identifier'] = 'child_name';
+  $handler->display->display_options['filters']['title']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+    4 => 0,
+  );
+  /* Filter criterion: Mother name */
+  $handler->display->display_options['filters']['title_1']['id'] = 'title_1';
+  $handler->display->display_options['filters']['title_1']['table'] = 'node';
+  $handler->display->display_options['filters']['title_1']['field'] = 'title';
+  $handler->display->display_options['filters']['title_1']['relationship'] = 'field_mother_target_id';
+  $handler->display->display_options['filters']['title_1']['ui_name'] = 'Mother name';
+  $handler->display->display_options['filters']['title_1']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['title_1']['expose']['operator_id'] = 'title_1_op';
+  $handler->display->display_options['filters']['title_1']['expose']['label'] = 'Mother name';
+  $handler->display->display_options['filters']['title_1']['expose']['operator'] = 'title_1_op';
+  $handler->display->display_options['filters']['title_1']['expose']['identifier'] = 'mother_name';
+  $handler->display->display_options['filters']['title_1']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+    4 => 0,
+  );
 
   /* Display: Child */
   $handler = $view->new_display('page', 'Child', 'page');
@@ -166,6 +213,89 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
   $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['label'] = 'Edit';
+  $handler->display->display_options['defaults']['filter_groups'] = FALSE;
+  $handler->display->display_options['defaults']['filters'] = FALSE;
+  /* Filter criterion: Content: Published */
+  $handler->display->display_options['filters']['status']['id'] = 'status';
+  $handler->display->display_options['filters']['status']['table'] = 'node';
+  $handler->display->display_options['filters']['status']['field'] = 'status';
+  $handler->display->display_options['filters']['status']['value'] = 1;
+  $handler->display->display_options['filters']['status']['group'] = 1;
+  $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
+  /* Filter criterion: Content: Type */
+  $handler->display->display_options['filters']['type']['id'] = 'type';
+  $handler->display->display_options['filters']['type']['table'] = 'node';
+  $handler->display->display_options['filters']['type']['field'] = 'type';
+  $handler->display->display_options['filters']['type']['value'] = array(
+    'child' => 'child',
+  );
+  /* Filter criterion: Child name */
+  $handler->display->display_options['filters']['title']['id'] = 'title';
+  $handler->display->display_options['filters']['title']['table'] = 'node';
+  $handler->display->display_options['filters']['title']['field'] = 'title';
+  $handler->display->display_options['filters']['title']['ui_name'] = 'Child name';
+  $handler->display->display_options['filters']['title']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['title']['expose']['operator_id'] = 'title_op';
+  $handler->display->display_options['filters']['title']['expose']['label'] = 'Child name';
+  $handler->display->display_options['filters']['title']['expose']['operator'] = 'title_op';
+  $handler->display->display_options['filters']['title']['expose']['identifier'] = 'child_name';
+  $handler->display->display_options['filters']['title']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+    4 => 0,
+  );
+  /* Filter criterion: Mother name */
+  $handler->display->display_options['filters']['title_1']['id'] = 'title_1';
+  $handler->display->display_options['filters']['title_1']['table'] = 'node';
+  $handler->display->display_options['filters']['title_1']['field'] = 'title';
+  $handler->display->display_options['filters']['title_1']['relationship'] = 'field_mother_target_id';
+  $handler->display->display_options['filters']['title_1']['ui_name'] = 'Mother name';
+  $handler->display->display_options['filters']['title_1']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['title_1']['expose']['operator_id'] = 'title_1_op';
+  $handler->display->display_options['filters']['title_1']['expose']['label'] = 'Mother name';
+  $handler->display->display_options['filters']['title_1']['expose']['operator'] = 'title_1_op';
+  $handler->display->display_options['filters']['title_1']['expose']['identifier'] = 'mother_name';
+  $handler->display->display_options['filters']['title_1']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+    4 => 0,
+  );
+  /* Filter criterion: Clinic */
+  $handler->display->display_options['filters']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
+  $handler->display->display_options['filters']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
+  $handler->display->display_options['filters']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
+  $handler->display->display_options['filters']['field_clinic_target_id']['relationship'] = 'field_mother_target_id';
+  $handler->display->display_options['filters']['field_clinic_target_id']['ui_name'] = 'Clinic';
+  $handler->display->display_options['filters']['field_clinic_target_id']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator_id'] = 'field_clinic_target_id_op';
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['label'] = 'Clinic';
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator'] = 'field_clinic_target_id_op';
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['identifier'] = 'clinic';
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+    4 => 0,
+  );
+  /* Filter criterion: Session ID */
+  $handler->display->display_options['filters']['nid']['id'] = 'nid';
+  $handler->display->display_options['filters']['nid']['table'] = 'node';
+  $handler->display->display_options['filters']['nid']['field'] = 'nid';
+  $handler->display->display_options['filters']['nid']['relationship'] = 'reverse_field_clinic_node';
+  $handler->display->display_options['filters']['nid']['ui_name'] = 'Session ID';
+  $handler->display->display_options['filters']['nid']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['nid']['expose']['operator_id'] = 'nid_op';
+  $handler->display->display_options['filters']['nid']['expose']['label'] = 'Session ID';
+  $handler->display->display_options['filters']['nid']['expose']['operator'] = 'nid_op';
+  $handler->display->display_options['filters']['nid']['expose']['identifier'] = 'session_id';
+  $handler->display->display_options['filters']['nid']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+    4 => 0,
+  );
   $handler->display->display_options['path'] = 'admin/content/children';
   $handler->display->display_options['menu']['type'] = 'normal';
   $handler->display->display_options['menu']['title'] = 'Children';
