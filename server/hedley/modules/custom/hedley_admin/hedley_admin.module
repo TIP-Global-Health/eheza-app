@@ -92,7 +92,7 @@ function hedley_admin_block_view($delta) {
       $links[] = '<a href="' . url($result->link_path, unserialize($result->options)) . '"' . $class . '>' . t($result->link_title) . '</a>';
     }
     else {
-      $links[] = l(($result->link_title), $result->link_path, unserialize($result->options));
+      $links[] = l(t($result->link_title), $result->link_path, unserialize($result->options));
     }
   }
 
