@@ -34,6 +34,7 @@ function hedley_install() {
   hedley_update_7003();
   hedley_update_7004();
   hedley_update_7005();
+  hedley_update_7011();
 }
 
 /**
@@ -358,4 +359,29 @@ function hedley_update_7009() {
 function hedley_update_7010() {
   $modules = ['prepopulate'];
   module_enable($modules);
+}
+
+/**
+ * Implements hook_update_7011().
+ *
+ * Replaces old menu block with the new one.
+ */
+function hedley_update_7011() {
+  $query = db_update('block');
+  $query->fields([
+    'status' => 0,
+    'region' => 'sidebar_first',
+  ]);
+  $query->condition('delta', 'menu-ihangane-admin-menu');
+  $query->condition('theme', 'bartik');
+  $query->execute();
+
+  $query = db_update('block');
+  $query->fields([
+    'status' => 1,
+    'region' => 'sidebar_first',
+  ]);
+  $query->condition('delta', 'ihangane_sidebar_menu');
+  $query->condition('theme', 'bartik');
+  $query->execute();
 }
