@@ -3,6 +3,7 @@ module Activity.Utils
         ( decodeActivityFromString
         , defaultActivity
         , encodeActivityAsString
+        , expectCounselingActivity
         , getActivityCountForMother
         , getActivityIcon
         , getAllActivities
