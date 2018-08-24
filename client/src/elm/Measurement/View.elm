@@ -602,8 +602,20 @@ viewCounselingSession language measurement session value =
                 activity =
                     ChildActivity Counseling
 
+                allTopicsChecked =
+                    EveryDictList.all
+                        (\id _ -> EverySet.member id topics)
+                        expected
+
+                -- For counseling sessions, we don't allow saves unless all the
+                -- topics are checked.
                 saveMsg =
-                    Just <| SendOutMsgChild <| SaveCounselingSession timing topics
+                    if allTopicsChecked then
+                        SaveCounselingSession timing topics
+                            |> SendOutMsgChild
+                            |> Just
+                    else
+                        Nothing
 
                 expected =
                     session.offlineSession.everyCounselingSchedule
