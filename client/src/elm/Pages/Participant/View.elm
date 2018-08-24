@@ -4,10 +4,10 @@ import Activity.Model exposing (Activity(..), ChildActivity, CompletedAndPending
 import Activity.Utils exposing (getActivityIcon, getCheckedIn, summarizeChildParticipant, summarizeMotherParticipant)
 import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Entities exposing (..)
-import Backend.Mother.Model exposing (Mother)
+import Backend.Mother.Model exposing (Mother, Ubudehe(..))
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getChildren, getMother, getMotherMeasurementData, getMyMother)
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
@@ -285,6 +285,24 @@ viewFoundMother language ( motherId, mother ) session model =
                             [ h2
                                 [ class "ui header" ]
                                 [ text mother.name ]
+                            , showMaybe <|
+                                Maybe.map
+                                    (\educationLevel ->
+                                        p [ class "education-level-wrapper" ]
+                                            [ label [] [ text <| translate language Trans.LevelOfEducationLabel ]
+                                            , span [] [ text <| translate language <| Trans.LevelOfEducation educationLevel ]
+                                            ]
+                                    )
+                                    mother.educationLevel
+                            , showMaybe <|
+                                Maybe.map
+                                    (\ubudehe ->
+                                        p [ class "ubudehe-wrapper" ]
+                                            [ label [] [ text <| translate language Trans.UbudeheLabel ]
+                                            , span [] [ text <| viewUbudehe ubudehe ]
+                                            ]
+                                    )
+                                    mother.ubudehe
                             , p [] childrenList
                             , viewFamilyLinks motherParticipant language motherId session
                             ]
@@ -464,3 +482,19 @@ viewFamilyLinks config language participantId session =
     ul
         [ class "links-body" ]
         (motherMarkup ++ childrenMarkup)
+
+
+viewUbudehe : Ubudehe -> String
+viewUbudehe ubudehe =
+    case ubudehe of
+        Ubudehe1 ->
+            "1"
+
+        Ubudehe2 ->
+            "2"
+
+        Ubudehe3 ->
+            "3"
+
+        Ubudehe4 ->
+            "4"

@@ -131,6 +131,7 @@ function hedley_patient_field_default_field_bases() {
         3 => 'Secondary School',
         4 => 'Diploma Programs (2 years of University)',
         5 => 'Higher Education (University)',
+        6 => 'Advanced Diploma',
       ),
       'allowed_values_function' => '',
     ),
