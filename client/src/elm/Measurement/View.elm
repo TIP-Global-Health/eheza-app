@@ -630,7 +630,9 @@ viewCounselingSession language measurement session value =
                     [ h3 [ class "ui header" ]
                         [ text <| translate language (Trans.ActivitiesTitle activity)
                         ]
-                    , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+                    , h3 [ class "ui header" ]
+                        [ text <| translate language (Trans.CounselingTimingHeading timing)
+                        ]
                     , div [ class "ui form" ] <|
                         p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
                             :: viewCounselingTopics language expected topics

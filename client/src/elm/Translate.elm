@@ -2,7 +2,7 @@ module Translate exposing (..)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import Backend.Child.Model exposing (Gender(..))
-import Backend.Counseling.Model exposing (CounselingTopic)
+import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
 import Backend.Mother.Model exposing (EducationLevel(..))
@@ -173,6 +173,7 @@ type TranslationId
     | ConfirmDeleteTrainingSessions
     | Connected
     | Continue
+    | CounselingTimingHeading CounselingTiming
     | CounselingTopic CounselingTopic
     | CreateSession
     | CreateTrainingSessions
@@ -338,7 +339,7 @@ translationSet trans =
                     }
 
                 ChildActivity Counseling ->
-                    { english = "Check off each topic once you have discussed it."
+                    { english = "Please refer to this list during counseling sessions and ensure that each task has been completed."
                     , kinyarwanda = Nothing
                     }
 
@@ -375,7 +376,7 @@ translationSet trans =
                     }
 
                 ChildActivity Counseling ->
-                    { english = "Which topics did you discuss today?"
+                    { english = "Please refer to this list during counseling sessions and ensure that each task has been completed."
                     , kinyarwanda = Nothing
                     }
 
@@ -712,6 +713,9 @@ translationSet trans =
             { english = "Continue"
             , kinyarwanda = Just "Gukomeza"
             }
+
+        CounselingTimingHeading timing ->
+            translateCounselingTimingHeading timing
 
         CounselingTopic topic ->
             { english = topic.english
@@ -1496,6 +1500,35 @@ translateActivePage page =
                     { english = "'My Account'"
                     , kinyarwanda = Just "Compte"
                     }
+
+
+translateCounselingTimingHeading : CounselingTiming -> TranslationSet
+translateCounselingTimingHeading timing =
+    case timing of
+        Entry ->
+            { english = "Entry Counseling Checklist:"
+            , kinyarwanda = Nothing
+            }
+
+        MidPoint ->
+            { english = "Mid Program Review Checklist:"
+            , kinyarwanda = Nothing
+            }
+
+        Exit ->
+            { english = "Exit Counseling Checklist:"
+            , kinyarwanda = Nothing
+            }
+
+        BeforeMidpoint ->
+            { english = "Reminder"
+            , kinyarwanda = Nothing
+            }
+
+        BeforeExit ->
+            { english = "Reminder"
+            , kinyarwanda = Nothing
+            }
 
 
 translateChartPhrase : ChartPhrase -> TranslationSet
