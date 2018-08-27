@@ -528,6 +528,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['field_date_measured_value']['field'] = 'field_date_measured_value';
   $handler->display->display_options['filters']['field_date_measured_value']['relationship'] = 'reverse_field_child_node';
   $handler->display->display_options['filters']['field_date_measured_value']['ui_name'] = 'Date Measured';
+  $handler->display->display_options['filters']['field_date_measured_value']['operator'] = 'between';
   $handler->display->display_options['filters']['field_date_measured_value']['exposed'] = TRUE;
   $handler->display->display_options['filters']['field_date_measured_value']['expose']['operator_id'] = 'field_date_measured_value_op';
   $handler->display->display_options['filters']['field_date_measured_value']['expose']['label'] = 'Session participant date';
