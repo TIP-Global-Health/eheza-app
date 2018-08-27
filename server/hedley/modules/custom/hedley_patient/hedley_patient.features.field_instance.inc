@@ -255,7 +255,7 @@ function hedley_patient_field_default_field_instances() {
     'bundle' => 'mother',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => 'Assign each mother to a clinic so that she will be included when data-entry sessions are scheduled for the clinic.',
+    'description' => 'Assign each mother/caregiver to a clinic so that she will be included when data-entry sessions are scheduled for the clinic.',
     'display' => array(
       'default' => array(
         'label' => 'above',
