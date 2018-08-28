@@ -1,9 +1,10 @@
-module TestRunner exposing (..)
+module TestRunner exposing (allTests)
 
 {-| This module includes all of the tests in the "main" source
 tree, so that the `elm-test` command will find them.
 -}
 
+import Activity.Test
 import App.Test
 import Backend.Measurement.Test
 import Expect exposing (Expectation)
@@ -20,7 +21,8 @@ import ZScore.Test
 allTests : Test
 allTests =
     describe "All tests"
-        [ App.Test.all
+        [ Activity.Test.all
+        , App.Test.all
         , Backend.Measurement.Test.all
         , Measurement.Test.all
         , Pages.Activity.Test.all
