@@ -56,6 +56,58 @@ testCases =
       , editing = Nothing
       , expected = Nothing
       }
+    , { title = "Reminder for midpoint"
+      , daysOld = 300
+      , completed = [ ( 30, Entry ) ]
+      , editing = Nothing
+      , expected = Just BeforeMidpoint
+      }
+    , -- The case where we've given a reminder, so we follow-up
+      { title = "Early midpoint"
+      , daysOld = 300
+      , completed = [ ( 30, Entry ), ( 270, BeforeMidpoint ) ]
+      , editing = Nothing
+      , expected = Just MidPoint
+      }
+    , -- The case with no reminder
+      { title = "No reminder midpoint"
+      , daysOld = 330
+      , completed = [ ( 30, Entry ) ]
+      , editing = Nothing
+      , expected = Just MidPoint
+      }
+    , { title = "Post midpoint"
+      , daysOld = 380
+      , completed = [ ( 30, Entry ), ( 300, BeforeMidpoint ), ( 330, MidPoint ) ]
+      , editing = Nothing
+      , expected = Nothing
+      }
+    , { title = "Reminder for exit"
+      , daysOld = 660
+      , completed = [ ( 30, Entry ), ( 300, BeforeMidpoint ), ( 330, MidPoint ) ]
+      , editing = Nothing
+      , expected = Just BeforeExit
+      }
+    , -- The case where we've given a reminder, so we follow-up
+      { title = "Early exit"
+      , daysOld = 660
+      , completed = [ ( 30, Entry ), ( 300, BeforeMidpoint ), ( 330, MidPoint ), ( 630, BeforeExit ) ]
+      , editing = Nothing
+      , expected = Just Exit
+      }
+    , -- The case with no reminder
+      { title = "No reminder exit"
+      , daysOld = 690
+      , completed = [ ( 30, Entry ), ( 300, BeforeMidpoint ), ( 330, MidPoint ) ]
+      , editing = Nothing
+      , expected = Just Exit
+      }
+    , { title = "Post exit"
+      , daysOld = 720
+      , completed = [ ( 30, Entry ), ( 300, BeforeMidpoint ), ( 330, MidPoint ), ( 630, BeforeExit ), ( 660, Exit ) ]
+      , editing = Nothing
+      , expected = Nothing
+      }
     ]
 
 
