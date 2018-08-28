@@ -385,3 +385,23 @@ function hedley_update_7011() {
   $query->condition('theme', 'bartik');
   $query->execute();
 }
+
+/**
+ * Implements hook_update_N().
+ *
+ * Enable title module.
+ */
+function hedley_update_7012() {
+  $modules = ['title'];
+  module_enable($modules);
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Adds counseling_session permission for nurses.
+ */
+function hedley_update_7013() {
+  $content_types = ['counseling_session'];
+  hedley_add_nurse_permissions_for_content_type($content_types);
+}

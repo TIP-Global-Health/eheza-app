@@ -36,6 +36,16 @@ livePantheon =
     }
 
 
+counselingPantheon : Model
+counselingPantheon =
+    { backendUrl = "https://counseling-ihangane.pantheonsite.io"
+    , name = "counselingPantheon"
+    , pusherKey = PusherAppKey "" UsEast1
+    , debug = False
+    , sandbox = False
+    }
+
+
 ***REMOVED*** : Model
 ***REMOVED*** =
     { backendUrl = "https://***REMOVED***"
@@ -65,6 +75,7 @@ configs =
         [ ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", livePantheon )
+        , ( "counseling-ihangane.pantheonsite.io", counselingPantheon )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "caregiver-ihangane.pantheonsite.io", caregiverPantheon )
         ]

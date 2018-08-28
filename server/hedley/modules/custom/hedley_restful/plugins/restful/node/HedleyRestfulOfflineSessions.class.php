@@ -89,6 +89,10 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       ],
     ];
 
+    $public_fields['counseling_schedule'] = [
+      'callback' => [$this, 'renderCounselingSchedule'],
+    ];
+
     return $public_fields;
   }
 
@@ -196,6 +200,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       'nutrition' => 'nutritions',
       'photo' => 'photos',
       'weight' => 'weights',
+      'counseling_session' => 'counseling-sessions',
     ];
   }
 
@@ -484,7 +489,6 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
         }
       }
     }
-
     catch (Exception $e) {
       $transaction->rollback();
       throw $e;
