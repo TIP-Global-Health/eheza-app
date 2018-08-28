@@ -33,7 +33,7 @@ getChildren motherId session =
                 mother.children
                     |> List.filterMap
                         (\childId ->
-                            EveryDict.get childId session.children
+                            EveryDictList.get childId session.children
                                 |> Maybe.map (\child -> ( childId, child ))
                         )
             )
@@ -42,7 +42,7 @@ getChildren motherId session =
 
 getChild : ChildId -> OfflineSession -> Maybe Child
 getChild childId session =
-    EveryDict.get childId session.children
+    EveryDictList.get childId session.children
 
 
 getMother : MotherId -> OfflineSession -> Maybe Mother
@@ -184,7 +184,7 @@ getPhotoUrls session =
 
         fromChildren =
             session.children
-                |> EveryDict.values
+                |> EveryDictList.values
                 |> List.filterMap .avatarUrl
 
         fromMeasurements =

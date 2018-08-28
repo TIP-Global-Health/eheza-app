@@ -351,7 +351,7 @@ emptyMeasurementEdits =
 {-| This a convenience for functions which want to take values wrapped
 in the given way.
 
-  - `status` indicates whether we're currently saving the edits, or any error
+  - `update` indicates whether we're currently saving the edits, or any error
     from the last save.
 
   - `previous` is the most recently value that is not part of this editing

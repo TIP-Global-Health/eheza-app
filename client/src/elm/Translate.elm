@@ -1,6 +1,6 @@
 module Translate exposing (..)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
+import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import Backend.Child.Model exposing (Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
@@ -131,11 +131,11 @@ type TranslationId
     = AccessDenied
     | Activities
     | ActivitiesCompleted Int
-    | ActivitiesHelp ActivityType
-    | ActivitiesLabel ActivityType
-    | ActivitiesTitle ActivityType
+    | ActivitiesHelp Activity
+    | ActivitiesLabel Activity
+    | ActivitiesTitle Activity
     | ActivitiesToComplete Int
-    | ActivityProgressReport ActivityType
+    | ActivityProgressReport Activity
     | ActivePage Page
     | Admin
     | AgeWord
@@ -249,12 +249,13 @@ type TranslationId
     | PlaceholderTextJoined
     | PleaseSelectClinic
     | PreviousFloatMeasurement Float
+    | ProgressReport
     | ReadyToBeginSession
     | ReportAge String
     | ReportDOB String
     | ReportRemaining Int
     | ReloadParticipant
-    | ReportCompleted { pending : Int, total : Int }
+    | ReportCompleted { pending : Int, completed : Int }
     | ResolveMonth Month
     | Retry
     | Save
@@ -272,6 +273,7 @@ type TranslationId
     | StartDate
     | EndDate
     | Success
+    | TakenCareOfBy
     | ThisActionCannotBeUndone
     | ThisClinicHasNoMothers
     | TitleHealthAssessment
@@ -281,6 +283,7 @@ type TranslationId
     | UbudeheLabel
     | UnableToDownload
     | UnableToUpload
+    | Unknown
     | Update
     | UpdateError
     | UploadHealthAssessment
@@ -354,11 +357,6 @@ translationSet trans =
                     , kinyarwanda = Just "Fata ifoto ya buri mwana kuri buri bikorwa by'ipimwa Ifoto igomba kwerekana ibice by'umubiri wose by'umwana"
                     }
 
-                ChildActivity ProgressReport ->
-                    { english = "Progress report"
-                    , kinyarwanda = Nothing
-                    }
-
                 ChildActivity Weight ->
                     { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on."
                     , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
@@ -389,11 +387,6 @@ translationSet trans =
                 ChildActivity ChildPicture ->
                     { english = "Photo:"
                     , kinyarwanda = Just "Ifoto"
-                    }
-
-                ChildActivity ProgressReport ->
-                    { english = "Progress Report"
-                    , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
                     }
 
                 ChildActivity Weight ->
@@ -428,11 +421,6 @@ translationSet trans =
                     , kinyarwanda = Just "Ifoto"
                     }
 
-                ChildActivity ProgressReport ->
-                    { english = "Progress Report"
-                    , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
-                    }
-
                 ChildActivity Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
@@ -463,11 +451,6 @@ translationSet trans =
                 ChildActivity ChildPicture ->
                     { english = "Photo"
                     , kinyarwanda = Just "Ifoto"
-                    }
-
-                ChildActivity ProgressReport ->
-                    { english = "Progress Report"
-                    , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
                     }
 
                 ChildActivity Weight ->
@@ -671,7 +654,7 @@ translationSet trans =
             }
 
         ClickTheCheckMark ->
-            { english = "Click the check mark if the mother is in attendance. The check mark will appear green when a mother has been signed in."
+            { english = "Click the check mark if the mother / caregiver is in attendance. The check mark will appear green when a mother / caregiver has been signed in."
             , kinyarwanda = Just "Kanda (kuri) ku kazu niba umubyeyi ahari. Ku kazu harahita hahindura ibara habe icyaytsi niba wemeje ko umubyeyi ahari"
             }
 
@@ -996,7 +979,7 @@ translationSet trans =
             }
 
         MotherName name ->
-            { english = "Mother: " ++ name
+            { english = "Mother/Caregiver: " ++ name
             , kinyarwanda = Just <| "Umubyeyi: " ++ name
             }
 
@@ -1172,6 +1155,11 @@ translationSet trans =
             , kinyarwanda = Just <| "Ibipimo by'ubushize: " ++ toString value
             }
 
+        ProgressReport ->
+            { english = "Progress Report"
+            , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
+            }
+
         ReadyToBeginSession ->
             { english = "You are now ready to begin your session."
             , kinyarwanda = Just "Ubu ushobora gutangira ibikorwa byawe."
@@ -1197,9 +1185,9 @@ translationSet trans =
             , kinyarwanda = Just "Ishakisha ryabaritabira"
             }
 
-        ReportCompleted { pending, total } ->
-            { english = toString (total - pending) ++ " / " ++ toString total ++ " Completed"
-            , kinyarwanda = Just <| toString (total - pending) ++ " / " ++ toString total ++ " Raporo irarangiye"
+        ReportCompleted { pending, completed } ->
+            { english = toString completed ++ " / " ++ toString (pending + completed) ++ " Completed"
+            , kinyarwanda = Just <| toString completed ++ " / " ++ toString (pending + completed) ++ " Raporo irarangiye"
             }
 
         ResolveMonth month ->
@@ -1291,6 +1279,11 @@ translationSet trans =
             , kinyarwanda = Just "Byagezweho"
             }
 
+        TakenCareOfBy ->
+            { english = "Taken care of by"
+            , kinyarwanda = Nothing
+            }
+
         ThisActionCannotBeUndone ->
             { english = "This action cannot be undone."
             , kinyarwanda = Nothing
@@ -1334,6 +1327,11 @@ translationSet trans =
         UnableToUpload ->
             { english = "Unable to Upload"
             , kinyarwanda = Just "Kwohereza ntibikunda"
+            }
+
+        Unknown ->
+            { english = "Unknown"
+            , kinyarwanda = Nothing
             }
 
         Update ->

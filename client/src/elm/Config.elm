@@ -49,6 +49,16 @@ livePantheon =
     }
 
 
+caregiverPantheon : Model
+caregiverPantheon =
+    { backendUrl = "https://caregiver-ihangane.pantheonsite.io"
+    , name = "caregiverPantheon"
+    , pusherKey = PusherAppKey "" UsEast1
+    , debug = False
+    , sandbox = False
+    }
+
+
 configs : Dict String Model
 configs =
     Dict.fromList
@@ -56,5 +66,6 @@ configs =
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", livePantheon )
         , ( "***REMOVED***", ***REMOVED*** )
+        , ( "caregiver-ihangane.pantheonsite.io", caregiverPantheon )
         ]
         |> Dict.union localConfigs

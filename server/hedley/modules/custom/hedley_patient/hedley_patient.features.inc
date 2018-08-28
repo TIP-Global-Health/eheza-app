@@ -51,7 +51,7 @@ function hedley_patient_node_info() {
       'help' => '',
     ),
     'mother' => array(
-      'name' => t('Mother'),
+      'name' => t('Mother/Caregiver'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',

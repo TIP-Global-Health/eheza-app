@@ -9,12 +9,10 @@ import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Pages.Activities.Update
 import Pages.Activity.Model
 import Pages.Activity.Update
-import Pages.Activity.Utils exposing (selectParticipantForTab)
 import Pages.Model exposing (..)
 import Pages.Participant.Model
 import Pages.Participant.Update
 import Pages.Participants.Update
-import Participant.Utils exposing (childParticipant, motherParticipant)
 
 
 {-| We need the editableSession in order to pass on some needed data. But we
@@ -33,30 +31,20 @@ updateSession session msg model =
             , List.map MsgSession extraMsgs
             )
 
-        MsgChildActivity activityType subMsg ->
+        MsgChildActivity activityType maybeChildId subMsg ->
             let
                 activityPage =
                     EveryDict.get activityType model.childActivityPages
                         |> Maybe.withDefault Pages.Activity.Model.emptyModel
 
-                -- TODO: This is a little fragile ... we're applying the same logic
-                -- we apply in the view, so that we'll route the messages to
-                -- the correct participant. But we really ought to actually
-                -- include the participant ID as part of the message, so there
-                -- is no possibility for error.
-                selectedParticipant =
-                    selectParticipantForTab childParticipant activityPage.selectedTab activityType session activityPage.selectedParticipant
-
                 childForm =
-                    selectedParticipant
-                        |> Maybe.map (\childId -> getChildForm childId session)
+                    Maybe.map (\childId -> getChildForm childId session) maybeChildId
 
                 ( subModel, subCmd, subForm, outMsg, page ) =
                     Pages.Activity.Update.updateChild subMsg activityPage childForm
 
                 sessionMsgs =
-                    -- Again, this isn't ideal ... should rethink this structure eventually.
-                    selectedParticipant
+                    maybeChildId
                         |> Maybe.map
                             (\childId ->
                                 [ Maybe.map (Backend.Session.Model.SetChildForm childId) subForm
@@ -78,34 +66,24 @@ updateSession session msg model =
             -- - we turn the redirect page into a message, if provided
             -- - we send a message to implement the OutMsg, if provided
             ( { model | childActivityPages = EveryDict.insert activityType subModel model.childActivityPages }
-            , Cmd.map (MsgChildActivity activityType) subCmd
+            , Cmd.map (MsgChildActivity activityType maybeChildId) subCmd
             , redirectMsgs ++ sessionMsgs
             )
 
-        MsgMotherActivity activityType subMsg ->
+        MsgMotherActivity activityType maybeMotherId subMsg ->
             let
                 activityPage =
                     EveryDict.get activityType model.motherActivityPages
                         |> Maybe.withDefault Pages.Activity.Model.emptyModel
 
-                -- TODO: This is a little fragile ... we're applying the same logic
-                -- we apply in the view, so that we'll route the messages to
-                -- the correct participant. But we really ought to actually
-                -- include the participant ID as part of the message, so there
-                -- is no possibility for error.
-                selectedParticipant =
-                    selectParticipantForTab motherParticipant activityPage.selectedTab activityType session activityPage.selectedParticipant
-
                 motherForm =
-                    selectedParticipant
-                        |> Maybe.map (\motherId -> getMotherForm motherId session)
+                    Maybe.map (\motherId -> getMotherForm motherId session) maybeMotherId
 
                 ( subModel, subCmd, subForm, outMsg, page ) =
                     Pages.Activity.Update.updateMother subMsg activityPage motherForm
 
                 sessionMsgs =
-                    -- Again, this isn't ideal ... should rethink this structure eventually.
-                    selectedParticipant
+                    maybeMotherId
                         |> Maybe.map
                             (\motherId ->
                                 [ Maybe.map (Backend.Session.Model.SetMotherForm motherId) subForm
@@ -127,7 +105,7 @@ updateSession session msg model =
             -- - we turn the redirect page into a message, if provided
             -- - we send a message to implement the OutMsg, if provided
             ( { model | motherActivityPages = EveryDict.insert activityType subModel model.motherActivityPages }
-            , Cmd.map (MsgMotherActivity activityType) subCmd
+            , Cmd.map (MsgMotherActivity activityType maybeMotherId) subCmd
             , redirectMsgs ++ sessionMsgs
             )
 

@@ -12,10 +12,21 @@ encodeMother mother =
     [ ( "label", string mother.name )
     , ( "avatar", maybe string mother.avatarUrl )
     , ( "children", list (List.map encodeEntityId mother.children) )
-    , ( "date_birth", encodeYYYYMMDD mother.birthDate )
+    , ( "date_birth", maybe encodeYYYYMMDD mother.birthDate )
+    , ( "relation", encodeChildrenRelation mother.relation )
     , ( "ubudehe", maybe encodeUbudehe mother.ubudehe )
     , ( "education_level", maybe encodeEducationLevel mother.educationLevel )
     ]
+
+
+encodeChildrenRelation : ChildrenRelationType -> Value
+encodeChildrenRelation relation =
+    case relation of
+        MotherRelation ->
+            string "mother"
+
+        CaregiverRelation ->
+            string "caregiver"
 
 
 encodeUbudehe : Ubudehe -> Value
