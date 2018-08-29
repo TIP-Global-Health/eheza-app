@@ -1037,6 +1037,14 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_1']['relationship'] = 'field_clinic_target_id';
   $handler->display->display_options['fields']['title_1']['label'] = 'Clinic';
   $handler->display->display_options['fields']['title_1']['link_to_node'] = FALSE;
+  /* Field: Content: Ubudehe */
+  $handler->display->display_options['fields']['field_ubudehe']['id'] = 'field_ubudehe';
+  $handler->display->display_options['fields']['field_ubudehe']['table'] = 'field_data_field_ubudehe';
+  $handler->display->display_options['fields']['field_ubudehe']['field'] = 'field_ubudehe';
+  /* Field: Content: Education Level */
+  $handler->display->display_options['fields']['field_education_level']['id'] = 'field_education_level';
+  $handler->display->display_options['fields']['field_education_level']['table'] = 'field_data_field_education_level';
+  $handler->display->display_options['fields']['field_education_level']['field'] = 'field_education_level';
   $handler->display->display_options['defaults']['filter_groups'] = FALSE;
   $handler->display->display_options['defaults']['filters'] = FALSE;
   /* Filter criterion: Content: Published */
