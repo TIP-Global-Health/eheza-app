@@ -1703,6 +1703,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['nid']['id'] = 'nid';
   $handler->display->display_options['filters']['nid']['table'] = 'node';
   $handler->display->display_options['filters']['nid']['field'] = 'nid';
+  $handler->display->display_options['filters']['nid']['relationship'] = 'field_session_target_id';
   $handler->display->display_options['filters']['nid']['group'] = 1;
   $handler->display->display_options['filters']['nid']['exposed'] = TRUE;
   $handler->display->display_options['filters']['nid']['expose']['operator_id'] = 'nid_op';
