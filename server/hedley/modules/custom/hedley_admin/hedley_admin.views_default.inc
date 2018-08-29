@@ -1568,11 +1568,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['relationships']['field_session_target_id']['field'] = 'field_session_target_id';
   $handler->display->display_options['relationships']['field_session_target_id']['label'] = 'Session';
   /* Relationship: Entity Reference: Referenced Entity */
-  $handler->display->display_options['relationships']['field_child_target_id']['id'] = 'field_child_target_id';
-  $handler->display->display_options['relationships']['field_child_target_id']['table'] = 'field_data_field_child';
-  $handler->display->display_options['relationships']['field_child_target_id']['field'] = 'field_child_target_id';
-  $handler->display->display_options['relationships']['field_child_target_id']['label'] = 'Child';
-  /* Relationship: Entity Reference: Referenced Entity */
   $handler->display->display_options['relationships']['field_mother_target_id']['id'] = 'field_mother_target_id';
   $handler->display->display_options['relationships']['field_mother_target_id']['table'] = 'field_data_field_mother';
   $handler->display->display_options['relationships']['field_mother_target_id']['field'] = 'field_mother_target_id';
@@ -1582,6 +1577,12 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['relationships']['uid']['table'] = 'node';
   $handler->display->display_options['relationships']['uid']['field'] = 'uid';
   $handler->display->display_options['relationships']['uid']['label'] = 'Nurse';
+  /* Relationship: Entity Reference: Referencing entity */
+  $handler->display->display_options['relationships']['reverse_field_mother_node']['id'] = 'reverse_field_mother_node';
+  $handler->display->display_options['relationships']['reverse_field_mother_node']['table'] = 'node';
+  $handler->display->display_options['relationships']['reverse_field_mother_node']['field'] = 'reverse_field_mother_node';
+  $handler->display->display_options['relationships']['reverse_field_mother_node']['relationship'] = 'field_mother_target_id';
+  $handler->display->display_options['relationships']['reverse_field_mother_node']['label'] = 'Child';
   $handler->display->display_options['defaults']['fields'] = FALSE;
   /* Field: Bulk operations: Content */
   $handler->display->display_options['fields']['views_bulk_operations']['id'] = 'views_bulk_operations';
@@ -1720,7 +1721,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['title']['id'] = 'title';
   $handler->display->display_options['filters']['title']['table'] = 'node';
   $handler->display->display_options['filters']['title']['field'] = 'title';
-  $handler->display->display_options['filters']['title']['relationship'] = 'field_child_target_id';
+  $handler->display->display_options['filters']['title']['relationship'] = 'reverse_field_mother_node';
   $handler->display->display_options['filters']['title']['operator'] = 'contains';
   $handler->display->display_options['filters']['title']['group'] = 1;
   $handler->display->display_options['filters']['title']['exposed'] = TRUE;
