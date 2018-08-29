@@ -14,7 +14,7 @@ function hedley_admin_menu_default_menu_links() {
   $menu_links['main-menu_children:admin/content/children'] = array(
     'menu_name' => 'main-menu',
     'link_path' => 'admin/content/children',
-    'router_path' => 'admin/content/children',
+    'router_path' => 'admin/content',
     'link_title' => 'Children',
     'options' => array(
       'identifier' => 'main-menu_children:admin/content/children',
@@ -31,7 +31,7 @@ function hedley_admin_menu_default_menu_links() {
   $menu_links['main-menu_clinics:admin/content/clinics'] = array(
     'menu_name' => 'main-menu',
     'link_path' => 'admin/content/clinics',
-    'router_path' => 'admin/content/clinics',
+    'router_path' => 'admin/content',
     'link_title' => 'Clinics',
     'options' => array(
       'identifier' => 'main-menu_clinics:admin/content/clinics',
@@ -48,7 +48,7 @@ function hedley_admin_menu_default_menu_links() {
   $menu_links['main-menu_historical-child:admin/measurement-historical-child'] = array(
     'menu_name' => 'main-menu',
     'link_path' => 'admin/measurement-historical-child',
-    'router_path' => 'admin/measurement-historical-child',
+    'router_path' => 'admin',
     'link_title' => 'Historical Child',
     'options' => array(
       'identifier' => 'main-menu_historical-child:admin/measurement-historical-child',
@@ -65,7 +65,7 @@ function hedley_admin_menu_default_menu_links() {
   $menu_links['main-menu_historical-mother:admin/measurement-historical-mother'] = array(
     'menu_name' => 'main-menu',
     'link_path' => 'admin/measurement-historical-mother',
-    'router_path' => 'admin/measurement-historical-mother',
+    'router_path' => 'admin',
     'link_title' => 'Historical Mother',
     'options' => array(
       'identifier' => 'main-menu_historical-mother:admin/measurement-historical-mother',
@@ -99,7 +99,7 @@ function hedley_admin_menu_default_menu_links() {
   $menu_links['main-menu_measurements:admin/content/measurements'] = array(
     'menu_name' => 'main-menu',
     'link_path' => 'admin/content/measurements',
-    'router_path' => 'admin/content/measurements',
+    'router_path' => 'admin/content',
     'link_title' => 'Measurements',
     'options' => array(
       'identifier' => 'main-menu_measurements:admin/content/measurements',
@@ -116,7 +116,7 @@ function hedley_admin_menu_default_menu_links() {
   $menu_links['main-menu_mothers:admin/content/mothers'] = array(
     'menu_name' => 'main-menu',
     'link_path' => 'admin/content/mothers',
-    'router_path' => 'admin/content/mothers',
+    'router_path' => 'admin/content',
     'link_title' => 'Mothers',
     'options' => array(
       'identifier' => 'main-menu_mothers:admin/content/mothers',
@@ -133,7 +133,7 @@ function hedley_admin_menu_default_menu_links() {
   $menu_links['main-menu_sessions:admin/content/sessions'] = array(
     'menu_name' => 'main-menu',
     'link_path' => 'admin/content/sessions',
-    'router_path' => 'admin/content/sessions',
+    'router_path' => 'admin/content',
     'link_title' => 'Sessions',
     'options' => array(
       'identifier' => 'main-menu_sessions:admin/content/sessions',
