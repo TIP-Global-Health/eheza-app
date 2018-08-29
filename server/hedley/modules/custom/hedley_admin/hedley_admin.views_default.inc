@@ -173,6 +173,23 @@ function hedley_admin_views_default_views() {
     3 => 0,
     4 => 0,
   );
+  /* Filter criterion: Clinic */
+  $handler->display->display_options['filters']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
+  $handler->display->display_options['filters']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
+  $handler->display->display_options['filters']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
+  $handler->display->display_options['filters']['field_clinic_target_id']['relationship'] = 'field_mother_target_id';
+  $handler->display->display_options['filters']['field_clinic_target_id']['ui_name'] = 'Clinic';
+  $handler->display->display_options['filters']['field_clinic_target_id']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator_id'] = 'field_clinic_target_id_op';
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['label'] = 'Clinic';
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator'] = 'field_clinic_target_id_op';
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['identifier'] = 'clinic';
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+    4 => 0,
+  );
 
   /* Display: Child */
   $handler = $view->new_display('page', 'Child', 'page');
