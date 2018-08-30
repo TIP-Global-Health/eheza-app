@@ -1,7 +1,6 @@
 module Measurement.Utils exposing (..)
 
 import Activity.Utils exposing (expectCounselingActivity)
-import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValue, mapMeasurementData)
