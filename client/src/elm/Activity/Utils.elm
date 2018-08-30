@@ -322,7 +322,10 @@ expectCounselingActivity session childId =
                             -- the ideal sequence would be:
                             --
                             -- entry -> Nothing -> Rminder MidPoint -> MidPoint
-                            Nothing
+                            if daysAgo < twoMonthGap then
+                                Nothing
+                            else
+                                Just BeforeMidpoint
                         else
                             Just MidPoint
 

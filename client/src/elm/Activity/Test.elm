@@ -51,7 +51,7 @@ testCases =
       , expected = Just Entry
       }
     , { title = "Completed entry"
-      , daysOld = 120
+      , daysOld = 280
       , completed = [ ( 32, Entry ) ]
       , editing = Nothing
       , expected = Nothing
@@ -77,7 +77,7 @@ testCases =
       , expected = Just MidPoint
       }
     , { title = "Post midpoint"
-      , daysOld = 380
+      , daysOld = 650
       , completed = [ ( 30, Entry ), ( 300, BeforeMidpoint ), ( 330, MidPoint ) ]
       , editing = Nothing
       , expected = Nothing
@@ -107,6 +107,34 @@ testCases =
       , completed = [ ( 30, Entry ), ( 300, BeforeMidpoint ), ( 330, MidPoint ), ( 630, BeforeExit ), ( 660, Exit ) ]
       , editing = Nothing
       , expected = Nothing
+      }
+
+    -- The next several cases model what we expect when the child enters the
+    -- program after 1 year old. (Which is Entry first, then a month of nothing,
+    -- then a reminder for midpoint, and then midpoint).
+    , { title = "Late entry"
+      , daysOld = 400
+      , completed = []
+      , editing = Nothing
+      , expected = Just Entry
+      }
+    , { title = "Gap until midpoint reminder"
+      , daysOld = 430
+      , completed = [ ( 400, Entry ) ]
+      , editing = Nothing
+      , expected = Nothing
+      }
+    , { title = "Eventually present midpoint reminder"
+      , daysOld = 480
+      , completed = [ ( 400, Entry ) ]
+      , editing = Nothing
+      , expected = Just BeforeMidpoint
+      }
+    , { title = "Eventually present midpoint"
+      , daysOld = 520
+      , completed = [ ( 400, Entry ) ]
+      , editing = Nothing
+      , expected = Just MidPoint
       }
     ]
 
