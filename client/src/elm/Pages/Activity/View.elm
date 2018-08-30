@@ -26,8 +26,12 @@ thumbnailDimensions =
 
 {-| We return the `Maybe id` because we need to indicate which participant we
 actually are generating messages for -- that is, which one did we actually
-show. That probably means this isn't ideally structured ... but I've done
-enough refactoring for now!
+show. It's possible that it would be better to structure this a little
+differently, by having the caller determine exactly which participant will
+be viewed. However, we "own" part of that data, so that would be a bit awkward.
+Another option would be to return the caller's `Html msg` type ... then we
+could do our own mapping. The caller would have to pass in a tag for us to
+map with, which wouldn't be a problem.
 -}
 view : Participant id value activity msg -> Language -> NominalDate -> ZScore.Model.Model -> activity -> EditableSession -> Model id -> ( Html (Msg id msg), Maybe id )
 view config language currentDate zscores selectedActivity session model =

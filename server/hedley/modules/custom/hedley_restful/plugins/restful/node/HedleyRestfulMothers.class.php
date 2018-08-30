@@ -2,11 +2,11 @@
 
 /**
  * @file
- * Contains HedleyRestfulWeights.
+ * Contains HedleyRestfulMothers.
  */
 
 /**
- * Class HedleyRestfulWeights.
+ * Class HedleyRestfulMothers.
  */
 class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
 
@@ -56,6 +56,10 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       'process_callbacks' => [
         [$this, 'getChildren'],
       ],
+    ];
+
+    $public_fields['relation'] = [
+      'property' => 'field_relationship',
     ];
 
     $public_fields['ubudehe'] = [

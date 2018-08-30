@@ -35,7 +35,7 @@ import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (applyEdit, currentValue, mapMeasurementData)
-import Backend.Mother.Model exposing (Mother)
+import Backend.Mother.Model exposing (ChildrenRelationType(..), Mother)
 import Backend.Session.Model exposing (..)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother, getMotherMeasurementData, getMyMother, mapMotherEdits)
 import EveryDict exposing (EveryDict)
@@ -359,8 +359,20 @@ we would expect to perform this action if checked in.
 -}
 expectMotherActivity : EditableSession -> MotherId -> MotherActivity -> Bool
 expectMotherActivity session motherId activity =
-    -- Always True until we have the caregiver code
-    True
+    -- The activity is unused for now, but will probably be used later, so I've
+    -- structured it this way from the beginning.  For now, all activities are
+    -- expected for "mothers" and none for "caregivers"
+    getMother motherId session.offlineSession
+        |> Maybe.map
+            (\mother ->
+                case mother.relation of
+                    MotherRelation ->
+                        True
+
+                    CaregiverRelation ->
+                        False
+            )
+        |> Maybe.withDefault False
 
 
 {-| For a particular child activity, figure out which children have completed
@@ -423,6 +435,9 @@ summarizeByActivity session =
     }
 
 
+{-| This summarizes our summary, by counting, for the given activity, how many participants
+are completed or pending.
+-}
 getParticipantCountForActivity : SummaryByActivity -> Activity -> CompletedAndPending Int
 getParticipantCountForActivity summary activity =
     case activity of
@@ -504,7 +519,12 @@ summarizeByParticipant session =
     }
 
 
-{-| This includes activities for children of the mother.
+{-| This summarizes our summary, by counting how many activities have been
+completed for the given mother.
+
+It includes ativities for children of the mother, since we navigate from mother
+to child.
+
 -}
 getActivityCountForMother : MotherId -> Mother -> SummaryByParticipant -> CompletedAndPending Int
 getActivityCountForMother id mother summary =

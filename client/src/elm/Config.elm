@@ -50,6 +50,16 @@ counselingPantheon =
 ***REMOVED*** =
     { backendUrl = "https://***REMOVED***"
     , name = "***REMOVED***"
+    , pusherKey = PusherAppKey "" UsEast1
+    , debug = False
+    , sandbox = False
+    }
+
+
+***REMOVED*** : Model
+***REMOVED*** =
+    { backendUrl = "https://***REMOVED***"
+    , name = "***REMOVED***"
 
     -- We're not actually using Pusher at the moment, so just filling in a
     -- blank key for now.
@@ -59,13 +69,25 @@ counselingPantheon =
     }
 
 
+caregiverPantheon : Model
+caregiverPantheon =
+    { backendUrl = "https://caregiver-ihangane.pantheonsite.io"
+    , name = "caregiverPantheon"
+    , pusherKey = PusherAppKey "" UsEast1
+    , debug = False
+    , sandbox = False
+    }
+
+
 configs : Dict String Model
 configs =
     Dict.fromList
         [ ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", livePantheon )
+        , ( "***REMOVED***", ***REMOVED*** )
         , ( "counseling-ihangane.pantheonsite.io", counselingPantheon )
         , ( "***REMOVED***", ***REMOVED*** )
+        , ( "caregiver-ihangane.pantheonsite.io", caregiverPantheon )
         ]
         |> Dict.union localConfigs

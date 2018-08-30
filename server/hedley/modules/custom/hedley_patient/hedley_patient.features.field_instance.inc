@@ -182,7 +182,7 @@ function hedley_patient_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_mother',
-    'label' => 'Mother',
+    'label' => 'Mother / Caregiver',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -255,7 +255,7 @@ function hedley_patient_field_default_field_instances() {
     'bundle' => 'mother',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => 'Assign each mother to a clinic so that she will be included when data-entry sessions are scheduled for the clinic.',
+    'description' => 'Assign each mother/caregiver to a clinic so that she will be included when data-entry sessions are scheduled for the clinic.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -320,7 +320,7 @@ function hedley_patient_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_birth',
     'label' => 'Date birth',
-    'required' => 1,
+    'required' => 0,
     'settings' => array(
       'default_value' => 'blank',
       'default_value2' => 'same',
@@ -384,6 +384,43 @@ function hedley_patient_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-mother-field_relationship'.
+  $field_instances['node-mother-field_relationship'] = array(
+    'bundle' => 'mother',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_relationship',
+    'label' => 'Relationship',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 10,
+    ),
+  );
+
   // Exported field_instance: 'node-mother-field_ubudehe'.
   $field_instances['node-mother-field_ubudehe'] = array(
     'bundle' => 'mother',
@@ -428,8 +465,9 @@ function hedley_patient_field_default_field_instances() {
   t('Date birth');
   t('Education Level');
   t('Gender');
-  t('Mother');
+  t('Mother / Caregiver');
   t('Profile photo');
+  t('Relationship');
   t('Ubudehe');
   t('What is the highest level of education you have completed?');
 

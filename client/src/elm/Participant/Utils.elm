@@ -32,7 +32,7 @@ childParticipant =
 motherParticipant : Participant MotherId Mother MotherActivity Measurement.Model.MsgMother
 motherParticipant =
     { getAvatarUrl = .avatarUrl
-    , getBirthDate = .birthDate >> Just
+    , getBirthDate = .birthDate
     , getMotherId = \motherId session -> Just motherId
     , getName = .name
     , getParticipants = \session -> session.offlineSession.mothers
