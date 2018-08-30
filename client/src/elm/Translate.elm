@@ -1519,17 +1519,17 @@ translateCounselingTimingHeading timing =
     case timing of
         Entry ->
             { english = "Entry Counseling Checklist:"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibigomba kugirwaho inama ku ntangiriro:"
             }
 
         MidPoint ->
             { english = "Mid Program Review Checklist:"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibigomba kugirwaho inama hagati mu gusubiramo gahunda:"
             }
 
         Exit ->
             { english = "Exit Counseling Checklist:"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibigomba kugirwaho inama kumuntu usohotse muri gahunda:"
             }
 
         BeforeMidpoint ->
