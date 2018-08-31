@@ -538,7 +538,7 @@ translationSet trans =
 
         BackendError ->
             { english = "Error contacting backend"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
             }
 
         Born ->
