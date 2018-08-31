@@ -19,8 +19,8 @@ module Activity.Utils
         , summarizeMotherParticipant
         )
 
-{-| Various utilities that deal with "activities". An activity represents the need
-for a nurse to do something with respect to a person who is checked in.
+{-| Various utilities that deal with "activities". An activity represents the
+need for a nurse to do something with respect to a person who is checked in.
 
 Just as a matter of terminology, we use "completed" to mean the obvious thing
 -- that is, the action has been performed. The word "pending" is not precisely
@@ -45,8 +45,8 @@ import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 
 
-{-| Used for URL etc., not for display in the normal UI
-(since we'd translate for that).
+{-| Used for URL etc., not for display in the normal UI (since we'd translate
+for that).
 -}
 encodeActivityAsString : Activity -> String
 encodeActivityAsString activity =
@@ -114,7 +114,8 @@ defaultActivity =
     ChildActivity Height
 
 
-{-| Returns a string representing an icon for the activity, for use in a "class" attribute.
+{-| Returns a string representing an icon for the activity, for use in a
+"class" attribute.
 -}
 getActivityIcon : Activity -> String
 getActivityIcon activity =
@@ -164,8 +165,8 @@ getAllMotherActivities =
 
 
 {-| Do we expect this activity to be performed in this session for this child?
-Note that we don't consider whether the child is checked in here -- just whether
-we would expect to perform this action if checked in.
+Note that we don't consider whether the child is checked in here -- just
+whether we would expect to perform this action if checked in.
 -}
 expectChildActivity : EditableSession -> ChildId -> ChildActivity -> Bool
 expectChildActivity session childId activity =
@@ -181,25 +182,26 @@ expectChildActivity session childId activity =
 
 {-| Whether to expect a counseling activity is not just a yes/no question,
 since we'd also like to know **which** sort of counseling activity to expect.
-I suppose we could parameterize the `Counseling` activity by `CounselingTiming`.
-However, that would be awkward in its own way, since we also don't want more than
-one in each session.
+I suppose we could parameterize the `Counseling` activity by
+`CounselingTiming`. However, that would be awkward in its own way, since we
+also don't want more than one in each session.
 
-So, we'll try it this way for now. We'll return `Nothing` if no kind of counseling
-activity is expected, and `Just CounselingTiming` if one is expected.
+So, we'll try it this way for now. We'll return `Nothing` if no kind of
+counseling activity is expected, and `Just CounselingTiming` if one is
+expected.
 
 -}
 expectCounselingActivity : EditableSession -> ChildId -> Maybe CounselingTiming
 expectCounselingActivity session childId =
     let
         -- First, we check our current value. If we have a counseling session
-        -- stored in the backend, or we've already got a local edit, then we use
-        -- that.  This has two benefits. First, its a kind of optimization, since
-        -- we're basically caching our conclusion about whether to showing the
-        -- counseling activity or not. Second, it provides some UI stability ...
-        -- once we show the counseling activity and the user checks some boxes, it
-        -- ensures that we'll definitely keep showing that one, and not switch to
-        -- something else.
+        -- stored in the backend, or we've already got a local edit, then we
+        -- use that.  This has two benefits. First, its a kind of optimization,
+        -- since we're basically caching our conclusion about whether to
+        -- showing the counseling activity or not. Second, it provides some UI
+        -- stability ...  once we show the counseling activity and the user
+        -- checks some boxes, it ensures that we'll definitely keep showing
+        -- that one, and not switch to something else.
         cachedTiming =
             getChildMeasurementData childId session
                 |> mapMeasurementData .counselingSession .counseling
@@ -255,17 +257,19 @@ expectCounselingActivity session childId =
         threeMonthGap =
             (normalSessionGap * 2) + maximumSessionGap
 
-        -- In how many days (from the session date) will the child be 2 years old?
+        -- In how many days (from the session date) will the child be 2 years
+        -- old?
         daysUntilTwoYearsOld =
             (365 * 2) - age
 
-        -- In how many days (from the session date) will the child be 1 year old?
+        -- In how many days (from the session date) will the child be 1 year
+        -- old?
         daysUntilOneYearOld =
             365 - age
 
-        -- If we don't have a value already, we apply our basic logic, but lazily,
-        -- so we make this a function. Here's a summary of our design goals, which
-        -- end up having a number of parts.
+        -- If we don't have a value already, we apply our basic logic, but
+        -- lazily, so we make this a function. Here's a summary of our design
+        -- goals, which end up having a number of parts.
         --
         -- - Definitely show the counseling activity before the relevant
         --   anniversary, using the assumption that the next session will be no
@@ -285,35 +289,38 @@ expectCounselingActivity session childId =
         --   and midpoint counseling (for cases where a baby starts late).
         checkTiming _ =
             if completed Exit then
-                -- If exit counseling has been done, then we need no more counseling
+                -- If exit counseling has been done, then we need no more
+                -- counseling
                 Nothing
             else if completed BeforeExit then
-                -- If we've given the exit reminder, then show the exit counseling
-                -- now, even if it seems a bit early.
+                -- If we've given the exit reminder, then show the exit
+                -- counseling now, even if it seems a bit early.
                 Just Exit
             else if daysUntilTwoYearsOld < maximumSessionGap then
-                -- If we can't be sure we'll have another session before the baby
-                -- is two, then show the exit counseling
+                -- If we can't be sure we'll have another session before the
+                -- baby is two, then show the exit counseling
                 Just Exit
             else if not (completed Entry) then
-                -- If we haven't done entry counseling, then we always need to do it
+                -- If we haven't done entry counseling, then we always need to
+                -- do it
                 Just Entry
             else if completed MidPoint then
-                -- If we have already done the MidPoint counseling, then the only
-                -- thing left to consider is whether to show the Exit reminder
+                -- If we have already done the MidPoint counseling, then the
+                -- only thing left to consider is whether to show the Exit
+                -- reminder
                 if daysUntilTwoYearsOld < twoMonthGap then
                     Just BeforeExit
                 else
                     Nothing
             else if completed BeforeMidpoint then
-                -- If we've given the midpoint warning, then show it, even if it
-                -- seems a bit early now.
+                -- If we've given the midpoint warning, then show it, even if
+                -- it seems a bit early now.
                 Just MidPoint
             else if daysUntilOneYearOld < maximumSessionGap then
-                -- If we can't be sure we'll have another session before the baby
-                -- is one year old, we show the exit counseling. Except, we also
-                -- check to see whether we've done entry counseling recently ...
-                -- so that we'll always have a bit of a gap.
+                -- If we can't be sure we'll have another session before the
+                -- baby is one year old, we show the exit counseling. Except,
+                -- we also check to see whether we've done entry counseling
+                -- recently ...  so that we'll always have a bit of a gap.
                 case completedDaysAgo Entry of
                     Just daysAgo ->
                         if daysAgo < threeMonthGap then
@@ -338,8 +345,9 @@ expectCounselingActivity session childId =
                 case completedDaysAgo Entry of
                     Just daysAgo ->
                         if daysAgo < twoMonthGap then
-                            -- We're forcing the reminder for midpoint counseling
-                            -- to be roughtly 2 months after the entry counseling.
+                            -- We're forcing the reminder for midpoint
+                            -- counseling to be roughtly 2 months after the
+                            -- entry counseling.
                             Nothing
                         else
                             Just BeforeMidpoint
@@ -354,8 +362,8 @@ expectCounselingActivity session childId =
 
 
 {-| Do we expect this activity to be performed in this session for this mother?
-Note that we don't consider whether the mother is checked in here -- just whether
-we would expect to perform this action if checked in.
+Note that we don't consider whether the mother is checked in here -- just
+whether we would expect to perform this action if checked in.
 -}
 expectMotherActivity : EditableSession -> MotherId -> MotherActivity -> Bool
 expectMotherActivity session motherId activity =
@@ -435,8 +443,8 @@ summarizeByActivity session =
     }
 
 
-{-| This summarizes our summary, by counting, for the given activity, how many participants
-are completed or pending.
+{-| This summarizes our summary, by counting, for the given activity, how many
+participants are completed or pending.
 -}
 getParticipantCountForActivity : SummaryByActivity -> Activity -> CompletedAndPending Int
 getParticipantCountForActivity summary activity =
@@ -685,7 +693,8 @@ getCheckedIn session =
             EveryDict.filter (\_ edits -> edits.explicitlyCheckedIn)
                 session.edits.mothers
 
-        -- A mother is checked in if explicitly checked in or has any completed activites.
+        -- A mother is checked in if explicitly checked in or has any completed
+        -- activites.
         mothers =
             EveryDictList.filter
                 (\motherId _ ->
