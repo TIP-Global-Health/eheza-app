@@ -40,7 +40,6 @@
         "rgrempel/elm-route-url": "4.0.0 <= v < 5.0.0",
         "sporto/erl": "13.0.2 <= v < 14.0.0",
         "stoeffel/editable": "2.0.0 <= v < 3.0.0",
-        "terezka/elm-plot": "5.1.0 <= v < 6.0.0",
         "truqu/elm-base64": "2.0.3 <= v < 3.0.0"
     },
     "elm-version": "0.18.0 <= v < 0.19.0"
