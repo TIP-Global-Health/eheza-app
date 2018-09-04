@@ -8,6 +8,46 @@
 include_once 'hedley_user.features.inc';
 
 /**
- * @file
- * Drupal needs this blank file.
+ * Implements hook_menu_alter().
  */
+function hedley_user_menu_alter(&$menu) {
+  foreach (node_type_get_types() as $type) {
+    $type_url_str = str_replace('_', '-', $type->type);
+    $menu['node/add/' . $type_url_str]['access callback'] = 'hedley_user_node_form_access_callback';
+  }
+
+  $menu['node/%node/edit']['access callback'] = 'hedley_user_node_form_access_callback';
+}
+
+/**
+ * Access callback; Determines if the user may create or edit the node.
+ *
+ * @param string $op
+ *   The operation to be performed on the node. Those are the possible values.
+ *   - "update".
+ *   - "create".
+ * @param object $node
+ *   The node object on which the operation is to be performed, or node type
+ *   (e.g. 'forum') for "create" operation.
+ *
+ * @return bool
+ *   TRUE if the operation may be performed, FALSE otherwise.
+ */
+function hedley_user_node_form_access_callback($op, $node) {
+  global $user;
+
+  // Always give access to the admin user.
+  if ($user->uid == 1) {
+    return TRUE;
+  }
+
+  $admin_role = user_role_load_by_name('administrator');
+
+  // If the user is not a nurse or is an admin, use default access callback.
+  if (user_has_role($admin_role->rid)) {
+    return node_access($op, $node);
+  }
+
+  // Only admin users have access to the node add or edit Drupal interface.
+  return NODE_ACCESS_DENY;
+}

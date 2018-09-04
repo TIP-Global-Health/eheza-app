@@ -4,6 +4,7 @@ import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherA
 import Backend.Child.Model exposing (Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
+import Backend.Mother.Model exposing (EducationLevel(..))
 import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
@@ -204,6 +205,8 @@ type TranslationId
     | Gender Gender
     | GoHome
     | KilogramShorthand
+    | LevelOfEducationLabel
+    | LevelOfEducation EducationLevel
     | LinkToMother
     | LoginPhrase LoginPhrase
     | MakeSureYouAreConnected
@@ -275,6 +278,7 @@ type TranslationId
     | Training
     | TrainingSessionCreateSuccessMessage
     | TrainingSessionDeleteSuccessMessage
+    | UbudeheLabel
     | UnableToDownload
     | UnableToUpload
     | Update
@@ -305,7 +309,7 @@ translationSet trans =
 
         Admin ->
             { english = "Administration"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Abakuriye"
             }
 
         AgeWord ->
@@ -320,7 +324,7 @@ translationSet trans =
 
         ActivitiesCompleted count ->
             { english = "Completed (" ++ toString count ++ ")"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just <| "Ibyarangiye (" ++ toString count ++ ")"
             }
 
         ActivitiesHelp activity ->
@@ -551,7 +555,7 @@ translationSet trans =
 
         BackendError ->
             { english = "Error contacting backend"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
             }
 
         Born ->
@@ -561,7 +565,7 @@ translationSet trans =
 
         BeginHealthAssessment ->
             { english = "Begin Health Assessment"
-            , kinyarwanda = Just "Gutangira ibikorwa by'ipima"
+            , kinyarwanda = Just "Gutangira igikorwa cy'ipima"
             }
 
         Cancel ->
@@ -688,7 +692,7 @@ translationSet trans =
 
         Closed ->
             { english = "Closed"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gufunga"
             }
 
         ConfirmDeleteTrainingSessions ->
@@ -708,7 +712,7 @@ translationSet trans =
 
         CreateSession ->
             { english = "Create Session"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Tangira igikorwa"
             }
 
         CreateTrainingSessions ->
@@ -753,22 +757,22 @@ translationSet trans =
 
         DownloadHealthAssessment ->
             { english = "Download Health Assessment"
-            , kinyarwanda = Just "Gukurura Health assessment (ibikorwa by'ubuzima)"
+            , kinyarwanda = Just "Gukurura Igikorwa cy’ipima"
             }
 
         DownloadSuccessful ->
             { english = "Download Successful"
-            , kinyarwanda = Just "Gukurura Health assessment byagenze neza"
+            , kinyarwanda = Just "Gukurura Igikorwa cy’ipima byagenze neza"
             }
 
         DownloadingSession1 ->
             { english = "Downloading…"
-            , kinyarwanda = Just "Uri gukurura Health assessment(gukurura amakuru y'ipima)"
+            , kinyarwanda = Just "Uri gukurura Igikorwa cy’ipima (gukurura amakuru y'ipima)"
             }
 
         DownloadingSession2 ->
             { english = "Downloading may take a few minutes, or a few hours. Do not leave this page while data is downloading."
-            , kinyarwanda = Just "Gukurura Health Assessment bishobora gutwara iminota mike cg amasaha make. Ub uretse gufunga iyi paji mu gihe ugikurura amakuru."
+            , kinyarwanda = Just "Gukurura Igikorwa cy’ipima bishobora gutwara iminota mike cg amasaha make. Ub uretse gufunga iyi paji mu gihe ugikurura amakuru."
             }
 
         DropzoneDefaultMessage ->
@@ -905,6 +909,48 @@ translationSet trans =
             { english = "kg"
             , kinyarwanda = Just "kg"
             }
+
+        LevelOfEducationLabel ->
+            { english = "Level of Education: "
+            , kinyarwanda = Just <| "Amashuri wize: "
+            }
+
+        LevelOfEducation educationLevel ->
+            case educationLevel of
+                NoSchooling ->
+                    { english = "No Schooling"
+                    , kinyarwanda = Just "Ntayo"
+                    }
+
+                PrimarySchool ->
+                    { english = "Primary School"
+                    , kinyarwanda = Just "Abanza"
+                    }
+
+                VocationalTrainingSchool ->
+                    { english = "Vocational Training School"
+                    , kinyarwanda = Just "Imyuga"
+                    }
+
+                SecondarySchool ->
+                    { english = "Secondary School"
+                    , kinyarwanda = Just "Ayisumbuye"
+                    }
+
+                DiplomaProgram ->
+                    { english = "Diploma Program (2 years of University)"
+                    , kinyarwanda = Just "Amashuri 2 ya Kaminuza"
+                    }
+
+                HigherEducation ->
+                    { english = "Higher Education (University)"
+                    , kinyarwanda = Just "(A0)"
+                    }
+
+                AdvancedDiploma ->
+                    { english = "Advanced Diploma"
+                    , kinyarwanda = Just "(A1)"
+                    }
 
         LinkToMother ->
             { english = "Link to mother"
@@ -1063,7 +1109,7 @@ translationSet trans =
 
         OnceYouEndYourSession ->
             { english = "Once you end your session, you will no longer be able to edit or add data. Remember to upload this session within the next 48 hours."
-            , kinyarwanda = Just "Igihe igikorwa cyawe ukirangije,ntubasha guhindura cyangwa kongera kubipimo, ibka kubyohereza mumasaha 48"
+            , kinyarwanda = Just "Igihe igikorwa cyawe ukirangije, ntubasha guhindura cyangwa kongera kubipimo, ibka kubyohereza mumasaha 48"
             }
 
         Page ->
@@ -1088,7 +1134,7 @@ translationSet trans =
 
         ParticipantSummary ->
             { english = "Participant Summary"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umwirondoro w’urera umwana"
             }
 
         PlaceholderEnterHeight ->
@@ -1186,7 +1232,7 @@ translationSet trans =
 
         SelectClinic ->
             { english = "Select Clinic..."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "hitamo ikigo nderabuzima..."
             }
 
         SelectYourClinic ->
@@ -1210,7 +1256,7 @@ translationSet trans =
 
         SessionInProgress ->
             { english = "A health assessment is already in progress for another clinic."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hari igikorwa cy’ipima kiri gukorwa mu kindi kigo nderabuzima."
             }
 
         SessionUnauthorized ->
@@ -1232,17 +1278,17 @@ translationSet trans =
 
         StartDate ->
             { english = "Start Date"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Itariki utangireyeho"
             }
 
         EndDate ->
             { english = "End Date"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Itariki urangirijeho"
             }
 
         Success ->
             { english = "Success"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Byagezweho"
             }
 
         ThisActionCannotBeUndone ->
@@ -1275,6 +1321,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        UbudeheLabel ->
+            { english = "Ubudehe: "
+            , kinyarwanda = Nothing
+            }
+
         UnableToDownload ->
             { english = "Unable to Download"
             , kinyarwanda = Just "ntibishoboka gukurura"
@@ -1282,7 +1333,7 @@ translationSet trans =
 
         UnableToUpload ->
             { english = "Unable to Upload"
-            , kinyarwanda = Just "Kwohereza health assessment ntibikunda (kohereza ntibikunda)"
+            , kinyarwanda = Just "Kwohereza ntibikunda"
             }
 
         Update ->
@@ -1297,7 +1348,7 @@ translationSet trans =
 
         UploadHealthAssessment ->
             { english = "Upload Health Assessment"
-            , kinyarwanda = Just "Kwohereza health assessment"
+            , kinyarwanda = Just "Kwohereza Igikorwa cy’ipima"
             }
 
         UploadingSession1 ->
@@ -1307,7 +1358,7 @@ translationSet trans =
 
         UploadingSession2 ->
             { english = "Uploading may take a few minutes, or a few hours. Do not leave this page while data is uploading."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kohereza igikorwa bishobora gufata iminota mike cyangwa amasaha make. Wifunga iyi paji mugihe iki gikorwa kitararangira."
             }
 
         UploadSuccessful ->
@@ -1337,12 +1388,12 @@ translationSet trans =
 
         YouHaveACompletedSession ->
             { english = "You have a completed session that needs to be uploaded. Please connect to the internet and upload this session within 48 hours."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ufite igikorwa cyarangiye ukeneye kohereza. Jya kuri intereneti ucyohereze bitarenze  amasaha 48."
             }
 
         YourSessionHasBeenSaved ->
             { english = "Your session has been saved."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igikorwa cyawe cyabitswe."
             }
 
         ZScoreHeightForAge ->
