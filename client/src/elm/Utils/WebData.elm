@@ -34,19 +34,19 @@ viewError : Language -> Http.Error -> Html any
 viewError language error =
     case error of
         Http.BadUrl message ->
-            div [] [ text <| translate language Translate.ErrorBadUrl ]
+            div [] [ text <| translate language <| Translate.HttpError error ]
 
         Http.BadPayload message _ ->
             div []
-                [ p [] [ text <| translate language Translate.ErrorBadPayload ]
+                [ p [] [ text <| translate language <| Translate.HttpError error ]
                 , p [] [ text message ]
                 ]
 
         Http.NetworkError ->
-            div [] [ text <| translate language Translate.ErrorNetworkError ]
+            div [] [ text <| translate language <| Translate.HttpError error ]
 
         Http.Timeout ->
-            div [] [ text <| translate language Translate.ErrorTimeout ]
+            div [] [ text <| translate language <| Translate.HttpError error ]
 
         Http.BadStatus response ->
             let
@@ -59,7 +59,7 @@ viewError language error =
                             response.body
             in
             div []
-                [ div [] [ text <| translate language Translate.ErrorBadStatus ]
+                [ p [] [ text <| translate language <| Translate.HttpError error ]
                 , p [] [ text response.status.message ]
                 , p [] [ text decodedBody ]
                 ]
