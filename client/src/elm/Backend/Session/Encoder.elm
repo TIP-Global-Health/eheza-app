@@ -2,6 +2,7 @@ module Backend.Session.Encoder exposing (..)
 
 import Backend.Child.Encoder exposing (encodeChild)
 import Backend.Clinic.Encoder exposing (encodeClinic)
+import Backend.Counseling.Encoder exposing (encodeEveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeChildMeasurementList, encodeMotherMeasurementList)
 import Backend.Model exposing (TrainingSessionAction(..), TrainingSessionRequest)
@@ -57,6 +58,7 @@ encodeOfflineSession offline =
             |> List.map (\( id, session ) -> object (( "id", encodeEntityId id ) :: encodeSession session))
             |> list
       )
+    , ( "counseling_schedule", encodeEveryCounselingSchedule offline.everyCounselingSchedule )
     , ( "clinics"
       , EveryDictList.toList offline.clinics
             |> List.map (\( id, clinic ) -> object (( "id", encodeEntityId id ) :: encodeClinic clinic))

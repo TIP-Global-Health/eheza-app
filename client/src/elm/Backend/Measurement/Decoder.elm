@@ -1,5 +1,6 @@
 module Backend.Measurement.Decoder exposing (..)
 
+import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Dict exposing (Dict)
@@ -82,6 +83,7 @@ decodeChildMeasurementList =
         |> optional "nutrition" (list (decodeWithEntityId decodeNutrition)) []
         |> optional "photo" (list (decodeWithEntityId decodePhoto)) []
         |> optional "weight" (list (decodeWithEntityId decodeWeight)) []
+        |> optional "counseling_session" (list (decodeWithEntityId decodeCounselingSession)) []
 
 
 {-| The `oneOf` provides some back-compat for locally stored values.
@@ -132,6 +134,14 @@ decodeNutrition =
     decodeEverySet decodeChildNutritionSign
         |> field "nutrition_signs"
         |> decodeChildMeasurement
+
+
+decodeCounselingSession : Decoder CounselingSession
+decodeCounselingSession =
+    decodeChildMeasurement <|
+        map2 (,)
+            (field "timing" decodeCounselingTiming)
+            (field "topics" (decodeEverySet decodeEntityId))
 
 
 decodeChildNutritionSign : Decoder ChildNutritionSign
@@ -225,6 +235,10 @@ decodeMeasurementEdits =
 
 
 {-| Decodes what `encodeChildEdits` produces.
+
+The keys should match the machine name of the entity on the backend, in order
+for the upload mechanism to work as expected.
+
 -}
 decodeChildEdits : Decoder ChildEdits
 decodeChildEdits =
@@ -234,6 +248,7 @@ decodeChildEdits =
         |> required "nutrition" (decodeEdit decodeNutrition)
         |> required "photo" (decodeEdit decodePhoto)
         |> required "weight" (decodeEdit decodeWeight)
+        |> required "counseling_session" (decodeEdit decodeCounselingSession)
 
 
 {-| Decodes what `encodeChildEdits` produces.

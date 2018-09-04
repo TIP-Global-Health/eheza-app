@@ -760,6 +760,30 @@ makeChildEdit currentDate childId outMsg sessionId session =
             in
             mapChildEdits (\edits -> { edits | muac = edit }) childId session
 
+        SaveCounselingSession timing topics ->
+            let
+                backend =
+                    mapMeasurementData .counselingSession .counseling data
+                        |> backendValue
+
+                edit =
+                    case backend of
+                        Just value ->
+                            Edited
+                                { backend = value
+                                , edited = { value | value = ( timing, topics ) }
+                                }
+
+                        Nothing ->
+                            Created
+                                { participantId = childId
+                                , sessionId = Just sessionId
+                                , dateMeasured = currentDate
+                                , value = ( timing, topics )
+                                }
+            in
+            mapChildEdits (\edits -> { edits | counseling = edit }) childId session
+
         SaveChildNutritionSigns nutrition ->
             let
                 backend =

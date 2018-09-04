@@ -102,7 +102,9 @@ function hedley_schedule_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'entry' => 'Entry',
+        'before-midpoint' => 'Before Midpoint',
         'midpoint' => 'Midpoint',
+        'before-exit' => 'Before Exit',
         'exit' => 'Exit',
       ),
       'allowed_values_function' => '',

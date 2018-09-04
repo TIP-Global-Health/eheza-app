@@ -3,6 +3,7 @@ module Backend.Session.Decoder exposing (..)
 import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Child.Model exposing (Child)
 import Backend.Clinic.Decoder exposing (decodeClinic)
+import Backend.Counseling.Decoder exposing (decodeEveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Decoder exposing (decodeHistoricalMeasurements)
 import Backend.Measurement.Model exposing (ChildMeasurementList, ChildMeasurements, Measurement, MotherMeasurementList, MotherMeasurements, emptyMeasurements)
@@ -79,6 +80,8 @@ decodeOfflineSession =
                     |> optional "all_sessions"
                         (EveryDictList.decodeArray2 (field "id" decodeEntityId) decodeSession)
                         EveryDictList.empty
+                    -- Also optional for transitional reasons.
+                    |> optional "counseling_schedule" decodeEveryCounselingSchedule EveryDict.empty
                     -- We get **all** the basic clinic information, as a convenience for
                     -- presenting the UI while offline
                     |> required "clinics" (EveryDictList.decodeArray2 (field "id" decodeEntityId) decodeClinic)
@@ -161,6 +164,9 @@ splitChildMeasurements sessionId =
 
                 photo =
                     getCurrentAndPrevious sessionId list.photos
+
+                counselingSession =
+                    getCurrentAndPrevious sessionId list.counselingSessions
             in
             { current =
                 { height = height.current
@@ -168,6 +174,7 @@ splitChildMeasurements sessionId =
                 , muac = muac.current
                 , nutrition = nutrition.current
                 , photo = photo.current
+                , counselingSession = counselingSession.current
                 }
             , previous =
                 { height = height.previous
@@ -175,6 +182,7 @@ splitChildMeasurements sessionId =
                 , muac = muac.previous
                 , nutrition = nutrition.previous
                 , photo = photo.previous
+                , counselingSession = counselingSession.previous
                 }
             }
         )

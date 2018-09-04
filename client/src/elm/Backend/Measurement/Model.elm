@@ -4,6 +4,7 @@ module Backend.Measurement.Model exposing (..)
 and cached in local storage.
 -}
 
+import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import EveryDict exposing (EveryDict)
 import EverySet exposing (EverySet)
@@ -114,6 +115,10 @@ type alias ChildNutrition =
     Measurement ChildId (EverySet ChildNutritionSign)
 
 
+type alias CounselingSession =
+    Measurement ChildId ( CounselingTiming, EverySet CounselingTopicId )
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -171,6 +176,7 @@ type alias ChildMeasurementList =
     , nutritions : List ( ChildNutritionId, ChildNutrition )
     , photos : List ( PhotoId, Photo )
     , weights : List ( WeightId, Weight )
+    , counselingSessions : List ( CounselingSessionId, CounselingSession )
     }
 
 
@@ -181,6 +187,7 @@ emptyChildMeasurementList =
     , nutritions = []
     , photos = []
     , weights = []
+    , counselingSessions = []
     }
 
 
@@ -215,6 +222,7 @@ type alias ChildMeasurements =
     , nutrition : Maybe ( ChildNutritionId, ChildNutrition )
     , photo : Maybe ( PhotoId, Photo )
     , weight : Maybe ( WeightId, Weight )
+    , counselingSession : Maybe ( CounselingSessionId, CounselingSession )
     }
 
 
@@ -225,6 +233,7 @@ emptyChildMeasurements =
     , nutrition = Nothing
     , photo = Nothing
     , weight = Nothing
+    , counselingSession = Nothing
     }
 
 
@@ -312,6 +321,7 @@ type alias ChildEdits =
     , nutrition : Edit ChildNutrition
     , photo : Edit Photo
     , weight : Edit Weight
+    , counseling : Edit CounselingSession
     }
 
 
@@ -322,6 +332,7 @@ emptyChildEdits =
     , nutrition = Unedited
     , photo = Unedited
     , weight = Unedited
+    , counseling = Unedited
     }
 
 

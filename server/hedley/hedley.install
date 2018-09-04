@@ -208,6 +208,7 @@ function hedley_standard_install() {
     'nutrition',
     'photo',
     'weight',
+    'counseling_session',
   ];
 
   hedley_add_nurse_permissions_for_content_type($nurse_permitted_types);

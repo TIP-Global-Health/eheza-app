@@ -1,5 +1,6 @@
 module Measurement.Utils exposing (..)
 
+import Activity.Utils exposing (expectCounselingActivity)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValue, mapMeasurementData)
@@ -55,6 +56,11 @@ fromChildMeasurementData data =
             |> currentValue
             |> Maybe.map .value
             |> Maybe.withDefault EverySet.empty
+    , counseling =
+        data
+            |> mapMeasurementData .counselingSession .counseling
+            |> currentValue
+            |> Maybe.map .value
     , photo =
         data
             |> mapMeasurementData .photo .photo
@@ -106,3 +112,22 @@ getChildForm childId session =
         Nothing ->
             getChildMeasurementData childId session
                 |> fromChildMeasurementData
+                |> (\form ->
+                        -- We need some special logic for the counseling
+                        -- session, to fill in the correct kind of session.
+                        -- This seems to be the best place to do that, though
+                        -- that may need some more thinking at some point.
+                        case form.counseling of
+                            Just _ ->
+                                form
+
+                            Nothing ->
+                                { form
+                                    | counseling =
+                                        expectCounselingActivity session childId
+                                            |> Maybe.map
+                                                (\timing ->
+                                                    ( timing, EverySet.empty )
+                                                )
+                                }
+                   )

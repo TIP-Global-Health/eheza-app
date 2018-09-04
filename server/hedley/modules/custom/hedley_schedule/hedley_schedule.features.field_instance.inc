@@ -234,6 +234,43 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-counseling_session-field_timing'.
+  $field_instances['node-counseling_session-field_timing'] = array(
+    'bundle' => 'counseling_session',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Which kind of counseling session was this?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 5,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_timing',
+    'label' => 'Timing',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 6,
+    ),
+  );
+
   // Exported field_instance: 'node-counseling_session-field_topics'.
   $field_instances['node-counseling_session-field_topics'] = array(
     'bundle' => 'counseling_session',
@@ -569,6 +606,7 @@ The end date is the last day on which data entry will be allowed for this sessio
   t('Timing');
   t('Topics');
   t('Training');
+  t('Which kind of counseling session was this?');
   t('Which topics should be addressed?');
 
   return $field_instances;

@@ -219,6 +219,17 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
   }
 
   /**
+   * Associate all measurement bundles and their handlers.
+   *
+   * @return array
+   *   Array where they key is the bundle name and the value is the name of the
+   *    handler.
+   */
+  public function getAllMeasurementBundles() {
+    return $this->getChildMeasurementBundles() + $this->getMotherMeasurementBundles();
+  }
+
+  /**
    * Return participant data.
    *
    * @param int $nid
@@ -419,14 +430,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     $session = entity_metadata_wrapper('node', $sessionId);
 
     // Now, let's get all the existing measurements for this session.
-    $bundles = [
-      'height' => 'heights',
-      'family_planning' => 'family-plannings',
-      'muac' => 'muacs',
-      'nutrition' => 'nutritions',
-      'photo' => 'photos',
-      'weight' => 'weights',
-    ];
+    $bundles = $this->getAllMeasurementBundles();
 
     $query = new EntityFieldQuery();
     $result = $query
@@ -474,6 +478,9 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
 
             $this->handleEdit($handler, $edit, $previous);
           }
+          else {
+            throw new RestfulBadRequestException("Entity $activity is unknown.");
+          }
         }
       }
 
@@ -485,6 +492,14 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
             $previous = $existing[$motherId][$activity];
 
             $this->handleEdit($handler, $edit, $previous);
+          }
+          else {
+            // We can ignore the `checked_in` activity since we don't track it
+            // on the backend. If sent another unrecognized activity, throw an
+            // error.
+            if ($activity != 'checked_in') {
+              throw new RestfulBadRequestException("Entity $activity is unknown.");
+            }
           }
         }
       }

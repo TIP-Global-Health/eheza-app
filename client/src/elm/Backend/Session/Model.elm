@@ -6,6 +6,7 @@ which measurements are taken.
 
 import Backend.Child.Model exposing (Child)
 import Backend.Clinic.Model exposing (Clinic)
+import Backend.Counseling.Model exposing (EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Mother.Model exposing (Mother)
@@ -43,6 +44,9 @@ type alias OfflineSession =
     -- All the sessions for the relevant clinic, sorted by date. We need these
     -- for the progress report.
     , allSessions : EveryDictList SessionId Session
+
+    -- Our master list of all the counseling topics, for each timing
+    , everyCounselingSchedule : EveryCounselingSchedule
 
     -- We include the basic information about all the clinics so that we can at
     -- least present a limited UI on clinic pages that includes their name.

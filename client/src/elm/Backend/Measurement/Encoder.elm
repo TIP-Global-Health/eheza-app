@@ -1,5 +1,6 @@
 module Backend.Measurement.Encoder exposing (..)
 
+import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Measurement.Model exposing (..)
 import EveryDict
 import EverySet
@@ -11,35 +12,36 @@ import Restful.Endpoint exposing (EntityId(..), encodeEntityId, fromEntityId)
 
 encodeHeight : Height -> List ( String, Value )
 encodeHeight =
-    encodeChildMeasurement (\(HeightInCm height) -> ( "height", float height ))
+    encodeChildMeasurement (\(HeightInCm height) -> [ ( "height", float height ) ])
 
 
 encodeMuac : Muac -> List ( String, Value )
 encodeMuac =
-    encodeChildMeasurement (\(MuacInCm muac) -> ( "muac", float muac ))
+    encodeChildMeasurement (\(MuacInCm muac) -> [ ( "muac", float muac ) ])
 
 
 encodeWeight : Weight -> List ( String, Value )
 encodeWeight =
-    encodeChildMeasurement (\(WeightInKg weight) -> ( "weight", float weight ))
+    encodeChildMeasurement (\(WeightInKg weight) -> [ ( "weight", float weight ) ])
 
 
 encodePhoto : Photo -> List ( String, Value )
 encodePhoto =
     encodeChildMeasurement
         (\photo ->
-            ( "photo"
-            , object
-                [ ( "styles"
-                  , object
-                        [ ( "patient-photo"
-                          , string photo.url
-                          )
-                        ]
-                  )
-                , ( "id", maybe int photo.fid )
-                ]
-            )
+            [ ( "photo"
+              , object
+                    [ ( "styles"
+                      , object
+                            [ ( "patient-photo"
+                              , string photo.url
+                              )
+                            ]
+                      )
+                    , ( "id", maybe int photo.fid )
+                    ]
+              )
+            ]
         )
 
 
@@ -47,11 +49,28 @@ encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeChildMeasurement
         (\nutritions ->
-            ( "nutrition_signs"
-            , EverySet.toList nutritions
-                |> List.map encodeNutritionSign
-                |> list
-            )
+            [ ( "nutrition_signs"
+              , EverySet.toList nutritions
+                    |> List.map encodeNutritionSign
+                    |> list
+              )
+            ]
+        )
+
+
+encodeCounselingSession : CounselingSession -> List ( String, Value )
+encodeCounselingSession =
+    encodeChildMeasurement
+        (\( timing, topics ) ->
+            [ ( "topics"
+              , EverySet.toList topics
+                    |> List.map encodeEntityId
+                    |> list
+              )
+            , ( "timing"
+              , encodeCounselingTiming timing
+              )
+            ]
         )
 
 
@@ -59,31 +78,34 @@ encodeFamilyPlanning : FamilyPlanning -> List ( String, Value )
 encodeFamilyPlanning =
     encodeMotherMeasurement
         (\familyPlannings ->
-            ( "family_planning_signs"
-            , EverySet.toList familyPlannings
-                |> List.map encodeFamilyPlanningSign
-                |> list
-            )
+            [ ( "family_planning_signs"
+              , EverySet.toList familyPlannings
+                    |> List.map encodeFamilyPlanningSign
+                    |> list
+              )
+            ]
         )
 
 
-encodeChildMeasurement : (value -> ( String, Value )) -> Measurement (EntityId a) value -> List ( String, Value )
+encodeChildMeasurement : (value -> List ( String, Value )) -> Measurement (EntityId a) value -> List ( String, Value )
 encodeChildMeasurement =
     encodeMeasurement "child"
 
 
-encodeMotherMeasurement : (value -> ( String, Value )) -> Measurement (EntityId a) value -> List ( String, Value )
+encodeMotherMeasurement : (value -> List ( String, Value )) -> Measurement (EntityId a) value -> List ( String, Value )
 encodeMotherMeasurement =
     encodeMeasurement "mother"
 
 
-encodeMeasurement : String -> (value -> ( String, Value )) -> Measurement (EntityId a) value -> List ( String, Value )
+encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityId a) value -> List ( String, Value )
 encodeMeasurement participantField encoder measurement =
-    [ ( participantField, encodeEntityId measurement.participantId )
-    , ( "session", maybe encodeEntityId measurement.sessionId )
-    , ( "date_measured", Gizra.NominalDate.encodeYYYYMMDD measurement.dateMeasured )
-    , encoder measurement.value
-    ]
+    List.concat
+        [ [ ( participantField, encodeEntityId measurement.participantId )
+          , ( "session", maybe encodeEntityId measurement.sessionId )
+          , ( "date_measured", Gizra.NominalDate.encodeYYYYMMDD measurement.dateMeasured )
+          ]
+        , encoder measurement.value
+        ]
 
 
 encodeNutritionSign : ChildNutritionSign -> Value
@@ -179,12 +201,16 @@ encodeMotherEdits edits =
         ]
 
 
+{-| The keys should match the machine name of the entity on the backend, in
+order for the upload mechanism to work as expected.
+-}
 encodeChildEdits : ChildEdits -> Value
 encodeChildEdits edits =
     object
         [ ( "height", encodeEdit (object << encodeHeight) edits.height )
         , ( "muac", encodeEdit (object << encodeMuac) edits.muac )
         , ( "nutrition", encodeEdit (object << encodeNutrition) edits.nutrition )
+        , ( "counseling_session", encodeEdit (object << encodeCounselingSession) edits.counseling )
         , ( "photo", encodeEdit (object << encodePhoto) edits.photo )
         , ( "weight", encodeEdit (object << encodeWeight) edits.weight )
         ]
@@ -232,6 +258,11 @@ encodeChildMeasurementList measurements =
         , ( "nutrition"
           , measurements.nutritions
                 |> List.map (encodeEntity encodeNutrition)
+                |> list
+          )
+        , ( "counseling_session"
+          , measurements.counselingSessions
+                |> List.map (encodeEntity encodeCounselingSession)
                 |> list
           )
         , ( "photo"

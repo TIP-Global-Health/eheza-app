@@ -71,6 +71,9 @@ import Restful.Endpoint exposing (EntityId(..))
         Child
         ChildNutrition
         Clinic
+        CounselingSchedule
+        CounselingSession
+        CounselingTopic
         FamilyPlanning
         Height
         Mother
@@ -138,6 +141,30 @@ type alias ClinicId =
 
 type ClinicIdType
     = ClinicIdType
+
+
+type alias CounselingScheduleId =
+    EntityId CounselingScheduleIdType
+
+
+type CounselingScheduleIdType
+    = CounselingScheduleIdType
+
+
+type alias CounselingSessionId =
+    EntityId CounselingSessionIdType
+
+
+type CounselingSessionIdType
+    = CounselingSessionIdType
+
+
+type alias CounselingTopicId =
+    EntityId CounselingTopicIdType
+
+
+type CounselingTopicIdType
+    = CounselingTopicIdType
 
 
 type alias FamilyPlanningId =

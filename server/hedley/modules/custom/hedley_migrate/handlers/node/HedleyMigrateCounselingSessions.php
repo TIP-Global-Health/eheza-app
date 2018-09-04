@@ -15,10 +15,12 @@ class HedleyMigrateCounselingSessions extends HedleyMigrateBase {
   protected $csvColumns = [
     'id',
     'field_date_measured',
+    'field_timing',
     'field_topics',
   ];
   protected $simpleMappings = [
     'field_date_measured',
+    'field_timing',
   ];
 
   /**

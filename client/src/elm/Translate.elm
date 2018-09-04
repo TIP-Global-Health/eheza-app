@@ -2,6 +2,7 @@ module Translate exposing (..)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import Backend.Child.Model exposing (Gender(..))
+import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
 import Backend.Mother.Model exposing (EducationLevel(..))
@@ -172,6 +173,8 @@ type TranslationId
     | ConfirmDeleteTrainingSessions
     | Connected
     | Continue
+    | CounselingTimingHeading CounselingTiming
+    | CounselingTopic CounselingTopic
     | CreateSession
     | CreateTrainingSessions
     | DeleteTrainingSessions
@@ -337,6 +340,11 @@ translationSet trans =
                     , kinyarwanda = Just "Buri mubyeyi agomba kubazwa uburyo bwo kuboneza urubyaro akoresha buri kwezi. Niba umubyeyi akeneye kuboneza urubyaro mwohereze ku kigo nderabuzima k'ubishinzwe"
                     }
 
+                ChildActivity Counseling ->
+                    { english = "Please refer to this list during counseling sessions and ensure that each task has been completed."
+                    , kinyarwanda = Nothing
+                    }
+
                 ChildActivity Height ->
                     { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight."
                     , kinyarwanda = Just "Saba Umubyeyi guhagarara inyuma y’umwana we agaramye, afata umutwe ku gice cy’amatwi. Sunikira akabaho ku buryo gakora mu bworo by’ibirenge byombi."
@@ -367,6 +375,11 @@ translationSet trans =
                 MotherActivity FamilyPlanning ->
                     { english = "Which, if any, of the following methods do you use?"
                     , kinyarwanda = Just "Ni ubuhe buryo, niba hari ubuhari, mu buryo bukurikira bwo kuboneza urubyaro ukoresha? Muri ubu buryo bukurikira bwo kuboneza urubyaro, ni ubuhe buryo mukoresha?"
+                    }
+
+                ChildActivity Counseling ->
+                    { english = "Please refer to this list during counseling sessions and ensure that each task has been completed."
+                    , kinyarwanda = Nothing
                     }
 
                 ChildActivity Height ->
@@ -401,6 +414,11 @@ translationSet trans =
                     , kinyarwanda = Just "Kuboneza Urubyaro? nticyaza muri raporo yimikurire yumwana"
                     }
 
+                ChildActivity Counseling ->
+                    { english = "Counseling"
+                    , kinyarwanda = Nothing
+                    }
+
                 ChildActivity Height ->
                     { english = "Height"
                     , kinyarwanda = Just "Uburebure"
@@ -431,6 +449,11 @@ translationSet trans =
                 MotherActivity FamilyPlanning ->
                     { english = "Family Planning"
                     , kinyarwanda = Just "Kuboneza Urubyaro? nticyaza muri raporo yimikurire yumwana"
+                    }
+
+                ChildActivity Counseling ->
+                    { english = "Counseling"
+                    , kinyarwanda = Nothing
                     }
 
                 ChildActivity Height ->
@@ -691,6 +714,14 @@ translationSet trans =
         Continue ->
             { english = "Continue"
             , kinyarwanda = Just "Gukomeza"
+            }
+
+        CounselingTimingHeading timing ->
+            translateCounselingTimingHeading timing
+
+        CounselingTopic topic ->
+            { english = topic.english
+            , kinyarwanda = topic.kinyarwanda
             }
 
         CreateSession ->
@@ -1481,6 +1512,35 @@ translateActivePage page =
                     { english = "'My Account'"
                     , kinyarwanda = Just "Compte"
                     }
+
+
+translateCounselingTimingHeading : CounselingTiming -> TranslationSet
+translateCounselingTimingHeading timing =
+    case timing of
+        Entry ->
+            { english = "Entry Counseling Checklist:"
+            , kinyarwanda = Just "Ibigomba kugirwaho inama ku ntangiriro:"
+            }
+
+        MidPoint ->
+            { english = "Mid Program Review Checklist:"
+            , kinyarwanda = Just "Ibigomba kugirwaho inama hagati mu gusubiramo gahunda:"
+            }
+
+        Exit ->
+            { english = "Exit Counseling Checklist:"
+            , kinyarwanda = Just "Ibigomba kugirwaho inama kumuntu usohotse muri gahunda:"
+            }
+
+        BeforeMidpoint ->
+            { english = "Reminder"
+            , kinyarwanda = Nothing
+            }
+
+        BeforeExit ->
+            { english = "Reminder"
+            , kinyarwanda = Nothing
+            }
 
 
 translateChartPhrase : ChartPhrase -> TranslationSet
