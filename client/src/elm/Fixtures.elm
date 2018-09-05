@@ -40,7 +40,6 @@ exampleChildA =
     { name = "Michelle Kelly"
     , avatarUrl = Just "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , motherId = Nothing
-    , siblingId = Nothing
     , birthDate = date 2016 8 28
     , gender = Male
     }
@@ -53,7 +52,6 @@ exampleChildB =
     { name = "Habimana Hakizimana"
     , avatarUrl = Just "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , motherId = Nothing
-    , siblingId = Nothing
     , birthDate = date 2016 11 17
     , gender = Female
     }
