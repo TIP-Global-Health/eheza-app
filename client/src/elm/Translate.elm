@@ -192,14 +192,9 @@ type TranslationId
     | DownloadingSession2
     | DropzoneDefaultMessage
     | EndSession
-    | ErrorBadUrl
-    | ErrorBadPayload
-    | ErrorBadStatus
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
     | ErrorFetchingCachedSession
-    | ErrorNetworkError
-    | ErrorTimeout
     | FamilyPlanningSignLabel FamilyPlanningSign
     | Fetch
     | FormError (ErrorValue ValidationError)
@@ -207,6 +202,7 @@ type TranslationId
     | FutureSessions
     | Gender Gender
     | GoHome
+    | HttpError Http.Error
     | KilogramShorthand
     | LevelOfEducationLabel
     | LevelOfEducation EducationLevel
@@ -809,21 +805,6 @@ translationSet trans =
             , kinyarwanda = Just "Kurangiza ipima (gupima)"
             }
 
-        ErrorBadUrl ->
-            { english = "URL is not valid."
-            , kinyarwanda = Nothing
-            }
-
-        ErrorBadPayload ->
-            { english = "The server responded with data of an unexpected type."
-            , kinyarwanda = Nothing
-            }
-
-        ErrorBadStatus ->
-            { english = "The server indicated the following error:"
-            , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira:"
-            }
-
         ErrorCheckLocalConfig ->
             { english = "Check your LocalConfig.elm file and make sure you have defined the enviorement properly"
             , kinyarwanda = Nothing
@@ -836,16 +817,6 @@ translationSet trans =
 
         ErrorFetchingCachedSession ->
             { english = "There was an error fetchhing the session stored on this device."
-            , kinyarwanda = Nothing
-            }
-
-        ErrorNetworkError ->
-            { english = "A network error occurred contacting the server. Are you connected to the Internet?"
-            , kinyarwanda = Nothing
-            }
-
-        ErrorTimeout ->
-            { english = "The network request timed out."
             , kinyarwanda = Nothing
             }
 
@@ -918,6 +889,9 @@ translationSet trans =
             { english = "Go to main page"
             , kinyarwanda = Just "Kujya ahabanza"
             }
+
+        HttpError error ->
+            translateHttpError error
 
         KilogramShorthand ->
             { english = "kg"
@@ -1658,21 +1632,7 @@ translateLoginPhrase phrase =
                     }
 
         LoginError error ->
-            case error of
-                Http.NetworkError ->
-                    { english = "A network error occurred contacting the server. Are you connected to the Internet?"
-                    , kinyarwanda = Just "hari ikibazo cya reseau hamagara kuri seriveri. ufite intereneti?(murandasi)"
-                    }
-
-                Http.Timeout ->
-                    { english = "The request to the server timed out."
-                    , kinyarwanda = Just "Ibyo wasabye kuri seriveri byarengeje igihe."
-                    }
-
-                _ ->
-                    { english = "The following error occurred while contacting the server. " ++ toString error
-                    , kinyarwanda = Just <| "Aya makosa yagaragaye hamagara kuri seriveri. " ++ toString error
-                    }
+            translateHttpError error
 
         LoginOrWorkOffline ->
             { english = "Either login below, or work offline without logging in."
@@ -1781,6 +1741,35 @@ translateMonth month =
         Dec ->
             { english = "December"
             , kinyarwanda = Just "Ukuboza"
+            }
+
+
+translateHttpError : Http.Error -> TranslationSet
+translateHttpError error =
+    case error of
+        Http.NetworkError ->
+            { english = "A network error occurred contacting the server. Are you connected to the Internet?"
+            , kinyarwanda = Just "hari ikibazo cya reseau hamagara kuri seriveri. ufite intereneti?(murandasi)"
+            }
+
+        Http.Timeout ->
+            { english = "The request to the server timed out."
+            , kinyarwanda = Just "Ibyo wasabye kuri seriveri byarengeje igihe."
+            }
+
+        Http.BadUrl url ->
+            { english = "URL is not valid: " ++ url
+            , kinyarwanda = Nothing
+            }
+
+        Http.BadStatus response ->
+            { english = "The server indicated the following error:"
+            , kinyarwanda = Just "Aya makosa yagaragaye hamagara kuri seriveri:"
+            }
+
+        Http.BadPayload message response ->
+            { english = "The server responded with data of an unexpected type."
+            , kinyarwanda = Nothing
             }
 
 
