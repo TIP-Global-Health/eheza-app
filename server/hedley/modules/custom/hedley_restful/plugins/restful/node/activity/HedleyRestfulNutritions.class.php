@@ -26,7 +26,7 @@ class HedleyRestfulNutritions extends HedleyRestfulChildActivityBase {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $field_names = [];
+    $field_names = ['field_nutrition_signs'];
 
     foreach ($field_names as $field_name) {
       $public_name = str_replace('field_', '', $field_name);
@@ -34,10 +34,6 @@ class HedleyRestfulNutritions extends HedleyRestfulChildActivityBase {
         'property' => $field_name,
       ];
     }
-
-    $public_fields['nutrition_signs'] = [
-      'property' => 'field_nutrition_signs',
-    ];
 
     return $public_fields;
   }
