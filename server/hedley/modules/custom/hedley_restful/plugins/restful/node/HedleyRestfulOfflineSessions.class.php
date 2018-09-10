@@ -215,6 +215,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     // There will eventually be more of these.
     return [
       'family_planning' => 'family-plannings',
+      'participant_consent' => 'participant-consent',
     ];
   }
 
