@@ -1103,7 +1103,49 @@ function hedley_activity_field_default_field_instances() {
         'summary_rows' => 5,
       ),
       'type' => 'text_textarea_with_summary',
-      'weight' => -4,
+      'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance: 'node-participant_form-field_kinyarwanda_body'.
+  $field_instances['node-participant_form-field_kinyarwanda_body'] = array(
+    'bundle' => 'participant_form',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 3,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_kinyarwanda_body',
+    'label' => 'Kinyarwanda Body',
+    'required' => 0,
+    'settings' => array(
+      'display_summary' => 0,
+      'text_processing' => 1,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'rows' => 20,
+        'summary_rows' => 5,
+      ),
+      'type' => 'text_textarea_with_summary',
+      'weight' => 4,
     ),
   );
 
@@ -1143,7 +1185,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 0,
+      'weight' => 2,
     ),
   );
 
@@ -1183,7 +1225,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => -2,
+      'weight' => 1,
     ),
   );
 
@@ -1669,6 +1711,7 @@ function hedley_activity_field_default_field_instances() {
   t('English Title');
   t('Family Planning');
   t('Height');
+  t('Kinyarwanda Body');
   t('Kinyarwanda Title');
   t('Language');
   t('MUAC');

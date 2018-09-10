@@ -86,6 +86,25 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_float',
   );
 
+  // Exported field_base: 'field_kinyarwanda_body'.
+  $field_bases['field_kinyarwanda_body'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_kinyarwanda_body',
+    'indexes' => array(
+      'format' => array(
+        0 => 'format',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'text',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'text_with_summary',
+  );
+
   // Exported field_base: 'field_language'.
   $field_bases['field_language'] = array(
     'active' => 1,
