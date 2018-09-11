@@ -121,8 +121,8 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'en' => 'en',
-        'rw' => 'rw',
+        'en' => 'English',
+        'rw' => 'Kinyarwanda',
       ),
       'allowed_values_function' => '',
     ),
