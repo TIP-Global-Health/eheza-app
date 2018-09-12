@@ -278,7 +278,6 @@ makeChild test =
     { name = "Test Child"
     , avatarUrl = Nothing
     , motherId = Nothing -- not relevant
-    , siblingId = Nothing -- not used
     , birthDate = addDays -test.daysOld sessionDate
     , gender = Male
     }
