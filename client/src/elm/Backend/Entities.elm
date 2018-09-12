@@ -7,15 +7,15 @@ module Backend.Entities exposing (..)
 
 It's nice to have type-safe IDs for backend entities, but it tends
 to lead to circular imports if you put the ID types in the "usual"
-place alongisde the data-type itself.
+place alongside the data-type itself.
 
-One typical case where the cirular references arise is where a "child"
+One typical case where the circular references arise is where a "child"
 entity has a reference to its "parent". So, for instance:
 
   - the various measurements have a `sessionId` to refer to the session the
     measurement was taken in.
 
-  - but the `OfflineSession` also has a `DictList` of all its measurmeents
+  - but the `OfflineSession` also has a `DictList` of all its measurements
 
 Now, you could imagine avoiding this in one way or another. For instance, you
 could imagine not storing the `sessionId` in the measurement, but instead
@@ -197,6 +197,22 @@ type alias MuacId =
 
 type MuacIdType
     = MuacIdType
+
+
+type alias ParticipantConsentId =
+    EntityId ParticipantConsentIdType
+
+
+type ParticipantConsentIdType
+    = ParticipantConsentIdType
+
+
+type alias ParticipantFormId =
+    EntityId ParticipantFormIdType
+
+
+type ParticipantFormIdType
+    = ParticipantFormIdType
 
 
 type alias PhotoId =

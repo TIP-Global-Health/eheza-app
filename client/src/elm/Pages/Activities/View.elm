@@ -95,6 +95,9 @@ view language session model =
             else
                 Nothing
 
+        _ =
+            Debug.log "Pending" model.selectedTab
+
         ( selectedActivities, emptySectionMessage ) =
             case model.selectedTab of
                 Pending ->
@@ -103,53 +106,53 @@ view language session model =
                 Completed ->
                     ( noPendingActivities, translate language Trans.NoActivitiesCompleted )
     in
-    div
-        [ class "wrap wrap-alt-2" ]
-        [ div
-            [ class "ui basic head segment" ]
-            [ h1
-                [ class "ui header" ]
-                [ text <| translate language Trans.Activities ]
-            , a
-                [ class "link-back"
-                , onClick <| SetRedirectPage <| UserPage <| ClinicsPage <| Just session.offlineSession.session.clinicId
-                ]
-                [ span [ class "icon-back" ] []
-                , span [] []
-                ]
-            , ul [ class "links-head" ]
-                [ li
-                    [ onClick <| SetRedirectPage <| SessionPage AttendancePage ]
-                    [ a [] [ span [ class "icon-completed" ] [] ] ]
-                , li
-                    [ onClick <| SetRedirectPage <| SessionPage ParticipantsPage ]
-                    [ a [] [ span [ class "icon-mother" ] [] ] ]
-                , li
-                    [ class "active" ]
-                    [ a [] [ span [ class "icon-measurements" ] [] ] ]
-                ]
-            ]
-        , tabs
-        , div
-            [ class "ui full segment" ]
+        div
+            [ class "wrap wrap-alt-2" ]
             [ div
-                [ class "full content" ]
-                [ div [ class "wrap-cards" ]
-                    [ div [ class "ui four cards" ] <|
-                        if List.isEmpty selectedActivities then
-                            [ span [] [ text emptySectionMessage ] ]
-                        else
-                            List.map viewCard selectedActivities
+                [ class "ui basic head segment" ]
+                [ h1
+                    [ class "ui header" ]
+                    [ text <| translate language Trans.Activities ]
+                , a
+                    [ class "link-back"
+                    , onClick <| SetRedirectPage <| UserPage <| ClinicsPage <| Just session.offlineSession.session.clinicId
+                    ]
+                    [ span [ class "icon-back" ] []
+                    , span [] []
+                    ]
+                , ul [ class "links-head" ]
+                    [ li
+                        [ onClick <| SetRedirectPage <| SessionPage AttendancePage ]
+                        [ a [] [ span [ class "icon-completed" ] [] ] ]
+                    , li
+                        [ onClick <| SetRedirectPage <| SessionPage ParticipantsPage ]
+                        [ a [] [ span [ class "icon-mother" ] [] ] ]
+                    , li
+                        [ class "active" ]
+                        [ a [] [ span [ class "icon-measurements" ] [] ] ]
                     ]
                 ]
+            , tabs
             , div
-                [ class "actions" ]
-                [ button
-                    [ class "ui fluid primary button"
-                    , onClick <| ShowEndSessionDialog True
+                [ class "ui full segment" ]
+                [ div
+                    [ class "full content" ]
+                    [ div [ class "wrap-cards" ]
+                        [ div [ class "ui four cards" ] <|
+                            if List.isEmpty selectedActivities then
+                                [ span [] [ text emptySectionMessage ] ]
+                            else
+                                List.map viewCard selectedActivities
+                        ]
                     ]
-                    [ text <| translate language Trans.EndSession ]
+                , div
+                    [ class "actions" ]
+                    [ button
+                        [ class "ui fluid primary button"
+                        , onClick <| ShowEndSessionDialog True
+                        ]
+                        [ text <| translate language Trans.EndSession ]
+                    ]
                 ]
+            , viewModal endSessionDialog
             ]
-        , viewModal endSessionDialog
-        ]

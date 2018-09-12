@@ -336,6 +336,11 @@ translationSet trans =
                     , kinyarwanda = Just "Buri mubyeyi agomba kubazwa uburyo bwo kuboneza urubyaro akoresha buri kwezi. Niba umubyeyi akeneye kuboneza urubyaro mwohereze ku kigo nderabuzima k'ubishinzwe"
                     }
 
+                MotherActivity ParticipantConsent ->
+                    { english = "Participant Consent"
+                    , kinyarwanda = Just "Participant Consent in Kinyarwanda"
+                    }
+
                 ChildActivity Counseling ->
                     { english = "Please refer to this list during counseling sessions and ensure that each task has been completed."
                     , kinyarwanda = Nothing
@@ -371,6 +376,11 @@ translationSet trans =
                 MotherActivity FamilyPlanning ->
                     { english = "Which, if any, of the following methods do you use?"
                     , kinyarwanda = Just "Ni ubuhe buryo, niba hari ubuhari, mu buryo bukurikira bwo kuboneza urubyaro ukoresha? Muri ubu buryo bukurikira bwo kuboneza urubyaro, ni ubuhe buryo mukoresha?"
+                    }
+
+                MotherActivity ParticipantConsent ->
+                    { english = "Participant Consent"
+                    , kinyarwanda = Just "Participant Consent in Kinyarwanda"
                     }
 
                 ChildActivity Counseling ->
@@ -410,6 +420,11 @@ translationSet trans =
                     , kinyarwanda = Just "Kuboneza Urubyaro? nticyaza muri raporo yimikurire yumwana"
                     }
 
+                MotherActivity ParticipantConsent ->
+                    { english = "Participant Consent"
+                    , kinyarwanda = Just "Participant Consent in Kinyarwanda"
+                    }
+
                 ChildActivity Counseling ->
                     { english = "Counseling"
                     , kinyarwanda = Nothing
@@ -445,6 +460,11 @@ translationSet trans =
                 MotherActivity FamilyPlanning ->
                     { english = "Family Planning"
                     , kinyarwanda = Just "Kuboneza Urubyaro? nticyaza muri raporo yimikurire yumwana"
+                    }
+
+                MotherActivity ParticipantConsent ->
+                    { english = "Participant Consent"
+                    , kinyarwanda = Just "Participant Consent in Kinyarwanda"
                     }
 
                 ChildActivity Counseling ->
