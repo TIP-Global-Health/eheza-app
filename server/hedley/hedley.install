@@ -31,10 +31,13 @@ function hedley_install() {
 
   // Perform several of the updates that aren't handled in
   // `hedley_standard_install`, and are needed on a fresh install
+  hedley_update_7002();
   hedley_update_7003();
   hedley_update_7004();
   hedley_update_7005();
+  hedley_update_7010();
   hedley_update_7011();
+  hedley_update_7012();
 }
 
 /**
