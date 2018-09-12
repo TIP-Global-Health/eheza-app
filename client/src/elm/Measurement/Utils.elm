@@ -85,6 +85,7 @@ fromMotherMeasurementData data =
             |> currentValue
             |> Maybe.map .value
             |> Maybe.withDefault EverySet.empty
+    , participantConsent = Nothing
     }
 
 

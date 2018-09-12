@@ -101,6 +101,16 @@ type alias FamilyPlanning =
     Measurement MotherId (EverySet FamilyPlanningSign)
 
 
+type alias ParticipantConsent =
+    Measurement MotherId Version
+
+
+{-| This is the identification of the version of the Participant Form signed by the mother.
+-}
+type alias Version =
+    Int
+
+
 type ChildNutritionSign
     = AbdominalDistension
     | Apathy
