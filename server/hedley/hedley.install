@@ -406,3 +406,25 @@ function hedley_update_7013() {
   $content_types = ['counseling_session'];
   hedley_add_nurse_permissions_for_content_type($content_types);
 }
+
+/**
+ * Implements hook_update_N().
+ *
+ * Remove the unused "hedley_examination" and "hedley_group" modules.
+ *
+ */
+function hedley_update_7014() {
+  node_type_delete('examination');
+  node_type_delete('group');
+
+  $modules = [
+    'hedley_group',
+    'hedley_examination',
+  ];
+
+  module_disable($modules);
+  drupal_uninstall_modules($modules);
+
+  node_types_rebuild();
+  menu_rebuild();
+}

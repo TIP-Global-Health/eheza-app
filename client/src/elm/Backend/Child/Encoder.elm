@@ -22,7 +22,6 @@ encodeChild child =
     [ ( "label", string child.name )
     , ( "avatar", maybe string child.avatarUrl )
     , ( "mother", maybe encodeEntityId child.motherId )
-    , ( "sibling", maybe encodeEntityId child.siblingId )
     , ( "date_birth", encodeYYYYMMDD child.birthDate )
     , ( "gender", encodeGender child.gender )
     ]
