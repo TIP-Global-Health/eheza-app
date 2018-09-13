@@ -368,8 +368,8 @@ expectCounselingActivity session childId =
             else
                 Nothing
     in
-        cachedTiming
-            |> Maybe.Extra.orElseLazy checkTiming
+    cachedTiming
+        |> Maybe.Extra.orElseLazy checkTiming
 
 
 {-| Do we expect this activity to be performed in this session for this mother?
@@ -449,9 +449,9 @@ summarizeByActivity session =
                     )
                 |> EveryDict.fromList
     in
-        { children = children
-        , mothers = mothers
-        }
+    { children = children
+    , mothers = mothers
+    }
 
 
 {-| This summarizes our summary, by counting, for the given activity, how many
@@ -533,9 +533,9 @@ summarizeByParticipant session =
                 (\motherId _ -> summarizeMotherParticipant motherId session)
                 checkedIn.mothers
     in
-        { children = children
-        , mothers = mothers
-        }
+    { children = children
+    , mothers = mothers
+    }
 
 
 {-| This summarizes our summary, by counting how many activities have been
@@ -561,19 +561,19 @@ getActivityCountForMother id mother summary =
                     , completed = 0
                     }
     in
-        List.foldl
-            (\childId accum ->
-                EveryDictList.get childId summary.children
-                    |> Maybe.map
-                        (\activities ->
-                            { pending = accum.pending + List.length activities.pending
-                            , completed = accum.completed + List.length activities.completed
-                            }
-                        )
-                    |> Maybe.withDefault accum
-            )
-            motherCount
-            mother.children
+    List.foldl
+        (\childId accum ->
+            EveryDictList.get childId summary.children
+                |> Maybe.map
+                    (\activities ->
+                        { pending = accum.pending + List.length activities.pending
+                        , completed = accum.completed + List.length activities.completed
+                        }
+                    )
+                |> Maybe.withDefault accum
+        )
+        motherCount
+        mother.children
 
 
 hasCompletedChildActivity : ChildActivity -> MeasurementData ChildMeasurements ChildEdits -> Bool
@@ -660,7 +660,7 @@ motherOrAnyChildHasAnyCompletedActivity motherId session =
                     )
                 |> Maybe.withDefault False
     in
-        motherHasOne || anyChildHasOne
+    motherHasOne || anyChildHasOne
 
 
 {-| Has the mother been marked as checked in?
@@ -680,7 +680,7 @@ motherIsCheckedIn motherId session =
         hasCompletedActivity =
             motherOrAnyChildHasAnyCompletedActivity motherId session
     in
-        explicitlyCheckedIn || hasCompletedActivity
+    explicitlyCheckedIn || hasCompletedActivity
 
 
 setCheckedIn : Bool -> MotherId -> EditableSession -> EditableSession
@@ -727,9 +727,9 @@ getCheckedIn session =
                 )
                 session.offlineSession.children
     in
-        { mothers = mothers
-        , children = children
-        }
+    { mothers = mothers
+    , children = children
+    }
 
 
 {-| Does the mother herself have any completed activity?
@@ -763,4 +763,4 @@ hasAnyCompletedActivity session =
                 |> EveryDictList.toList
                 |> List.any (\( id, _ ) -> motherHasAnyCompletedActivity id session)
     in
-        forChildren || forMothers
+    forChildren || forMothers
