@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulParticipantsConsent.
  */
-class HedleyRestfulParticipantsConsent extends HedleyRestfulChildActivityBase {
+class HedleyRestfulParticipantsConsent extends HedleyRestfulMotherActivityBase {
 
   /**
    * Return the type of the activity.
