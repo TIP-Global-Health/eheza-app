@@ -28,30 +28,12 @@ function hedley_user_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'create examination content'.
-  $permissions['create examination content'] = array(
-    'name' => 'create examination content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'create family_planning content'.
   $permissions['create family_planning content'] = array(
     'name' => 'create family_planning content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'create group content'.
-  $permissions['create group content'] = array(
-    'name' => 'create group content',
-    'roles' => array(
-      'administrator' => 'administrator',
     ),
     'module' => 'node',
   );
@@ -143,27 +125,9 @@ function hedley_user_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'delete any examination content'.
-  $permissions['delete any examination content'] = array(
-    'name' => 'delete any examination content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'delete any family_planning content'.
   $permissions['delete any family_planning content'] = array(
     'name' => 'delete any family_planning content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'delete any group content'.
-  $permissions['delete any group content'] = array(
-    'name' => 'delete any group content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -251,27 +215,9 @@ function hedley_user_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'delete own examination content'.
-  $permissions['delete own examination content'] = array(
-    'name' => 'delete own examination content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'delete own family_planning content'.
   $permissions['delete own family_planning content'] = array(
     'name' => 'delete own family_planning content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'delete own group content'.
-  $permissions['delete own group content'] = array(
-    'name' => 'delete own group content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -359,30 +305,12 @@ function hedley_user_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit any examination content'.
-  $permissions['edit any examination content'] = array(
-    'name' => 'edit any examination content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'edit any family_planning content'.
   $permissions['edit any family_planning content'] = array(
     'name' => 'edit any family_planning content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'edit any group content'.
-  $permissions['edit any group content'] = array(
-    'name' => 'edit any group content',
-    'roles' => array(
-      'administrator' => 'administrator',
     ),
     'module' => 'node',
   );
@@ -474,30 +402,12 @@ function hedley_user_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit own examination content'.
-  $permissions['edit own examination content'] = array(
-    'name' => 'edit own examination content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'edit own family_planning content'.
   $permissions['edit own family_planning content'] = array(
     'name' => 'edit own family_planning content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'edit own group content'.
-  $permissions['edit own group content'] = array(
-    'name' => 'edit own group content',
-    'roles' => array(
-      'administrator' => 'administrator',
     ),
     'module' => 'node',
   );
