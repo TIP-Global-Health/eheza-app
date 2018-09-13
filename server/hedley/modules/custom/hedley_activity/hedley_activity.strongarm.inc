@@ -41,6 +41,20 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_node_participant_consent';
+  $strongarm->value = '1';
+  $export['auto_entitylabel_node_participant_consent'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_node_participant_form';
+  $strongarm->value = '0';
+  $export['auto_entitylabel_node_participant_form'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_node_photo';
   $strongarm->value = '1';
   $export['auto_entitylabel_node_photo'] = $strongarm;
@@ -83,6 +97,20 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_pattern_node_participant_consent';
+  $strongarm->value = '[node:content-type] - [node:field-mother:title] - [node:field-date-measured:custom:Y-m-d] - [node:field-session:nid]';
+  $export['auto_entitylabel_pattern_node_participant_consent'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_pattern_node_participant_form';
+  $strongarm->value = '[node:content-type] - [node:nid]';
+  $export['auto_entitylabel_pattern_node_participant_form'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_pattern_node_photo';
   $strongarm->value = '[node:content-type] - [node:field-child:title] - [node:field-date-measured:custom:Y-m-d] - [node:field-session:nid]';
   $export['auto_entitylabel_pattern_node_photo'] = $strongarm;
@@ -121,6 +149,20 @@ function hedley_activity_strongarm() {
   $strongarm->name = 'auto_entitylabel_php_node_nutrition';
   $strongarm->value = 0;
   $export['auto_entitylabel_php_node_nutrition'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_php_node_participant_consent';
+  $strongarm->value = 0;
+  $export['auto_entitylabel_php_node_participant_consent'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_php_node_participant_form';
+  $strongarm->value = 0;
+  $export['auto_entitylabel_php_node_participant_form'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
