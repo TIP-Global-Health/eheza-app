@@ -223,13 +223,13 @@ viewFloatForm config language currentDate child measurements zscores model =
                                     |> Maybe.map viewZScore
                                     |> Maybe.withDefault (translate language Trans.NotAvailable)
                         in
-                            div
-                                [ class "ui large header z-score age" ]
-                                [ text <| translate language config.zScoreLabelForAge
-                                , span
-                                    [ class "sub header" ]
-                                    [ text zScoreText ]
-                                ]
+                        div
+                            [ class "ui large header z-score age" ]
+                            [ text <| translate language config.zScoreLabelForAge
+                            , span
+                                [ class "sub header" ]
+                                [ text zScoreText ]
+                            ]
                     )
 
         -- In some cases (weight) we also calculate a ZScore based on the
@@ -258,63 +258,63 @@ viewFloatForm config language currentDate child measurements zscores model =
                                     |> Maybe.map viewZScore
                                     |> Maybe.withDefault (translate language Trans.NotAvailable)
                         in
-                            div
-                                [ class "ui large header z-score height" ]
-                                [ text <| translate language Trans.ZScoreWeightForHeight
-                                , span
-                                    [ class "sub header" ]
-                                    [ text zScoreText
-                                    ]
+                        div
+                            [ class "ui large header z-score height" ]
+                            [ text <| translate language Trans.ZScoreWeightForHeight
+                            , span
+                                [ class "sub header" ]
+                                [ text zScoreText
                                 ]
+                            ]
                     )
     in
-        div
-            [ class <| "ui full segment " ++ config.blockName ]
-            [ div [ class "content" ]
-                [ h3
-                    [ class "ui header" ]
-                    [ text <| translate language (Trans.ActivitiesTitle config.activity)
-                    ]
-                , p
-                    []
-                    [ text <| translate language (Trans.ActivitiesLabel config.activity) ]
-                , div
-                    [ class "ui form" ]
-                    [ div [ class "ui grid" ]
-                        [ div
-                            [ class "eleven wide column" ]
-                            [ div [ class "ui right labeled input" ]
-                                [ input inputAttrs []
-                                , div
-                                    [ class "ui basic label" ]
-                                    [ text <| translate language config.unit ]
-                                ]
-                            ]
-                        , div
-                            [ class "five wide column" ]
-                            [ showMaybe <|
-                                Maybe.map2 (viewFloatDiff config language)
-                                    measurements.previous
-                                    floatValue
-                            , showMaybe <|
-                                Maybe.map2 (\func value -> func language value)
-                                    config.viewIndication
-                                    floatValue
+    div
+        [ class <| "ui full segment " ++ config.blockName ]
+        [ div [ class "content" ]
+            [ h3
+                [ class "ui header" ]
+                [ text <| translate language (Trans.ActivitiesTitle config.activity)
+                ]
+            , p
+                []
+                [ text <| translate language (Trans.ActivitiesLabel config.activity) ]
+            , div
+                [ class "ui form" ]
+                [ div [ class "ui grid" ]
+                    [ div
+                        [ class "eleven wide column" ]
+                        [ div [ class "ui right labeled input" ]
+                            [ input inputAttrs []
+                            , div
+                                [ class "ui basic label" ]
+                                [ text <| translate language config.unit ]
                             ]
                         ]
-                    , previousMeasurement
-                        |> Maybe.map (viewPreviousMeasurement config language)
-                        |> showMaybe
+                    , div
+                        [ class "five wide column" ]
+                        [ showMaybe <|
+                            Maybe.map2 (viewFloatDiff config language)
+                                measurements.previous
+                                floatValue
+                        , showMaybe <|
+                            Maybe.map2 (\func value -> func language value)
+                                config.viewIndication
+                                floatValue
+                        ]
                     ]
-                , showMaybe renderedZScoreForAge
-                , showMaybe renderedZScoreForHeight
+                , previousMeasurement
+                    |> Maybe.map (viewPreviousMeasurement config language)
+                    |> showMaybe
                 ]
-            , div [ class "actions" ] <|
-                saveButton language
-                    (Maybe.map config.saveMsg floatValue)
-                    measurements
-                    Nothing
+            , showMaybe renderedZScoreForAge
+            , showMaybe renderedZScoreForHeight
             ]
+        , div [ class "actions" ] <|
+            saveButton language
+                (Maybe.map config.saveMsg floatValue)
+                measurements
+                Nothing
+        ]
 
 
 muacColor : MuacIndication -> Attribute any
@@ -389,19 +389,19 @@ viewFloatDiff config language previousValue currentValue =
                     else
                         "down"
             in
-                p
-                    [ class <| "label-with-icon label-form" ]
-                    [ span [ class <| "icon-" ++ classSuffix ] []
-                    , text <| diff ++ " " ++ translate language config.unit
-                    ]
+            p
+                [ class <| "label-with-icon label-form" ]
+                [ span [ class <| "icon-" ++ classSuffix ] []
+                , text <| diff ++ " " ++ translate language config.unit
+                ]
     in
-        if currentValue == previousFloatValue then
-            -- No change in the values.
-            emptyNode
-        else if currentValue > previousFloatValue then
-            viewMessage True
-        else
-            viewMessage False
+    if currentValue == previousFloatValue then
+        -- No change in the values.
+        emptyNode
+    else if currentValue > previousFloatValue then
+        viewMessage True
+    else
+        viewMessage False
 
 
 viewPhoto : Language -> MeasurementData (Maybe Photo) (Edit Photo) -> Maybe PhotoValue -> Html MsgChild
@@ -410,52 +410,52 @@ viewPhoto language measurement photo =
         activity =
             ChildActivity ChildPicture
     in
-        divKeyed
-            [ class "ui full segment photo" ]
-            [ keyedDivKeyed "content"
-                [ class "content" ]
-                [ h3
-                    [ class "ui header" ]
-                    [ text <| translate language (Trans.ActivitiesTitle activity) ]
-                    |> keyed "title"
-                , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
-                    |> keyed "help"
-                , keyedDivKeyed "grid"
-                    [ class "ui grid" ]
-                    [ Maybe.map viewPhotoThumb photo
-                        |> showMaybe
-                        |> List.singleton
-                        |> div [ class "eight wide column" ]
-                        |> keyed "thumbnail"
-                    , div
-                        [ id "dropzone"
-                        , class "eight wide column dropzone"
-                        , on "dropzonecomplete" (Json.Decode.map DropZoneComplete decodeDropZoneFile)
-                        ]
-                        [ div
-                            [ class "dz-message"
-                            , attribute "data-dz-message" ""
-                            ]
-                            [ span
-                                []
-                                [ text <| translate language Trans.DropzoneDefaultMessage ]
-                            ]
-                        ]
-                        |> keyed "dropzone"
-
-                    -- This runs the function from our `app.js` at the precise moment this gets
-                    -- written to the DOM. Isn't that convenient?
-                    , script "bindDropZone()"
-                        |> keyed "script"
+    divKeyed
+        [ class "ui full segment photo" ]
+        [ keyedDivKeyed "content"
+            [ class "content" ]
+            [ h3
+                [ class "ui header" ]
+                [ text <| translate language (Trans.ActivitiesTitle activity) ]
+                |> keyed "title"
+            , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+                |> keyed "help"
+            , keyedDivKeyed "grid"
+                [ class "ui grid" ]
+                [ Maybe.map viewPhotoThumb photo
+                    |> showMaybe
+                    |> List.singleton
+                    |> div [ class "eight wide column" ]
+                    |> keyed "thumbnail"
+                , div
+                    [ id "dropzone"
+                    , class "eight wide column dropzone"
+                    , on "dropzonecomplete" (Json.Decode.map DropZoneComplete decodeDropZoneFile)
                     ]
+                    [ div
+                        [ class "dz-message"
+                        , attribute "data-dz-message" ""
+                        ]
+                        [ span
+                            []
+                            [ text <| translate language Trans.DropzoneDefaultMessage ]
+                        ]
+                    ]
+                    |> keyed "dropzone"
+
+                -- This runs the function from our `app.js` at the precise moment this gets
+                -- written to the DOM. Isn't that convenient?
+                , script "bindDropZone()"
+                    |> keyed "script"
                 ]
-            , keyed "button" <|
-                div [ class "actions" ] <|
-                    saveButton language
-                        (Maybe.map (SendOutMsgChild << SavePhoto) photo)
-                        measurement
-                        (Just "column")
             ]
+        , keyed "button" <|
+            div [ class "actions" ] <|
+                saveButton language
+                    (Maybe.map (SendOutMsgChild << SavePhoto) photo)
+                    measurement
+                    (Just "column")
+        ]
 
 
 {-| Helper function to create a Save button.
@@ -486,23 +486,23 @@ saveButton language msg measurement maybeDivClass =
                 Maybe.map onClick msg
                     |> Maybe.Extra.toList
     in
-        [ button
-            ([ classList
-                [ ( "ui fluid primary button", True )
-                , ( "loading", isLoading )
-                , ( "negative", isFailure )
-                , ( "disabled", Maybe.Extra.isNothing msg )
-                ]
-             , id "save-form"
-             ]
-                ++ saveAttr
-            )
-            [ text <| translate language updateText
+    [ button
+        ([ classList
+            [ ( "ui fluid primary button", True )
+            , ( "loading", isLoading )
+            , ( "negative", isFailure )
+            , ( "disabled", Maybe.Extra.isNothing msg )
             ]
-        , [ text <| translate language errorText ]
-            |> div []
-            |> showIf isFailure
+         , id "save-form"
+         ]
+            ++ saveAttr
+        )
+        [ text <| translate language updateText
         ]
+    , [ text <| translate language errorText ]
+        |> div []
+        |> showIf isFailure
+    ]
 
 
 viewNutritionSigns : Language -> MeasurementData (Maybe ChildNutrition) (Edit ChildNutrition) -> EverySet ChildNutritionSign -> Html MsgChild
@@ -517,26 +517,26 @@ viewNutritionSigns language measurement signs =
             else
                 Just <| SendOutMsgChild <| SaveChildNutritionSigns signs
     in
-        div
-            [ class "ui full segment nutrition"
-            , id "nutritionSignsEntryForm"
-            ]
-            [ div [ class "content" ]
-                [ h3 [ class "ui header" ]
-                    [ text <| translate language (Trans.ActivitiesTitle activity)
-                    ]
-                , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
-                , div [ class "ui form" ] <|
-                    p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
-                        :: viewNutritionSignsSelector language signs
+    div
+        [ class "ui full segment nutrition"
+        , id "nutritionSignsEntryForm"
+        ]
+        [ div [ class "content" ]
+            [ h3 [ class "ui header" ]
+                [ text <| translate language (Trans.ActivitiesTitle activity)
                 ]
-            , div [ class "actions" ] <|
-                saveButton
-                    language
-                    saveMsg
-                    measurement
-                    Nothing
+            , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+            , div [ class "ui form" ] <|
+                p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
+                    :: viewNutritionSignsSelector language signs
             ]
+        , div [ class "actions" ] <|
+            saveButton
+                language
+                saveMsg
+                measurement
+                Nothing
+        ]
 
 
 viewNutritionSignsSelector : Language -> EverySet ChildNutritionSign -> List (Html MsgChild)
@@ -548,17 +548,17 @@ viewNutritionSignsSelector language nutritionSigns =
         nutrionSignsAndTranslationIdsSecond =
             [ Apathy, PoorAppetite, BrittleHair ]
     in
-        [ div [ class "ui grid" ]
-            [ nutrionSignsAndTranslationIdsFirst
-                |> List.map (viewNutritionSignsSelectorItem language nutritionSigns)
-                |> div [ class "eight wide column" ]
-            , nutrionSignsAndTranslationIdsSecond
-                |> List.map (viewNutritionSignsSelectorItem language nutritionSigns)
-                |> div [ class "eight wide column" ]
-            ]
-        , div [ class "ui divider" ] []
-        , viewNutritionSignsSelectorItem language nutritionSigns None
+    [ div [ class "ui grid" ]
+        [ nutrionSignsAndTranslationIdsFirst
+            |> List.map (viewNutritionSignsSelectorItem language nutritionSigns)
+            |> div [ class "eight wide column" ]
+        , nutrionSignsAndTranslationIdsSecond
+            |> List.map (viewNutritionSignsSelectorItem language nutritionSigns)
+            |> div [ class "eight wide column" ]
         ]
+    , div [ class "ui divider" ] []
+    , viewNutritionSignsSelectorItem language nutritionSigns None
+    ]
 
 
 {-| Helper function to return a tuples of checkbox label and attributes value.
@@ -576,19 +576,19 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
         isChecked =
             EverySet.member sign nutritionSigns
     in
-        div [ class "ui checkbox activity" ]
-            [ input
-                [ type_ "checkbox"
-                , id inputId
-                , name inputId
-                , onClick <| SelectNutritionSign (not isChecked) sign
-                , checked isChecked
-                , classList [ ( "checked", isChecked ) ]
-                ]
-                []
-            , label [ for inputId ]
-                [ text <| translate language (Trans.ChildNutritionSignLabel sign) ]
+    div [ class "ui checkbox activity" ]
+        [ input
+            [ type_ "checkbox"
+            , id inputId
+            , name inputId
+            , onClick <| SelectNutritionSign (not isChecked) sign
+            , checked isChecked
+            , classList [ ( "checked", isChecked ) ]
             ]
+            []
+        , label [ for inputId ]
+            [ text <| translate language (Trans.ChildNutritionSignLabel sign) ]
+        ]
 
 
 viewCounselingSession : Language -> MeasurementData (Maybe CounselingSession) (Edit CounselingSession) -> EditableSession -> Maybe ( CounselingTiming, EverySet CounselingTopicId ) -> Html MsgChild
@@ -622,28 +622,28 @@ viewCounselingSession language measurement session value =
                         |> EveryDict.get timing
                         |> Maybe.withDefault EveryDictList.empty
             in
-                div
-                    [ class "ui full segment counseling"
-                    , id "counselingSessionEntryForm"
-                    ]
-                    [ div [ class "content" ]
-                        [ h3 [ class "ui header" ]
-                            [ text <| translate language (Trans.ActivitiesTitle activity)
-                            ]
-                        , h3 [ class "ui header" ]
-                            [ text <| translate language (Trans.CounselingTimingHeading timing)
-                            ]
-                        , div [ class "ui form" ] <|
-                            p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
-                                :: viewCounselingTopics language expected topics
+            div
+                [ class "ui full segment counseling"
+                , id "counselingSessionEntryForm"
+                ]
+                [ div [ class "content" ]
+                    [ h3 [ class "ui header" ]
+                        [ text <| translate language (Trans.ActivitiesTitle activity)
                         ]
-                    , div [ class "actions" ] <|
-                        saveButton
-                            language
-                            saveMsg
-                            measurement
-                            Nothing
+                    , h3 [ class "ui header" ]
+                        [ text <| translate language (Trans.CounselingTimingHeading timing)
+                        ]
+                    , div [ class "ui form" ] <|
+                        p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
+                            :: viewCounselingTopics language expected topics
                     ]
+                , div [ class "actions" ] <|
+                    saveButton
+                        language
+                        saveMsg
+                        measurement
+                        Nothing
+                ]
 
 
 viewCounselingTopics : Language -> EveryDictList CounselingTopicId CounselingTopic -> EverySet CounselingTopicId -> List (Html MsgChild)
@@ -658,21 +658,21 @@ viewCounselingTopics language expectedTopics selectedTopics =
                     isChecked =
                         EverySet.member topicId selectedTopics
                 in
-                    div
-                        [ class "ui checkbox activity" ]
-                        [ input
-                            [ type_ "checkbox"
-                            , id inputId
-                            , name inputId
-                            , onClick <| SelectCounselingTopic (not isChecked) topicId
-                            , checked isChecked
-                            , classList [ ( "checked", isChecked ) ]
-                            ]
-                            []
-                        , label
-                            [ for inputId ]
-                            [ text <| translate language (Trans.CounselingTopic topic) ]
+                div
+                    [ class "ui checkbox activity" ]
+                    [ input
+                        [ type_ "checkbox"
+                        , id inputId
+                        , name inputId
+                        , onClick <| SelectCounselingTopic (not isChecked) topicId
+                        , checked isChecked
+                        , classList [ ( "checked", isChecked ) ]
                         ]
+                        []
+                    , label
+                        [ for inputId ]
+                        [ text <| translate language (Trans.CounselingTopic topic) ]
+                    ]
             )
         |> EveryDictList.values
 
@@ -707,26 +707,26 @@ viewFamilyPlanning language measurement signs =
             else
                 Just <| SendOutMsgMother <| SaveFamilyPlanningSigns signs
     in
-        div
-            [ class "ui full segment family-planning"
-            , id "familyPlanningEntryForm"
-            ]
-            [ div [ class "content" ]
-                [ h3
-                    [ class "ui header" ]
-                    [ text <| translate language (Trans.ActivitiesTitle activity)
-                    ]
-                , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
-                , div [ class "ui form" ] <|
-                    p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
-                        :: viewFamilyPlanningSelector language signs
+    div
+        [ class "ui full segment family-planning"
+        , id "familyPlanningEntryForm"
+        ]
+        [ div [ class "content" ]
+            [ h3
+                [ class "ui header" ]
+                [ text <| translate language (Trans.ActivitiesTitle activity)
                 ]
-            , div [ class "actions" ] <|
-                saveButton language
-                    saveMsg
-                    measurement
-                    Nothing
+            , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+            , div [ class "ui form" ] <|
+                p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
+                    :: viewFamilyPlanningSelector language signs
             ]
+        , div [ class "actions" ] <|
+            saveButton language
+                saveMsg
+                measurement
+                Nothing
+        ]
 
 
 viewFamilyPlanningSelector : Language -> EverySet FamilyPlanningSign -> List (Html MsgMother)
@@ -738,17 +738,17 @@ viewFamilyPlanningSelector language familyPlanningSigns =
         familyPlanningSignSecond =
             [ Implant, Injection, Necklace ]
     in
-        [ div [ class "ui grid" ]
-            [ familyPlanningSignFirst
-                |> List.map (viewFamilyPlanningSelectorItem language familyPlanningSigns)
-                |> div [ class "eight wide column" ]
-            , familyPlanningSignSecond
-                |> List.map (viewFamilyPlanningSelectorItem language familyPlanningSigns)
-                |> div [ class "eight wide column" ]
-            ]
-        , div [ class "ui divider" ] []
-        , viewFamilyPlanningSelectorItem language familyPlanningSigns NoFamilyPlanning
+    [ div [ class "ui grid" ]
+        [ familyPlanningSignFirst
+            |> List.map (viewFamilyPlanningSelectorItem language familyPlanningSigns)
+            |> div [ class "eight wide column" ]
+        , familyPlanningSignSecond
+            |> List.map (viewFamilyPlanningSelectorItem language familyPlanningSigns)
+            |> div [ class "eight wide column" ]
         ]
+    , div [ class "ui divider" ] []
+    , viewFamilyPlanningSelectorItem language familyPlanningSigns NoFamilyPlanning
+    ]
 
 
 viewFamilyPlanningSelectorItem : Language -> EverySet FamilyPlanningSign -> FamilyPlanningSign -> Html MsgMother
@@ -760,21 +760,21 @@ viewFamilyPlanningSelectorItem language familyPlanningSigns sign =
         isChecked =
             EverySet.member sign familyPlanningSigns
     in
-        div [ class "ui checkbox activity" ]
-            [ input
-                ([ type_ "checkbox"
-                 , id inputId
-                 , name inputId
-                 , onClick <| SelectFamilyPlanningSign (not isChecked) sign
-                 , checked isChecked
-                 ]
-                    ++ (if isChecked then
-                            [ class "checked" ]
-                        else
-                            []
-                       )
-                )
-                []
-            , label [ for inputId ]
-                [ text <| translate language (Trans.FamilyPlanningSignLabel sign) ]
-            ]
+    div [ class "ui checkbox activity" ]
+        [ input
+            ([ type_ "checkbox"
+             , id inputId
+             , name inputId
+             , onClick <| SelectFamilyPlanningSign (not isChecked) sign
+             , checked isChecked
+             ]
+                ++ (if isChecked then
+                        [ class "checked" ]
+                    else
+                        []
+                   )
+            )
+            []
+        , label [ for inputId ]
+            [ text <| translate language (Trans.FamilyPlanningSignLabel sign) ]
+        ]
