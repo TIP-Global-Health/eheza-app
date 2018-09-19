@@ -386,7 +386,6 @@ viewFloatDiff config language previousValue currentValue =
                 classSuffix =
                     if isGain then
                         "up"
-
                     else
                         "down"
             in
@@ -399,10 +398,8 @@ viewFloatDiff config language previousValue currentValue =
     if currentValue == previousFloatValue then
         -- No change in the values.
         emptyNode
-
     else if currentValue > previousFloatValue then
         viewMessage True
-
     else
         viewMessage False
 
@@ -479,14 +476,12 @@ saveButton language msg measurement maybeDivClass =
         ( updateText, errorText ) =
             if isJust <| applyEdit measurement.edits measurement.current then
                 ( Trans.Update, Trans.UpdateError )
-
             else
                 ( Trans.Save, Trans.SaveError )
 
         saveAttr =
             if isLoading then
                 []
-
             else
                 Maybe.map onClick msg
                     |> Maybe.Extra.toList
@@ -519,7 +514,6 @@ viewNutritionSigns language measurement signs =
         saveMsg =
             if EverySet.isEmpty signs then
                 Nothing
-
             else
                 Just <| SendOutMsgChild <| SaveChildNutritionSigns signs
     in
@@ -626,7 +620,6 @@ viewCounselingSession language measurement session value =
                         SaveCounselingSession timing topics
                             |> SendOutMsgChild
                             |> Just
-
                     else
                         Nothing
 
@@ -657,7 +650,6 @@ viewCounselingSession language measurement session value =
                         , p [] (question 2 Trans.Question2)
                         , p [] (question 3 Trans.Question3)
                         ]
-
                     else
                         []
             in
@@ -743,7 +735,6 @@ viewFamilyPlanning language measurement signs =
         saveMsg =
             if EverySet.isEmpty signs then
                 Nothing
-
             else
                 Just <| SendOutMsgMother <| SaveFamilyPlanningSigns signs
     in
@@ -810,7 +801,6 @@ viewFamilyPlanningSelectorItem language familyPlanningSigns sign =
              ]
                 ++ (if isChecked then
                         [ class "checked" ]
-
                     else
                         []
                    )
