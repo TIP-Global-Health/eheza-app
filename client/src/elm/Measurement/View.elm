@@ -621,22 +621,49 @@ viewCounselingSession language measurement session value =
                     session.offlineSession.everyCounselingSchedule
                         |> EveryDict.get timing
                         |> Maybe.withDefault EveryDictList.empty
+
+                question num phrase =
+                    [ strong []
+                        [ text <| translate language <| Trans.Feedback Trans.Question
+                        , text " "
+                        , text <| toString num
+                        , text ": "
+                        ]
+                    , text <| translate language <| Trans.Feedback phrase
+                    ]
+
+                exitQuestionnaire =
+                    if timing == Exit then
+                        [ h3
+                            [ class "ui header" ]
+                            [ text <| translate language <| Trans.Feedback Trans.FeedbackQuestionnaire
+                            , text ":"
+                            ]
+                        , p [] [ text <| translate language <| Trans.Feedback Trans.PleaseAsk ]
+                        , p [] (question 1 Trans.Question1)
+                        , p [] (question 2 Trans.Question2)
+                        , p [] (question 3 Trans.Question3)
+                        ]
+                    else
+                        []
             in
             div
                 [ class "ui full segment counseling"
                 , id "counselingSessionEntryForm"
                 ]
                 [ div [ class "content" ]
-                    [ h3 [ class "ui header" ]
+                    ([ h3 [ class "ui header" ]
                         [ text <| translate language (Trans.ActivitiesTitle activity)
                         ]
-                    , h3 [ class "ui header" ]
+                     , h3 [ class "ui header" ]
                         [ text <| translate language (Trans.CounselingTimingHeading timing)
                         ]
-                    , div [ class "ui form" ] <|
+                     , div [ class "ui form" ] <|
                         p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
                             :: viewCounselingTopics language expected topics
-                    ]
+                     ]
+                        ++ exitQuestionnaire
+                    )
                 , div [ class "actions" ] <|
                     saveButton
                         language
