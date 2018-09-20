@@ -16,6 +16,7 @@ dependencies[] = strongarm
 dependencies[] = text
 features[ctools][] = strongarm:strongarm:1
 features[features_api][] = api:2
+features[field_base][] = body
 features[field_base][] = field_kinyarwanda_body
 features[field_base][] = field_language
 features[field_base][] = field_participant_form
