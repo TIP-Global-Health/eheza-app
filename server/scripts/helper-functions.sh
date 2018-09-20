@@ -297,10 +297,8 @@ function generate_demo_content {
   # Generating all types of nodes.
   # Hardcoding the list because of the dependencies between them.
   TYPES=(
-    group
     mother
     child
-    examination
     height
     muac
     nutrition

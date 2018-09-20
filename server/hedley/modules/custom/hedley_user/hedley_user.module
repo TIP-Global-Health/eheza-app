@@ -49,5 +49,5 @@ function hedley_user_node_form_access_callback($op, $node) {
   }
 
   // Only admin users have access to the node add or edit Drupal interface.
-  return NODE_ACCESS_DENY;
+  return FALSE;
 }

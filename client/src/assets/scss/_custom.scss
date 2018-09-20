@@ -953,6 +953,7 @@ input::placeholder {
   display: block;
   text-align: center;
   color: $color-text;
+  white-space: normal;
 
   &:hover {
     color: inherit;
