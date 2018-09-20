@@ -338,7 +338,7 @@ translationSet trans =
 
                 MotherActivity ParticipantConsent ->
                     { english = "Participant Consent"
-                    , kinyarwanda = Just "Participant Consent in Kinyarwanda"
+                    , kinyarwanda = Nothing
                     }
 
                 ChildActivity Counseling ->
@@ -380,7 +380,7 @@ translationSet trans =
 
                 MotherActivity ParticipantConsent ->
                     { english = "Participant Consent"
-                    , kinyarwanda = Just "Participant Consent in Kinyarwanda"
+                    , kinyarwanda = Nothing
                     }
 
                 ChildActivity Counseling ->
@@ -422,7 +422,7 @@ translationSet trans =
 
                 MotherActivity ParticipantConsent ->
                     { english = "Participant Consent"
-                    , kinyarwanda = Just "Participant Consent in Kinyarwanda"
+                    , kinyarwanda = Nothing
                     }
 
                 ChildActivity Counseling ->
@@ -464,7 +464,7 @@ translationSet trans =
 
                 MotherActivity ParticipantConsent ->
                     { english = "Participant Consent"
-                    , kinyarwanda = Just "Participant Consent in Kinyarwanda"
+                    , kinyarwanda = Just Nothing
                     }
 
                 ChildActivity Counseling ->
