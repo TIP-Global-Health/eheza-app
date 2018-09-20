@@ -38,6 +38,7 @@ function hedley_install() {
   hedley_update_7010();
   hedley_update_7011();
   hedley_update_7012();
+  hedley_update_7015();
 }
 
 /**
@@ -440,4 +441,15 @@ function hedley_update_7014() {
 
   node_types_rebuild();
   menu_rebuild();
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Enable the hedley_forms module.
+ *
+ */
+function hedley_update_7015() {
+  $modules = ['hedley_forms'];
+  module_enable($modules);
 }
