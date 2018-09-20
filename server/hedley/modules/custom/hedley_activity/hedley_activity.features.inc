@@ -50,22 +50,6 @@ function hedley_activity_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
-    'participant_consent' => array(
-      'name' => t('Participant consent'),
-      'base' => 'node_content',
-      'description' => '',
-      'has_title' => '1',
-      'title_label' => t('Title'),
-      'help' => '',
-    ),
-    'participant_form' => array(
-      'name' => t('Participant form'),
-      'base' => 'node_content',
-      'description' => '',
-      'has_title' => '1',
-      'title_label' => t('Title'),
-      'help' => '',
-    ),
     'photo' => array(
       'name' => t('Photo'),
       'base' => 'node_content',
