@@ -16,7 +16,6 @@ type alias Child =
     { name : String
     , avatarUrl : Maybe String
     , motherId : Maybe MotherId
-    , siblingId : Maybe ChildId
     , birthDate : NominalDate
     , gender : Gender
     }

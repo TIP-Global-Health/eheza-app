@@ -31,10 +31,13 @@ function hedley_install() {
 
   // Perform several of the updates that aren't handled in
   // `hedley_standard_install`, and are needed on a fresh install
+  hedley_update_7002();
   hedley_update_7003();
   hedley_update_7004();
   hedley_update_7005();
+  hedley_update_7010();
   hedley_update_7011();
+  hedley_update_7012();
 }
 
 /**
@@ -144,6 +147,16 @@ function hedley_standard_install() {
     [
       'module' => 'menu',
       'delta' => 'menu-ihangane-admin-menu',
+      'theme' => $default_theme,
+      'status' => 0,
+      'weight' => 0,
+      'region' => 'sidebar_first',
+      'pages' => '',
+      'cache' => -1,
+    ],
+    [
+      'module' => 'hedley_admin',
+      'delta' => 'ihangane_sidebar_menu',
       'theme' => $default_theme,
       'status' => 1,
       'weight' => 0,
@@ -405,4 +418,26 @@ function hedley_update_7012() {
 function hedley_update_7013() {
   $content_types = ['counseling_session'];
   hedley_add_nurse_permissions_for_content_type($content_types);
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Remove the unused "hedley_examination" and "hedley_group" modules.
+ *
+ */
+function hedley_update_7014() {
+  node_type_delete('examination');
+  node_type_delete('group');
+
+  $modules = [
+    'hedley_group',
+    'hedley_examination',
+  ];
+
+  module_disable($modules);
+  drupal_uninstall_modules($modules);
+
+  node_types_rebuild();
+  menu_rebuild();
 }
