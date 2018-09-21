@@ -22,14 +22,3 @@ type alias FormBody =
     { raw : String
     , parsed : List Node
     }
-
-
-{-| Models the occasion on which we actually gained consent to
-a form during a session. (These are the specific values in
-addition to the usual `Measurement` values).
--}
-type alias ParticipantConsent =
-    { witness : UserId
-    , language : Language
-    , formId : ParticipantFormId
-    }

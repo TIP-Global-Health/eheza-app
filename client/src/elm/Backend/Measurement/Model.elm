@@ -10,6 +10,8 @@ import EveryDict exposing (EveryDict)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
+import Translate.Model exposing (Language)
+import User.Model exposing (UserId)
 
 
 -- GENERAL CASE
@@ -102,13 +104,14 @@ type alias FamilyPlanning =
 
 
 type alias ParticipantConsent =
-    Measurement MotherId Version
+    Measurement MotherId ParticipantConsentValue
 
 
-{-| This is the identification of the version of the Participant Form signed by the mother.
--}
-type alias Version =
-    Int
+type alias ParticipantConsentValue =
+    { witness : UserId
+    , language : Language
+    , formId : ParticipantFormId
+    }
 
 
 type ChildNutritionSign
