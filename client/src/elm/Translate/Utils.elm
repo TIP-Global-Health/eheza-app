@@ -6,6 +6,8 @@ Actual translations can be found in `Translate.elm`
 
 -}
 
+import Json.Decode exposing (Decoder, fail, succeed)
+import Json.Encode exposing (Value)
 import Translate.Model exposing (..)
 
 
@@ -58,3 +60,22 @@ languageToCode lang =
 
         Kinyarwanda ->
             "rw"
+
+
+decodeLanguage : Decoder Language
+decodeLanguage =
+    Json.Decode.string
+        |> Json.Decode.andThen
+            (\s ->
+                case languageFromCode s of
+                    Ok language ->
+                        succeed language
+
+                    Err err ->
+                        fail err
+            )
+
+
+encodeLanguage : Language -> Value
+encodeLanguage =
+    languageToCode >> Json.Encode.string

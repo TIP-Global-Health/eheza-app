@@ -8,6 +8,7 @@ import Gizra.NominalDate
 import Json.Encode as Encoder exposing (Value, bool, float, int, list, object, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (EntityId(..), encodeEntityId, fromEntityId)
+import Translate.Utils exposing (encodeLanguage)
 
 
 encodeHeight : Height -> List ( String, Value )
@@ -54,6 +55,17 @@ encodeNutrition =
                     |> List.map encodeNutritionSign
                     |> list
               )
+            ]
+        )
+
+
+encodeParticipantConsent : ParticipantConsent -> List ( String, Value )
+encodeParticipantConsent =
+    encodeChildMeasurement
+        (\consent ->
+            [ ( "witness", string consent.witness )
+            , ( "language", encodeLanguage consent.language )
+            , ( "participant_form", encodeEntityId consent.formId )
             ]
         )
 
@@ -197,6 +209,11 @@ encodeMotherEdits : MotherEdits -> Value
 encodeMotherEdits edits =
     object
         [ ( "family_planning", encodeEdit (object << encodeFamilyPlanning) edits.familyPlanning )
+        , ( "participant_consent"
+          , edits.consent
+                |> List.map (encodeEdit (object << encodeParticipantConsent))
+                |> list
+          )
         , ( "checked_in", bool edits.explicitlyCheckedIn )
         ]
 
@@ -284,6 +301,11 @@ encodeMotherMeasurementList measurements =
         [ ( "family_planning"
           , measurements.familyPlannings
                 |> List.map (encodeEntity encodeFamilyPlanning)
+                |> list
+          )
+        , ( "participant_consent"
+          , measurements.consents
+                |> List.map (encodeEntity encodeParticipantConsent)
                 |> list
           )
         ]

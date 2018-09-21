@@ -134,12 +134,19 @@ splitMotherMeasurements sessionId =
             let
                 familyPlanning =
                     getCurrentAndPrevious sessionId list.familyPlannings
+
+                consent =
+                    getCurrentAndPrevious sessionId list.consents
             in
             { current =
-                { familyPlanning = familyPlanning.current
+                { familyPlanning = List.head familyPlanning.current
+                , consent = consent.current
                 }
             , previous =
+                -- We don't "compare" consents, so previous doesn't mean
+                -- anything for it.
                 { familyPlanning = familyPlanning.previous
+                , consent = []
                 }
             }
         )
@@ -169,12 +176,13 @@ splitChildMeasurements sessionId =
                     getCurrentAndPrevious sessionId list.counselingSessions
             in
             { current =
-                { height = height.current
-                , weight = weight.current
-                , muac = muac.current
-                , nutrition = nutrition.current
-                , photo = photo.current
-                , counselingSession = counselingSession.current
+                -- We can only have one per session ... we enforce that here.
+                { height = List.head height.current
+                , weight = List.head weight.current
+                , muac = List.head muac.current
+                , nutrition = List.head nutrition.current
+                , photo = List.head photo.current
+                , counselingSession = List.head counselingSession.current
                 }
             , previous =
                 { height = height.previous
@@ -188,9 +196,9 @@ splitChildMeasurements sessionId =
         )
 
 
-{-| Picks out a current and previous value from a list of measurements.
+{-| Picks out current and previous values from a list of measurements.
 -}
-getCurrentAndPrevious : SessionId -> List ( id, Measurement a b ) -> { current : Maybe ( id, Measurement a b ), previous : Maybe ( id, Measurement a b ) }
+getCurrentAndPrevious : SessionId -> List ( id, Measurement a b ) -> { current : List ( id, Measurement a b ), previous : Maybe ( id, Measurement a b ) }
 getCurrentAndPrevious sessionId =
     let
         -- This is designed to iterate through each list only once, to get both
@@ -198,7 +206,7 @@ getCurrentAndPrevious sessionId =
         go measurement acc =
             if .sessionId (Tuple.second measurement) == Just sessionId then
                 -- If it's got our session ID, then it's current
-                { acc | current = Just measurement }
+                { acc | current = measurement :: acc.current }
             else
                 case acc.previous of
                     -- Otherwise, it might be previous
@@ -212,7 +220,7 @@ getCurrentAndPrevious sessionId =
                             acc
     in
     List.foldl go
-        { current = Nothing
+        { current = []
         , previous = Nothing
         }
 

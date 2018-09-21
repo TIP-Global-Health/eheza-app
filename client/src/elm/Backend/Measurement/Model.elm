@@ -166,12 +166,14 @@ of a specialized type (rather than a single list with a tagged type).
 -}
 type alias MotherMeasurementList =
     { familyPlannings : List ( FamilyPlanningId, FamilyPlanning )
+    , consents : List ( ParticipantConsentId, ParticipantConsent )
     }
 
 
 emptyMotherMeasurementList : MotherMeasurementList
 emptyMotherMeasurementList =
     { familyPlannings = []
+    , consents = []
     }
 
 
@@ -225,9 +227,11 @@ emptyHistoricalMeasurements =
 
 
 {-| This is like `ChildMeasurementList`, except that it just covers one
-of each kind of measurements (rather than a list of each kind). So, it
-is the type you'd use if you wanted to apply a `List.head` to everything
-in `ChildMeasurementList`, for instance.
+of each kind of measurements (rather than a list of each kind).
+
+So, this is the type you'd use for the measurements for a child for
+a particular session.
+
 -}
 type alias ChildMeasurements =
     { height : Maybe ( HeightId, Height )
@@ -251,15 +255,21 @@ emptyChildMeasurements =
 
 
 {-| Like `ChildMeasurements`, but for mothers.
+
+Note that for `consent`, we could have multiple consents in the same session.
+So, it is a `List` (possibly empty) rather than a `Maybe`.
+
 -}
 type alias MotherMeasurements =
     { familyPlanning : Maybe ( FamilyPlanningId, FamilyPlanning )
+    , consent : List ( ParticipantConsentId, ParticipantConsent )
     }
 
 
 emptyMotherMeasurements : MotherMeasurements
 emptyMotherMeasurements =
     { familyPlanning = Nothing
+    , consent = []
     }
 
 
@@ -314,9 +324,14 @@ But see the `isCheckedIn` function in `Activity.Utils`, which also checks whethe
 the mother is **implicitly** checked in, because she or a child has a completed
 activity.
 
+`consent` is a List, because we can have more than one consent in a session.
+This is unlike, say, familyPlanning, where we'd only have one recorded for
+each session.
+
 -}
 type alias MotherEdits =
     { familyPlanning : Edit FamilyPlanning
+    , consent : List (Edit ParticipantConsent)
     , explicitlyCheckedIn : Bool
     }
 
@@ -324,6 +339,7 @@ type alias MotherEdits =
 emptyMotherEdits : MotherEdits
 emptyMotherEdits =
     { familyPlanning = Unedited
+    , consent = []
     , explicitlyCheckedIn = False
     }
 

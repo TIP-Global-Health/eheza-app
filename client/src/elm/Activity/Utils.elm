@@ -378,18 +378,23 @@ whether we would expect to perform this action if checked in.
 -}
 expectMotherActivity : EditableSession -> MotherId -> MotherActivity -> Bool
 expectMotherActivity session motherId activity =
-    -- The activity is unused for now, but will probably be used later, so I've
-    -- structured it this way from the beginning.  For now, all activities are
-    -- expected for "mothers" and none for "caregivers"
     getMother motherId session.offlineSession
         |> Maybe.map
             (\mother ->
-                case mother.relation of
-                    MotherRelation ->
-                        True
+                case activity of
+                    FamilyPlanning ->
+                        case mother.relation of
+                            MotherRelation ->
+                                True
 
-                    CaregiverRelation ->
-                        False
+                            CaregiverRelation ->
+                                False
+
+                    ParticipantConsent ->
+                        -- TODO: Actually write the logic for this ... depends on
+                        -- whether we have all the required consents already, so
+                        -- something like `expectCounselingActivity` except simpler.
+                        True
             )
         |> Maybe.withDefault False
 
@@ -415,6 +420,12 @@ the activity is expected.
 -}
 summarizeMotherActivity : MotherActivity -> EditableSession -> CompletedAndPending (EveryDictList MotherId Mother)
 summarizeMotherActivity activity session =
+    -- TODO: Need to account for the fact that for ParticipantConsent, we can
+    -- be "partly" completed ... we could have one form finished but another
+    -- form required. May require an adjustment to the data model. It may be
+    -- easiest to only consider the consent activity completed when **all**
+    -- the required consents are completed. Until then, we could indicate on
+    -- the "Todo" tab that an individual consent is completed.
     getCheckedIn session
         |> .mothers
         |> EveryDictList.filter (\motherId _ -> expectMotherActivity session motherId activity)
@@ -611,6 +622,8 @@ hasCompletedMotherActivity activityType measurements =
             isCompleted measurements.edits.familyPlanning (Maybe.map Tuple.second measurements.current.familyPlanning)
 
         ParticipantConsent ->
+            -- TODO: Implement this. Probably easiest to consider it completed
+            -- only when all required forms are copmleted.
             True
 
 
