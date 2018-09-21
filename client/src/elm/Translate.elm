@@ -474,7 +474,7 @@ translationSet trans =
 
                 MotherActivity ParticipantConsent ->
                     { english = "Participant Consent"
-                    , kinyarwanda = Just Nothing
+                    , kinyarwanda = Nothing
                     }
 
                 ChildActivity Counseling ->
