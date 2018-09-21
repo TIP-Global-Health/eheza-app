@@ -1,5 +1,9 @@
 module Translate exposing (..)
 
+{-| This module has just the translations ... for types and
+general utilities, see `Translate.Model` and `Translate.Utils`.
+-}
+
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import Backend.Child.Model exposing (Gender(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
@@ -12,80 +16,30 @@ import Http
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (fromEntityId)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
+import Translate.Model exposing (TranslationSet)
+import Translate.Utils exposing (..)
 
 
-type Language
-    = English
-    | Kinyarwanda
+{-| We re-export this one for convenience, so you don't have to import
+`Translate.Model` in simple cases. That is, you can do this, which will be
+enough for most "view" modules:
 
+    import Translate exposing (translate, Language)
 
-allLanguages : List Language
-allLanguages =
-    [ English
-    , Kinyarwanda
-    ]
+Note that importing `Language` from here gives you only the type, not the
+constructors. For more complex cases, where you need `English` and
+`Kinyarwanda` as well, you have to do this instead:
 
+    import Translate.Model exposing (Language(..))
 
-type alias TranslationSet a =
-    { english : a
-    , kinyarwanda : Maybe a
-    }
+-}
+type alias Language =
+    Translate.Model.Language
 
 
 translate : Language -> TranslationId -> String
 translate lang trans =
     selectLanguage lang (translationSet trans)
-
-
-selectLanguage : Language -> TranslationSet a -> a
-selectLanguage lang set =
-    case lang of
-        English ->
-            set.english
-
-        Kinyarwanda ->
-            case set.kinyarwanda of
-                Just trans ->
-                    trans
-
-                Nothing ->
-                    set.english
-
-
-languageFromString : String -> Result String Language
-languageFromString str =
-    case str of
-        "English" ->
-            Ok English
-
-        "Kinyarwanda" ->
-            Ok Kinyarwanda
-
-        _ ->
-            Err "Not a language"
-
-
-languageFromCode : String -> Result String Language
-languageFromCode str =
-    case str of
-        "en" ->
-            Ok English
-
-        "rw" ->
-            Ok Kinyarwanda
-
-        _ ->
-            Err "Not a language"
-
-
-languageToCode : Language -> String
-languageToCode lang =
-    case lang of
-        English ->
-            "en"
-
-        Kinyarwanda ->
-            "rw"
 
 
 type LoginPhrase

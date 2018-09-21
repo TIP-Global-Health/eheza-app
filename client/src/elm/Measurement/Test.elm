@@ -13,7 +13,7 @@ import Restful.Endpoint exposing (toEntityId)
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
 import Test.Html.Selector as Selector exposing (class, classes, id, tag, text)
-import Translate exposing (..)
+import Translate.Model exposing (Language(..))
 
 
 viewChildFormsTest : Test

@@ -27,7 +27,7 @@ import Measurement.Utils exposing (..)
 import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Restful.Endpoint exposing (fromEntityId)
 import Round
-import Translate as Trans exposing (Language(..), TranslationId, translate)
+import Translate as Trans exposing (Language, TranslationId, translate)
 import Utils.Html exposing (script)
 import Utils.NominalDate exposing (Days(..), diffDays)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)

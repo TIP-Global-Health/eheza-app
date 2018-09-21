@@ -25,7 +25,8 @@ import ServiceWorker.Model
 import ServiceWorker.Update
 import Task
 import Time exposing (minute)
-import Translate exposing (Language(..), languageFromCode, languageToCode)
+import Translate.Model exposing (Language(..))
+import Translate.Utils exposing (languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
 import User.Decoder exposing (decodeUser)
 import User.Encoder exposing (encodeUser)

@@ -14,7 +14,8 @@ import Pages.PageNotFound.View
 import Pages.View exposing (viewFoundSession)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Login as RL
-import Translate exposing (Language(..), translate)
+import Translate exposing (Language, translate)
+import Translate.Model exposing (Language(..))
 import User.Model exposing (User)
 import Utils.Html exposing (spinner, wrapPage)
 import Utils.WebData exposing (viewError)
