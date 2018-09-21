@@ -152,7 +152,7 @@ getActivityIcon activity =
                     "planning"
 
                 ParticipantConsent ->
-                    "participant-consent"
+                    "forms"
 
 
 getAllActivities : List Activity

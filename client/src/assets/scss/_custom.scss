@@ -393,6 +393,10 @@ h3.ui.header {
   background-image: url(#{$img-path}icon-counseling-active.svg);
 }
 
+.icon-task-forms {
+  background-image: url(#{$img-path}icon-forms-active.svg);
+}
+
 .icon-task-muac {
   background-image: url(#{$img-path}icon-muac-active.svg);
   background-size: 80px 73px;
@@ -561,6 +565,10 @@ h3.ui.header {
 
 .icon-item-counseling {
   background-image: url(#{$img-path}icon-counseling-blue.svg);
+}
+
+.icon-item-forms {
+  background-image: url(#{$img-path}icon-forms-blue.svg);
 }
 
 .icon-item-muac {
@@ -1026,6 +1034,16 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-counseling.svg);
+  }
+}
+
+.icon-forms {
+  .active &:after {
+    background-image: url(#{$img-path}icon-forms-active.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-forms.svg);
   }
 }
 
