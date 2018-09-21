@@ -301,7 +301,7 @@ translationSet trans =
                     }
 
                 MotherActivity ParticipantConsent ->
-                    { english = "Participant Consent"
+                    { english = "Please review the following forms with the participant."
                     , kinyarwanda = Nothing
                     }
 
@@ -343,7 +343,7 @@ translationSet trans =
                     }
 
                 MotherActivity ParticipantConsent ->
-                    { english = "Participant Consent"
+                    { english = "Forms:"
                     , kinyarwanda = Nothing
                     }
 
@@ -385,7 +385,7 @@ translationSet trans =
                     }
 
                 MotherActivity ParticipantConsent ->
-                    { english = "Participant Consent"
+                    { english = "Forms"
                     , kinyarwanda = Nothing
                     }
 
@@ -427,7 +427,7 @@ translationSet trans =
                     }
 
                 MotherActivity ParticipantConsent ->
-                    { english = "Participant Consent"
+                    { english = "Forms"
                     , kinyarwanda = Nothing
                     }
 
