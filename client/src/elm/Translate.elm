@@ -26,9 +26,9 @@ allLanguages =
     ]
 
 
-type alias TranslationSet =
-    { english : String
-    , kinyarwanda : Maybe String
+type alias TranslationSet a =
+    { english : a
+    , kinyarwanda : Maybe a
     }
 
 
@@ -37,7 +37,7 @@ translate lang trans =
     selectLanguage lang (translationSet trans)
 
 
-selectLanguage : Language -> TranslationSet -> String
+selectLanguage : Language -> TranslationSet a -> a
 selectLanguage lang set =
     case lang of
         English ->
@@ -311,7 +311,7 @@ type TranslationId
     | ZScoreWeightForHeight
 
 
-translationSet : TranslationId -> TranslationSet
+translationSet : TranslationId -> TranslationSet String
 translationSet trans =
     case trans of
         AccessDenied ->
@@ -1453,7 +1453,7 @@ translationSet trans =
             }
 
 
-translateActivePage : Page -> TranslationSet
+translateActivePage : Page -> TranslationSet String
 translateActivePage page =
     case page of
         LoginPage ->
@@ -1521,7 +1521,7 @@ translateActivePage page =
                     }
 
 
-translateFeedback : Feedback -> TranslationSet
+translateFeedback : Feedback -> TranslationSet String
 translateFeedback feedback =
     case feedback of
         FeedbackQuestionnaire ->
@@ -1555,7 +1555,7 @@ translateFeedback feedback =
             }
 
 
-translateCounselingTimingHeading : CounselingTiming -> TranslationSet
+translateCounselingTimingHeading : CounselingTiming -> TranslationSet String
 translateCounselingTimingHeading timing =
     case timing of
         Entry ->
@@ -1584,7 +1584,7 @@ translateCounselingTimingHeading timing =
             }
 
 
-translateChartPhrase : ChartPhrase -> TranslationSet
+translateChartPhrase : ChartPhrase -> TranslationSet String
 translateChartPhrase phrase =
     case phrase of
         AgeCompletedMonthsYears ->
@@ -1663,7 +1663,7 @@ translateChartPhrase phrase =
             }
 
 
-translateLoginPhrase : LoginPhrase -> TranslationSet
+translateLoginPhrase : LoginPhrase -> TranslationSet String
 translateLoginPhrase phrase =
     case phrase of
         CheckingCachedCredentials ->
@@ -1747,7 +1747,7 @@ translateLoginPhrase phrase =
             }
 
 
-translateMonth : Month -> TranslationSet
+translateMonth : Month -> TranslationSet String
 translateMonth month =
     case month of
         Jan ->
@@ -1811,7 +1811,7 @@ translateMonth month =
             }
 
 
-translateHttpError : Http.Error -> TranslationSet
+translateHttpError : Http.Error -> TranslationSet String
 translateHttpError error =
     case error of
         Http.NetworkError ->
@@ -1840,7 +1840,7 @@ translateHttpError error =
             }
 
 
-translateValidationError : ValidationError -> TranslationSet
+translateValidationError : ValidationError -> TranslationSet String
 translateValidationError id =
     case id of
         UnknownClinic ->
@@ -1849,7 +1849,7 @@ translateValidationError id =
             }
 
 
-translateFormError : ErrorValue ValidationError -> TranslationSet
+translateFormError : ErrorValue ValidationError -> TranslationSet String
 translateFormError error =
     case error of
         Empty ->
@@ -1934,7 +1934,7 @@ translateFormError error =
 {-| This one is hampered by the fact that the field names in etaque/elm-form
 are untyped strings, but we do our best.
 -}
-translateFormField : String -> TranslationSet
+translateFormField : String -> TranslationSet String
 translateFormField field =
     case field of
         "clinic_id" ->
