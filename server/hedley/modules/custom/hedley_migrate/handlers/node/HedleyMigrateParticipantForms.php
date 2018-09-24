@@ -59,11 +59,13 @@ class HedleyMigrateParticipantForms extends XMLMigration {
 
     $this
       ->addFieldMapping('title', 'title')
-      ->xpath('title');
+      ->xpath('title')
+      ->callbacks('trim');
 
     $this
       ->addFieldMapping('field_kinyarwanda_title', 'kinyarwanda_title')
-      ->xpath('kinyarwanda_title');
+      ->xpath('kinyarwanda_title')
+      ->callbacks('trim');
 
     $this
       ->addFieldMapping('body', 'body')
