@@ -4,7 +4,11 @@
         <title>
             Participant’s Rights and Responsibilities Form
         </title>
-        <kinyarwanda_title></kinyarwanda_title>
+
+        <kinyarwanda_title>
+
+        </kinyarwanda_title>
+
         <body>
             <p>
                 As a participant in the NHI program, it is my responsibility to:
@@ -89,8 +93,9 @@
                 </li>
             </ul>
         </body>
+
         <kinyarwanda_body>
+
         </kinyarwanda_body>
     </form>
 </forms>
-    

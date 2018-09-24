@@ -74,7 +74,50 @@ class HedleyMigrateParticipantForms extends XMLMigration {
     $this
       ->addFieldMapping('field_kinyarwanda_body', 'kinyarwanda_body')
       ->xpath('kinyarwanda_body');
+  }
 
+  /**
+   * Prepare XML item.
+   *
+   * We take the <body> and <kinyarwanda_body> elements and convert them to
+   * strings which represent their HTML content.
+   *
+   * @return bool
+   *   Whether to use this item.
+   */
+  public function prepareRow($row) {
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
+
+    // The `asXML` gets the content, and we use str_replace to strip the outer
+    // tags.
+    $body = str_replace(
+      ["<body>", "</body>"],
+      "",
+      $row->xml->body[0]->asXML()
+    );
+
+    $kinyarwanda_body = str_replace(
+      ["<kinyarwanda_body>", "</kinyarwanda_body>"],
+      "",
+      $row->xml->kinyarwanda_body[0]->asXML()
+    );
+
+    unset($row->xml->body);
+    unset($row->xml->kinyarwanda_body);
+
+    $body = trim($body);
+    if ($body) {
+      $row->xml->addChild("body", $body);
+    }
+
+    $kinyarwanda_body = trim($kinyarwanda_body);
+    if ($kinyarwanda_body) {
+      $row->xml->addChild("kinyarwanda_body", $kinyarwanda_body);
+    }
+
+    return TRUE;
   }
 
   /**
