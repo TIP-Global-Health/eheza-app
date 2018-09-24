@@ -17,6 +17,7 @@ function hedley_migrate_migrate_api() {
     'HedleyMigrateCounselingSchedules',
     'HedleyMigrateCounselingSessions',
     'HedleyMigrateCounselingTopics',
+    'HedleyMigrateParticipantForms',
   );
 
   $api['api'] = 2;

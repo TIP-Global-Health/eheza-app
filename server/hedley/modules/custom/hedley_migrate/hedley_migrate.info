@@ -14,3 +14,4 @@ files[] = handlers/node/HedleyMigrateClinics.php
 files[] = handlers/node/HedleyMigrateCounselingSchedules.php
 files[] = handlers/node/HedleyMigrateCounselingSessions.php
 files[] = handlers/node/HedleyMigrateCounselingTopics.php
+files[] = handlers/node/HedleyMigrateParticipantForms.php
