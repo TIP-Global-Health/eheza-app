@@ -17,6 +17,6 @@ export PATH="$HOME/.composer/vendor/bin:$PATH"
 drush @server.local en simpletest -y
 cd "$ROOT_DIR"/server
 php ./www/scripts/run-tests.sh --php "$(which php)" --concurrency 4 --verbose --color --url http://server.local Hedley 2>&1 | tee /tmp/simpletest-result.txt
-grep -E -i "([1-9]+ fail)|(Fatal error)|([1-9]+ exception)" /tmp/simpletest-result.txt && exit 1
+grep -E -i "([1-9]+ fail)|(Fatal error)|([1-9]+ exception)|([0-9]+0 fail)|([0-9]+0 exception)" /tmp/simpletest-result.txt && exit 1
 
 exit 0
