@@ -33,7 +33,11 @@ class HedleyMigrateParticipantForms extends XMLMigration {
     $items_class = new MigrateItemsXML($source_file, $item_xpath, $item_ID_xpath);
     $this->source = new MigrateSourceMultiItems($items_class, $fields);
 
-    $this->destination = new MigrateDestinationNode('participant_form');
+    $options = [
+      'text_format' => 'filtered_html',
+    ];
+
+    $this->destination = new MigrateDestinationNode('participant_form', $options);
 
     $key = [
       'id' => [
