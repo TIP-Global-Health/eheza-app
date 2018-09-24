@@ -4,6 +4,7 @@ module Activity.Utils
         , defaultActivity
         , encodeActivityAsString
         , expectCounselingActivity
+        , expectParticipantConsent
         , getActivityCountForMother
         , getActivityIcon
         , getAllActivities
@@ -36,10 +37,12 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (applyEdit, currentValue, mapMeasurementData)
 import Backend.Mother.Model exposing (ChildrenRelationType(..), Mother)
+import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Session.Model exposing (..)
-import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother, getMotherMeasurementData, getMyMother, mapMotherEdits)
+import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMyMother, mapMotherEdits)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
+import EverySet
 import Gizra.NominalDate exposing (diffDays)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
@@ -391,12 +394,26 @@ expectMotherActivity session motherId activity =
                                 False
 
                     ParticipantConsent ->
-                        -- TODO: Actually write the logic for this ... depends on
-                        -- whether we have all the required consents already, so
-                        -- something like `expectCounselingActivity` except simpler.
-                        True
+                        expectParticipantConsent session motherId
+                            |> EveryDictList.isEmpty
+                            |> not
             )
         |> Maybe.withDefault False
+
+
+{-| Which participant forms would we expect this mother to consent to in this session?
+-}
+expectParticipantConsent : EditableSession -> MotherId -> EveryDictList ParticipantFormId ParticipantForm
+expectParticipantConsent session motherId =
+    let
+        previouslyConsented =
+            getMotherHistoricalMeasurements motherId session.offlineSession
+                |> .consents
+                |> List.map (Tuple.second >> .value >> .formId)
+                |> EverySet.fromList
+    in
+    session.offlineSession.allParticipantForms
+        |> EveryDictList.filter (\id _ -> not (EverySet.member id previouslyConsented))
 
 
 {-| For a particular child activity, figure out which children have completed
@@ -615,22 +632,46 @@ childHasCompletedActivity childId activityType session =
         |> hasCompletedChildActivity activityType
 
 
-hasCompletedMotherActivity : MotherActivity -> MeasurementData MotherMeasurements MotherEdits -> Bool
-hasCompletedMotherActivity activityType measurements =
+hasCompletedMotherActivity : EditableSession -> MotherId -> MotherActivity -> MeasurementData MotherMeasurements MotherEdits -> Bool
+hasCompletedMotherActivity session motherId activityType measurements =
     case activityType of
         FamilyPlanning ->
             isCompleted measurements.edits.familyPlanning (Maybe.map Tuple.second measurements.current.familyPlanning)
 
         ParticipantConsent ->
-            -- TODO: Implement this. Probably easiest to consider it completed
-            -- only when all required forms are copmleted.
-            True
+            let
+                current =
+                    measurements.current.consent
+                        |> List.map (Tuple.second >> .value >> .formId)
+                        |> EverySet.fromList
+
+                withEdits =
+                    List.foldl applyConsentEdit current measurements.edits.consent
+
+                applyConsentEdit edit accum =
+                    case edit of
+                        Unedited ->
+                            accum
+
+                        Created consent ->
+                            EverySet.insert consent.value.formId accum
+
+                        Edited _ ->
+                            -- TODO: In theory, should check for a change in
+                            -- the formId.
+                            accum
+
+                        Deleted consent ->
+                            EverySet.remove consent.value.formId accum
+            in
+            expectParticipantConsent session motherId
+                |> EveryDictList.all (\id _ -> EverySet.member id withEdits)
 
 
 motherHasCompletedActivity : MotherId -> MotherActivity -> EditableSession -> Bool
 motherHasCompletedActivity motherId activityType session =
     getMotherMeasurementData motherId session
-        |> hasCompletedMotherActivity activityType
+        |> hasCompletedMotherActivity session motherId activityType
 
 
 {-| Should some measurement be considered completed? Note that this means that it has
@@ -641,10 +682,10 @@ isCompleted edit =
     applyEdit edit >> isJust
 
 
-hasAnyCompletedMotherActivity : MeasurementData MotherMeasurements MotherEdits -> Bool
-hasAnyCompletedMotherActivity measurements =
+hasAnyCompletedMotherActivity : EditableSession -> MotherId -> MeasurementData MotherMeasurements MotherEdits -> Bool
+hasAnyCompletedMotherActivity session motherId measurements =
     getAllMotherActivities
-        |> List.any (flip hasCompletedMotherActivity measurements)
+        |> List.any (\activity -> hasCompletedMotherActivity session motherId activity measurements)
 
 
 hasAnyCompletedChildActivity : MeasurementData ChildMeasurements ChildEdits -> Bool
@@ -750,7 +791,7 @@ getCheckedIn session =
 motherHasAnyCompletedActivity : MotherId -> EditableSession -> Bool
 motherHasAnyCompletedActivity motherId session =
     getMotherMeasurementData motherId session
-        |> hasAnyCompletedMotherActivity
+        |> hasAnyCompletedMotherActivity session motherId
 
 
 {-| Does the child have any completed activity?

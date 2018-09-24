@@ -3,7 +3,6 @@ module Backend.ParticipantConsent.Decoder exposing (..)
 import Backend.ParticipantConsent.Model exposing (..)
 import HtmlParser exposing (Node)
 import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (..)
 import Translate.Model exposing (TranslationSet)
 
 
@@ -29,4 +28,8 @@ decodeBody =
     in
     map2 go
         (at [ "body", "value" ] string)
-        (at [ "kinyarwanda_body", "value" ] (nullable string))
+        (oneOf
+            [ at [ "kinyarwanda_body", "value" ] (nullable string)
+            , field "kinyarwanda_body" (null Nothing)
+            ]
+        )
