@@ -7,6 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeChildMeasurementList, encodeMotherMeasurementList)
 import Backend.Model exposing (TrainingSessionAction(..), TrainingSessionRequest)
 import Backend.Mother.Encoder exposing (encodeMother)
+import Backend.ParticipantConsent.Encoder exposing (encodeParticipantForm)
 import Backend.Session.Model exposing (..)
 import EveryDict
 import EveryDictList
@@ -56,6 +57,11 @@ encodeOfflineSession offline =
     , ( "all_sessions"
       , EveryDictList.toList offline.allSessions
             |> List.map (\( id, session ) -> object (( "id", encodeEntityId id ) :: encodeSession session))
+            |> list
+      )
+    , ( "participant_forms"
+      , EveryDictList.toList offline.allParticipantForms
+            |> List.map (\( id, form ) -> object (( "id", encodeEntityId id ) :: encodeParticipantForm form))
             |> list
       )
     , ( "counseling_schedule", encodeEveryCounselingSchedule offline.everyCounselingSchedule )

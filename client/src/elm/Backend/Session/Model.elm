@@ -10,6 +10,7 @@ import Backend.Counseling.Model exposing (EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Mother.Model exposing (Mother)
+import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDateRange)
@@ -44,6 +45,7 @@ type alias OfflineSession =
     -- All the sessions for the relevant clinic, sorted by date. We need these
     -- for the progress report.
     , allSessions : EveryDictList SessionId Session
+    , allParticipantForms : EveryDictList ParticipantFormId ParticipantForm
 
     -- Our master list of all the counseling topics, for each timing
     , everyCounselingSchedule : EveryCounselingSchedule

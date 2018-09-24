@@ -10,6 +10,7 @@ import Backend.Measurement.Model exposing (ChildMeasurementList, ChildMeasuremen
 import Backend.Model exposing (TrainingSessionAction(..), TrainingSessionRequest)
 import Backend.Mother.Decoder exposing (decodeMother)
 import Backend.Mother.Model exposing (Mother)
+import Backend.ParticipantConsent.Decoder exposing (decodeParticipantForm)
 import Backend.Session.Model exposing (..)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
@@ -79,6 +80,9 @@ decodeOfflineSession =
                     -- So, we could make this required at some point in the future.
                     |> optional "all_sessions"
                         (EveryDictList.decodeArray2 (field "id" decodeEntityId) decodeSession)
+                        EveryDictList.empty
+                    |> optional "participant_forms"
+                        (EveryDictList.decodeArray2 (field "id" decodeEntityId) decodeParticipantForm)
                         EveryDictList.empty
                     -- Also optional for transitional reasons.
                     |> optional "counseling_schedule" decodeEveryCounselingSchedule EveryDict.empty
