@@ -93,6 +93,10 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       'callback' => [$this, 'renderCounselingSchedule'],
     ];
 
+    $public_fields['participant_forms'] = [
+      'callback' => [$this, 'renderParticipantForms'],
+    ];
+
     return $public_fields;
   }
 

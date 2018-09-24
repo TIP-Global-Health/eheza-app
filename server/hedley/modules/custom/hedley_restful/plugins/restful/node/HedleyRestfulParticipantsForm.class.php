@@ -35,10 +35,6 @@ class HedleyRestfulParticipantsForm extends HedleyRestfulEntityBaseNode {
       ];
     }
 
-    $public_fields['title'] = [
-      'property' => 'title_field',
-    ];
-
     $public_fields['body'] = [
       'property' => 'body',
     ];
