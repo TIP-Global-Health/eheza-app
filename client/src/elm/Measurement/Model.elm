@@ -7,6 +7,7 @@ participant.
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import EveryDict exposing (EveryDict)
 import EverySet exposing (EverySet)
 
 
@@ -44,8 +45,12 @@ type alias ModelChild =
 
 type alias ModelMother =
     { familyPlanningSigns : EverySet FamilyPlanningSign
-    , participantConsent : Maybe ParticipantConsent
+    , participantConsent : EveryDict ParticipantFormId ParticipantFormUI
     }
+
+
+type ParticipantFormUI
+    = ParticipantFormUI
 
 
 type alias FloatInputConstraints =
@@ -113,5 +118,5 @@ emptyModelChild =
 emptyModelMother : ModelMother
 emptyModelMother =
     { familyPlanningSigns = EverySet.empty
-    , participantConsent = Nothing
+    , participantConsent = EveryDict.empty
     }

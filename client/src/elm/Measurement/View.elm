@@ -11,7 +11,7 @@ import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, e
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (applyEdit, mapMeasurementData, muacIndication)
 import Backend.Session.Model exposing (EditableSession)
-import EveryDict
+import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
@@ -726,7 +726,32 @@ viewMother language activity measurements model =
             viewFamilyPlanning language (mapMeasurementData (Maybe.map Tuple.second << .familyPlanning) .familyPlanning measurements) model.familyPlanningSigns
 
         ParticipantConsent ->
-            div [] []
+            viewParticipantConsent language (mapMeasurementData .consent .consent measurements) model.participantConsent
+
+
+viewParticipantConsent : Language -> MeasurementData (List ( ParticipantConsentId, ParticipantConsent )) (List (Edit ParticipantConsent)) -> EveryDict ParticipantFormId ParticipantFormUI -> Html MsgMother
+viewParticipantConsent language measurement ui =
+    let
+        activity =
+            MotherActivity ParticipantConsent
+
+        saveMsg =
+            Nothing
+    in
+    div
+        [ class "ui full segment participant-consent"
+        , id "participantConsentForm"
+        ]
+        [ div [ class "content" ]
+            [ h3
+                [ class "ui header" ]
+                [ text <| translate language (Trans.ActivitiesTitle activity)
+                ]
+            , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+            , div [ class "ui form" ]
+                []
+            ]
+        ]
 
 
 viewFamilyPlanning : Language -> MeasurementData (Maybe FamilyPlanning) (Edit FamilyPlanning) -> EverySet FamilyPlanningSign -> Html MsgMother
