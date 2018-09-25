@@ -128,6 +128,13 @@ type ValidationError
     = UnknownClinic
 
 
+type Adherence
+    = PrescribedAVRs
+    | CorrectDosage
+    | TimeOfDay
+    | Adhering
+
+
 type Feedback
     = FeedbackQuestionnaire
     | Question
@@ -148,6 +155,7 @@ type TranslationId
     | ActivityProgressReport Activity
     | ActivePage Page
     | Admin
+    | Adherence Adherence
     | AgeWord
     | Age Int Int
     | AgeDays Int
@@ -348,7 +356,7 @@ translationSet trans =
 
                 ChildActivity Counseling ->
                     { english = "Please refer to this list during counseling sessions and ensure that each task has been completed."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
                     }
 
                 ChildActivity Height ->
@@ -385,7 +393,7 @@ translationSet trans =
 
                 ChildActivity Counseling ->
                     { english = "Please refer to this list during counseling sessions and ensure that each task has been completed."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
                     }
 
                 ChildActivity Height ->
@@ -422,7 +430,7 @@ translationSet trans =
 
                 ChildActivity Counseling ->
                     { english = "Counseling"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubujyanama"
                     }
 
                 ChildActivity Height ->
@@ -494,6 +502,9 @@ translationSet trans =
 
         ActivePage page ->
             translateActivePage page
+
+        Adherence adherence ->
+            translateAdherence adherence
 
         Age months days ->
             { english = toString months ++ " months " ++ toString days ++ " days"
@@ -1501,12 +1512,36 @@ translateActivePage page =
                     }
 
 
+translateAdherence : Adherence -> TranslationSet
+translateAdherence adherence =
+    case adherence of
+        PrescribedAVRs ->
+            { english = "Ask the mother to name or describe her prescribed AVRs. Can she correctly describe her medication?"
+            , kinyarwanda = Just "Saba umubyeyi kuvuga izina ry’imiti igabanya ubukana bamuhaye. Ese abashije kuyivuga neza?"
+            }
+
+        CorrectDosage ->
+            { english = "Can she tell you the correct dosage?"
+            , kinyarwanda = Just "Yaba abasha kukubwira neza uburyo ayifata?"
+            }
+
+        TimeOfDay ->
+            { english = "Can she tell you the correct time of day to make her ARVs?"
+            , kinyarwanda = Just "Yaba abasha kukubwira amasaha ayifatiraho buri munsi?"
+            }
+
+        Adhering ->
+            { english = "Based on your conversations with her, do you think she is adhering to her ARV regimen?"
+            , kinyarwanda = Just "Ugendeye ku kiganiro mwagiranye, utekereza ko ari gufata imiti ye neza?"
+            }
+
+
 translateFeedback : Feedback -> TranslationSet
 translateFeedback feedback =
     case feedback of
         FeedbackQuestionnaire ->
             { english = "Feedback Questionnaire"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibibazo by’isuzuma"
             }
 
         Question ->
@@ -1516,7 +1551,7 @@ translateFeedback feedback =
 
         PleaseAsk ->
             { english = "Please ask participants exiting the program to provide their feedback in order to help us improve the NHI program."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Saba abarangije porogaramu gutanga amakuru kucyo batekereza cyakosorwa muri porogaramu ya NHI."
             }
 
         Question1 ->
@@ -1555,12 +1590,12 @@ translateCounselingTimingHeading timing =
 
         BeforeMidpoint ->
             { english = "Reminder"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kwibutsa"
             }
 
         BeforeExit ->
             { english = "Reminder"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kwibutsa"
             }
 
 
