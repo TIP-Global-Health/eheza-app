@@ -98,4 +98,75 @@
 
         </kinyarwanda_body>
     </form>
+
+    <form id="grievance_procecdure_1">
+        <title>
+            Prenatal and Post Partum Participant Grievance Procedure
+        </title>
+
+        <kinyarwanda_title>
+
+        </kinyarwanda_title>
+
+        <body>
+            <p>
+                TIP believes in giving participants second chances and in
+                making changes to our program to better serve our participants.
+                The Ihangane Project is dedicated to providing the highest
+                quality of services to our participants. We believe that to
+                accomplish this, we must provide them with a method of
+                addressing issues and/or concerns that cannot be resolved
+                informally between TIP participants and staff.
+            </p>
+
+            <h4>What is a Grievance?</h4>
+
+            <p>
+                A grievance is a formal expression of concern about any
+                particular issue thought to be unjust, unfair or abusive.
+                Filing a grievance means putting in writing anything that
+                you have experienced that you believe was harmful or unfair.
+                You have the right to file a grievance at any time without
+                fear of retaliation.
+            </p>
+
+            <h4>Formal Grievance Procedures</h4>
+
+            <p>
+                <b>Step 1.</b> If for any reason a TIP participant feels
+                she/he has not been treated well or fairly or has not received
+                the service expected, that participant can address their grievance
+                in writing to the Community Health Worker responsible for their case.
+            </p>
+
+            <p>
+                <b>Step 2.</b> Should the participant not receive complete
+                satisfaction after addressing the staff person directly,
+                or if they feel uncomfortable addressing that person,
+                the client is encouraged to address the Hospital Director
+                with their written complaint.
+            </p>
+
+            <p>
+                <b>Step 3.</b> Following this course, should no satisfaction be
+                attained with the Hospital Director, the participant may contact
+                the US-based team via email or by phone.
+            </p>
+
+            <p>
+                <b>Step 4.</b> The participant can expect their grievance to be
+                addressed and resolved in a under one month
+            </p>
+
+            <p>
+                <b>Step 5.</b> Upon final resolution of the grievance issue,
+                the appropriate TIP staff will propose a summary of the issue,
+                ultimate resolution, and the action plan to prevent repeat occurrences.
+            </p>
+        </body>
+
+        <kinyarwanda_body>
+
+        </kinyarwanda_body>
+    </form>
 </forms>
