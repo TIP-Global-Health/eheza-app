@@ -95,9 +95,6 @@ view language session model =
             else
                 Nothing
 
-        _ =
-            Debug.log "Pending" model.selectedTab
-
         ( selectedActivities, emptySectionMessage ) =
             case model.selectedTab of
                 Pending ->
