@@ -1,6 +1,6 @@
 module Measurement.Utils exposing (..)
 
-import Activity.Utils exposing (expectCounselingActivity)
+import Activity.Utils exposing (expectCounselingActivity, expectParticipantConsent)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValue, mapMeasurementData)
@@ -85,9 +85,7 @@ fromMotherMeasurementData data =
             |> currentValue
             |> Maybe.map .value
             |> Maybe.withDefault EverySet.empty
-    , participantConsent =
-        -- TODO: Implement!
-        EveryDict.empty
+    , participantConsent = Nothing
     }
 
 
@@ -102,6 +100,17 @@ getMotherForm motherId session =
         Nothing ->
             getMotherMeasurementData motherId session
                 |> fromMotherMeasurementData
+                |> (\form ->
+                        case form.participantConsent of
+                            Just _ ->
+                                form
+
+                            Nothing ->
+                                { form
+                                    | participantConsent =
+                                        Just { expected = expectParticipantConsent session motherId }
+                                }
+                   )
 
 
 getChildForm : ChildId -> EditableSession -> ModelChild

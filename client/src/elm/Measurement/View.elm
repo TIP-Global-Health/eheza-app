@@ -28,6 +28,7 @@ import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Restful.Endpoint exposing (fromEntityId)
 import Round
 import Translate as Trans exposing (Language, TranslationId, translate)
+import Translate.Utils exposing (selectLanguage)
 import Utils.Html exposing (script)
 import Utils.NominalDate exposing (Days(..), diffDays)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
@@ -729,29 +730,36 @@ viewMother language activity measurements model =
             viewParticipantConsent language (mapMeasurementData .consent .consent measurements) model.participantConsent
 
 
-viewParticipantConsent : Language -> MeasurementData (List ( ParticipantConsentId, ParticipantConsent )) (List (Edit ParticipantConsent)) -> EveryDict ParticipantFormId ParticipantFormUI -> Html MsgMother
+viewParticipantConsent : Language -> MeasurementData (List ( ParticipantConsentId, ParticipantConsent )) (List (Edit ParticipantConsent)) -> Maybe ParticipantFormUI -> Html MsgMother
 viewParticipantConsent language measurement ui =
     let
         activity =
             MotherActivity ParticipantConsent
 
-        saveMsg =
-            Nothing
+        viewParticipantForm formId form =
+            li [] [ text <| selectLanguage language form.title ]
     in
-    div
-        [ class "ui full segment participant-consent"
-        , id "participantConsentForm"
-        ]
-        [ div [ class "content" ]
-            [ h3
-                [ class "ui header" ]
-                [ text <| translate language (Trans.ActivitiesTitle activity)
+    case ui of
+        Nothing ->
+            emptyNode
+
+        Just value ->
+            div
+                [ class "ui full segment participant-consent"
+                , id "participantConsentForm"
                 ]
-            , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
-            , div [ class "ui form" ]
-                []
-            ]
-        ]
+                [ div [ class "content" ]
+                    [ h3
+                        [ class "ui header" ]
+                        [ text <| translate language (Trans.ActivitiesTitle activity)
+                        ]
+                    , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+                    , value.expected
+                        |> EveryDictList.map viewParticipantForm
+                        |> EveryDictList.values
+                        |> ul []
+                    ]
+                ]
 
 
 viewFamilyPlanning : Language -> MeasurementData (Maybe FamilyPlanning) (Edit FamilyPlanning) -> EverySet FamilyPlanningSign -> Html MsgMother
