@@ -208,6 +208,7 @@ makeOfflineSession : TestCase -> OfflineSession
 makeOfflineSession test =
     { session = session sessionDate
     , allSessions = EveryDictList.empty -- not relevant
+    , allParticipantForms = EveryDictList.empty -- not relevant
     , everyCounselingSchedule = EveryDict.empty -- not relevant
     , clinics = EveryDictList.empty -- not relevant
     , mothers = EveryDictList.empty -- not relevant
