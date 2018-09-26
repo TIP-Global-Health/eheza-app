@@ -19,6 +19,7 @@ import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
+import HtmlParser.Util exposing (toVirtualDom)
 import Json.Decode
 import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
@@ -784,6 +785,11 @@ viewParticipantConsent language measurement ui =
                             ]
                         ]
                         [ text titleText ]
+
+                body =
+                    Maybe.map (toVirtualDom << .parsed << selectLanguage language << .body) form
+                        |> Maybe.withDefault []
+                        |> div []
             in
             viewModal <|
                 Just <|
@@ -792,6 +798,7 @@ viewParticipantConsent language measurement ui =
                             [ class "wrap-report" ]
                             [ backIcon
                             , title
+                            , body
                             ]
                         ]
     in
