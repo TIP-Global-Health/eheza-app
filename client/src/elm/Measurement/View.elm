@@ -793,12 +793,17 @@ viewParticipantConsent language measurement ui =
             in
             viewModal <|
                 Just <|
-                    div [ class "page-report" ]
+                    div [ class "page-form" ]
                         [ div
-                            [ class "wrap-report" ]
+                            [ class "wrap-form" ]
                             [ backIcon
                             , title
                             , body
+                            , hr [] []
+                            , h3 [] [ text <| translate language Trans.ParticipantSignature ]
+                            , text <| translate language Trans.ParticipantReviewed
+                            , h3 [] [ text <| translate language Trans.CounselorSignature ]
+                            , text <| translate language Trans.CounselorReviewed
                             ]
                         ]
     in

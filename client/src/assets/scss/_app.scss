@@ -165,3 +165,29 @@ a {
     }
   }
 }
+
+.page-form {
+  background: #333;
+  padding: 30px;
+  width: 100%;
+  height: 100%;
+}
+
+.wrap-form {
+  max-width: 1215px;
+  height: 100%;
+  margin: 0 auto 30px auto;
+  background: #fff;
+  border-top: 9px solid #06b9ff;
+  padding: 30px;
+  overflow-y: scroll;
+
+  .icon-back {
+    width: 34px;
+    height: 27px;
+    display: block;
+    background: url(#{$img-path}icon-back-dark.svg);
+    position: absolute;
+    background-size: 34px 27px;
+  }
+}

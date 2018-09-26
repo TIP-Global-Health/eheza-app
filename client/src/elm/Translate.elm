@@ -146,6 +146,8 @@ type TranslationId
     | Continue
     | CounselingTimingHeading CounselingTiming
     | CounselingTopic CounselingTopic
+    | CounselorReviewed
+    | CounselorSignature
     | CreateSession
     | CreateTrainingSessions
     | DeleteTrainingSessions
@@ -212,6 +214,8 @@ type TranslationId
     | Page404
     | PageNotFoundMsg
     | Participants
+    | ParticipantReviewed
+    | ParticipantSignature
     | ParticipantSummary
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
@@ -715,6 +719,16 @@ translationSet trans =
             , kinyarwanda = topic.kinyarwanda
             }
 
+        CounselorReviewed ->
+            { english = "I have reviewed the above with the participant."
+            , kinyarwanda = Nothing
+            }
+
+        CounselorSignature ->
+            { english = "Entry Counselor Signature"
+            , kinyarwanda = Nothing
+            }
+
         CreateSession ->
             { english = "Create Session"
             , kinyarwanda = Just "Tangira igikorwa"
@@ -1116,6 +1130,16 @@ translationSet trans =
         Participants ->
             { english = "Participants"
             , kinyarwanda = Just "Ubwitabire"
+            }
+
+        ParticipantReviewed ->
+            { english = "I have reviewed and understand the above."
+            , kinyarwanda = Nothing
+            }
+
+        ParticipantSignature ->
+            { english = "Participant Signature"
+            , kinyarwanda = Nothing
             }
 
         ParticipantSummary ->
