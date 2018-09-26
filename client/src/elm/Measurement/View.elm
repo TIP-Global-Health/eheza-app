@@ -790,6 +790,32 @@ viewParticipantConsent language measurement ui =
                     Maybe.map (toVirtualDom << .parsed << selectLanguage language << .body) form
                         |> Maybe.withDefault []
                         |> div []
+
+                counselorReviewed =
+                    div [ class "ui checkbox activity" ]
+                        [ input
+                            [ type_ "checkbox"
+                            , id "counselor-reviewed"
+                            , name "counselor-reviewed"
+                            ]
+                            []
+                        , label
+                            [ for "counselor-reviewed" ]
+                            [ text <| translate language Trans.CounselorReviewed ]
+                        ]
+
+                participantReviewed =
+                    div [ class "ui checkbox activity" ]
+                        [ input
+                            [ type_ "checkbox"
+                            , id "participant-reviewed"
+                            , name "participant-reviewed"
+                            ]
+                            []
+                        , label
+                            [ for "participant-reviewed" ]
+                            [ text <| translate language Trans.ParticipantReviewed ]
+                        ]
             in
             viewModal <|
                 Just <|
@@ -801,9 +827,9 @@ viewParticipantConsent language measurement ui =
                             , body
                             , hr [] []
                             , h3 [] [ text <| translate language Trans.ParticipantSignature ]
-                            , text <| translate language Trans.ParticipantReviewed
+                            , participantReviewed
                             , h3 [] [ text <| translate language Trans.CounselorSignature ]
-                            , text <| translate language Trans.CounselorReviewed
+                            , counselorReviewed
                             ]
                         ]
     in
