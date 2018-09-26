@@ -108,7 +108,10 @@ getMotherForm motherId session =
                             Nothing ->
                                 { form
                                     | participantConsent =
-                                        Just { expected = expectParticipantConsent session motherId }
+                                        Just
+                                            { expected = expectParticipantConsent session motherId
+                                            , view = Nothing
+                                            }
                                 }
                    )
 

@@ -136,6 +136,12 @@ updateMother msg model =
             , Nothing
             )
 
+        ViewParticipantForm formId ->
+            model.participantConsent
+                |> Maybe.map (\consent -> { model | participantConsent = Just { consent | view = formId } })
+                |> Maybe.withDefault model
+                |> (\m -> ( m, Cmd.none, Nothing ))
+
         SendOutMsgMother outMsg ->
             ( model
             , Cmd.none

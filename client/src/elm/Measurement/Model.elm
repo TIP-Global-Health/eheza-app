@@ -53,6 +53,7 @@ type alias ModelMother =
 
 type alias ParticipantFormUI =
     { expected : EveryDictList ParticipantFormId ParticipantForm
+    , view : Maybe ParticipantFormId
     }
 
 
@@ -87,6 +88,7 @@ type MsgChild
 
 type MsgMother
     = SelectFamilyPlanningSign Bool FamilyPlanningSign
+    | ViewParticipantForm (Maybe ParticipantFormId)
     | SendOutMsgMother OutMsgMother
 
 

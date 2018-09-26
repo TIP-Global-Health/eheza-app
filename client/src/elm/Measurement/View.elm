@@ -29,7 +29,7 @@ import Restful.Endpoint exposing (fromEntityId)
 import Round
 import Translate as Trans exposing (Language, TranslationId, translate)
 import Translate.Utils exposing (selectLanguage)
-import Utils.Html exposing (script)
+import Utils.Html exposing (script, viewModal)
 import Utils.NominalDate exposing (Days(..), diffDays)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
 import ZScore.Utils exposing (viewZScore, zScoreHeightForAge, zScoreWeightForAge, zScoreWeightForHeight)
@@ -737,13 +737,11 @@ viewParticipantConsent language measurement ui =
             MotherActivity ParticipantConsent
 
         viewParticipantForm formId form =
-            li [] [ text <| selectLanguage language form.title ]
-    in
-    case ui of
-        Nothing ->
-            emptyNode
+            li
+                [ onClick <| ViewParticipantForm <| Just formId ]
+                [ text <| selectLanguage language form.title ]
 
-        Just value ->
+        viewFormList expected =
             div
                 [ class "ui full segment participant-consent"
                 , id "participantConsentForm"
@@ -754,12 +752,60 @@ viewParticipantConsent language measurement ui =
                         [ text <| translate language (Trans.ActivitiesTitle activity)
                         ]
                     , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
-                    , value.expected
+                    , expected
                         |> EveryDictList.map viewParticipantForm
                         |> EveryDictList.values
                         |> ul []
                     ]
                 ]
+
+        viewForm formId expected =
+            let
+                backIcon =
+                    a
+                        [ class "icon-back"
+                        , onClick <| ViewParticipantForm Nothing
+                        ]
+                        []
+
+                form =
+                    EveryDictList.get formId expected
+
+                titleText =
+                    Maybe.map (selectLanguage language << .title) form
+                        |> Maybe.withDefault ""
+
+                title =
+                    h1
+                        [ class "ui report header"
+                        , style
+                            [ ( "padding-left", "60px" )
+                            , ( "padding-right", "60px" )
+                            ]
+                        ]
+                        [ text titleText ]
+            in
+            viewModal <|
+                Just <|
+                    div [ class "page-report" ]
+                        [ div
+                            [ class "wrap-report" ]
+                            [ backIcon
+                            , title
+                            ]
+                        ]
+    in
+    case ui of
+        Nothing ->
+            emptyNode
+
+        Just value ->
+            case value.view of
+                Nothing ->
+                    viewFormList value.expected
+
+                Just formId ->
+                    viewForm formId value.expected
 
 
 viewFamilyPlanning : Language -> MeasurementData (Maybe FamilyPlanning) (Edit FamilyPlanning) -> EverySet FamilyPlanningSign -> Html MsgMother
