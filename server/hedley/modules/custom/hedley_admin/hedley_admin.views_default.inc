@@ -262,6 +262,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['title_1']['field'] = 'title';
   $handler->display->display_options['filters']['title_1']['relationship'] = 'field_mother_target_id';
   $handler->display->display_options['filters']['title_1']['ui_name'] = 'Mother name';
+  $handler->display->display_options['filters']['title_1']['operator'] = 'word';
   $handler->display->display_options['filters']['title_1']['exposed'] = TRUE;
   $handler->display->display_options['filters']['title_1']['expose']['operator_id'] = 'title_1_op';
   $handler->display->display_options['filters']['title_1']['expose']['label'] = 'Mother name';
