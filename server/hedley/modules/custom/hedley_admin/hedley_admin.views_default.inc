@@ -582,6 +582,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['title']['table'] = 'node';
   $handler->display->display_options['filters']['title']['field'] = 'title';
   $handler->display->display_options['filters']['title']['ui_name'] = 'Mother name';
+  $handler->display->display_options['filters']['title']['operator'] = 'word';
   $handler->display->display_options['filters']['title']['group'] = 1;
   $handler->display->display_options['filters']['title']['exposed'] = TRUE;
   $handler->display->display_options['filters']['title']['expose']['operator_id'] = 'title_op';
@@ -1541,7 +1542,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['title']['table'] = 'node';
   $handler->display->display_options['filters']['title']['field'] = 'title';
   $handler->display->display_options['filters']['title']['relationship'] = 'field_child_target_id';
-  $handler->display->display_options['filters']['title']['operator'] = 'contains';
+  $handler->display->display_options['filters']['title']['operator'] = 'word';
   $handler->display->display_options['filters']['title']['group'] = 1;
   $handler->display->display_options['filters']['title']['exposed'] = TRUE;
   $handler->display->display_options['filters']['title']['expose']['operator_id'] = 'title_op';
@@ -1559,7 +1560,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['title_1']['table'] = 'node';
   $handler->display->display_options['filters']['title_1']['field'] = 'title';
   $handler->display->display_options['filters']['title_1']['relationship'] = 'field_mother_target_id';
-  $handler->display->display_options['filters']['title_1']['operator'] = 'contains';
+  $handler->display->display_options['filters']['title_1']['operator'] = 'word';
   $handler->display->display_options['filters']['title_1']['group'] = 1;
   $handler->display->display_options['filters']['title_1']['exposed'] = TRUE;
   $handler->display->display_options['filters']['title_1']['expose']['operator_id'] = 'title_1_op';
@@ -1779,7 +1780,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['title']['table'] = 'node';
   $handler->display->display_options['filters']['title']['field'] = 'title';
   $handler->display->display_options['filters']['title']['relationship'] = 'reverse_field_mother_node';
-  $handler->display->display_options['filters']['title']['operator'] = 'contains';
+  $handler->display->display_options['filters']['title']['operator'] = 'word';
   $handler->display->display_options['filters']['title']['group'] = 1;
   $handler->display->display_options['filters']['title']['exposed'] = TRUE;
   $handler->display->display_options['filters']['title']['expose']['operator_id'] = 'title_op';
@@ -1797,7 +1798,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['title_1']['table'] = 'node';
   $handler->display->display_options['filters']['title_1']['field'] = 'title';
   $handler->display->display_options['filters']['title_1']['relationship'] = 'field_mother_target_id';
-  $handler->display->display_options['filters']['title_1']['operator'] = 'contains';
+  $handler->display->display_options['filters']['title_1']['operator'] = 'word';
   $handler->display->display_options['filters']['title_1']['group'] = 1;
   $handler->display->display_options['filters']['title_1']['exposed'] = TRUE;
   $handler->display->display_options['filters']['title_1']['expose']['operator_id'] = 'title_1_op';
