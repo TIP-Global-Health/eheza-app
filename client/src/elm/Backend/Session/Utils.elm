@@ -237,6 +237,7 @@ setPhotoFileId photo id =
                                         | photo =
                                             Edited
                                                 { backend = change.backend
+                                                , id = change.id
                                                 , edited = { edited | value = { value | fid = Just id } }
                                                 }
                                     }
@@ -244,7 +245,7 @@ setPhotoFileId photo id =
                     else
                         edit
 
-                Deleted _ ->
+                Deleted _ _ ->
                     edit
         )
 

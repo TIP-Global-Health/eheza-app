@@ -82,10 +82,23 @@ type alias ParticipantFormProgress =
     }
 
 
+{-| The starting point for the UI where we haven't
+obtained a consent yet.
+-}
 emptyParticipantFormProgress : ParticipantFormProgress
 emptyParticipantFormProgress =
     { counselorSigned = False
     , participantSigned = False
+    }
+
+
+{-| The starting point for the UI when we have obtained
+a consent.
+-}
+completedParticipantFormProgress : ParticipantFormProgress
+completedParticipantFormProgress =
+    { counselorSigned = True
+    , participantSigned = True
     }
 
 

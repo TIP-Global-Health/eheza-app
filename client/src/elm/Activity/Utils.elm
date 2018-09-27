@@ -35,7 +35,7 @@ import Backend.Child.Model exposing (Child)
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (applyEdit, currentValue, mapMeasurementData)
+import Backend.Measurement.Utils exposing (applyEdit, currentValue, currentValues, mapMeasurementData)
 import Backend.Mother.Model exposing (ChildrenRelationType(..), Mother)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Session.Model exposing (..)
@@ -641,31 +641,13 @@ hasCompletedMotherActivity session motherId activityType measurements =
         ParticipantConsent ->
             let
                 current =
-                    measurements.current.consent
+                    mapMeasurementData .consent .consent measurements
+                        |> currentValues
                         |> List.map (Tuple.second >> .value >> .formId)
                         |> EverySet.fromList
-
-                withEdits =
-                    List.foldl applyConsentEdit current measurements.edits.consent
-
-                applyConsentEdit edit accum =
-                    case edit of
-                        Unedited ->
-                            accum
-
-                        Created consent ->
-                            EverySet.insert consent.value.formId accum
-
-                        Edited _ ->
-                            -- TODO: In theory, should check for a change in
-                            -- the formId.
-                            accum
-
-                        Deleted consent ->
-                            EverySet.remove consent.value.formId accum
             in
             expectParticipantConsent session motherId
-                |> EveryDictList.all (\id _ -> EverySet.member id withEdits)
+                |> EveryDictList.all (\id _ -> EverySet.member id current)
 
 
 motherHasCompletedActivity : MotherId -> MotherActivity -> EditableSession -> Bool
@@ -677,7 +659,7 @@ motherHasCompletedActivity motherId activityType session =
 {-| Should some measurement be considered completed? Note that this means that it has
 been entered locally, not that it has been saved to the backend.
 -}
-isCompleted : Edit value -> Maybe value -> Bool
+isCompleted : Edit id value -> Maybe value -> Bool
 isCompleted edit =
     applyEdit edit >> isJust
 

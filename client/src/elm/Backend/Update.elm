@@ -696,9 +696,10 @@ makeChildEdit currentDate childId outMsg sessionId session =
                 edit =
                     case backend of
                         -- TODO: Could do a comparison to possibly return to `Unedited`
-                        Just value ->
+                        Just ( id, value ) ->
                             Edited
                                 { backend = value
+                                , id = id
                                 , edited = { value | value = height }
                                 }
 
@@ -720,9 +721,10 @@ makeChildEdit currentDate childId outMsg sessionId session =
 
                 edit =
                     case backend of
-                        Just value ->
+                        Just ( id, value ) ->
                             Edited
                                 { backend = value
+                                , id = id
                                 , edited = { value | value = weight }
                                 }
 
@@ -744,9 +746,10 @@ makeChildEdit currentDate childId outMsg sessionId session =
 
                 edit =
                     case backend of
-                        Just value ->
+                        Just ( id, value ) ->
                             Edited
                                 { backend = value
+                                , id = id
                                 , edited = { value | value = muac }
                                 }
 
@@ -768,9 +771,10 @@ makeChildEdit currentDate childId outMsg sessionId session =
 
                 edit =
                     case backend of
-                        Just value ->
+                        Just ( id, value ) ->
                             Edited
                                 { backend = value
+                                , id = id
                                 , edited = { value | value = ( timing, topics ) }
                                 }
 
@@ -792,9 +796,10 @@ makeChildEdit currentDate childId outMsg sessionId session =
 
                 edit =
                     case backend of
-                        Just value ->
+                        Just ( id, value ) ->
                             Edited
                                 { backend = value
+                                , id = id
                                 , edited = { value | value = nutrition }
                                 }
 
@@ -816,10 +821,11 @@ makeChildEdit currentDate childId outMsg sessionId session =
 
                 edit =
                     case backend of
-                        Just value ->
+                        Just ( id, value ) ->
                             Edited
                                 { backend = value
                                 , edited = { value | value = photo }
+                                , id = id
                                 }
 
                         Nothing ->
@@ -851,9 +857,10 @@ makeMotherEdit currentDate motherId outMsg sessionId session =
 
                 edit =
                     case backend of
-                        Just value ->
+                        Just ( id, value ) ->
                             Edited
                                 { backend = value
+                                , id = id
                                 , edited = { value | value = signs }
                                 }
 

@@ -7,7 +7,7 @@ import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict)
 import Gizra.NominalDate
-import Json.Decode exposing (Decoder, andThen, at, bool, decodeValue, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed, value)
+import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (EntityId, decodeEntityId, toEntityId)
 import Translate.Utils exposing (decodeLanguage)
@@ -278,7 +278,7 @@ decodeMotherEdits =
 
 {-| The opposite of `encodeEdit`
 -}
-decodeEdit : Decoder value -> Decoder (Edit value)
+decodeEdit : Decoder value -> Decoder (Edit (EntityId id) value)
 decodeEdit valueDecoder =
     field "tag" string
         |> andThen
@@ -292,19 +292,24 @@ decodeEdit valueDecoder =
                             |> map Created
 
                     "edited" ->
-                        map2
-                            (\backend edited ->
+                        map3
+                            (\backend edited id ->
                                 Edited
                                     { backend = backend
                                     , edited = edited
+                                    , id = id
                                     }
                             )
                             (field "backend" valueDecoder)
                             (field "edited" valueDecoder)
+                            -- TODO: There is a back-compat issue here
+                            (field "id" decodeEntityId)
 
                     "deleted" ->
-                        field "value" valueDecoder
-                            |> map Deleted
+                        -- TODO: And another back-compat issue here
+                        map2 Deleted
+                            (field "id" decodeEntityId)
+                            (field "value" valueDecoder)
 
                     _ ->
                         fail <|

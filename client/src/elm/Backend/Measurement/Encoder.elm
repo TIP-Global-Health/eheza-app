@@ -233,7 +233,7 @@ encodeChildEdits edits =
         ]
 
 
-encodeEdit : (value -> Value) -> Edit value -> Value
+encodeEdit : (value -> Value) -> Edit (EntityId id) value -> Value
 encodeEdit encodeValue edit =
     case edit of
         Unedited ->
@@ -245,17 +245,19 @@ encodeEdit encodeValue edit =
                 , ( "value", encodeValue value )
                 ]
 
-        Edited { backend, edited } ->
+        Edited { id, backend, edited } ->
             object
                 [ ( "tag", string "edited" )
                 , ( "backend", encodeValue backend )
                 , ( "edited", encodeValue edited )
+                , ( "id", encodeEntityId id )
                 ]
 
-        Deleted value ->
+        Deleted id value ->
             object
                 [ ( "tag", string "deleted" )
                 , ( "value", encodeValue value )
+                , ( "id", encodeEntityId id )
                 ]
 
 

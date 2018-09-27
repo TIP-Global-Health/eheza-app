@@ -139,22 +139,22 @@ weightFormConfig =
     }
 
 
-viewHeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Height) (Edit Height) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewHeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Height) (Edit HeightId Height) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewHeight =
     viewFloatForm heightFormConfig
 
 
-viewWeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Weight) (Edit Weight) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewWeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Weight) (Edit WeightId Weight) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewWeight =
     viewFloatForm weightFormConfig
 
 
-viewMuac : Language -> NominalDate -> Child -> MeasurementData (Maybe Muac) (Edit Muac) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewMuac : Language -> NominalDate -> Child -> MeasurementData (Maybe Muac) (Edit MuacId Muac) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewMuac =
     viewFloatForm muacFormConfig
 
 
-viewFloatForm : FloatFormConfig value -> Language -> NominalDate -> Child -> MeasurementData (Maybe value) (Edit value) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewFloatForm : FloatFormConfig value -> Language -> NominalDate -> Child -> MeasurementData (Maybe value) (Edit id value) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewFloatForm config language currentDate child measurements zscores model =
     let
         -- What is the string input value from the form?
@@ -406,7 +406,7 @@ viewFloatDiff config language previousValue currentValue =
         viewMessage False
 
 
-viewPhoto : Language -> MeasurementData (Maybe Photo) (Edit Photo) -> Maybe PhotoValue -> Html MsgChild
+viewPhoto : Language -> MeasurementData (Maybe Photo) (Edit PhotoId Photo) -> Maybe PhotoValue -> Html MsgChild
 viewPhoto language measurement photo =
     let
         activity =
@@ -466,7 +466,7 @@ Button will also take care of preventing double submission,
 and showing success and error indications.
 
 -}
-saveButton : Language -> Maybe msg -> MeasurementData (Maybe a) (Edit a) -> Maybe String -> List (Html msg)
+saveButton : Language -> Maybe msg -> MeasurementData (Maybe a) (Edit id a) -> Maybe String -> List (Html msg)
 saveButton language msg measurement maybeDivClass =
     let
         isLoading =
@@ -507,7 +507,7 @@ saveButton language msg measurement maybeDivClass =
     ]
 
 
-viewNutritionSigns : Language -> MeasurementData (Maybe ChildNutrition) (Edit ChildNutrition) -> EverySet ChildNutritionSign -> Html MsgChild
+viewNutritionSigns : Language -> MeasurementData (Maybe ChildNutrition) (Edit ChildNutritionId ChildNutrition) -> EverySet ChildNutritionSign -> Html MsgChild
 viewNutritionSigns language measurement signs =
     let
         activity =
@@ -593,7 +593,7 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
         ]
 
 
-viewCounselingSession : Language -> MeasurementData (Maybe CounselingSession) (Edit CounselingSession) -> EditableSession -> Maybe ( CounselingTiming, EverySet CounselingTopicId ) -> Html MsgChild
+viewCounselingSession : Language -> MeasurementData (Maybe CounselingSession) (Edit CounselingSessionId CounselingSession) -> EditableSession -> Maybe ( CounselingTiming, EverySet CounselingTopicId ) -> Html MsgChild
 viewCounselingSession language measurement session value =
     case value of
         Nothing ->
@@ -731,7 +731,7 @@ viewMother language activity measurements model =
             viewParticipantConsent language (mapMeasurementData .consent .consent measurements) model.participantConsent
 
 
-viewParticipantConsent : Language -> MeasurementData (List ( ParticipantConsentId, ParticipantConsent )) (List (Edit ParticipantConsent)) -> ParticipantFormUI -> Html MsgMother
+viewParticipantConsent : Language -> MeasurementData (EveryDict ParticipantConsentId ParticipantConsent) (List (Edit ParticipantConsentId ParticipantConsent)) -> ParticipantFormUI -> Html MsgMother
 viewParticipantConsent language measurement ui =
     let
         activity =
@@ -851,7 +851,7 @@ viewParticipantConsent language measurement ui =
             viewForm formId ui.expected
 
 
-viewFamilyPlanning : Language -> MeasurementData (Maybe FamilyPlanning) (Edit FamilyPlanning) -> EverySet FamilyPlanningSign -> Html MsgMother
+viewFamilyPlanning : Language -> MeasurementData (Maybe FamilyPlanning) (Edit FamilyPlanningId FamilyPlanning) -> EverySet FamilyPlanningSign -> Html MsgMother
 viewFamilyPlanning language measurement signs =
     let
         activity =

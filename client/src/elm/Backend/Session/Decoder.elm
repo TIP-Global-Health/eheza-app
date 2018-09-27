@@ -141,16 +141,18 @@ splitMotherMeasurements sessionId =
 
                 consent =
                     getCurrentAndPrevious sessionId list.consents
+                        |> .current
+                        |> EveryDict.fromList
             in
             { current =
                 { familyPlanning = List.head familyPlanning.current
-                , consent = consent.current
+                , consent = consent
                 }
             , previous =
                 -- We don't "compare" consents, so previous doesn't mean
                 -- anything for it.
                 { familyPlanning = familyPlanning.previous
-                , consent = []
+                , consent = EveryDict.empty
                 }
             }
         )

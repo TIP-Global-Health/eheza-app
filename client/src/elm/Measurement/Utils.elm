@@ -3,10 +3,11 @@ module Measurement.Utils exposing (..)
 import Activity.Utils exposing (expectCounselingActivity, expectParticipantConsent)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValue, mapMeasurementData)
+import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData)
 import EveryDict
+import EveryDictList
 import EverySet
 import Measurement.Model exposing (..)
 
@@ -79,15 +80,27 @@ fromChildMeasurementData data =
 -}
 fromMotherMeasurementData : MeasurementData MotherMeasurements MotherEdits -> ModelMother
 fromMotherMeasurementData data =
+    let
+        -- We show the UI as completed for all current consents
+        progress =
+            data
+                |> mapMeasurementData .consent .consent
+                |> currentValues
+                |> List.map (Tuple.second >> .value >> .formId)
+                |> List.map (\formId -> ( formId, completedParticipantFormProgress ))
+                |> EveryDict.fromList
+    in
     { familyPlanningSigns =
         data
             |> mapMeasurementData .familyPlanning .familyPlanning
             |> currentValue
             |> Maybe.map .value
             |> Maybe.withDefault EverySet.empty
-
-    -- TODO: Fix this
-    , participantConsent = emptyParticipantFormUI
+    , participantConsent =
+        { expected = EveryDictList.empty
+        , view = Nothing
+        , progress = progress
+        }
     }
 
 
