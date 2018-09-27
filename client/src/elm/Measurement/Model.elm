@@ -47,13 +47,45 @@ type alias ModelChild =
 
 type alias ModelMother =
     { familyPlanningSigns : EverySet FamilyPlanningSign
-    , participantConsent : Maybe ParticipantFormUI
+    , participantConsent : ParticipantFormUI
     }
 
 
+{-| The UI for participant consent forms for a particular mother.
+
+  - `expected` tracks which forms we expect to deal with for that mother.
+
+  - `view` tracks which form we're looking at for the mother. If `Nothing`,
+    we're looking at a list of the forms.
+
+  - `progress` tracks the state of the UI for each particular form.
+
+-}
 type alias ParticipantFormUI =
     { expected : EveryDictList ParticipantFormId ParticipantForm
     , view : Maybe ParticipantFormId
+    , progress : EveryDict ParticipantFormId ParticipantFormProgress
+    }
+
+
+emptyParticipantFormUI : ParticipantFormUI
+emptyParticipantFormUI =
+    { expected = EveryDictList.empty
+    , view = Nothing
+    , progress = EveryDict.empty
+    }
+
+
+type alias ParticipantFormProgress =
+    { counselorSigned : Bool
+    , participantSigned : Bool
+    }
+
+
+emptyParticipantFormProgress : ParticipantFormProgress
+emptyParticipantFormProgress =
+    { counselorSigned = False
+    , participantSigned = False
     }
 
 
@@ -89,6 +121,8 @@ type MsgChild
 type MsgMother
     = SelectFamilyPlanningSign Bool FamilyPlanningSign
     | ViewParticipantForm (Maybe ParticipantFormId)
+    | SetCounselorSigned ParticipantFormId Bool
+    | SetParticipantSigned ParticipantFormId Bool
     | SendOutMsgMother OutMsgMother
 
 
@@ -123,5 +157,5 @@ emptyModelChild =
 emptyModelMother : ModelMother
 emptyModelMother =
     { familyPlanningSigns = EverySet.empty
-    , participantConsent = Nothing
+    , participantConsent = emptyParticipantFormUI
     }

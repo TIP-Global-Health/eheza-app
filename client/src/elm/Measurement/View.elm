@@ -731,7 +731,7 @@ viewMother language activity measurements model =
             viewParticipantConsent language (mapMeasurementData .consent .consent measurements) model.participantConsent
 
 
-viewParticipantConsent : Language -> MeasurementData (List ( ParticipantConsentId, ParticipantConsent )) (List (Edit ParticipantConsent)) -> Maybe ParticipantFormUI -> Html MsgMother
+viewParticipantConsent : Language -> MeasurementData (List ( ParticipantConsentId, ParticipantConsent )) (List (Edit ParticipantConsent)) -> ParticipantFormUI -> Html MsgMother
 viewParticipantConsent language measurement ui =
     let
         activity =
@@ -772,6 +772,10 @@ viewParticipantConsent language measurement ui =
                 form =
                     EveryDictList.get formId expected
 
+                progress =
+                    EveryDict.get formId ui.progress
+                        |> Maybe.withDefault emptyParticipantFormProgress
+
                 titleText =
                     Maybe.map (selectLanguage language << .title) form
                         |> Maybe.withDefault ""
@@ -797,6 +801,9 @@ viewParticipantConsent language measurement ui =
                             [ type_ "checkbox"
                             , id "counselor-reviewed"
                             , name "counselor-reviewed"
+                            , onClick <| SetCounselorSigned formId (not progress.counselorSigned)
+                            , checked progress.counselorSigned
+                            , classList [ ( "checked", progress.counselorSigned ) ]
                             ]
                             []
                         , label
@@ -810,6 +817,9 @@ viewParticipantConsent language measurement ui =
                             [ type_ "checkbox"
                             , id "participant-reviewed"
                             , name "participant-reviewed"
+                            , onClick <| SetParticipantSigned formId (not progress.participantSigned)
+                            , checked progress.participantSigned
+                            , classList [ ( "checked", progress.participantSigned ) ]
                             ]
                             []
                         , label
@@ -833,17 +843,12 @@ viewParticipantConsent language measurement ui =
                             ]
                         ]
     in
-    case ui of
+    case ui.view of
         Nothing ->
-            emptyNode
+            viewFormList ui.expected
 
-        Just value ->
-            case value.view of
-                Nothing ->
-                    viewFormList value.expected
-
-                Just formId ->
-                    viewForm formId value.expected
+        Just formId ->
+            viewForm formId ui.expected
 
 
 viewFamilyPlanning : Language -> MeasurementData (Maybe FamilyPlanning) (Edit FamilyPlanning) -> EverySet FamilyPlanningSign -> Html MsgMother

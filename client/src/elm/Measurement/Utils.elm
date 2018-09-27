@@ -85,7 +85,9 @@ fromMotherMeasurementData data =
             |> currentValue
             |> Maybe.map .value
             |> Maybe.withDefault EverySet.empty
-    , participantConsent = Nothing
+
+    -- TODO: Fix this
+    , participantConsent = emptyParticipantFormUI
     }
 
 
@@ -101,18 +103,13 @@ getMotherForm motherId session =
             getMotherMeasurementData motherId session
                 |> fromMotherMeasurementData
                 |> (\form ->
-                        case form.participantConsent of
-                            Just _ ->
-                                form
-
-                            Nothing ->
-                                { form
-                                    | participantConsent =
-                                        Just
-                                            { expected = expectParticipantConsent session motherId
-                                            , view = Nothing
-                                            }
+                        { form
+                            | participantConsent =
+                                { expected = expectParticipantConsent session motherId
+                                , view = Nothing
+                                , progress = form.participantConsent.progress
                                 }
+                        }
                    )
 
 

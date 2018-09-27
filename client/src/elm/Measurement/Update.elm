@@ -3,6 +3,7 @@ port module Measurement.Update exposing (updateChild, updateMother)
 import Backend.Entities exposing (ChildId, MotherId)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), PhotoValue)
 import Config.Model exposing (BackendUrl)
+import EveryDict
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
 
@@ -136,11 +137,44 @@ updateMother msg model =
             , Nothing
             )
 
+        SetCounselorSigned formId signed ->
+            let
+                updated =
+                    EveryDict.get formId model.participantConsent.progress
+                        |> Maybe.withDefault emptyParticipantFormProgress
+                        |> (\progress -> EveryDict.insert formId { progress | counselorSigned = signed } model.participantConsent.progress)
+            in
+            (\consent ->
+                ( { model | participantConsent = { consent | progress = updated } }
+                , Cmd.none
+                , Nothing
+                )
+            )
+                model.participantConsent
+
+        SetParticipantSigned formId signed ->
+            let
+                updated =
+                    EveryDict.get formId model.participantConsent.progress
+                        |> Maybe.withDefault emptyParticipantFormProgress
+                        |> (\progress -> EveryDict.insert formId { progress | participantSigned = signed } model.participantConsent.progress)
+            in
+            (\consent ->
+                ( { model | participantConsent = { consent | progress = updated } }
+                , Cmd.none
+                , Nothing
+                )
+            )
+                model.participantConsent
+
         ViewParticipantForm formId ->
-            model.participantConsent
-                |> Maybe.map (\consent -> { model | participantConsent = Just { consent | view = formId } })
-                |> Maybe.withDefault model
-                |> (\m -> ( m, Cmd.none, Nothing ))
+            (\consent ->
+                ( { model | participantConsent = { consent | view = formId } }
+                , Cmd.none
+                , Nothing
+                )
+            )
+                model.participantConsent
 
         SendOutMsgMother outMsg ->
             ( model
