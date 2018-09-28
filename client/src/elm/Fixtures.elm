@@ -3,6 +3,7 @@ module Fixtures exposing (..)
 import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), Mother, Ubudehe(..))
 import EverySet
+import Restful.Endpoint exposing (toEntityId)
 import Time.Date exposing (date)
 import User.Model exposing (User)
 
@@ -25,7 +26,7 @@ exampleBackendUrl =
 -}
 exampleUser : User
 exampleUser =
-    { id = 35
+    { id = toEntityId 35
     , name = "aya"
     , avatarUrl = "http://example.com/avatar.jpg"
     , clinics = []
