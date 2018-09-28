@@ -9,7 +9,7 @@ import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (applyEdit, mapMeasurementData, muacIndication)
+import Backend.Measurement.Utils exposing (applyEdit, currentValues, mapMeasurementData, muacIndication)
 import Backend.Session.Model exposing (EditableSession)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
@@ -760,6 +760,11 @@ viewParticipantConsent language measurement ui =
                     ]
                 ]
 
+        completedFormIds =
+            currentValues measurement
+                |> List.map (Tuple.second >> .value >> .formId)
+                |> EverySet.fromList
+
         viewForm formId expected =
             let
                 backIcon =
@@ -769,12 +774,18 @@ viewParticipantConsent language measurement ui =
                         ]
                         []
 
+                completed =
+                    EverySet.member formId completedFormIds
+
                 form =
                     EveryDictList.get formId expected
 
                 progress =
                     EveryDict.get formId ui.progress
                         |> Maybe.withDefault emptyParticipantFormProgress
+
+                progressCompleted =
+                    progress.participantSigned && progress.counselorSigned
 
                 titleText =
                     Maybe.map (selectLanguage language << .title) form
@@ -804,6 +815,7 @@ viewParticipantConsent language measurement ui =
                             , onClick <| SetCounselorSigned formId (not progress.counselorSigned)
                             , checked progress.counselorSigned
                             , classList [ ( "checked", progress.counselorSigned ) ]
+                            , disabled completed
                             ]
                             []
                         , label
@@ -820,12 +832,59 @@ viewParticipantConsent language measurement ui =
                             , onClick <| SetParticipantSigned formId (not progress.participantSigned)
                             , checked progress.participantSigned
                             , classList [ ( "checked", progress.participantSigned ) ]
+                            , disabled completed
                             ]
                             []
                         , label
                             [ for "participant-reviewed" ]
                             [ text <| translate language Trans.ParticipantReviewed ]
                         ]
+
+                msg =
+                    if completed || not progressCompleted then
+                        Nothing
+                    else
+                        SaveCompletedForm formId language
+                            |> SendOutMsgMother
+                            |> Just
+
+                isLoading =
+                    measurement.update == Loading
+
+                isFailure =
+                    RemoteData.isFailure measurement.update
+
+                ( updateText, errorText ) =
+                    if EverySet.member formId completedFormIds then
+                        ( Trans.Update, Trans.UpdateError )
+                    else
+                        ( Trans.Save, Trans.SaveError )
+
+                saveAttr =
+                    if isLoading then
+                        []
+                    else
+                        Maybe.map onClick msg
+                            |> Maybe.Extra.toList
+
+                saveButton =
+                    [ button
+                        ([ classList
+                            [ ( "ui fluid primary button", True )
+                            , ( "loading", isLoading )
+                            , ( "negative", isFailure )
+                            , ( "disabled", Maybe.Extra.isNothing msg )
+                            ]
+                         , id "save-form"
+                         ]
+                            ++ saveAttr
+                        )
+                        [ text <| translate language updateText
+                        ]
+                    , [ text <| translate language errorText ]
+                        |> div []
+                        |> showIf isFailure
+                    ]
             in
             viewModal <|
                 Just <|
@@ -840,6 +899,7 @@ viewParticipantConsent language measurement ui =
                             , participantReviewed
                             , h3 [] [ text <| translate language Trans.CounselorSignature ]
                             , counselorReviewed
+                            , div [ class "actions" ] saveButton
                             ]
                         ]
     in

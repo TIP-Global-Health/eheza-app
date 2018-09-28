@@ -11,6 +11,7 @@ import Backend.ParticipantConsent.Model exposing (..)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import EverySet exposing (EverySet)
+import Translate.Model exposing (Language)
 
 
 {-| The strategy here, at least for now, is this:
@@ -154,6 +155,7 @@ type OutMsgChild
 
 type OutMsgMother
     = SaveFamilyPlanningSigns (EverySet FamilyPlanningSign)
+    | SaveCompletedForm ParticipantFormId Language
 
 
 emptyModelChild : ModelChild

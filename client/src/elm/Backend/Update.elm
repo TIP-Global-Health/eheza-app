@@ -412,8 +412,8 @@ updateBackend backendUrl accessToken msg model =
                     )
 
 
-updateCache : NominalDate -> MsgCached -> ModelCached -> ( ModelCached, Cmd MsgCached, List MsgBackend )
-updateCache currentDate msg model =
+updateCache : UserId -> NominalDate -> MsgCached -> ModelCached -> ( ModelCached, Cmd MsgCached, List MsgBackend )
+updateCache user currentDate msg model =
     case msg of
         CacheEditableSession ->
             withEditableSession ( model, Cmd.none, [] )
@@ -482,7 +482,7 @@ updateCache currentDate msg model =
             , deleteEditableSession ()
             , []
             )
-                |> sequenceExtra (updateCache currentDate)
+                |> sequenceExtra (updateCache user currentDate)
                     [ MsgCacheStorage clearCachedPhotos ]
 
         FetchEditableSessionFromCache ->
@@ -561,7 +561,7 @@ updateCache currentDate msg model =
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -576,7 +576,7 @@ updateCache currentDate msg model =
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -585,13 +585,13 @@ updateCache currentDate msg model =
                         (\sessionId session ->
                             let
                                 newSession =
-                                    makeMotherEdit currentDate motherId outMsg sessionId session
+                                    makeMotherEdit user currentDate motherId outMsg sessionId session
                             in
                             ( { model | editableSession = Success <| Just ( sessionId, newSession ) }
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -612,7 +612,7 @@ updateCache currentDate msg model =
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -643,7 +643,7 @@ updateCache currentDate msg model =
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -652,7 +652,7 @@ updateCache currentDate msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra (updateCache currentDate) [ CacheEditableSession ]
+                |> sequenceExtra (updateCache user currentDate) [ CacheEditableSession ]
 
         -- Like SetEditableSession, but we just substitute the offlineSesttion part.
         -- This works because we never mutate the offlineSession locally.
@@ -668,7 +668,7 @@ updateCache currentDate msg model =
                         , Cmd.none
                         , []
                         )
-                            |> sequenceExtra (updateCache currentDate) [ CacheEditableSession ]
+                            |> sequenceExtra (updateCache user currentDate) [ CacheEditableSession ]
                     else
                         ( model, Cmd.none, [] )
                 )
@@ -842,8 +842,8 @@ makeChildEdit currentDate childId outMsg sessionId session =
 {-| We reach this when the user hits "Save" upon editing something in the measurement
 form. So, we want to change the appropriate edit ...
 -}
-makeMotherEdit : NominalDate -> MotherId -> OutMsgMother -> SessionId -> EditableSession -> EditableSession
-makeMotherEdit currentDate motherId outMsg sessionId session =
+makeMotherEdit : UserId -> NominalDate -> MotherId -> OutMsgMother -> SessionId -> EditableSession -> EditableSession
+makeMotherEdit user currentDate motherId outMsg sessionId session =
     let
         data =
             getMotherMeasurementData motherId session
@@ -873,6 +873,27 @@ makeMotherEdit currentDate motherId outMsg sessionId session =
                                 }
             in
             mapMotherEdits (\edits -> { edits | familyPlanning = edit }) motherId session
+
+        SaveCompletedForm formId language ->
+            -- In this case, so far, we don't allow for updates. So, for the
+            -- moment, the only things we have to do is create things.
+            let
+                edit =
+                    Created
+                        { participantId = motherId
+                        , sessionId = Just sessionId
+                        , dateMeasured = currentDate
+                        , value =
+                            { witness = user
+                            , formId = formId
+                            , language = language
+                            }
+                        }
+            in
+            mapMotherEdits
+                (\edits -> { edits | consent = edit :: edits.consent })
+                motherId
+                session
 
 
 {-| Subscribe to the answers to our cache requests.

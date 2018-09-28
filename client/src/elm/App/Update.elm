@@ -1,6 +1,7 @@
 port module App.Update exposing (init, loginConfig, subscriptions, update)
 
 import App.Model exposing (..)
+import App.Utils exposing (..)
 import Backend.Model
 import Backend.Session.Model
 import Backend.Update
@@ -19,7 +20,7 @@ import Pages.Model
 import Pages.Page exposing (Page(..), UserPage(AdminPage, ClinicsPage))
 import Pages.Update
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (decodeSingleDrupalEntity)
+import Restful.Endpoint exposing (decodeSingleDrupalEntity, toEntityId)
 import Restful.Login exposing (AuthenticatedUser, Credentials, LoginEvent(..), UserAndData(..), checkCachedCredentials)
 import ServiceWorker.Model
 import ServiceWorker.Update
@@ -115,8 +116,14 @@ update msg model =
     case msg of
         MsgCache subMsg ->
             let
+                -- This isn't ideal ... should separate out those things which
+                -- require a user and which don't. But it will do for now.
+                userId =
+                    getUserId model
+                        |> Maybe.withDefault (toEntityId 0)
+
                 ( subModel, subCmd, extraMsgs ) =
-                    Backend.Update.updateCache model.currentDate subMsg model.cache
+                    Backend.Update.updateCache userId model.currentDate subMsg model.cache
             in
             ( { model | cache = subModel }
             , Cmd.map MsgCache subCmd

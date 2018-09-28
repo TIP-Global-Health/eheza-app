@@ -61,9 +61,9 @@ encodeNutrition =
 
 encodeParticipantConsent : ParticipantConsent -> List ( String, Value )
 encodeParticipantConsent =
-    encodeChildMeasurement
+    encodeMotherMeasurement
         (\consent ->
-            [ ( "witness", string consent.witness )
+            [ ( "witness", encodeEntityId consent.witness )
             , ( "language", encodeLanguage consent.language )
             , ( "participant_form", encodeEntityId consent.formId )
             ]

@@ -139,7 +139,7 @@ decodeParticipantConsent =
 decodeParticipantConsentValue : Decoder ParticipantConsentValue
 decodeParticipantConsentValue =
     decode ParticipantConsentValue
-        |> required "witness" string
+        |> required "witness" decodeEntityId
         |> required "language" decodeLanguage
         |> required "participant_form" decodeEntityId
 

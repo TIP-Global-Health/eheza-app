@@ -119,6 +119,14 @@ import Restful.Endpoint exposing (EntityId(..))
 -}
 
 
+type alias UserId =
+    EntityId UserIdType
+
+
+type UserIdType
+    = UserIdType
+
+
 type alias ChildId =
     EntityId ChildIdType
 

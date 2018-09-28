@@ -11,7 +11,6 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate.Model exposing (Language)
-import User.Model exposing (UserId)
 
 
 -- GENERAL CASE
