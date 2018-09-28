@@ -26,19 +26,29 @@ class HedleyRestfulParticipantsConsent extends HedleyRestfulMotherActivityBase {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $field_names = [
-      'field_mother',
-      'field_witness',
-      'field_language',
-      'field_participant_form',
+    $public_fields['witness'] = [
+      'property' => 'field_witness',
+      'resource' => [
+        'user' => [
+          'name' => 'users',
+          'full_view' => FALSE,
+        ],
+      ],
     ];
 
-    foreach ($field_names as $field_name) {
-      $public_name = str_replace('field_', '', $field_name);
-      $public_fields[$public_name] = [
-        'property' => $field_name,
-      ];
-    }
+    $public_fields['language'] = [
+      'property' => 'field_language',
+    ];
+
+    $public_fields['participant_form'] = [
+      'property' => 'field_participant_form',
+      'resource' => [
+        'participant_form' => [
+          'name' => 'participants-form',
+          'full_view' => FALSE,
+        ],
+      ],
+    ];
 
     return $public_fields;
   }
