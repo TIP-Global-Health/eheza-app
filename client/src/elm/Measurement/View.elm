@@ -738,6 +738,10 @@ viewParticipantConsent language measurement ui =
             MotherActivity ParticipantConsent
 
         viewParticipantForm formId form =
+            let
+                completed =
+                    EverySet.member formId completedFormIds
+            in
             div
                 [ class "item"
                 , onClick <| ViewParticipantForm <| Just formId
@@ -749,10 +753,22 @@ viewParticipantConsent language measurement ui =
                     []
                 , div
                     [ class "middle aligned content" ]
-                    [ a [] [ text <| selectLanguage language form.title ] ]
+                    [ a [] [ text <| selectLanguage language form.title ]
+                    , i
+                        [ classList
+                            [ ( "icon check circle outline green", completed ) ]
+                        ]
+                        []
+                    ]
                 ]
 
         viewFormList expected =
+            let
+                completedLast =
+                    expected
+                        |> EveryDictList.partition (\id _ -> EverySet.member id completedFormIds)
+                        |> (\( completed, todo ) -> EveryDictList.union todo completed)
+            in
             div
                 [ class "ui full segment participant-consent"
                 , id "participantConsentForm"
@@ -763,7 +779,7 @@ viewParticipantConsent language measurement ui =
                         [ text <| translate language (Trans.ActivitiesTitle activity)
                         ]
                     , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
-                    , expected
+                    , completedLast
                         |> EveryDictList.map viewParticipantForm
                         |> EveryDictList.values
                         |> div [ class "ui items" ]
