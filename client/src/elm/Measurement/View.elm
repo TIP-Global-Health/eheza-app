@@ -916,16 +916,33 @@ viewParticipantConsent language measurement ui =
                 Just <|
                     div [ class "page-form" ]
                         [ div
-                            [ class "wrap-form" ]
-                            [ backIcon
-                            , title
-                            , body
-                            , hr [] []
-                            , h3 [] [ text <| translate language Trans.ParticipantSignature ]
-                            , participantReviewed
-                            , h3 [] [ text <| translate language Trans.CounselorSignature ]
-                            , counselorReviewed
-                            , div [ class "actions" ] saveButton
+                            [ class "wrap-form"
+                            ]
+                            [ div
+                                [ style [ ( "position", "absolute" ) ] ]
+                                [ backIcon
+                                , title
+                                ]
+                            , div
+                                [ style
+                                    [ ( "margin-top", "72px" )
+                                    , ( "margin-bottom", "60px" )
+                                    , ( "overflow-y", "scroll" )
+                                    , ( "height", "100%" )
+                                    ]
+                                ]
+                                [ body
+                                , hr [] []
+                                , h3 [] [ text <| translate language Trans.ParticipantSignature ]
+                                , participantReviewed
+                                , h3 [] [ text <| translate language Trans.CounselorSignature ]
+                                , counselorReviewed
+                                , div
+                                    [ class "actions"
+                                    , style [ ( "margin-bottom", "72px" ) ]
+                                    ]
+                                    saveButton
+                                ]
                             ]
                         ]
     in
