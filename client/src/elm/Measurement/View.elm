@@ -738,9 +738,19 @@ viewParticipantConsent language measurement ui =
             MotherActivity ParticipantConsent
 
         viewParticipantForm formId form =
-            li
-                [ onClick <| ViewParticipantForm <| Just formId ]
-                [ text <| selectLanguage language form.title ]
+            div
+                [ class "item"
+                , onClick <| ViewParticipantForm <| Just formId
+                ]
+                [ div
+                    [ class "ui image icon-item icon-item-forms"
+                    , style [ ( "height", "140px" ), ( "width", "140px" ) ]
+                    ]
+                    []
+                , div
+                    [ class "middle aligned content" ]
+                    [ a [] [ text <| selectLanguage language form.title ] ]
+                ]
 
         viewFormList expected =
             div
@@ -756,7 +766,7 @@ viewParticipantConsent language measurement ui =
                     , expected
                         |> EveryDictList.map viewParticipantForm
                         |> EveryDictList.values
-                        |> ul []
+                        |> div [ class "ui items" ]
                     ]
                 ]
 
