@@ -452,4 +452,7 @@ function hedley_update_7014() {
 function hedley_update_7015() {
   $modules = ['hedley_forms'];
   module_enable($modules);
+
+  $content_types = ['participant_consent'];
+  hedley_add_nurse_permissions_for_content_type($content_types);
 }

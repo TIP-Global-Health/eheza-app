@@ -460,7 +460,15 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
         $participant_id = $wrapper->field_mother->getIdentifier();
       }
 
-      $existing[$participant_id][$wrapper->getBundle()] = $id;
+      // We can have more than one participant_consent entity per session, so
+      // we don't do the "existing" thing for them.
+      //
+      // TODO: We now track the id in the edit itself on the client side, so we
+      // wouldn't have to match them up this way any longer.
+      $bundle = $wrapper->getBundle();
+      if ($bundle != 'participant_consent') {
+        $existing[$participant_id][$wrapper->getBundle()] = $id;
+      }
     }
 
     $transaction = db_transaction();
@@ -494,9 +502,18 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
           if ($bundles[$activity]) {
             $handler = restful_get_restful_handler($bundles[$activity]);
             $handler->setAccount($account);
-            $previous = $existing[$motherId][$activity];
 
-            $this->handleEdit($handler, $edit, $previous);
+            if (empty($edit['tag'])) {
+              // For participant_consent, we can have multiple edits.
+              foreach ($edit as $multiple) {
+                $this->handleEdit($handler, $multiple, NULL);
+              }
+            }
+            else {
+              // For the others, it is just a single edit.
+              $previous = $existing[$motherId][$activity];
+              $this->handleEdit($handler, $edit, $previous);
+            }
           }
           else {
             // We can ignore the `checked_in` activity since we don't track it
