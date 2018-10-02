@@ -1,9 +1,11 @@
 port module Measurement.Update exposing (updateChild, updateMother)
 
-import Backend.Entities exposing (ChildId, MotherId)
-import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), PhotoValue)
+import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MeasurementData, MotherEdits, MotherMeasurements, PhotoValue)
+import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
 import Config.Model exposing (BackendUrl)
 import EveryDict
+import EveryDictList
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
 
@@ -102,8 +104,8 @@ updateChild msg model =
             )
 
 
-updateMother : MsgMother -> ModelMother -> ( ModelMother, Cmd MsgMother, Maybe OutMsgMother )
-updateMother msg model =
+updateMother : MeasurementData MotherMeasurements MotherEdits -> MsgMother -> ModelMother -> ( ModelMother, Cmd MsgMother, Maybe OutMsgMother )
+updateMother measurements msg model =
     case msg of
         SelectFamilyPlanningSign selected sign ->
             let
@@ -177,10 +179,73 @@ updateMother msg model =
                 model.participantConsent
 
         SendOutMsgMother outMsg ->
-            ( model
+            let
+                -- TODO: For the moment, we're just assuming that the save into
+                -- the local cache succeeds ... we don't do any error checking.
+                -- Once we do, this mechanism would transition to the handling
+                -- for the RemoteData that represents the state of the save &
+                -- the possible error message.
+                updated =
+                    case outMsg of
+                        SaveCompletedForm formId _ ->
+                            case model.participantConsent.view of
+                                Just currentFormId ->
+                                    if formId == currentFormId then
+                                        -- If we're looking at this form, then
+                                        -- either look at the next form, or
+                                        -- nothing, if all completed already.
+                                        selectNextForm measurements formId model
+                                    else
+                                        -- If we're already looking at a
+                                        -- different form, stay there.
+                                        model
+
+                                Nothing ->
+                                    -- If we weren't looking at a specific
+                                    -- form, then no change needed.
+                                    model
+
+                        SaveFamilyPlanningSigns _ ->
+                            model
+            in
+            ( updated
             , Cmd.none
             , Just outMsg
             )
+
+
+selectNextForm : MeasurementData MotherMeasurements MotherEdits -> ParticipantFormId -> ModelMother -> ModelMother
+selectNextForm measurements formId model =
+    let
+        completedFormIds =
+            -- TODO: Note in the last step we treat the current formId as
+            -- completed ...  once we're actually doing error checking on the
+            -- save to the cache, we will need to adjust that (to take into
+            -- account whether the save succeeded or not).
+            measurements
+                |> mapMeasurementData .consent .consent
+                |> currentValues
+                |> List.map (Tuple.second >> .value >> .formId)
+                |> EverySet.fromList
+                |> EverySet.insert formId
+
+        expectedFormIds =
+            model.participantConsent.expected
+                |> EveryDictList.keys
+                |> EverySet.fromList
+
+        remaining =
+            EverySet.diff expectedFormIds completedFormIds
+                |> EverySet.toList
+                |> List.head
+    in
+    model.participantConsent
+        |> (\consent ->
+                { model
+                    | participantConsent =
+                        { consent | view = remaining }
+                }
+           )
 
 
 {-| Send new photo of a child to the backend.

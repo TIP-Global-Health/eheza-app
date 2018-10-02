@@ -914,7 +914,8 @@ viewParticipantConsent language measurement ui =
             in
             viewModal <|
                 Just <|
-                    div [ class "page-form" ]
+                    divKeyed
+                        [ class "page-form" ]
                         [ div
                             [ class "wrap-form"
                             ]
@@ -944,6 +945,8 @@ viewParticipantConsent language measurement ui =
                                     saveButton
                                 ]
                             ]
+                            -- Use keys to force the browser to re-scroll when we switch forms.
+                            |> keyed ("consent-form-" ++ toString (fromEntityId formId))
                         ]
     in
     case ui.view of

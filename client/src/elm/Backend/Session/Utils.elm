@@ -107,6 +107,15 @@ getMotherMeasurementData motherId session =
     }
 
 
+emptyMotherMeasurementData : EditableSession -> MeasurementData MotherMeasurements MotherEdits
+emptyMotherMeasurementData session =
+    { current = emptyMotherMeasurements
+    , previous = emptyMotherMeasurements
+    , edits = emptyMotherEdits
+    , update = session.update
+    }
+
+
 {-| Given an OfflineSession for which we don't have edits, fill in default
 values as a starting point for an EditableSession.
 -}
