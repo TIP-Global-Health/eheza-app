@@ -1691,7 +1691,7 @@ translateHttpError error =
     case error of
         Http.NetworkError ->
             { english = "A network error occurred contacting the server. Are you connected to the Internet?"
-            , kinyarwanda = Just "hari ikibazo cya reseau hamagara kuri seriveri. ufite intereneti?(murandasi)"
+            , kinyarwanda = Just "Hari ikibazo cya reseau hamagara kuri seriveri. Ufite intereneti? (murandasi)"
             }
 
         Http.Timeout ->
