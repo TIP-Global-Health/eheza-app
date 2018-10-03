@@ -302,11 +302,14 @@ decodeEdit valueDecoder =
                             )
                             (field "backend" valueDecoder)
                             (field "edited" valueDecoder)
-                            -- TODO: There is a back-compat issue here
-                            (field "id" decodeEntityId)
+                            -- The `maybe` below is transitional ... for back-compat with
+                            -- existing cached sessions.
+                            (field "id" decodeEntityId
+                                |> maybe
+                                |> map (Maybe.withDefault (toEntityId 0))
+                            )
 
                     "deleted" ->
-                        -- TODO: And another back-compat issue here
                         map2 Deleted
                             (field "id" decodeEntityId)
                             (field "value" valueDecoder)
