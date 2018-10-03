@@ -931,30 +931,20 @@ viewParticipantConsent language measurement ui =
                             [ class "wrap-form"
                             ]
                             [ div
-                                [ style [ ( "position", "absolute" ) ] ]
+                                [ class "form-title" ]
                                 [ backIcon
                                 , title
                                 ]
                             , div
-                                [ style
-                                    [ ( "margin-top", "72px" )
-                                    , ( "margin-bottom", "60px" )
-                                    , ( "overflow-y", "scroll" )
-                                    , ( "height", "100%" )
-                                    ]
-                                ]
+                                [ class "form-body" ]
                                 [ body
                                 , hr [] []
                                 , h3 [] [ text <| translate language Trans.ParticipantSignature ]
                                 , participantReviewed
                                 , h3 [] [ text <| translate language Trans.CounselorSignature ]
                                 , counselorReviewed
-                                , div
-                                    [ class "actions"
-                                    , style [ ( "margin-bottom", "72px" ) ]
-                                    ]
-                                    saveButton
                                 ]
+                            , div [ class "actions" ] saveButton
                             ]
                             -- Use keys to force the browser to re-scroll when we switch forms.
                             |> keyed ("consent-form-" ++ toString (fromEntityId formId))

@@ -184,14 +184,28 @@ a {
   background: #fff;
   border-top: 9px solid #06b9ff;
   padding: 30px;
-  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  .form-title {
+    flex: initial;
+  }
+
+  .form-body {
+    flex: auto;
+    overflow-y: scroll;
+  }
+
+  .actions {
+    flex: initial;
+  }
 
   .icon-back {
     width: 34px;
     height: 27px;
     display: block;
     background: url(#{$img-path}icon-back-dark.svg);
-    position: absolute;
     background-size: 34px 27px;
+    float: left;
   }
 }
