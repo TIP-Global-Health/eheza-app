@@ -96,7 +96,7 @@ projects[strongarm][subdir] = "contrib"
 projects[strongarm][version] = "2.0"
 
 projects[title][subdir] = "contrib"
-projects[title][version] = "1.0-alpha7"
+projects[title][version] = "1.0-alpha9"
 
 projects[token][subdir] = "contrib"
 projects[token][version] = "1.7"
