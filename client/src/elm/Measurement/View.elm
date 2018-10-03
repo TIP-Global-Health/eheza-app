@@ -939,9 +939,9 @@ viewParticipantConsent language measurement ui =
                                 [ class "form-body" ]
                                 [ body
                                 , hr [] []
-                                , h3 [] [ text <| translate language Trans.ParticipantSignature ]
+                                , h2 [] [ text <| translate language Trans.ParticipantSignature ]
                                 , participantReviewed
-                                , h3 [] [ text <| translate language Trans.CounselorSignature ]
+                                , h2 [] [ text <| translate language Trans.CounselorSignature ]
                                 , counselorReviewed
                                 ]
                             , div [ class "actions" ] saveButton
