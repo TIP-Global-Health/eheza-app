@@ -437,12 +437,8 @@ the activity is expected.
 -}
 summarizeMotherActivity : MotherActivity -> EditableSession -> CompletedAndPending (EveryDictList MotherId Mother)
 summarizeMotherActivity activity session =
-    -- TODO: Need to account for the fact that for ParticipantConsent, we can
-    -- be "partly" completed ... we could have one form finished but another
-    -- form required. May require an adjustment to the data model. It may be
-    -- easiest to only consider the consent activity completed when **all**
-    -- the required consents are completed. Until then, we could indicate on
-    -- the "Todo" tab that an individual consent is completed.
+    -- For participant consent, we only consider the activity to be completed once
+    -- all expected consents have been saved.
     getCheckedIn session
         |> .mothers
         |> EveryDictList.filter (\motherId _ -> expectMotherActivity session motherId activity)
@@ -639,6 +635,8 @@ hasCompletedMotherActivity session motherId activityType measurements =
             isCompleted measurements.edits.familyPlanning (Maybe.map Tuple.second measurements.current.familyPlanning)
 
         ParticipantConsent ->
+            -- We only consider this activity completed if all expected
+            -- consents have been saved.
             let
                 current =
                     mapMeasurementData .consent .consent measurements
