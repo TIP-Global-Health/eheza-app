@@ -741,6 +741,12 @@ viewParticipantConsent language measurement ui =
             let
                 completed =
                     EverySet.member formId completedFormIds
+
+                iconVisibility =
+                    if completed then
+                        "visible"
+                    else
+                        "hidden"
             in
             div
                 [ class "item"
@@ -753,12 +759,17 @@ viewParticipantConsent language measurement ui =
                     []
                 , div
                     [ class "middle aligned content" ]
-                    [ a [] [ text <| selectLanguage language form.title ]
-                    , i
-                        [ classList
-                            [ ( "icon check circle outline green", completed ) ]
+                    [ div
+                        [ style [ ( "float", "right" ) ] ]
+                        [ i
+                            [ class "icon check circle outline green large"
+                            , style [ ( "visibility", iconVisibility ) ]
+                            ]
+                            []
                         ]
-                        []
+                    , div
+                        [ class "consent-form-list" ]
+                        [ text <| selectLanguage language form.title ]
                     ]
                 ]
 
