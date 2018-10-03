@@ -12,7 +12,7 @@ projects[auto_entitylabel][subdir] = "contrib"
 projects[auto_entitylabel][version] = "1.4"
 
 projects[ctools][subdir] = "contrib"
-projects[ctools][version] = "1.12"
+projects[ctools][version] = "1.14"
 projects[ctools][patch][] = "https://www.drupal.org/files/issues/2067997-reload-plugins-class-7.patch"
 
 projects[composer_manager][subdir] = "contrib"
@@ -52,7 +52,7 @@ projects[jquery_update][subdir] = "contrib"
 projects[jquery_update][version] = "2.4"
 
 projects[libraries][subdir] = "contrib"
-projects[libraries][version] = "2.3"
+projects[libraries][version] = "2.4"
 
 projects[logs_rollbar][type] = "module"
 projects[logs_rollbar][subdir] = "contrib"
@@ -98,10 +98,10 @@ projects[token][subdir] = "contrib"
 projects[token][version] = "1.7"
 
 projects[views][subdir] = "contrib"
-projects[views][version] = "3.18"
+projects[views][version] = "3.20"
 
 projects[views_bulk_operations][subdir] = "contrib"
-projects[views_bulk_operations][version] = "3.4"
+projects[views_bulk_operations][version] = "3.5"
 
 projects[vbo_export][subdir] = "contrib"
 projects[vbo_export][version] = "1.2"
@@ -122,7 +122,7 @@ projects[devel][download][revision] = 2f0db7d7dd41af26fdd71033a2c0258a133efef8
 projects[devel][patch][] = "https://www.drupal.org/files/issues/2879092-devel-generate-php7-warning-4.patch"
 
 projects[migrate][subdir] = "development"
-projects[migrate][version] = "2.8"
+projects[migrate][version] = "2.11"
 
 projects[migrate_extras][subdir] = "development"
 projects[migrate_extras][version] = 2.5
