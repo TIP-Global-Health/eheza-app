@@ -52,7 +52,7 @@ viewLanguageSwitcher model =
             [ class "links-translate" ]
             [ li
                 [ classList
-                    [ ( "item", True )
+                    [ ( "item english", True )
                     , ( "active", model.language == English )
                     ]
                 , onClick <| SetLanguage English
@@ -60,7 +60,7 @@ viewLanguageSwitcher model =
                 [ a [] [ span [ class "icon-english" ] [] ] ]
             , li
                 [ classList
-                    [ ( "item", True )
+                    [ ( "item kinyarwanda", True )
                     , ( "active", model.language == Kinyarwanda )
                     ]
                 , onClick <| SetLanguage Kinyarwanda
