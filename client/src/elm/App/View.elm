@@ -57,7 +57,9 @@ viewLanguageSwitcher model =
                     ]
                 , onClick <| SetLanguage English
                 ]
-                [ a [] [ span [ class "icon-english" ] [] ] ]
+                [ text "English"
+                , a [] [ span [ class "icon-english" ] [] ]
+                ]
             , li
                 [ classList
                     [ ( "item kinyarwanda", True )
@@ -65,7 +67,9 @@ viewLanguageSwitcher model =
                     ]
                 , onClick <| SetLanguage Kinyarwanda
                 ]
-                [ a [] [ span [ class "icon-kinyarwanda" ] [] ] ]
+                [ text "Kinyarwanda"
+                , a [] [ span [ class "icon-kinyarwanda" ] [] ]
+                ]
             ]
         ]
 

@@ -30,11 +30,19 @@ a {
     margin: 0;
     padding: 0 25px;
     list-style: none;
+    display: flex;
+    justify-content: flex-end;
+
+
 
     li {
       display: inline-block;
       margin-left: 15px;
       position: relative;
+      display: flex;
+      height: 27px;
+      color: white;
+      font-size: .8em;
 
       a {
         display: block;
@@ -43,6 +51,7 @@ a {
         background: #fff;
         border-radius: 50%;
         position: relative;
+        margin-left: 10px;
       }
     }
 
