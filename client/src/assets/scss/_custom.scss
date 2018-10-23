@@ -162,24 +162,26 @@ a {
 .ui.menu {
   font-family: $font;
   font-size:  1.575rem;
+  padding-left: 5px;
   min-height: 0;
 }
 
 .ui.tabular.menu {
   margin: 0;
   border-bottom: 9px solid $color-primary;
-  padding-left: 12px;
   position: relative;
   z-index: 100;
 }
 
 .ui.tabular.menu .item {
+  font-size: 0.85em;
   background: #fff;
   border: 0;
-  padding: 0.6em 1.8em;
+  padding: 0.6em 0.6em 0.6em 1.2em;
+  width: 225px;
   height: 48px;
   position: relative;
-  margin-right: 20px;
+  margin-right: 10px;
   box-shadow: -2px -2px 5px 0 rgba(0,0,0,0.12);
   color: $color-text;
   border-radius: 0 !important;
@@ -197,7 +199,7 @@ a {
     border-width: 48px 0 0 28px;
     border-color: transparent transparent transparent #fff;
     position: absolute;
-    top: 0;
+    bottom: 0;
     left: 100%;
     z-index: 200;
     filter: drop-shadow(4px -2px 2px rgba(0,0,0,0.08));
