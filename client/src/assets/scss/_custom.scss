@@ -22,19 +22,42 @@ a {
 }
 
 .language-switcher {
-  margin: 10px 0;
+  width: 800px;
+  text-align: right;
+  margin: 10px auto;
 
-  .button {
+  .links-translate {
+    margin: 0;
+    padding: 0 25px;
+    list-style: none;
 
-    i {
-      vertical-align: 3px;
+    li {
+      display: inline-block;
+      margin-left: 15px;
+      position: relative;
+
+      a {
+        display: block;
+        width: 27 px;
+        height: 27 px;
+        background: #fff;
+        border-radius: 50%;
+        position: relative;
+      }
     }
 
-    &:hover,
-    &.active:hover,
-    &.active {
-      color: $color-secondary;
+    li.active a:before {
+      width: 35px;
+      height: 35px;
+      border: 2px solid #00374f;
+      content: " ";
+      display: block;
+      border-radius: 50%;
+      position: absolute;
+      top: -4px;
+      left: -4px;
     }
+
   }
 }
 
@@ -926,6 +949,23 @@ input::placeholder {
 .icon-measurements {
   background: url(#{$img-path}icon-measurements.svg) no-repeat center;
   background-size: 30px 33px;
+}
+
+.icon-english,
+.icon-kinyarwanda {
+  width: 27px;
+  height: 27px;
+  display: block;
+}
+
+.icon-english {
+  background: url(#{$img-path}icon-english.png) no-repeat center;
+  background-size: 16px 11px;
+}
+
+.icon-kinyarwanda {
+  background: url(#{$img-path}icon-kinyarwanda.png) no-repeat center;
+  background-size: 16px 11px;
 }
 
 
