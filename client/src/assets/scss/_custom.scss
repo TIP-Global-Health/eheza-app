@@ -45,6 +45,10 @@ a {
       font-size: .8em;
       cursor: pointer;
 
+      &.active {
+        color: $color-dark-blue;
+      }
+
       a {
         display: block;
         width: 27 px;
@@ -59,7 +63,7 @@ a {
     li.active a:before {
       width: 35px;
       height: 35px;
-      border: 2px solid #00374f;
+      border: 2px solid $color-dark-blue;
       content: " ";
       display: block;
       border-radius: 50%;
@@ -911,7 +915,7 @@ input::placeholder {
   li.active a:before {
     width: 68px;
     height: 68px;
-    border: 3px solid #00374f;
+    border: 3px solid $color-dark-blue;
     content: " ";
     display: block;
     border-radius: 50%;
