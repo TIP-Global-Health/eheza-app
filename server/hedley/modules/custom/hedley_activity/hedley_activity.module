@@ -242,8 +242,10 @@ function hedley_activity_node_presave($node) {
 
       // The formula is (kg / meters squared).
       $bmi = $kg / (($cm / 100) ^ 2);
+      $zscore_bmi_for_age = hedley_zscore_bmi_for_age($days, $gender, $bmi);
 
       $wrapper->field_z_score_length->set($zscore_for_length);
+      $wrapper->field_z_score_bmi->set($zscore_bmi_for_age);
       $wrapper->field_bmi->set($bmi);
     }
   }

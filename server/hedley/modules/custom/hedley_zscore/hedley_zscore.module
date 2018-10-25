@@ -41,6 +41,38 @@ function hedley_zscore_read_file($file) {
 }
 
 /**
+ * BMI-for-age boys.
+ *
+ * @return array
+ *   An array of the entries parsed from JSON.
+ */
+function hedley_zscore_bfa_boys() {
+  $cached = &drupal_static(__FUNCTION__);
+
+  if (!isset($cached)) {
+    $cached = hedley_zscore_read_file("bfa_boys_z_exp.json");
+  }
+
+  return $cached;
+}
+
+/**
+ * BMI-for-age girls.
+ *
+ * @return array
+ *   An array of the entries parsed from JSON.
+ */
+function hedley_zscore_bfa_girls() {
+  $cached = &drupal_static(__FUNCTION__);
+
+  if (!isset($cached)) {
+    $cached = hedley_zscore_read_file("bfa_girls_z_exp.json");
+  }
+
+  return $cached;
+}
+
+/**
  * Length-for-age boys.
  *
  * @return array
@@ -134,6 +166,36 @@ function hedley_zscore_wfl_girls() {
   }
 
   return $cached;
+}
+
+/**
+ * Z-Score BMI for age.
+ *
+ * @param float $days
+ *   How many days old is the child?
+ * @param string $gender
+ *   Is the child 'male' or 'female'?
+ * @param float $bmi
+ *   What is the BMI, in (kg / metres squared)
+ *
+ * @return int
+ *   A Z-Score
+ */
+function hedley_zscore_bmi_for_age($days, $gender, $bmi) {
+  switch ($gender) {
+    case HEDLEY_ZSCORE_MALE:
+      $source = hedley_zscore_bfa_boys();
+      break;
+
+    case HEDLEY_ZSCORE_FEMALE:
+      $source = hedley_zscore_bfa_girls();
+      break;
+
+    default:
+      return NULL;
+  }
+
+  return hedley_zscore_lookup(round($days), $bmi, $source);
 }
 
 /**
