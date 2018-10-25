@@ -111,7 +111,7 @@ a {
   li.active a:before {
     width: 72px;
     height: 72px;
-    border: 6px solid #00374f;
+    border: 6px solid $color-dark-blue;
     content: " ";
     display: block;
     border-radius: 50%;

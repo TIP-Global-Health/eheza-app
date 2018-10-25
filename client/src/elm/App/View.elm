@@ -47,30 +47,29 @@ saves the current language via the Update function in local storage.
 viewLanguageSwitcher : Model -> Html Msg
 viewLanguageSwitcher model =
     div
-        [ class "ui centered language-switcher" ]
-        [ button
-            [ classList
-                [ ( "ui english left attached button", True )
-                , ( "active", model.language == English )
+        [ class "ui language-switcher" ]
+        [ ul
+            [ class "links-translate" ]
+            [ li
+                [ classList
+                    [ ( "item english", True )
+                    , ( "active", model.language == English )
+                    ]
+                , onClick <| SetLanguage English
                 ]
-            , onClick <| SetLanguage English
-            ]
-            [ i
-                [ class "gb flag" ]
-                []
-            , text "English"
-            ]
-        , button
-            [ classList
-                [ ( "ui kinyarwanda right attached button", True )
-                , ( "active", model.language == Kinyarwanda )
+                [ text "English"
+                , a [] [ span [ class "icon-english" ] [] ]
                 ]
-            , onClick <| SetLanguage Kinyarwanda
-            ]
-            [ i
-                [ class "rw flag" ]
-                []
-            , text "Kinyarwanda"
+            , li
+                [ classList
+                    [ ( "item kinyarwanda", True )
+                    , ( "active", model.language == Kinyarwanda )
+                    ]
+                , onClick <| SetLanguage Kinyarwanda
+                ]
+                [ text "Kinyarwanda"
+                , a [] [ span [ class "icon-kinyarwanda" ] [] ]
+                ]
             ]
         ]
 
