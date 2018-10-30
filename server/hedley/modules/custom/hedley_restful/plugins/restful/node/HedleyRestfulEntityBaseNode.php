@@ -88,7 +88,8 @@ abstract class HedleyRestfulEntityBaseNode extends \RestfulEntityBaseNode {
    */
   protected function renderParticipantForms() {
     $handler = restful_get_restful_handler('participants-form');
-    $handler->setAccount($this->getAccount());
+    $account = $this->getAccount();
+    $handler->setAccount($account);
 
     return $handler->get();
   }
