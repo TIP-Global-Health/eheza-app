@@ -11,9 +11,9 @@ import Translate.Model exposing (TranslationSet)
 
 decodeCounselingTopic : Decoder CounselingTopic
 decodeCounselingTopic =
-    map2 TranslationSet
-        (field "label" string)
-        (field "kinyarwanda_title" (nullable string))
+    decode TranslationSet
+        |> required "label" string
+        |> required "kinyarwanda_title" (maybe string)
 
 
 decodeCounselingTiming : Decoder CounselingTiming
