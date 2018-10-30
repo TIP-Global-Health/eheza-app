@@ -434,8 +434,12 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     // Load the session.
     $session = entity_metadata_wrapper('node', $sessionId);
 
+    // Get some metadata for our bundles.
     $bundles = $this->getAllMeasurementBundles();
 
+    // We'd like this entire operation to succeed or fail as a whole, so that
+    // we don't have deal with partially-successful updates. So, we create a
+    // transaction.
     $transaction = db_transaction();
 
     try {
