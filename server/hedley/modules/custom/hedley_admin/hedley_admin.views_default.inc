@@ -415,6 +415,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_scheduled_date']['table'] = 'field_data_field_scheduled_date';
   $handler->display->display_options['fields']['field_scheduled_date']['field'] = 'field_scheduled_date';
   $handler->display->display_options['fields']['field_scheduled_date']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['field_scheduled_date']['element_class'] = 'nowrap';
   $handler->display->display_options['fields']['field_scheduled_date']['settings'] = array(
     'format_type' => 'custom',
     'custom_date_format' => 'd-m-Y',
@@ -429,7 +430,8 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_scheduled_date_1']['table'] = 'field_data_field_scheduled_date';
   $handler->display->display_options['fields']['field_scheduled_date_1']['field'] = 'field_scheduled_date';
   $handler->display->display_options['fields']['field_scheduled_date_1']['alter']['alter_text'] = TRUE;
-  $handler->display->display_options['fields']['field_scheduled_date_1']['alter']['text'] = '[field_scheduled_date] - [field_scheduled_date_1] ';
+  $handler->display->display_options['fields']['field_scheduled_date_1']['alter']['text'] = '[field_scheduled_date] – [field_scheduled_date_1] ';
+  $handler->display->display_options['fields']['field_scheduled_date_1']['element_class'] = 'nowrap';
   $handler->display->display_options['fields']['field_scheduled_date_1']['settings'] = array(
     'format_type' => 'custom',
     'custom_date_format' => 'd-m-Y',
@@ -658,6 +660,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_date_measured']['id'] = 'field_date_measured';
   $handler->display->display_options['fields']['field_date_measured']['table'] = 'field_data_field_date_measured';
   $handler->display->display_options['fields']['field_date_measured']['field'] = 'field_date_measured';
+  $handler->display->display_options['fields']['field_date_measured']['element_class'] = 'nowrap';
   $handler->display->display_options['fields']['field_date_measured']['settings'] = array(
     'format_type' => 'custom',
     'custom_date_format' => 'd-m-Y',
@@ -1365,6 +1368,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_date_measured']['table'] = 'field_data_field_date_measured';
   $handler->display->display_options['fields']['field_date_measured']['field'] = 'field_date_measured';
   $handler->display->display_options['fields']['field_date_measured']['label'] = 'Date';
+  $handler->display->display_options['fields']['field_date_measured']['element_class'] = 'nowrap';
   $handler->display->display_options['fields']['field_date_measured']['settings'] = array(
     'format_type' => 'custom',
     'custom_date_format' => 'd-m-Y',
@@ -1407,6 +1411,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_date_birth']['field'] = 'field_date_birth';
   $handler->display->display_options['fields']['field_date_birth']['relationship'] = 'field_child_target_id';
   $handler->display->display_options['fields']['field_date_birth']['label'] = 'Child DOB';
+  $handler->display->display_options['fields']['field_date_birth']['element_class'] = 'nowrap';
   $handler->display->display_options['fields']['field_date_birth']['settings'] = array(
     'format_type' => 'custom',
     'custom_date_format' => 'd-m-Y',
@@ -1701,6 +1706,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_date_measured']['table'] = 'field_data_field_date_measured';
   $handler->display->display_options['fields']['field_date_measured']['field'] = 'field_date_measured';
   $handler->display->display_options['fields']['field_date_measured']['label'] = 'Date';
+  $handler->display->display_options['fields']['field_date_measured']['element_class'] = 'nowrap';
   $handler->display->display_options['fields']['field_date_measured']['settings'] = array(
     'format_type' => 'custom',
     'custom_date_format' => 'd-m-Y',
