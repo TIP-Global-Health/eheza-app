@@ -412,7 +412,7 @@ updateBackend backendUrl accessToken msg model =
                     )
 
 
-updateCache : UserId -> NominalDate -> MsgCached -> ModelCached -> ( ModelCached, Cmd MsgCached, List MsgBackend )
+updateCache : Maybe UserId -> NominalDate -> MsgCached -> ModelCached -> ( ModelCached, Cmd MsgCached, List MsgBackend )
 updateCache user currentDate msg model =
     case msg of
         CacheEditableSession ->
@@ -842,7 +842,7 @@ makeChildEdit currentDate childId outMsg sessionId session =
 {-| We reach this when the user hits "Save" upon editing something in the measurement
 form. So, we want to change the appropriate edit ...
 -}
-makeMotherEdit : UserId -> NominalDate -> MotherId -> OutMsgMother -> SessionId -> EditableSession -> EditableSession
+makeMotherEdit : Maybe UserId -> NominalDate -> MotherId -> OutMsgMother -> SessionId -> EditableSession -> EditableSession
 makeMotherEdit user currentDate motherId outMsg sessionId session =
     let
         data =
@@ -876,24 +876,31 @@ makeMotherEdit user currentDate motherId outMsg sessionId session =
 
         SaveCompletedForm formId language ->
             -- In this case, so far, we don't allow for updates. So, for the
-            -- moment, the only things we have to do is create things.
-            let
-                edit =
-                    Created
-                        { participantId = motherId
-                        , sessionId = Just sessionId
-                        , dateMeasured = currentDate
-                        , value =
-                            { witness = user
-                            , formId = formId
-                            , language = language
-                            }
-                        }
-            in
-            mapMotherEdits
-                (\edits -> { edits | consent = edit :: edits.consent })
-                motherId
-                session
+            -- moment, the only things we have to do is create things. Also,
+            -- we necessarily will have a current user in this case, though
+            -- we'd need to restructure to convince the compiler of that.
+            case user of
+                Just userId ->
+                    let
+                        edit =
+                            Created
+                                { participantId = motherId
+                                , sessionId = Just sessionId
+                                , dateMeasured = currentDate
+                                , value =
+                                    { witness = userId
+                                    , formId = formId
+                                    , language = language
+                                    }
+                                }
+                    in
+                    mapMotherEdits
+                        (\edits -> { edits | consent = edit :: edits.consent })
+                        motherId
+                        session
+
+                Nothing ->
+                    session
 
 
 {-| Subscribe to the answers to our cache requests.

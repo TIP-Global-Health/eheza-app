@@ -116,14 +116,8 @@ update msg model =
     case msg of
         MsgCache subMsg ->
             let
-                -- This isn't ideal ... should separate out those things which
-                -- require a user and which don't. But it will do for now.
-                userId =
-                    getUserId model
-                        |> Maybe.withDefault (toEntityId 0)
-
                 ( subModel, subCmd, extraMsgs ) =
-                    Backend.Update.updateCache userId model.currentDate subMsg model.cache
+                    Backend.Update.updateCache (getUserId model) model.currentDate subMsg model.cache
             in
             ( { model | cache = subModel }
             , Cmd.map MsgCache subCmd
