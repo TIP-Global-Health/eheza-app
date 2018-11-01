@@ -1466,7 +1466,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['nothing']['field'] = 'nothing';
   $handler->display->display_options['fields']['nothing']['label'] = 'Measurement Value';
   $handler->display->display_options['fields']['nothing']['alter']['text'] = '[field_height][field_muac][field_weight][field_nutrition_signs] ';
-  /* Field: Content: Z-Score Age */
+  /* Field: Content: ZScore Age */
   $handler->display->display_options['fields']['field_zscore_age']['id'] = 'field_zscore_age';
   $handler->display->display_options['fields']['field_zscore_age']['table'] = 'field_data_field_zscore_age';
   $handler->display->display_options['fields']['field_zscore_age']['field'] = 'field_zscore_age';
@@ -1476,7 +1476,7 @@ function hedley_admin_views_default_views() {
     'scale' => '2',
     'prefix_suffix' => 0,
   );
-  /* Field: Content: Z-Score Length */
+  /* Field: Content: ZScore Length */
   $handler->display->display_options['fields']['field_zscore_length']['id'] = 'field_zscore_length';
   $handler->display->display_options['fields']['field_zscore_length']['table'] = 'field_data_field_zscore_length';
   $handler->display->display_options['fields']['field_zscore_length']['field'] = 'field_zscore_length';
@@ -1485,6 +1485,27 @@ function hedley_admin_views_default_views() {
     'decimal_separator' => '.',
     'scale' => '2',
     'prefix_suffix' => 0,
+  );
+  /* Field: Content: BMI */
+  $handler->display->display_options['fields']['field_bmi']['id'] = 'field_bmi';
+  $handler->display->display_options['fields']['field_bmi']['table'] = 'field_data_field_bmi';
+  $handler->display->display_options['fields']['field_bmi']['field'] = 'field_bmi';
+  $handler->display->display_options['fields']['field_bmi']['settings'] = array(
+    'thousand_separator' => '',
+    'decimal_separator' => '.',
+    'scale' => '2',
+    'prefix_suffix' => 1,
+  );
+  /* Field: Content: ZScore BMI */
+  $handler->display->display_options['fields']['field_zscore_bmi']['id'] = 'field_zscore_bmi';
+  $handler->display->display_options['fields']['field_zscore_bmi']['table'] = 'field_data_field_zscore_bmi';
+  $handler->display->display_options['fields']['field_zscore_bmi']['field'] = 'field_zscore_bmi';
+  $handler->display->display_options['fields']['field_zscore_bmi']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['field_zscore_bmi']['settings'] = array(
+    'thousand_separator' => '',
+    'decimal_separator' => '.',
+    'scale' => '2',
+    'prefix_suffix' => 1,
   );
   /* Field: Content: Edit link */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
