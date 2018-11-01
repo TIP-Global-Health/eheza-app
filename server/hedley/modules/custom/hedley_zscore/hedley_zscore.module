@@ -14,12 +14,6 @@ define('HEDLEY_ZSCORE_DAYS', 'days');
 define('HEDLEY_ZSCORE_MONTHS', 'months');
 define('HEDLEY_ZSCORE_MILLIMETRES', 'millimetres');
 
-// Gender as encoded in the WHO tables.
-define('HEDLEY_ZSCORE_WHO_GENDER', [
-  'male' => 1,
-  'female' => 2,
-]);
-
 /**
  * Read a JSON file and return the results.
  *
@@ -263,7 +257,12 @@ function hedley_zscore_weight_for_height($cm, $gender, $kg) {
  */
 function hedley_zscore_lookup($key, $gender, $measurement, $clamp, array $source) {
   // Convert gender to how it is represented in the WHO tables.
-  $who_gender = HEDLEY_ZSCORE_WHO_GENDER[$gender];
+  $hedley_zscore_who_gender = [
+    'male' => 1,
+    'female' => 2,
+  ];
+
+  $who_gender = $hedley_zscore_who_gender[$gender];
 
   // First, check if we're indexing by millimetre.
   if (isset($source[HEDLEY_ZSCORE_MILLIMETRES])) {
