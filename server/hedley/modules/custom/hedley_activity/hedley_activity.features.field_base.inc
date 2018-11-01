@@ -10,6 +10,23 @@
 function hedley_activity_field_default_field_bases() {
   $field_bases = array();
 
+  // Exported field_base: 'field_bmi'.
+  $field_bases['field_bmi'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_bmi',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
+  );
+
   // Exported field_base: 'field_date_measured'.
   $field_bases['field_date_measured'] = array(
     'active' => 1,
@@ -207,34 +224,55 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_float',
   );
 
-  // Exported field_base: 'field_z_score_age'.
-  $field_bases['field_z_score_age'] = array(
+  // Exported field_base: 'field_zscore_age'.
+  $field_bases['field_zscore_age'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_z_score_age',
+    'field_name' => 'field_zscore_age',
     'indexes' => array(),
     'locked' => 0,
     'module' => 'number',
-    'settings' => array(),
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
     'translatable' => 0,
-    'type' => 'number_integer',
+    'type' => 'number_float',
   );
 
-  // Exported field_base: 'field_z_score_length'.
-  $field_bases['field_z_score_length'] = array(
+  // Exported field_base: 'field_zscore_bmi'.
+  $field_bases['field_zscore_bmi'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_z_score_length',
+    'field_name' => 'field_zscore_bmi',
     'indexes' => array(),
     'locked' => 0,
     'module' => 'number',
-    'settings' => array(),
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
     'translatable' => 0,
-    'type' => 'number_integer',
+    'type' => 'number_float',
+  );
+
+  // Exported field_base: 'field_zscore_length'.
+  $field_bases['field_zscore_length'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_zscore_length',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
   );
 
   return $field_bases;

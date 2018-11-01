@@ -8,6 +8,20 @@ basically:
     curl -O http://www.who.int/childgrowth/standards/wfl_boys_z_exp.txt
     curl -O http://www.who.int/childgrowth/standards/wfl_girls_z_exp.txt
 
+Now, those tables are appropriate for looking up integer z-scores. To
+calculate fractional z-scores, we need different tables. What we're
+doing is basically a translation of the reference code (in R), located
+at:
+
+    http://www.who.int/growthref/tools/en/  (for ages 5 - 19)
+    http://www.who.int/childgrowth/software/en/ (for under 5)
+
+Unpacking the reference code there gives us the various files of the
+form:
+
+    ...anthro.txt
+    ...who2007.txt
+
 In our gulpfile, we'll transform them into some JSON that we can more
 easily handle. We then store the JSON in three places:
 

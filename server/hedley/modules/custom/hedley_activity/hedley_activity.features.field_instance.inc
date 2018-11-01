@@ -380,12 +380,12 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-height-field_z_score_age'.
-  $field_instances['node-height-field_z_score_age'] = array(
+  // Exported field_instance: 'node-height-field_zscore_age'.
+  $field_instances['node-height-field_zscore_age'] = array(
     'bundle' => 'height',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => 'The Z-Score calculated for this measurement, according to the child\'s age at the time of the measurement.',
+    'description' => '',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -393,11 +393,11 @@ function hedley_activity_field_default_field_instances() {
         'settings' => array(
           'decimal_separator' => '.',
           'prefix_suffix' => TRUE,
-          'scale' => 0,
+          'scale' => 2,
           'thousand_separator' => '',
         ),
-        'type' => 'number_integer',
-        'weight' => 6,
+        'type' => 'number_decimal',
+        'weight' => 7,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -407,9 +407,9 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_z_score_age',
-    'label' => 'Z-Score Age',
-    'required' => 0,
+    'field_name' => 'field_zscore_age',
+    'label' => 'ZScore Age',
+    'required' => FALSE,
     'settings' => array(
       'max' => '',
       'min' => '',
@@ -418,11 +418,10 @@ function hedley_activity_field_default_field_instances() {
       'user_register_form' => FALSE,
     ),
     'widget' => array(
-      'active' => 0,
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 7,
+      'weight' => 8,
     ),
   );
 
@@ -988,6 +987,51 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-weight-field_bmi'.
+  $field_instances['node-weight-field_bmi'] = array(
+    'bundle' => 'weight',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_bmi',
+    'label' => 'BMI',
+    'required' => FALSE,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 5,
+    ),
+  );
+
   // Exported field_instance: 'node-weight-field_child'.
   $field_instances['node-weight-field_child'] = array(
     'bundle' => 'weight',
@@ -1028,7 +1072,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -2,
+      'weight' => 1,
     ),
   );
 
@@ -1127,7 +1171,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 5,
+      'weight' => 4,
     ),
   );
 
@@ -1173,12 +1217,12 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 1,
+      'weight' => 2,
     ),
   );
 
-  // Exported field_instance: 'node-weight-field_z_score_age'.
-  $field_instances['node-weight-field_z_score_age'] = array(
+  // Exported field_instance: 'node-weight-field_zscore_age'.
+  $field_instances['node-weight-field_zscore_age'] = array(
     'bundle' => 'weight',
     'default_value' => NULL,
     'deleted' => 0,
@@ -1190,11 +1234,11 @@ function hedley_activity_field_default_field_instances() {
         'settings' => array(
           'decimal_separator' => '.',
           'prefix_suffix' => TRUE,
-          'scale' => 0,
+          'scale' => 2,
           'thousand_separator' => '',
         ),
-        'type' => 'number_integer',
-        'weight' => 7,
+        'type' => 'number_decimal',
+        'weight' => 11,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -1204,8 +1248,8 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_z_score_age',
-    'label' => 'Z-Score Age',
+    'field_name' => 'field_zscore_age',
+    'label' => 'ZScore Age',
     'required' => 0,
     'settings' => array(
       'max' => '',
@@ -1219,12 +1263,12 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 7,
+      'weight' => 10,
     ),
   );
 
-  // Exported field_instance: 'node-weight-field_z_score_length'.
-  $field_instances['node-weight-field_z_score_length'] = array(
+  // Exported field_instance: 'node-weight-field_zscore_bmi'.
+  $field_instances['node-weight-field_zscore_bmi'] = array(
     'bundle' => 'weight',
     'default_value' => NULL,
     'deleted' => 0,
@@ -1236,11 +1280,11 @@ function hedley_activity_field_default_field_instances() {
         'settings' => array(
           'decimal_separator' => '.',
           'prefix_suffix' => TRUE,
-          'scale' => 0,
+          'scale' => 2,
           'thousand_separator' => '',
         ),
-        'type' => 'number_integer',
-        'weight' => 8,
+        'type' => 'number_decimal',
+        'weight' => 13,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -1250,8 +1294,8 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_z_score_length',
-    'label' => 'Z-Score Length',
+    'field_name' => 'field_zscore_bmi',
+    'label' => 'ZScore BMI',
     'required' => 0,
     'settings' => array(
       'max' => '',
@@ -1265,12 +1309,59 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 8,
+      'weight' => 12,
+    ),
+  );
+
+  // Exported field_instance: 'node-weight-field_zscore_length'.
+  $field_instances['node-weight-field_zscore_length'] = array(
+    'bundle' => 'weight',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 12,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_zscore_length',
+    'label' => 'ZScore Length',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 11,
     ),
   );
 
   // Translatables
   // Included for use with string extractors like potx.
+  t('BMI');
   t('Child');
   t('Date Measured');
   t('Family Planning');
@@ -1282,11 +1373,11 @@ function hedley_activity_field_default_field_instances() {
   t('Refers to the date-entry session which this measurement was taken in.');
   t('Represents the date which on which the measurement took place. This is distinct from the date which data entry was scheduled (though that would be the default). It is also distinct from the creation date of the node, since that could be different from the date the measurement took place.');
   t('Session');
-  t('The Z-Score calculated for this measurement, according to the child\'s age at the time of the measurement.');
   t('Weight');
   t('When was this measurement actually made (as opposed to scheduled, or entered)?');
-  t('Z-Score Age');
-  t('Z-Score Length');
+  t('ZScore Age');
+  t('ZScore BMI');
+  t('ZScore Length');
 
   return $field_instances;
 }

@@ -71,7 +71,7 @@ function hedley_activity_recalculate_zscores() {
       // hedley_activity_node_presave will do the calculation, so we don't
       // need to think hard here.
       $wrapper = entity_metadata_wrapper('node', $node);
-      $wrapper->field_z_score_age->set(NULL);
+      $wrapper->field_zscore_age->set(NULL);
       $wrapper->save();
     }
 
