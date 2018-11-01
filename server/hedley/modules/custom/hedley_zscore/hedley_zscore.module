@@ -5,8 +5,14 @@
  * Code for the Hedley ZScore calculations.
  */
 
+// Our constants as stored in our database.
 define('HEDLEY_ZSCORE_MALE', 'male');
 define('HEDLEY_ZSCORE_FEMALE', 'female');
+
+// Some keys for our tables.
+define('HEDLEY_ZSCORE_DAYS', 'days');
+define('HEDLEY_ZSCORE_MONTHS', 'months');
+define('HEDLEY_ZSCORE_MILLIMETRES', 'millimetres');
 
 /**
  * Read a JSON file and return the results.
@@ -20,24 +26,30 @@ define('HEDLEY_ZSCORE_FEMALE', 'female');
 function hedley_zscore_read_file($file) {
   $path = drupal_get_path('module', 'hedley_zscore') . '/json/' . $file;
 
-  // This mimics what we do on the Elm side when decoding the JSON.
   $json = file_get_contents($path);
   $decoded = json_decode($json);
 
+  // For speedy lookup, we index in appropriate ways, depending on
+  // which data we're looking at.
   $indexed = [];
+
   foreach ($decoded as $entry) {
-    if (isset($entry->Length)) {
+    if (isset($entry->length)) {
       // Lengths are in 0.1 increments, but we need integer keys,
       // so we multiply by 10.
-      $indexed[$entry->Length * 10] = $entry;
+      $indexed[$entry->sex][$entry->length * 10] = $entry;
     }
-    elseif (isset($entry->Month)) {
-      // For older children, we index by month ...
-      $indexed[$entry->Month] = $entry;
+    elseif (isset($entry->height)) {
+      // Heights are in 0.1 increments, but we need integer keys,
+      // so we multiply by 10.
+      $indexed[$entry->sex][$entry->height * 10] = $entry;
+    }
+    elseif (isset($entry->age)) {
+      // Otherwise, we index by age.
+      $indexed[$entry->sex][$entry->age] = $entry;
     }
     else {
-      // Otherwise, we index by day.
-      $indexed[$entry->Day] = $entry;
+      throw new Exception('Entry had unexpected structure.');
     }
   }
 
@@ -45,134 +57,86 @@ function hedley_zscore_read_file($file) {
 }
 
 /**
- * BMI-for-age boys.
+ * BMI-for-age.
  *
  * @return array
  *   An array of the entries parsed from JSON.
  */
-function hedley_zscore_bfa_boys() {
+function hedley_zscore_bfa() {
   $cached = &drupal_static(__FUNCTION__);
 
   if (!isset($cached)) {
-    $cached['days'] = hedley_zscore_read_file('bfa_boys_z_exp.json');
-    $cached['months'] = hedley_zscore_read_file('bmi_boys_z_WHO2007_exp.json');
+    $cached[HEDLEY_ZSCORE_DAYS] = hedley_zscore_read_file('bmianthro.json');
+    $cached[HEDLEY_ZSCORE_MONTHS] = hedley_zscore_read_file('bfawho2007.json');
   }
 
   return $cached;
 }
 
 /**
- * BMI-for-age girls.
+ * Length-for-age.
+ *
+ * In fact, this is length-for-age when 2 years and under, and height-for-age
+ * for older children. At the moment, this matches our practices.
  *
  * @return array
  *   An array of the entries parsed from JSON.
  */
-function hedley_zscore_bfa_girls() {
+function hedley_zscore_lhfa() {
   $cached = &drupal_static(__FUNCTION__);
 
   if (!isset($cached)) {
-    $cached['days'] = hedley_zscore_read_file('bfa_girls_z_exp.json');
-    $cached['months'] = hedley_zscore_read_file('bmi_girls_z_WHO2007_exp.json');
+    $cached[HEDLEY_ZSCORE_DAYS] = hedley_zscore_read_file('lenanthro.json');
+    $cached[HEDLEY_ZSCORE_MONTHS] = hedley_zscore_read_file('hfawho2007.json');
   }
 
   return $cached;
 }
 
 /**
- * Length-for-age boys.
+ * Weight-for-age.
  *
  * @return array
  *   An array of the entries parsed from JSON.
  */
-function hedley_zscore_lhfa_boys() {
+function hedley_zscore_wfa() {
   $cached = &drupal_static(__FUNCTION__);
 
   if (!isset($cached)) {
-    $cached['days'] = hedley_zscore_read_file('lhfa_boys_z_exp.json');
-    $cached['months'] = hedley_zscore_read_file('hfa_boys_z_WHO2007_exp.json');
+    $cached[HEDLEY_ZSCORE_DAYS] = hedley_zscore_read_file('weianthro.json');
+    $cached[HEDLEY_ZSCORE_MONTHS] = hedley_zscore_read_file('wfawho2007.json');
   }
 
   return $cached;
 }
 
 /**
- * Length-for-age girls.
+ * Weight-for-length.
  *
  * @return array
  *   An array of the entries parsed from JSON.
  */
-function hedley_zscore_lhfa_girls() {
+function hedley_zscore_wfl() {
   $cached = &drupal_static(__FUNCTION__);
 
   if (!isset($cached)) {
-    $cached['days'] = hedley_zscore_read_file('lhfa_girls_z_exp.json');
-    $cached['months'] = hedley_zscore_read_file('hfa_girls_z_WHO2007_exp.json');
+    $cached[HEDLEY_ZSCORE_MILLIMETRES] = hedley_zscore_read_file('wflanthro.json');
   }
 
   return $cached;
 }
 
 /**
- * Weight-for-age boys.
+ * Weight-for-height.
  *
  * @return array
  *   An array of the entries parsed from JSON.
  */
-function hedley_zscore_wfa_boys() {
+function hedley_zscore_wfh() {
   $cached = &drupal_static(__FUNCTION__);
 
   if (!isset($cached)) {
-    $cached['days'] = hedley_zscore_read_file('wfa_boys_z_exp.json');
-    $cached['months'] = hedley_zscore_read_file('wfa_boys_z_WHO2007_exp.json');
-  }
-
-  return $cached;
-}
-
-/**
- * Weight-for-age girls.
- *
- * @return array
- *   An array of the entries parsed from JSON.
- */
-function hedley_zscore_wfa_girls() {
-  $cached = &drupal_static(__FUNCTION__);
-
-  if (!isset($cached)) {
-    $cached['days'] = hedley_zscore_read_file('wfa_girls_z_exp.json');
-    $cached['months'] = hedley_zscore_read_file('wfa_girls_z_WHO2007_exp.json');
-  }
-
-  return $cached;
-}
-
-/**
- * Weight-for-length boys.
- *
- * @return array
- *   An array of the entries parsed from JSON.
- */
-function hedley_zscore_wfl_boys() {
-  $cached = &drupal_static(__FUNCTION__);
-
-  if (!isset($cached)) {
-    $cached['millimetres'] = hedley_zscore_read_file('wfl_boys_z_exp.json');
-  }
-
-  return $cached;
-}
-
-/**
- * Weight-for-length girls.
- *
- * @return array
- *   An array of the entries parsed from JSON.
- */
-function hedley_zscore_wfl_girls() {
-  $cached = &drupal_static(__FUNCTION__);
-
-  if (!isset($cached)) {
-    $cached['millimetres'] = hedley_zscore_read_file('wfl_girls_z_exp.json');
+    $cached[HEDLEY_ZSCORE_MILLIMETRES] = hedley_zscore_read_file('wfhanthro.json');
   }
 
   return $cached;
@@ -192,24 +156,16 @@ function hedley_zscore_wfl_girls() {
  *   A Z-Score
  */
 function hedley_zscore_bmi_for_age($days, $gender, $bmi) {
-  switch ($gender) {
-    case HEDLEY_ZSCORE_MALE:
-      $source = hedley_zscore_bfa_boys();
-      break;
+  $source = hedley_zscore_bfa();
 
-    case HEDLEY_ZSCORE_FEMALE:
-      $source = hedley_zscore_bfa_girls();
-      break;
-
-    default:
-      return NULL;
-  }
-
-  return hedley_zscore_lookup(round($days), $bmi, $source);
+  return hedley_zscore_lookup(round($days), $gender, $bmi, TRUE, $source);
 }
 
 /**
  * Z-Score length for age.
+ *
+ * In fact, for 2 years and older, we assume this is height,
+ * rather than length.
  *
  * @param float $days
  *   How many days old is the child?
@@ -222,20 +178,9 @@ function hedley_zscore_bmi_for_age($days, $gender, $bmi) {
  *   A Z-Score
  */
 function hedley_zscore_length_for_age($days, $gender, $cm) {
-  switch ($gender) {
-    case HEDLEY_ZSCORE_MALE:
-      $source = hedley_zscore_lhfa_boys();
-      break;
+  $source = hedley_zscore_lhfa();
 
-    case HEDLEY_ZSCORE_FEMALE:
-      $source = hedley_zscore_lhfa_girls();
-      break;
-
-    default:
-      return NULL;
-  }
-
-  return hedley_zscore_lookup(round($days), $cm, $source);
+  return hedley_zscore_lookup(round($days), $gender, $cm, FALSE, $source);
 }
 
 /**
@@ -252,22 +197,9 @@ function hedley_zscore_length_for_age($days, $gender, $cm) {
  *   A Z-Score
  */
 function hedley_zscore_weight_for_age($days, $gender, $kg) {
-  $source = NULL;
+  $source = hedley_zscore_wfa();
 
-  switch ($gender) {
-    case HEDLEY_ZSCORE_MALE:
-      $source = hedley_zscore_wfa_boys();
-      break;
-
-    case HEDLEY_ZSCORE_FEMALE;
-      $source = hedley_zscore_wfa_girls();
-      break;
-
-    default:
-      return NULL;
-  }
-
-  return hedley_zscore_lookup(round($days), $kg, $source);
+  return hedley_zscore_lookup(round($days), $gender, $kg, TRUE, $source);
 }
 
 /**
@@ -284,22 +216,28 @@ function hedley_zscore_weight_for_age($days, $gender, $kg) {
  *   A Z-Score
  */
 function hedley_zscore_weight_for_length($cm, $gender, $kg) {
-  $source = NULL;
+  $source = hedley_zscore_wfl();
 
-  switch ($gender) {
-    case HEDLEY_ZSCORE_MALE:
-      $source = hedley_zscore_wfl_boys();
-      break;
+  return hedley_zscore_lookup(round($cm * 10), $gender, $kg, TRUE, $source);
+}
 
-    case HEDLEY_ZSCORE_FEMALE:
-      $source = hedley_zscore_wfl_girls();
-      break;
+/**
+ * Z-Score weight for height.
+ *
+ * @param float $cm
+ *   How many centimetres is the child in height?
+ * @param string $gender
+ *   Is the child 'male' or 'female'?
+ * @param float $kg
+ *   How many kilograms does the child weigh?
+ *
+ * @return int
+ *   A Z-Score
+ */
+function hedley_zscore_weight_for_height($cm, $gender, $kg) {
+  $source = hedley_zscore_wfh();
 
-    default:
-      return NULL;
-  }
-
-  return hedley_zscore_lookup(round($cm * 10), $kg, $source);
+  return hedley_zscore_lookup(round($cm * 10), $gender, $kg, TRUE, $source);
 }
 
 /**
@@ -309,86 +247,108 @@ function hedley_zscore_weight_for_length($cm, $gender, $kg) {
  *   What index should we lookup?
  * @param float $measurement
  *   What is the measurement?
+ * @param bool $clamp
+ *   Should we apply a special procedure to values outside +3 or -3?
  * @param array $source
  *   What are the decoded JSON files we should use?
  *
  * @return int
  *   A Z-Score
  */
-function hedley_zscore_lookup($key, $measurement, array $source) {
-  // First, check if we're indexing by millimetre.
-  if (isset($source['millimetres'])) {
-    $entries = $source['millimetres'];
+function hedley_zscore_lookup($key, $gender, $measurement, $clamp, array $source) {
+  // Convert gender to how it is represented in the WHO tables.
+  $hedley_zscore_who_gender = [
+    'male' => 1,
+    'female' => 2,
+  ];
 
-    if (empty($entries[$key])) {
+  $who_gender = $hedley_zscore_who_gender[$gender];
+
+  // First, check if we're indexing by millimetre.
+  if (isset($source[HEDLEY_ZSCORE_MILLIMETRES])) {
+    if (empty($source[HEDLEY_ZSCORE_MILLIMETRES][$who_gender][$key])) {
+      // We're looking up millimetres, so we can't fall back on anything else.
       return NULL;
     }
 
-    return hedley_zscore_check_entry($measurement, $entries[$key]);
+    $entry = $source[HEDLEY_ZSCORE_MILLIMETRES][$who_gender][$key];
+
+    return hedley_zscore_check_entry($clamp, $measurement, $entry->l, $entry->m, $entry->s);
   }
 
   // If not, see if we can use a 'days' table.
-  if (isset($source['days'][$key])) {
-    return hedley_zscore_check_entry($measurement, $source['days'][$key]);
+  if (isset($source[HEDLEY_ZSCORE_DAYS][$who_gender][$key])) {
+    $entry = $source[HEDLEY_ZSCORE_DAYS][$who_gender][$key];
+
+    return hedley_zscore_check_entry($clamp, $measurement, $entry->l, $entry->m, $entry->s);
   }
 
-  // If our 'days' table doesn't have the needed data, we convert to months
-  // and try our months table.
-  //
-  // For now, we'll do the easy thing, and use months of equal lengths,
-  // rather than vary month length according to exactly when the child was
-  // born.
-  $completed_months = $key * 12 / 365.25;
-
-  // Our tables are 1-based, so we actually want to index by which month
-  // the child is **in**, rather than which month the child has completed.
-  // So, we basically round up.
-  $index_months = ceil($completed_months);
-
-  // Then look it up!
-  if (isset($source['months'][$index_months])) {
-    return hedley_zscore_check_entry($measurement, $source['months'][$index_months]);
+  // If our 'days' table doesn't have the needed data, we try months.
+  if (empty($source[HEDLEY_ZSCORE_MONTHS][$who_gender])) {
+    return NULL;
   }
 
-  // We'll fall through to here if everything was out of range.
-  return NULL;
+  // The months table for our gender.
+  $months = $source[HEDLEY_ZSCORE_MONTHS][$who_gender];
+
+  // Convert days to months.
+  $fractional_months = $key * 12 / 365.25;
+
+  // We interpolate between the l, m and s values we know for the months.
+  $low_months = floor($fractional_months);
+  $high_months = ceil($fractional_months);
+  $diff_months = $fractional_months - $low_months;
+
+  if (empty($months[$low_months]) || empty($months[$high_months])) {
+    return NULL;
+  }
+
+  $low = $months[$low_months];
+  $high = $months[$high_months];
+
+  $l = $low->l + ($diff_months * ($high->l - $low->l));
+  $m = $low->m + ($diff_months * ($high->m - $low->m));
+  $s = $low->s + ($diff_months * ($high->s - $low->s));
+
+  return hedley_zscore_check_entry($clamp, $measurement, $l, $m, $s);
 }
 
 /**
- * Looks up the measurement given a specific entry.
+ * Calculates the Z-score given the l, m and s values.
  *
+ * @param bool $clamp
+ *   Should we adjust results above 3 or below -3?
  * @param float $measurement
  *   What is the measurement?
- * @param object $entry
- *   What is the specific entry we should check?
+ * @param float $l
+ *   The l value.
+ * @param float $m
+ *   The m value.
+ * @param float $s
+ *   The s value.
  *
- * @return int
+ * @return float
  *   A Z-Score
  */
-function hedley_zscore_check_entry($measurement, $entry) {
-  if ($measurement <= $entry->SD3neg) {
-    return -3;
+function hedley_zscore_check_entry($clamp, $measurement, $l, $m, $s) {
+  $result = (pow($measurement / $m, $l) - 1) / ($s * $l);
+
+  if ($clamp) {
+    if ($result > 3) {
+      $sd3pos = $m * pow(1 + $l * $s * 3, 1 / $l);
+      $sd2pos = $m * pow(1 + $l * $s * 2, 1 / $l);
+      $sd23pos = $sd3pos - $sd2pos;
+
+      $result = 3 + (($measurement - $sd3pos) / $sd23pos);
+    }
+    elseif ($result < -3) {
+      $sd3neg = $m * pow(1 + $l * $s * -3, 1 / $l);
+      $sd2neg = $m * pow(1 + $l * $s * -2, 1 / $l);
+      $sd23neg = $sd2neg - $sd3neg;
+
+      $result = -3 + (($measurement - $sd3neg) / $sd23neg);
+    }
   }
 
-  if ($measurement <= $entry->SD2neg) {
-    return -2;
-  }
-
-  if ($measurement <= $entry->SD1neg) {
-    return -1;
-  }
-
-  if ($measurement <= $entry->SD0) {
-    return 0;
-  }
-
-  if ($measurement <= $entry->SD1) {
-    return 1;
-  }
-
-  if ($measurement <= $entry->SD2) {
-    return 2;
-  }
-
-  return 3;
+  return $result;
 }

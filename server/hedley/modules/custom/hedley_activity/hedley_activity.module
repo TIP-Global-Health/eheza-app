@@ -103,8 +103,8 @@ function hedley_activity_handle_height($nid) {
   $weight = entity_metadata_wrapper('node', $weight_id);
 
   // The presave should fill it in, so no need to think too hard here ...
-  $weight->field_z_score_length->set(NULL);
-  $weight->field_z_score_bmi->set(NULL);
+  $weight->field_zscore_length->set(NULL);
+  $weight->field_zscore_bmi->set(NULL);
   $weight->field_bmi->set(NULL);
   $weight->save();
 }
@@ -148,7 +148,7 @@ function hedley_activity_handle_child_zscores($nid) {
     foreach ($keys as $key) {
       // Just trigger presave ... that will do the hard work!
       $wrapper = entity_metadata_wrapper('node', $key);
-      $wrapper->field_z_score_age->set(NULL);
+      $wrapper->field_zscore_age->set(NULL);
       $wrapper->save();
     }
 
@@ -214,13 +214,13 @@ function hedley_activity_node_presave($node) {
 
   if ($node->type == 'height') {
     $zscore = hedley_zscore_length_for_age($days, $gender, $wrapper->field_height->value());
-    $wrapper->field_z_score_age->set($zscore);
+    $wrapper->field_zscore_age->set($zscore);
     return;
   }
 
   if ($node->type == 'weight') {
     $zscore_for_age = hedley_zscore_weight_for_age($days, $gender, $wrapper->field_weight->value());
-    $wrapper->field_z_score_age->set($zscore_for_age);
+    $wrapper->field_zscore_age->set($zscore_for_age);
 
     $child_id = $wrapper->field_child->getIdentifier();
     $session_id = $wrapper->field_session->getIdentifier();
@@ -228,9 +228,9 @@ function hedley_activity_node_presave($node) {
     $height_id = hedley_activity_height_for_session($session_id, $child_id);
 
     if (empty($height_id)) {
-      // No height yet, so no z_score_length or BMI.
-      $wrapper->field_z_score_length->set(NULL);
-      $wrapper->field_z_score_bmi->set(NULL);
+      // No height yet, so no zscore_length or BMI.
+      $wrapper->field_zscore_length->set(NULL);
+      $wrapper->field_zscore_bmi->set(NULL);
       $wrapper->field_bmi->set(NULL);
     }
     else {
@@ -241,11 +241,11 @@ function hedley_activity_node_presave($node) {
       $zscore_for_length = hedley_zscore_weight_for_length($cm, $gender, $kg);
 
       // The formula is (kg / meters squared).
-      $bmi = $kg / (($cm / 100) ^ 2);
+      $bmi = $kg / pow($cm / 100, 2);
       $zscore_bmi_for_age = hedley_zscore_bmi_for_age($days, $gender, $bmi);
 
-      $wrapper->field_z_score_length->set($zscore_for_length);
-      $wrapper->field_z_score_bmi->set($zscore_bmi_for_age);
+      $wrapper->field_zscore_length->set($zscore_for_length);
+      $wrapper->field_zscore_bmi->set($zscore_bmi_for_age);
       $wrapper->field_bmi->set($bmi);
     }
   }
