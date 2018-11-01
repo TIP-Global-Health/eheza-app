@@ -22,7 +22,7 @@ import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date exposing (delta)
-import Translate exposing (Language(..), TranslationId, translate)
+import Translate exposing (Language, translate)
 import User.Model exposing (User)
 import User.Utils exposing (assignedToClinic)
 import Utils.Html exposing (spinner, viewModal)

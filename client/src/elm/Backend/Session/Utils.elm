@@ -67,6 +67,12 @@ getChildHistoricalMeasurements childId session =
         |> Maybe.withDefault emptyChildMeasurementList
 
 
+getMotherHistoricalMeasurements : MotherId -> OfflineSession -> MotherMeasurementList
+getMotherHistoricalMeasurements motherId session =
+    EveryDict.get motherId session.historicalMeasurements.mothers
+        |> Maybe.withDefault emptyMotherMeasurementList
+
+
 {-| Gets the data in the form that `Measurement.View` (and others) will want.
 -}
 getChildMeasurementData : ChildId -> EditableSession -> MeasurementData ChildMeasurements ChildEdits
@@ -97,6 +103,15 @@ getMotherMeasurementData motherId session =
     , edits =
         EveryDict.get motherId session.edits.mothers
             |> Maybe.withDefault emptyMotherEdits
+    , update = session.update
+    }
+
+
+emptyMotherMeasurementData : EditableSession -> MeasurementData MotherMeasurements MotherEdits
+emptyMotherMeasurementData session =
+    { current = emptyMotherMeasurements
+    , previous = emptyMotherMeasurements
+    , edits = emptyMotherEdits
     , update = session.update
     }
 
@@ -231,6 +246,7 @@ setPhotoFileId photo id =
                                         | photo =
                                             Edited
                                                 { backend = change.backend
+                                                , id = change.id
                                                 , edited = { edited | value = { value | fid = Just id } }
                                                 }
                                     }
@@ -238,7 +254,7 @@ setPhotoFileId photo id =
                     else
                         edit
 
-                Deleted _ ->
+                Deleted _ _ ->
                     edit
         )
 

@@ -7,9 +7,10 @@ import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict)
 import Gizra.NominalDate
-import Json.Decode exposing (Decoder, andThen, at, bool, decodeValue, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed, value)
+import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (EntityId, decodeEntityId, toEntityId)
+import Translate.Utils exposing (decodeLanguage)
 import Utils.Json exposing (decodeEverySet)
 
 
@@ -73,6 +74,7 @@ decodeMotherMeasurementList : Decoder MotherMeasurementList
 decodeMotherMeasurementList =
     decode MotherMeasurementList
         |> optional "family_planning" (list (decodeWithEntityId decodeFamilyPlanning)) []
+        |> optional "participant_consent" (list (decodeWithEntityId decodeParticipantConsent)) []
 
 
 decodeChildMeasurementList : Decoder ChildMeasurementList
@@ -127,6 +129,19 @@ decodeFamilyPlanning =
     decodeEverySet decodeFamilyPlanningSign
         |> field "family_planning_signs"
         |> decodeMotherMeasurement
+
+
+decodeParticipantConsent : Decoder ParticipantConsent
+decodeParticipantConsent =
+    decodeMotherMeasurement decodeParticipantConsentValue
+
+
+decodeParticipantConsentValue : Decoder ParticipantConsentValue
+decodeParticipantConsentValue =
+    decode ParticipantConsentValue
+        |> required "witness" decodeEntityId
+        |> required "language" decodeLanguage
+        |> required "participant_form" decodeEntityId
 
 
 decodeNutrition : Decoder ChildNutrition
@@ -257,12 +272,13 @@ decodeMotherEdits : Decoder MotherEdits
 decodeMotherEdits =
     decode MotherEdits
         |> required "family_planning" (decodeEdit decodeFamilyPlanning)
+        |> optional "participant_consent" (list (decodeEdit decodeParticipantConsent)) []
         |> optional "checked_in" bool False
 
 
 {-| The opposite of `encodeEdit`
 -}
-decodeEdit : Decoder value -> Decoder (Edit value)
+decodeEdit : Decoder value -> Decoder (Edit (EntityId id) value)
 decodeEdit valueDecoder =
     field "tag" string
         |> andThen
@@ -276,19 +292,27 @@ decodeEdit valueDecoder =
                             |> map Created
 
                     "edited" ->
-                        map2
-                            (\backend edited ->
+                        map3
+                            (\backend edited id ->
                                 Edited
                                     { backend = backend
                                     , edited = edited
+                                    , id = id
                                     }
                             )
                             (field "backend" valueDecoder)
                             (field "edited" valueDecoder)
+                            -- The `maybe` below is transitional ... for back-compat with
+                            -- existing cached sessions.
+                            (field "id" decodeEntityId
+                                |> maybe
+                                |> map (Maybe.withDefault (toEntityId 0))
+                            )
 
                     "deleted" ->
-                        field "value" valueDecoder
-                            |> map Deleted
+                        map2 Deleted
+                            (field "id" decodeEntityId)
+                            (field "value" valueDecoder)
 
                     _ ->
                         fail <|

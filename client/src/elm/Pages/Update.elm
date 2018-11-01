@@ -3,6 +3,7 @@ module Pages.Update exposing (..)
 import App.Model exposing (Msg(MsgSession))
 import Backend.Model
 import Backend.Session.Model exposing (EditableSession, MsgEditableSession(..))
+import Backend.Session.Utils exposing (emptyMotherMeasurementData, getMotherMeasurementData)
 import EveryDict
 import Maybe.Extra
 import Measurement.Utils exposing (getChildForm, getMotherForm)
@@ -79,8 +80,13 @@ updateSession session msg model =
                 motherForm =
                     Maybe.map (\motherId -> getMotherForm motherId session) maybeMotherId
 
+                measurements =
+                    maybeMotherId
+                        |> Maybe.map (\motherId -> getMotherMeasurementData motherId session)
+                        |> Maybe.withDefault (emptyMotherMeasurementData session)
+
                 ( subModel, subCmd, subForm, outMsg, page ) =
-                    Pages.Activity.Update.updateMother subMsg activityPage motherForm
+                    Pages.Activity.Update.updateMother subMsg activityPage motherForm measurements
 
                 sessionMsgs =
                     maybeMotherId
@@ -160,8 +166,11 @@ updateSession session msg model =
                     EveryDict.get motherId model.motherPages
                         |> Maybe.withDefault Pages.Participant.Model.emptyModel
 
+                measurements =
+                    getMotherMeasurementData motherId session
+
                 ( subModel, subCmd, subForm, outMsg, page ) =
-                    Pages.Participant.Update.updateMother subMsg motherPage motherForm
+                    Pages.Participant.Update.updateMother subMsg motherPage motherForm measurements
 
                 sessionMsgs =
                     List.map (App.Model.MsgCache << Backend.Model.MsgEditableSession)

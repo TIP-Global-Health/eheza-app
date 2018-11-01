@@ -10,6 +10,7 @@ import EveryDict exposing (EveryDict)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
+import Translate.Model exposing (Language)
 
 
 -- GENERAL CASE
@@ -101,6 +102,17 @@ type alias FamilyPlanning =
     Measurement MotherId (EverySet FamilyPlanningSign)
 
 
+type alias ParticipantConsent =
+    Measurement MotherId ParticipantConsentValue
+
+
+type alias ParticipantConsentValue =
+    { witness : UserId
+    , language : Language
+    , formId : ParticipantFormId
+    }
+
+
 type ChildNutritionSign
     = AbdominalDistension
     | Apathy
@@ -153,12 +165,14 @@ of a specialized type (rather than a single list with a tagged type).
 -}
 type alias MotherMeasurementList =
     { familyPlannings : List ( FamilyPlanningId, FamilyPlanning )
+    , consents : List ( ParticipantConsentId, ParticipantConsent )
     }
 
 
 emptyMotherMeasurementList : MotherMeasurementList
 emptyMotherMeasurementList =
     { familyPlannings = []
+    , consents = []
     }
 
 
@@ -212,9 +226,11 @@ emptyHistoricalMeasurements =
 
 
 {-| This is like `ChildMeasurementList`, except that it just covers one
-of each kind of measurements (rather than a list of each kind). So, it
-is the type you'd use if you wanted to apply a `List.head` to everything
-in `ChildMeasurementList`, for instance.
+of each kind of measurements (rather than a list of each kind).
+
+So, this is the type you'd use for the measurements for a child for
+a particular session.
+
 -}
 type alias ChildMeasurements =
     { height : Maybe ( HeightId, Height )
@@ -238,15 +254,21 @@ emptyChildMeasurements =
 
 
 {-| Like `ChildMeasurements`, but for mothers.
+
+Note that for `consent`, we could have multiple consents in the same session.
+So, it is a `List` (possibly empty) rather than a `Maybe`.
+
 -}
 type alias MotherMeasurements =
     { familyPlanning : Maybe ( FamilyPlanningId, FamilyPlanning )
+    , consent : EveryDict ParticipantConsentId ParticipantConsent
     }
 
 
 emptyMotherMeasurements : MotherMeasurements
 emptyMotherMeasurements =
     { familyPlanning = Nothing
+    , consent = EveryDict.empty
     }
 
 
@@ -271,7 +293,7 @@ emptyMeasurements =
 so that eventually we can perform those edits on the backend. So, we define
 a type which represents a possible edit.
 -}
-type Edit value
+type Edit id value
     = Unedited
       -- We've created a new measurement, which we didn't think was on the backend
       -- when the user created it. It has no key, since that will be supplied when
@@ -281,12 +303,16 @@ type Edit value
       -- was on the backend when the user performed the edit. (This may be valuable
       -- someday for conflict resolution). So, if we edit and the re-edit, the
       -- "backend" value remains the same ... until we update the backend.
-    | Edited { backend : value, edited : value }
+    | Edited
+        { id : id
+        , backend : value
+        , edited : value
+        }
       -- We've deleted it ... that is, we now want to indicate that this measurement
       -- hasn't been taken at all. The value tracks what value we thought was on
       -- the backend when the user performed the delete (again, possibly valuable
       -- someday for conflict resolution)
-    | Deleted value
+    | Deleted id value
 
 
 {-| This represents a set of edits to Mother measurements.
@@ -301,9 +327,14 @@ But see the `isCheckedIn` function in `Activity.Utils`, which also checks whethe
 the mother is **implicitly** checked in, because she or a child has a completed
 activity.
 
+`consent` is a List, because we can have more than one consent in a session.
+This is unlike, say, familyPlanning, where we'd only have one recorded for
+each session.
+
 -}
 type alias MotherEdits =
-    { familyPlanning : Edit FamilyPlanning
+    { familyPlanning : Edit FamilyPlanningId FamilyPlanning
+    , consent : List (Edit ParticipantConsentId ParticipantConsent)
     , explicitlyCheckedIn : Bool
     }
 
@@ -311,17 +342,18 @@ type alias MotherEdits =
 emptyMotherEdits : MotherEdits
 emptyMotherEdits =
     { familyPlanning = Unedited
+    , consent = []
     , explicitlyCheckedIn = False
     }
 
 
 type alias ChildEdits =
-    { height : Edit Height
-    , muac : Edit Muac
-    , nutrition : Edit ChildNutrition
-    , photo : Edit Photo
-    , weight : Edit Weight
-    , counseling : Edit CounselingSession
+    { height : Edit HeightId Height
+    , muac : Edit MuacId Muac
+    , nutrition : Edit ChildNutritionId ChildNutrition
+    , photo : Edit PhotoId Photo
+    , weight : Edit WeightId Weight
+    , counseling : Edit CounselingSessionId CounselingSession
     }
 
 

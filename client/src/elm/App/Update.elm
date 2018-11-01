@@ -1,6 +1,7 @@
 port module App.Update exposing (init, loginConfig, subscriptions, update)
 
 import App.Model exposing (..)
+import App.Utils exposing (..)
 import Backend.Model
 import Backend.Session.Model
 import Backend.Update
@@ -19,13 +20,14 @@ import Pages.Model
 import Pages.Page exposing (Page(..), UserPage(AdminPage, ClinicsPage))
 import Pages.Update
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (decodeSingleDrupalEntity)
+import Restful.Endpoint exposing (decodeSingleDrupalEntity, toEntityId)
 import Restful.Login exposing (AuthenticatedUser, Credentials, LoginEvent(..), UserAndData(..), checkCachedCredentials)
 import ServiceWorker.Model
 import ServiceWorker.Update
 import Task
 import Time exposing (minute)
-import Translate exposing (Language(..), languageFromCode, languageToCode)
+import Translate.Model exposing (Language(..))
+import Translate.Utils exposing (languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
 import User.Decoder exposing (decodeUser)
 import User.Encoder exposing (encodeUser)
@@ -115,7 +117,7 @@ update msg model =
         MsgCache subMsg ->
             let
                 ( subModel, subCmd, extraMsgs ) =
-                    Backend.Update.updateCache model.currentDate subMsg model.cache
+                    Backend.Update.updateCache (getUserId model) model.currentDate subMsg model.cache
             in
             ( { model | cache = subModel }
             , Cmd.map MsgCache subCmd

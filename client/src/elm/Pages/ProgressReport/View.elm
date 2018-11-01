@@ -19,7 +19,7 @@ import Maybe.Extra
 import Pages.Model exposing (MsgSession(..))
 import Pages.Page exposing (Page(..), SessionPage(..))
 import Pages.PageNotFound.View
-import Translate exposing (Language(..), translate)
+import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore(..))

@@ -34,11 +34,12 @@ type ChildActivity
 
 {-| So far, it seems simpler not to have a separate `CaregiverActivityType`.
 Once we have some caregiver activities, they are very likely to be a subset
-of the mother activites, rather than an entirely different type. Also, we
+of the mother activities, rather than an entirely different type. Also, we
 show mothers and caregivers in very similar ways in the UI.
 -}
 type MotherActivity
     = FamilyPlanning
+    | ParticipantConsent
 
 
 {-| This is basically a tuple, but it's nice to have meaningful names for the

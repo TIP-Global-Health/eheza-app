@@ -9,9 +9,9 @@ import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (applyEdit, mapMeasurementData, muacIndication)
+import Backend.Measurement.Utils exposing (applyEdit, currentValues, mapMeasurementData, muacIndication)
 import Backend.Session.Model exposing (EditableSession)
-import EveryDict
+import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
@@ -19,6 +19,7 @@ import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
+import HtmlParser.Util exposing (toVirtualDom)
 import Json.Decode
 import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
@@ -27,8 +28,9 @@ import Measurement.Utils exposing (..)
 import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Restful.Endpoint exposing (fromEntityId)
 import Round
-import Translate as Trans exposing (Language(..), TranslationId, translate)
-import Utils.Html exposing (script)
+import Translate as Trans exposing (Language, TranslationId, translate)
+import Translate.Utils exposing (selectLanguage)
+import Utils.Html exposing (script, viewModal)
 import Utils.NominalDate exposing (Days(..), diffDays)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
 import ZScore.Utils exposing (viewZScore, zScoreHeightForAge, zScoreWeightForAge, zScoreWeightForHeight)
@@ -137,22 +139,22 @@ weightFormConfig =
     }
 
 
-viewHeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Height) (Edit Height) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewHeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Height) (Edit HeightId Height) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewHeight =
     viewFloatForm heightFormConfig
 
 
-viewWeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Weight) (Edit Weight) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewWeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Weight) (Edit WeightId Weight) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewWeight =
     viewFloatForm weightFormConfig
 
 
-viewMuac : Language -> NominalDate -> Child -> MeasurementData (Maybe Muac) (Edit Muac) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewMuac : Language -> NominalDate -> Child -> MeasurementData (Maybe Muac) (Edit MuacId Muac) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewMuac =
     viewFloatForm muacFormConfig
 
 
-viewFloatForm : FloatFormConfig value -> Language -> NominalDate -> Child -> MeasurementData (Maybe value) (Edit value) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewFloatForm : FloatFormConfig value -> Language -> NominalDate -> Child -> MeasurementData (Maybe value) (Edit id value) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewFloatForm config language currentDate child measurements zscores model =
     let
         -- What is the string input value from the form?
@@ -404,7 +406,7 @@ viewFloatDiff config language previousValue currentValue =
         viewMessage False
 
 
-viewPhoto : Language -> MeasurementData (Maybe Photo) (Edit Photo) -> Maybe PhotoValue -> Html MsgChild
+viewPhoto : Language -> MeasurementData (Maybe Photo) (Edit PhotoId Photo) -> Maybe PhotoValue -> Html MsgChild
 viewPhoto language measurement photo =
     let
         activity =
@@ -464,7 +466,7 @@ Button will also take care of preventing double submission,
 and showing success and error indications.
 
 -}
-saveButton : Language -> Maybe msg -> MeasurementData (Maybe a) (Edit a) -> Maybe String -> List (Html msg)
+saveButton : Language -> Maybe msg -> MeasurementData (Maybe a) (Edit id a) -> Maybe String -> List (Html msg)
 saveButton language msg measurement maybeDivClass =
     let
         isLoading =
@@ -505,7 +507,7 @@ saveButton language msg measurement maybeDivClass =
     ]
 
 
-viewNutritionSigns : Language -> MeasurementData (Maybe ChildNutrition) (Edit ChildNutrition) -> EverySet ChildNutritionSign -> Html MsgChild
+viewNutritionSigns : Language -> MeasurementData (Maybe ChildNutrition) (Edit ChildNutritionId ChildNutrition) -> EverySet ChildNutritionSign -> Html MsgChild
 viewNutritionSigns language measurement signs =
     let
         activity =
@@ -591,7 +593,7 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
         ]
 
 
-viewCounselingSession : Language -> MeasurementData (Maybe CounselingSession) (Edit CounselingSession) -> EditableSession -> Maybe ( CounselingTiming, EverySet CounselingTopicId ) -> Html MsgChild
+viewCounselingSession : Language -> MeasurementData (Maybe CounselingSession) (Edit CounselingSessionId CounselingSession) -> EditableSession -> Maybe ( CounselingTiming, EverySet CounselingTopicId ) -> Html MsgChild
 viewCounselingSession language measurement session value =
     case value of
         Nothing ->
@@ -725,8 +727,238 @@ viewMother language activity measurements model =
         FamilyPlanning ->
             viewFamilyPlanning language (mapMeasurementData (Maybe.map Tuple.second << .familyPlanning) .familyPlanning measurements) model.familyPlanningSigns
 
+        ParticipantConsent ->
+            viewParticipantConsent language (mapMeasurementData .consent .consent measurements) model.participantConsent
 
-viewFamilyPlanning : Language -> MeasurementData (Maybe FamilyPlanning) (Edit FamilyPlanning) -> EverySet FamilyPlanningSign -> Html MsgMother
+
+viewParticipantConsent : Language -> MeasurementData (EveryDict ParticipantConsentId ParticipantConsent) (List (Edit ParticipantConsentId ParticipantConsent)) -> ParticipantFormUI -> Html MsgMother
+viewParticipantConsent language measurement ui =
+    let
+        activity =
+            MotherActivity ParticipantConsent
+
+        viewParticipantForm formId form =
+            let
+                completed =
+                    EverySet.member formId completedFormIds
+
+                iconVisibility =
+                    if completed then
+                        "visible"
+                    else
+                        "hidden"
+            in
+            div
+                [ class "item"
+                , onClick <| ViewParticipantForm <| Just formId
+                ]
+                [ div
+                    [ class "ui image icon-item icon-item-forms"
+                    , style [ ( "height", "140px" ), ( "width", "140px" ) ]
+                    ]
+                    []
+                , div
+                    [ class "middle aligned content" ]
+                    [ div
+                        [ style [ ( "float", "right" ) ] ]
+                        [ i
+                            [ class "icon check circle outline green large"
+                            , style [ ( "visibility", iconVisibility ) ]
+                            ]
+                            []
+                        ]
+                    , div
+                        [ class "consent-form-list" ]
+                        [ text <| selectLanguage language form.title ]
+                    ]
+                ]
+
+        viewFormList expected =
+            let
+                completedLast =
+                    expected
+                        |> EveryDictList.partition (\id _ -> EverySet.member id completedFormIds)
+                        |> (\( completed, todo ) -> EveryDictList.union todo completed)
+            in
+            div
+                [ class "ui full segment participant-consent"
+                , id "participantConsentForm"
+                ]
+                [ div [ class "content" ]
+                    [ h3
+                        [ class "ui header" ]
+                        [ text <| translate language (Trans.ActivitiesTitle activity)
+                        ]
+                    , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+                    , completedLast
+                        |> EveryDictList.map viewParticipantForm
+                        |> EveryDictList.values
+                        |> div [ class "ui items" ]
+                    ]
+                ]
+
+        completedFormIds =
+            currentValues measurement
+                |> List.map (Tuple.second >> .value >> .formId)
+                |> EverySet.fromList
+
+        viewForm formId expected =
+            let
+                backIcon =
+                    a
+                        [ class "icon-back"
+                        , onClick <| ViewParticipantForm Nothing
+                        ]
+                        []
+
+                completed =
+                    EverySet.member formId completedFormIds
+
+                form =
+                    EveryDictList.get formId expected
+
+                progress =
+                    EveryDict.get formId ui.progress
+                        |> Maybe.withDefault emptyParticipantFormProgress
+
+                progressCompleted =
+                    progress.participantSigned && progress.counselorSigned
+
+                titleText =
+                    Maybe.map (selectLanguage language << .title) form
+                        |> Maybe.withDefault ""
+
+                title =
+                    h1
+                        [ class "ui report header"
+                        , style
+                            [ ( "padding-left", "60px" )
+                            , ( "padding-right", "60px" )
+                            ]
+                        ]
+                        [ text titleText ]
+
+                body =
+                    Maybe.map (toVirtualDom << .parsed << selectLanguage language << .body) form
+                        |> Maybe.withDefault []
+                        |> div []
+
+                counselorReviewed =
+                    div [ class "ui checkbox activity" ]
+                        [ input
+                            [ type_ "checkbox"
+                            , id "counselor-reviewed"
+                            , name "counselor-reviewed"
+                            , onClick <| SetCounselorSigned formId (not progress.counselorSigned)
+                            , checked progress.counselorSigned
+                            , classList [ ( "checked", progress.counselorSigned ) ]
+                            , disabled completed
+                            ]
+                            []
+                        , label
+                            [ for "counselor-reviewed" ]
+                            [ text <| translate language Trans.CounselorReviewed ]
+                        ]
+
+                participantReviewed =
+                    div [ class "ui checkbox activity" ]
+                        [ input
+                            [ type_ "checkbox"
+                            , id "participant-reviewed"
+                            , name "participant-reviewed"
+                            , onClick <| SetParticipantSigned formId (not progress.participantSigned)
+                            , checked progress.participantSigned
+                            , classList [ ( "checked", progress.participantSigned ) ]
+                            , disabled completed
+                            ]
+                            []
+                        , label
+                            [ for "participant-reviewed" ]
+                            [ text <| translate language Trans.ParticipantReviewed ]
+                        ]
+
+                msg =
+                    if completed || not progressCompleted then
+                        Nothing
+                    else
+                        SaveCompletedForm formId language
+                            |> SendOutMsgMother
+                            |> Just
+
+                isLoading =
+                    measurement.update == Loading
+
+                isFailure =
+                    RemoteData.isFailure measurement.update
+
+                ( updateText, errorText ) =
+                    if EverySet.member formId completedFormIds then
+                        ( Trans.Update, Trans.UpdateError )
+                    else
+                        ( Trans.Save, Trans.SaveError )
+
+                saveAttr =
+                    if isLoading then
+                        []
+                    else
+                        Maybe.map onClick msg
+                            |> Maybe.Extra.toList
+
+                saveButton =
+                    [ button
+                        ([ classList
+                            [ ( "ui fluid primary button", True )
+                            , ( "loading", isLoading )
+                            , ( "negative", isFailure )
+                            , ( "disabled", Maybe.Extra.isNothing msg )
+                            ]
+                         , id "save-form"
+                         ]
+                            ++ saveAttr
+                        )
+                        [ text <| translate language updateText
+                        ]
+                    , [ text <| translate language errorText ]
+                        |> div []
+                        |> showIf isFailure
+                    ]
+            in
+            viewModal <|
+                Just <|
+                    divKeyed
+                        [ class "page-form" ]
+                        [ div
+                            [ class "wrap-form"
+                            ]
+                            [ div
+                                [ class "form-title" ]
+                                [ backIcon
+                                , title
+                                ]
+                            , div
+                                [ class "form-body" ]
+                                [ body
+                                , hr [] []
+                                , h2 [] [ text <| translate language Trans.ParticipantSignature ]
+                                , participantReviewed
+                                , h2 [] [ text <| translate language Trans.CounselorSignature ]
+                                , counselorReviewed
+                                ]
+                            , div [ class "actions" ] saveButton
+                            ]
+                            -- Use keys to force the browser to re-scroll when we switch forms.
+                            |> keyed ("consent-form-" ++ toString (fromEntityId formId))
+                        ]
+    in
+    case ui.view of
+        Nothing ->
+            viewFormList ui.expected
+
+        Just formId ->
+            viewForm formId ui.expected
+
+
+viewFamilyPlanning : Language -> MeasurementData (Maybe FamilyPlanning) (Edit FamilyPlanningId FamilyPlanning) -> EverySet FamilyPlanningSign -> Html MsgMother
 viewFamilyPlanning language measurement signs =
     let
         activity =

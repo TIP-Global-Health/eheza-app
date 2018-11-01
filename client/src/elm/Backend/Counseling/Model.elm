@@ -13,15 +13,14 @@ with the other measurements.
 import Backend.Entities exposing (..)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
+import Translate.Model exposing (TranslationSet)
 
 
 {-| For the moment, the only information we track about the topic itself
 is the text for the checkboxes, in both languages.
 -}
 type alias CounselingTopic =
-    { english : String
-    , kinyarwanda : Maybe String
-    }
+    TranslationSet String
 
 
 {-| The different stages for counseling sessions.

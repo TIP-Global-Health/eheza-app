@@ -6,13 +6,14 @@ import EveryDictList
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Restful.Endpoint exposing (decodeEntityId)
+import Translate.Model exposing (TranslationSet)
 
 
 decodeCounselingTopic : Decoder CounselingTopic
 decodeCounselingTopic =
-    map2 CounselingTopic
-        (field "label" string)
-        (field "kinyarwanda_title" (nullable string))
+    decode TranslationSet
+        |> required "label" string
+        |> required "kinyarwanda_title" (maybe string)
 
 
 decodeCounselingTiming : Decoder CounselingTiming

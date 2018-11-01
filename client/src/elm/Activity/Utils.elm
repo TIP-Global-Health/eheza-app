@@ -4,6 +4,7 @@ module Activity.Utils
         , defaultActivity
         , encodeActivityAsString
         , expectCounselingActivity
+        , expectParticipantConsent
         , getActivityCountForMother
         , getActivityIcon
         , getAllActivities
@@ -34,12 +35,14 @@ import Backend.Child.Model exposing (Child)
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (applyEdit, currentValue, mapMeasurementData)
+import Backend.Measurement.Utils exposing (applyEdit, currentValue, currentValues, mapMeasurementData)
 import Backend.Mother.Model exposing (ChildrenRelationType(..), Mother)
+import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Session.Model exposing (..)
-import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother, getMotherMeasurementData, getMyMother, mapMotherEdits)
+import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMyMother, mapMotherEdits)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
+import EverySet
 import Gizra.NominalDate exposing (diffDays)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
@@ -76,6 +79,9 @@ encodeActivityAsString activity =
                 FamilyPlanning ->
                     "family_planning"
 
+                ParticipantConsent ->
+                    "participants_consent"
+
 
 {-| The inverse of encodeActivityTypeAsString
 -}
@@ -102,6 +108,9 @@ decodeActivityFromString s =
 
         "family_planning" ->
             Just <| MotherActivity FamilyPlanning
+
+        "participants_consent" ->
+            Just <| MotherActivity ParticipantConsent
 
         _ ->
             Nothing
@@ -145,6 +154,9 @@ getActivityIcon activity =
                 FamilyPlanning ->
                     "planning"
 
+                ParticipantConsent ->
+                    "forms"
+
 
 getAllActivities : List Activity
 getAllActivities =
@@ -161,7 +173,9 @@ getAllChildActivities =
 
 getAllMotherActivities : List MotherActivity
 getAllMotherActivities =
-    [ FamilyPlanning ]
+    [ FamilyPlanning
+    , ParticipantConsent
+    ]
 
 
 {-| Do we expect this activity to be performed in this session for this child?
@@ -367,20 +381,39 @@ whether we would expect to perform this action if checked in.
 -}
 expectMotherActivity : EditableSession -> MotherId -> MotherActivity -> Bool
 expectMotherActivity session motherId activity =
-    -- The activity is unused for now, but will probably be used later, so I've
-    -- structured it this way from the beginning.  For now, all activities are
-    -- expected for "mothers" and none for "caregivers"
     getMother motherId session.offlineSession
         |> Maybe.map
             (\mother ->
-                case mother.relation of
-                    MotherRelation ->
-                        True
+                case activity of
+                    FamilyPlanning ->
+                        case mother.relation of
+                            MotherRelation ->
+                                True
 
-                    CaregiverRelation ->
-                        False
+                            CaregiverRelation ->
+                                False
+
+                    ParticipantConsent ->
+                        expectParticipantConsent session motherId
+                            |> EveryDictList.isEmpty
+                            |> not
             )
         |> Maybe.withDefault False
+
+
+{-| Which participant forms would we expect this mother to consent to in this session?
+-}
+expectParticipantConsent : EditableSession -> MotherId -> EveryDictList ParticipantFormId ParticipantForm
+expectParticipantConsent session motherId =
+    let
+        previouslyConsented =
+            getMotherHistoricalMeasurements motherId session.offlineSession
+                |> .consents
+                |> List.map (Tuple.second >> .value >> .formId)
+                |> EverySet.fromList
+    in
+    session.offlineSession.allParticipantForms
+        |> EveryDictList.filter (\id _ -> not (EverySet.member id previouslyConsented))
 
 
 {-| For a particular child activity, figure out which children have completed
@@ -404,6 +437,8 @@ the activity is expected.
 -}
 summarizeMotherActivity : MotherActivity -> EditableSession -> CompletedAndPending (EveryDictList MotherId Mother)
 summarizeMotherActivity activity session =
+    -- For participant consent, we only consider the activity to be completed once
+    -- all expected consents have been saved.
     getCheckedIn session
         |> .mothers
         |> EveryDictList.filter (\motherId _ -> expectMotherActivity session motherId activity)
@@ -593,31 +628,44 @@ childHasCompletedActivity childId activityType session =
         |> hasCompletedChildActivity activityType
 
 
-hasCompletedMotherActivity : MotherActivity -> MeasurementData MotherMeasurements MotherEdits -> Bool
-hasCompletedMotherActivity activityType measurements =
+hasCompletedMotherActivity : EditableSession -> MotherId -> MotherActivity -> MeasurementData MotherMeasurements MotherEdits -> Bool
+hasCompletedMotherActivity session motherId activityType measurements =
     case activityType of
         FamilyPlanning ->
             isCompleted measurements.edits.familyPlanning (Maybe.map Tuple.second measurements.current.familyPlanning)
+
+        ParticipantConsent ->
+            -- We only consider this activity completed if all expected
+            -- consents have been saved.
+            let
+                current =
+                    mapMeasurementData .consent .consent measurements
+                        |> currentValues
+                        |> List.map (Tuple.second >> .value >> .formId)
+                        |> EverySet.fromList
+            in
+            expectParticipantConsent session motherId
+                |> EveryDictList.all (\id _ -> EverySet.member id current)
 
 
 motherHasCompletedActivity : MotherId -> MotherActivity -> EditableSession -> Bool
 motherHasCompletedActivity motherId activityType session =
     getMotherMeasurementData motherId session
-        |> hasCompletedMotherActivity activityType
+        |> hasCompletedMotherActivity session motherId activityType
 
 
 {-| Should some measurement be considered completed? Note that this means that it has
 been entered locally, not that it has been saved to the backend.
 -}
-isCompleted : Edit value -> Maybe value -> Bool
+isCompleted : Edit id value -> Maybe value -> Bool
 isCompleted edit =
     applyEdit edit >> isJust
 
 
-hasAnyCompletedMotherActivity : MeasurementData MotherMeasurements MotherEdits -> Bool
-hasAnyCompletedMotherActivity measurements =
+hasAnyCompletedMotherActivity : EditableSession -> MotherId -> MeasurementData MotherMeasurements MotherEdits -> Bool
+hasAnyCompletedMotherActivity session motherId measurements =
     getAllMotherActivities
-        |> List.any (flip hasCompletedMotherActivity measurements)
+        |> List.any (\activity -> hasCompletedMotherActivity session motherId activity measurements)
 
 
 hasAnyCompletedChildActivity : MeasurementData ChildMeasurements ChildEdits -> Bool
@@ -723,7 +771,7 @@ getCheckedIn session =
 motherHasAnyCompletedActivity : MotherId -> EditableSession -> Bool
 motherHasAnyCompletedActivity motherId session =
     getMotherMeasurementData motherId session
-        |> hasAnyCompletedMotherActivity
+        |> hasAnyCompletedMotherActivity session motherId
 
 
 {-| Does the child have any completed activity?
