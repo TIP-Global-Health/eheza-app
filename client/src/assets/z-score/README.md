@@ -7,17 +7,6 @@ basically:
     curl -O http://www.who.int/childgrowth/standards/wfa_girls_z_exp.txt
     curl -O http://www.who.int/childgrowth/standards/wfl_boys_z_exp.txt
     curl -O http://www.who.int/childgrowth/standards/wfl_girls_z_exp.txt
-    curl -O http://www.who.int/childgrowth/standards/bfa_boys_z_exp.txt
-    curl -O http://www.who.int/childgrowth/standards/bfa_girls_z_exp.txt
-
-And, then, for ages 5+
-
-    curl -O http://www.who.int/growthref/bmi_boys_z_WHO2007_exp.txt
-    curl -O http://www.who.int/growthref/bmi_girls_z_WHO2007_exp.txt
-    curl -O http://www.who.int/growthref/hfa_boys_z_WHO2007_exp.txt
-    curl -O http://www.who.int/growthref/hfa_girls_z_WHO2007_exp.txt
-    curl -O http://www.who.int/growthref/wfa_boys_z_WHO2007_exp.txt
-    curl -O http://www.who.int/growthref/wfa_girls_z_WHO2007_exp.txt
 
 Now, those tables are appropriate for looking up integer z-scores. To
 calculate fractional z-scores, we need different tables. What we're
@@ -30,8 +19,8 @@ at:
 Unpacking the reference code there gives us the various files of the
 form:
 
-    *anthro.txt
-    *who2007.txt
+    ...anthro.txt
+    ...who2007.txt
 
 In our gulpfile, we'll transform them into some JSON that we can more
 easily handle. We then store the JSON in three places:
