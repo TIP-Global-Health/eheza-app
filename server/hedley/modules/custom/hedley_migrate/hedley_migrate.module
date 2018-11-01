@@ -11,19 +11,56 @@ use Faker\Generator;
  * Implements hook_migrate_api().
  */
 function hedley_migrate_migrate_api() {
-  $migrations = array(
-    'HedleyMigrateUsers',
-    'HedleyMigrateClinics',
-    'HedleyMigrateCounselingSchedules',
-    'HedleyMigrateCounselingSessions',
-    'HedleyMigrateCounselingTopics',
-    'HedleyMigrateParticipantForms',
-  );
-
-  $api['api'] = 2;
-  foreach ($migrations as $migration) {
-    $api['migrations'][$migration] = array('class_name' => $migration);
-  }
+  $api = [
+    'api' => 2,
+    'groups' => [
+      'missing' => [
+        'title' => t('Missing Data'),
+      ],
+      'counseling' => [
+        'title' => t('Counseling'),
+      ],
+      'forms' => [
+        'title' => t('Forms'),
+      ],
+    ],
+    'migrations' => [
+      'HedleyMigrateUsers' => [
+        'class_name' => 'HedleyMigrateUsers',
+      ],
+      'HedleyMigrateClinics' => [
+        'class_name' => 'HedleyMigrateClinics',
+      ],
+      'HedleyMigrateMissingHeights' => [
+        'class_name' => 'HedleyMigrateMissingHeights',
+        'group_name' => 'missing',
+      ],
+      'HedleyMigrateMissingWeights' => [
+        'class_name' => 'HedleyMigrateMissingWeights',
+        'group_name' => 'missing',
+      ],
+      'HedleyMigrateMissingMuacs' => [
+        'class_name' => 'HedleyMigrateMissingMuacs',
+        'group_name' => 'missing',
+      ],
+      'HedleyMigrateCounselingSchedules' => [
+        'class_name' => 'HedleyMigrateCounselingSchedules',
+        'group_name' => 'counseling',
+      ],
+      'HedleyMigrateCounselingSessions' => [
+        'class_name' => 'HedleyMigrateCounselingSessions',
+        'group_name' => 'counseling',
+      ],
+      'HedleyMigrateCounselingTopics' => [
+        'class_name' => 'HedleyMigrateCounselingTopics',
+        'group_name' => 'counseling',
+      ],
+      'HedleyMigrateParticipantForms' => [
+        'class_name' => 'HedleyMigrateParticipantForms',
+        'group_name' => 'forms',
+      ],
+    ],
+  ];
 
   return $api;
 }

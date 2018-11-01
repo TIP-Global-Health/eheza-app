@@ -22,19 +22,54 @@ a {
 }
 
 .language-switcher {
-  margin: 10px 0;
+  width: 800px;
+  text-align: right;
+  margin: 10px auto;
 
-  .button {
+  .links-translate {
+    margin: 0;
+    padding: 6px 25px;
+    list-style: none;
+    display: flex;
+    justify-content: flex-start;
 
-    i {
-      vertical-align: 3px;
+    li {
+      display: inline-block;
+      margin-right: 15px;
+      position: relative;
+      display: flex;
+      height: 27px;
+      color: white;
+      font-size: .8em;
+      cursor: pointer;
+
+      &.active {
+        color: $color-dark-blue;
+      }
+
+      a {
+        display: block;
+        width: 27 px;
+        height: 27 px;
+        background: #fff;
+        border-radius: 50%;
+        position: relative;
+        margin-left: 10px;
+      }
     }
 
-    &:hover,
-    &.active:hover,
-    &.active {
-      color: $color-secondary;
+    li.active a:before {
+      width: 35px;
+      height: 35px;
+      border: 2px solid $color-dark-blue;
+      content: " ";
+      display: block;
+      border-radius: 50%;
+      position: absolute;
+      top: -4px;
+      left: -4px;
     }
+
   }
 }
 
@@ -44,7 +79,7 @@ a {
   width: 800px;
   margin: 0 auto;
   padding: 0 35px 35px 35px;
-  min-height: 100vh;
+  min-height: 95vh;
   flex-direction: column;
   display: flex;
 
@@ -119,8 +154,8 @@ a {
   }
 
   &.head {
-    margin: 0 -35px 35px -35px;
-    padding: 30px 0;
+    margin: 0 -35px 30px -35px;
+    padding: 25px 0;
     z-index: 100;
     position: relative;
     box-shadow: 0 5px 20px 2px rgba(0,0,0,0.175);
@@ -162,24 +197,26 @@ a {
 .ui.menu {
   font-family: $font;
   font-size:  1.575rem;
+  padding-left: 5px;
   min-height: 0;
 }
 
 .ui.tabular.menu {
   margin: 0;
   border-bottom: 9px solid $color-primary;
-  padding-left: 12px;
   position: relative;
   z-index: 100;
 }
 
 .ui.tabular.menu .item {
+  font-size: 0.85em;
   background: #fff;
   border: 0;
-  padding: 0.6em 1.8em;
+  padding: 0.6em 0.6em 0.6em 1.2em;
+  width: 225px;
   height: 48px;
   position: relative;
-  margin-right: 20px;
+  margin-right: 10px;
   box-shadow: -2px -2px 5px 0 rgba(0,0,0,0.12);
   color: $color-text;
   border-radius: 0 !important;
@@ -197,7 +234,7 @@ a {
     border-width: 48px 0 0 28px;
     border-color: transparent transparent transparent #fff;
     position: absolute;
-    top: 0;
+    bottom: 0;
     left: 100%;
     z-index: 200;
     filter: drop-shadow(4px -2px 2px rgba(0,0,0,0.08));
@@ -511,7 +548,7 @@ h3.ui.header {
 // Items
 
 .ui.items {
-  margin: 0 0 40px 0;
+  margin: 0 0 30px 0;
   color: #fff;
 
   >.item {
@@ -531,7 +568,7 @@ h3.ui.header {
 }
 
 .ui.items>.item>.content>*:first-child {
-  margin-top: 30px;
+  margin-top: 0px;
 }
 
 .ui.items>.item>.image+.content {
@@ -868,7 +905,7 @@ input::placeholder {
   width: 34px;
   height: 27px;
   left: 30px;
-  top: 33px;
+  top: 28px;
 }
 
 .icon-back {
@@ -884,7 +921,7 @@ input::placeholder {
   padding: 0;
   list-style: none;
   position: absolute;
-  top: 19px;
+  top: 14px;
   right: 20px;
 
   li {
@@ -904,7 +941,7 @@ input::placeholder {
   li.active a:before {
     width: 68px;
     height: 68px;
-    border: 3px solid #00374f;
+    border: 3px solid $color-dark-blue;
     content: " ";
     display: block;
     border-radius: 50%;
@@ -952,6 +989,23 @@ input::placeholder {
 .icon-measurements {
   background: url(#{$img-path}icon-measurements.svg) no-repeat center;
   background-size: 30px 33px;
+}
+
+.icon-english,
+.icon-kinyarwanda {
+  width: 27px;
+  height: 27px;
+  display: block;
+}
+
+.icon-english {
+  background: url(#{$img-path}icon-english.png) no-repeat center;
+  background-size: 16px 11px;
+}
+
+.icon-kinyarwanda {
+  background: url(#{$img-path}icon-kinyarwanda.png) no-repeat center;
+  background-size: 16px 11px;
 }
 
 

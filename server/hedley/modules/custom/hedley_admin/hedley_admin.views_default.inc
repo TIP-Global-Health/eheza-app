@@ -415,9 +415,10 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_scheduled_date']['table'] = 'field_data_field_scheduled_date';
   $handler->display->display_options['fields']['field_scheduled_date']['field'] = 'field_scheduled_date';
   $handler->display->display_options['fields']['field_scheduled_date']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['field_scheduled_date']['element_class'] = 'nowrap';
   $handler->display->display_options['fields']['field_scheduled_date']['settings'] = array(
     'format_type' => 'custom',
-    'custom_date_format' => 'd/m/Y',
+    'custom_date_format' => 'd-m-Y',
     'fromto' => 'value',
     'multiple_number' => '',
     'multiple_from' => '',
@@ -429,10 +430,11 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_scheduled_date_1']['table'] = 'field_data_field_scheduled_date';
   $handler->display->display_options['fields']['field_scheduled_date_1']['field'] = 'field_scheduled_date';
   $handler->display->display_options['fields']['field_scheduled_date_1']['alter']['alter_text'] = TRUE;
-  $handler->display->display_options['fields']['field_scheduled_date_1']['alter']['text'] = '[field_scheduled_date] - [field_scheduled_date_1] ';
+  $handler->display->display_options['fields']['field_scheduled_date_1']['alter']['text'] = '[field_scheduled_date] – [field_scheduled_date_1] ';
+  $handler->display->display_options['fields']['field_scheduled_date_1']['element_class'] = 'nowrap';
   $handler->display->display_options['fields']['field_scheduled_date_1']['settings'] = array(
     'format_type' => 'custom',
-    'custom_date_format' => 'd/m/Y',
+    'custom_date_format' => 'd-m-Y',
     'fromto' => 'value2',
     'multiple_number' => '',
     'multiple_from' => '',
@@ -458,8 +460,9 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['created']['table'] = 'node';
   $handler->display->display_options['fields']['created']['field'] = 'created';
   $handler->display->display_options['fields']['created']['label'] = 'Uploaded';
+  $handler->display->display_options['fields']['created']['element_class'] = 'nowrap';
   $handler->display->display_options['fields']['created']['date_format'] = 'custom';
-  $handler->display->display_options['fields']['created']['custom_date_format'] = 'd/m/Y';
+  $handler->display->display_options['fields']['created']['custom_date_format'] = 'd-m-Y';
   $handler->display->display_options['fields']['created']['second_date_format'] = 'long';
   /* Field: Content: Edit link */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
@@ -662,9 +665,10 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_date_measured']['id'] = 'field_date_measured';
   $handler->display->display_options['fields']['field_date_measured']['table'] = 'field_data_field_date_measured';
   $handler->display->display_options['fields']['field_date_measured']['field'] = 'field_date_measured';
+  $handler->display->display_options['fields']['field_date_measured']['element_class'] = 'nowrap';
   $handler->display->display_options['fields']['field_date_measured']['settings'] = array(
     'format_type' => 'custom',
-    'custom_date_format' => 'd/m/Y',
+    'custom_date_format' => 'd-m-Y',
     'fromto' => 'both',
     'multiple_number' => '',
     'multiple_from' => '',
@@ -935,11 +939,11 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_scheduled_date']['id'] = 'field_scheduled_date';
   $handler->display->display_options['fields']['field_scheduled_date']['table'] = 'field_data_field_scheduled_date';
   $handler->display->display_options['fields']['field_scheduled_date']['field'] = 'field_scheduled_date';
-  $handler->display->display_options['fields']['field_scheduled_date']['label'] = '';
-  $handler->display->display_options['fields']['field_scheduled_date']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['field_scheduled_date']['label'] = 'Start Date';
+  $handler->display->display_options['fields']['field_scheduled_date']['element_label_colon'] = FALSE;
   $handler->display->display_options['fields']['field_scheduled_date']['settings'] = array(
     'format_type' => 'custom',
-    'custom_date_format' => 'd/m/Y',
+    'custom_date_format' => 'd-m-Y',
     'fromto' => 'value',
     'multiple_number' => '',
     'multiple_from' => '',
@@ -950,11 +954,11 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_scheduled_date_1']['id'] = 'field_scheduled_date_1';
   $handler->display->display_options['fields']['field_scheduled_date_1']['table'] = 'field_data_field_scheduled_date';
   $handler->display->display_options['fields']['field_scheduled_date_1']['field'] = 'field_scheduled_date';
-  $handler->display->display_options['fields']['field_scheduled_date_1']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['field_scheduled_date_1']['label'] = 'End Date';
   $handler->display->display_options['fields']['field_scheduled_date_1']['alter']['text'] = '[field_scheduled_date] - [field_scheduled_date_1] ';
   $handler->display->display_options['fields']['field_scheduled_date_1']['settings'] = array(
     'format_type' => 'custom',
-    'custom_date_format' => 'd/m/Y',
+    'custom_date_format' => 'd-m-Y',
     'fromto' => 'value2',
     'multiple_number' => '',
     'multiple_from' => '',
@@ -1187,7 +1191,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_date_measured']['field'] = 'field_date_measured';
   $handler->display->display_options['fields']['field_date_measured']['settings'] = array(
     'format_type' => 'custom',
-    'custom_date_format' => 'd/m/Y',
+    'custom_date_format' => 'd-m-Y',
     'fromto' => 'both',
     'multiple_number' => '',
     'multiple_from' => '',
@@ -1373,9 +1377,10 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_date_measured']['table'] = 'field_data_field_date_measured';
   $handler->display->display_options['fields']['field_date_measured']['field'] = 'field_date_measured';
   $handler->display->display_options['fields']['field_date_measured']['label'] = 'Date';
+  $handler->display->display_options['fields']['field_date_measured']['element_class'] = 'nowrap';
   $handler->display->display_options['fields']['field_date_measured']['settings'] = array(
     'format_type' => 'custom',
-    'custom_date_format' => 'Y-m-d',
+    'custom_date_format' => 'd-m-Y',
     'fromto' => 'both',
     'multiple_number' => '',
     'multiple_from' => '',
@@ -1415,9 +1420,10 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_date_birth']['field'] = 'field_date_birth';
   $handler->display->display_options['fields']['field_date_birth']['relationship'] = 'field_child_target_id';
   $handler->display->display_options['fields']['field_date_birth']['label'] = 'Child DOB';
+  $handler->display->display_options['fields']['field_date_birth']['element_class'] = 'nowrap';
   $handler->display->display_options['fields']['field_date_birth']['settings'] = array(
     'format_type' => 'custom',
-    'custom_date_format' => 'Y-d-m',
+    'custom_date_format' => 'd-m-Y',
     'fromto' => 'both',
     'multiple_number' => '',
     'multiple_from' => '',
@@ -1474,20 +1480,45 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['nothing']['field'] = 'nothing';
   $handler->display->display_options['fields']['nothing']['label'] = 'Measurement Value';
   $handler->display->display_options['fields']['nothing']['alter']['text'] = '[field_height][field_muac][field_weight][field_nutrition_signs] ';
-  /* Field: Content: Z-Score Age */
-  $handler->display->display_options['fields']['field_z_score_age']['id'] = 'field_z_score_age';
-  $handler->display->display_options['fields']['field_z_score_age']['table'] = 'field_data_field_z_score_age';
-  $handler->display->display_options['fields']['field_z_score_age']['field'] = 'field_z_score_age';
-  $handler->display->display_options['fields']['field_z_score_age']['settings'] = array(
+  /* Field: Content: ZScore Age */
+  $handler->display->display_options['fields']['field_zscore_age']['id'] = 'field_zscore_age';
+  $handler->display->display_options['fields']['field_zscore_age']['table'] = 'field_data_field_zscore_age';
+  $handler->display->display_options['fields']['field_zscore_age']['field'] = 'field_zscore_age';
+  $handler->display->display_options['fields']['field_zscore_age']['settings'] = array(
     'thousand_separator' => '',
+    'decimal_separator' => '.',
+    'scale' => '2',
+    'prefix_suffix' => 0,
+  );
+  /* Field: Content: ZScore Length */
+  $handler->display->display_options['fields']['field_zscore_length']['id'] = 'field_zscore_length';
+  $handler->display->display_options['fields']['field_zscore_length']['table'] = 'field_data_field_zscore_length';
+  $handler->display->display_options['fields']['field_zscore_length']['field'] = 'field_zscore_length';
+  $handler->display->display_options['fields']['field_zscore_length']['settings'] = array(
+    'thousand_separator' => '',
+    'decimal_separator' => '.',
+    'scale' => '2',
+    'prefix_suffix' => 0,
+  );
+  /* Field: Content: BMI */
+  $handler->display->display_options['fields']['field_bmi']['id'] = 'field_bmi';
+  $handler->display->display_options['fields']['field_bmi']['table'] = 'field_data_field_bmi';
+  $handler->display->display_options['fields']['field_bmi']['field'] = 'field_bmi';
+  $handler->display->display_options['fields']['field_bmi']['settings'] = array(
+    'thousand_separator' => '',
+    'decimal_separator' => '.',
+    'scale' => '2',
     'prefix_suffix' => 1,
   );
-  /* Field: Content: Z-Score Length */
-  $handler->display->display_options['fields']['field_z_score_length']['id'] = 'field_z_score_length';
-  $handler->display->display_options['fields']['field_z_score_length']['table'] = 'field_data_field_z_score_length';
-  $handler->display->display_options['fields']['field_z_score_length']['field'] = 'field_z_score_length';
-  $handler->display->display_options['fields']['field_z_score_length']['settings'] = array(
+  /* Field: Content: ZScore BMI */
+  $handler->display->display_options['fields']['field_zscore_bmi']['id'] = 'field_zscore_bmi';
+  $handler->display->display_options['fields']['field_zscore_bmi']['table'] = 'field_data_field_zscore_bmi';
+  $handler->display->display_options['fields']['field_zscore_bmi']['field'] = 'field_zscore_bmi';
+  $handler->display->display_options['fields']['field_zscore_bmi']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['field_zscore_bmi']['settings'] = array(
     'thousand_separator' => '',
+    'decimal_separator' => '.',
+    'scale' => '2',
     'prefix_suffix' => 1,
   );
   /* Field: Content: Edit link */
@@ -1684,9 +1715,10 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_date_measured']['table'] = 'field_data_field_date_measured';
   $handler->display->display_options['fields']['field_date_measured']['field'] = 'field_date_measured';
   $handler->display->display_options['fields']['field_date_measured']['label'] = 'Date';
+  $handler->display->display_options['fields']['field_date_measured']['element_class'] = 'nowrap';
   $handler->display->display_options['fields']['field_date_measured']['settings'] = array(
     'format_type' => 'custom',
-    'custom_date_format' => 'Y-m-d',
+    'custom_date_format' => 'd-m-Y',
     'fromto' => 'both',
     'multiple_number' => '',
     'multiple_from' => '',

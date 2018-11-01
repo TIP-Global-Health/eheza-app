@@ -248,7 +248,9 @@ function import_demo_content {
   if [ "$MIGRATE_UI" ] && [ "$MIGRATE_EXTRAS" ]; then
     drush en -y hedley_migrate
     drush en -y migrate migrate_ui migrate_extras
-    drush mi --all --user=1
+    drush mi --group=default --user=1
+    drush mi --group=counseling --user=1
+    drush mi --group=forms --user=1
   else
     echo -e  "${BGYELLOW}                                                                 ${RESTORE}"
     echo -e "${BGLYELLOW}  Migrate and or Migrate Extras module(s) are not available!     ${RESTORE}"

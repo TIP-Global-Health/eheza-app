@@ -20,8 +20,8 @@ class HedleyRestfulHeights extends HedleyRestfulChildActivityBase {
       'property' => 'field_height',
     ];
 
-    $public_fields['z_score_age'] = [
-      'property' => 'field_z_score_age',
+    $public_fields['zscore_age'] = [
+      'property' => 'field_zscore_age',
     ];
 
     return $public_fields;
