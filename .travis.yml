@@ -28,6 +28,7 @@ install:
 - "$TRAVIS_BUILD_DIR/ci-scripts/install_elm_format.sh"
 before_script:
 - "$TRAVIS_BUILD_DIR/ci-scripts/prepare_client.sh"
+- phpenv config-add "$TRAVIS_BUILD_DIR/ci-scripts/travis.ini"
 script:
 - "$TRAVIS_BUILD_DIR/ci-scripts/test_client.sh"
 - "$TRAVIS_BUILD_DIR/ci-scripts/test_coder.sh"
