@@ -238,7 +238,15 @@ function hedley_activity_node_presave($node) {
       $cm = $height->field_height->value();
       $kg = $wrapper->field_weight->value();
 
-      $zscore_for_length = hedley_zscore_weight_for_length($cm, $gender, $kg);
+      // For children older than two, we actually measure height rather than
+      // length. So, we need to use the weight-for-height tables, rather than
+      // weight-for-length. But we store the result in the same field.
+      if ($days > (365 * 2)) {
+        $zscore_for_length = hedley_zscore_weight_for_height($cm, $gender, $kg);
+      }
+      else {
+        $zscore_for_length = hedley_zscore_weight_for_length($cm, $gender, $kg);
+      }
 
       // The formula is (kg / meters squared).
       $bmi = $kg / pow($cm / 100, 2);
