@@ -371,3 +371,15 @@ function hedley_update_7010() {
   node_types_rebuild();
   menu_rebuild();
 }
+
+/**
+ * Delete some now-unused fields.
+ *
+ * These were integer fields, which we've now re-created as float fields with
+ * slightly different names. However, the features module does not
+ * automatically delete them.
+ */
+function hedley_update_7011() {
+  field_delete_field('field_z_score_age');
+  field_delete_field('field_z_score_length');
+}
