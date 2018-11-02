@@ -42,7 +42,7 @@ class HedleyRestfulTests extends HedleyWebTestBase {
     // Make an array of 24 previous days.
     $previous_days = [];
     for ($x = 1; $x < 25; $x++) {
-      $previous_days[] = $today - ($x * $day);
+      $previous_days[] = $today - ($x * $day * 2);
     }
 
     // Create a clinic, a session, and a nurse -- these are the ones we'll
