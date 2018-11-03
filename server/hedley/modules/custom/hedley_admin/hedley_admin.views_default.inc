@@ -1406,6 +1406,11 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title']['field'] = 'title';
   $handler->display->display_options['fields']['title']['relationship'] = 'field_child_target_id';
   $handler->display->display_options['fields']['title']['label'] = 'Child Name';
+  /* Field: Content: Gender */
+  $handler->display->display_options['fields']['field_gender']['id'] = 'field_gender';
+  $handler->display->display_options['fields']['field_gender']['table'] = 'field_data_field_gender';
+  $handler->display->display_options['fields']['field_gender']['field'] = 'field_gender';
+  $handler->display->display_options['fields']['field_gender']['relationship'] = 'field_child_target_id';
   /* Field: Content: Date birth */
   $handler->display->display_options['fields']['field_date_birth']['id'] = 'field_date_birth';
   $handler->display->display_options['fields']['field_date_birth']['table'] = 'field_data_field_date_birth';
