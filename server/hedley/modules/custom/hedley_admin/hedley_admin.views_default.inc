@@ -1491,6 +1491,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_zscore_length']['id'] = 'field_zscore_length';
   $handler->display->display_options['fields']['field_zscore_length']['table'] = 'field_data_field_zscore_length';
   $handler->display->display_options['fields']['field_zscore_length']['field'] = 'field_zscore_length';
+  $handler->display->display_options['fields']['field_zscore_length']['label'] = 'ZScore WFL';
   $handler->display->display_options['fields']['field_zscore_length']['settings'] = array(
     'thousand_separator' => '',
     'decimal_separator' => '.',
