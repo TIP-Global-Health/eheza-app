@@ -26,3 +26,4 @@ features[menu_links][] = menu-ihangane-admin-menu_create-session:node/add/sessio
 features[menu_links][] = menu-ihangane-admin-menu_create-user:admin/people/create
 features[views_view][] = admin_views
 features_exclude[dependencies][ctools] = ctools
+files[] = hedley_admin_handlers.inc

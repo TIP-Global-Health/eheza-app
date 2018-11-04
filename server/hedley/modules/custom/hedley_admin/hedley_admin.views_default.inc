@@ -1481,12 +1481,21 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_zscore_age']['id'] = 'field_zscore_age';
   $handler->display->display_options['fields']['field_zscore_age']['table'] = 'field_data_field_zscore_age';
   $handler->display->display_options['fields']['field_zscore_age']['field'] = 'field_zscore_age';
+  $handler->display->display_options['fields']['field_zscore_age']['exclude'] = TRUE;
   $handler->display->display_options['fields']['field_zscore_age']['settings'] = array(
     'thousand_separator' => '',
     'decimal_separator' => '.',
     'scale' => '2',
     'prefix_suffix' => 0,
   );
+  /* Field: Content: ZScore LHFA */
+  $handler->display->display_options['fields']['zscore_lhfa']['id'] = 'zscore_lhfa';
+  $handler->display->display_options['fields']['zscore_lhfa']['table'] = 'node';
+  $handler->display->display_options['fields']['zscore_lhfa']['field'] = 'zscore_lhfa';
+  /* Field: Content: ZScore WFA */
+  $handler->display->display_options['fields']['zscore_wfa']['id'] = 'zscore_wfa';
+  $handler->display->display_options['fields']['zscore_wfa']['table'] = 'node';
+  $handler->display->display_options['fields']['zscore_wfa']['field'] = 'zscore_wfa';
   /* Field: Content: ZScore Length */
   $handler->display->display_options['fields']['field_zscore_length']['id'] = 'field_zscore_length';
   $handler->display->display_options['fields']['field_zscore_length']['table'] = 'field_data_field_zscore_length';
