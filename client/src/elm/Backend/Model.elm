@@ -169,7 +169,7 @@ emptyModelCached =
     }
 
 
-{-| This represents a request sent to /api/training\_sessions, which is an
+{-| This represents a request sent to `/api/training_sessions`, which is an
 endpoint that represents certain actions that can be taken with respect to
 training sessions as a whole. So, "creating" a request there is like queueing
 up an action for the backend to take.
@@ -185,7 +185,7 @@ type alias TrainingSessionRequest =
     }
 
 
-{-| An action we can ask /api/training\_sessions to perform.
+{-| An action we can ask `/api/training_sessions` to perform.
 
   - CreateAll will create a new training session, for today, for every clinic
     that doesn't already have a training session starting today.

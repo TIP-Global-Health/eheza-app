@@ -37,7 +37,7 @@ decodeMeasurement participantDecoder valueDecoder =
         |> custom valueDecoder
 
 
-{-| Decodes `HistoricalMeasurements` as sent by /api/offline\_sessions/
+{-| Decodes `HistoricalMeasurements` as sent by `/api/offline_sessions/`
 -}
 decodeHistoricalMeasurements : Decoder HistoricalMeasurements
 decodeHistoricalMeasurements =

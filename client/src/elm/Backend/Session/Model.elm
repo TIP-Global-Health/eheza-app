@@ -36,7 +36,7 @@ type alias Session =
 
 {-| This adds the additional information we get when we take a Session offline
 for data-entry. It includes everything we need for data-entry. We get it from
-/api/offline\_sessions (and massage that a bit for convenience).
+`/api/offline_sessions` (and massage that a bit for convenience).
 -}
 type alias OfflineSession =
     -- The particular session we're working on

@@ -36,9 +36,9 @@ function hedley_install() {
   hedley_update_7004();
   hedley_update_7005();
   hedley_update_7010();
-  hedley_update_7011();
   hedley_update_7012();
-  hedley_update_7015();
+  hedley_update_7013();
+  hedley_update_7016();
 }
 
 /**
@@ -357,9 +357,21 @@ function hedley_update_7010() {
 }
 
 /**
- * Replaces old menu block with the new one.
+ * Delete some now-unused fields.
+ *
+ * These were integer fields, which we've now re-created as float fields with
+ * slightly different names. However, the features module does not
+ * automatically delete them.
  */
 function hedley_update_7011() {
+  field_delete_field('field_z_score_age');
+  field_delete_field('field_z_score_length');
+}
+
+/**
+ * Replaces old menu block with the new one.
+ */
+function hedley_update_7012() {
   $query = db_update('block');
   $query->fields([
     'status' => 0,
@@ -382,7 +394,7 @@ function hedley_update_7011() {
 /**
  * Enable title module.
  */
-function hedley_update_7012() {
+function hedley_update_7013() {
   $modules = ['title'];
   module_enable($modules);
 }
@@ -390,7 +402,7 @@ function hedley_update_7012() {
 /**
  * Adds counseling_session permission for nurses.
  */
-function hedley_update_7013() {
+function hedley_update_7014() {
   $content_types = ['counseling_session'];
   hedley_add_nurse_permissions_for_content_type($content_types);
 }
@@ -398,7 +410,7 @@ function hedley_update_7013() {
 /**
  * Remove the unused "hedley_examination" and "hedley_group" modules.
  */
-function hedley_update_7014() {
+function hedley_update_7015() {
   node_type_delete('examination');
   node_type_delete('group');
 
@@ -417,7 +429,7 @@ function hedley_update_7014() {
 /**
  * Enable the hedley_forms module.
  */
-function hedley_update_7015() {
+function hedley_update_7016() {
   $modules = ['hedley_forms'];
   module_enable($modules);
 

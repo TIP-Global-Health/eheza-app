@@ -63,7 +63,7 @@ decodeSession =
         |> optional "training" bool False
 
 
-{-| Decodes the JSON sent by /api/offline\_sessions
+{-| Decodes the JSON sent by `/api/offline_sessions`
 -}
 decodeOfflineSession : Decoder OfflineSession
 decodeOfflineSession =

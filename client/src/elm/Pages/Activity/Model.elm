@@ -4,7 +4,7 @@ module Pages.Activity.Model exposing (Model, Msg(..), Tab(..), emptyModel)
 the following flow:
 
   - The user sees a list of activities (in `Pages.Activities`)
-  - The user selects an activity (in \`Pages.Activities)
+  - The user selects an activity (in `Pages.Activities`)
   - The user sees the participants for whom the activity is pending
     (or for whom the activity is complete)
   - The user can select a participant in order to perform (or re-perform)
