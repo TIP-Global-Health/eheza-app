@@ -89,6 +89,7 @@ fetch currentDate clinicId backend =
                             -- need to consult the clinicId
                             if queryDate == currentDate then
                                 Nothing
+
                             else
                                 Just <| Backend.Model.FetchFutureSessions currentDate
 

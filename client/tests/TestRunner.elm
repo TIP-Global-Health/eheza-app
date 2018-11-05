@@ -1,4 +1,4 @@
-module TestRunner exposing (..)
+module TestRunner exposing (allTests)
 
 {-| This module includes all of the tests in the "main" source
 tree, so that the `elm-test` command will find them.

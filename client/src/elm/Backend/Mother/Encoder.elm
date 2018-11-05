@@ -1,4 +1,4 @@
-module Backend.Mother.Encoder exposing (..)
+module Backend.Mother.Encoder exposing (encodeEducationLevel, encodeMother, encodeUbudehe)
 
 import Backend.Mother.Model exposing (..)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)

@@ -1,4 +1,4 @@
-module Pages.Participants.Model exposing (..)
+module Pages.Participants.Model exposing (Model, Msg(..), Tab(..), emptyModel)
 
 {-| This module is analogous to `Pages.Activities`, but it manages the
 selection of participants first, rather than activities first. That is

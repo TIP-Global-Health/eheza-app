@@ -1,4 +1,4 @@
-module Utils.NominalDate exposing (..)
+module Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, endField, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate, setNominalDateRange, startField, validateNominalDate, validateNominalDateRange)
 
 {-| An extra utility for elm-community/elm-time ... should integrate with
 Gizra.NominalDate.
@@ -68,18 +68,25 @@ renderAgeMonthsDays language birthDate now =
     in
     if days == 1 && months == 0 then
         translate language <| Translate.AgeSingleDayWithoutMonth months days
+
     else if months == 0 then
         translate language <| Translate.AgeDays days
+
     else if months == 1 && days == 0 then
         translate language <| Translate.AgeSingleMonthWithoutDay months
+
     else if months > 1 && days == 0 then
         translate language <| Translate.AgeMonthsWithoutDay months
+
     else if months == 1 && days == 1 then
         translate language <| Translate.AgeSingleBoth months days
+
     else if days == 1 then
         translate language <| Translate.AgeSingleDayWithMonth months days
+
     else if months == 1 && days /= 0 then
         translate language <| Translate.AgeSingleMonth months days
+
     else
         translate language <| Translate.Age months days
 
@@ -99,10 +106,12 @@ renderAgeMonthsDaysAbbrev language birthDate now =
         dayPart =
             if days == 0 then
                 Nothing
+
             else if days == 1 then
                 Just <|
                     "1 "
                         ++ translate language Translate.Day
+
             else
                 Just <|
                     toString days
@@ -112,6 +121,7 @@ renderAgeMonthsDaysAbbrev language birthDate now =
         monthPart =
             if months == 0 then
                 Nothing
+
             else
                 Just <|
                     toString months
@@ -138,10 +148,12 @@ renderAgeMonthsDaysHtml language birthDate now =
         dayPart =
             if days == 0 then
                 Nothing
+
             else if days == 1 then
                 Just <|
                     "1 "
                         ++ translate language Translate.Day
+
             else
                 Just <|
                     toString days
@@ -151,6 +163,7 @@ renderAgeMonthsDaysHtml language birthDate now =
         monthPart =
             if months == 0 then
                 Nothing
+
             else
                 Just <|
                     toString months
@@ -180,6 +193,7 @@ renderDate language date =
     in
     (if day < 10 then
         "0" ++ toString day
+
      else
         toString day
     )

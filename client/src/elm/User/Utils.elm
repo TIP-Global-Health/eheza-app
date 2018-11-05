@@ -1,4 +1,4 @@
-module User.Utils exposing (..)
+module User.Utils exposing (assignedToClinic)
 
 import Backend.Entities exposing (..)
 import User.Model exposing (..)

@@ -1,13 +1,12 @@
-module ZScore.Model
-    exposing
-        ( Centimetres(..)
-        , Kilograms(..)
-        , Model
-        , Msg(..)
-        , ZScore(..)
-        , ZScoreEntry
-        , emptyModel
-        )
+module ZScore.Model exposing
+    ( Centimetres(..)
+    , Kilograms(..)
+    , Model
+    , Msg(..)
+    , ZScore(..)
+    , ZScoreEntry
+    , emptyModel
+    )
 
 import IntDict exposing (IntDict)
 import RemoteData exposing (RemoteData(..), WebData)

@@ -1,7 +1,4 @@
-module Backend.Mother.Decoder
-    exposing
-        ( decodeMother
-        )
+module Backend.Mother.Decoder exposing (decodeMother)
 
 import Backend.Mother.Model exposing (..)
 import Gizra.Json exposing (decodeInt)

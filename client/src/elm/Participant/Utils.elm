@@ -1,4 +1,4 @@
-module Participant.Utils exposing (..)
+module Participant.Utils exposing (childParticipant, motherParticipant)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType, MotherActivityType)
 import Activity.Utils exposing (childHasAnyPendingActivity, childHasPendingActivity, getAllChildActivities, getAllMotherActivities, motherHasAnyPendingActivity, motherHasPendingActivity)

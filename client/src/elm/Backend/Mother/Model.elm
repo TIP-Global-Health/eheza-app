@@ -1,4 +1,4 @@
-module Backend.Mother.Model exposing (..)
+module Backend.Mother.Model exposing (EducationLevel(..), Mother, Ubudehe(..))
 
 import Backend.Entities exposing (..)
 import Gizra.NominalDate exposing (NominalDate)

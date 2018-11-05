@@ -106,6 +106,7 @@ view config language currentDate zscores selectedActivity fullSession model =
                 participantsCards =
                     if EveryDict.size selectedParticipants == 0 then
                         [ span [] [ text emptySectionMessage ] ]
+
                     else
                         selectedParticipants
                             |> EveryDict.toList

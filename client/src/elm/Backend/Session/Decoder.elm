@@ -1,4 +1,4 @@
-module Backend.Session.Decoder exposing (..)
+module Backend.Session.Decoder exposing (decodeChildren, decodeMothers, decodeOfflineSession, decodeSession, decodeTrainingSessionAction, decodeTrainingSessionRequest, getCurrentAndPrevious, splitChildMeasurements, splitHistoricalMeasurements, splitMotherMeasurements)
 
 import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Child.Model exposing (Child)
@@ -61,7 +61,7 @@ decodeSession =
         |> optional "training" bool False
 
 
-{-| Decodes the JSON sent by /api/offline_sessions
+{-| Decodes the JSON sent by `/api/offline_sessions`
 -}
 decodeOfflineSession : Decoder OfflineSession
 decodeOfflineSession =
@@ -191,6 +191,7 @@ getCurrentAndPrevious sessionId =
             if .sessionId (Tuple.second measurement) == Just sessionId then
                 -- If it's got our session ID, then it's current
                 { acc | current = Just measurement }
+
             else
                 case acc.previous of
                     -- Otherwise, it might be previous
@@ -200,6 +201,7 @@ getCurrentAndPrevious sessionId =
                     Just ( _, previousValue ) ->
                         if Time.Date.compare (.dateMeasured (Tuple.second measurement)) previousValue.dateMeasured == GT then
                             { acc | previous = Just measurement }
+
                         else
                             acc
     in

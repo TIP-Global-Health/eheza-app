@@ -1,4 +1,4 @@
-module Activity.Model exposing (..)
+module Activity.Model exposing (ActivityListItem, ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 
 {-| This module provides types relating to the UI for presenting activities.
 

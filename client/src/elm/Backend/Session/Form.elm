@@ -1,4 +1,4 @@
-module Backend.Session.Form exposing (..)
+module Backend.Session.Form exposing (SessionForm, clinicId, clinicIdState, closed, closedState, emptyForm, scheduledDate, scheduledDateState, training, trainingState, validateClinicId, validateSession)
 
 {-| These are things for `Session` forms which won't vary from one view to
 another. So, they may as well be defined here.
@@ -106,6 +106,7 @@ validateClinicId knownClinic =
             (\id ->
                 if knownClinic id then
                     succeed id
+
                 else
                     fail (customError UnknownClinic)
             )

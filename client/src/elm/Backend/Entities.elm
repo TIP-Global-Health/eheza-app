@@ -1,4 +1,4 @@
-module Backend.Entities exposing (..)
+module Backend.Entities exposing (ChildId, ChildIdType(..), ChildNutritionId, ChildNutritionIdType(..), ClinicId, ClinicIdType(..), FamilyPlanningId, FamilyPlanningIdType(..), HeightId, HeightIdType(..), MotherId, MotherIdType(..), MuacId, MuacIdType(..), PhotoId, PhotoIdType(..), SessionId, SessionIdType(..), WeightId, WeightIdType(..))
 
 {-|
 
@@ -50,6 +50,7 @@ we need it.
 -}
 
 import Restful.Endpoint exposing (EntityId(..))
+
 
 
 {-

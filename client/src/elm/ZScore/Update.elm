@@ -28,6 +28,7 @@ update msg model =
                 ( { model | heightForAgeBoys = Loading }
                 , fetchForAge "assets/z-score/lhfa_boys_z_exp.json" HandleHeightForAgeBoys
                 )
+
             else
                 ( model, Cmd.none )
 
@@ -36,6 +37,7 @@ update msg model =
                 ( { model | heightForAgeGirls = Loading }
                 , fetchForAge "assets/z-score/lhfa_girls_z_exp.json" HandleHeightForAgeGirls
                 )
+
             else
                 ( model, Cmd.none )
 
@@ -44,6 +46,7 @@ update msg model =
                 ( { model | weightForAgeBoys = Loading }
                 , fetchForAge "assets/z-score/wfa_boys_z_exp.json" HandleWeightForAgeBoys
                 )
+
             else
                 ( model, Cmd.none )
 
@@ -52,6 +55,7 @@ update msg model =
                 ( { model | weightForAgeGirls = Loading }
                 , fetchForAge "assets/z-score/wfa_girls_z_exp.json" HandleWeightForAgeGirls
                 )
+
             else
                 ( model, Cmd.none )
 
@@ -60,6 +64,7 @@ update msg model =
                 ( { model | weightForHeightBoys = Loading }
                 , fetchForHeight "assets/z-score/wfl_boys_z_exp.json" HandleWeightForHeightBoys
                 )
+
             else
                 ( model, Cmd.none )
 
@@ -68,6 +73,7 @@ update msg model =
                 ( { model | weightForHeightGirls = Loading }
                 , fetchForHeight "assets/z-score/wfl_girls_z_exp.json" HandleWeightForHeightGirls
                 )
+
             else
                 ( model, Cmd.none )
 

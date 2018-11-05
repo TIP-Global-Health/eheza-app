@@ -1,4 +1,4 @@
-module ServiceWorker.Model exposing (..)
+module ServiceWorker.Model exposing (Model, Msg(..), emptyModel)
 
 {-| Some state we maintain relating to service workers.
 -}

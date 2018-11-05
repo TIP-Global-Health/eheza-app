@@ -36,6 +36,7 @@ view config language currentDate user backend model =
         content =
             if EverySet.member Administrator user.roles then
                 contentForAdmin config language currentDate backend model
+
             else
                 contentForOthers language
 
@@ -136,6 +137,7 @@ viewCreateSessionForm config language backend model form clinics sessions =
                             [ div [ class "header" ] [ text <| translate language Translate.Success ]
                             , div [] [ text <| translate language Translate.YourSessionHasBeenSaved ]
                             ]
+
                     else
                         emptyNode
 
@@ -263,6 +265,7 @@ viewFormError language ( path, error ) =
         -- We special-case this one because it's common, to get a nicer
         -- customaized message
         li [] [ text <| translate language Translate.PleaseSelectClinic ]
+
     else
         li []
             [ text <| translate language <| Translate.FormField path
@@ -301,6 +304,7 @@ viewClinicList config language backend model clinics ( _, futureSessions ) =
                     , Confirmation.view model.confirmation
                         |> Html.map MsgConfirmation
                     ]
+
             else
                 emptyNode
 

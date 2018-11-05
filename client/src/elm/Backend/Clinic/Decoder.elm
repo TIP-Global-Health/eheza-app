@@ -1,4 +1,4 @@
-module Backend.Clinic.Decoder exposing (..)
+module Backend.Clinic.Decoder exposing (decodeClinic)
 
 import Backend.Clinic.Model exposing (..)
 import Json.Decode exposing (Decoder, andThen, dict, fail, field, int, list, map, map2, nullable, string, succeed)

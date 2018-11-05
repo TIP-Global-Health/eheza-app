@@ -30,6 +30,7 @@ view language session =
                     [ class "ui message warning" ]
                     [ text <| translate language Translate.ThisClinicHasNoMothers ]
                 ]
+
             else
                 session.offlineSession.mothers
                     |> EveryDictList.map (viewMother session)
@@ -86,6 +87,7 @@ viewMother session motherId mother =
                     , onClick <| MsgEditableSession <| SetCheckedIn motherId False
                     ]
                     [ span [ class "icon-checked-in" ] [] ]
+
             else
                 a
                     [ class "link-check-in"

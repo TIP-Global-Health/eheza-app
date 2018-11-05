@@ -1,4 +1,4 @@
-module Measurement.Utils exposing (..)
+module Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getMotherForm)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)

@@ -1,4 +1,4 @@
-module ServiceWorker.Encoder exposing (..)
+module ServiceWorker.Encoder exposing (encodeMsg)
 
 import Json.Encode exposing (..)
 import ServiceWorker.Model exposing (..)

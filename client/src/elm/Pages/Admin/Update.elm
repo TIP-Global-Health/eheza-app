@@ -1,4 +1,4 @@
-module Pages.Admin.Update exposing (..)
+module Pages.Admin.Update exposing (update)
 
 import App.Model
 import Backend.Model exposing (ModelBackend)
@@ -125,6 +125,7 @@ update date backend msg model =
                         Just form ->
                             if show then
                                 ( model, [] )
+
                             else
                                 ( { model | createSession = Nothing }
                                 , []
@@ -135,6 +136,7 @@ update date backend msg model =
                                 ( { model | createSession = Just <| Backend.Session.Form.emptyForm knownClinic initialDates }
                                 , [ resetSessionRequests ]
                                 )
+
                             else
                                 ( model, [] )
             in

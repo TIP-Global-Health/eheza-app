@@ -85,6 +85,7 @@ view language session model =
                                 ]
                             ]
                         ]
+
             else
                 Nothing
 
@@ -131,6 +132,7 @@ view language session model =
                     [ div [ class "ui four cards" ] <|
                         if List.isEmpty selectedActivities then
                             [ span [] [ text emptySectionMessage ] ]
+
                         else
                             List.map (viewCard language) selectedActivities
                     ]

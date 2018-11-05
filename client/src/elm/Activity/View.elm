@@ -1,7 +1,4 @@
-module Activity.View
-    exposing
-        ( viewActivityTypeFilter
-        )
+module Activity.View exposing (viewActivityTypeFilter)
 
 import Activity.Model exposing (ActivityType)
 import Activity.Utils exposing (getActivityIcon, getActivityTypeList)

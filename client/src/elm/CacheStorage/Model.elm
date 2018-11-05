@@ -1,4 +1,4 @@
-module CacheStorage.Model exposing (..)
+module CacheStorage.Model exposing (Model, Msg(..), Request(..), Response(..), Url, cachePhotos, checkCachedPhotos, clearCachedPhotos, emptyModel)
 
 {-| Wraps access to the Javascript `CacheStorage` APIs.
 

@@ -1,4 +1,4 @@
-module Pages.Model exposing (..)
+module Pages.Model exposing (MsgSession(..), SessionPages, emptySessionPages)
 
 {-| This module manages the "pages" of the UI.
 
