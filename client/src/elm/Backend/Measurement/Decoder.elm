@@ -1,4 +1,4 @@
-module Backend.Measurement.Decoder exposing (..)
+module Backend.Measurement.Decoder exposing (decodeChildEdits, decodeChildMeasurement, decodeChildMeasurementList, decodeChildNutritionSign, decodeCounselingSession, decodeEdit, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMeasurementEdits, decodeMotherEdits, decodeMotherMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodeWeight, decodeWithEntityId, toEveryDict)
 
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
@@ -37,7 +37,7 @@ decodeMeasurement participantDecoder valueDecoder =
         |> custom valueDecoder
 
 
-{-| Decodes `HistoricalMeasurements` as sent by /api/offline_sessions/
+{-| Decodes `HistoricalMeasurements` as sent by /api/offline\_sessions/
 -}
 decodeHistoricalMeasurements : Decoder HistoricalMeasurements
 decodeHistoricalMeasurements =

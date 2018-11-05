@@ -1,4 +1,4 @@
-module User.Model exposing (..)
+module User.Model exposing (Role(..), User)
 
 import Backend.Entities exposing (..)
 import EverySet exposing (EverySet)

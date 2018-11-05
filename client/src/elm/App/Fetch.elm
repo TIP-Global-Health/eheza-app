@@ -1,4 +1,4 @@
-module App.Fetch exposing (..)
+module App.Fetch exposing (fetch)
 
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInModel, hasAccessToken)

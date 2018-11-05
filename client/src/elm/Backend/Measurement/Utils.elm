@@ -1,4 +1,4 @@
-module Backend.Measurement.Utils exposing (..)
+module Backend.Measurement.Utils exposing (applyEdit, applyEdits, backendValue, currentValue, currentValueWithId, currentValues, getChildEdits, getMotherEdits, getPhotoEdits, getPhotosToUpload, mapMeasurementData, muacIndication)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -30,8 +30,10 @@ muacIndication : MuacInCm -> MuacIndication
 muacIndication (MuacInCm value) =
     if value <= 11.5 then
         MuacRed
+
     else if value <= 12.5 then
         MuacYellow
+
     else
         MuacGreen
 
@@ -151,12 +153,14 @@ getPhotosToUpload =
                     Created photo ->
                         if photo.value.fid == Nothing then
                             Just photo
+
                         else
                             Nothing
 
                     Edited { edited } ->
                         if edited.value.fid == Nothing then
                             Just edited
+
                         else
                             Nothing
 

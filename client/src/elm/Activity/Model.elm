@@ -1,4 +1,4 @@
-module Activity.Model exposing (..)
+module Activity.Model exposing (Activity(..), ChildActivity(..), CompletedAndPending, MotherActivity(..), SummaryByActivity, SummaryByParticipant)
 
 {-| This module provides types relating to the UI for presenting activities.
 

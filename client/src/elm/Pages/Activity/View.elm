@@ -76,6 +76,7 @@ view config language currentDate zscores selectedActivity session model =
                             (\participant ->
                                 if EveryDictList.member participant participants.completed then
                                     Just participant
+
                                 else
                                     Nothing
                             )
@@ -87,6 +88,7 @@ view config language currentDate zscores selectedActivity session model =
                             (\participant ->
                                 if EveryDictList.member participant participants.pending then
                                     Just participant
+
                                 else
                                     Nothing
                             )
@@ -132,6 +134,7 @@ view config language currentDate zscores selectedActivity session model =
                 participantsCards =
                     if EveryDictList.size selectedParticipants == 0 then
                         [ span [] [ text emptySectionMessage ] ]
+
                     else
                         selectedParticipants
                             |> EveryDictList.toList

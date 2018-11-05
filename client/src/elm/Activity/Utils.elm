@@ -1,24 +1,23 @@
-module Activity.Utils
-    exposing
-        ( decodeActivityFromString
-        , defaultActivity
-        , encodeActivityAsString
-        , expectCounselingActivity
-        , expectParticipantConsent
-        , getActivityCountForMother
-        , getActivityIcon
-        , getAllActivities
-        , getCheckedIn
-        , getParticipantCountForActivity
-        , motherIsCheckedIn
-        , setCheckedIn
-        , summarizeByActivity
-        , summarizeByParticipant
-        , summarizeChildActivity
-        , summarizeChildParticipant
-        , summarizeMotherActivity
-        , summarizeMotherParticipant
-        )
+module Activity.Utils exposing
+    ( decodeActivityFromString
+    , defaultActivity
+    , encodeActivityAsString
+    , expectCounselingActivity
+    , expectParticipantConsent
+    , getActivityCountForMother
+    , getActivityIcon
+    , getAllActivities
+    , getCheckedIn
+    , getParticipantCountForActivity
+    , motherIsCheckedIn
+    , setCheckedIn
+    , summarizeByActivity
+    , summarizeByParticipant
+    , summarizeChildActivity
+    , summarizeChildParticipant
+    , summarizeMotherActivity
+    , summarizeMotherParticipant
+    )
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -306,30 +305,37 @@ expectCounselingActivity session childId =
                 -- If exit counseling has been done, then we need no more
                 -- counseling
                 Nothing
+
             else if completed BeforeExit then
                 -- If we've given the exit reminder, then show the exit
                 -- counseling now, even if it seems a bit early.
                 Just Exit
+
             else if daysUntilTwoYearsOld < maximumSessionGap then
                 -- If we can't be sure we'll have another session before the
                 -- baby is two, then show the exit counseling
                 Just Exit
+
             else if not (completed Entry) then
                 -- If we haven't done entry counseling, then we always need to
                 -- do it
                 Just Entry
+
             else if completed MidPoint then
                 -- If we have already done the MidPoint counseling, then the
                 -- only thing left to consider is whether to show the Exit
                 -- reminder
                 if daysUntilTwoYearsOld < twoMonthGap then
                     Just BeforeExit
+
                 else
                     Nothing
+
             else if completed BeforeMidpoint then
                 -- If we've given the midpoint warning, then show it, even if
                 -- it seems a bit early now.
                 Just MidPoint
+
             else if daysUntilOneYearOld < maximumSessionGap then
                 -- If we can't be sure we'll have another session before the
                 -- baby is one year old, we show the exit counseling. Except,
@@ -345,13 +351,16 @@ expectCounselingActivity session childId =
                             -- entry -> Nothing -> Rminder MidPoint -> MidPoint
                             if daysAgo < twoMonthGap then
                                 Nothing
+
                             else
                                 Just BeforeMidpoint
+
                         else
                             Just MidPoint
 
                     Nothing ->
                         Just MidPoint
+
             else if daysUntilOneYearOld < twoMonthGap then
                 -- If we think we'll do the midpoint counseling at the next
                 -- session, show the reminder. Except, again, we try to force a
@@ -363,11 +372,13 @@ expectCounselingActivity session childId =
                             -- counseling to be roughtly 2 months after the
                             -- entry counseling.
                             Nothing
+
                         else
                             Just BeforeMidpoint
 
                     Nothing ->
                         Just BeforeMidpoint
+
             else
                 Nothing
     in

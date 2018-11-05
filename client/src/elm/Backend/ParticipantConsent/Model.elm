@@ -1,4 +1,4 @@
-module Backend.ParticipantConsent.Model exposing (..)
+module Backend.ParticipantConsent.Model exposing (FormBody, ParticipantForm)
 
 import HtmlParser exposing (Node)
 import Translate.Model exposing (Language, TranslationSet)

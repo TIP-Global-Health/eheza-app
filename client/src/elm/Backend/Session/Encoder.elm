@@ -1,4 +1,4 @@
-module Backend.Session.Encoder exposing (..)
+module Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession, encodeTrainingSessionAction, encodeTrainingSessionRequest)
 
 import Backend.Child.Encoder exposing (encodeChild)
 import Backend.Clinic.Encoder exposing (encodeClinic)

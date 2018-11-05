@@ -1,4 +1,4 @@
-module Pusher.Model exposing (..)
+module Pusher.Model exposing (Cluster(..), PusherAppKey, PusherEvent, PusherEventData(..), eventNames)
 
 {-| This isn't used at the moment ... we can revive it at some
 point when we have a sense of what we want to do with Pusher. It will be a

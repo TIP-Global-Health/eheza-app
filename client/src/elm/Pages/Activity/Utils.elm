@@ -1,4 +1,4 @@
-module Pages.Activity.Utils exposing (..)
+module Pages.Activity.Utils exposing (viewChildMeasurements, viewMotherMeasurements)
 
 import Activity.Model exposing (ChildActivity(..), MotherActivity(..))
 import Backend.Entities exposing (..)

@@ -1,4 +1,4 @@
-module Backend.Clinic.Model exposing (..)
+module Backend.Clinic.Model exposing (Clinic)
 
 {-| Represents a location at which measurements are taken.
 -}

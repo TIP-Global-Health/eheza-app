@@ -215,6 +215,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                 ( id :: expectedIds
                 , Just currentSession.clinicId
                 )
+
             else if currentClinic == Just currentSession.clinicId then
                 -- This is a session for the clinic the child appears to be
                 -- assigned to at this time, so it's expected even though
@@ -222,6 +223,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                 ( id :: expectedIds
                 , currentClinic
                 )
+
             else
                 -- No measurement, and not the current clinic, so just keep going.
                 state

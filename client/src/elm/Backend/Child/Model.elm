@@ -1,4 +1,4 @@
-module Backend.Child.Model exposing (..)
+module Backend.Child.Model exposing (Child, Gender(..))
 
 import Backend.Entities exposing (..)
 import Gizra.NominalDate exposing (NominalDate)

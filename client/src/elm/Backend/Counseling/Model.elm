@@ -1,4 +1,4 @@
-module Backend.Counseling.Model exposing (..)
+module Backend.Counseling.Model exposing (CounselingSchedule, CounselingTiming(..), CounselingTopic, EveryCounselingSchedule)
 
 {-| This module represents the idea of CounselingTopics and a
 CounselingSchedule. The CounselingSchedule records which topics are expected

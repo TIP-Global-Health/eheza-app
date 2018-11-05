@@ -116,6 +116,7 @@ viewClinicButton user ( clinicId, clinic ) =
         classAttr =
             if assignedToClinic clinicId user then
                 class "ui fluid primary button"
+
             else
                 class "ui fluid primary dark disabled button"
     in
@@ -345,6 +346,7 @@ viewDownloadProgress language request photos validSession =
                                     ]
                                 ]
                             ]
+
                 else
                     Nothing
 
@@ -444,6 +446,7 @@ viewClinicWithCachedSession language clinicId backend cache sessionId session =
                         ]
                         [ text <| translate language Translate.UploadHealthAssessment ]
                     ]
+
                 else
                     [ button
                         [ class "ui fluid primary button"
@@ -451,6 +454,7 @@ viewClinicWithCachedSession language clinicId backend cache sessionId session =
                         ]
                         [ text <| translate language Translate.BeginHealthAssessment ]
                     ]
+
             else
                 [ div
                     [ class "ui info" ]

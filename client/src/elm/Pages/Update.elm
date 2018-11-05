@@ -1,4 +1,4 @@
-module Pages.Update exposing (..)
+module Pages.Update exposing (updateSession)
 
 import App.Model exposing (Msg(MsgSession))
 import Backend.Model

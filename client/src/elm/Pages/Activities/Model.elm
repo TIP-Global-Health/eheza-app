@@ -1,4 +1,4 @@
-module Pages.Activities.Model exposing (..)
+module Pages.Activities.Model exposing (Model, Msg(..), Tab(..), emptyModel)
 
 import Pages.Page exposing (Page)
 

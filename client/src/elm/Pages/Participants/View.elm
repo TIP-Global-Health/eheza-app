@@ -82,6 +82,7 @@ view language editableSession model =
                 mothersCards =
                     if EveryDictList.size selectedMothers == 0 then
                         [ span [] [ text emptySectionMessage ] ]
+
                     else
                         selectedMothers
                             |> EveryDictList.toList
@@ -124,6 +125,7 @@ view language editableSession model =
                                 ]
                             ]
                         ]
+
             else
                 Nothing
 

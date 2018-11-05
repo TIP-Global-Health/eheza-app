@@ -1,4 +1,4 @@
-module Participant.Utils exposing (..)
+module Participant.Utils exposing (childParticipant, motherParticipant)
 
 import Activity.Model exposing (Activity(..), ChildActivity, MotherActivity)
 import Activity.Utils exposing (summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)

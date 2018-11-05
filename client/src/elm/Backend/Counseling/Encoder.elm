@@ -1,4 +1,4 @@
-module Backend.Counseling.Encoder exposing (..)
+module Backend.Counseling.Encoder exposing (encodeCounselingSchedule, encodeCounselingTiming, encodeCounselingTopic, encodeEveryCounselingSchedule)
 
 import Backend.Counseling.Model exposing (..)
 import EveryDict

@@ -37,6 +37,7 @@ updateChild msg model =
                 counseling =
                     if selected then
                         Maybe.map (Tuple.mapSecond (EverySet.insert topicId)) model.counseling
+
                     else
                         Maybe.map (Tuple.mapSecond (EverySet.remove topicId)) model.counseling
             in
@@ -61,6 +62,7 @@ updateChild msg model =
                                 model.nutritionSigns
                                     |> EverySet.insert sign
                                     |> EverySet.remove None
+
                     else
                         -- We're allowing `NoFamilyPanning` itself to be
                         -- un-checked here.  That probably makes sense ...  it
@@ -124,6 +126,7 @@ updateMother measurements msg model =
                                 model.familyPlanningSigns
                                     |> EverySet.insert sign
                                     |> EverySet.remove NoFamilyPlanning
+
                     else
                         -- We're allowing `NoFamilyPanning` itself to be
                         -- un-checked here.  That probably makes sense ...  it
@@ -195,6 +198,7 @@ updateMother measurements msg model =
                                         -- either look at the next form, or
                                         -- nothing, if all completed already.
                                         selectNextForm measurements formId model
+
                                     else
                                         -- If we're already looking at a
                                         -- different form, stay there.

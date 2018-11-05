@@ -177,6 +177,7 @@ update msg model =
                                                         if EverySet.member Administrator credentials.user.roles then
                                                             -- We leave admins on the login page
                                                             []
+
                                                         else
                                                             [ SetActivePage <| UserPage <| ClinicsPage Nothing ]
 
@@ -206,6 +207,7 @@ update msg model =
                                         MsgLoggedIn <| MsgBackend <| Backend.Model.ResetErrors
                                 in
                                 refetch :: resetErrors :: redirect
+
                             else
                                 []
                     in
@@ -288,6 +290,7 @@ update msg model =
                 resetSessionRequests =
                     if page == UserPage AdminPage && page /= model.activePage then
                         [ MsgLoggedIn <| MsgBackend <| Backend.Model.ResetSessionRequests ]
+
                     else
                         []
             in
@@ -318,6 +321,7 @@ update msg model =
             -- previous one.
             if nominalDate == model.currentDate then
                 ( model, Cmd.none )
+
             else
                 ( { model | currentDate = nominalDate }
                 , Cmd.none

@@ -1,4 +1,4 @@
-module Translate.Model exposing (..)
+module Translate.Model exposing (Language(..), TranslationSet, allLanguages)
 
 {-| This exposes the types used for translation.
 

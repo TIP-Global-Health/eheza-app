@@ -1,4 +1,4 @@
-module App.Utils exposing (..)
+module App.Utils exposing (getLoggedInModel, getUserId, hasAccessToken, hasValidAccessToken)
 
 import App.Model exposing (..)
 import Backend.Entities exposing (..)

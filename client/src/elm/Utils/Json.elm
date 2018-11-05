@@ -1,15 +1,14 @@
-module Utils.Json
-    exposing
-        ( decodeDate
-        , decodeEmptyArrayAsEmptyDict
-        , decodeError
-        , decodeEverySet
-        , decodeListAsDict
-        , decodeListAsDictByProperty
-        , decodeListAsIntDict
-        , decodeListAsIntDictByProperty
-        , decodeNullAsEmptyArray
-        )
+module Utils.Json exposing
+    ( decodeDate
+    , decodeEmptyArrayAsEmptyDict
+    , decodeError
+    , decodeEverySet
+    , decodeListAsDict
+    , decodeListAsDictByProperty
+    , decodeListAsIntDict
+    , decodeListAsIntDictByProperty
+    , decodeNullAsEmptyArray
+    )
 
 import Date exposing (Date)
 import Dict exposing (Dict)
@@ -36,6 +35,7 @@ decodeEmptyArrayAsEmptyDict =
                 in
                 if length == 0 then
                     succeed Dict.empty
+
                 else
                     fail <| "Expected an empty array, not an array with length: " ++ toString length
             )

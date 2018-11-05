@@ -1,4 +1,4 @@
-module Pages.Participant.Model exposing (..)
+module Pages.Participant.Model exposing (Model, Msg(..), Tab(..), emptyModel)
 
 {-| This module models the UI state for showing a particular participant.
 

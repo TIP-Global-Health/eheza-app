@@ -1,4 +1,4 @@
-module Pages.Admin.Model exposing (..)
+module Pages.Admin.Model exposing (Model, Msg(..), emptyModel)
 
 import Backend.Model
 import Backend.Session.Form exposing (SessionForm)

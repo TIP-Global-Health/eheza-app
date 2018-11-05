@@ -1,4 +1,4 @@
-module Backend.Utils exposing (..)
+module Backend.Utils exposing (withEditableSession)
 
 import Backend.Entities exposing (..)
 import Backend.Model exposing (..)

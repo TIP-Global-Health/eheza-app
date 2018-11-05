@@ -1,4 +1,4 @@
-module Measurement.Decoder exposing (..)
+module Measurement.Decoder exposing (decodeDropZoneFile)
 
 import Gizra.Json exposing (decodeJsonInString)
 import Json.Decode exposing (..)
