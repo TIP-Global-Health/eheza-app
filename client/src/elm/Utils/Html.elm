@@ -1,14 +1,13 @@
-module Utils.Html
-    exposing
-        ( debugView
-        , divider
-        , script
-        , spinner
-        , tabItem
-        , thumbnailImage
-        , viewModal
-        , wrapPage
-        )
+module Utils.Html exposing
+    ( debugView
+    , divider
+    , script
+    , spinner
+    , tabItem
+    , thumbnailImage
+    , viewModal
+    , wrapPage
+    )
 
 import Config.Model exposing (Model)
 import Gizra.Html exposing (showIf, showMaybe)

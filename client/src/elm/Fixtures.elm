@@ -1,4 +1,4 @@
-module Fixtures exposing (..)
+module Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildA, exampleChildB, exampleMother, exampleUser)
 
 import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Mother.Model exposing (EducationLevel(..), Mother, Ubudehe(..))

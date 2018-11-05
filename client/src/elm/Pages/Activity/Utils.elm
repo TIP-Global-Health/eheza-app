@@ -1,4 +1,4 @@
-module Pages.Activity.Utils exposing (..)
+module Pages.Activity.Utils exposing (selectParticipantForTab, viewChildMeasurements, viewMotherMeasurements)
 
 import Activity.Model exposing (ChildActivityType(..), MotherActivityType(..))
 import Activity.Utils exposing (onlyCheckedIn)
@@ -79,6 +79,7 @@ selectParticipantForTab config tab activity session userSelection =
                     (\id ->
                         if config.hasPendingActivity id activity session then
                             Nothing
+
                         else
                             Just id
                     )
@@ -90,6 +91,7 @@ selectParticipantForTab config tab activity session userSelection =
                     (\id ->
                         if config.hasPendingActivity id activity session then
                             Just id
+
                         else
                             Nothing
                     )

@@ -1,4 +1,4 @@
-module Utils.Form exposing (..)
+module Utils.Form exposing (onError)
 
 import Form.Error exposing (..)
 import Form.Validate exposing (..)

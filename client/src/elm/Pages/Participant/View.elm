@@ -107,6 +107,7 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
                             (\activity ->
                                 if childHasCompletedActivity childId activity session then
                                     Just activity
+
                                 else
                                     Nothing
                             )
@@ -118,6 +119,7 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
                             (\activity ->
                                 if childHasPendingActivity childId activity session then
                                     Just activity
+
                                 else
                                     Nothing
                             )
@@ -140,6 +142,7 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
                     ]
                     |> keyed "progress-report"
                 ]
+
             else
                 case selectedActivity of
                     Just activity ->
@@ -236,6 +239,7 @@ viewFoundMother language ( motherId, mother ) session model =
                             (\activity ->
                                 if motherHasCompletedActivity motherId activity session then
                                     Just activity
+
                                 else
                                     Nothing
                             )
@@ -247,6 +251,7 @@ viewFoundMother language ( motherId, mother ) session model =
                             (\activity ->
                                 if motherHasPendingActivity motherId activity session then
                                     Just activity
+
                                 else
                                     Nothing
                             )
@@ -324,23 +329,27 @@ viewActivityCards config language participantId selectedTab selectedActivity ses
         pendingActivitiesView =
             if List.isEmpty pendingActivities then
                 [ span [] [ text <| translate language Trans.NoActivitiesPendingForThisParticipant ] ]
+
             else
                 List.map (viewActivityListItem config language selectedActivity) pendingActivities
 
         completedActivitiesView =
             if List.isEmpty completedActivities then
                 [ span [] [ text <| translate language Trans.NoActivitiesCompletedForThisParticipant ] ]
+
             else
                 List.map (viewActivityListItem config language selectedActivity) completedActivities
 
         activeView =
             if selectedTab == ProgressReport then
                 emptyNode
+
             else
                 div [ class "ui task segment" ]
                     [ div [ class "ui five column grid" ] <|
                         if selectedTab == Pending then
                             pendingActivitiesView
+
                         else
                             completedActivitiesView
                     ]
@@ -357,6 +366,7 @@ viewActivityCards config language participantId selectedTab selectedActivity ses
         extraTabs =
             if config.showProgressReportTab then
                 [ tabItem progressTabTitle (selectedTab == ProgressReport) "progressreport" (SetSelectedTab ProgressReport) ]
+
             else
                 []
 
@@ -439,6 +449,7 @@ viewFamilyLinks config language participantId session =
                 attributes =
                     if active then
                         [ class "active" ]
+
                     else
                         [ ChildPage childId
                             |> SessionPage
@@ -469,6 +480,7 @@ viewFamilyLinks config language participantId session =
                 attributes =
                     if active then
                         [ class "active" ]
+
                     else
                         [ MotherPage motherId
                             |> SessionPage

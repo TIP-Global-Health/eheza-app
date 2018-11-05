@@ -117,6 +117,7 @@ viewWhenLoggedIn language login session =
                         , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage Pages.Page.AdminPage
                         ]
                         [ text <| translate language Translate.Admin ]
+
             else
                 Nothing
 

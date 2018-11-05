@@ -1,4 +1,4 @@
-module Backend.Session.Utils exposing (..)
+module Backend.Session.Utils exposing (activeClinicName, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildren, getMother, getMotherMeasurementData, getMyMother, getPhotoUrls, isAuthorized, isClosed, makeEditableSession, mapAllChildEdits, mapChildEdits, mapMotherEdits, setPhotoFileId)
 
 import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (..)
@@ -216,6 +216,7 @@ setPhotoFileId photo id =
                     if created.value.url == photo.value.url then
                         created.value
                             |> (\value -> { edit | photo = Created { created | value = { value | fid = Just id } } })
+
                     else
                         edit
 
@@ -235,6 +236,7 @@ setPhotoFileId photo id =
                                                 }
                                     }
                                )
+
                     else
                         edit
 

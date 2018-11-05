@@ -1,11 +1,10 @@
-module ZScore.Utils
-    exposing
-        ( compareZScore
-        , viewZScore
-        , zScoreHeightForAge
-        , zScoreWeightForAge
-        , zScoreWeightForHeight
-        )
+module ZScore.Utils exposing
+    ( compareZScore
+    , viewZScore
+    , zScoreHeightForAge
+    , zScoreWeightForAge
+    , zScoreWeightForHeight
+    )
 
 {-| This module determines a ZScore for various measurements.
 -}
@@ -139,16 +138,22 @@ zScoreFromInt : Int -> ZScore
 zScoreFromInt z =
     if z == -3 then
         ZScore3Neg
+
     else if z == -2 then
         ZScore2Neg
+
     else if z == -1 then
         ZScore1Neg
+
     else if z == 0 then
         ZScore0
+
     else if z == 1 then
         ZScore1
+
     else if z == 2 then
         ZScore2
+
     else
         ZScore3
 
@@ -164,16 +169,22 @@ zScoreFromEntries key measurement entries =
             (\entry ->
                 if measurement <= entry.sd3neg then
                     ZScore3Neg
+
                 else if measurement <= entry.sd2neg then
                     ZScore2Neg
+
                 else if measurement <= entry.sd1neg then
                     ZScore1Neg
+
                 else if measurement <= entry.sd0 then
                     ZScore0
+
                 else if measurement <= entry.sd1 then
                     ZScore1
+
                 else if measurement <= entry.sd2 then
                     ZScore2
+
                 else
                     ZScore3
             )

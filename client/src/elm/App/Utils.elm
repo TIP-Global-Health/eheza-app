@@ -1,4 +1,4 @@
-module App.Utils exposing (..)
+module App.Utils exposing (getLoggedInModel, hasAccessToken, hasValidAccessToken)
 
 import App.Model exposing (..)
 import RemoteData

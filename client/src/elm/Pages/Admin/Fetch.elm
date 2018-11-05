@@ -31,6 +31,7 @@ fetch currentDate backend model =
                     -- redo the query.
                     if queryDate == currentDate then
                         Nothing
+
                     else
                         Just <| MsgBackend <| Backend.Model.FetchFutureSessions currentDate
 
@@ -43,6 +44,7 @@ fetch currentDate backend model =
                             (\form ->
                                 if Form.isSubmitted form then
                                     Just ResetCreateSessionForm
+
                                 else
                                     Nothing
                             )

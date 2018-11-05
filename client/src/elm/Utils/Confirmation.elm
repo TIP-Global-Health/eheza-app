@@ -1,4 +1,4 @@
-module Utils.Confirmation exposing (..)
+module Utils.Confirmation exposing (ConfirmationDialog, Model(..), Msg(..), emptyModel, update, view)
 
 {-| A generic way to require a confirmation dialog before
 sending a message.

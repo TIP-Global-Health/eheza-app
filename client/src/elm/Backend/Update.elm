@@ -669,6 +669,7 @@ updateCache currentDate msg model =
                         , []
                         )
                             |> sequenceExtra (updateCache currentDate) [ CacheEditableSession ]
+
                     else
                         ( model, Cmd.none, [] )
                 )

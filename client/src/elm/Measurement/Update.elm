@@ -45,6 +45,7 @@ updateChild msg model =
                                 model.nutritionSigns
                                     |> EverySet.insert sign
                                     |> EverySet.remove None
+
                     else
                         -- We're allowing `NoFamilyPanning` itself to be
                         -- un-checked here.  That probably makes sense ...  it
@@ -108,6 +109,7 @@ updateMother msg model =
                                 model.familyPlanningSigns
                                     |> EverySet.insert sign
                                     |> EverySet.remove NoFamilyPlanning
+
                     else
                         -- We're allowing `NoFamilyPanning` itself to be
                         -- un-checked here.  That probably makes sense ...  it

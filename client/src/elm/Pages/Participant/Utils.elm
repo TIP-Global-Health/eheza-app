@@ -1,4 +1,4 @@
-module Pages.Participant.Utils exposing (..)
+module Pages.Participant.Utils exposing (sequenceExtra)
 
 import List
 

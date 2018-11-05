@@ -1,31 +1,30 @@
-module Activity.Utils
-    exposing
-        ( childHasAnyPendingActivity
-        , childHasCompletedActivity
-        , childHasPendingActivity
-        , decodeActivityTypeFromString
-        , defaultActivityType
-        , encodeActivityTypeAsString
-        , getActivityIcon
-        , getActivityList
-        , getActivityTypeList
-        , getAllChildActivities
-        , getAllMotherActivities
-        , getTotalsNumberPerActivity
-        , hasAnyCompletedActivity
-        , hasAnyPendingChildActivity
-        , hasAnyPendingMotherActivity
-        , hasCompletedChildActivity
-        , hasCompletedMotherActivity
-        , isCheckedIn
-        , motherHasAnyPendingActivity
-        , motherHasCompletedActivity
-        , motherHasPendingActivity
-        , motherOrAnyChildHasAnyCompletedActivity
-        , motherOrAnyChildHasAnyPendingActivity
-        , onlyCheckedIn
-        , setCheckedIn
-        )
+module Activity.Utils exposing
+    ( childHasAnyPendingActivity
+    , childHasCompletedActivity
+    , childHasPendingActivity
+    , decodeActivityTypeFromString
+    , defaultActivityType
+    , encodeActivityTypeAsString
+    , getActivityIcon
+    , getActivityList
+    , getActivityTypeList
+    , getAllChildActivities
+    , getAllMotherActivities
+    , getTotalsNumberPerActivity
+    , hasAnyCompletedActivity
+    , hasAnyPendingChildActivity
+    , hasAnyPendingMotherActivity
+    , hasCompletedChildActivity
+    , hasCompletedMotherActivity
+    , isCheckedIn
+    , motherHasAnyPendingActivity
+    , motherHasCompletedActivity
+    , motherHasPendingActivity
+    , motherOrAnyChildHasAnyCompletedActivity
+    , motherOrAnyChildHasAnyPendingActivity
+    , onlyCheckedIn
+    , setCheckedIn
+    )
 
 import Activity.Model exposing (ActivityListItem, ActivityType(..), ChildActivityType(..), MotherActivityType(..))
 import Backend.Entities exposing (..)

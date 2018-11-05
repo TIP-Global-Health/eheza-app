@@ -1,7 +1,4 @@
-module Backend.Child.Decoder
-    exposing
-        ( decodeChild
-        )
+module Backend.Child.Decoder exposing (decodeChild)
 
 import Backend.Child.Model exposing (..)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
@@ -35,8 +32,10 @@ decodeGender =
             (\gender ->
                 if gender == "female" then
                     succeed Female
+
                 else if gender == "male" then
                     succeed Male
+
                 else
                     fail (gender ++ " is not a recognized 'type' for Gender.")
             )

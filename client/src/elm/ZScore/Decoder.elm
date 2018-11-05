@@ -1,4 +1,4 @@
-module ZScore.Decoder exposing (..)
+module ZScore.Decoder exposing (decodeZScoreEntriesByDay, decodeZScoreEntriesByHeight, decodeZScoreEntry)
 
 import IntDict exposing (IntDict)
 import Json.Decode exposing (..)

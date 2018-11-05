@@ -1,4 +1,4 @@
-module ZScore.View exposing (..)
+module ZScore.View exposing (Bounds, LabelConfig, PlotConfig, ageLines, frame, heightForAgeBoysLabels, heightForAgeConfig, heightForAgeGirlsLabels, heightLines, labels, plotChildData, plotData, plotReferenceData, referenceLinesHeight, referenceLinesWeight, referenceLinesWeightForHeight, viewHeightForAgeBoys, viewHeightForAgeGirls, viewMarkers, viewWeightForAgeBoys, viewWeightForAgeGirls, viewWeightForHeightBoys, viewWeightForHeightGirls, weightForAgeBoysLabels, weightForAgeConfig, weightForAgeGirlsLabels, weightForHeightBoysLabels, weightForHeightConfig, weightForHeightGirlsLabels, zScoreLabelsHeightForAgeBoys, zScoreLabelsHeightForAgeGirls, zScoreLabelsWeightForAgeBoys, zScoreLabelsWeightForAgeGirls, zScoreLabelsWeightForHeightBoys, zScoreLabelsWeightForHeightGirls)
 
 {-| Ultimately, the idea is that we've got information in the `Model` that we
 can use to draw the elements below more programmatically ... that is, we don't
@@ -191,6 +191,7 @@ plotReferenceData config data =
                         -- bounds
                         if result.x >= config.input.minX && result.x <= config.input.maxX then
                             Just result
+
                         else
                             Nothing
                     )
@@ -274,11 +275,13 @@ plotReferenceData config data =
     , Just <| makeLine neg2points "two-line-new"
     , if config.drawSD1 then
         Just <| makeLine (getPoints .sd1neg) "one-line-new"
+
       else
         Nothing
     , Just <| makeLine (getPoints .sd0) "zero-line-new"
     , if config.drawSD1 then
         Just <| makeLine (getPoints .sd1) "one-line-new"
+
       else
         Nothing
     , Just <| makeLine (getPoints .sd2) "two-line-new"

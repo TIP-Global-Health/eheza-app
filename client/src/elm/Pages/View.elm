@@ -1,4 +1,4 @@
-module Pages.View exposing (..)
+module Pages.View exposing (viewClosedSession, viewFoundSession, viewUnauthorizedSession)
 
 import Activity.Model exposing (ActivityType(..))
 import App.Model exposing (Model)
@@ -41,8 +41,10 @@ viewFoundSession user page ( sessionId, session ) model =
     in
     if isClosed currentDate session then
         viewClosedSession language sessionId session
+
     else if not (isAuthorized user session) then
         viewUnauthorizedSession language session
+
     else
         case page of
             ActivitiesPage ->

@@ -1,4 +1,4 @@
-module Pages.Login.Model exposing (..)
+module Pages.Login.Model exposing (Model, Msg(..), OutMsg(..), emptyModel)
 
 {-| This models the username and password entered in the UI.
 -}
