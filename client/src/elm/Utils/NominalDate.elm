@@ -20,6 +20,8 @@ type Days
     = Days Int
 
 
+{-| A wrapper for an integer representing months.
+-}
 type Months
     = Months Int
 

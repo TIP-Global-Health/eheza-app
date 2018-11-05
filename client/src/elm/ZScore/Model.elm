@@ -1,15 +1,25 @@
 module ZScore.Model exposing
-    ( Centimetres(..)
-    , Kilograms(..)
-    , Model
-    , Msg(..)
-    , ZScore(..)
-    , ZScoreEntry
-    , emptyModel
+    ( Model, Msg(..), ZScoreEntry, emptyModel
+    , Length(..), Height(..), Centimetres(..), Kilograms(..), BMI(..)
     )
 
-import IntDict exposing (IntDict)
+{-| Models our ZScore tables.
+
+
+## Model
+
+@docs Model, Msg, ZScoreEntry, emptyModel
+
+
+## Units
+
+@docs Length, Height, Centimetres, Kilograms, BMI
+
+-}
+
+import AllDict exposing (AllDict)
 import RemoteData exposing (RemoteData(..), WebData)
+import Utils.NominalDate exposing (Days, Months)
 
 
 {-| This represents the data that we use to calculate ZScores.
@@ -22,23 +32,20 @@ application startup), and then provide the `Model` to the functions in
 
 -}
 type alias Model =
-    { heightForAgeBoys : WebData (IntDict ZScoreEntry)
-    , heightForAgeGirls : WebData (IntDict ZScoreEntry)
-    , weightForAgeBoys : WebData (IntDict ZScoreEntry)
-    , weightForAgeGirls : WebData (IntDict ZScoreEntry)
-    , weightForHeightBoys : WebData (IntDict ZScoreEntry)
-    , weightForHeightGirls : WebData (IntDict ZScoreEntry)
+    { bmiForAge : WebData BmiForAgeTables
+    , lengthHeightForAge : WebData LengthHeightForAgeTables
+    , weightForAge : WebData WeightForAgeTables
+    , weightForHeight : WebData WeightForHeightTables
+    , weightForLength : WebData WeightForLengthTables
     }
 
 
 emptyModel : Model
 emptyModel =
-    { heightForAgeBoys = NotAsked
-    , heightForAgeGirls = NotAsked
-    , weightForAgeBoys = NotAsked
-    , weightForAgeGirls = NotAsked
-    , weightForHeightBoys = NotAsked
-    , weightForHeightGirls = NotAsked
+    { bmiForAge = NotAsked
+    , lengthHeightForAge = NotAsked
+    , weightForAge = NotAsked
+    , weightForHeight = NotAsked
     }
 
 
@@ -46,19 +53,17 @@ emptyModel =
 locally, so (a) it will be fast, and (b) it will work offline.
 -}
 type Msg
-    = FetchAll
-    | FetchHeightForAgeBoys
-    | FetchHeightForAgeGirls
-    | FetchWeightForAgeBoys
-    | FetchWeightForAgeGirls
-    | FetchWeightForHeightBoys
-    | FetchWeightForHeightGirls
-    | HandleHeightForAgeBoys (WebData (IntDict ZScoreEntry))
-    | HandleHeightForAgeGirls (WebData (IntDict ZScoreEntry))
-    | HandleWeightForAgeBoys (WebData (IntDict ZScoreEntry))
-    | HandleWeightForAgeGirls (WebData (IntDict ZScoreEntry))
-    | HandleWeightForHeightBoys (WebData (IntDict ZScoreEntry))
-    | HandleWeightForHeightGirls (WebData (IntDict ZScoreEntry))
+    = FetchAllTables
+    | FetchBmiForAgeTables
+    | FetchLengthHeightForAgeTables
+    | FetchWeightForAgeTables
+    | FetchWeightForHeightTables
+    | FetchWeightForLengthTables
+    | HandleBmiForAgeTables (WebData BmiForAgeTables)
+    | HandleLengthHeightForAgeTables (WebData LengthHeightForAgeTables)
+    | HandleWeightForAgeTables (WebData WeightForAgeTables)
+    | HandleWeightForHeightTables (WebData WeightForHeightTables)
+    | HandleWeightForLengthTables (WebData WeightForLengthTables)
 
 
 
@@ -69,54 +74,71 @@ type Msg
    The types are mainly to avoid any confusion about what the units are. It
    forces the caller to do things like:
 
-       zScoreFromHeight (AgeDay 27) Male (Centimetres 27)
+       zScoreFromHeight (AgeDay 27) Male (Length 27)
 
    ... so that the caller has to think about what units are being provided.
 -}
 
 
+type Length
+    = Length Float
+
+
+type Height
+    = Height Float
+
+
+{-| In some cases, we accept a `length` or a `height`.
+-}
 type Centimetres
-    = Centimetres Float
+    = Centimeters Float
 
 
 type Kilograms
     = Kilograms Float
 
 
-{-| A ZScore. This isn't really a number -- e.g. you can't
-meaningfully do any arithmetic with it. So, we just enumerate the
-possibilities.
+type BMI
+    = BMI Float
 
-  - Use `compareZScore` to check ordering.
 
-  - You can use Elm's `==` reliably with this type.
+type alias ByDaysAndMonths value =
+    { byDay : AllDict Days (ZScoreEntry value)
+    , byMonth : AllDict Months (ZScoreEntry value)
+    }
 
-  - Use `viewZScore` to get the ZScore as a string, such that
-    `ZSCore3Neg` displays as "-3", etc.
 
-Note that when we calculate a ZScore from a measurement, we apply a kind
-of "ceiling" ... if a measurement is between two ZScore lines, we report
-the higher one.
+type alias BmiForAgeTables =
+    MaleAndFemale (ByDaysAndMonths BMI)
 
-Also note that our data tables have a +4 and -4, but we don't use them.
 
+{-| These tables represent length for children < 2 yrs old,
+and height for >= 2 years old.
 -}
-type ZScore
-    = ZScore3Neg
-    | ZScore2Neg
-    | ZScore1Neg
-    | ZScore0
-    | ZScore1
-    | ZScore2
-    | ZScore3
+type alias LengthHeightForAgeTables =
+    MaleAndFemale (ByDaysAndMonths Centimetres)
 
 
-type alias ZScoreEntry =
-    { sd0 : Float
-    , sd1 : Float
-    , sd2 : Float
-    , sd3 : Float
-    , sd1neg : Float
-    , sd2neg : Float
-    , sd3neg : Float
+type alias WeightForAgeTables =
+    MaleAndFemale (ByDaysAndMonths Kilograms)
+
+
+type alias WeightForLengthTables =
+    MaleAndFemale (AllDict Length Kilograms)
+
+
+type alias WeightForHeightTables =
+    MaleAndFemale (AllDict Height Kilograms)
+
+
+type alias MaleAndFemale a =
+    { male : a
+    , female : a
+    }
+
+
+type alias ZScoreEntry value =
+    { l : Float
+    , m : value
+    , s : Float
     }
