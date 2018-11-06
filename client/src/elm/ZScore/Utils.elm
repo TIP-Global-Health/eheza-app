@@ -48,7 +48,7 @@ zScoreLengthHeightForAge : Model -> Days -> Gender -> Centimetres -> Maybe ZScor
 zScoreLengthHeightForAge model age gender cm =
     model.lengthHeightForAge
         |> RemoteData.toMaybe
-        |> Maybe.andThen (zScoreForAge NoClamp (\(Centimetres x) -> x) age gender cm)
+        |> Maybe.andThen (zScoreForAge NoClamp (\(Centimetres x) -> x) Centimetres age gender cm)
 
 
 {-| Calculates the ZScore from the provided data.
@@ -60,7 +60,7 @@ zScoreBmiForAge : Model -> Days -> Gender -> BMI -> Maybe ZScore
 zScoreBmiForAge model age gender bmi =
     model.bmiForAge
         |> RemoteData.toMaybe
-        |> Maybe.andThen (zScoreForAge Clamp (\(BMI x) -> x) age gender bmi)
+        |> Maybe.andThen (zScoreForAge Clamp (\(BMI x) -> x) BMI age gender bmi)
 
 
 {-| Calculates the ZScore from the provided data.
@@ -72,17 +72,17 @@ zScoreWeightForAge : Model -> Days -> Gender -> Kilograms -> Maybe ZScore
 zScoreWeightForAge model age gender kg =
     model.weightForAge
         |> RemoteData.toMaybe
-        |> Maybe.andThen (zScoreForAge Clamp (\(Kilograms x) -> x) age gender kg)
+        |> Maybe.andThen (zScoreForAge Clamp (\(Kilograms x) -> x) Kilograms age gender kg)
 
 
-zScoreForAge : Clamp -> (value -> Float) -> Days -> Gender -> value -> MaleAndFemale (ByDaysAndMonths value) -> Maybe ZScore
-zScoreForAge clamp unwrapValue days gender value tables =
+zScoreForAge : Clamp -> (value -> Float) -> (Float -> value) -> Days -> Gender -> value -> MaleAndFemale (ByDaysAndMonths value) -> Maybe ZScore
+zScoreForAge clamp unwrapValue wrapValue days gender value tables =
     let
         table =
             selectGender gender tables
     in
     zScoreForDays clamp unwrapValue days value table.byDay
-        |> orElseLazy (\_ -> zScoreForMonths clamp unwrapValue days value table.byMonth)
+        |> orElseLazy (\_ -> zScoreForMonths clamp unwrapValue wrapValue days value table.byMonth)
 
 
 zScoreForDays : Clamp -> (value -> Float) -> Days -> value -> AllDict Days (ZScoreEntry value) Int -> Maybe ZScore
@@ -92,9 +92,35 @@ zScoreForDays clamp unwrapValue days value table =
         (AllDict.get days table)
 
 
-zScoreForMonths : Clamp -> (value -> Float) -> Days -> value -> AllDict Months (ZScoreEntry value) Int -> Maybe ZScore
-zScoreForMonths clamp unwrapValue days value table =
-    Debug.crash "todo"
+zScoreForMonths : Clamp -> (value -> Float) -> (Float -> value) -> Days -> value -> AllDict Months (ZScoreEntry value) Int -> Maybe ZScore
+zScoreForMonths clamp unwrapValue wrapValue (Days days) value table =
+    let
+        fractionalMonths =
+            toFloat days * 12 / 365.25
+
+        lowMonths =
+            truncate fractionalMonths
+
+        highMonths =
+            ceiling fractionalMonths
+
+        diffMonths =
+            fractionalMonths - toFloat lowMonths
+    in
+    Maybe.map2
+        (\low high ->
+            let
+                -- We interpolate an entry from fractional months
+                entry =
+                    { l = low.l + (diffMonths * (high.l - low.l))
+                    , m = wrapValue (unwrapValue low.m + diffMonths * (unwrapValue high.m - unwrapValue low.m))
+                    , s = low.s + (diffMonths * (high.s - low.s))
+                    }
+            in
+            calculateZScore clamp unwrapValue value entry
+        )
+        (AllDict.get (Months lowMonths) table)
+        (AllDict.get (Months highMonths) table)
 
 
 calculateZScore : Clamp -> (value -> Float) -> value -> ZScoreEntry value -> ZScore
