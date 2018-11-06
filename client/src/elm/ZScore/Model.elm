@@ -1,6 +1,7 @@
 module ZScore.Model exposing
     ( Model, Msg(..), ZScoreEntry, emptyModel
-    , Length(..), Height(..), Centimetres(..), Kilograms(..), BMI(..)
+    , Length(..), Height(..), Centimetres(..), Kilograms(..), BMI(..), ZScore
+    , BmiForAgeTables, ByDaysAndMonths, LengthHeightForAgeTables, MaleAndFemale, WeightForAgeTables, WeightForHeightTables, WeightForLengthTables
     )
 
 {-| Models our ZScore tables.
@@ -13,7 +14,7 @@ module ZScore.Model exposing
 
 ## Units
 
-@docs Length, Height, Centimetres, Kilograms, BMI
+@docs Length, Height, Centimetres, Kilograms, BMI, ZScore
 
 -}
 
@@ -46,6 +47,7 @@ emptyModel =
     , lengthHeightForAge = NotAsked
     , weightForAge = NotAsked
     , weightForHeight = NotAsked
+    , weightForLength = NotAsked
     }
 
 
@@ -64,6 +66,15 @@ type Msg
     | HandleWeightForAgeTables (WebData WeightForAgeTables)
     | HandleWeightForHeightTables (WebData WeightForHeightTables)
     | HandleWeightForLengthTables (WebData WeightForLengthTables)
+
+
+{-| For now, just make ZScore an alias for a Float ... we could do fancier
+things here, if it seems helpful. For instance, we could have phantom
+types differentiating between weight-for-length, weight-for-age, etc. But that
+seems like it might be overkill.
+-}
+type alias ZScore =
+    Float
 
 
 
@@ -91,7 +102,7 @@ type Height
 {-| In some cases, we accept a `length` or a `height`.
 -}
 type Centimetres
-    = Centimeters Float
+    = Centimetres Float
 
 
 type Kilograms
@@ -103,8 +114,8 @@ type BMI
 
 
 type alias ByDaysAndMonths value =
-    { byDay : AllDict Days (ZScoreEntry value)
-    , byMonth : AllDict Months (ZScoreEntry value)
+    { byDay : AllDict Days (ZScoreEntry value) Int
+    , byMonth : AllDict Months (ZScoreEntry value) Int
     }
 
 
@@ -124,11 +135,11 @@ type alias WeightForAgeTables =
 
 
 type alias WeightForLengthTables =
-    MaleAndFemale (AllDict Length Kilograms)
+    MaleAndFemale (AllDict Length (ZScoreEntry Kilograms) Int)
 
 
 type alias WeightForHeightTables =
-    MaleAndFemale (AllDict Height Kilograms)
+    MaleAndFemale (AllDict Height (ZScoreEntry Kilograms) Int)
 
 
 type alias MaleAndFemale a =
