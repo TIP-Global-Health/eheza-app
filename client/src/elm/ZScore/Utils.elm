@@ -199,8 +199,14 @@ zScoreWeightForLength model length gender kg =
 
 
 zScoreForCm : key -> Gender -> Kilograms -> MaleAndFemale (AllDict key (ZScoreEntry Kilograms) Int) -> Maybe ZScore
-zScoreForCm key gender kg table =
-    Debug.crash "todo"
+zScoreForCm key gender kg tables =
+    let
+        table =
+            selectGender gender tables
+    in
+    Maybe.map
+        (calculateZScore Clamp (\(Kilograms x) -> x) kg)
+        (AllDict.get key table)
 
 
 {-| Convert the ZScore to a string for display purposes.
