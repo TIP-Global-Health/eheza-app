@@ -29,6 +29,13 @@ selectGender gender =
             .female
 
 
+{-| Should we clamp ZScores above +3 or below -3?
+-}
+type Clamp
+    = Clamp
+    | NoClamp
+
+
 {-| Calculates the ZScore from the provided data.
 
 It is assumed that the measurement represents "length" for children < 2 years
@@ -41,7 +48,7 @@ zScoreLengthHeightForAge : Model -> Days -> Gender -> Centimetres -> Maybe ZScor
 zScoreLengthHeightForAge model age gender cm =
     model.lengthHeightForAge
         |> RemoteData.toMaybe
-        |> Maybe.andThen (zScoreForAge (\(Centimetres x) -> x) age gender cm)
+        |> Maybe.andThen (zScoreForAge NoClamp (\(Centimetres x) -> x) age gender cm)
 
 
 {-| Calculates the ZScore from the provided data.
@@ -53,7 +60,7 @@ zScoreBmiForAge : Model -> Days -> Gender -> BMI -> Maybe ZScore
 zScoreBmiForAge model age gender bmi =
     model.bmiForAge
         |> RemoteData.toMaybe
-        |> Maybe.andThen (zScoreForAge (\(BMI x) -> x) age gender bmi)
+        |> Maybe.andThen (zScoreForAge Clamp (\(BMI x) -> x) age gender bmi)
 
 
 {-| Calculates the ZScore from the provided data.
@@ -65,27 +72,80 @@ zScoreWeightForAge : Model -> Days -> Gender -> Kilograms -> Maybe ZScore
 zScoreWeightForAge model age gender kg =
     model.weightForAge
         |> RemoteData.toMaybe
-        |> Maybe.andThen (zScoreForAge (\(Kilograms x) -> x) age gender kg)
+        |> Maybe.andThen (zScoreForAge Clamp (\(Kilograms x) -> x) age gender kg)
 
 
-zScoreForAge : (value -> Float) -> Days -> Gender -> value -> MaleAndFemale (ByDaysAndMonths value) -> Maybe ZScore
-zScoreForAge unwrapValue days gender value tables =
+zScoreForAge : Clamp -> (value -> Float) -> Days -> Gender -> value -> MaleAndFemale (ByDaysAndMonths value) -> Maybe ZScore
+zScoreForAge clamp unwrapValue days gender value tables =
     let
         table =
             selectGender gender tables
     in
-    zScoreForDays unwrapValue days value table.byDay
-        |> orElseLazy (\_ -> zScoreForMonths unwrapValue days value table.byMonth)
+    zScoreForDays clamp unwrapValue days value table.byDay
+        |> orElseLazy (\_ -> zScoreForMonths clamp unwrapValue days value table.byMonth)
 
 
-zScoreForDays : (value -> Float) -> Days -> value -> AllDict Days (ZScoreEntry value) Int -> Maybe ZScore
-zScoreForDays unwrapValue days value table =
+zScoreForDays : Clamp -> (value -> Float) -> Days -> value -> AllDict Days (ZScoreEntry value) Int -> Maybe ZScore
+zScoreForDays clamp unwrapValue days value table =
+    Maybe.map
+        (calculateZScore clamp unwrapValue value)
+        (AllDict.get days table)
+
+
+zScoreForMonths : Clamp -> (value -> Float) -> Days -> value -> AllDict Months (ZScoreEntry value) Int -> Maybe ZScore
+zScoreForMonths clamp unwrapValue days value table =
     Debug.crash "todo"
 
 
-zScoreForMonths : (value -> Float) -> Days -> value -> AllDict Months (ZScoreEntry value) Int -> Maybe ZScore
-zScoreForMonths unwrapValue days value table =
-    Debug.crash "todo"
+calculateZScore : Clamp -> (value -> Float) -> value -> ZScoreEntry value -> ZScore
+calculateZScore clamp unwrapValue value entry =
+    let
+        result =
+            (((unwrapValue value / unwrapValue entry.m) ^ entry.l) - 1) / (entry.s * entry.l)
+    in
+    case clamp of
+        NoClamp ->
+            result
+
+        Clamp ->
+            -- If we're clamping, we adjust things so that outside of +3 or
+            -- -3, we have a constant distance between ZScores, where the
+            -- constant difference is the distance between SD2 and SD3.
+            if result > 3 then
+                let
+                    sd3pos =
+                        valueForZScore unwrapValue 3 entry
+
+                    sd2pos =
+                        valueForZScore unwrapValue 2 entry
+
+                    sd23pos =
+                        sd3pos - sd2pos
+                in
+                3 + ((unwrapValue value - sd3pos) / sd23pos)
+
+            else if result < -3 then
+                let
+                    sd3neg =
+                        valueForZScore unwrapValue -3 entry
+
+                    sd2neg =
+                        valueForZScore unwrapValue -2 entry
+
+                    sd23neg =
+                        sd2neg - sd3neg
+                in
+                -3 + ((unwrapValue value - sd3neg) / sd23neg)
+
+            else
+                result
+
+
+{-| Given a desired ZScore, what value will produce that ZScore?
+-}
+valueForZScore : (value -> Float) -> ZScore -> ZScoreEntry value -> Float
+valueForZScore unwrapValue zscore entry =
+    unwrapValue entry.m * ((1 + entry.l * entry.s * zscore) ^ (1 / entry.l))
 
 
 {-| Calculates the ZScore from the provided data.
