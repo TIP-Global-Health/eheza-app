@@ -1,7 +1,7 @@
 module ZScore.Model exposing
-    ( Model, Msg(..), ZScoreEntry, emptyModel
+    ( Model, Msg(..), MaleAndFemale, ZScoreEntry, emptyModel
     , Length(..), Height(..), Centimetres(..), Kilograms(..), BMI(..), ZScore
-    , BmiForAgeTables, ByDaysAndMonths, LengthHeightForAgeTables, MaleAndFemale, WeightForAgeTables, WeightForHeightTables, WeightForLengthTables
+    , BmiForAgeTables, ByDaysAndMonths, LengthHeightForAgeTables, WeightForAgeTables, WeightForHeightTables, WeightForLengthTables
     )
 
 {-| Models our ZScore tables.
@@ -9,7 +9,7 @@ module ZScore.Model exposing
 
 ## Model
 
-@docs Model, Msg, ZScoreEntry, emptyModel
+@docs Model, Msg, MaleAndFemale, ZScoreEntry, emptyModel
 
 
 ## Units
