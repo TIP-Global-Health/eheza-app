@@ -1,5 +1,6 @@
 module ZScore.Utils exposing
     ( compareZScore
+    , valueForZScore
     , viewZScore
     , zScoreBmiForAge
     , zScoreLengthHeightForAge
