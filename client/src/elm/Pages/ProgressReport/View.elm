@@ -21,8 +21,8 @@ import Pages.PageNotFound.View
 import Translate exposing (Language(..), translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate)
-import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore(..))
-import ZScore.Utils exposing (zScoreHeightForAge, zScoreWeightForAge)
+import ZScore.Model exposing (Centimetres(..), Kilograms(..), Length(..), ZScore)
+import ZScore.Utils exposing (zScoreLengthHeightForAge, zScoreWeightForAge)
 import ZScore.View
 
 
@@ -294,7 +294,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                                         diffDays child.birthDate height.dateMeasured
 
                                     indication =
-                                        zScoreHeightForAge zscores ageInDays child.gender (Centimetres cm)
+                                        zScoreLengthHeightForAge zscores ageInDays child.gender (Centimetres cm)
                                             |> Maybe.map (class << classForIndication << zScoreToIndication)
                                             |> Maybe.Extra.toList
 
@@ -542,27 +542,14 @@ muacIndicationToIndication muacIndication =
 
 zScoreToIndication : ZScore -> Indication
 zScoreToIndication zScore =
-    case zScore of
-        ZScore3 ->
-            Positive
+    if zScore <= -3 then
+        Negative
 
-        ZScore2 ->
-            Positive
+    else if zScore <= -2 then
+        Warning
 
-        ZScore1 ->
-            Positive
-
-        ZScore0 ->
-            Positive
-
-        ZScore1Neg ->
-            Positive
-
-        ZScore2Neg ->
-            Warning
-
-        ZScore3Neg ->
-            Negative
+    else
+        Positive
 
 
 chartHeightForAge : Child -> Height -> ( Days, Centimetres )
@@ -587,16 +574,18 @@ chartWeightForAge child weight =
     )
 
 
-chartWeightForHeight : List Height -> Weight -> Maybe ( Centimetres, Kilograms )
+chartWeightForHeight : List Height -> Weight -> Maybe ( Length, Kilograms )
 chartWeightForHeight heights weight =
-    -- For each weight, we try to find a height with a matching sessionID
+    -- For each weight, we try to find a height with a matching sessionID.
+    -- Eventually, we shouild take age into account to distingiush height
+    -- and length.
     heights
         |> List.Extra.find (\height -> height.sessionId == weight.sessionId)
         |> Maybe.map
             (\height ->
                 ( case height.value of
                     HeightInCm cm ->
-                        Centimetres cm
+                        Length cm
                 , case weight.value of
                     WeightInKg kg ->
                         Kilograms kg
