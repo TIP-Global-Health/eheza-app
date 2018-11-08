@@ -16,6 +16,7 @@ import AllDict exposing (AllDict)
 import Backend.Child.Model exposing (Gender(..))
 import Maybe.Extra exposing (orElseLazy)
 import RemoteData
+import Round
 import Utils.NominalDate exposing (Days(..), Months(..))
 import ZScore.Model exposing (..)
 
@@ -211,10 +212,13 @@ zScoreForCm key gender kg tables =
 
 
 {-| Convert the ZScore to a string for display purposes.
+
+We'll show two decimal points.
+
 -}
 viewZScore : ZScore -> String
 viewZScore =
-    toString
+    Round.round 2
 
 
 {-| Is the first ZScore greater than, less than, or equal to the second?
