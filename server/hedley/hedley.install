@@ -35,9 +35,9 @@ function hedley_install() {
   hedley_update_7003();
   hedley_update_7004();
   hedley_update_7005();
-  hedley_update_7010();
   hedley_update_7012();
   hedley_update_7013();
+  hedley_update_7014();
   hedley_update_7016();
 }
 
@@ -223,6 +223,7 @@ function hedley_standard_install() {
     'photo',
     'weight',
     'counseling_session',
+    'participant_consent',
   ];
 
   hedley_add_nurse_permissions_for_content_type($nurse_permitted_types);
@@ -349,11 +350,22 @@ function hedley_update_7009() {
 }
 
 /**
- * Enable new prepopulate module.
+ * Remove the unused "hedley_examination" and "hedley_group" modules.
  */
 function hedley_update_7010() {
-  $modules = ['prepopulate'];
-  module_enable($modules);
+  node_type_delete('examination');
+  node_type_delete('group');
+
+  $modules = [
+    'hedley_group',
+    'hedley_examination',
+  ];
+
+  module_disable($modules);
+  drupal_uninstall_modules($modules);
+
+  node_types_rebuild();
+  menu_rebuild();
 }
 
 /**
@@ -369,9 +381,17 @@ function hedley_update_7011() {
 }
 
 /**
- * Replaces old menu block with the new one.
+ * Enable new prepopulate module.
  */
 function hedley_update_7012() {
+  $modules = ['prepopulate'];
+  module_enable($modules);
+}
+
+/**
+ * Replaces old menu block with the new one.
+ */
+function hedley_update_7013() {
   $query = db_update('block');
   $query->fields([
     'status' => 0,
@@ -394,7 +414,7 @@ function hedley_update_7012() {
 /**
  * Enable title module.
  */
-function hedley_update_7013() {
+function hedley_update_7014() {
   $modules = ['title'];
   module_enable($modules);
 }
@@ -402,28 +422,9 @@ function hedley_update_7013() {
 /**
  * Adds counseling_session permission for nurses.
  */
-function hedley_update_7014() {
+function hedley_update_7015() {
   $content_types = ['counseling_session'];
   hedley_add_nurse_permissions_for_content_type($content_types);
-}
-
-/**
- * Remove the unused "hedley_examination" and "hedley_group" modules.
- */
-function hedley_update_7015() {
-  node_type_delete('examination');
-  node_type_delete('group');
-
-  $modules = [
-    'hedley_group',
-    'hedley_examination',
-  ];
-
-  module_disable($modules);
-  drupal_uninstall_modules($modules);
-
-  node_types_rebuild();
-  menu_rebuild();
 }
 
 /**
