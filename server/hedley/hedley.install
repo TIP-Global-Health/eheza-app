@@ -38,6 +38,7 @@ function hedley_install() {
   hedley_update_7012();
   hedley_update_7013();
   hedley_update_7014();
+  hedley_update_7015();
   hedley_update_7016();
 }
 
@@ -222,8 +223,6 @@ function hedley_standard_install() {
     'nutrition',
     'photo',
     'weight',
-    'counseling_session',
-    'participant_consent',
   ];
 
   hedley_add_nurse_permissions_for_content_type($nurse_permitted_types);
