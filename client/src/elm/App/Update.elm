@@ -98,7 +98,7 @@ init flags =
                     )
                         |> sequence update
                             [ MsgServiceWorker ServiceWorker.Model.Register
-                            , MsgZScore ZScore.Model.FetchAll
+                            , MsgZScore ZScore.Model.FetchAllTables
                             ]
 
                 Nothing ->

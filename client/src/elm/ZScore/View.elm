@@ -14,8 +14,8 @@ far it doesn't seem to be a performance problem, so no premature optimization!
 
 -}
 
+import AllDict exposing (AllDict)
 import Html exposing (Html)
-import IntDict exposing (IntDict)
 import RemoteData
 import Round
 import Svg exposing (..)
@@ -23,6 +23,7 @@ import Svg.Attributes exposing (..)
 import Translate exposing (ChartPhrase(..), Language, TranslationId(ChartPhrase), translate)
 import Utils.NominalDate exposing (Days(..))
 import ZScore.Model exposing (..)
+import ZScore.Utils exposing (valueForZScore)
 
 
 {-| If you're calling any of the functions that generate charts,
@@ -69,18 +70,15 @@ viewHeightForAgeBoys language model data =
         , referenceLinesHeight
         , ageLines language
         , zScoreLabelsHeightForAgeBoys
-        , model.heightForAgeBoys
-            |> RemoteData.withDefault IntDict.empty
+        , model.lengthHeightForAge
+            |> RemoteData.map (.male >> .byDay >> AllDict.toList)
+            |> RemoteData.withDefault []
             |> plotReferenceData heightForAgeConfig
         , plotChildData heightForAgeConfig data
         ]
 
 
 {-| Things we need to know to plot stuff.
-
-  - referenceX takes the `Int` from an IntDict ZScoreEntry and converts it to a
-    Float. This is usually just `toFloat`, but for the `WeightForHeight` charts, we
-    divide by 10 as well.
 
   - drawSD1 controls whether we draw a line for SD1 and SD1neg
 
@@ -94,7 +92,6 @@ type alias PlotConfig xAxis yAxis =
     , toFloatY : yAxis -> Float
     , input : Bounds
     , output : Bounds
-    , referenceX : Int -> Float
     , drawSD1 : Bool
     }
 
@@ -113,7 +110,6 @@ heightForAgeConfig =
     , toFloatY = \(Centimetres cm) -> cm
     , input = { minY = 42, maxY = 99, minX = 0, maxX = 365 * 2 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
-    , referenceX = toFloat
     , drawSD1 = False
     }
 
@@ -124,18 +120,16 @@ weightForAgeConfig =
     , toFloatY = \(Kilograms kg) -> kg
     , input = { minY = 1.4, maxY = 17.8, minX = 0, maxX = 365 * 2 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
-    , referenceX = toFloat
     , drawSD1 = False
     }
 
 
-weightForHeightConfig : PlotConfig Centimetres Kilograms
+weightForHeightConfig : PlotConfig Length Kilograms
 weightForHeightConfig =
-    { toFloatX = \(Centimetres cm) -> cm
+    { toFloatX = \(Length cm) -> cm
     , toFloatY = \(Kilograms kg) -> kg
     , input = { minY = 1.0, maxY = 25.0, minX = 45, maxX = 110 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
-    , referenceX = \x -> toFloat x / 10
     , drawSD1 = True
     }
 
@@ -169,21 +163,17 @@ plotData config data =
             )
 
 
-plotReferenceData : PlotConfig x y -> IntDict ZScoreEntry -> Svg any
-plotReferenceData config data =
+plotReferenceData : PlotConfig x y -> List ( x, ZScoreEntry y ) -> Svg any
+plotReferenceData config zscoreList =
     let
-        zscoreList =
-            -- toList will produce a sorted list, so no need to sort
-            IntDict.toList data
-
-        getPoints accessor =
+        getPoints zscore =
             zscoreList
                 |> List.filterMap
                     (\( x, entry ) ->
                         let
                             result =
-                                { x = config.referenceX x
-                                , y = accessor entry
+                                { x = config.toFloatX x
+                                , y = valueForZScore config.toFloatY zscore entry
                                 }
                         in
                         -- We have more data in the numeric tables than we
@@ -199,10 +189,10 @@ plotReferenceData config data =
         -- We need the neg3 and neg2 points both to draw a line and to draw a polygon
         -- for fill ... so, we do them here.
         neg3points =
-            getPoints .sd3neg
+            getPoints -3
 
         neg2points =
-            getPoints .sd2neg
+            getPoints -2
 
         makeLine dataPoints lineClass =
             dataPoints
@@ -274,18 +264,18 @@ plotReferenceData config data =
     , Just <| makeLine neg3points "three-line-new"
     , Just <| makeLine neg2points "two-line-new"
     , if config.drawSD1 then
-        Just <| makeLine (getPoints .sd1neg) "one-line-new"
+        Just <| makeLine (getPoints -1) "one-line-new"
 
       else
         Nothing
-    , Just <| makeLine (getPoints .sd0) "zero-line-new"
+    , Just <| makeLine (getPoints 0) "zero-line-new"
     , if config.drawSD1 then
-        Just <| makeLine (getPoints .sd1) "one-line-new"
+        Just <| makeLine (getPoints 1) "one-line-new"
 
       else
         Nothing
-    , Just <| makeLine (getPoints .sd2) "two-line-new"
-    , Just <| makeLine (getPoints .sd3) "three-line-new"
+    , Just <| makeLine (getPoints 2) "two-line-new"
+    , Just <| makeLine (getPoints 3) "three-line-new"
     ]
         |> List.filterMap identity
         |> g []
@@ -327,14 +317,15 @@ viewWeightForAgeBoys language model data =
         , referenceLinesWeight
         , ageLines language
         , zScoreLabelsWeightForAgeBoys
-        , model.weightForAgeBoys
-            |> RemoteData.withDefault IntDict.empty
+        , model.weightForAge
+            |> RemoteData.map (.male >> .byDay >> AllDict.toList)
+            |> RemoteData.withDefault []
             |> plotReferenceData weightForAgeConfig
         , plotChildData weightForAgeConfig data
         ]
 
 
-viewWeightForHeightBoys : Language -> Model -> List ( Centimetres, Kilograms ) -> Html any
+viewWeightForHeightBoys : Language -> Model -> List ( Length, Kilograms ) -> Html any
 viewWeightForHeightBoys language model data =
     svg
         [ class "z-score boys"
@@ -347,14 +338,15 @@ viewWeightForHeightBoys language model data =
         , referenceLinesWeightForHeight
         , heightLines
         , zScoreLabelsWeightForHeightBoys
-        , model.weightForHeightBoys
-            |> RemoteData.withDefault IntDict.empty
+        , model.weightForLength
+            |> RemoteData.map (.male >> AllDict.toList)
+            |> RemoteData.withDefault []
             |> plotReferenceData weightForHeightConfig
         , plotChildData weightForHeightConfig data
         ]
 
 
-viewWeightForHeightGirls : Language -> Model -> List ( Centimetres, Kilograms ) -> Html any
+viewWeightForHeightGirls : Language -> Model -> List ( Length, Kilograms ) -> Html any
 viewWeightForHeightGirls language model data =
     svg
         [ class "z-score girls"
@@ -367,8 +359,9 @@ viewWeightForHeightGirls language model data =
         , referenceLinesWeightForHeight
         , heightLines
         , zScoreLabelsWeightForHeightGirls
-        , model.weightForHeightGirls
-            |> RemoteData.withDefault IntDict.empty
+        , model.weightForLength
+            |> RemoteData.map (.female >> AllDict.toList)
+            |> RemoteData.withDefault []
             |> plotReferenceData weightForHeightConfig
         , plotChildData weightForHeightConfig data
         ]
@@ -387,8 +380,9 @@ viewHeightForAgeGirls language model data =
         , referenceLinesHeight
         , ageLines language
         , zScoreLabelsHeightForAgeGirls
-        , model.heightForAgeGirls
-            |> RemoteData.withDefault IntDict.empty
+        , model.lengthHeightForAge
+            |> RemoteData.map (.female >> .byDay >> AllDict.toList)
+            |> RemoteData.withDefault []
             |> plotReferenceData heightForAgeConfig
         , plotChildData heightForAgeConfig data
         ]
@@ -407,8 +401,9 @@ viewWeightForAgeGirls language model data =
         , referenceLinesWeight
         , ageLines language
         , zScoreLabelsWeightForAgeGirls
-        , model.weightForAgeGirls
-            |> RemoteData.withDefault IntDict.empty
+        , model.weightForAge
+            |> RemoteData.map (.female >> .byDay >> AllDict.toList)
+            |> RemoteData.withDefault []
             |> plotReferenceData weightForAgeConfig
         , plotChildData weightForAgeConfig data
         ]
