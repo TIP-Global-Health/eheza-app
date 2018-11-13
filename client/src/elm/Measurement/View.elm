@@ -33,7 +33,7 @@ import Translate.Utils exposing (selectLanguage)
 import Utils.Html exposing (script, viewModal)
 import Utils.NominalDate exposing (Days(..), diffDays)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
-import ZScore.Utils exposing (viewZScore, zScoreHeightForAge, zScoreWeightForAge, zScoreWeightForHeight)
+import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
 
 
 {-| We need the current date in order to immediately construct a ZScore for the
@@ -70,7 +70,7 @@ type alias FloatFormConfig value =
     , placeholderText : TranslationId
     , zScoreLabelForAge : TranslationId
     , zScoreForAge : Maybe (ZScore.Model.Model -> Days -> Gender -> Float -> Maybe ZScore)
-    , zScoreForHeight : Maybe (ZScore.Model.Model -> Centimetres -> Gender -> Float -> Maybe ZScore)
+    , zScoreForHeightOrLength : Maybe (ZScore.Model.Model -> Days -> Centimetres -> Gender -> Float -> Maybe ZScore)
     , constraints : FloatInputConstraints
     , unit : TranslationId
     , inputValue : ModelChild -> String
@@ -88,8 +88,8 @@ heightFormConfig =
     , activity = ChildActivity Height
     , placeholderText = Trans.PlaceholderEnterHeight
     , zScoreLabelForAge = Trans.ZScoreHeightForAge
-    , zScoreForAge = Just <| \model age gender height -> zScoreHeightForAge model age gender (Centimetres height)
-    , zScoreForHeight = Nothing
+    , zScoreForAge = Just <| \model age gender height -> zScoreLengthHeightForAge model age gender (Centimetres height)
+    , zScoreForHeightOrLength = Nothing
     , constraints = getInputConstraintsHeight
     , unit = Trans.CentimeterShorthand
     , inputValue = .height
@@ -108,7 +108,7 @@ muacFormConfig =
     , placeholderText = Trans.PlaceholderEnterMUAC
     , zScoreLabelForAge = Trans.ZScoreMuacForAge
     , zScoreForAge = Nothing
-    , zScoreForHeight = Nothing
+    , zScoreForHeightOrLength = Nothing
     , constraints = getInputConstraintsMuac
     , unit = Trans.CentimeterShorthand
     , inputValue = .muac
@@ -127,7 +127,7 @@ weightFormConfig =
     , placeholderText = Trans.PlaceholderEnterWeight
     , zScoreLabelForAge = Trans.ZScoreWeightForAge
     , zScoreForAge = Just <| \model age gender weight -> zScoreWeightForAge model age gender (Kilograms weight)
-    , zScoreForHeight = Just <| \model height gender weight -> zScoreWeightForHeight model height gender (Kilograms weight)
+    , zScoreForHeightOrLength = Just zScoreForHeightOrLength
     , constraints = getInputConstraintsWeight
     , unit = Trans.KilogramShorthand
     , inputValue = .weight
@@ -137,6 +137,15 @@ weightFormConfig =
     , updateMsg = UpdateWeight
     , saveMsg = SendOutMsgChild << SaveWeight << WeightInKg
     }
+
+
+zScoreForHeightOrLength : ZScore.Model.Model -> Days -> Centimetres -> Gender -> Float -> Maybe ZScore
+zScoreForHeightOrLength model (Days days) (Centimetres cm) gender weight =
+    if days < 731 then
+        zScoreWeightForLength model (ZScore.Model.Length cm) gender (Kilograms weight)
+
+    else
+        zScoreWeightForHeight model (ZScore.Model.Height cm) gender (Kilograms weight)
 
 
 viewHeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Height) (Edit HeightId Height) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
@@ -237,7 +246,7 @@ viewFloatForm config language currentDate child measurements zscores model =
         -- In some cases (weight) we also calculate a ZScore based on the
         -- height (rather than age). In order to do that, we need both the height and the weight.
         renderedZScoreForHeight =
-            config.zScoreForHeight
+            config.zScoreForHeightOrLength
                 |> Maybe.map
                     (\func ->
                         let
@@ -254,7 +263,7 @@ viewFloatForm config language currentDate child measurements zscores model =
                                     |> Maybe.andThen
                                         (\height ->
                                             Maybe.andThen
-                                                (\weight -> func zscores (Centimetres height) child.gender weight)
+                                                (\weight -> func zscores ageInDays (Centimetres height) child.gender weight)
                                                 floatValue
                                         )
                                     |> Maybe.map viewZScore

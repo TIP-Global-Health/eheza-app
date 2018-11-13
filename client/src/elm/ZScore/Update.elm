@@ -1,131 +1,189 @@
 module ZScore.Update exposing (update)
 
+import AllDict exposing (AllDict)
 import Http exposing (Error, expectJson)
 import HttpBuilder exposing (get, toTask, withExpect)
 import IntDict exposing (IntDict)
 import RemoteData exposing (RemoteData(..), WebData, isNotAsked)
+import Task
 import Update.Extra exposing (sequence)
+import Utils.NominalDate exposing (Days(..), Months(..))
 import ZScore.Decoder exposing (..)
 import ZScore.Model exposing (..)
+
+
+type alias MonthsAndDays a =
+    { days : a
+    , months : a
+    }
+
+
+bmiForAgePaths : MonthsAndDays String
+bmiForAgePaths =
+    { days = "assets/z-score/bmianthro.json"
+    , months = "assets/z-score/bfawho2007.json"
+    }
+
+
+lengthHeightForAgePaths : MonthsAndDays String
+lengthHeightForAgePaths =
+    { days = "assets/z-score/lenanthro.json"
+    , months = "assets/z-score/hfawho2007.json"
+    }
+
+
+weightForAgePaths : MonthsAndDays String
+weightForAgePaths =
+    { days = "assets/z-score/weianthro.json"
+    , months = "assets/z-score/wfawho2007.json"
+    }
+
+
+weightForHeightPath : String
+weightForHeightPath =
+    "assets/z-score/wfhanthro.json"
+
+
+weightForLengthPath : String
+weightForLengthPath =
+    "assets/z-score/wflanthro.json"
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        FetchAll ->
+        FetchAllTables ->
             ( model, Cmd.none )
                 |> sequence update
-                    [ FetchHeightForAgeBoys
-                    , FetchHeightForAgeGirls
-                    , FetchWeightForAgeBoys
-                    , FetchWeightForAgeGirls
-                    , FetchWeightForHeightBoys
-                    , FetchWeightForHeightGirls
+                    [ FetchBmiForAgeTables
+                    , FetchLengthHeightForAgeTables
+                    , FetchWeightForAgeTables
+                    , FetchWeightForHeightTables
+                    , FetchWeightForLengthTables
                     ]
 
-        FetchHeightForAgeBoys ->
-            if isNotAsked model.heightForAgeBoys then
-                ( { model | heightForAgeBoys = Loading }
-                , fetchForAge "assets/z-score/lhfa_boys_z_exp.json" HandleHeightForAgeBoys
+        FetchBmiForAgeTables ->
+            if isNotAsked model.bmiForAge then
+                ( { model | bmiForAge = Loading }
+                , fetchForAge bmiForAgePaths BMI HandleBmiForAgeTables
                 )
 
             else
                 ( model, Cmd.none )
 
-        FetchHeightForAgeGirls ->
-            if isNotAsked model.heightForAgeGirls then
-                ( { model | heightForAgeGirls = Loading }
-                , fetchForAge "assets/z-score/lhfa_girls_z_exp.json" HandleHeightForAgeGirls
+        FetchLengthHeightForAgeTables ->
+            if isNotAsked model.lengthHeightForAge then
+                ( { model | lengthHeightForAge = Loading }
+                , fetchForAge lengthHeightForAgePaths Centimetres HandleLengthHeightForAgeTables
                 )
 
             else
                 ( model, Cmd.none )
 
-        FetchWeightForAgeBoys ->
-            if isNotAsked model.weightForAgeBoys then
-                ( { model | weightForAgeBoys = Loading }
-                , fetchForAge "assets/z-score/wfa_boys_z_exp.json" HandleWeightForAgeBoys
+        FetchWeightForAgeTables ->
+            if isNotAsked model.weightForAge then
+                ( { model | weightForAge = Loading }
+                , fetchForAge weightForAgePaths Kilograms HandleWeightForAgeTables
                 )
 
             else
                 ( model, Cmd.none )
 
-        FetchWeightForAgeGirls ->
-            if isNotAsked model.weightForAgeGirls then
-                ( { model | weightForAgeGirls = Loading }
-                , fetchForAge "assets/z-score/wfa_girls_z_exp.json" HandleWeightForAgeGirls
+        FetchWeightForHeightTables ->
+            if isNotAsked model.weightForHeight then
+                ( { model | weightForHeight = Loading }
+                , fetchForHeight weightForHeightPath HandleWeightForHeightTables
                 )
 
             else
                 ( model, Cmd.none )
 
-        FetchWeightForHeightBoys ->
-            if isNotAsked model.weightForHeightBoys then
-                ( { model | weightForHeightBoys = Loading }
-                , fetchForHeight "assets/z-score/wfl_boys_z_exp.json" HandleWeightForHeightBoys
+        FetchWeightForLengthTables ->
+            if isNotAsked model.weightForLength then
+                ( { model | weightForLength = Loading }
+                , fetchForLength weightForLengthPath HandleWeightForLengthTables
                 )
 
             else
                 ( model, Cmd.none )
 
-        FetchWeightForHeightGirls ->
-            if isNotAsked model.weightForHeightGirls then
-                ( { model | weightForHeightGirls = Loading }
-                , fetchForHeight "assets/z-score/wfl_girls_z_exp.json" HandleWeightForHeightGirls
-                )
-
-            else
-                ( model, Cmd.none )
-
-        HandleHeightForAgeBoys data ->
-            ( { model | heightForAgeBoys = data }
+        HandleBmiForAgeTables data ->
+            ( { model | bmiForAge = data }
             , Cmd.none
             )
 
-        HandleHeightForAgeGirls data ->
-            ( { model | heightForAgeGirls = data }
+        HandleLengthHeightForAgeTables data ->
+            ( { model | lengthHeightForAge = data }
             , Cmd.none
             )
 
-        HandleWeightForAgeBoys data ->
-            ( { model | weightForAgeBoys = data }
+        HandleWeightForAgeTables data ->
+            ( { model | weightForAge = data }
             , Cmd.none
             )
 
-        HandleWeightForAgeGirls data ->
-            ( { model | weightForAgeGirls = data }
+        HandleWeightForHeightTables data ->
+            ( { model | weightForHeight = data }
             , Cmd.none
             )
 
-        HandleWeightForHeightBoys data ->
-            ( { model | weightForHeightBoys = data }
-            , Cmd.none
-            )
-
-        HandleWeightForHeightGirls data ->
-            ( { model | weightForHeightGirls = data }
+        HandleWeightForLengthTables data ->
+            ( { model | weightForLength = data }
             , Cmd.none
             )
 
 
-{-| Fetch JSON data keyed by an "Day" field which is integer days.
+fetchForAge : MonthsAndDays String -> (Float -> a) -> (WebData (MaleAndFemale (ByDaysAndMonths a)) -> Msg) -> Cmd Msg
+fetchForAge paths wrapper tagger =
+    let
+        daysTask =
+            get paths.days
+                |> withExpect (expectJson (decodeForAge Days (\(Days x) -> x) wrapper))
+                |> toTask
+
+        monthsTask =
+            get paths.months
+                |> withExpect (expectJson (decodeForAge Months (\(Months x) -> x) wrapper))
+                |> toTask
+    in
+    daysTask
+        |> Task.andThen
+            (\daysResult ->
+                Task.map
+                    (\monthsResult ->
+                        { male =
+                            { byDay = daysResult.male
+                            , byMonth = monthsResult.male
+                            }
+                        , female =
+                            { byDay = daysResult.female
+                            , byMonth = monthsResult.female
+                            }
+                        }
+                    )
+                    monthsTask
+            )
+        |> RemoteData.asCmd
+        |> Cmd.map tagger
+
+
+{-| Fetch JSON data keyed by a "length" field which is in centimetres
 -}
-fetchForAge : String -> (WebData (IntDict ZScoreEntry) -> Msg) -> Cmd Msg
-fetchForAge path tag =
+fetchForLength : String -> (WebData (MaleAndFemale (AllDict Length (ZScoreEntry Kilograms) Int)) -> Msg) -> Cmd Msg
+fetchForLength path tagCmd =
     get path
-        |> withExpect (expectJson decodeZScoreEntriesByDay)
+        |> withExpect (expectJson (decodeForCentimetres "length" Length (\(Length x) -> x)))
         |> toTask
         |> RemoteData.asCmd
-        |> Cmd.map tag
+        |> Cmd.map tagCmd
 
 
-{-| Fetch JSON data keyed by an "Height" field which is float cm,
-which we convert to integer millimetres.
+{-| Fetch JSON data keyed by a "height" field which is in centimetres
 -}
-fetchForHeight : String -> (WebData (IntDict ZScoreEntry) -> Msg) -> Cmd Msg
-fetchForHeight path tag =
+fetchForHeight : String -> (WebData (MaleAndFemale (AllDict Height (ZScoreEntry Kilograms) Int)) -> Msg) -> Cmd Msg
+fetchForHeight path tagCmd =
     get path
-        |> withExpect (expectJson decodeZScoreEntriesByHeight)
+        |> withExpect (expectJson (decodeForCentimetres "height" Height (\(Height x) -> x)))
         |> toTask
         |> RemoteData.asCmd
-        |> Cmd.map tag
+        |> Cmd.map tagCmd

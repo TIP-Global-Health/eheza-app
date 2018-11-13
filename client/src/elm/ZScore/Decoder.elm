@@ -1,44 +1,137 @@
-module ZScore.Decoder exposing (decodeZScoreEntriesByDay, decodeZScoreEntriesByHeight, decodeZScoreEntry)
+module ZScore.Decoder exposing (decodeForAge, decodeForCentimetres)
 
-import IntDict exposing (IntDict)
+import AllDict exposing (AllDict)
+import Backend.Child.Model exposing (Gender(..))
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import ZScore.Model exposing (..)
 
 
-decodeZScoreEntry : Decoder ZScoreEntry
-decodeZScoreEntry =
-    -- TODO: This is fragile, since it depends on the order
-    -- of the fields in ZScoreEntry. So, it would be nice
-    -- to make the fields more explicit here. However, it
-    -- would be more verbose!
-    decode ZScoreEntry
-        |> required "SD0" float
-        |> required "SD1" float
-        |> required "SD2" float
-        |> required "SD3" float
-        |> required "SD1neg" float
-        |> required "SD2neg" float
-        |> required "SD3neg" float
-
-
-decodeZScoreEntriesByDay : Decoder (IntDict ZScoreEntry)
-decodeZScoreEntriesByDay =
-    map2 (,) (field "Day" int) decodeZScoreEntry
-        |> list
-        |> map IntDict.fromList
-
-
-{-| This is a bit different because the height in JSON is a float in cm,
-and we want to convert to integer millimetres.
+{-| This is a type which matches the structure of our JSON. We initially
+decode this, and then turn it into a type that is more oriented to our
+app's needs.
 -}
-decodeZScoreEntriesByHeight : Decoder (IntDict ZScoreEntry)
-decodeZScoreEntriesByHeight =
+type alias JsonByAge key value =
+    { gender : Gender
+    , age : key
+    , l : Float
+    , m : value
+    , s : Float
+    }
+
+
+{-| Like JsonByAge, but where the key is in centimetres.
+-}
+type alias JsonKgByCm key =
+    { gender : Gender
+    , centimetres : key
+    , l : Float
+    , m : Kilograms
+    , s : Float
+    }
+
+
+{-| The way that gender is encoded in our ZScore tables.
+-}
+decodeGender : Decoder Gender
+decodeGender =
+    andThen
+        (\gender ->
+            case gender of
+                1 ->
+                    succeed Male
+
+                2 ->
+                    succeed Female
+
+                _ ->
+                    fail <| "Not a recognized code for a gender: " ++ toString gender
+        )
+        int
+
+
+{-| Decodes our intermediate format.
+-}
+decodeJsonByAge : (Int -> key) -> (Float -> value) -> Decoder (JsonByAge key value)
+decodeJsonByAge tagKey tagValue =
+    decode JsonByAge
+        |> required "sex" decodeGender
+        |> required "age" (map tagKey int)
+        |> required "l" float
+        |> required "m" (map tagValue float)
+        |> required "s" float
+
+
+decodeJsonKgByCm : String -> (Float -> key) -> Decoder (JsonKgByCm key)
+decodeJsonKgByCm label tagKey =
+    decode JsonKgByCm
+        |> required "sex" decodeGender
+        |> required label (map tagKey float)
+        |> required "l" float
+        |> required "m" (map Kilograms float)
+        |> required "s" float
+
+
+{-| Decodes a JSON table organized by age.
+-}
+decodeForAge : (Int -> key) -> (key -> Int) -> (Float -> value) -> Decoder (MaleAndFemale (AllDict key (ZScoreEntry value) Int))
+decodeForAge tagKey untagKey tagValue =
     let
-        decodeIntegerMillimetres =
-            field "Length" float
-                |> map ((*) 10 >> round)
+        initial =
+            { male = AllDict.empty untagKey
+            , female = AllDict.empty untagKey
+            }
+
+        eachEntry entry accum =
+            let
+                value =
+                    { l = entry.l
+                    , m = entry.m
+                    , s = entry.s
+                    }
+            in
+            case entry.gender of
+                Male ->
+                    { accum | male = AllDict.insert entry.age value accum.male }
+
+                Female ->
+                    { accum | female = AllDict.insert entry.age value accum.female }
     in
-    map2 (,) decodeIntegerMillimetres decodeZScoreEntry
+    decodeJsonByAge tagKey tagValue
         |> list
-        |> map IntDict.fromList
+        |> map (List.foldl eachEntry initial)
+
+
+decodeForCentimetres : String -> (Float -> key) -> (key -> Float) -> Decoder (MaleAndFemale (AllDict key (ZScoreEntry Kilograms) Int))
+decodeForCentimetres label tagKey untagKey =
+    let
+        -- We index by the millimetre, so we multiple the centimetres by 10 and
+        -- round. I suppose float itself is comparable, but comparing floats
+        -- for equality can be tricky, so it's probably better to round to the
+        -- precision we know we're using.
+        ord key =
+            round <| untagKey key * 10
+
+        initial =
+            { male = AllDict.empty ord
+            , female = AllDict.empty ord
+            }
+
+        eachEntry entry accum =
+            let
+                value =
+                    { l = entry.l
+                    , m = entry.m
+                    , s = entry.s
+                    }
+            in
+            case entry.gender of
+                Male ->
+                    { accum | male = AllDict.insert entry.centimetres value accum.male }
+
+                Female ->
+                    { accum | female = AllDict.insert entry.centimetres value accum.female }
+    in
+    decodeJsonKgByCm label tagKey
+        |> list
+        |> map (List.foldl eachEntry initial)
