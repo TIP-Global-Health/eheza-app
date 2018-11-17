@@ -263,7 +263,7 @@ decodeChildEdits =
         |> required "nutrition" (decodeEdit decodeNutrition)
         |> required "photo" (decodeEdit decodePhoto)
         |> required "weight" (decodeEdit decodeWeight)
-        |> required "counseling_session" (decodeEdit decodeCounselingSession)
+        |> optional "counseling_session" (decodeEdit decodeCounselingSession) Unedited
 
 
 {-| Decodes what `encodeChildEdits` produces.
