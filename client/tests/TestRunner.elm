@@ -7,6 +7,7 @@ tree, so that the `elm-test` command will find them.
 import Activity.Test
 import App.Test
 import Backend.Measurement.Test
+import Backend.Session.Test
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import Measurement.Test
@@ -24,6 +25,7 @@ allTests =
         [ Activity.Test.all
         , App.Test.all
         , Backend.Measurement.Test.all
+        , Backend.Session.Test.all
         , Measurement.Test.all
         , Pages.Activity.Test.all
         , Pages.Participant.Test.all
