@@ -3,6 +3,7 @@ module LocalConfig exposing (localConfigs)
 import Config.Model as Config exposing (Model)
 import Dict exposing (..)
 import Pusher.Model exposing (Cluster(..), PusherAppKey)
+import Rollbar
 
 
 local : Model
@@ -11,6 +12,7 @@ local =
     , name = "local"
     , pusherKey = PusherAppKey "" UsEast1
     , debug = True
+    , rollbarToken = Rollbar.token "***REMOVED***"
     , sandbox = False
     }
 

@@ -4,6 +4,7 @@ import Config.Model as Config exposing (Model)
 import Dict exposing (..)
 import LocalConfig exposing (localConfigs)
 import Pusher.Model exposing (Cluster(..), PusherAppKey)
+import Rollbar
 
 
 ***REMOVED*** : Model
@@ -12,6 +13,7 @@ import Pusher.Model exposing (Cluster(..), PusherAppKey)
     , name = "***REMOVED***"
     , pusherKey = PusherAppKey "***REMOVED***" UsEast1
     , debug = False
+    , rollbarToken = Rollbar.token "***REMOVED***"
     , sandbox = False
     }
 
@@ -22,6 +24,7 @@ import Pusher.Model exposing (Cluster(..), PusherAppKey)
     , name = "***REMOVED***"
     , pusherKey = PusherAppKey "***REMOVED***" UsEast1
     , debug = False
+    , rollbarToken = Rollbar.token "***REMOVED***"
     , sandbox = False
     }
 
@@ -32,6 +35,7 @@ livePantheon =
     , name = "livePantheon"
     , pusherKey = PusherAppKey "***REMOVED***" UsEast1
     , debug = False
+    , rollbarToken = Rollbar.token "***REMOVED***"
     , sandbox = False
     }
 
@@ -45,6 +49,7 @@ livePantheon =
     -- blank key for now.
     , pusherKey = PusherAppKey "" UsEast1
     , debug = False
+    , rollbarToken = Rollbar.token "***REMOVED***"
     , sandbox = True
     }
 

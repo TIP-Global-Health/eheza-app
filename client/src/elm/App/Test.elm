@@ -9,6 +9,7 @@ import Pages.Login.Model
 import Pusher.Model exposing (Cluster(..), PusherAppKey)
 import RemoteData exposing (RemoteData(..))
 import Restful.Login exposing (checkCachedCredentials)
+import Rollbar
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
 import Test.Html.Selector as Selector exposing (class, tag, text)
@@ -54,6 +55,7 @@ testConfigModel =
             , name = "local"
             , pusherKey = PusherAppKey "" UsEast1
             , debug = True
+            , rollbarToken = Rollbar.token "the_token"
             , sandbox = False
             }
 

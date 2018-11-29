@@ -289,6 +289,7 @@ var precacheLocalDev = [
   'serve/bower_components/copy-button/bundled.min.js',
   'serve/bower_components/dropzone/dist/min/dropzone.min.css',
   'serve/bower_components/dropzone/dist/min/dropzone.min.js',
+  'serve/bower_components/dexie/dist/dexie.min.js',
   'serve/bower_components/offline/offline.min.js'
 ];
 
@@ -300,6 +301,7 @@ var precacheProd = [
   'dist/bower_components/copy-button/bundled.min.*.js',
   'dist/bower_components/dropzone/dist/min/dropzone.min.*.css',
   'dist/bower_components/dropzone/dist/min/dropzone.min.*.js',
+  'dist/bower_components/dexie/dist/dexie.min.js',
   'dist/bower_components/offline/offline.min.*.js'
 ];
 
@@ -332,7 +334,11 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm", "version"], functio
     stripPrefix: rootDir,
     runtimeCaching: cacheRemote,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
-    importScripts: ["photos.js"]
+    importScripts: [
+        'bower_components/dexie/dist/dexie.min.js',
+        'photos.js',
+        'rollbar.js'
+    ]
   }, callback);
 });
 
@@ -347,7 +353,11 @@ gulp.task('pwa:prod', function (callback) {
     stripPrefix: rootDir,
     runtimeCaching: cacheRemote,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
-    importScripts: ["photos.js"]
+    importScripts: [
+        'bower_components/dexie/dist/dexie.min.js',
+        'photos.js',
+        'rollbar.js'
+    ]
   }, callback);
 });
 

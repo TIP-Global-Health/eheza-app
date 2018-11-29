@@ -2,6 +2,7 @@ port module App.Update exposing (init, loginConfig, subscriptions, update)
 
 import App.Decoder exposing (decodeVersion)
 import App.Model exposing (..)
+import App.Utils exposing (..)
 import Backend.Model
 import Backend.Session.Model
 import Backend.Update
@@ -23,6 +24,7 @@ import Pages.Update
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (decodeSingleDrupalEntity)
 import Restful.Login exposing (AuthenticatedUser, Credentials, LoginEvent(..), UserAndData(..), checkCachedCredentials)
+import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
 import Task
@@ -307,6 +309,32 @@ update msg model =
                 ( { model | activePage = page }
                 , Cmd.none
                 )
+
+        SendRollbar level message data ->
+            updateConfigured
+                (\configured ->
+                    let
+                        cmd =
+                            Rollbar.send
+                                configured.config.rollbarToken
+                                (Rollbar.scope "user")
+                                (Rollbar.environment configured.config.name)
+                                0
+                                level
+                                message
+                                data
+                                |> Task.attempt HandleRollbar
+                    in
+                    ( configured
+                    , cmd
+                    , []
+                    )
+                )
+                model
+
+        HandleRollbar result ->
+            -- For now, we do nothing
+            ( model, Cmd.none )
 
         SetLanguage language ->
             ( { model | language = language }

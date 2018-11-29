@@ -3,17 +3,22 @@ module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..)
 import Backend.Model
 import Config.Model
 import Date
+import Dict exposing (Dict)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
+import Http
+import Json.Encode exposing (Value)
 import Pages.Admin.Model
 import Pages.Login.Model
 import Pages.Model
 import Pages.Page exposing (Page(LoginPage))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Login exposing (UserAndData)
+import Rollbar
 import ServiceWorker.Model
 import Time exposing (Time)
 import Translate exposing (Language(..))
 import User.Model exposing (User)
+import Uuid exposing (Uuid)
 import ZScore.Model
 
 
@@ -150,6 +155,8 @@ type Msg
     | MsgSession Pages.Model.MsgSession
     | MsgServiceWorker ServiceWorker.Model.Msg
     | MsgZScore ZScore.Model.Msg
+    | SendRollbar Rollbar.Level String (Dict String Value)
+    | HandleRollbar (Result Http.Error Uuid)
     | SetActivePage Page
     | SetLanguage Language
     | SetOffline Bool

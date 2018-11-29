@@ -1,6 +1,7 @@
 module Config.Model exposing (BackendUrl, Model)
 
 import Pusher.Model exposing (PusherAppKey)
+import Rollbar
 
 
 type alias BackendUrl =
@@ -12,5 +13,6 @@ type alias Model =
     , name : String
     , pusherKey : PusherAppKey
     , debug : Bool
+    , rollbarToken : Rollbar.Token
     , sandbox : Bool
     }
