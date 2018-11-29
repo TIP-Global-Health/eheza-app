@@ -284,6 +284,7 @@ type TranslationId
     | UploadingSession2
     | UploadSuccessful
     | ValidationErrors
+    | Version
     | ViewProgressReport
     | WelcomeUser String
     | YouAreNotAnAdmin
@@ -1342,6 +1343,12 @@ translationSet trans =
 
         ValidationErrors ->
             { english = "Validation Errors"
+            , kinyarwanda = Nothing
+            }
+
+        -- As in, the version the app
+        Version ->
+            { english = "Version"
             , kinyarwanda = Nothing
             }
 

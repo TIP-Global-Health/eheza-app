@@ -18,6 +18,8 @@ var elm  = require('gulp-elm');
 var fs = require('fs');
 var path = require('path');
 var csvParse = require('csv-parse');
+var gitRev = require('git-rev');
+var sourceStream = require('vinyl-source-stream');
 
 // merge is used to merge the output from two different streams into the same stream
 var merge = require("merge-stream");
@@ -105,6 +107,16 @@ gulp.task("zscore", [], function () {
       path.extname = '.elm';
     })).pipe(gulp.dest('src/generated/ZScore/Fixture/'))
     ;
+});
+
+gulp.task('version', [], function () {
+  var stream = sourceStream('version.json');
+
+  gitRev.short(function (rev) {
+    stream.end(JSON.stringify({build: rev}));
+  });
+
+  return stream.pipe(gulp.dest('serve'));
 });
 
 function capitalize (input) {
@@ -310,7 +322,7 @@ var cacheRemote = [{
 }];
 
 // For offline use while developing
-gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function(callback) {
+gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm", "version"], function(callback) {
   var swPrecache = require('sw-precache');
   var rootDir = 'serve/';
 

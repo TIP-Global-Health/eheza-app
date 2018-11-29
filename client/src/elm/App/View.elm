@@ -2,6 +2,7 @@ module App.View exposing (view)
 
 import App.Model exposing (..)
 import Config.View
+import Gizra.Html exposing (showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
@@ -28,7 +29,7 @@ view model =
 
         Success configuration ->
             div [ class "container" ]
-                [ viewLanguageSwitcher model
+                [ viewLanguageSwitcherAndVersion model
 
                 -- We supply the model as well as the resolved configuration ...
                 -- it's easier that way.
@@ -44,8 +45,8 @@ view model =
 {-| The language switcher view which sets a preferred language for each user and
 saves the current language via the Update function in local storage.
 -}
-viewLanguageSwitcher : Model -> Html Msg
-viewLanguageSwitcher model =
+viewLanguageSwitcherAndVersion : Model -> Html Msg
+viewLanguageSwitcherAndVersion model =
     div
         [ class "ui language-switcher" ]
         [ ul
@@ -71,6 +72,18 @@ viewLanguageSwitcher model =
                 , a [] [ span [ class "icon-kinyarwanda" ] [] ]
                 ]
             ]
+        , model.version
+            |> RemoteData.toMaybe
+            |> Maybe.map
+                (\version ->
+                    span
+                        [ class "version" ]
+                        [ text <| translate model.language Translate.Version
+                        , text ": "
+                        , text version.build
+                        ]
+                )
+            |> showMaybe
         ]
 
 

@@ -1,4 +1,4 @@
-module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..), MsgLoggedIn(..), emptyLoggedInModel, emptyModel)
+module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..), MsgLoggedIn(..), Version, emptyLoggedInModel, emptyModel)
 
 import Backend.Model
 import Config.Model
@@ -49,7 +49,16 @@ type alias Model =
     , language : Language
     , serviceWorker : ServiceWorker.Model.Model
     , offline : Bool
+    , version : WebData Version
     , zscores : ZScore.Model.Model
+    }
+
+
+{-| Represents the version of the app. Currently, we just track the git
+revision of the build. We could eventually also track a tag etc.
+-}
+type alias Version =
+    { build : String
     }
 
 
@@ -144,6 +153,7 @@ type Msg
     | SetActivePage Page
     | SetLanguage Language
     | SetOffline Bool
+    | SetVersion (WebData Version)
     | Tick Time
 
 
@@ -178,5 +188,6 @@ emptyModel =
     , offline = False
     , sessionPages = Pages.Model.emptySessionPages
     , serviceWorker = ServiceWorker.Model.emptyModel
+    , version = NotAsked
     , zscores = ZScore.Model.emptyModel
     }

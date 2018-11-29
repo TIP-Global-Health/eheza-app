@@ -1,5 +1,6 @@
 port module App.Update exposing (init, loginConfig, subscriptions, update)
 
+import App.Decoder exposing (decodeVersion)
 import App.Model exposing (..)
 import Backend.Model
 import Backend.Session.Model
@@ -10,6 +11,7 @@ import Date
 import Dict
 import EverySet
 import Gizra.NominalDate exposing (fromLocalDateTime)
+import Http
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Maybe.Extra
 import Pages.Admin.Update
@@ -85,6 +87,7 @@ init flags =
                                   Task.perform Tick Time.now
                                 , loginCmd
                                 , Backend.Update.fetchEditableSession ()
+                                , fetchVersion
                                 ]
 
                         configuredModel =
@@ -103,10 +106,17 @@ init flags =
 
                 Nothing ->
                     ( { emptyModel | configuration = Failure <| "No config found for: " ++ flags.hostname }
-                    , Cmd.none
+                    , fetchVersion
                     )
     in
     ( { updatedModel | language = activeLanguage }, cmd )
+
+
+fetchVersion : Cmd Msg
+fetchVersion =
+    Http.get "version.json" decodeVersion
+        |> RemoteData.sendRequest
+        |> Cmd.map SetVersion
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -305,6 +315,11 @@ update msg model =
 
         SetOffline offline ->
             ( { model | offline = offline }
+            , Cmd.none
+            )
+
+        SetVersion version ->
+            ( { model | version = version }
             , Cmd.none
             )
 
