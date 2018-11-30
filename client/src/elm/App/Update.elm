@@ -2,7 +2,6 @@ port module App.Update exposing (init, loginConfig, subscriptions, update)
 
 import App.Decoder exposing (decodeVersion)
 import App.Model exposing (..)
-import App.Utils exposing (..)
 import Backend.Model
 import Backend.Session.Model
 import Backend.Update
