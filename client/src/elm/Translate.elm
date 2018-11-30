@@ -804,14 +804,16 @@ translationSet trans =
             }
 
         ErrorFetchingCachedSession ->
-            { english = "There was an error fetchhing the session stored on this device."
+            { english = "Error Loading Cached Session"
             , kinyarwanda = Nothing
             }
 
         ErrorFetchingCachedSession2 ->
             { english = """
-                An error report has been sent (or will be sent when the device is online).
-                Contact the Ihangane project for further instructions.
+                There was an error loading the session data cached on this
+                device. An error report has been sent (or will be sent when the
+                device is online). Contact the Ihangane project for further
+                instructions.
                 """
             , kinyarwanda = Nothing
             }

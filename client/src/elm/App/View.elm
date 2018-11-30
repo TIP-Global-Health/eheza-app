@@ -1,6 +1,7 @@
 module App.View exposing (view)
 
 import App.Model exposing (..)
+import Backend.Model exposing (CachedSessionError(..))
 import Config.View
 import Gizra.Html exposing (showMaybe)
 import Html exposing (..)
@@ -18,7 +19,6 @@ import Restful.Login as RL
 import Translate exposing (Language(..), translate)
 import User.Model exposing (User)
 import Utils.Html exposing (spinner, wrapPage)
-import Utils.WebData exposing (viewError)
 
 
 view : Model -> Html Msg
@@ -159,10 +159,7 @@ viewConfiguredModel model configured =
                             viewSessionPage login.credentials.user subPage model
 
         Failure err ->
-            wrapPage
-                [ h4 [] [ text <| translate model.language Translate.ErrorFetchingCachedSession ]
-                , p [] [ text <| translate model.language Translate.ErrorFetchingCachedSession2 ]
-                ]
+            viewCachedSessionError model.language err
 
         _ ->
             viewLoading
@@ -191,10 +188,7 @@ viewSessionPage user page model =
             wrapPage [ spinner ]
 
         Failure err ->
-            wrapPage
-                [ h4 [] [ text <| translate model.language Translate.ErrorFetchingCachedSession ]
-                , p [] [ text <| translate model.language Translate.ErrorFetchingCachedSession2 ]
-                ]
+            viewCachedSessionError model.language err
 
         Success fetched ->
             case fetched of
@@ -217,3 +211,20 @@ viewSessionPage user page model =
                                 [ text <| translate model.language Translate.SelectYourClinic ]
                             ]
                         ]
+
+
+viewCachedSessionError : Language -> CachedSessionError -> Html any
+viewCachedSessionError language err =
+    div [ class "wrap wrap-alt-2" ]
+        [ div
+            [ class "ui basic head segment" ]
+            [ h1
+                [ class "ui header" ]
+                [ text <| translate language Translate.ErrorFetchingCachedSession ]
+            ]
+        , div
+            [ class "ui basic segment" ]
+            [ p []
+                [ text <| translate language Translate.ErrorFetchingCachedSession2 ]
+            ]
+        ]
