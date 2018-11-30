@@ -158,11 +158,13 @@ viewConfiguredModel model configured =
                         SessionPage subPage ->
                             viewSessionPage login.credentials.user subPage model
 
+        Failure err ->
+            wrapPage
+                [ h4 [] [ text <| translate model.language Translate.ErrorFetchingCachedSession ]
+                , p [] [ text <| translate model.language Translate.ErrorFetchingCachedSession2 ]
+                ]
+
         _ ->
-            -- TODO: What should we show if we have errors loading the
-            -- offlineSession from the cache? At the moment, we basically
-            -- always succeed, and report we don't have one if there was an
-            -- error.
             viewLoading
 
 
