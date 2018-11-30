@@ -14,6 +14,7 @@ import EverySet
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Http
 import Json.Decode exposing (bool, decodeValue, oneOf)
+import Json.Encode
 import Maybe.Extra
 import Pages.Admin.Update
 import Pages.Login.Model
@@ -316,6 +317,7 @@ update msg model =
                     model.version
                         |> RemoteData.map .build
                         |> RemoteData.withDefault "Unknown"
+                        |> Json.Encode.string
             in
             updateConfigured
                 (\configured ->
@@ -323,12 +325,12 @@ update msg model =
                         cmd =
                             Rollbar.send
                                 configured.config.rollbarToken
-                                (Rollbar.scope version)
+                                (Rollbar.scope "user")
                                 (Rollbar.environment configured.config.name)
                                 0
                                 level
                                 message
-                                data
+                                (Dict.insert "build" version data)
                                 |> Task.attempt HandleRollbar
                     in
                     ( configured
