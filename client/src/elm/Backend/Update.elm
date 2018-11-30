@@ -778,11 +778,15 @@ encodeForRollbar err =
                 ]
 
         DecodersFailed details ->
+            -- We send the full edits because it's nice to save that, and it
+            -- doesn't contain names. We don't send the full offline session,
+            -- because it's immutable, so we don't need to save it, and the
+            -- JSOn error itself typically contains enough information to see
+            -- what went wrong.
             Dict.fromList
                 [ ( "type", Json.Encode.string "Decoders failed" )
                 , ( "edits", Json.Encode.string details.editsJson )
                 , ( "editsError", Json.Encode.Extra.maybe Json.Encode.string details.editsError )
-                , ( "offlineSession", Json.Encode.string details.offlineSessionJson )
                 , ( "offlineSessionError", Json.Encode.Extra.maybe Json.Encode.string details.offlineSessionError )
                 ]
 
