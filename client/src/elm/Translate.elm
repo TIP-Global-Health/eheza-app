@@ -192,6 +192,7 @@ type TranslationId
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
     | ErrorFetchingCachedSession
+    | ErrorFetchingCachedSession2
     | FamilyPlanningSignLabel FamilyPlanningSign
     | Fetch
     | FormError (ErrorValue ValidationError)
@@ -804,6 +805,14 @@ translationSet trans =
 
         ErrorFetchingCachedSession ->
             { english = "There was an error fetchhing the session stored on this device."
+            , kinyarwanda = Nothing
+            }
+
+        ErrorFetchingCachedSession2 ->
+            { english = """
+                An error report has been sent (or will be sent when the device is online).
+                Contact the Ihangane project for further instructions.
+                """
             , kinyarwanda = Nothing
             }
 

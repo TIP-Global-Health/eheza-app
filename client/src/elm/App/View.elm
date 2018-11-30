@@ -191,7 +191,7 @@ viewSessionPage user page model =
         Failure err ->
             wrapPage
                 [ h4 [] [ text <| translate model.language Translate.ErrorFetchingCachedSession ]
-                , viewError model.language err
+                , p [] [ text <| translate model.language Translate.ErrorFetchingCachedSession2 ]
                 ]
 
         Success fetched ->

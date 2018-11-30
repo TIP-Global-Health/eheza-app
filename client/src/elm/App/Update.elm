@@ -132,7 +132,7 @@ update msg model =
             ( { model | cache = subModel }
             , Cmd.map MsgCache subCmd
             )
-                |> sequence update (List.map (MsgLoggedIn << MsgBackend) extraMsgs)
+                |> sequence update extraMsgs
 
         MsgLoggedIn loggedInMsg ->
             updateLoggedIn
@@ -311,13 +311,19 @@ update msg model =
                 )
 
         SendRollbar level message data ->
+            let
+                version =
+                    model.version
+                        |> RemoteData.map .build
+                        |> RemoteData.withDefault "Unknown"
+            in
             updateConfigured
                 (\configured ->
                     let
                         cmd =
                             Rollbar.send
                                 configured.config.rollbarToken
-                                (Rollbar.scope "user")
+                                (Rollbar.scope version)
                                 (Rollbar.environment configured.config.name)
                                 0
                                 level
