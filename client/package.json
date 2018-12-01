@@ -54,6 +54,6 @@
     "node": ">0.10.0"
   },
   "scripts": {
-    "test": "gulp zscore && elm-test"
+    "test": "gulp zscore && gulp version && elm-test"
   }
 }
