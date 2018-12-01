@@ -3,7 +3,6 @@ module App.View exposing (view)
 import App.Model exposing (..)
 import Backend.Model exposing (CachedSessionError(..))
 import Config.View
-import Gizra.Html exposing (showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
@@ -19,6 +18,7 @@ import Restful.Login as RL
 import Translate exposing (Language(..), translate)
 import User.Model exposing (User)
 import Utils.Html exposing (spinner, wrapPage)
+import Version
 
 
 view : Model -> Html Msg
@@ -72,18 +72,12 @@ viewLanguageSwitcherAndVersion model =
                 , a [] [ span [ class "icon-kinyarwanda" ] [] ]
                 ]
             ]
-        , model.version
-            |> RemoteData.toMaybe
-            |> Maybe.map
-                (\version ->
-                    span
-                        [ class "version" ]
-                        [ text <| translate model.language Translate.Version
-                        , text ": "
-                        , text version.build
-                        ]
-                )
-            |> showMaybe
+        , span
+            [ class "version" ]
+            [ text <| translate model.language Translate.Version
+            , text ": "
+            , text <| .build Version.version
+            ]
         ]
 
 

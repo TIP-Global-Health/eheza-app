@@ -54,13 +54,16 @@ type alias Model =
     , language : Language
     , serviceWorker : ServiceWorker.Model.Model
     , offline : Bool
-    , version : WebData Version
     , zscores : ZScore.Model.Model
     }
 
 
 {-| Represents the version of the app. Currently, we just track the git
 revision of the build. We could eventually also track a tag etc.
+
+This is actually found in Version.version, which is a file generated
+by gulp ... at src/generated/Version.elm
+
 -}
 type alias Version =
     { build : String
@@ -160,7 +163,6 @@ type Msg
     | SetActivePage Page
     | SetLanguage Language
     | SetOffline Bool
-    | SetVersion (WebData Version)
     | Tick Time
 
 
@@ -195,6 +197,5 @@ emptyModel =
     , offline = False
     , sessionPages = Pages.Model.emptySessionPages
     , serviceWorker = ServiceWorker.Model.emptyModel
-    , version = NotAsked
     , zscores = ZScore.Model.emptyModel
     }

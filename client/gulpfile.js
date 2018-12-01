@@ -110,13 +110,17 @@ gulp.task("zscore", [], function () {
 });
 
 gulp.task('version', [], function () {
-  var stream = sourceStream('version.json');
+  var stream = sourceStream('Version.elm');
 
   gitRev.short(function (rev) {
-    stream.end(JSON.stringify({build: rev}));
+      stream.write('module Version exposing (version)\n');
+      stream.write('import App.Model exposing (Version)\n');
+      stream.write('version : Version\n');
+      stream.write('version = {build = "' + rev + '"}\n');
+      stream.end();
   });
 
-  return stream.pipe(gulp.dest('serve'));
+  return stream.pipe(gulp.dest('src/generated'));
 });
 
 function capitalize (input) {
@@ -228,7 +232,7 @@ gulp.task("deploy", [], function () {
 });
 
 gulp.task('elm-init', elm.init);
-gulp.task('elm', ['elm-init'], function(){
+gulp.task('elm', ['elm-init', 'version'], function(){
   return gulp.src('src/elm/Main.elm')
     .pipe(plumber())
     .pipe(elm({'debug': false, 'warn' : true}))
@@ -324,7 +328,7 @@ var cacheRemote = [{
 }];
 
 // For offline use while developing
-gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm", "version"], function(callback) {
+gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function(callback) {
   var swPrecache = require('sw-precache');
   var rootDir = 'serve/';
 

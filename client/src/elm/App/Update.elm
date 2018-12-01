@@ -1,6 +1,5 @@
 port module App.Update exposing (init, loginConfig, subscriptions, update)
 
-import App.Decoder exposing (decodeVersion)
 import App.Model exposing (..)
 import Backend.Model
 import Backend.Session.Model
@@ -11,7 +10,6 @@ import Date
 import Dict
 import EverySet
 import Gizra.NominalDate exposing (fromLocalDateTime)
-import Http
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
 import Maybe.Extra
@@ -34,6 +32,7 @@ import Update.Extra exposing (sequence)
 import User.Decoder exposing (decodeUser)
 import User.Encoder exposing (encodeUser)
 import User.Model exposing (Role(Administrator), User)
+import Version
 import ZScore.Model
 import ZScore.Update
 
@@ -89,7 +88,6 @@ init flags =
                                   Task.perform Tick Time.now
                                 , loginCmd
                                 , Backend.Update.fetchEditableSession ()
-                                , fetchVersion
                                 ]
 
                         configuredModel =
@@ -108,17 +106,10 @@ init flags =
 
                 Nothing ->
                     ( { emptyModel | configuration = Failure <| "No config found for: " ++ flags.hostname }
-                    , fetchVersion
+                    , Cmd.none
                     )
     in
     ( { updatedModel | language = activeLanguage }, cmd )
-
-
-fetchVersion : Cmd Msg
-fetchVersion =
-    Http.get "version.json" decodeVersion
-        |> RemoteData.sendRequest
-        |> Cmd.map SetVersion
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -311,16 +302,14 @@ update msg model =
                 )
 
         SendRollbar level message data ->
-            let
-                version =
-                    model.version
-                        |> RemoteData.map .build
-                        |> RemoteData.withDefault "Unknown"
-                        |> Json.Encode.string
-            in
             updateConfigured
                 (\configured ->
                     let
+                        version =
+                            Version.version
+                                |> .build
+                                |> Json.Encode.string
+
                         cmd =
                             Rollbar.send
                                 configured.config.rollbarToken
@@ -350,11 +339,6 @@ update msg model =
 
         SetOffline offline ->
             ( { model | offline = offline }
-            , Cmd.none
-            )
-
-        SetVersion version ->
-            ( { model | version = version }
             , Cmd.none
             )
 
