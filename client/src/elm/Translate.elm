@@ -191,8 +191,8 @@ type TranslationId
     | EndSession
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
-    | ErrorFetchingCachedSession
-    | ErrorFetchingCachedSession2
+    | ErrorFetchingCachedSessionTitle
+    | ErrorFetchingCachedSessionMessage
     | FamilyPlanningSignLabel FamilyPlanningSign
     | Fetch
     | FormError (ErrorValue ValidationError)
@@ -803,12 +803,12 @@ translationSet trans =
             , kinyarwanda = Just "Ikosa mu igena miterere"
             }
 
-        ErrorFetchingCachedSession ->
+        ErrorFetchingCachedSessionTitle ->
             { english = "Error Loading Cached Session"
             , kinyarwanda = Nothing
             }
 
-        ErrorFetchingCachedSession2 ->
+        ErrorFetchingCachedSessionMessage ->
             { english = """
                 There was an error loading the session data cached on this
                 device. An error report has been sent (or will be sent when the

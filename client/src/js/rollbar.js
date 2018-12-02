@@ -10,9 +10,9 @@
 
 (function () {
 
-    var trySending = 'try-sending-rollbar';
+    var trySendingTag = 'try-sending-rollbar';
 
-    var rollbarURL = /^https:\/\/api.rollbar.com\/api\/1\/item\/$/;
+    var rollbarUrlRegex = /^https:\/\/api.rollbar.com\/api\/1\/item\/$/;
 
     var db = new Dexie('rollbar-db');
 
@@ -26,7 +26,7 @@
     });
 
     self.addEventListener('fetch', function (event) {
-        if (rollbarURL.test(event.request.url)) {
+        if (rollbarUrlRegex.test(event.request.url)) {
             if (event.request.method === 'POST') {
                 // First we try to send it normally.
                 var response = fetch(event.request.clone()).catch(function(error) {
@@ -40,7 +40,7 @@
                         }).then(function (id) {
                             // And, we schedule a future attempt to send this
                             // when we're online.
-                            return registration.sync.register(trySending).then(function (sync) {
+                            return registration.sync.register(trySendingTag).then(function (sync) {
                                 return new Response('', {
                                     status: 202,
                                     statusText: 'Accepted by Service Worker'
@@ -56,7 +56,7 @@
     });
 
     self.addEventListener('sync', function(event) {
-        if (event.tag === trySending) {
+        if (event.tag === trySendingTag) {
             return event.waitUntil(sendPosts());
         }
     });

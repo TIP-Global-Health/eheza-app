@@ -214,11 +214,11 @@ viewCachedSessionError language err =
             [ class "ui basic head segment" ]
             [ h1
                 [ class "ui header" ]
-                [ text <| translate language Translate.ErrorFetchingCachedSession ]
+                [ text <| translate language Translate.ErrorFetchingCachedSessionTitle ]
             ]
         , div
             [ class "ui basic segment" ]
             [ p []
-                [ text <| translate language Translate.ErrorFetchingCachedSession2 ]
+                [ text <| translate language Translate.ErrorFetchingCachedSessionMessage ]
             ]
         ]
