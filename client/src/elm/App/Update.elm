@@ -11,6 +11,7 @@ import Dict
 import EverySet
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Json.Decode exposing (bool, decodeValue, oneOf)
+import Json.Encode
 import Maybe.Extra
 import Pages.Admin.Update
 import Pages.Login.Model
@@ -21,6 +22,7 @@ import Pages.Update
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (decodeSingleDrupalEntity)
 import Restful.Login exposing (AuthenticatedUser, Credentials, LoginEvent(..), UserAndData(..), checkCachedCredentials)
+import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
 import Task
@@ -30,6 +32,7 @@ import Update.Extra exposing (sequence)
 import User.Decoder exposing (decodeUser)
 import User.Encoder exposing (encodeUser)
 import User.Model exposing (Role(Administrator), User)
+import Version
 import ZScore.Model
 import ZScore.Update
 
@@ -120,7 +123,7 @@ update msg model =
             ( { model | cache = subModel }
             , Cmd.map MsgCache subCmd
             )
-                |> sequence update (List.map (MsgLoggedIn << MsgBackend) extraMsgs)
+                |> sequence update extraMsgs
 
         MsgLoggedIn loggedInMsg ->
             updateLoggedIn
@@ -297,6 +300,37 @@ update msg model =
                 ( { model | activePage = page }
                 , Cmd.none
                 )
+
+        SendRollbar level message data ->
+            updateConfigured
+                (\configured ->
+                    let
+                        version =
+                            Version.version
+                                |> .build
+                                |> Json.Encode.string
+
+                        cmd =
+                            Rollbar.send
+                                configured.config.rollbarToken
+                                (Rollbar.scope "user")
+                                (Rollbar.environment configured.config.name)
+                                0
+                                level
+                                message
+                                (Dict.insert "build" version data)
+                                |> Task.attempt HandleRollbar
+                    in
+                    ( configured
+                    , cmd
+                    , []
+                    )
+                )
+                model
+
+        HandleRollbar result ->
+            -- For now, we do nothing
+            ( model, Cmd.none )
 
         SetLanguage language ->
             ( { model | language = language }

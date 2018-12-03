@@ -1,4 +1,4 @@
-module Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..), MsgCached(..), TrainingSessionAction(..), TrainingSessionRequest, emptyModelBackend, emptyModelCached)
+module Backend.Model exposing (CachedSessionError(..), ModelBackend, ModelCached, MsgBackend(..), MsgCached(..), TrainingSessionAction(..), TrainingSessionRequest, emptyModelBackend, emptyModelCached)
 
 {-| The `Backend` hierarchy is for code that represents entities from the
 backend. It is reponsible for fetching them, saving them, etc.
@@ -153,13 +153,32 @@ type alias ModelCached =
     -- In fact, we'll also do slightly different things in the UI depending
     -- on whether our editable session has edits or not ... you won't be
     -- locked into edit mode until you've made an edit.
-    { editableSession : WebData (Maybe ( SessionId, EditableSession ))
+    { editableSession : RemoteData CachedSessionError (Maybe ( SessionId, EditableSession ))
 
     -- This uses the `CacheStorage` API, which ultimately will be nicer
     -- than using local storage ... so, eventually could transition
     -- editableSession into here as well.
     , cacheStorage : CacheStorage.Model.Model
     }
+
+
+{-| The errors that can occur as we try to read the cached sesssion from
+local storage.
+
+  - FoundEditsButNoSession means that the decoders succeeded, and we found
+    some edits, but there was no session.
+
+  - DecodersFailed means that one or both of the decoders failed.
+
+-}
+type CachedSessionError
+    = FoundEditsButNoSession { editsJson : String }
+    | DecodersFailed
+        { editsJson : String
+        , editsError : Maybe String
+        , offlineSessionJson : String
+        , offlineSessionError : Maybe String
+        }
 
 
 emptyModelCached : ModelCached

@@ -191,7 +191,8 @@ type TranslationId
     | EndSession
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
-    | ErrorFetchingCachedSession
+    | ErrorFetchingCachedSessionTitle
+    | ErrorFetchingCachedSessionMessage
     | FamilyPlanningSignLabel FamilyPlanningSign
     | Fetch
     | FormError (ErrorValue ValidationError)
@@ -284,6 +285,7 @@ type TranslationId
     | UploadingSession2
     | UploadSuccessful
     | ValidationErrors
+    | Version
     | ViewProgressReport
     | WelcomeUser String
     | YouAreNotAnAdmin
@@ -801,8 +803,18 @@ translationSet trans =
             , kinyarwanda = Just "Ikosa mu igena miterere"
             }
 
-        ErrorFetchingCachedSession ->
-            { english = "There was an error fetchhing the session stored on this device."
+        ErrorFetchingCachedSessionTitle ->
+            { english = "Error Loading Cached Session"
+            , kinyarwanda = Nothing
+            }
+
+        ErrorFetchingCachedSessionMessage ->
+            { english = """
+                There was an error loading the session data cached on this
+                device. An error report has been sent (or will be sent when the
+                device is online). Contact the Ihangane project for further
+                instructions.
+                """
             , kinyarwanda = Nothing
             }
 
@@ -1342,6 +1354,12 @@ translationSet trans =
 
         ValidationErrors ->
             { english = "Validation Errors"
+            , kinyarwanda = Nothing
+            }
+
+        -- As in, the version the app
+        Version ->
+            { english = "Version"
             , kinyarwanda = Nothing
             }
 

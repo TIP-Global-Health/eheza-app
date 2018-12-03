@@ -6,6 +6,7 @@ to keep it together here for now.
 -}
 
 import Activity.Utils exposing (setCheckedIn)
+import App.Model
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
 import Backend.Clinic.Model exposing (Clinic)
@@ -23,6 +24,7 @@ import Backend.Utils exposing (withEditableSession)
 import CacheStorage.Model exposing (cachePhotos, clearCachedPhotos)
 import CacheStorage.Update
 import Config.Model exposing (BackendUrl)
+import Dict exposing (Dict)
 import EveryDict
 import EveryDictList
 import Gizra.Json exposing (decodeInt)
@@ -32,10 +34,12 @@ import Http exposing (Error)
 import HttpBuilder
 import Json.Decode exposing (field, succeed)
 import Json.Encode exposing (Value, object)
+import Json.Encode.Extra
 import Maybe.Extra exposing (toList)
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityId, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityId, endpoint, fromEntityId, toCmd, toEntityId, withParamsEncoder, withValueEncoder, withoutDecoder)
+import Rollbar
 import Utils.WebData exposing (resetError, resetSuccess)
 
 
@@ -412,7 +416,7 @@ updateBackend backendUrl accessToken msg model =
                     )
 
 
-updateCache : NominalDate -> MsgCached -> ModelCached -> ( ModelCached, Cmd MsgCached, List MsgBackend )
+updateCache : NominalDate -> MsgCached -> ModelCached -> ( ModelCached, Cmd MsgCached, List App.Model.Msg )
 updateCache currentDate msg model =
     case msg of
         CacheEditableSession ->
@@ -472,7 +476,10 @@ updateCache currentDate msg model =
                 (\sessionId session ->
                     ( model
                     , Cmd.none
-                    , [ UploadEdits sessionId session.edits ]
+                    , [ UploadEdits sessionId session.edits
+                            |> App.Model.MsgBackend
+                            |> App.Model.MsgLoggedIn
+                      ]
                     )
                 )
                 model
@@ -496,46 +503,128 @@ updateCache currentDate msg model =
         HandleEditableSession ( offlineSessionJson, editsJson ) ->
             let
                 decodedOfflineSession =
-                    Json.Decode.decodeString
-                        (Json.Decode.map2 (,) (Json.Decode.field "id" decodeEntityId) decodeOfflineSession)
-                        offlineSessionJson
+                    if offlineSessionJson == "" then
+                        -- If the port gives us an empty string, then there was
+                        -- nothing found in local storage. This is fine ...  it
+                        -- just means we don't have any. So, we indicate an Ok
+                        -- result, but nothing found.
+                        Ok Nothing
+
+                    else
+                        -- If local storage had something other than an empty
+                        -- string, we try to decode it. This should succeed, so
+                        -- we indicate an error if it doesn't. If it does
+                        -- succeed, we wrap it in `Just`.
+                        Json.Decode.decodeString
+                            (Json.Decode.map2 (,) (Json.Decode.field "id" decodeEntityId) decodeOfflineSession)
+                            offlineSessionJson
+                            |> Result.map Just
 
                 decodedEdits =
-                    Json.Decode.decodeString decodeMeasurementEdits editsJson
+                    if editsJson == "" then
+                        -- If the port gave us an empty string for editsJson,
+                        -- that means nothing was found in local storage. This
+                        -- is fine ... it just means we don't have any. So, we
+                        -- indicate an OK result, but Nothing found.
+                        Ok Nothing
+
+                    else
+                        -- If we got something other than an empty string, we
+                        -- try to decode it. We wrap it in a `Just` -- that
+                        -- way, we either succeed in decoding and get actual
+                        -- edits, or we fail in decoding (where we should have
+                        -- succeeded, so it's an error).
+                        Json.Decode.decodeString decodeMeasurementEdits editsJson
+                            |> Result.map Just
 
                 decodedEditableSession =
-                    Result.map2
-                        (\( sessionId, offlineSession ) edits ->
+                    case ( decodedOfflineSession, decodedEdits ) of
+                        ( Ok Nothing, Ok Nothing ) ->
+                            -- If both were absent from local storage, then
+                            -- that's normal ... we just don't have a cached
+                            -- session.
+                            Success Nothing
+
+                        ( Ok (Just ( sessionId, offlineSession )), Ok Nothing ) ->
+                            -- If we have the offline session, but there were
+                            -- no edits in local storage, then we can start
+                            -- with some blank edits.
+                            ( sessionId, makeEditableSession offlineSession )
+                                |> Just
+                                |> Success
+
+                        ( Ok Nothing, Ok (Just _) ) ->
+                            -- If we have the edits, but no offline session, then
+                            -- something has gone wrong. So, we indicate that.
+                            FoundEditsButNoSession
+                                { editsJson = editsJson }
+                                |> Failure
+
+                        ( Ok (Just ( sessionId, offlineSession )), Ok (Just edits) ) ->
+                            -- We've got both, so this is the happy path
                             makeEditableSession offlineSession
                                 |> (\session ->
                                         ( sessionId
                                         , { session | edits = edits }
                                         )
                                    )
-                        )
-                        decodedOfflineSession
-                        decodedEdits
-            in
-            case decodedEditableSession of
-                Ok result ->
-                    ( { model | editableSession = Success <| Just result }
-                    , Cmd.none
-                      -- This is where we're re-checking to see if the backend
-                      -- has any updates to the offlineSession.
-                    , [ RefetchOfflineSession (Tuple.first result) ]
-                    )
+                                |> Just
+                                |> Success
 
-                Err err ->
-                    -- TODO: Actually think about the error. for now, we just say
-                    -- we don't have one.
-                    let
-                        _ =
-                            Debug.log "error fetching session from cache" err
-                    in
-                    ( { model | editableSession = Success Nothing }
-                    , Cmd.none
-                    , []
-                    )
+                        ( Err offlineSessionError, Ok _ ) ->
+                            DecodersFailed
+                                { editsJson = editsJson
+                                , editsError = Nothing
+                                , offlineSessionJson = offlineSessionJson
+                                , offlineSessionError = Just offlineSessionError
+                                }
+                                |> Failure
+
+                        ( Ok _, Err editsError ) ->
+                            DecodersFailed
+                                { editsJson = editsJson
+                                , editsError = Just editsError
+                                , offlineSessionJson = offlineSessionJson
+                                , offlineSessionError = Nothing
+                                }
+                                |> Failure
+
+                        ( Err offlineSessionError, Err editsError ) ->
+                            DecodersFailed
+                                { editsJson = editsJson
+                                , editsError = Just editsError
+                                , offlineSessionJson = offlineSessionJson
+                                , offlineSessionError = Just offlineSessionError
+                                }
+                                |> Failure
+
+                msgs =
+                    case decodedEditableSession of
+                        Success (Just ( sessionId, _ )) ->
+                            -- This is where we're re-checking to see if the backend
+                            -- has any updates to the offlineSession.
+                            [ RefetchOfflineSession sessionId
+                                |> App.Model.MsgBackend
+                                |> App.Model.MsgLoggedIn
+                            ]
+
+                        Success Nothing ->
+                            []
+
+                        Failure err ->
+                            [ App.Model.SendRollbar Rollbar.Error "Error getting session from local storage" (encodeForRollbar err)
+                            ]
+
+                        NotAsked ->
+                            []
+
+                        Loading ->
+                            []
+            in
+            ( { model | editableSession = decodedEditableSession }
+            , Cmd.none
+            , msgs
+            )
 
         MsgCacheStorage subMsg ->
             let
@@ -600,7 +689,10 @@ updateCache currentDate msg model =
                         (\sessionId _ ->
                             ( model
                             , Cmd.none
-                            , [ RefetchOfflineSession sessionId ]
+                            , [ RefetchOfflineSession sessionId
+                                    |> App.Model.MsgBackend
+                                    |> App.Model.MsgLoggedIn
+                              ]
                             )
                         )
                         model
@@ -674,6 +766,29 @@ updateCache currentDate msg model =
                         ( model, Cmd.none, [] )
                 )
                 model
+
+
+encodeForRollbar : CachedSessionError -> Dict String Value
+encodeForRollbar err =
+    case err of
+        FoundEditsButNoSession { editsJson } ->
+            Dict.fromList
+                [ ( "type", Json.Encode.string "Found edits but no session" )
+                , ( "edits", Json.Encode.string editsJson )
+                ]
+
+        DecodersFailed details ->
+            -- We send the full edits because it's nice to save that, and it
+            -- doesn't contain names. We don't send the full offline session,
+            -- because it's immutable, so we don't need to save it, and the
+            -- JSOn error itself typically contains enough information to see
+            -- what went wrong.
+            Dict.fromList
+                [ ( "type", Json.Encode.string "Decoders failed" )
+                , ( "edits", Json.Encode.string details.editsJson )
+                , ( "editsError", Json.Encode.Extra.maybe Json.Encode.string details.editsError )
+                , ( "offlineSessionError", Json.Encode.Extra.maybe Json.Encode.string details.offlineSessionError )
+                ]
 
 
 {-| We reach this when the user hits "Save" upon editing something in the measurement

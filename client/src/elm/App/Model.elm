@@ -1,19 +1,24 @@
-module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..), MsgLoggedIn(..), emptyLoggedInModel, emptyModel)
+module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..), MsgLoggedIn(..), Version, emptyLoggedInModel, emptyModel)
 
 import Backend.Model
 import Config.Model
 import Date
+import Dict exposing (Dict)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
+import Http
+import Json.Encode exposing (Value)
 import Pages.Admin.Model
 import Pages.Login.Model
 import Pages.Model
 import Pages.Page exposing (Page(LoginPage))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Login exposing (UserAndData)
+import Rollbar
 import ServiceWorker.Model
 import Time exposing (Time)
 import Translate exposing (Language(..))
 import User.Model exposing (User)
+import Uuid exposing (Uuid)
 import ZScore.Model
 
 
@@ -50,6 +55,18 @@ type alias Model =
     , serviceWorker : ServiceWorker.Model.Model
     , offline : Bool
     , zscores : ZScore.Model.Model
+    }
+
+
+{-| Represents the version of the app. Currently, we just track the git
+revision of the build. We could eventually also track a tag etc.
+
+This is actually found in Version.version, which is a file generated
+by gulp ... at src/generated/Version.elm
+
+-}
+type alias Version =
+    { build : String
     }
 
 
@@ -141,6 +158,8 @@ type Msg
     | MsgSession Pages.Model.MsgSession
     | MsgServiceWorker ServiceWorker.Model.Msg
     | MsgZScore ZScore.Model.Msg
+    | SendRollbar Rollbar.Level String (Dict String Value)
+    | HandleRollbar (Result Http.Error Uuid)
     | SetActivePage Page
     | SetLanguage Language
     | SetOffline Bool

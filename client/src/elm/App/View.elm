@@ -1,6 +1,7 @@
 module App.View exposing (view)
 
 import App.Model exposing (..)
+import Backend.Model exposing (CachedSessionError(..))
 import Config.View
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
@@ -17,7 +18,7 @@ import Restful.Login as RL
 import Translate exposing (Language(..), translate)
 import User.Model exposing (User)
 import Utils.Html exposing (spinner, wrapPage)
-import Utils.WebData exposing (viewError)
+import Version
 
 
 view : Model -> Html Msg
@@ -28,7 +29,7 @@ view model =
 
         Success configuration ->
             div [ class "container" ]
-                [ viewLanguageSwitcher model
+                [ viewLanguageSwitcherAndVersion model
 
                 -- We supply the model as well as the resolved configuration ...
                 -- it's easier that way.
@@ -44,8 +45,8 @@ view model =
 {-| The language switcher view which sets a preferred language for each user and
 saves the current language via the Update function in local storage.
 -}
-viewLanguageSwitcher : Model -> Html Msg
-viewLanguageSwitcher model =
+viewLanguageSwitcherAndVersion : Model -> Html Msg
+viewLanguageSwitcherAndVersion model =
     div
         [ class "ui language-switcher" ]
         [ ul
@@ -70,6 +71,12 @@ viewLanguageSwitcher model =
                 [ text "Kinyarwanda"
                 , a [] [ span [ class "icon-kinyarwanda" ] [] ]
                 ]
+            ]
+        , span
+            [ class "version" ]
+            [ text <| translate model.language Translate.Version
+            , text ": "
+            , text <| .build Version.version
             ]
         ]
 
@@ -145,11 +152,10 @@ viewConfiguredModel model configured =
                         SessionPage subPage ->
                             viewSessionPage login.credentials.user subPage model
 
+        Failure err ->
+            viewCachedSessionError model.language err
+
         _ ->
-            -- TODO: What should we show if we have errors loading the
-            -- offlineSession from the cache? At the moment, we basically
-            -- always succeed, and report we don't have one if there was an
-            -- error.
             viewLoading
 
 
@@ -176,10 +182,7 @@ viewSessionPage user page model =
             wrapPage [ spinner ]
 
         Failure err ->
-            wrapPage
-                [ h4 [] [ text <| translate model.language Translate.ErrorFetchingCachedSession ]
-                , viewError model.language err
-                ]
+            viewCachedSessionError model.language err
 
         Success fetched ->
             case fetched of
@@ -202,3 +205,20 @@ viewSessionPage user page model =
                                 [ text <| translate model.language Translate.SelectYourClinic ]
                             ]
                         ]
+
+
+viewCachedSessionError : Language -> CachedSessionError -> Html any
+viewCachedSessionError language err =
+    div [ class "wrap wrap-alt-2" ]
+        [ div
+            [ class "ui basic head segment" ]
+            [ h1
+                [ class "ui header" ]
+                [ text <| translate language Translate.ErrorFetchingCachedSessionTitle ]
+            ]
+        , div
+            [ class "ui basic segment" ]
+            [ p []
+                [ text <| translate language Translate.ErrorFetchingCachedSessionMessage ]
+            ]
+        ]

@@ -18,6 +18,8 @@ var elm  = require('gulp-elm');
 var fs = require('fs');
 var path = require('path');
 var csvParse = require('csv-parse');
+var gitRev = require('git-rev');
+var sourceStream = require('vinyl-source-stream');
 
 // merge is used to merge the output from two different streams into the same stream
 var merge = require("merge-stream");
@@ -105,6 +107,20 @@ gulp.task("zscore", [], function () {
       path.extname = '.elm';
     })).pipe(gulp.dest('src/generated/ZScore/Fixture/'))
     ;
+});
+
+gulp.task('version', [], function () {
+  var stream = sourceStream('Version.elm');
+
+  gitRev.short(function (rev) {
+      stream.write('module Version exposing (version)\n');
+      stream.write('import App.Model exposing (Version)\n');
+      stream.write('version : Version\n');
+      stream.write('version = {build = "' + rev + '"}\n');
+      stream.end();
+  });
+
+  return stream.pipe(gulp.dest('src/generated'));
 });
 
 function capitalize (input) {
@@ -216,7 +232,7 @@ gulp.task("deploy", [], function () {
 });
 
 gulp.task('elm-init', elm.init);
-gulp.task('elm', ['elm-init'], function(){
+gulp.task('elm', ['elm-init', 'version'], function(){
   return gulp.src('src/elm/Main.elm')
     .pipe(plumber())
     .pipe(elm({'debug': false, 'warn' : true}))
@@ -277,6 +293,7 @@ var precacheLocalDev = [
   'serve/bower_components/copy-button/bundled.min.js',
   'serve/bower_components/dropzone/dist/min/dropzone.min.css',
   'serve/bower_components/dropzone/dist/min/dropzone.min.js',
+  'serve/bower_components/dexie/dist/dexie.min.js',
   'serve/bower_components/offline/offline.min.js'
 ];
 
@@ -288,6 +305,7 @@ var precacheProd = [
   'dist/bower_components/copy-button/bundled.min.*.js',
   'dist/bower_components/dropzone/dist/min/dropzone.min.*.css',
   'dist/bower_components/dropzone/dist/min/dropzone.min.*.js',
+  'dist/bower_components/dexie/dist/dexie.min.js',
   'dist/bower_components/offline/offline.min.*.js'
 ];
 
@@ -320,7 +338,11 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function(callback)
     stripPrefix: rootDir,
     runtimeCaching: cacheRemote,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
-    importScripts: ["photos.js"]
+    importScripts: [
+        'bower_components/dexie/dist/dexie.min.js',
+        'photos.js',
+        'rollbar.js'
+    ]
   }, callback);
 });
 
@@ -335,7 +357,11 @@ gulp.task('pwa:prod', function (callback) {
     stripPrefix: rootDir,
     runtimeCaching: cacheRemote,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
-    importScripts: ["photos.js"]
+    importScripts: [
+        'bower_components/dexie/dist/dexie.min.js',
+        'photos.js',
+        'rollbar.js'
+    ]
   }, callback);
 });
 
