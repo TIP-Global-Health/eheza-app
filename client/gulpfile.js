@@ -157,7 +157,8 @@ gulp.task("copy:dev", ["copy:bower", "copy:images", "copy:favicon"], function ()
 
 // Copy bower.
 gulp.task("copy:bower", function () {
-  return gulp.src(["bower_components/**/*"])
+  // There are unused Dexie files that causes trouble for uglify later
+  return gulp.src(["bower_components/**/*", "!bower_components/**/*.es.js"])
     .pipe(gulp.dest("serve/bower_components"))
     .pipe($.size({ title: "Bower" }))
 });
