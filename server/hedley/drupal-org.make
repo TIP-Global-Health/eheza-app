@@ -70,7 +70,7 @@ projects[message][version] = "1.12"
 projects[message_notify][subdir] = "contrib"
 projects[message_notify][version] = "2.5"
 
-projects[mimemail][version] = 1.0-beta3
+projects[mimemail][version] = 1.1
 projects[mimemail][subdir] = "contrib"
 
 projects[module_filter][subdir] = "contrib"
