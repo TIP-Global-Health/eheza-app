@@ -40,6 +40,17 @@ livePantheon =
     }
 
 
+ehezaGlobal : Model
+ehezaGlobal =
+    { backendUrl = "https://***REMOVED***"
+    , name = "eheza-global"
+    , pusherKey = PusherAppKey "***REMOVED***" UsEast1
+    , debug = False
+    , rollbarToken = Rollbar.token "***REMOVED***"
+    , sandbox = False
+    }
+
+
 ***REMOVED*** : Model
 ***REMOVED*** =
     { backendUrl = "https://***REMOVED***"
@@ -60,6 +71,7 @@ configs =
         [ ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", livePantheon )
+        , ( "***REMOVED***", ehezaGlobal )
         , ( "***REMOVED***", ***REMOVED*** )
         ]
         |> Dict.union localConfigs
