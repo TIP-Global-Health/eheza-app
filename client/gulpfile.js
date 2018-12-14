@@ -313,11 +313,6 @@ var precacheProd = [
 // In addition to local assets, we also cache some remote assets
 // that won't change ... i.e. CDN stuff.
 var cacheRemote = [{
-    urlPattern: /^https:\/\/js\.pusher\.com\//,
-    // The version is in the URL, so we don't need to check network
-    // if it's in the cache.
-    handler: 'cacheFirst'
-},{
     urlPattern: /^https:\/\/cdn\.jsdelivr\.net\//,
     handler: 'cacheFirst'
 },{
