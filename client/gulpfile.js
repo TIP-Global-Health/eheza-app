@@ -339,6 +339,8 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function(callback)
     stripPrefix: rootDir,
     runtimeCaching: cacheRemote,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
+    clientsClaim: false,
+    skipWaiting: false,
     importScripts: [
         'bower_components/dexie/dist/dexie.min.js',
         'photos.js',
