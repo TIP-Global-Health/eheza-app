@@ -141,15 +141,15 @@ gulp.task("images", function () {
     .pipe($.size({title: "images"}));
 });
 
-// Copy over fonts to the "dist" directory
-gulp.task("fonts", function () {
+// Copy fonts.
+gulp.task("copy:fonts", function () {
   return gulp.src("src/assets/fonts/**")
-    .pipe(gulp.dest("dist/assets/fonts"))
+    .pipe(gulp.dest("serve/assets/fonts"))
     .pipe($.size({ title: "fonts" }));
 });
 
 // Copy index.html and CNAME files to the "serve" directory
-gulp.task("copy:dev", ["copy:bower", "copy:images", "copy:favicon"], function () {
+gulp.task("copy:dev", ["copy:bower", "copy:images", "copy:favicon", "copy:fonts"], function () {
   return gulp.src(["src/index.html", "src/CNAME", "src/js/**/*"])
     .pipe(gulp.dest("serve"))
     .pipe($.size({ title: "index.html & CNAME" }))
@@ -284,7 +284,7 @@ gulp.task("serve:prod", function () {
   });
 });
 
-var precacheFileGlob = '*.{js,html,css,png,jpg,gif,svg,eot,ttf,woff,json}';
+var precacheFileGlob = '*.{js,html,css,png,jpg,gif,svg,eot,ttf,woff,woff2,json}';
 
 // We cache bower_components individually, since they often include things
 // we don't need.
@@ -312,16 +312,6 @@ var precacheProd = [
   'dist/bower_components/offline/offline.min.*.js'
 ];
 
-// In addition to local assets, we also cache some remote assets
-// that won't change ... i.e. CDN stuff.
-var cacheRemote = [{
-    urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
-    handler: 'cacheFirst'
-},{
-    urlPattern: /^https:\/\/fonts\.gstatic\.com\//,
-    handler: 'cacheFirst'
-}];
-
 // For offline use while developing
 gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function(callback) {
   var swPrecache = require('sw-precache');
@@ -331,7 +321,6 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function(callback)
     cacheId: 'ihangane',
     staticFileGlobs: precacheLocalDev,
     stripPrefix: rootDir,
-    runtimeCaching: cacheRemote,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
     clientsClaim: false,
     skipWaiting: false,
@@ -352,7 +341,6 @@ gulp.task('pwa:prod', function (callback) {
     cacheId: 'ihangane',
     staticFileGlobs: precacheProd,
     stripPrefix: rootDir,
-    runtimeCaching: cacheRemote,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
     importScripts: [
         'bower_components/dexie/dist/dexie.min.js',
