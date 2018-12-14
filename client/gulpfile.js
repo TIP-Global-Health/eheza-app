@@ -295,6 +295,7 @@ var precacheLocalDev = [
   'serve/bower_components/dropzone/dist/min/dropzone.min.css',
   'serve/bower_components/dropzone/dist/min/dropzone.min.js',
   'serve/bower_components/dexie/dist/dexie.min.js',
+  'serve/bower_components/semantic/dist/semantic.min.css',
   'serve/bower_components/offline/offline.min.js'
 ];
 
@@ -306,16 +307,14 @@ var precacheProd = [
   'dist/bower_components/copy-button/bundled.min.*.js',
   'dist/bower_components/dropzone/dist/min/dropzone.min.*.css',
   'dist/bower_components/dropzone/dist/min/dropzone.min.*.js',
-  'dist/bower_components/dexie/dist/dexie.min.js',
+  'dist/bower_components/dexie/dist/dexie.min.*.js',
+  'dist/bower_components/semantic/dist/semantic.min.*.css',
   'dist/bower_components/offline/offline.min.*.js'
 ];
 
 // In addition to local assets, we also cache some remote assets
 // that won't change ... i.e. CDN stuff.
 var cacheRemote = [{
-    urlPattern: /^https:\/\/cdn\.jsdelivr\.net\//,
-    handler: 'cacheFirst'
-},{
     urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
     handler: 'cacheFirst'
 },{
