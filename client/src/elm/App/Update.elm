@@ -100,7 +100,7 @@ init flags =
                     , cmd
                     )
                         |> sequence update
-                            [ MsgServiceWorker ServiceWorker.Model.Register
+                            [ MsgServiceWorker (ServiceWorker.Model.SendOutgoingMsg ServiceWorker.Model.Register)
                             , MsgZScore ZScore.Model.FetchAllTables
                             ]
 

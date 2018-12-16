@@ -8,18 +8,18 @@ via sending messages through the `update` function.
 -}
 
 import Json.Decode exposing (Value, decodeValue)
-import ServiceWorker.Decoder exposing (decodeMsg)
-import ServiceWorker.Encoder exposing (encodeMsg)
+import ServiceWorker.Decoder exposing (decodeIncomingMsg)
+import ServiceWorker.Encoder exposing (encodeOutgoingMsg)
 import ServiceWorker.Model exposing (..)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        HandlePortMsg value ->
-            case decodeValue decodeMsg value of
-                Ok portMsg ->
-                    update portMsg model
+        HandleIncomingMsg value ->
+            case decodeValue decodeIncomingMsg value of
+                Ok incoming ->
+                    handleIncomingMsg incoming model
 
                 Err err ->
                     let
@@ -30,25 +30,31 @@ update msg model =
                     in
                     ( model, Cmd.none )
 
+        SendOutgoingMsg msg ->
+            sendOutgoingMsg msg model
+
+
+handleIncomingMsg : IncomingMsg -> Model -> ( Model, Cmd Msg )
+handleIncomingMsg msg model =
+    case msg of
         SetActive value ->
             ( { model | active = value }
             , Cmd.none
             )
 
-        Register ->
-            ( model
-            , serviceWorkerOut (encodeMsg msg)
-            )
 
-        Unregister ->
-            ( model
-            , serviceWorkerOut (encodeMsg msg)
-            )
+sendOutgoingMsg : OutgoingMsg -> Model -> ( Model, Cmd Msg )
+sendOutgoingMsg msg model =
+    -- At some point, we may need to distinguish further among them.
+    -- But for now we can just encode.
+    ( model
+    , serviceWorkerOut (encodeOutgoingMsg msg)
+    )
 
 
 subscriptions : Sub Msg
 subscriptions =
-    serviceWorkerIn HandlePortMsg
+    serviceWorkerIn HandleIncomingMsg
 
 
 {-| Receive messages about service workers.

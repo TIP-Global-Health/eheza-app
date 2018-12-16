@@ -1,4 +1,4 @@
-module ServiceWorker.Decoder exposing (decodeMsg)
+module ServiceWorker.Decoder exposing (decodeIncomingMsg)
 
 import Json.Decode exposing (..)
 import ServiceWorker.Model exposing (..)
@@ -7,8 +7,8 @@ import ServiceWorker.Model exposing (..)
 {-| Given some JSON our port sends in, decode it into a Msg we can handle. So,
 the port can basically send any message we can handle here ... isn't that nice?
 -}
-decodeMsg : Decoder Msg
-decodeMsg =
+decodeIncomingMsg : Decoder IncomingMsg
+decodeIncomingMsg =
     field "tag" string
         |> andThen
             (\tag ->

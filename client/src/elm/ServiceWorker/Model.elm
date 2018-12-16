@@ -1,4 +1,4 @@
-module ServiceWorker.Model exposing (Model, Msg(..), emptyModel)
+module ServiceWorker.Model exposing (IncomingMsg(..), Model, Msg(..), OutgoingMsg(..), emptyModel)
 
 {-| Some state we maintain relating to service workers.
 -}
@@ -22,7 +22,14 @@ emptyModel =
 
 
 type Msg
-    = HandlePortMsg Value
-    | Register
-    | SetActive Bool
+    = HandleIncomingMsg Value
+    | SendOutgoingMsg OutgoingMsg
+
+
+type IncomingMsg
+    = SetActive Bool
+
+
+type OutgoingMsg
+    = Register
     | Unregister
