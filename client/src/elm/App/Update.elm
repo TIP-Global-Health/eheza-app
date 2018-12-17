@@ -255,12 +255,13 @@ update msg model =
 
         MsgServiceWorker subMsg ->
             let
-                ( subModel, subCmd ) =
+                ( subModel, subCmd, extraMsgs ) =
                     ServiceWorker.Update.update subMsg model.serviceWorker
             in
             ( { model | serviceWorker = subModel }
             , Cmd.map MsgServiceWorker subCmd
             )
+                |> sequence update extraMsgs
 
         MsgSession subMsg ->
             -- TODO: Should ideally reflect the fact that an EditableSession is

@@ -5,6 +5,7 @@ module ServiceWorker.View exposing (view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import RemoteData exposing (RemoteData(..))
 import ServiceWorker.Model exposing (..)
 import Translate exposing (Language(..), translate)
@@ -18,6 +19,13 @@ view language model =
             [ h1
                 [ class "ui header" ]
                 [ text <| translate language Translate.ServiceWorkerStatus ]
+            , a
+                [ class "link-back"
+                , onClick BackToLoginPage
+                ]
+                [ span [ class "icon-back" ] []
+                , span [] []
+                ]
             ]
         , div
             [ class "ui basic segment" ]

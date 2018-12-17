@@ -74,7 +74,9 @@ viewLanguageSwitcherAndVersion model =
                 ]
             ]
         , span
-            [ class "version" ]
+            [ class "version"
+            , onClick <| SetActivePage ServiceWorkerPage
+            ]
             [ text <| translate model.language Translate.Version
             , text ": "
             , text <| .build Version.version
@@ -123,6 +125,10 @@ viewEditableSession model configured =
                                 PageNotFound url ->
                                     Pages.PageNotFound.View.view model.language url
 
+                                ServiceWorkerPage ->
+                                    ServiceWorker.View.view model.language model.serviceWorker
+                                        |> Html.map MsgServiceWorker
+
                                 _ ->
                                     Pages.Login.View.view model.language model.activePage configured.login configured.loginPage (Maybe.map Tuple.second session)
                                         |> Html.map MsgPageLogin
@@ -159,6 +165,10 @@ viewEditableSession model configured =
 
                                 ClinicsPage clinicId ->
                                     Pages.Clinics.View.view model.language model.currentDate login.credentials.user clinicId login.data.backend model.cache
+
+                        ServiceWorkerPage ->
+                            ServiceWorker.View.view model.language model.serviceWorker
+                                |> Html.map MsgServiceWorker
 
                         PageNotFound url ->
                             Pages.PageNotFound.View.view model.language url

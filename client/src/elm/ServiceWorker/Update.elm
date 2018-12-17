@@ -7,16 +7,24 @@ via sending messages through the `update` function.
 
 -}
 
+import App.Model
 import Json.Decode exposing (Value, decodeValue)
+import Pages.Page
 import RemoteData exposing (RemoteData(..))
 import ServiceWorker.Decoder exposing (decodeIncomingMsg)
 import ServiceWorker.Encoder exposing (encodeOutgoingMsg)
 import ServiceWorker.Model exposing (..)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update msg model =
     case msg of
+        BackToLoginPage ->
+            ( model
+            , Cmd.none
+            , [ App.Model.SetActivePage Pages.Page.LoginPage ]
+            )
+
         HandleIncomingMsg value ->
             case decodeValue decodeIncomingMsg value of
                 Ok incoming ->
@@ -29,42 +37,47 @@ update msg model =
                                 "Error decoding message from port: "
                                     ++ err
                     in
-                    ( model, Cmd.none )
+                    ( model, Cmd.none, [] )
 
         SendOutgoingMsg msg ->
             sendOutgoingMsg msg model
 
 
-handleIncomingMsg : IncomingMsg -> Model -> ( Model, Cmd Msg )
+handleIncomingMsg : IncomingMsg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 handleIncomingMsg msg model =
     case msg of
         SetActive value ->
             ( { model | active = value }
             , Cmd.none
+            , []
             )
 
         RegistrationSucceeded ->
             ( { model | registration = Success () }
             , Cmd.none
+            , []
             )
 
         RegistrationFailed error ->
             ( { model | registration = Failure error }
             , Cmd.none
+            , []
             )
 
 
-sendOutgoingMsg : OutgoingMsg -> Model -> ( Model, Cmd Msg )
+sendOutgoingMsg : OutgoingMsg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 sendOutgoingMsg msg model =
     case msg of
         Register ->
             ( { model | registration = Loading }
             , serviceWorkerOut (encodeOutgoingMsg msg)
+            , []
             )
 
         Unregister ->
             ( model
             , serviceWorkerOut (encodeOutgoingMsg msg)
+            , []
             )
 
 

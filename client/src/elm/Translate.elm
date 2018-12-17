@@ -1464,6 +1464,11 @@ translateActivePage page =
             , kinyarwanda = Just "Ibibura"
             }
 
+        ServiceWorkerPage ->
+            { english = "Deployment"
+            , kinyarwanda = Nothing
+            }
+
         SessionPage sessionPage ->
             case sessionPage of
                 ActivitiesPage ->

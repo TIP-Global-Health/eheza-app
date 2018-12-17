@@ -21,6 +21,9 @@ delta2url previous current =
             -- If we couldn't interpret the URL, we don't try to change it.
             Nothing
 
+        ServiceWorkerPage ->
+            Just <| UrlChange NewEntry "#deployment"
+
         -- These are pages which depend on having a downloaded session
         SessionPage sessionPage ->
             case sessionPage of
@@ -86,6 +89,7 @@ parseUrl =
         , map (UserPage (ClinicsPage Nothing)) (s "clinics")
         , map (UserPage AdminPage) (s "admin")
         , map LoginPage (s "login")
+        , map ServiceWorkerPage (s "deployment")
         , map (UserPage MyAccountPage) (s "my-account")
         , map (SessionPage << MotherPage << toEntityId) (s "mother" </> int)
         , map (SessionPage ParticipantsPage) (s "participants")

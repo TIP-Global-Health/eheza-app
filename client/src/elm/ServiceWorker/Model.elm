@@ -31,7 +31,8 @@ emptyModel active =
 
 
 type Msg
-    = HandleIncomingMsg Value
+    = BackToLoginPage
+    | HandleIncomingMsg Value
     | SendOutgoingMsg OutgoingMsg
 
 
