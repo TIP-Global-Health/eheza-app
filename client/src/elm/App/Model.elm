@@ -177,11 +177,12 @@ type alias Flags =
     { credentials : String
     , hostname : String
     , activeLanguage : String
+    , activeServiceWorker : Bool
     }
 
 
-emptyModel : Model
-emptyModel =
+emptyModel : Flags -> Model
+emptyModel flags =
     -- I suppose the login page is as logical as any.
     -- if we auto-login, we'll transition to something
     -- sensible anyway.
@@ -196,6 +197,6 @@ emptyModel =
     , language = English
     , offline = False
     , sessionPages = Pages.Model.emptySessionPages
-    , serviceWorker = ServiceWorker.Model.emptyModel
+    , serviceWorker = ServiceWorker.Model.emptyModel flags.activeServiceWorker
     , zscores = ZScore.Model.emptyModel
     }

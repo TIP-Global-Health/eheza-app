@@ -63,6 +63,9 @@ init flags =
                 Err msg ->
                     English
 
+        model =
+            emptyModel flags
+
         ( updatedModel, cmd ) =
             case Dict.get flags.hostname Config.configs of
                 Just config ->
@@ -96,7 +99,7 @@ init flags =
                             , login = loginStatus
                             }
                     in
-                    ( { emptyModel | configuration = Success configuredModel }
+                    ( { model | configuration = Success configuredModel }
                     , cmd
                     )
                         |> sequence update
@@ -105,7 +108,7 @@ init flags =
                             ]
 
                 Nothing ->
-                    ( { emptyModel | configuration = Failure <| "No config found for: " ++ flags.hostname }
+                    ( { model | configuration = Failure <| "No config found for: " ++ flags.hostname }
                     , Cmd.none
                     )
     in

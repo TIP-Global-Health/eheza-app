@@ -6,18 +6,22 @@ module ServiceWorker.Model exposing (IncomingMsg(..), Model, Msg(..), OutgoingMs
 import Json.Encode exposing (Value)
 
 
-{-| We're not tracking much (yet) ... we'll just flip this to true
-when we get a message that we have an active worker. Eventually, we
-may want to do more.
+{-| The state of the service worker system.
+
+  - `active` tracks whether this page is currently controlled by some
+    service worker.
+
 -}
 type alias Model =
     { active : Bool
     }
 
 
-emptyModel : Model
-emptyModel =
-    { active = False
+{-| We use flags, so that we know whether we're active as early as possible.
+-}
+emptyModel : Bool -> Model
+emptyModel active =
+    { active = active
     }
 
 

@@ -38,6 +38,7 @@ if (location.hostname.endsWith('pantheonsite.io') && location.protocol == 'http:
 // enough.
 var elmApp = Elm.Main.fullscreen({
     credentials: localStorage.getItem('credentials') || '{}',
+    activeServiceWorker: !!navigator.serviceWorker.controller,
     hostname: window.location.hostname,
     activeLanguage : localStorage.getItem('language') || ''
 });
