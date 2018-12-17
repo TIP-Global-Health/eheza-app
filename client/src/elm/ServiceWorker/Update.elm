@@ -8,6 +8,7 @@ via sending messages through the `update` function.
 -}
 
 import Json.Decode exposing (Value, decodeValue)
+import RemoteData exposing (RemoteData(..))
 import ServiceWorker.Decoder exposing (decodeIncomingMsg)
 import ServiceWorker.Encoder exposing (encodeOutgoingMsg)
 import ServiceWorker.Model exposing (..)
@@ -42,14 +43,29 @@ handleIncomingMsg msg model =
             , Cmd.none
             )
 
+        RegistrationSucceeded ->
+            ( { model | registration = Success () }
+            , Cmd.none
+            )
+
+        RegistrationFailed error ->
+            ( { model | registration = Failure error }
+            , Cmd.none
+            )
+
 
 sendOutgoingMsg : OutgoingMsg -> Model -> ( Model, Cmd Msg )
 sendOutgoingMsg msg model =
-    -- At some point, we may need to distinguish further among them.
-    -- But for now we can just encode.
-    ( model
-    , serviceWorkerOut (encodeOutgoingMsg msg)
-    )
+    case msg of
+        Register ->
+            ( { model | registration = Loading }
+            , serviceWorkerOut (encodeOutgoingMsg msg)
+            )
+
+        Unregister ->
+            ( model
+            , serviceWorkerOut (encodeOutgoingMsg msg)
+            )
 
 
 subscriptions : Sub Msg

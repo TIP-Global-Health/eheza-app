@@ -262,6 +262,10 @@ type TranslationId
     | SelectYourClinic
     | ServiceWorkerActive
     | ServiceWorkerInactive
+    | ServiceWorkerRegNotAsked
+    | ServiceWorkerRegLoading
+    | ServiceWorkerRegErr
+    | ServiceWorkerRegSuccess
     | ServiceWorkerStatus
     | SessionClosed
     | SessionClosed2 SessionId
@@ -1236,6 +1240,26 @@ translationSet trans =
 
         ServiceWorkerInactive ->
             { english = "The app is not yet installed on this device."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerRegNotAsked ->
+            { english = "We have not yet attempted to install the app on this device."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerRegLoading ->
+            { english = "Installation of the app on this device is in progress."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerRegErr ->
+            { english = "There was an error installing the app on this device. To try again, reload this page."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerRegSuccess ->
+            { english = "The app was successfully registered with this device."
             , kinyarwanda = Nothing
             }
 

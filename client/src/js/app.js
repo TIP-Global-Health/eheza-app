@@ -184,8 +184,14 @@ elmApp.ports.serviceWorkerOut.subscribe(function (message) {
   switch (message.tag) {
     case 'Register':
       navigator.serviceWorker.register('service-worker.js').then(function(reg) {
-
-        // We could also start sending some events ...
+        elmApp.ports.serviceWorkerIn.send({
+          tag: 'RegistrationSucceeded'
+        });
+      }).catch(function (error) {
+        elmApp.ports.serviceWorkerIn.send({
+          tag: 'RegistrationFailed',
+          error: error
+        });
       });
       break;
 

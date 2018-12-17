@@ -5,6 +5,7 @@ module ServiceWorker.View exposing (view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import RemoteData exposing (RemoteData(..))
 import ServiceWorker.Model exposing (..)
 import Translate exposing (Language(..), translate)
 
@@ -20,14 +21,32 @@ view language model =
             ]
         , div
             [ class "ui basic segment" ]
-            (viewDeploymentStatus language model)
+            [ viewDeploymentStatus language model
+            , viewRegistrationStatus language model
+            ]
         ]
 
 
-viewDeploymentStatus : Language -> Model -> List (Html Msg)
+viewDeploymentStatus : Language -> Model -> Html Msg
 viewDeploymentStatus language model =
     if model.active then
-        [ text <| translate language Translate.ServiceWorkerActive ]
+        p [] [ text <| translate language Translate.ServiceWorkerActive ]
 
     else
-        [ text <| translate language Translate.ServiceWorkerInactive ]
+        p [] [ text <| translate language Translate.ServiceWorkerInactive ]
+
+
+viewRegistrationStatus : Language -> Model -> Html Msg
+viewRegistrationStatus language model =
+    case model.registration of
+        NotAsked ->
+            p [] [ text <| translate language Translate.ServiceWorkerRegNotAsked ]
+
+        Loading ->
+            p [] [ text <| translate language Translate.ServiceWorkerRegLoading ]
+
+        Failure err ->
+            p [] [ text <| translate language Translate.ServiceWorkerRegErr ]
+
+        Success _ ->
+            p [] [ text <| translate language Translate.ServiceWorkerRegSuccess ]

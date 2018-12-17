@@ -17,6 +17,13 @@ decodeIncomingMsg =
                         field "value" bool
                             |> map SetActive
 
+                    "RegistrationSucceeded" ->
+                        succeed RegistrationSucceeded
+
+                    "RegistrationFailed" ->
+                        field "error" value
+                            |> map RegistrationFailed
+
                     _ ->
                         fail <|
                             "ServiceWorker.Decoder unrecognized tag: "
