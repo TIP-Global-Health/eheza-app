@@ -15,6 +15,7 @@ import Pages.PageNotFound.View
 import Pages.View exposing (viewFoundSession)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Login as RL
+import ServiceWorker.View
 import Translate exposing (Language(..), translate)
 import User.Model exposing (User)
 import Utils.Html exposing (spinner, wrapPage)
@@ -89,6 +90,19 @@ don't have one.
 -}
 viewConfiguredModel : Model -> ConfiguredModel -> Html Msg
 viewConfiguredModel model configured =
+    if model.serviceWorker.active then
+        viewEditableSession model configured
+
+    else
+        -- If our service worker is not active, then the only thing we allow
+        -- is showing the status of the service worker. (Since we need the
+        -- service worker for the normal operatio of the app).
+        ServiceWorker.View.view model.language model.serviceWorker
+            |> Html.map MsgServiceWorker
+
+
+viewEditableSession : Model -> ConfiguredModel -> Html Msg
+viewEditableSession model configured =
     -- What we are able to do here depends on whether we've logged in or not.
     -- So, in effect, this is where we're doing what you would think of as
     -- "access control". And, we also want to wait until we know whether

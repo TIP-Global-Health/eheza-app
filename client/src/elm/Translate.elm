@@ -260,6 +260,9 @@ type TranslationId
     | SelectClinic
     | SelectLanguage
     | SelectYourClinic
+    | ServiceWorkerActive
+    | ServiceWorkerInactive
+    | ServiceWorkerStatus
     | SessionClosed
     | SessionClosed2 SessionId
     | SessionInProgress
@@ -1224,6 +1227,21 @@ translationSet trans =
         SelectYourClinic ->
             { english = "Select your clinic"
             , kinyarwanda = Just "Guhitamo ikigo nderabuzima"
+            }
+
+        ServiceWorkerActive ->
+            { english = "The app is installed on this device."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerInactive ->
+            { english = "The app is not yet installed on this device."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerStatus ->
+            { english = "Deployment Status"
+            , kinyarwanda = Nothing
             }
 
         SessionClosed ->
