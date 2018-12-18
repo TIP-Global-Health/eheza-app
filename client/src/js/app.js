@@ -231,7 +231,7 @@ elmApp.ports.serviceWorkerOut.subscribe(function (message) {
       }).catch(function (error) {
         elmApp.ports.serviceWorkerIn.send({
           tag: 'RegistrationFailed',
-          error: error
+          error: JSON.stringify(error)
         });
       });
       break;

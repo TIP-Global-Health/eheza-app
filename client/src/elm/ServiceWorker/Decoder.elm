@@ -17,7 +17,7 @@ decodeIncomingMsg =
                         succeed RegistrationSucceeded
 
                     "RegistrationFailed" ->
-                        field "error" value
+                        field "error" string
                             |> map RegistrationFailed
 
                     "SetNewWorker" ->

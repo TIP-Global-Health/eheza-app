@@ -90,7 +90,10 @@ viewRegistrationStatus language model =
             p [] [ text <| translate language Translate.ServiceWorkerRegLoading ]
 
         Failure err ->
-            p [] [ text <| translate language Translate.ServiceWorkerRegErr ]
+            div []
+                [ p [] [ text <| translate language Translate.ServiceWorkerRegErr ]
+                , p [] [ text err ]
+                ]
 
         Success _ ->
             p [] [ text <| translate language Translate.ServiceWorkerRegSuccess ]

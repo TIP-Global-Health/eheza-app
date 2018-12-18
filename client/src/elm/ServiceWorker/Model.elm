@@ -17,10 +17,13 @@ import Time exposing (Time)
 
   - `newWorker` tracks the status of a new worker which is being installed
 
+  - `lastUpdateCheck` tracks the last time we checked for an updated service
+    worker
+
 -}
 type alias Model =
     { active : Bool
-    , registration : RemoteData Value ()
+    , registration : RemoteData String ()
     , newWorker : Maybe NewWorker
     , lastUpdateCheck : Maybe Time
     }
@@ -53,7 +56,7 @@ type Msg
 
 type IncomingMsg
     = RegistrationSucceeded
-    | RegistrationFailed Value
+    | RegistrationFailed String
     | SetNewWorker NewWorker
 
 
