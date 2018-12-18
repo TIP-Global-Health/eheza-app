@@ -21,10 +21,24 @@ viewConfigErrorTest =
     describe "Config error view"
         [ test "Correct error message appears when config has errored" <|
             \() ->
-                view { emptyModel | configuration = Failure "some error" }
+                view { testModel | configuration = Failure "some error" }
                     |> Query.fromHtml
                     |> Query.has [ text "Configuration error" ]
         ]
+
+
+exampleFlags : Flags
+exampleFlags =
+    { credentials = ""
+    , hostname = ""
+    , activeLanguage = "en"
+    , activeServiceWorker = False
+    }
+
+
+testModel : Model
+testModel =
+    emptyModel exampleFlags
 
 
 viewLanguageSwitcherTest : Test
@@ -32,14 +46,14 @@ viewLanguageSwitcherTest =
     describe "Language switcher view"
         [ test "The language switcher appears with the English language" <|
             \() ->
-                view { emptyModel | configuration = Success testConfigModel }
+                view { testModel | configuration = Success testConfigModel }
                     |> Query.fromHtml
                     |> Query.find [ Selector.class "language-switcher" ]
                     |> Query.find [ Selector.class "english" ]
                     |> Query.has [ Selector.class "active" ]
         , test "The language switcher appears with the Kinyarwanda language" <|
             \() ->
-                view { emptyModel | configuration = Success testConfigModel, language = Kinyarwanda }
+                view { testModel | configuration = Success testConfigModel, language = Kinyarwanda }
                     |> Query.fromHtml
                     |> Query.find [ Selector.class "language-switcher" ]
                     |> Query.find [ Selector.class "kinyarwanda" ]

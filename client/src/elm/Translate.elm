@@ -1303,7 +1303,7 @@ translationSet trans =
             }
 
         ServiceWorkerRegLoading ->
-            { english = "Installation of the app on this device is in progress."
+            { english = "Installation of the app on this device is progressing."
             , kinyarwanda = Nothing
             }
 
