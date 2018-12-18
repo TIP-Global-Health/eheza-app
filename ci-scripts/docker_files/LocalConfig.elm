@@ -17,10 +17,22 @@ local =
     }
 
 
+localhost : Model
+localhost =
+    { backendUrl = "http://localhost"
+    , name = "local"
+    , pusherKey = PusherAppKey "" UsEast1
+    , debug = True
+    , rollbarToken = Rollbar.token "***REMOVED***"
+    , sandbox = False
+    }
+
+
 localConfigs : Dict String Model
 localConfigs =
     Dict.fromList
         -- Change "localhost" if you are serving this from a different local
         -- URL.
         [ ( "server.local", local )
+        , ( "localhost", localhost )
         ]
