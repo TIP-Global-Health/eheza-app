@@ -3,6 +3,8 @@ module App.View exposing (view)
 import App.Model exposing (..)
 import Backend.Model exposing (CachedSessionError(..))
 import Config.View
+import Date
+import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
@@ -99,12 +101,16 @@ viewConfiguredModel model configured =
         -- If our service worker is not active, then the only thing we allow
         -- is showing the status of the service worker. (Since we need the
         -- service worker for the normal operatio of the app).
-        ServiceWorker.View.view model.language model.serviceWorker
+        ServiceWorker.View.view model.currentTime model.language model.serviceWorker
             |> Html.map MsgServiceWorker
 
 
 viewEditableSession : Model -> ConfiguredModel -> Html Msg
 viewEditableSession model configured =
+    let
+        currentDate =
+            fromLocalDateTime <| Date.fromTime model.currentTime
+    in
     -- What we are able to do here depends on whether we've logged in or not.
     -- So, in effect, this is where we're doing what you would think of as
     -- "access control". And, we also want to wait until we know whether
@@ -126,7 +132,7 @@ viewEditableSession model configured =
                                     Pages.PageNotFound.View.view model.language url
 
                                 ServiceWorkerPage ->
-                                    ServiceWorker.View.view model.language model.serviceWorker
+                                    ServiceWorker.View.view model.currentTime model.language model.serviceWorker
                                         |> Html.map MsgServiceWorker
 
                                 _ ->
@@ -157,17 +163,17 @@ viewEditableSession model configured =
                         UserPage userPage ->
                             case userPage of
                                 AdminPage ->
-                                    Pages.Admin.View.view configured.config model.language model.currentDate login.credentials.user login.data.backend login.data.adminPage
+                                    Pages.Admin.View.view configured.config model.language currentDate login.credentials.user login.data.backend login.data.adminPage
                                         |> Html.map (MsgLoggedIn << MsgPageAdmin)
 
                                 MyAccountPage ->
                                     Pages.MyAccount.View.view model.language login.credentials.user
 
                                 ClinicsPage clinicId ->
-                                    Pages.Clinics.View.view model.language model.currentDate login.credentials.user clinicId login.data.backend model.cache
+                                    Pages.Clinics.View.view model.language currentDate login.credentials.user clinicId login.data.backend model.cache
 
                         ServiceWorkerPage ->
-                            ServiceWorker.View.view model.language model.serviceWorker
+                            ServiceWorker.View.view model.currentTime model.language model.serviceWorker
                                 |> Html.map MsgServiceWorker
 
                         PageNotFound url ->

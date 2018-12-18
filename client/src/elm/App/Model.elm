@@ -2,9 +2,7 @@ module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..)
 
 import Backend.Model
 import Config.Model
-import Date
 import Dict exposing (Dict)
-import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Http
 import Json.Encode exposing (Value)
 import Pages.Admin.Model
@@ -50,7 +48,7 @@ type alias Model =
     -- we have a session ... but I've done enough restructuring for now!
     , sessionPages : Pages.Model.SessionPages
     , configuration : RemoteData String ConfiguredModel
-    , currentDate : NominalDate
+    , currentTime : Time
     , language : Language
     , serviceWorker : ServiceWorker.Model.Model
     , offline : Bool
@@ -193,7 +191,7 @@ emptyModel flags =
     -- We start at 1970, which might be nice to avoid, but probably more
     -- trouble than it's worth ... this will almost immediately get updated
     -- with the real date.
-    , currentDate = fromLocalDateTime (Date.fromTime 0)
+    , currentTime = 0
     , language = English
     , offline = False
     , sessionPages = Pages.Model.emptySessionPages

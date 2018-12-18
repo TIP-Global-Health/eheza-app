@@ -5,6 +5,7 @@ module ServiceWorker.Model exposing (IncomingMsg(..), Model, Msg(..), NewWorker(
 
 import Json.Encode exposing (Value)
 import RemoteData exposing (RemoteData(..))
+import Time exposing (Time)
 
 
 {-| The state of the service worker system.
@@ -21,6 +22,7 @@ type alias Model =
     { active : Bool
     , registration : RemoteData Value ()
     , newWorker : Maybe NewWorker
+    , lastUpdateCheck : Maybe Time
     }
 
 
@@ -39,6 +41,7 @@ emptyModel active =
     { active = active
     , registration = NotAsked
     , newWorker = Nothing
+    , lastUpdateCheck = Nothing
     }
 
 

@@ -202,6 +202,7 @@ type TranslationId
     | GoHome
     | HttpError Http.Error
     | KilogramShorthand
+    | LastChecked
     | LevelOfEducationLabel
     | LevelOfEducation EducationLevel
     | LinkToMother
@@ -210,6 +211,7 @@ type TranslationId
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
+    | MinutesAgo Int
     | MonthAbbrev
     | MonthsOld
     | Mother
@@ -912,6 +914,11 @@ translationSet trans =
             , kinyarwanda = Just "kg"
             }
 
+        LastChecked ->
+            { english = "Last checked"
+            , kinyarwanda = Nothing
+            }
+
         LevelOfEducationLabel ->
             { english = "Level of Education: "
             , kinyarwanda = Just <| "Amashuri wize: "
@@ -980,6 +987,19 @@ translationSet trans =
         MeasurementLost amount ->
             { english = "Lost " ++ toString amount
             , kinyarwanda = Just <| "Kwiyongera " ++ toString amount
+            }
+
+        MinutesAgo minutes ->
+            { english =
+                if minutes == 0 then
+                    "just now"
+
+                else if minutes == 1 then
+                    "one minute ago"
+
+                else
+                    toString minutes ++ " minutes ago"
+            , kinyarwanda = Nothing
             }
 
         MonthAbbrev ->

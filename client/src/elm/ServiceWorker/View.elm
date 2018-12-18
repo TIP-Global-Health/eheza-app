@@ -3,17 +3,18 @@ module ServiceWorker.View exposing (view)
 {-| View functions related to the status of the Service Worker.
 -}
 
-import Gizra.Html exposing (showIf)
+import Gizra.Html exposing (emptyNode, showIf)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import RemoteData exposing (RemoteData(..))
 import ServiceWorker.Model exposing (..)
+import Time exposing (Time)
 import Translate exposing (Language(..), translate)
 
 
-view : Language -> Model -> Html Msg
-view language model =
+view : Time -> Language -> Model -> Html Msg
+view currentTime language model =
     div [ class "wrap wrap-alt-2" ]
         [ div
             [ class "ui basic head segment" ]
@@ -30,10 +31,10 @@ view language model =
             ]
         , div
             [ class "ui basic segment" ]
-            [ viewDeploymentStatus language model
-            , viewRegistrationStatus language model
+            [ viewRegistrationStatus language model
+            , viewDeploymentStatus language model
             , showIf model.active <|
-                viewUpdateStatus language model
+                viewUpdateStatus currentTime language model
             ]
         ]
 
@@ -63,13 +64,14 @@ viewRegistrationStatus language model =
             p [] [ text <| translate language Translate.ServiceWorkerRegSuccess ]
 
 
-viewUpdateStatus : Language -> Model -> Html Msg
-viewUpdateStatus language model =
+viewUpdateStatus : Time -> Language -> Model -> Html Msg
+viewUpdateStatus currentTime language model =
     case model.newWorker of
         Nothing ->
             div []
                 [ p []
                     [ text <| translate language Translate.ServiceWorkerCurrent ]
+                , viewLastChecked language currentTime model.lastUpdateCheck
                 , button
                     [ onClick <| SendOutgoingMsg Update
                     , class "ui primary button"
@@ -116,3 +118,21 @@ viewUpdateStatus language model =
                     ]
                     [ text <| translate language Translate.ServiceWorkerCheckForUpdates ]
                 ]
+
+
+viewLastChecked : Language -> Time -> Maybe Time -> Html msg
+viewLastChecked language currentTime checkedTime =
+    case checkedTime of
+        Just checked ->
+            let
+                diffInMinutes =
+                    round ((currentTime - checked) / Time.minute)
+            in
+            p []
+                [ text <| translate language Translate.LastChecked
+                , text " "
+                , text <| translate language <| Translate.MinutesAgo diffInMinutes
+                ]
+
+        Nothing ->
+            emptyNode

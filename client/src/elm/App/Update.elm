@@ -117,11 +117,15 @@ init flags =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    let
+        currentDate =
+            fromLocalDateTime <| Date.fromTime model.currentTime
+    in
     case msg of
         MsgCache subMsg ->
             let
                 ( subModel, subCmd, extraMsgs ) =
-                    Backend.Update.updateCache model.currentDate subMsg model.cache
+                    Backend.Update.updateCache currentDate subMsg model.cache
             in
             ( { model | cache = subModel }
             , Cmd.map MsgCache subCmd
@@ -145,7 +149,7 @@ update msg model =
                         MsgPageAdmin subMsg ->
                             let
                                 ( newModel, cmd, appMsgs ) =
-                                    Pages.Admin.Update.update model.currentDate data.backend subMsg data.adminPage
+                                    Pages.Admin.Update.update currentDate data.backend subMsg data.adminPage
                             in
                             ( { data | adminPage = newModel }
                             , Cmd.map (MsgLoggedIn << MsgPageAdmin) cmd
@@ -256,7 +260,7 @@ update msg model =
         MsgServiceWorker subMsg ->
             let
                 ( subModel, subCmd, extraMsgs ) =
-                    ServiceWorker.Update.update subMsg model.serviceWorker
+                    ServiceWorker.Update.update model.currentTime subMsg model.serviceWorker
             in
             ( { model | serviceWorker = subModel }
             , Cmd.map MsgServiceWorker subCmd
@@ -347,21 +351,9 @@ update msg model =
             )
 
         Tick time ->
-            let
-                nominalDate =
-                    fromLocalDateTime (Date.fromTime time)
-            in
-            -- We don't update the model at all if the date hasn't
-            -- changed ...  this should be a small optimization, since
-            -- the new model will be referentially equal to the
-            -- previous one.
-            if nominalDate == model.currentDate then
-                ( model, Cmd.none )
-
-            else
-                ( { model | currentDate = nominalDate }
-                , Cmd.none
-                )
+            ( { model | currentTime = time }
+            , Cmd.none
+            )
 
 
 {-| Convenience function to process a msg which depends on having a configuration.

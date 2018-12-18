@@ -15,10 +15,11 @@ import RemoteData exposing (RemoteData(..))
 import ServiceWorker.Decoder exposing (decodeIncomingMsg)
 import ServiceWorker.Encoder exposing (encodeOutgoingMsg)
 import ServiceWorker.Model exposing (..)
+import Time exposing (Time)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update msg model =
+update : Time -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentTime msg model =
     case msg of
         BackToLoginPage ->
             ( model
@@ -29,17 +30,17 @@ update msg model =
         HandleIncomingMsg value ->
             case decodeValue decodeIncomingMsg value of
                 Ok incoming ->
-                    handleIncomingMsg incoming model
+                    handleIncomingMsg currentTime incoming model
 
                 Err err ->
                     ( model, Cmd.none, [] )
 
         SendOutgoingMsg msg ->
-            sendOutgoingMsg msg model
+            sendOutgoingMsg currentTime msg model
 
 
-handleIncomingMsg : IncomingMsg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-handleIncomingMsg msg model =
+handleIncomingMsg : Time -> IncomingMsg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+handleIncomingMsg currentTime msg model =
     case msg of
         RegistrationSucceeded ->
             ( { model | registration = Success () }
@@ -71,11 +72,11 @@ handleIncomingMsg msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra update extraMsgs
+                |> sequenceExtra (update currentTime) extraMsgs
 
 
-sendOutgoingMsg : OutgoingMsg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-sendOutgoingMsg msg model =
+sendOutgoingMsg : Time -> OutgoingMsg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+sendOutgoingMsg currentTime msg model =
     case msg of
         Register ->
             ( { model | registration = Loading }
@@ -90,7 +91,7 @@ sendOutgoingMsg msg model =
             )
 
         Update ->
-            ( model
+            ( { model | lastUpdateCheck = Just currentTime }
             , serviceWorkerOut (encodeOutgoingMsg msg)
             , []
             )
