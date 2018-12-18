@@ -13,10 +13,6 @@ decodeIncomingMsg =
         |> andThen
             (\tag ->
                 case tag of
-                    "SetActive" ->
-                        field "value" bool
-                            |> map SetActive
-
                     "RegistrationSucceeded" ->
                         succeed RegistrationSucceeded
 
@@ -24,8 +20,40 @@ decodeIncomingMsg =
                         field "error" value
                             |> map RegistrationFailed
 
+                    "SetNewWorker" ->
+                        field "state" decodeNewWorker
+                            |> map SetNewWorker
+
                     _ ->
                         fail <|
                             "ServiceWorker.Decoder unrecognized tag: "
                                 ++ tag
+            )
+
+
+decodeNewWorker : Decoder NewWorker
+decodeNewWorker =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "installing" ->
+                        succeed Installing
+
+                    "installed" ->
+                        succeed Installed
+
+                    "activating" ->
+                        succeed Activating
+
+                    "activated" ->
+                        succeed Activated
+
+                    "redundant" ->
+                        succeed Redundant
+
+                    _ ->
+                        fail <|
+                            "Unrecognized NewWorker state: "
+                                ++ s
             )

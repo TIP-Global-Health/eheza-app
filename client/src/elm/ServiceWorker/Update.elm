@@ -8,6 +8,7 @@ via sending messages through the `update` function.
 -}
 
 import App.Model
+import Gizra.Update exposing (sequenceExtra)
 import Json.Decode exposing (Value, decodeValue)
 import Pages.Page
 import RemoteData exposing (RemoteData(..))
@@ -31,12 +32,6 @@ update msg model =
                     handleIncomingMsg incoming model
 
                 Err err ->
-                    let
-                        _ =
-                            Debug.log <|
-                                "Error decoding message from port: "
-                                    ++ err
-                    in
                     ( model, Cmd.none, [] )
 
         SendOutgoingMsg msg ->
@@ -46,12 +41,6 @@ update msg model =
 handleIncomingMsg : IncomingMsg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 handleIncomingMsg msg model =
     case msg of
-        SetActive value ->
-            ( { model | active = value }
-            , Cmd.none
-            , []
-            )
-
         RegistrationSucceeded ->
             ( { model | registration = Success () }
             , Cmd.none
@@ -64,6 +53,26 @@ handleIncomingMsg msg model =
             , []
             )
 
+        SetNewWorker worker ->
+            let
+                extraMsgs =
+                    -- If we have a new worker that has finished installing,
+                    -- and we're not controlled by anyone yet, then tell the
+                    -- new worker to get on with it. Otherwise, we'll just
+                    -- display the information in the UI and let the user
+                    -- decide when to actually activate the new version.
+                    if worker == Installed && not model.active then
+                        [ SendOutgoingMsg SkipWaiting ]
+
+                    else
+                        []
+            in
+            ( { model | newWorker = Just worker }
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra update extraMsgs
+
 
 sendOutgoingMsg : OutgoingMsg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 sendOutgoingMsg msg model =
@@ -74,7 +83,13 @@ sendOutgoingMsg msg model =
             , []
             )
 
-        Unregister ->
+        SkipWaiting ->
+            ( model
+            , serviceWorkerOut (encodeOutgoingMsg msg)
+            , []
+            )
+
+        Update ->
             ( model
             , serviceWorkerOut (encodeOutgoingMsg msg)
             , []

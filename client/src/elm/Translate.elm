@@ -261,6 +261,15 @@ type TranslationId
     | SelectLanguage
     | SelectYourClinic
     | ServiceWorkerActive
+    | ServiceWorkerCurrent
+    | ServiceWorkerCheckForUpdates
+    | ServiceWorkerInstalling
+    | ServiceWorkerInstalled
+    | ServiceWorkerSkipWaiting
+    | ServiceWorkerRestarting
+    | ServiceWorkerActivating
+    | ServiceWorkerActivated
+    | ServiceWorkerRedundant
     | ServiceWorkerInactive
     | ServiceWorkerRegNotAsked
     | ServiceWorkerRegLoading
@@ -1235,6 +1244,51 @@ translationSet trans =
 
         ServiceWorkerActive ->
             { english = "The app is installed on this device."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerCurrent ->
+            { english = "You have the current version of the app."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerCheckForUpdates ->
+            { english = "Check for updates"
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerInstalling ->
+            { english = "A new version of the app has been detected and is being downloaded. You can continue to work while this is in progress."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerInstalled ->
+            { english = "A new version of the app has been downloaded."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerSkipWaiting ->
+            { english = "Activate new version of the app"
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerRestarting ->
+            { english = "The app should reload momentarily with the new version."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerActivating ->
+            { english = "A new version of the app is preparing itself for use."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerActivated ->
+            { english = "A new version of the app is ready for use."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerRedundant ->
+            { english = "An error occurred installing a new version of the app."
             , kinyarwanda = Nothing
             }
 

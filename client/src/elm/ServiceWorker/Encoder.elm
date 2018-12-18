@@ -21,7 +21,12 @@ encodeOutgoingMsg msg =
                 [ ( "tag", string "Register" )
                 ]
 
-        Unregister ->
+        Update ->
             object
-                [ ( "tag", string "Unregister" )
+                [ ( "tag", string "Update" )
+                ]
+
+        SkipWaiting ->
+            object
+                [ ( "tag", string "SkipWaiting" )
                 ]

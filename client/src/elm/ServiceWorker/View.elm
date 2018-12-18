@@ -31,6 +31,7 @@ view language model =
             [ class "ui basic segment" ]
             [ viewDeploymentStatus language model
             , viewRegistrationStatus language model
+            , viewUpdateStatus language model
             ]
         ]
 
@@ -58,3 +59,58 @@ viewRegistrationStatus language model =
 
         Success _ ->
             p [] [ text <| translate language Translate.ServiceWorkerRegSuccess ]
+
+
+viewUpdateStatus : Language -> Model -> Html Msg
+viewUpdateStatus language model =
+    case model.newWorker of
+        Nothing ->
+            div []
+                [ p []
+                    [ text <| translate language Translate.ServiceWorkerCurrent ]
+                , button
+                    [ onClick <| SendOutgoingMsg Update
+                    , class "ui primary button"
+                    ]
+                    [ text <| translate language Translate.ServiceWorkerCheckForUpdates ]
+                ]
+
+        Just Installing ->
+            p [] [ text <| translate language Translate.ServiceWorkerInstalling ]
+
+        Just Installed ->
+            if model.active then
+                div []
+                    [ p []
+                        [ text <| translate language Translate.ServiceWorkerInstalled ]
+                    , button
+                        [ onClick <| SendOutgoingMsg SkipWaiting
+                        , class "ui primary button"
+                        ]
+                        [ text <| translate language Translate.ServiceWorkerSkipWaiting ]
+                    ]
+
+            else
+                div []
+                    [ p [] [ text <| translate language Translate.ServiceWorkerInstalled ]
+                    , p [] [ text <| translate language Translate.ServiceWorkerRestarting ]
+                    ]
+
+        Just Activating ->
+            p [] [ text <| translate language Translate.ServiceWorkerActivating ]
+
+        Just Activated ->
+            div []
+                [ p [] [ text <| translate language Translate.ServiceWorkerActivated ]
+                , p [] [ text <| translate language Translate.ServiceWorkerRestarting ]
+                ]
+
+        Just Redundant ->
+            div []
+                [ p [] [ text <| translate language Translate.ServiceWorkerRedundant ]
+                , button
+                    [ onClick <| SendOutgoingMsg Update
+                    , class "ui primary button"
+                    ]
+                    [ text <| translate language Translate.ServiceWorkerCheckForUpdates ]
+                ]

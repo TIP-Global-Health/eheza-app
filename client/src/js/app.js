@@ -171,14 +171,25 @@ function makeCustomEvent (eventName, detail) {
     }
 }
 
-navigator.serviceWorker.oncontrollerchange = function () {
-  elmApp.ports.serviceWorkerIn.send({
-    tag: "SetActive",
-    value: true
-  });
-
-  // We could also start sending some events related to the active worker ...
-};
+navigator.serviceWorker.addEventListener('controllerchange', function () {
+    // If we detect a controller change, that means we're being managed
+    // by a new service worker. In that case, we need to reload the page,
+    // since the new service worker may have new HTML or new Javascript
+    // for us to execute.
+    //
+    // It's safe to reload the page here, because we'll only get a new
+    // service worker in two cases:
+    //
+    // - If we had no service worker, so we told the service worker to
+    //   skip waiting.
+    //
+    // - If the user explicitly tells us to proceed with the new version.
+    //
+    // So, we're not reloading at a moment that should be surprising to
+    // the user ... it's either the only thing they can do, or they just
+    // told us to do it.
+    location.reload();
+});
 
 elmApp.ports.serviceWorkerOut.subscribe(function (message) {
   switch (message.tag) {
@@ -186,6 +197,36 @@ elmApp.ports.serviceWorkerOut.subscribe(function (message) {
       navigator.serviceWorker.register('service-worker.js').then(function(reg) {
         elmApp.ports.serviceWorkerIn.send({
           tag: 'RegistrationSucceeded'
+        });
+
+        if (reg.waiting) {
+          elmApp.ports.serviceWorkerIn.send({
+            tag: 'SetNewWorker',
+            state: reg.waiting.state
+          });
+        } else if (reg.installing) {
+          elmApp.ports.serviceWorkerIn.send({
+            tag: 'SetNewWorker',
+            state: reg.installing.state
+          });
+        }
+
+        reg.addEventListener('updatefound', function () {
+          // We've got a new service worker that will prepare itself ...
+          // how exciting! Let's tell the app the good news.
+          var newWorker = reg.installing;
+
+          elmApp.ports.serviceWorkerIn.send({
+            tag: 'SetNewWorker',
+            state: newWorker.state
+          });
+
+          newWorker.addEventListener('statechange', function () {
+            elmApp.ports.serviceWorkerIn.send({
+              tag: 'SetNewWorker',
+              state: newWorker.state
+            });
+          });
         });
       }).catch(function (error) {
         elmApp.ports.serviceWorkerIn.send({
@@ -195,9 +236,25 @@ elmApp.ports.serviceWorkerOut.subscribe(function (message) {
       });
       break;
 
-    case 'Unregister':
+    case 'Update':
+      // This happens on its own every 24 hours or so, but we can force a
+      // check for updates if we like.
       navigator.serviceWorker.getRegistration().then(function (reg) {
-        reg.unregister();
+        reg.update();
+      });
+      break;
+
+    case 'SkipWaiting':
+      // If we have an installed service worker that is waiting to control
+      // pages, tell it to stop waiting. It will claim existing clients
+      // (including this one), which in turn will trigger a reload, so we
+      // actually get the HTML and Javascript the new service worker will
+      // provide. So we make this explicit rather than automatic -- we don't
+      // want to reload at some moment the user isn't expecting.
+      navigator.serviceWorker.getRegistration().then(function (reg) {
+        if (reg.waiting) {
+          reg.waiting.postMessage('SkipWaiting');
+        }
       });
       break;
   }
