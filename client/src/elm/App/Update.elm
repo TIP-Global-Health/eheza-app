@@ -351,9 +351,24 @@ update msg model =
             )
 
         Tick time ->
+            let
+                extraMsgs =
+                    case model.serviceWorker.lastUpdateCheck of
+                        Nothing ->
+                            [ MsgServiceWorker <| ServiceWorker.Model.SendOutgoingMsg ServiceWorker.Model.Update ]
+
+                        Just checked ->
+                            -- Automatically check for updates every hour
+                            if time - checked > 60 * Time.minute then
+                                [ MsgServiceWorker <| ServiceWorker.Model.SendOutgoingMsg ServiceWorker.Model.Update ]
+
+                            else
+                                []
+            in
             ( { model | currentTime = time }
             , Cmd.none
             )
+                |> sequence update extraMsgs
 
 
 {-| Convenience function to process a msg which depends on having a configuration.
