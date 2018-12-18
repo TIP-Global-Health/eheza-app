@@ -1,4 +1,4 @@
-module ServiceWorker.View exposing (view)
+module ServiceWorker.View exposing (view, viewIcon)
 
 {-| View functions related to the status of the Service Worker.
 -}
@@ -37,6 +37,38 @@ view currentTime language model =
                 viewUpdateStatus currentTime language model
             ]
         ]
+
+
+{-| This gives us an icon for our "Version" header on each page.
+-}
+viewIcon : Model -> Html msg
+viewIcon model =
+    let
+        icon color =
+            i
+                [ class "download icon"
+                , class color
+                ]
+                []
+    in
+    case model.newWorker of
+        Nothing ->
+            emptyNode
+
+        Just Installing ->
+            icon "yellow"
+
+        Just Installed ->
+            icon "green"
+
+        Just Activating ->
+            icon "black"
+
+        Just Activated ->
+            icon "black"
+
+        Just Redundant ->
+            icon "red"
 
 
 viewDeploymentStatus : Language -> Model -> Html Msg
@@ -132,6 +164,7 @@ viewLastChecked language currentTime checkedTime =
                 [ text <| translate language Translate.LastChecked
                 , text " "
                 , text <| translate language <| Translate.MinutesAgo diffInMinutes
+                , text "."
                 ]
 
         Nothing ->

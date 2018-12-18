@@ -79,7 +79,8 @@ viewLanguageSwitcherAndVersion model =
             [ class "version"
             , onClick <| SetActivePage ServiceWorkerPage
             ]
-            [ text <| translate model.language Translate.Version
+            [ ServiceWorker.View.viewIcon model.serviceWorker
+            , text <| translate model.language Translate.Version
             , text ": "
             , text <| .build Version.version
             ]
