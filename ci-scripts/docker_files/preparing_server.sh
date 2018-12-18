@@ -16,9 +16,6 @@ check_last_command
 print_message "Configure apache2."
 cd "$ROOT_DIR" || exit 1
 cp ci-scripts/docker_files/default.apache2.conf /etc/apache2/apache2.conf
-cp ci-scripts/docker_files/server.crt /etc/apache2/ssl/server.crt
-cp ci-scripts/docker_files/server.key /etc/apache2/ssl/server.key
-a2enmod ssl
 service apache2 restart
 cp ci-scripts/docker_files/server.conf /etc/apache2/sites-available/
 a2ensite server.conf

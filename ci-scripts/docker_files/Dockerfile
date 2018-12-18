@@ -7,4 +7,4 @@ WORKDIR /var/www/html/Server
 RUN chmod +x /var/www/html/Server/ci-scripts/docker_files/run.sh
 ENTRYPOINT ["/var/www/html/Server/ci-scripts/docker_files/run.sh"]
 
-EXPOSE 80 443 3306 22
+EXPOSE 80 3306 22
