@@ -3,6 +3,7 @@ module ServiceWorker.View exposing (view)
 {-| View functions related to the status of the Service Worker.
 -}
 
+import Gizra.Html exposing (showIf)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -31,7 +32,8 @@ view language model =
             [ class "ui basic segment" ]
             [ viewDeploymentStatus language model
             , viewRegistrationStatus language model
-            , viewUpdateStatus language model
+            , showIf model.active <|
+                viewUpdateStatus language model
             ]
         ]
 
