@@ -158,8 +158,11 @@ gulp.task("copy:dev", ["copy:bower", "copy:images", "copy:favicon", "copy:fonts"
 // Copy bower.
 gulp.task("copy:bower", function () {
   // There are unused Dexie files that causes trouble for uglify later
-  return gulp.src(["bower_components/**/*", "!bower_components/**/*.es.js"])
-    .pipe(gulp.dest("serve/bower_components"))
+  return gulp.src([
+    "bower_components/**/*",
+    "!bower_components/**/*.es.js",
+    "!bower_components/semantic/tasks/config/admin/templates/*.js"
+  ]).pipe(gulp.dest("serve/bower_components"))
     .pipe($.size({ title: "Bower" }))
 });
 
@@ -361,4 +364,4 @@ gulp.task("build", gulpSequence("clean:dev", ["styles", "zscore", "copy:dev", "e
 
 // Builds your site with the "build" command and then runs all the optimizations on
 // it and outputs it to "./dist"
-gulp.task("publish", gulpSequence(["build", "clean:prod"], ["minify", "cname", "images", "fonts"], "pwa:dev"));
+gulp.task("publish", gulpSequence(["build", "clean:prod"], ["minify", "cname", "images"], "pwa:dev"));
