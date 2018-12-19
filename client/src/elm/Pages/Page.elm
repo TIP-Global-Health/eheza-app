@@ -77,6 +77,7 @@ type Page
     | UserPage UserPage -- page that requires a logged-in user
     | PageNotFound String -- we couldn't interpret the URL ... the parameter is the URL
     | SessionPage SessionPage -- pages that require an `EditableSession`
+    | ServiceWorkerPage -- shows status of the service worker
 
 
 {-| A page which you must be logged in to view. If you're not logged in, we'll show you

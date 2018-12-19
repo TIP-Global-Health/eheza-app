@@ -1,28 +1,66 @@
-module ServiceWorker.Model exposing (Model, Msg(..), emptyModel)
+module ServiceWorker.Model exposing (IncomingMsg(..), Model, Msg(..), NewWorker(..), OutgoingMsg(..), emptyModel)
 
 {-| Some state we maintain relating to service workers.
 -}
 
 import Json.Encode exposing (Value)
+import RemoteData exposing (RemoteData(..))
+import Time exposing (Time)
 
 
-{-| We're not tracking much (yet) ... we'll just flip this to true
-when we get a message that we have an active worker. Eventually, we
-may want to do more.
+{-| The state of the service worker system.
+
+  - `active` tracks whether this page was being controlled by a
+    service worker when the app started up.
+
+  - `registration` tracks our attempt to register the service worker.
+
+  - `newWorker` tracks the status of a new worker which is being installed
+
+  - `lastUpdateCheck` tracks the last time we checked for an updated service
+    worker
+
 -}
 type alias Model =
     { active : Bool
+    , registration : RemoteData String ()
+    , newWorker : Maybe NewWorker
+    , lastUpdateCheck : Maybe Time
     }
 
 
-emptyModel : Model
-emptyModel =
-    { active = False
+type NewWorker
+    = Installing
+    | Installed
+    | Activating
+    | Activated
+    | Redundant
+
+
+{-| We use flags, so that we know whether we're active as early as possible.
+-}
+emptyModel : Bool -> Model
+emptyModel active =
+    { active = active
+    , registration = NotAsked
+    , newWorker = Nothing
+    , lastUpdateCheck = Nothing
     }
 
 
 type Msg
-    = HandlePortMsg Value
-    | Register
-    | SetActive Bool
-    | Unregister
+    = BackToLoginPage
+    | HandleIncomingMsg Value
+    | SendOutgoingMsg OutgoingMsg
+
+
+type IncomingMsg
+    = RegistrationSucceeded
+    | RegistrationFailed String
+    | SetNewWorker NewWorker
+
+
+type OutgoingMsg
+    = Register
+    | SkipWaiting
+    | Update

@@ -7,48 +7,99 @@ via sending messages through the `update` function.
 
 -}
 
+import App.Model
+import Gizra.Update exposing (sequenceExtra)
 import Json.Decode exposing (Value, decodeValue)
-import ServiceWorker.Decoder exposing (decodeMsg)
-import ServiceWorker.Encoder exposing (encodeMsg)
+import Pages.Page
+import RemoteData exposing (RemoteData(..))
+import ServiceWorker.Decoder exposing (decodeIncomingMsg)
+import ServiceWorker.Encoder exposing (encodeOutgoingMsg)
 import ServiceWorker.Model exposing (..)
+import Time exposing (Time)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Time -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentTime msg model =
     case msg of
-        HandlePortMsg value ->
-            case decodeValue decodeMsg value of
-                Ok portMsg ->
-                    update portMsg model
+        BackToLoginPage ->
+            ( model
+            , Cmd.none
+            , [ App.Model.SetActivePage Pages.Page.LoginPage ]
+            )
+
+        HandleIncomingMsg value ->
+            case decodeValue decodeIncomingMsg value of
+                Ok incoming ->
+                    handleIncomingMsg currentTime incoming model
 
                 Err err ->
-                    let
-                        _ =
-                            Debug.log <|
-                                "Error decoding message from port: "
-                                    ++ err
-                    in
-                    ( model, Cmd.none )
+                    ( model, Cmd.none, [] )
 
-        SetActive value ->
-            ( { model | active = value }
+        SendOutgoingMsg msg ->
+            sendOutgoingMsg currentTime msg model
+
+
+handleIncomingMsg : Time -> IncomingMsg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+handleIncomingMsg currentTime msg model =
+    case msg of
+        RegistrationSucceeded ->
+            ( { model | registration = Success () }
             , Cmd.none
+            , []
             )
 
+        RegistrationFailed error ->
+            ( { model | registration = Failure error }
+            , Cmd.none
+            , []
+            )
+
+        SetNewWorker worker ->
+            let
+                extraMsgs =
+                    -- If we have a new worker that has finished installing,
+                    -- and we're not controlled by anyone yet, then tell the
+                    -- new worker to get on with it. Otherwise, we'll just
+                    -- display the information in the UI and let the user
+                    -- decide when to actually activate the new version.
+                    if worker == Installed && not model.active then
+                        [ SendOutgoingMsg SkipWaiting ]
+
+                    else
+                        []
+            in
+            ( { model | newWorker = Just worker }
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update currentTime) extraMsgs
+
+
+sendOutgoingMsg : Time -> OutgoingMsg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+sendOutgoingMsg currentTime msg model =
+    case msg of
         Register ->
-            ( model
-            , serviceWorkerOut (encodeMsg msg)
+            ( { model | registration = Loading }
+            , serviceWorkerOut (encodeOutgoingMsg msg)
+            , []
             )
 
-        Unregister ->
+        SkipWaiting ->
             ( model
-            , serviceWorkerOut (encodeMsg msg)
+            , serviceWorkerOut (encodeOutgoingMsg msg)
+            , []
+            )
+
+        Update ->
+            ( { model | lastUpdateCheck = Just currentTime }
+            , serviceWorkerOut (encodeOutgoingMsg msg)
+            , []
             )
 
 
 subscriptions : Sub Msg
 subscriptions =
-    serviceWorkerIn HandlePortMsg
+    serviceWorkerIn HandleIncomingMsg
 
 
 {-| Receive messages about service workers.
