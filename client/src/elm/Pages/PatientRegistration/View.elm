@@ -1,11 +1,9 @@
-module Pages.PatientRegistartion.View exposing (view)
+module Pages.PatientRegistration.View exposing (view)
 
 {-| The purpose of this page is
 -}
 
-import App.Model exposing (Msg(..), MsgLoggedIn(..))
-import Backend.Clinic.Model exposing (Clinic)
-import Backend.Entities exposing (ClinicId, SessionId)
+import App.Model exposing (Msg(..))
 import Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..))
 import Backend.Session.Model exposing (EditableSession, Session)
 import Backend.Session.Utils
@@ -22,9 +20,6 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date exposing (delta)
 import Translate exposing (Language(..), TranslationId, translate)
 import User.Model exposing (User)
-import User.Utils exposing (assignedToClinic)
-import Utils.Html exposing (spinner, viewModal)
-import Utils.WebData exposing (viewError, viewOrFetch)
 
 
 {-| To make things simpler, we just supply the whole state of the backend ... the view

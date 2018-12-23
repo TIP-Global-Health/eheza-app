@@ -14,7 +14,7 @@ import Pages.Login.View
 import Pages.MyAccount.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
-import Pages.PatientRegistartion.View
+import Pages.PatientRegistration.View
 import Pages.View exposing (viewFoundSession)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Login as RL
@@ -175,7 +175,7 @@ viewEditableSession model configured =
                                     Pages.Clinics.View.view model.language currentDate login.credentials.user clinicId login.data.backend model.cache
 
                                 PatientRegistartionPage ->
-                                    Pages.PatientRegistartion.View.view model.language currentDate login.credentials.user login.data.backend model.cache
+                                    Pages.PatientRegistration.View.view model.language currentDate login.credentials.user login.data.backend model.cache
 
                         ServiceWorkerPage ->
                             ServiceWorker.View.view model.currentTime model.language model.serviceWorker
