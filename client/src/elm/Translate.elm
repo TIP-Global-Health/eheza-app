@@ -1605,6 +1605,13 @@ translateActivePage page =
                     , kinyarwanda = Just "Compte"
                     }
 
+                PatientRegistartionPage ->
+                    { english = "Patient Registartion"
+
+                    -- TODO: translate
+                    , kinyarwanda = Nothing
+                    }
+
 
 translateChartPhrase : ChartPhrase -> TranslationSet
 translateChartPhrase phrase =

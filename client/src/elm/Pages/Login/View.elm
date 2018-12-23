@@ -178,6 +178,7 @@ viewWhenLoggedIn language login session =
         , showMaybe administrationButton
         , button
             [ class "ui fluid primary button"
+            , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.PatientRegistartion
             ]
             [ text <| translate language Translate.RegisterAPatient ]
         , logoutButton

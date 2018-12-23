@@ -87,6 +87,7 @@ type UserPage
     = AdminPage -- a page that shows administrative tasks
     | ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
     | MyAccountPage -- shows information about the logged-in user
+    | PatientRegistartionPage -- alllows registration of new patients.
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it

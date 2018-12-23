@@ -66,6 +66,9 @@ delta2url previous current =
                 MyAccountPage ->
                     Just <| UrlChange NewEntry "#my-account"
 
+                PatientRegistartionPage ->
+                    Just <| UrlChange NewEntry "#patient-registration"
+
 
 {-| For now, the only messages we're generating from the URL are messages
 to set the active page. So, we just return a `Page`, and the caller can
