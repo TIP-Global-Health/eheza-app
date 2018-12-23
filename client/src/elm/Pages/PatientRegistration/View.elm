@@ -3,38 +3,33 @@ module Pages.PatientRegistration.View exposing (view)
 {-| The purpose of this page is
 -}
 
-import App.Model exposing (Msg(..))
 import Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..))
-import Backend.Session.Model exposing (EditableSession, Session)
-import Backend.Session.Utils
-import EveryDictList exposing (EveryDictList)
+import Form
+import Form.Input
 import Gizra.Html exposing (showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.PageNotFound.View
-import RemoteData exposing (RemoteData(..), WebData)
-import Time.Date exposing (delta)
+import Pages.PatientRegistration.Model exposing (Model, Msg(..))
 import Translate exposing (Language(..), TranslationId, translate)
 import User.Model exposing (User)
+import Utils.Html exposing (script)
 
 
-{-| To make things simpler, we just supply the whole state of the backend ... the view
-can pick out what it wants. (Sometimes it would be a better idea to pass more
-specific things, rather than the whole state of the backend).
+view : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
+view language currentDate user backend cache model =
+    let
+        firstName =
+            Form.getFieldAsString "firstName" model.registrationForm
 
-For now, at least, we don't really need our own `Msg` type, so we're just using
-the big one.
+        secondName =
+            Form.getFieldAsString "secondName" model.registrationForm
 
-If `selectedClinic` is Just, we'll show a page for that clinic. If not, we'll
-show a list of clinics.
-
--}
-view : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Html Msg
-view language currentDate user backend cache =
+        nationalIdNumber =
+            Form.getFieldAsString "nationalIdNumber" model.registrationForm
+    in
     div [ class "wrap wrap-alt-2" ]
         [ div
             [ class "ui basic head segment" ]
@@ -57,9 +52,72 @@ view language currentDate user backend cache =
                     [ h3
                         [ class "ui header" ]
                         [ text <| translate language Translate.PatientDemographicInformation ++ ":" ]
-                    , div [ class "ui middle aligned divided list" ]
-                        [ text "hello" ]
+                    , div [ class "ui form registration" ]
+                        [ viewPhoto language Nothing
+                        , Html.map MsgRegistrationForm <|
+                            fieldset [ class "registration-form" ]
+                                [ div [ class "ui grid" ]
+                                    [ div [ class "six wide column" ]
+                                        [ text <| translate language Translate.FirstName ++ ":" ]
+                                    , div [ class "ten wide column" ]
+                                        [ Form.Input.textInput firstName [] ]
+                                    ]
+                                , div [ class "ui grid" ]
+                                    [ div [ class "six wide column" ]
+                                        [ text <| translate language Translate.SecondName ++ ":" ]
+                                    , div [ class "ten wide column" ]
+                                        [ Form.Input.textInput secondName [ class "ten wide column" ] ]
+                                    ]
+                                , div [ class "ui grid" ]
+                                    [ div [ class "six wide column" ]
+                                        [ text <| translate language Translate.NationalIdNumber ++ ":" ]
+                                    , div [ class "ten wide column" ]
+                                        [ Form.Input.textInput nationalIdNumber [ class "ten wide column" ] ]
+                                    ]
+                                ]
+                        ]
                     ]
                 ]
             ]
+        ]
+
+
+viewPhoto : Language -> Maybe String -> Html Msg
+viewPhoto language photo =
+    div
+        [ class "ui grid photo" ]
+        [ Maybe.map viewPhotoThumb photo
+            |> showMaybe
+            |> List.singleton
+            |> div [ class "eight wide column" ]
+        , div
+            [ id "dropzone"
+            , class "eight wide column dropzone"
+
+            -- , on "dropzonecomplete" (Json.Decode.map DropZoneComplete decodeDropZoneFile)
+            ]
+            [ div
+                [ class "dz-message"
+                , attribute "data-dz-message" ""
+                ]
+                [ span
+                    []
+                    [ text <| translate language Translate.DropzoneDefaultMessage ]
+                ]
+            ]
+
+        -- This runs the function from our `app.js` at the precise moment this gets
+        -- written to the DOM. Indeed very convenient.
+        , script "bindDropZone()"
+        ]
+
+
+viewPhotoThumb : String -> Html any
+viewPhotoThumb photo =
+    div []
+        [ img
+            [ src photo
+            , class "ui small image"
+            ]
+            []
         ]

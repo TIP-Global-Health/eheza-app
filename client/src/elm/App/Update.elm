@@ -18,6 +18,8 @@ import Pages.Login.Model
 import Pages.Login.Update
 import Pages.Model
 import Pages.Page exposing (Page(..), UserPage(AdminPage, ClinicsPage))
+import Pages.PatientRegistration.Model
+import Pages.PatientRegistration.Update
 import Pages.Update
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (decodeSingleDrupalEntity)
@@ -96,6 +98,7 @@ init flags =
                         configuredModel =
                             { config = config
                             , loginPage = Pages.Login.Model.emptyModel
+                            , patientRegistrationPage = Pages.PatientRegistration.Model.emptyModel
                             , login = loginStatus
                             }
                     in
@@ -253,6 +256,20 @@ update msg model =
                     ( { configured | loginPage = subModel }
                     , Cmd.map MsgPageLogin subCmd
                     , extraMsgs
+                    )
+                )
+                model
+
+        MsgPagePatientRegistration subMsg ->
+            updateConfigured
+                (\configured ->
+                    let
+                        ( subModel, subCmd, appMsgs ) =
+                            Pages.PatientRegistration.Update.update subMsg configured.patientRegistrationPage
+                    in
+                    ( { configured | patientRegistrationPage = subModel }
+                    , Cmd.map MsgPagePatientRegistration subCmd
+                    , appMsgs
                     )
                 )
                 model

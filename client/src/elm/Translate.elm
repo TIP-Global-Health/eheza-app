@@ -179,6 +179,7 @@ type TranslationId
     | DataIsNowSaved
     | DateOfLastAssessment
     | Day
+    | DateOfBirth
     | Days
     | Delete
     | DownloadHealthAssessment
@@ -195,6 +196,7 @@ type TranslationId
     | ErrorFetchingCachedSessionMessage
     | FamilyPlanningSignLabel FamilyPlanningSign
     | Fetch
+    | FirstName
     | FormError (ErrorValue ValidationError)
     | FormField String
     | FutureSessions
@@ -219,6 +221,7 @@ type TranslationId
     | Mothers
     | MuacIndication MuacIndication
     | MyAccount
+    | NationalIdNumber
     | NoActiveIncidents
     | NoActivitiesCompleted
     | NoActivitiesCompletedForThisParticipant
@@ -262,6 +265,7 @@ type TranslationId
     | Save
     | SaveError
     | SearchByName
+    | SecondName
     | SelectClinic
     | SelectLanguage
     | SelectYourClinic
@@ -764,6 +768,13 @@ translationSet trans =
             , kinyarwanda = Just "Umunsi"
             }
 
+        DateOfBirth ->
+            { english = "Date of Birth"
+
+            -- TODO: translate
+            , kinyarwanda = Nothing
+            }
+
         Days ->
             { english = "days"
             , kinyarwanda = Just "Iminsi"
@@ -879,6 +890,13 @@ translationSet trans =
         Fetch ->
             { english = "Fetch"
             , kinyarwanda = Just "Gushakisha"
+            }
+
+        FirstName ->
+            { english = "First Name"
+
+            -- TODO: translate
+            , kinyarwanda = Nothing
             }
 
         FormError errorValue ->
@@ -1050,6 +1068,13 @@ translationSet trans =
         MyAccount ->
             { english = "My Account"
             , kinyarwanda = Just "Konti yanjye"
+            }
+
+        NationalIdNumber ->
+            { english = "National ID Number"
+
+            -- TODO: translate
+            , kinyarwanda = Nothing
             }
 
         NoActiveIncidents ->
@@ -1269,6 +1294,13 @@ translationSet trans =
         SearchByName ->
             { english = "Search by Name"
             , kinyarwanda = Just "Gushakisha izina"
+            }
+
+        SecondName ->
+            { english = "Second Name"
+
+            -- TODO: translate
+            , kinyarwanda = Nothing
             }
 
         SelectLanguage ->

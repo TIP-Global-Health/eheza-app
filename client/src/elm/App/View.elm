@@ -175,7 +175,8 @@ viewEditableSession model configured =
                                     Pages.Clinics.View.view model.language currentDate login.credentials.user clinicId login.data.backend model.cache
 
                                 PatientRegistartionPage ->
-                                    Pages.PatientRegistration.View.view model.language currentDate login.credentials.user login.data.backend model.cache
+                                    Pages.PatientRegistration.View.view model.language currentDate login.credentials.user login.data.backend model.cache configured.patientRegistrationPage
+                                        |> Html.map MsgPagePatientRegistration
 
                         ServiceWorkerPage ->
                             ServiceWorker.View.view model.currentTime model.language model.serviceWorker

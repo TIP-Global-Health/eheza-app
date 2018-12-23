@@ -9,6 +9,7 @@ import Pages.Admin.Model
 import Pages.Login.Model
 import Pages.Model
 import Pages.Page exposing (Page(LoginPage))
+import Pages.PatientRegistration.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Login exposing (UserAndData)
 import Rollbar
@@ -86,6 +87,7 @@ since we need a UI for logging in.
 type alias ConfiguredModel =
     { config : Config.Model.Model
     , loginPage : Pages.Login.Model.Model
+    , patientRegistrationPage : Pages.PatientRegistration.Model.Model
     , login : UserAndData () User LoggedInModel
     }
 
@@ -153,6 +155,7 @@ type Msg
     | MsgLoggedIn MsgLoggedIn
     | MsgLogin (Restful.Login.Msg User)
     | MsgPageLogin Pages.Login.Model.Msg
+    | MsgPagePatientRegistration Pages.PatientRegistration.Model.Msg
     | MsgSession Pages.Model.MsgSession
     | MsgServiceWorker ServiceWorker.Model.Msg
     | MsgZScore ZScore.Model.Msg

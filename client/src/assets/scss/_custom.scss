@@ -670,6 +670,29 @@ h3.ui.header {
   color: $color-text;
 }
 
+.ui.form.registration {
+  fieldset {
+    border:none;
+    margin-top: 25px;
+  }
+
+  input,
+  input:focus {
+    background: none;
+    font-size: 2rem;
+    border: 2px solid $color-gray;
+    padding: 0 0.5em;
+    line-height: 0.5;
+    text-align: left;
+    height: 50px;
+    width: 410px;
+    color: $color-text;
+  }
+}
+
+
+
+
 input::placeholder {
   text-align: left;
   color: #999;
