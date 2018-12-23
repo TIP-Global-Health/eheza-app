@@ -241,6 +241,7 @@ type TranslationId
     | PageNotFoundMsg
     | Participants
     | ParticipantSummary
+    | PatientDemographicInformation
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
     | PlaceholderEnterWeight
@@ -250,6 +251,7 @@ type TranslationId
     | PreviousFloatMeasurement Float
     | ReadyToBeginSession
     | RegisterAPatient
+    | RegisterANewPatient
     | ReportAge String
     | ReportDOB String
     | ReportRemaining Int
@@ -1160,6 +1162,13 @@ translationSet trans =
             , kinyarwanda = Just "Umwirondoro w’urera umwana"
             }
 
+        PatientDemographicInformation ->
+            { english = "Patient Demographic Information"
+
+            -- TODO: translate
+            , kinyarwanda = Nothing
+            }
+
         PlaceholderEnterHeight ->
             { english = "Enter height here…"
             , kinyarwanda = Just "Andika uburebure hano…"
@@ -1202,6 +1211,13 @@ translationSet trans =
 
         RegisterAPatient ->
             { english = "Register a patient"
+
+            -- TODO: add translation
+            , kinyarwanda = Nothing
+            }
+
+        RegisterANewPatient ->
+            { english = "Register a new patient"
 
             -- TODO: add translation
             , kinyarwanda = Nothing

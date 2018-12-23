@@ -35,4 +35,31 @@ show a list of clinics.
 -}
 view : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Html Msg
 view language currentDate user backend cache =
-    div [] [ text "hello" ]
+    div [ class "wrap wrap-alt-2" ]
+        [ div
+            [ class "ui basic head segment" ]
+            [ h1
+                [ class "ui header" ]
+                [ text <| translate language Translate.RegisterANewPatient ]
+            , a
+                [ class "link-back"
+                , onClick <| SetActivePage LoginPage
+                ]
+                [ span [ class "icon-back" ] []
+                , span [] []
+                ]
+            ]
+        , div
+            [ class "ui full blue segment" ]
+            [ div
+                [ class "full content" ]
+                [ div [ class "wrap-list" ]
+                    [ h3
+                        [ class "ui header" ]
+                        [ text <| translate language Translate.PatientDemographicInformation ++ ":" ]
+                    , div [ class "ui middle aligned divided list" ]
+                        [ text "hello" ]
+                    ]
+                ]
+            ]
+        ]

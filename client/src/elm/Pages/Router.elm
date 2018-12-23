@@ -96,6 +96,7 @@ parseUrl =
         , map (UserPage MyAccountPage) (s "my-account")
         , map (SessionPage << MotherPage << toEntityId) (s "mother" </> int)
         , map (SessionPage ParticipantsPage) (s "participants")
+        , map (UserPage PatientRegistartionPage) (s "patient-registration")
 
         -- TODO: `top` represents the page without any segements ... i.e. the
         -- root page.  Should figure out how to handle this best. Possibly a
