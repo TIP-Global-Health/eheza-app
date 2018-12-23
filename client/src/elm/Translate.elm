@@ -1202,7 +1202,9 @@ translationSet trans =
 
         RegisterAPatient ->
             { english = "Register a patient"
-            , kinyarwanda = Just ""
+
+            -- TODO: add translation
+            , kinyarwanda = Nothing
             }
 
         ReportAge age ->
