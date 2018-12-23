@@ -249,6 +249,7 @@ type TranslationId
     | PleaseSelectClinic
     | PreviousFloatMeasurement Float
     | ReadyToBeginSession
+    | RegisterAPatient
     | ReportAge String
     | ReportDOB String
     | ReportRemaining Int
@@ -1197,6 +1198,11 @@ translationSet trans =
         ReadyToBeginSession ->
             { english = "You are now ready to begin your session."
             , kinyarwanda = Just "Ubu ushobora gutangira ibikorwa byawe."
+            }
+
+        RegisterAPatient ->
+            { english = "Register a patient"
+            , kinyarwanda = Just ""
             }
 
         ReportAge age ->

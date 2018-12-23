@@ -176,6 +176,10 @@ viewWhenLoggedIn language login session =
             ]
             [ text <| translate language Translate.SelectYourClinic ]
         , showMaybe administrationButton
+        , button
+            [ class "ui fluid primary button"
+            ]
+            [ text <| translate language Translate.RegisterAPatient ]
         , logoutButton
         ]
 
