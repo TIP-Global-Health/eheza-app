@@ -671,9 +671,14 @@ h3.ui.header {
 }
 
 .ui.form.registration {
+
+  .ui.grid.photo {
+    margin-top: 20px;
+  }
+
   fieldset {
     border:none;
-    margin-top: 25px;
+    margin-top: 35px;
   }
 
   input,
@@ -685,13 +690,10 @@ h3.ui.header {
     line-height: 0.5;
     text-align: left;
     height: 50px;
-    width: 410px;
+    width: 406px;
     color: $color-text;
   }
 }
-
-
-
 
 input::placeholder {
   text-align: left;
