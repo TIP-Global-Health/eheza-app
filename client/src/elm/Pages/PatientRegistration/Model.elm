@@ -7,7 +7,7 @@ module Pages.PatientRegistration.Model exposing
     )
 
 import Form exposing (Form)
-import Form.Validate exposing (Validation, andMap, field, int, string, succeed)
+import Form.Validate exposing (Validation, andMap, field, string, succeed)
 import Pages.Page exposing (Page)
 
 
@@ -31,9 +31,9 @@ type alias RegistrationForm =
     { firstName : String
     , secondName : String
     , nationalIdNumber : String
-    , dayOfBirth : Int
-    , monthOfBirth : Int
-    , yearOfBirth : Int
+    , dayOfBirth : String
+    , monthOfBirth : String
+    , yearOfBirth : String
     }
 
 
@@ -43,6 +43,6 @@ validateRegistrationForm =
         |> andMap (field "firstName" string)
         |> andMap (field "secondName" string)
         |> andMap (field "nationalIdNumber" string)
-        |> andMap (field "dayOfBirth" int)
-        |> andMap (field "monthOfBirth" int)
-        |> andMap (field "yearOfBirth" int)
+        |> andMap (field "dayOfBirth" string)
+        |> andMap (field "monthOfBirth" string)
+        |> andMap (field "yearOfBirth" string)

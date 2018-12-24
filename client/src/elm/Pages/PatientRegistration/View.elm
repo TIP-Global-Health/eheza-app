@@ -13,6 +13,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRegistration.Model exposing (Model, Msg(..))
+import Time.Date
 import Translate exposing (Language(..), TranslationId, translate)
 import User.Model exposing (User)
 import Utils.Html exposing (script)
@@ -29,6 +30,34 @@ view language currentDate user backend cache model =
 
         nationalIdNumber =
             Form.getFieldAsString "nationalIdNumber" model.registrationForm
+
+        dayOfBirth =
+            Form.getFieldAsString "dayOfBirth" model.registrationForm
+
+        monthOfBirth =
+            Form.getFieldAsString "monthOfBirth" model.registrationForm
+
+        yearOfBirth =
+            Form.getFieldAsString "yearOfBirth" model.registrationForm
+
+        dayOptions =
+            List.repeat 31 "."
+                |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
+
+        monthOptions =
+            List.repeat 12 "."
+                |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
+
+        currentYear =
+            Time.Date.year currentDate
+
+        startFromYear =
+            currentYear - 99
+
+        yearOptions =
+            List.repeat 100 "."
+                |> List.indexedMap (\index _ -> ( toString <| index + startFromYear, toString <| index + startFromYear ))
+                |> List.reverse
     in
     div [ class "wrap wrap-alt-2" ]
         [ div
@@ -66,13 +95,23 @@ view language currentDate user backend cache model =
                                     [ div [ class "six wide column" ]
                                         [ text <| translate language Translate.SecondName ++ ":" ]
                                     , div [ class "ten wide column" ]
-                                        [ Form.Input.textInput secondName [ class "ten wide column" ] ]
+                                        [ Form.Input.textInput secondName [] ]
                                     ]
                                 , div [ class "ui grid" ]
                                     [ div [ class "six wide column" ]
                                         [ text <| translate language Translate.NationalIdNumber ++ ":" ]
                                     , div [ class "ten wide column" ]
-                                        [ Form.Input.textInput nationalIdNumber [ class "ten wide column" ] ]
+                                        [ Form.Input.textInput nationalIdNumber [] ]
+                                    ]
+                                , div [ class "ui grid" ]
+                                    [ div [ class "six wide column" ]
+                                        [ text <| translate language Translate.DateOfBirth ++ ":" ]
+                                    , div [ class "three wide column" ]
+                                        [ Form.Input.selectInput dayOptions dayOfBirth [] ]
+                                    , div [ class "three wide column" ]
+                                        [ Form.Input.selectInput monthOptions monthOfBirth [] ]
+                                    , div [ class "four wide column" ]
+                                        [ Form.Input.selectInput yearOptions yearOfBirth [] ]
                                     ]
                                 ]
                         ]
