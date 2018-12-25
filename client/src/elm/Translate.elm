@@ -4,7 +4,7 @@ import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherA
 import Backend.Child.Model exposing (Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
-import Backend.Mother.Model exposing (EducationLevel(..))
+import Backend.Mother.Model exposing (EducationLevel(..), MaritalStatus(..))
 import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
@@ -119,7 +119,7 @@ type ChartPhrase
     | WeightForLengthBoys
     | WeightForLengthGirls
     | WeightKg
-    | XYears Int
+    | YearsPlural Int
     | ZScoreChartsAvailableAt
 
 
@@ -210,6 +210,8 @@ type TranslationId
     | LinkToMother
     | LoginPhrase LoginPhrase
     | MakeSureYouAreConnected
+    | MaritalStatusLabel
+    | MaritalStatus MaritalStatus
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
@@ -252,6 +254,7 @@ type TranslationId
     | PlaceholderTextJoined
     | PleaseSelectClinic
     | PreviousFloatMeasurement Float
+    | Profession
     | ReadyToBeginSession
     | RegisterAPatient
     | RegisterANewPatient
@@ -771,8 +774,6 @@ translationSet trans =
 
         DateOfBirth ->
             { english = "Date of Birth"
-
-            -- TODO: translate
             , kinyarwanda = Nothing
             }
 
@@ -895,8 +896,6 @@ translationSet trans =
 
         FirstName ->
             { english = "First Name"
-
-            -- TODO: translate
             , kinyarwanda = Nothing
             }
 
@@ -996,6 +995,33 @@ translationSet trans =
             , kinyarwanda = Just "Banza urebe ko ufite interineti. Ikibazo nigikomeza, hamagara The Ihangane Project kuri +250 788 817 542"
             }
 
+        MaritalStatusLabel ->
+            { english = "Marital Status"
+            , kinyarwanda = Nothing
+            }
+
+        MaritalStatus status ->
+            case status of
+                Divorced ->
+                    { english = "Divorced"
+                    , kinyarwanda = Nothing
+                    }
+
+                Maried ->
+                    { english = "Maried"
+                    , kinyarwanda = Nothing
+                    }
+
+                Single ->
+                    { english = "Single"
+                    , kinyarwanda = Nothing
+                    }
+
+                Widowed ->
+                    { english = "Widowed"
+                    , kinyarwanda = Nothing
+                    }
+
         MeasurementNoChange ->
             { english = "No Change"
             , kinyarwanda = Just "nta cyahindutse"
@@ -1073,8 +1099,6 @@ translationSet trans =
 
         NationalIdNumber ->
             { english = "National ID Number"
-
-            -- TODO: translate
             , kinyarwanda = Nothing
             }
 
@@ -1190,8 +1214,6 @@ translationSet trans =
 
         PatientDemographicInformation ->
             { english = "Patient Demographic Information"
-
-            -- TODO: translate
             , kinyarwanda = Nothing
             }
 
@@ -1228,6 +1250,13 @@ translationSet trans =
         PreviousFloatMeasurement value ->
             { english = "Previous measurement: " ++ toString value
             , kinyarwanda = Just <| "Ibipimo by'ubushize: " ++ toString value
+            }
+
+        Profession ->
+            { english = "Profession"
+
+            --TODO: translate
+            , kinyarwanda = Nothing
             }
 
         ReadyToBeginSession ->
@@ -1299,8 +1328,6 @@ translationSet trans =
 
         SecondName ->
             { english = "Second Name"
-
-            -- TODO: translate
             , kinyarwanda = Nothing
             }
 
@@ -1442,8 +1469,6 @@ translationSet trans =
 
         Sex ->
             { english = "Gender"
-
-            -- TODO: translate
             , kinyarwanda = Nothing
             }
 
@@ -1663,8 +1688,6 @@ translateActivePage page =
 
                 PatientRegistartionPage ->
                     { english = "Patient Registartion"
-
-                    -- TODO: translate
                     , kinyarwanda = Nothing
                     }
 
@@ -1737,7 +1760,7 @@ translateChartPhrase phrase =
             , kinyarwanda = Just "Ibiro kg"
             }
 
-        XYears value ->
+        YearsPlural value ->
             { english = toString value ++ " years"
             , kinyarwanda = Just <| "Imyaka " ++ toString value
             }

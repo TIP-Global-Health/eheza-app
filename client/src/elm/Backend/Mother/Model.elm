@@ -1,4 +1,4 @@
-module Backend.Mother.Model exposing (EducationLevel(..), Mother, Ubudehe(..))
+module Backend.Mother.Model exposing (EducationLevel(..), MaritalStatus(..), Mother, Ubudehe(..))
 
 import Backend.Entities exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
@@ -29,3 +29,10 @@ type EducationLevel
     | DiplomaProgram
     | HigherEducation
     | AdvancedDiploma
+
+
+type MaritalStatus
+    = Divorced
+    | Maried
+    | Single
+    | Widowed

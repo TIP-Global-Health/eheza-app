@@ -37,6 +37,7 @@ type alias RegistrationForm =
     , isMale : Bool
     , isFemale : Bool
     , levelOfEducation : String
+    , profession : String
     }
 
 
@@ -52,3 +53,4 @@ validateRegistrationForm =
         |> andMap (field "isMale" bool)
         |> andMap (field "isFemale" bool)
         |> andMap (field "levelOfEducation" string)
+        |> andMap (field "profession" string)

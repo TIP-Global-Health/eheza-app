@@ -5,7 +5,7 @@ module Pages.PatientRegistration.View exposing (view)
 
 import Backend.Child.Model exposing (Gender(..))
 import Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..))
-import Backend.Mother.Model exposing (EducationLevel(..))
+import Backend.Mother.Model exposing (EducationLevel(..), MaritalStatus(..))
 import Form
 import Form.Input
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -51,6 +51,12 @@ view language currentDate user backend cache model =
 
         levelOfEducation =
             Form.getFieldAsString "levelOfEducation" model.registrationForm
+
+        profession =
+            Form.getFieldAsString "profession" model.registrationForm
+
+        maritalStatus =
+            Form.getFieldAsString "maritalStatus" model.registrationForm
 
         getFieldValue field =
             unwrap
@@ -153,7 +159,7 @@ view language currentDate user backend cache model =
                                             translate language <| Translate.ChartPhrase Translate.OneYear
 
                                         else
-                                            translate language <| Translate.ChartPhrase (Translate.XYears delta.years)
+                                            translate language <| Translate.ChartPhrase (Translate.YearsPlural delta.years)
 
                                     else if delta.months > 0 then
                                         if delta.months == 1 then
@@ -175,45 +181,79 @@ view language currentDate user backend cache model =
                                     [ text age ]
                                 ]
 
-                        viewGender =
-                            if delta.years > 12 then
-                                div [ class "ui grid" ]
-                                    [ div [ class "six wide column" ]
-                                        [ text <| translate language Translate.Sex ++ ":" ]
-                                    , Form.Input.checkboxInput isMale [ class "two wide column" ]
-                                    , div [ class "three wide column" ]
-                                        [ text <| translate language (Translate.Gender Male) ]
-                                    , Form.Input.checkboxInput isFemale [ class "two wide column" ]
-                                    , div [ class "two wide column" ]
-                                        [ text <| translate language (Translate.Gender Female) ]
-                                    ]
+                        motherInputs =
+                            let
+                                viewGender =
+                                    div [ class "ui grid" ]
+                                        [ div [ class "six wide column" ]
+                                            [ text <| translate language Translate.Sex ++ ":" ]
+                                        , Form.Input.checkboxInput isMale [ class "two wide column" ]
+                                        , div [ class "three wide column" ]
+                                            [ text <| translate language (Translate.Gender Male) ]
+                                        , Form.Input.checkboxInput isFemale [ class "two wide column" ]
+                                        , div [ class "two wide column" ]
+                                            [ text <| translate language (Translate.Gender Female) ]
+                                        ]
+
+                                viewLevelOfEducation =
+                                    let
+                                        options =
+                                            [ ( "0", translate language <| Translate.LevelOfEducation NoSchooling )
+                                            , ( "1", translate language <| Translate.LevelOfEducation PrimarySchool )
+                                            , ( "2", translate language <| Translate.LevelOfEducation VocationalTrainingSchool )
+                                            , ( "3", translate language <| Translate.LevelOfEducation SecondarySchool )
+                                            , ( "4", translate language <| Translate.LevelOfEducation DiplomaProgram )
+                                            , ( "5", translate language <| Translate.LevelOfEducation HigherEducation )
+                                            , ( "6", translate language <| Translate.LevelOfEducation AdvancedDiploma )
+                                            ]
+                                    in
+                                    div [ class "ui grid" ]
+                                        [ div [ class "six wide column" ]
+                                            [ text <| translate language Translate.LevelOfEducationLabel ]
+                                        , div [ class "ten wide column" ]
+                                            [ Form.Input.selectInput options levelOfEducation [ class "select-input" ] ]
+                                        ]
+
+                                viewProfession =
+                                    div [ class "ui grid" ]
+                                        [ div [ class "six wide column" ]
+                                            [ text <| translate language Translate.Profession ++ ":" ]
+                                        , div [ class "ten wide column" ]
+                                            [ Form.Input.textInput profession [] ]
+                                        ]
+
+                                viewMaritalStatus =
+                                    let
+                                        options =
+                                            [ ( "0", translate language <| Translate.MaritalStatus Divorced )
+                                            , ( "1", translate language <| Translate.MaritalStatus Maried )
+                                            , ( "2", translate language <| Translate.MaritalStatus Single )
+                                            , ( "3", translate language <| Translate.MaritalStatus Widowed )
+                                            ]
+                                    in
+                                    div [ class "ui grid" ]
+                                        [ div [ class "six wide column" ]
+                                            [ text <| translate language Translate.MaritalStatusLabel ]
+                                        , div [ class "ten wide column" ]
+                                            [ Form.Input.selectInput options maritalStatus [ class "select-input" ] ]
+                                        ]
+                            in
+                            [ viewGender
+                            , viewLevelOfEducation
+                            , viewProfession
+                            , viewMaritalStatus
+                            ]
+
+                        childInputs =
+                            [ div [] [ text "Placeholder for child inputs" ] ]
+                    in
+                    viewAge
+                        :: (if delta.years > 12 then
+                                motherInputs
 
                             else
-                                div [] [ text "child" ]
-
-                        viewLevelOfEducation =
-                            let
-                                options =
-                                    [ ( "0", translate language <| Translate.LevelOfEducation NoSchooling )
-                                    , ( "1", translate language <| Translate.LevelOfEducation PrimarySchool )
-                                    , ( "2", translate language <| Translate.LevelOfEducation VocationalTrainingSchool )
-                                    , ( "3", translate language <| Translate.LevelOfEducation SecondarySchool )
-                                    , ( "4", translate language <| Translate.LevelOfEducation DiplomaProgram )
-                                    , ( "5", translate language <| Translate.LevelOfEducation HigherEducation )
-                                    , ( "6", translate language <| Translate.LevelOfEducation AdvancedDiploma )
-                                    ]
-                            in
-                            div [ class "ui grid" ]
-                                [ div [ class "six wide column" ]
-                                    [ text <| translate language Translate.LevelOfEducationLabel ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.selectInput options levelOfEducation [ class "select-input" ] ]
-                                ]
-                    in
-                    [ viewAge
-                    , viewGender
-                    , viewLevelOfEducation
-                    ]
+                                childInputs
+                           )
 
                 Nothing ->
                     []
