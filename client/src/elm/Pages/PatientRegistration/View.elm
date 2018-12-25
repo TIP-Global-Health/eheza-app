@@ -446,6 +446,14 @@ view language currentDate user backend cache model =
                     , div [ class "separator-line" ] []
                     , h3 [ class "ui header" ]
                         [ text <| translate language Translate.AddChild ++ ":" ]
+                    , div [ class "ui grid" ]
+                        [ div [ class "four wide column" ]
+                            [ span [ class "icon-participant mother" ] [] ]
+                        , div [ class "eight wide column add-child-label" ]
+                            [ text <| translate language Translate.AddChildToFamily ]
+                        , div [ class "four wide column" ]
+                            [ div [ class "add-child-icon-wrapper" ] [ span [ class "add-child-icon" ] [] ] ]
+                        ]
                     ]
 
         leftButton =

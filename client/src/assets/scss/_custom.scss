@@ -685,6 +685,40 @@ h3.ui.header {
     margin-bottom: 70px;
   }
 
+  .icon-participant.mother {
+    background-color: white;
+    border: 2px dashed $color-gray;
+    margin-top: 25px;
+    height: 120px;
+    width: 120px;
+  }
+
+  .add-child-label {
+    margin-top: 70px;
+    padding-left: 30px;
+  }
+
+  .add-child-icon-wrapper {
+    height: 50px;
+    border: 2px solid gray;
+    border-radius: 28px;
+    width: 50px;
+    margin-top: 60px;
+    margin-left: 50px;
+
+    .add-child-icon {
+      background: url(#{$img-path}icon-add.svg) no-repeat center;
+      background-size: 62% 62%;
+      display: block;
+      height: 40px;
+      width: 40px;
+      margin-left: 2px;
+      margin-top: 2px;
+    }
+  }
+
+
+
   .ui.grid.photo {
     margin-top: 20px;
   }
