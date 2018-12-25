@@ -2,6 +2,7 @@ module Pages.PatientRegistration.Model exposing
     ( Model
     , Msg(..)
     , RegistrationForm
+    , RegistrationStep(..)
     , emptyModel
     , validateRegistrationForm
     )
@@ -13,18 +14,28 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { registrationForm : Form () RegistrationForm
+    , registrationStep : RegistrationStep
     }
 
 
 emptyModel : Model
 emptyModel =
     { registrationForm = Form.initial [] validateRegistrationForm
+    , registrationStep = First
     }
+
+
+type RegistrationStep
+    = First
+    | Second
+    | Third
 
 
 type Msg
     = MsgRegistrationForm Form.Msg
     | SetActivePage Page
+    | SetRegistrationStep RegistrationStep
+    | Submit
 
 
 type alias RegistrationForm =

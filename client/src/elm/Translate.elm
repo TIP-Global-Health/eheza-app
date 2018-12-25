@@ -153,6 +153,7 @@ type TranslationId
     | Attendance
     | Baby
     | BabyName String
+    | Back
     | BackendError
     | BeginHealthAssessment
     | Born
@@ -201,6 +202,7 @@ type TranslationId
     | FormField String
     | FutureSessions
     | Gender Gender
+    | GenderLabel
     | GoHome
     | HIVStatusLabel
     | HIVStatus HIVStatus
@@ -226,6 +228,7 @@ type TranslationId
     | MuacIndication MuacIndication
     | MyAccount
     | NationalIdNumber
+    | Next
     | NoActiveIncidents
     | NoActivitiesCompleted
     | NoActivitiesCompletedForThisParticipant
@@ -297,8 +300,8 @@ type TranslationId
     | SessionUnauthorized2
     | StartEndDate
     | StartDate
-    | Sex
     | EndDate
+    | Submit
     | Success
     | ThisActionCannotBeUndone
     | ThisClinicHasNoMothers
@@ -580,6 +583,11 @@ translationSet trans =
         BabyName name ->
             { english = "Baby: " ++ name
             , kinyarwanda = Just <| "Umwana: " ++ name
+            }
+
+        Back ->
+            { english = "Back"
+            , kinyarwanda = Nothing
             }
 
         BackendError ->
@@ -924,6 +932,11 @@ translationSet trans =
                     , kinyarwanda = Just "Gore"
                     }
 
+        GenderLabel ->
+            { english = "Gender"
+            , kinyarwanda = Nothing
+            }
+
         GoHome ->
             { english = "Go to main page"
             , kinyarwanda = Just "Kujya ahabanza"
@@ -1123,6 +1136,11 @@ translationSet trans =
 
         NationalIdNumber ->
             { english = "National ID Number"
+            , kinyarwanda = Nothing
+            }
+
+        Next ->
+            { english = "Next"
             , kinyarwanda = Nothing
             }
 
@@ -1491,14 +1509,14 @@ translationSet trans =
             , kinyarwanda = Just "Itariki utangireyeho"
             }
 
-        Sex ->
-            { english = "Gender"
-            , kinyarwanda = Nothing
-            }
-
         EndDate ->
             { english = "End Date"
             , kinyarwanda = Just "Itariki urangirijeho"
+            }
+
+        Submit ->
+            { english = "Submit"
+            , kinyarwanda = Nothing
             }
 
         Success ->

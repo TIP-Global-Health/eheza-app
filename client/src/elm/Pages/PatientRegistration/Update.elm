@@ -11,7 +11,7 @@ update msg model =
     case msg of
         MsgRegistrationForm subMsg ->
             let
-                -- If one checkbox is enabled, disable the other one.
+                -- If one checkbox gets enabled, disable the other one.
                 updatedForm =
                     case subMsg of
                         Form.Input "isMale" Form.Checkbox (Bool True) ->
@@ -27,3 +27,9 @@ update msg model =
 
         SetActivePage page ->
             ( model, Cmd.none, [ App.Model.SetActivePage page ] )
+
+        SetRegistrationStep step ->
+            ( { model | registrationStep = step }, Cmd.none, [] )
+
+        Submit ->
+            ( model, Cmd.none, [] )
