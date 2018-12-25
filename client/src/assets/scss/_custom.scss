@@ -682,7 +682,8 @@ h3.ui.header {
   }
 
   input,
-  input:focus {
+  input:focus,
+  .select-input {
     background: none;
     font-size: 2rem;
     border: 2px solid $color-gray;

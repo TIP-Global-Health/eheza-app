@@ -292,6 +292,7 @@ type TranslationId
     | SessionUnauthorized2
     | StartEndDate
     | StartDate
+    | Sex
     | EndDate
     | Success
     | ThisActionCannotBeUndone
@@ -1437,6 +1438,13 @@ translationSet trans =
         StartDate ->
             { english = "Start Date"
             , kinyarwanda = Just "Itariki utangireyeho"
+            }
+
+        Sex ->
+            { english = "Gender"
+
+            -- TODO: translate
+            , kinyarwanda = Nothing
             }
 
         EndDate ->
