@@ -34,24 +34,6 @@ view language currentDate user backend cache model =
         yearOfBirth =
             Form.getFieldAsString "yearOfBirth" model.registrationForm
 
-        isMale =
-            Form.getFieldAsBool "isMale" model.registrationForm
-
-        isFemale =
-            Form.getFieldAsBool "isFemale" model.registrationForm
-
-        levelOfEducation =
-            Form.getFieldAsString "levelOfEducation" model.registrationForm
-
-        profession =
-            Form.getFieldAsString "profession" model.registrationForm
-
-        maritalStatus =
-            Form.getFieldAsString "maritalStatus" model.registrationForm
-
-        hivStatus =
-            Form.getFieldAsString "hivStatus" model.registrationForm
-
         getFieldValue field =
             unwrap
                 0
@@ -158,6 +140,24 @@ view language currentDate user backend cache model =
                             case maybeAgeDateDelta of
                                 Just delta ->
                                     let
+                                        isMale =
+                                            Form.getFieldAsBool "isMale" model.registrationForm
+
+                                        isFemale =
+                                            Form.getFieldAsBool "isFemale" model.registrationForm
+
+                                        levelOfEducation =
+                                            Form.getFieldAsString "levelOfEducation" model.registrationForm
+
+                                        profession =
+                                            Form.getFieldAsString "profession" model.registrationForm
+
+                                        maritalStatus =
+                                            Form.getFieldAsString "maritalStatus" model.registrationForm
+
+                                        hivStatus =
+                                            Form.getFieldAsString "hivStatus" model.registrationForm
+
                                         viewAge =
                                             let
                                                 age =
@@ -351,8 +351,8 @@ view language currentDate user backend cache model =
                         viewNumberOfChildren =
                             let
                                 options =
-                                    List.repeat 20 "."
-                                        |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
+                                    List.repeat 21 "."
+                                        |> List.indexedMap (\index _ -> ( toString index, toString index ))
                             in
                             div [ class "ui grid" ]
                                 [ div [ class "six wide column" ]
@@ -366,7 +366,7 @@ view language currentDate user backend cache model =
                                 [ div [ class "six wide column" ]
                                     [ text <| translate language Translate.District ++ ":" ]
                                 , div [ class "ten wide column" ]
-                                    [ Form.Input.textInput profession [] ]
+                                    [ Form.Input.textInput district [] ]
                                 ]
 
                         viewSector =
