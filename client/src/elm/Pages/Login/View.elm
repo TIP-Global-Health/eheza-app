@@ -180,7 +180,7 @@ viewWhenLoggedIn language login session =
             [ class "ui fluid primary button"
             , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.PatientRegistartionPage
             ]
-            [ text <| translate language Translate.RegisterAPatient ]
+            [ text <| translate language Translate.RegisterPatient ]
         , logoutButton
         ]
 

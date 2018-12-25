@@ -137,6 +137,7 @@ type TranslationId
     | ActivitiesToComplete Int
     | ActivityProgressReport ActivityType
     | ActivePage Page
+    | AddChild
     | Admin
     | AddressInformation
     | AgeWord
@@ -210,6 +211,7 @@ type TranslationId
     | Gender Gender
     | GenderLabel
     | GoHome
+    | HealthCenterName
     | HIVStatusLabel
     | HIVStatus HIVStatus
     | HouseholdSize
@@ -269,8 +271,9 @@ type TranslationId
     | PreviousFloatMeasurement Float
     | Profession
     | ReadyToBeginSession
-    | RegisterAPatient
-    | RegisterANewPatient
+    | RegisterPatient
+    | RegisterNewPatient
+    | RegistratingHealthCenter
     | ReportAge String
     | ReportDOB String
     | ReportRemaining Int
@@ -530,6 +533,11 @@ translationSet trans =
 
         ActivePage page ->
             translateActivePage page
+
+        AddChild ->
+            { english = "Add a Child"
+            , kinyarwanda = Nothing
+            }
 
         Age months days ->
             { english = toString months ++ " months " ++ toString days ++ " days"
@@ -983,6 +991,11 @@ translationSet trans =
             , kinyarwanda = Just "Kujya ahabanza"
             }
 
+        HealthCenterName ->
+            { english = "Health Center Name"
+            , kinyarwanda = Nothing
+            }
+
         HIVStatusLabel ->
             { english = "HIV Status"
             , kinyarwanda = Nothing
@@ -1347,8 +1360,6 @@ translationSet trans =
 
         Profession ->
             { english = "Profession"
-
-            --TODO: translate
             , kinyarwanda = Nothing
             }
 
@@ -1357,17 +1368,18 @@ translationSet trans =
             , kinyarwanda = Just "Ubu ushobora gutangira ibikorwa byawe."
             }
 
-        RegisterAPatient ->
+        RegisterPatient ->
             { english = "Register a patient"
-
-            -- TODO: add translation
             , kinyarwanda = Nothing
             }
 
-        RegisterANewPatient ->
+        RegisterNewPatient ->
             { english = "Register a new patient"
+            , kinyarwanda = Nothing
+            }
 
-            -- TODO: add translation
+        RegistratingHealthCenter ->
+            { english = "Registrating Health Center"
             , kinyarwanda = Nothing
             }
 

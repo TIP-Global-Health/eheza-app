@@ -426,7 +426,27 @@ view language currentDate user backend cache model =
                     ]
 
                 Third ->
-                    [ div [] [ text "Third" ] ]
+                    let
+                        healthCenterName =
+                            Form.getFieldAsString "healthCenterName" model.registrationForm
+
+                        viewHealthCenterName =
+                            div [ class "ui grid" ]
+                                [ div [ class "six wide column" ]
+                                    [ text <| translate language Translate.HealthCenterName ++ ":" ]
+                                , div [ class "ten wide column" ]
+                                    [ Form.Input.textInput healthCenterName [] ]
+                                ]
+                    in
+                    [ h3 [ class "ui header" ]
+                        [ text <| translate language Translate.RegistratingHealthCenter ++ ":" ]
+                    , Html.map MsgRegistrationForm <|
+                        fieldset [ class "registration-form registrating-health-center" ]
+                            [ viewHealthCenterName ]
+                    , div [ class "separator-line" ] []
+                    , h3 [ class "ui header" ]
+                        [ text <| translate language Translate.AddChild ++ ":" ]
+                    ]
 
         leftButton =
             let
@@ -477,7 +497,7 @@ view language currentDate user backend cache model =
             [ class "ui basic segment head" ]
             [ h1
                 [ class "ui header" ]
-                [ text <| translate language Translate.RegisterANewPatient ]
+                [ text <| translate language Translate.RegisterNewPatient ]
             , a
                 [ class "link-back"
                 , onClick <| SetActivePage LoginPage

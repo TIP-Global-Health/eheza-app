@@ -678,6 +678,13 @@ h3.ui.header {
 
 .ui.form.registration {
 
+  .separator-line {
+    border-top: 2px solid $color-gray;
+    width: 620px;
+    margin-top: 70px;
+    margin-bottom: 70px;
+  }
+
   .ui.grid.photo {
     margin-top: 20px;
   }

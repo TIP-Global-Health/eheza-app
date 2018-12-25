@@ -58,6 +58,7 @@ type alias RegistrationForm =
     , cell : String
     , village : String
     , telephoneNumber : String
+    , healthCenterName : String
     }
 
 
@@ -83,3 +84,4 @@ validateRegistrationForm =
         |> andMap (field "cell" string)
         |> andMap (field "village" string)
         |> andMap (field "telephoneNumber" string)
+        |> andMap (field "healthCenterName" string)
