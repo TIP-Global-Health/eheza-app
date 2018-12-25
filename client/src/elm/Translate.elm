@@ -138,6 +138,7 @@ type TranslationId
     | ActivityProgressReport ActivityType
     | ActivePage Page
     | Admin
+    | AddressInformation
     | AgeWord
     | Age Int Int
     | AgeDays Int
@@ -159,6 +160,7 @@ type TranslationId
     | Born
     | Cancel
     | CentimeterShorthand
+    | Cell
     | ChartPhrase ChartPhrase
     | CheckIn
     | ChildNutritionSignLabel ChildNutritionSign
@@ -172,6 +174,7 @@ type TranslationId
     | Closed
     | ConfirmDeleteTrainingSessions
     | Connected
+    | ContactInformation
     | Continue
     | CreateSession
     | CreateTrainingSessions
@@ -183,6 +186,7 @@ type TranslationId
     | DateOfBirth
     | Days
     | Delete
+    | District
     | DownloadHealthAssessment
     | DownloadSession1
     | DownloadSession2
@@ -195,7 +199,9 @@ type TranslationId
     | ErrorConfigurationError
     | ErrorFetchingCachedSessionTitle
     | ErrorFetchingCachedSessionMessage
+    | FamilyInformation
     | FamilyPlanningSignLabel FamilyPlanningSign
+    | FamilyUbudehe
     | Fetch
     | FirstName
     | FormError (ErrorValue ValidationError)
@@ -206,6 +212,7 @@ type TranslationId
     | GoHome
     | HIVStatusLabel
     | HIVStatus HIVStatus
+    | HouseholdSize
     | HttpError Http.Error
     | KilogramShorthand
     | LastChecked
@@ -243,6 +250,7 @@ type TranslationId
     | NoParticipantsFound
     | NotAvailable
     | NotConnected
+    | NumberOfChildren
     | OK
     | Old
     | OnceYouEndYourSession
@@ -274,6 +282,7 @@ type TranslationId
     | SaveError
     | SearchByName
     | SecondName
+    | Sector
     | SelectClinic
     | SelectLanguage
     | SelectYourClinic
@@ -303,6 +312,7 @@ type TranslationId
     | EndDate
     | Submit
     | Success
+    | TelephoneNumber
     | ThisActionCannotBeUndone
     | ThisClinicHasNoMothers
     | TitleHealthAssessment
@@ -321,6 +331,7 @@ type TranslationId
     | ValidationErrors
     | Version
     | ViewProgressReport
+    | Village
     | WelcomeUser String
     | YouAreNotAnAdmin
     | YouHaveACompletedSession
@@ -342,6 +353,11 @@ translationSet trans =
         Admin ->
             { english = "Administration"
             , kinyarwanda = Just "Abakuriye"
+            }
+
+        AddressInformation ->
+            { english = "Address Information"
+            , kinyarwanda = Nothing
             }
 
         AgeWord ->
@@ -610,6 +626,11 @@ translationSet trans =
             , kinyarwanda = Just "Guhagarika"
             }
 
+        Cell ->
+            { english = "Cell"
+            , kinyarwanda = Nothing
+            }
+
         CentimeterShorthand ->
             { english = "cm"
             , kinyarwanda = Just "cm"
@@ -742,6 +763,11 @@ translationSet trans =
             , kinyarwanda = Just "Ufite interineti (murandasi)"
             }
 
+        ContactInformation ->
+            { english = "Contact Information"
+            , kinyarwanda = Nothing
+            }
+
         Continue ->
             { english = "Continue"
             , kinyarwanda = Just "Gukomeza"
@@ -794,6 +820,11 @@ translationSet trans =
 
         Delete ->
             { english = "Delete"
+            , kinyarwanda = Nothing
+            }
+
+        District ->
+            { english = "District"
             , kinyarwanda = Nothing
             }
 
@@ -862,6 +893,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        FamilyInformation ->
+            { english = "Family Information"
+            , kinyarwanda = Nothing
+            }
+
         FamilyPlanningSignLabel sign ->
             case sign of
                 Condoms ->
@@ -898,6 +934,11 @@ translationSet trans =
                     { english = "None of these"
                     , kinyarwanda = Just "nta buryo bwo kuboneza urubyaro akoresha"
                     }
+
+        FamilyUbudehe ->
+            { english = "Family Ubudehe"
+            , kinyarwanda = Nothing
+            }
 
         Fetch ->
             { english = "Fetch"
@@ -963,6 +1004,11 @@ translationSet trans =
                     { english = "Positive"
                     , kinyarwanda = Nothing
                     }
+
+        HouseholdSize ->
+            { english = "Household Size"
+            , kinyarwanda = Nothing
+            }
 
         HttpError error ->
             translateHttpError error
@@ -1214,6 +1260,11 @@ translationSet trans =
             , kinyarwanda = Just "Ntamurandasi"
             }
 
+        NumberOfChildren ->
+            { english = "Number of Children"
+            , kinyarwanda = Nothing
+            }
+
         OK ->
             { english = "OK"
             , kinyarwanda = Just "Nibyo, yego"
@@ -1373,6 +1424,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Sector ->
+            { english = "Sector"
+            , kinyarwanda = Nothing
+            }
+
         SelectLanguage ->
             { english = "Select language"
             , kinyarwanda = Nothing
@@ -1524,6 +1580,11 @@ translationSet trans =
             , kinyarwanda = Just "Byagezweho"
             }
 
+        TelephoneNumber ->
+            { english = "Telephone Number"
+            , kinyarwanda = Nothing
+            }
+
         ThisActionCannotBeUndone ->
             { english = "This action cannot be undone."
             , kinyarwanda = Nothing
@@ -1613,6 +1674,11 @@ translationSet trans =
         ViewProgressReport ->
             { english = "View Progress Report"
             , kinyarwanda = Just "Garagaza uruhererekane rw'imikurire y'umwana"
+            }
+
+        Village ->
+            { english = "Village"
+            , kinyarwanda = Nothing
             }
 
         WelcomeUser name ->

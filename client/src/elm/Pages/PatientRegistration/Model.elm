@@ -51,6 +51,13 @@ type alias RegistrationForm =
     , profession : String
     , maritalStatus : String
     , hivStatus : String
+    , familyUbudehe : String
+    , numberOfChildren : String
+    , district : String
+    , sector : String
+    , cell : String
+    , village : String
+    , telephoneNumber : String
     }
 
 
@@ -69,3 +76,10 @@ validateRegistrationForm =
         |> andMap (field "profession" string)
         |> andMap (field "maritalStatus" string)
         |> andMap (field "hivStatus" string)
+        |> andMap (field "familyUbudehe" string)
+        |> andMap (field "numberOfChildren" string)
+        |> andMap (field "district" string)
+        |> andMap (field "sector" string)
+        |> andMap (field "cell" string)
+        |> andMap (field "village" string)
+        |> andMap (field "telephoneNumber" string)

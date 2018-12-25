@@ -5,7 +5,7 @@ module Pages.PatientRegistration.View exposing (view)
 
 import Backend.Child.Model exposing (Gender(..))
 import Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..))
-import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..))
+import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Ubudehe(..))
 import Form
 import Form.Input
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -25,15 +25,6 @@ import Utils.Html exposing (script)
 view : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
 view language currentDate user backend cache model =
     let
-        firstName =
-            Form.getFieldAsString "firstName" model.registrationForm
-
-        secondName =
-            Form.getFieldAsString "secondName" model.registrationForm
-
-        nationalIdNumber =
-            Form.getFieldAsString "nationalIdNumber" model.registrationForm
-
         dayOfBirth =
             Form.getFieldAsString "dayOfBirth" model.registrationForm
 
@@ -90,14 +81,23 @@ view language currentDate user backend cache model =
             else
                 Nothing
 
+        emptyOption =
+            ( "", "" )
+
         formContent =
             case model.registrationStep of
                 First ->
                     let
                         staticComponents =
                             let
-                                emptyOption =
-                                    ( "", "" )
+                                firstName =
+                                    Form.getFieldAsString "firstName" model.registrationForm
+
+                                secondName =
+                                    Form.getFieldAsString "secondName" model.registrationForm
+
+                                nationalIdNumber =
+                                    Form.getFieldAsString "nationalIdNumber" model.registrationForm
 
                                 dayOptions =
                                     emptyOption
@@ -240,7 +240,7 @@ view language currentDate user backend cache model =
                                                     in
                                                     div [ class "ui grid" ]
                                                         [ div [ class "six wide column" ]
-                                                            [ text <| translate language Translate.MaritalStatusLabel ]
+                                                            [ text <| translate language Translate.MaritalStatusLabel ++ ":" ]
                                                         , div [ class "ten wide column" ]
                                                             [ Form.Input.selectInput options maritalStatus [ class "select-input" ] ]
                                                         ]
@@ -255,7 +255,7 @@ view language currentDate user backend cache model =
                                                     in
                                                     div [ class "ui grid" ]
                                                         [ div [ class "six wide column" ]
-                                                            [ text <| translate language Translate.HIVStatusLabel ]
+                                                            [ text <| translate language Translate.HIVStatusLabel ++ ":" ]
                                                         , div [ class "ten wide column" ]
                                                             [ Form.Input.selectInput options hivStatus [ class "select-input" ] ]
                                                         ]
@@ -281,7 +281,9 @@ view language currentDate user backend cache model =
                                 Nothing ->
                                     []
                     in
-                    [ viewPhoto language Nothing
+                    [ h3 [ class "ui header" ]
+                        [ text <| translate language Translate.PatientDemographicInformation ++ ":" ]
+                    , viewPhoto language Nothing
                     , Html.map MsgRegistrationForm <|
                         fieldset [ class "registration-form" ] <|
                             staticComponents
@@ -289,7 +291,139 @@ view language currentDate user backend cache model =
                     ]
 
                 Second ->
-                    [ div [] [ text "Second" ] ]
+                    let
+                        familyUbudehe =
+                            Form.getFieldAsString "familyUbudehe" model.registrationForm
+
+                        householdSize =
+                            Form.getFieldAsString "familyUbudehe" model.registrationForm
+
+                        numberOfChildren =
+                            Form.getFieldAsString "numberOfChildren" model.registrationForm
+
+                        district =
+                            Form.getFieldAsString "district" model.registrationForm
+
+                        sector =
+                            Form.getFieldAsString "sector" model.registrationForm
+
+                        cell =
+                            Form.getFieldAsString "cell" model.registrationForm
+
+                        village =
+                            Form.getFieldAsString "village" model.registrationForm
+
+                        telephoneNumber =
+                            Form.getFieldAsString "telephoneNumber" model.registrationForm
+
+                        viewFamilyUbudehe =
+                            let
+                                options =
+                                    -- TODO: verify which values are required and translate.
+                                    [ ( toString Ubudehe1, toString Ubudehe1 )
+                                    , ( toString Ubudehe2, toString Ubudehe2 )
+                                    , ( toString Ubudehe3, toString Ubudehe3 )
+                                    , ( toString Ubudehe4, toString Ubudehe4 )
+                                    ]
+                            in
+                            div [ class "ui grid" ]
+                                [ div [ class "six wide column" ]
+                                    [ text <| translate language Translate.FamilyUbudehe ++ ":" ]
+                                , div [ class "ten wide column" ]
+                                    [ Form.Input.selectInput options familyUbudehe [ class "select-input" ] ]
+                                ]
+
+                        viewHouseholdSize =
+                            let
+                                options =
+                                    emptyOption
+                                        :: (List.repeat 30 "."
+                                                |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
+                                           )
+                            in
+                            div [ class "ui grid" ]
+                                [ div [ class "six wide column" ]
+                                    [ text <| translate language Translate.HouseholdSize ++ ":" ]
+                                , div [ class "four wide column" ]
+                                    [ Form.Input.selectInput options householdSize [] ]
+                                ]
+
+                        viewNumberOfChildren =
+                            let
+                                options =
+                                    List.repeat 20 "."
+                                        |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
+                            in
+                            div [ class "ui grid" ]
+                                [ div [ class "six wide column" ]
+                                    [ text <| translate language Translate.NumberOfChildren ++ ":" ]
+                                , div [ class "four wide column" ]
+                                    [ Form.Input.selectInput options numberOfChildren [] ]
+                                ]
+
+                        viewDistrict =
+                            div [ class "ui grid" ]
+                                [ div [ class "six wide column" ]
+                                    [ text <| translate language Translate.District ++ ":" ]
+                                , div [ class "ten wide column" ]
+                                    [ Form.Input.textInput profession [] ]
+                                ]
+
+                        viewSector =
+                            div [ class "ui grid" ]
+                                [ div [ class "six wide column" ]
+                                    [ text <| translate language Translate.Sector ++ ":" ]
+                                , div [ class "ten wide column" ]
+                                    [ Form.Input.textInput sector [] ]
+                                ]
+
+                        viewCell =
+                            div [ class "ui grid" ]
+                                [ div [ class "six wide column" ]
+                                    [ text <| translate language Translate.Cell ++ ":" ]
+                                , div [ class "ten wide column" ]
+                                    [ Form.Input.textInput cell [] ]
+                                ]
+
+                        viewVillage =
+                            div [ class "ui grid" ]
+                                [ div [ class "six wide column" ]
+                                    [ text <| translate language Translate.Village ++ ":" ]
+                                , div [ class "ten wide column" ]
+                                    [ Form.Input.textInput village [] ]
+                                ]
+
+                        viewTelephoneNumber =
+                            div [ class "ui grid" ]
+                                [ div [ class "six wide column" ]
+                                    [ text <| translate language Translate.TelephoneNumber ++ ":" ]
+                                , div [ class "ten wide column" ]
+                                    [ Form.Input.textInput telephoneNumber [] ]
+                                ]
+                    in
+                    [ h3 [ class "ui header" ]
+                        [ text <| translate language Translate.FamilyInformation ++ ":" ]
+                    , Html.map MsgRegistrationForm <|
+                        fieldset [ class "registration-form family-info" ]
+                            [ viewFamilyUbudehe
+                            , viewHouseholdSize
+                            , viewNumberOfChildren
+                            ]
+                    , h3 [ class "ui header" ]
+                        [ text <| translate language Translate.AddressInformation ++ ":" ]
+                    , Html.map MsgRegistrationForm <|
+                        fieldset [ class "registration-form address-info" ]
+                            [ viewDistrict
+                            , viewSector
+                            , viewCell
+                            , viewVillage
+                            ]
+                    , h3 [ class "ui header" ]
+                        [ text <| translate language Translate.ContactInformation ++ ":" ]
+                    , Html.map MsgRegistrationForm <|
+                        fieldset [ class "registration-form address-info" ]
+                            [ viewTelephoneNumber ]
+                    ]
 
                 Third ->
                     [ div [] [ text "Third" ] ]
@@ -356,10 +490,7 @@ view language currentDate user backend cache model =
             [ class "ui full segment blue" ]
             [ div [ class "content" ]
                 [ div [ class "wrap-list" ]
-                    [ h3
-                        [ class "ui header" ]
-                        [ text <| translate language Translate.PatientDemographicInformation ++ ":" ]
-                    , div [ class "ui form registration" ]
+                    [ div [ class "ui form registration" ]
                         formContent
                     ]
                 ]
