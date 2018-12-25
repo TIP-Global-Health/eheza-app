@@ -543,7 +543,7 @@ ageLines language =
             [ transform "matrix(1 0 0 1 699.7343 525.9767)"
             , class "z-score-white z-score-semibold st20"
             ]
-            [ text <| translate language (Translate.ChartPhrase Translate.TwoYears) ]
+            [ text <| translate language (Translate.ChartPhrase (Translate.XYears 2)) ]
         , text_ [ transform "matrix(1 0 0 1 133.9667 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "1" ]
         , text_ [ transform "matrix(1 0 0 1 159.1552 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "2" ]
         , text_ [ transform "matrix(1 0 0 1 184.3441 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]

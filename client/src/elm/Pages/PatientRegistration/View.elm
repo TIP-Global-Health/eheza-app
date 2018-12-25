@@ -6,11 +6,12 @@ module Pages.PatientRegistration.View exposing (view)
 import Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..))
 import Form
 import Form.Input
-import Gizra.Html exposing (showMaybe)
+import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Maybe.Extra exposing (unwrap)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRegistration.Model exposing (Model, Msg(..))
 import Time.Date
@@ -40,13 +41,20 @@ view language currentDate user backend cache model =
         yearOfBirth =
             Form.getFieldAsString "yearOfBirth" model.registrationForm
 
+        emptyOption =
+            ( "", "" )
+
         dayOptions =
-            List.repeat 31 "."
-                |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
+            emptyOption
+                :: (List.repeat 31 "."
+                        |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
+                   )
 
         monthOptions =
-            List.repeat 12 "."
-                |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
+            emptyOption
+                :: (List.repeat 12 "."
+                        |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
+                   )
 
         currentYear =
             Time.Date.year currentDate
@@ -55,9 +63,74 @@ view language currentDate user backend cache model =
             currentYear - 99
 
         yearOptions =
-            List.repeat 100 "."
-                |> List.indexedMap (\index _ -> ( toString <| index + startFromYear, toString <| index + startFromYear ))
-                |> List.reverse
+            emptyOption
+                :: (List.repeat 100 "."
+                        |> List.indexedMap (\index _ -> ( toString <| index + startFromYear, toString <| index + startFromYear ))
+                        |> List.reverse
+                   )
+
+        viewAge =
+            let
+                getFieldValue field =
+                    unwrap
+                        0
+                        (\value ->
+                            case String.toInt value of
+                                Ok value ->
+                                    value
+
+                                _ ->
+                                    0
+                        )
+                        field.value
+
+                birthDay =
+                    getFieldValue dayOfBirth
+
+                birthMonth =
+                    getFieldValue monthOfBirth
+
+                birthYear =
+                    getFieldValue yearOfBirth
+            in
+            if birthDay > 0 && birthMonth > 0 && birthYear > 0 then
+                let
+                    birthDate =
+                        Time.Date.date birthYear birthMonth birthDay
+
+                    delta =
+                        Time.Date.delta currentDate birthDate
+
+                    age =
+                        if delta.years > 0 then
+                            if delta.years == 1 then
+                                translate language <| Translate.ChartPhrase Translate.OneYear
+
+                            else
+                                translate language <| Translate.ChartPhrase (Translate.XYears delta.years)
+
+                        else if delta.months > 0 then
+                            if delta.months == 1 then
+                                translate language <| Translate.AgeSingleMonthWithoutDay 1
+
+                            else
+                                translate language <| Translate.AgeMonthsWithoutDay delta.month
+
+                        else if delta.days == 1 then
+                            translate language <| Translate.AgeSingleDayWithoutMonth 0 1
+
+                        else
+                            translate language <| Translate.AgeDays delta.days
+                in
+                div [ class "ui grid" ]
+                    [ div [ class "six wide column" ]
+                        [ text "Age:" ]
+                    , div [ class "ten wide column" ]
+                        [ text age ]
+                    ]
+
+            else
+                emptyNode
     in
     div [ class "wrap wrap-alt-2" ]
         [ div
@@ -113,6 +186,7 @@ view language currentDate user backend cache model =
                                     , div [ class "four wide column" ]
                                         [ Form.Input.selectInput yearOptions yearOfBirth [] ]
                                     ]
+                                , viewAge
                                 ]
                         ]
                     ]

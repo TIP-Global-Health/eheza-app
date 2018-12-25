@@ -114,12 +114,12 @@ type ChartPhrase
     | LengthForAgeGirls
     | Months
     | OneYear
-    | TwoYears
     | WeightForAgeBoys
     | WeightForAgeGirls
     | WeightForLengthBoys
     | WeightForLengthGirls
     | WeightKg
+    | XYears Int
     | ZScoreChartsAvailableAt
 
 
@@ -1704,11 +1704,6 @@ translateChartPhrase phrase =
             , kinyarwanda = Just "Umwaka umwe"
             }
 
-        TwoYears ->
-            { english = "2 years"
-            , kinyarwanda = Just "Imyaka 2"
-            }
-
         WeightForAgeBoys ->
             { english = "Weight-for-age BOYS"
             , kinyarwanda = Just "Ibiro ku myaka umuhungu"
@@ -1732,6 +1727,11 @@ translateChartPhrase phrase =
         WeightKg ->
             { english = "Weight (kg)"
             , kinyarwanda = Just "Ibiro kg"
+            }
+
+        XYears value ->
+            { english = toString value ++ " years"
+            , kinyarwanda = Just <| "Imyaka " ++ toString value
             }
 
         ZScoreChartsAvailableAt ->
