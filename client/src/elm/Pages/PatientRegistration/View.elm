@@ -279,7 +279,7 @@ view language currentDate user backend cache model =
     in
     div [ class "wrap wrap-alt-2" ]
         [ div
-            [ class "ui basic head segment" ]
+            [ class "ui basic segment head" ]
             [ h1
                 [ class "ui header" ]
                 [ text <| translate language Translate.RegisterANewPatient ]
@@ -292,9 +292,8 @@ view language currentDate user backend cache model =
                 ]
             ]
         , div
-            [ class "ui full blue segment" ]
-            [ div
-                [ class "full content" ]
+            [ class "ui full segment blue" ]
+            [ div [ class "content" ]
                 [ div [ class "wrap-list" ]
                     [ h3
                         [ class "ui header" ]
@@ -307,6 +306,19 @@ view language currentDate user backend cache model =
                                     ++ dynamicComponents
                         ]
                     ]
+                ]
+            , div [ class "registration-form actions" ]
+                [ button
+                    [ class "ui primary button"
+                    , onClick <| SetActivePage LoginPage
+                    ]
+                    [ text "< Back" ]
+                , button
+                    [ class "ui primary button disabled"
+
+                    -- , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.ClinicsPage Nothing
+                    ]
+                    [ text "Next >" ]
                 ]
             ]
         ]

@@ -670,6 +670,12 @@ h3.ui.header {
   color: $color-text;
 }
 
+.registration-form.actions button {
+  float: left;
+  margin: 0;
+  width: 50%;
+}
+
 .ui.form.registration {
 
   .ui.grid.photo {
