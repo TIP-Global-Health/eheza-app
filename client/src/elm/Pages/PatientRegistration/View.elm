@@ -114,7 +114,7 @@ view language currentDate user backend cache model =
                                 translate language <| Translate.AgeSingleMonthWithoutDay 1
 
                             else
-                                translate language <| Translate.AgeMonthsWithoutDay delta.month
+                                translate language <| Translate.AgeMonthsWithoutDay delta.months
 
                         else if delta.days == 1 then
                             translate language <| Translate.AgeSingleDayWithoutMonth 0 1
