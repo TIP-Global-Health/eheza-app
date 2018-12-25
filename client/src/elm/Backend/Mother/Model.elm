@@ -1,4 +1,4 @@
-module Backend.Mother.Model exposing (EducationLevel(..), MaritalStatus(..), Mother, Ubudehe(..))
+module Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother, Ubudehe(..))
 
 import Backend.Entities exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
@@ -36,3 +36,9 @@ type MaritalStatus
     | Maried
     | Single
     | Widowed
+
+
+type HIVStatus
+    = Negative
+    | NA
+    | Positive

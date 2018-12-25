@@ -5,7 +5,7 @@ module Pages.PatientRegistration.View exposing (view)
 
 import Backend.Child.Model exposing (Gender(..))
 import Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..))
-import Backend.Mother.Model exposing (EducationLevel(..), MaritalStatus(..))
+import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..))
 import Form
 import Form.Input
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -57,6 +57,9 @@ view language currentDate user backend cache model =
 
         maritalStatus =
             Form.getFieldAsString "maritalStatus" model.registrationForm
+
+        hivStatus =
+            Form.getFieldAsString "hivStatus" model.registrationForm
 
         getFieldValue field =
             unwrap
@@ -198,13 +201,13 @@ view language currentDate user backend cache model =
                                 viewLevelOfEducation =
                                     let
                                         options =
-                                            [ ( "0", translate language <| Translate.LevelOfEducation NoSchooling )
-                                            , ( "1", translate language <| Translate.LevelOfEducation PrimarySchool )
-                                            , ( "2", translate language <| Translate.LevelOfEducation VocationalTrainingSchool )
-                                            , ( "3", translate language <| Translate.LevelOfEducation SecondarySchool )
-                                            , ( "4", translate language <| Translate.LevelOfEducation DiplomaProgram )
-                                            , ( "5", translate language <| Translate.LevelOfEducation HigherEducation )
-                                            , ( "6", translate language <| Translate.LevelOfEducation AdvancedDiploma )
+                                            [ ( toString NoSchooling, translate language <| Translate.LevelOfEducation NoSchooling )
+                                            , ( toString PrimarySchool, translate language <| Translate.LevelOfEducation PrimarySchool )
+                                            , ( toString VocationalTrainingSchool, translate language <| Translate.LevelOfEducation VocationalTrainingSchool )
+                                            , ( toString SecondarySchool, translate language <| Translate.LevelOfEducation SecondarySchool )
+                                            , ( toString DiplomaProgram, translate language <| Translate.LevelOfEducation DiplomaProgram )
+                                            , ( toString HigherEducation, translate language <| Translate.LevelOfEducation HigherEducation )
+                                            , ( toString AdvancedDiploma, translate language <| Translate.LevelOfEducation AdvancedDiploma )
                                             ]
                                     in
                                     div [ class "ui grid" ]
@@ -225,10 +228,10 @@ view language currentDate user backend cache model =
                                 viewMaritalStatus =
                                     let
                                         options =
-                                            [ ( "0", translate language <| Translate.MaritalStatus Divorced )
-                                            , ( "1", translate language <| Translate.MaritalStatus Maried )
-                                            , ( "2", translate language <| Translate.MaritalStatus Single )
-                                            , ( "3", translate language <| Translate.MaritalStatus Widowed )
+                                            [ ( toString Divorced, translate language <| Translate.MaritalStatus Divorced )
+                                            , ( toString Maried, translate language <| Translate.MaritalStatus Maried )
+                                            , ( toString Single, translate language <| Translate.MaritalStatus Single )
+                                            , ( toString Widowed, translate language <| Translate.MaritalStatus Widowed )
                                             ]
                                     in
                                     div [ class "ui grid" ]
@@ -237,11 +240,27 @@ view language currentDate user backend cache model =
                                         , div [ class "ten wide column" ]
                                             [ Form.Input.selectInput options maritalStatus [ class "select-input" ] ]
                                         ]
+
+                                viewHIVStatus =
+                                    let
+                                        options =
+                                            [ ( toString NA, translate language <| Translate.HIVStatus NA )
+                                            , ( toString Negative, translate language <| Translate.HIVStatus Negative )
+                                            , ( toString Positive, translate language <| Translate.HIVStatus Positive )
+                                            ]
+                                    in
+                                    div [ class "ui grid" ]
+                                        [ div [ class "six wide column" ]
+                                            [ text <| translate language Translate.HIVStatusLabel ]
+                                        , div [ class "ten wide column" ]
+                                            [ Form.Input.selectInput options hivStatus [ class "select-input" ] ]
+                                        ]
                             in
                             [ viewGender
                             , viewLevelOfEducation
                             , viewProfession
                             , viewMaritalStatus
+                            , viewHIVStatus
                             ]
 
                         childInputs =

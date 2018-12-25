@@ -4,7 +4,7 @@ import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherA
 import Backend.Child.Model exposing (Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
-import Backend.Mother.Model exposing (EducationLevel(..), MaritalStatus(..))
+import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..))
 import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
@@ -202,6 +202,8 @@ type TranslationId
     | FutureSessions
     | Gender Gender
     | GoHome
+    | HIVStatusLabel
+    | HIVStatus HIVStatus
     | HttpError Http.Error
     | KilogramShorthand
     | LastChecked
@@ -926,6 +928,28 @@ translationSet trans =
             { english = "Go to main page"
             , kinyarwanda = Just "Kujya ahabanza"
             }
+
+        HIVStatusLabel ->
+            { english = "HIV Status"
+            , kinyarwanda = Nothing
+            }
+
+        HIVStatus status ->
+            case status of
+                Negative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                NA ->
+                    { english = "N/A"
+                    , kinyarwanda = Nothing
+                    }
+
+                Positive ->
+                    { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
 
         HttpError error ->
             translateHttpError error
