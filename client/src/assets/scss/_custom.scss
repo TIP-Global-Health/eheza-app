@@ -748,6 +748,12 @@ h3.ui.header {
   .select-year-input {
     width: 120px;
   }
+
+  .required:before {
+    content: " *";
+    margin-left: -20px;
+    padding-right: 10px;
+  }
 }
 
 input::placeholder {

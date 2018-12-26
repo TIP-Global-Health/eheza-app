@@ -148,13 +148,13 @@ view language currentDate user backend cache model =
                                         |> List.reverse
                             in
                             [ div [ class "ui grid" ]
-                                [ div [ class "six wide column" ]
+                                [ div [ class "six wide column required" ]
                                     [ text <| translate language Translate.FirstName ++ ":" ]
                                 , div [ class "ten wide column" ]
                                     [ Form.Input.textInput firstName [] ]
                                 ]
                             , div [ class "ui grid" ]
-                                [ div [ class "six wide column" ]
+                                [ div [ class "six wide column required" ]
                                     [ text <| translate language Translate.SecondName ++ ":" ]
                                 , div [ class "ten wide column" ]
                                     [ Form.Input.textInput secondName [] ]
@@ -166,7 +166,7 @@ view language currentDate user backend cache model =
                                     [ Form.Input.textInput nationalIdNumber [] ]
                                 ]
                             , div [ class "ui grid" ]
-                                [ div [ class "six wide column" ]
+                                [ div [ class "six wide column required" ]
                                     [ text <| translate language Translate.DateOfBirth ++ ":" ]
                                 , div [ class "three wide column" ]
                                     [ Form.Input.selectInput dayOptions dayOfBirth [ class "select-day-input" ] ]
@@ -238,7 +238,7 @@ view language currentDate user backend cache model =
                                                             ]
                                                     in
                                                     div [ class "ui grid" ]
-                                                        [ div [ class "six wide column" ]
+                                                        [ div [ class "six wide column required" ]
                                                             [ text <| translate language Translate.LevelOfEducationLabel ]
                                                         , div [ class "ten wide column" ]
                                                             [ Form.Input.selectInput options levelOfEducation [ class "select-input" ] ]
@@ -278,7 +278,7 @@ view language currentDate user backend cache model =
                                                             ]
                                                     in
                                                     div [ class "ui grid" ]
-                                                        [ div [ class "six wide column" ]
+                                                        [ div [ class "six wide column required" ]
                                                             [ text <| translate language Translate.HIVStatusLabel ++ ":" ]
                                                         , div [ class "ten wide column" ]
                                                             [ Form.Input.selectInput options hivStatus [ class "select-input" ] ]
@@ -327,7 +327,7 @@ view language currentDate user backend cache model =
                                     ]
                             in
                             div [ class "ui grid" ]
-                                [ div [ class "six wide column" ]
+                                [ div [ class "six wide column required" ]
                                     [ text <| translate language Translate.FamilyUbudehe ++ ":" ]
                                 , div [ class "ten wide column" ]
                                     [ Form.Input.selectInput options familyUbudehe [ class "select-input" ] ]
@@ -355,7 +355,7 @@ view language currentDate user backend cache model =
                                         |> List.indexedMap (\index _ -> ( toString index, toString index ))
                             in
                             div [ class "ui grid" ]
-                                [ div [ class "six wide column" ]
+                                [ div [ class "six wide column required" ]
                                     [ text <| translate language Translate.NumberOfChildren ++ ":" ]
                                 , div [ class "four wide column" ]
                                     [ Form.Input.selectInput options numberOfChildren [] ]
@@ -363,7 +363,7 @@ view language currentDate user backend cache model =
 
                         viewDistrict =
                             div [ class "ui grid" ]
-                                [ div [ class "six wide column" ]
+                                [ div [ class "six wide column required" ]
                                     [ text <| translate language Translate.District ++ ":" ]
                                 , div [ class "ten wide column" ]
                                     [ Form.Input.textInput district [] ]
@@ -371,7 +371,7 @@ view language currentDate user backend cache model =
 
                         viewSector =
                             div [ class "ui grid" ]
-                                [ div [ class "six wide column" ]
+                                [ div [ class "six wide column required" ]
                                     [ text <| translate language Translate.Sector ++ ":" ]
                                 , div [ class "ten wide column" ]
                                     [ Form.Input.textInput sector [] ]
@@ -379,7 +379,7 @@ view language currentDate user backend cache model =
 
                         viewCell =
                             div [ class "ui grid" ]
-                                [ div [ class "six wide column" ]
+                                [ div [ class "six wide column required" ]
                                     [ text <| translate language Translate.Cell ++ ":" ]
                                 , div [ class "ten wide column" ]
                                     [ Form.Input.textInput cell [] ]
@@ -387,7 +387,7 @@ view language currentDate user backend cache model =
 
                         viewVillage =
                             div [ class "ui grid" ]
-                                [ div [ class "six wide column" ]
+                                [ div [ class "six wide column required" ]
                                     [ text <| translate language Translate.Village ++ ":" ]
                                 , div [ class "ten wide column" ]
                                     [ Form.Input.textInput village [] ]
