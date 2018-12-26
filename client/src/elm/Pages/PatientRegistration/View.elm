@@ -25,6 +25,15 @@ import Utils.Html exposing (script)
 view : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
 view language currentDate user backend cache model =
     let
+        firstName =
+            Form.getFieldAsString "firstName" model.registrationForm
+
+        secondName =
+            Form.getFieldAsString "secondName" model.registrationForm
+
+        nationalIdNumber =
+            Form.getFieldAsString "nationalIdNumber" model.registrationForm
+
         dayOfBirth =
             Form.getFieldAsString "dayOfBirth" model.registrationForm
 
@@ -34,6 +43,53 @@ view language currentDate user backend cache model =
         yearOfBirth =
             Form.getFieldAsString "yearOfBirth" model.registrationForm
 
+        isMale =
+            Form.getFieldAsBool "isMale" model.registrationForm
+
+        isFemale =
+            Form.getFieldAsBool "isFemale" model.registrationForm
+
+        levelOfEducation =
+            Form.getFieldAsString "levelOfEducation" model.registrationForm
+
+        profession =
+            Form.getFieldAsString "profession" model.registrationForm
+
+        maritalStatus =
+            Form.getFieldAsString "maritalStatus" model.registrationForm
+
+        hivStatus =
+            Form.getFieldAsString "hivStatus" model.registrationForm
+
+        -- END STEP 1 FIELDS --
+        familyUbudehe =
+            Form.getFieldAsString "familyUbudehe" model.registrationForm
+
+        householdSize =
+            Form.getFieldAsString "familyUbudehe" model.registrationForm
+
+        numberOfChildren =
+            Form.getFieldAsString "numberOfChildren" model.registrationForm
+
+        district =
+            Form.getFieldAsString "district" model.registrationForm
+
+        sector =
+            Form.getFieldAsString "sector" model.registrationForm
+
+        cell =
+            Form.getFieldAsString "cell" model.registrationForm
+
+        village =
+            Form.getFieldAsString "village" model.registrationForm
+
+        telephoneNumber =
+            Form.getFieldAsString "telephoneNumber" model.registrationForm
+
+        healthCenterName =
+            Form.getFieldAsString "healthCenterName" model.registrationForm
+
+        -- END STEP 3 FIELDS --
         getFieldValue field =
             unwrap
                 0
@@ -72,26 +128,13 @@ view language currentDate user backend cache model =
                     let
                         staticComponents =
                             let
-                                firstName =
-                                    Form.getFieldAsString "firstName" model.registrationForm
-
-                                secondName =
-                                    Form.getFieldAsString "secondName" model.registrationForm
-
-                                nationalIdNumber =
-                                    Form.getFieldAsString "nationalIdNumber" model.registrationForm
-
                                 dayOptions =
-                                    emptyOption
-                                        :: (List.repeat 31 "."
-                                                |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
-                                           )
+                                    List.repeat 31 "."
+                                        |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
 
                                 monthOptions =
-                                    emptyOption
-                                        :: (List.repeat 12 "."
-                                                |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
-                                           )
+                                    List.repeat 12 "."
+                                        |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
 
                                 currentYear =
                                     Time.Date.year currentDate
@@ -100,11 +143,9 @@ view language currentDate user backend cache model =
                                     currentYear - 99
 
                                 yearOptions =
-                                    emptyOption
-                                        :: (List.repeat 100 "."
-                                                |> List.indexedMap (\index _ -> ( toString <| index + startFromYear, toString <| index + startFromYear ))
-                                                |> List.reverse
-                                           )
+                                    List.repeat 100 "."
+                                        |> List.indexedMap (\index _ -> ( toString <| index + startFromYear, toString <| index + startFromYear ))
+                                        |> List.reverse
                             in
                             [ div [ class "ui grid" ]
                                 [ div [ class "six wide column" ]
@@ -140,24 +181,6 @@ view language currentDate user backend cache model =
                             case maybeAgeDateDelta of
                                 Just delta ->
                                     let
-                                        isMale =
-                                            Form.getFieldAsBool "isMale" model.registrationForm
-
-                                        isFemale =
-                                            Form.getFieldAsBool "isFemale" model.registrationForm
-
-                                        levelOfEducation =
-                                            Form.getFieldAsString "levelOfEducation" model.registrationForm
-
-                                        profession =
-                                            Form.getFieldAsString "profession" model.registrationForm
-
-                                        maritalStatus =
-                                            Form.getFieldAsString "maritalStatus" model.registrationForm
-
-                                        hivStatus =
-                                            Form.getFieldAsString "hivStatus" model.registrationForm
-
                                         viewAge =
                                             let
                                                 age =
@@ -232,11 +255,12 @@ view language currentDate user backend cache model =
                                                 viewMaritalStatus =
                                                     let
                                                         options =
-                                                            [ ( toString Divorced, translate language <| Translate.MaritalStatus Divorced )
-                                                            , ( toString Maried, translate language <| Translate.MaritalStatus Maried )
-                                                            , ( toString Single, translate language <| Translate.MaritalStatus Single )
-                                                            , ( toString Widowed, translate language <| Translate.MaritalStatus Widowed )
-                                                            ]
+                                                            emptyOption
+                                                                :: [ ( toString Divorced, translate language <| Translate.MaritalStatus Divorced )
+                                                                   , ( toString Maried, translate language <| Translate.MaritalStatus Maried )
+                                                                   , ( toString Single, translate language <| Translate.MaritalStatus Single )
+                                                                   , ( toString Widowed, translate language <| Translate.MaritalStatus Widowed )
+                                                                   ]
                                                     in
                                                     div [ class "ui grid" ]
                                                         [ div [ class "six wide column" ]
@@ -292,30 +316,6 @@ view language currentDate user backend cache model =
 
                 Second ->
                     let
-                        familyUbudehe =
-                            Form.getFieldAsString "familyUbudehe" model.registrationForm
-
-                        householdSize =
-                            Form.getFieldAsString "familyUbudehe" model.registrationForm
-
-                        numberOfChildren =
-                            Form.getFieldAsString "numberOfChildren" model.registrationForm
-
-                        district =
-                            Form.getFieldAsString "district" model.registrationForm
-
-                        sector =
-                            Form.getFieldAsString "sector" model.registrationForm
-
-                        cell =
-                            Form.getFieldAsString "cell" model.registrationForm
-
-                        village =
-                            Form.getFieldAsString "village" model.registrationForm
-
-                        telephoneNumber =
-                            Form.getFieldAsString "telephoneNumber" model.registrationForm
-
                         viewFamilyUbudehe =
                             let
                                 options =
@@ -427,9 +427,6 @@ view language currentDate user backend cache model =
 
                 Third ->
                     let
-                        healthCenterName =
-                            Form.getFieldAsString "healthCenterName" model.registrationForm
-
                         viewHealthCenterName =
                             div [ class "ui grid" ]
                                 [ div [ class "six wide column" ]
@@ -477,25 +474,42 @@ view language currentDate user backend cache model =
 
         rightButton =
             let
-                ( label, action ) =
+                isFieldSet field =
+                    case field.value of
+                        Nothing ->
+                            False
+
+                        Just "" ->
+                            False
+
+                        _ ->
+                            True
+
+                ( label, action, disabled ) =
                     case model.registrationStep of
                         First ->
                             ( Translate.Next
                             , SetRegistrationStep Second
+                            , List.all isFieldSet [ firstName, secondName ] |> not
                             )
 
                         Second ->
                             ( Translate.Next
                             , SetRegistrationStep Third
+                            , List.all isFieldSet [ district, sector, cell, village ] |> not
                             )
 
                         Third ->
                             ( Translate.Submit
                             , Submit
+                            , False
                             )
             in
             button
-                [ class "ui primary button"
+                [ classList
+                    [ ( "ui primary button", True )
+                    , ( "disabled", disabled )
+                    ]
                 , onClick action
                 ]
                 [ text <| translate language label ++ " >" ]
