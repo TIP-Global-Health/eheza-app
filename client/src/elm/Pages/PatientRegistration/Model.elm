@@ -7,20 +7,24 @@ module Pages.PatientRegistration.Model exposing
     , validateRegistrationForm
     )
 
+import Backend.Measurement.Model exposing (PhotoValue)
 import Form exposing (Form)
 import Form.Validate exposing (Validation, andMap, bool, field, string, succeed)
+import Measurement.Model exposing (DropZoneFile)
 import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { registrationForm : Form () RegistrationForm
+    { photo : Maybe PhotoValue
+    , registrationForm : Form () RegistrationForm
     , registrationStep : RegistrationStep
     }
 
 
 emptyModel : Model
 emptyModel =
-    { registrationForm = Form.initial [] validateRegistrationForm
+    { photo = Nothing
+    , registrationForm = Form.initial [] validateRegistrationForm
     , registrationStep = First
     }
 
@@ -32,7 +36,8 @@ type RegistrationStep
 
 
 type Msg
-    = MsgRegistrationForm Form.Msg
+    = DropZoneComplete DropZoneFile
+    | MsgRegistrationForm Form.Msg
     | SetActivePage Page
     | SetRegistrationStep RegistrationStep
     | Submit

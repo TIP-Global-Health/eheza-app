@@ -9,6 +9,21 @@ import Pages.PatientRegistration.Model exposing (..)
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update msg model =
     case msg of
+        DropZoneComplete result ->
+            -- The `fid` being Nothing signifies that we haven't uploaded this to
+            -- the backend yet, so we don't know what file ID the backend will
+            -- ultimately give it.
+            ( { model
+                | photo =
+                    Just
+                        { url = result.url
+                        , fid = Nothing
+                        }
+              }
+            , Cmd.none
+            , []
+            )
+
         MsgRegistrationForm subMsg ->
             let
                 -- If one checkbox gets enabled, disable the other one.

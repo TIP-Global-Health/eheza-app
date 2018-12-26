@@ -4,6 +4,7 @@ module Pages.PatientRegistration.View exposing (view)
 -}
 
 import Backend.Child.Model exposing (Gender(..))
+import Backend.Measurement.Model exposing (PhotoValue)
 import Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..))
 import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Ubudehe(..))
 import Form
@@ -13,7 +14,9 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Json.Decode
 import Maybe.Extra exposing (unwrap)
+import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRegistration.Model exposing (Model, Msg(..), RegistrationStep(..))
 import Time.Date
@@ -318,7 +321,7 @@ view language currentDate user backend cache model =
                     in
                     [ h3 [ class "ui header" ]
                         [ text <| translate language Translate.PatientDemographicInformation ++ ":" ]
-                    , viewPhoto language Nothing
+                    , viewPhoto language model.photo
                     , Html.map MsgRegistrationForm <|
                         fieldset [ class "registration-form" ] <|
                             staticComponents
@@ -556,7 +559,7 @@ view language currentDate user backend cache model =
         ]
 
 
-viewPhoto : Language -> Maybe String -> Html Msg
+viewPhoto : Language -> Maybe PhotoValue -> Html Msg
 viewPhoto language photo =
     div
         [ class "ui grid photo" ]
@@ -567,8 +570,7 @@ viewPhoto language photo =
         , div
             [ id "dropzone"
             , class "eight wide column dropzone"
-
-            -- , on "dropzonecomplete" (Json.Decode.map DropZoneComplete decodeDropZoneFile)
+            , on "dropzonecomplete" (Json.Decode.map DropZoneComplete decodeDropZoneFile)
             ]
             [ div
                 [ class "dz-message"
@@ -586,11 +588,11 @@ viewPhoto language photo =
         ]
 
 
-viewPhotoThumb : String -> Html any
+viewPhotoThumb : PhotoValue -> Html any
 viewPhotoThumb photo =
     div []
         [ img
-            [ src photo
+            [ src photo.url
             , class "ui small image"
             ]
             []
