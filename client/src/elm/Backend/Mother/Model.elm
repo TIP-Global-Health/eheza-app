@@ -33,12 +33,12 @@ type EducationLevel
 
 type MaritalStatus
     = Divorced
-    | Maried
+    | Married
     | Single
     | Widowed
 
 
 type HIVStatus
-    = Negative
-    | NA
+    = NA
+    | Negative
     | Positive

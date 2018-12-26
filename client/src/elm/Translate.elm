@@ -1109,8 +1109,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                Maried ->
-                    { english = "Maried"
+                Married ->
+                    { english = "Married"
                     , kinyarwanda = Nothing
                     }
 

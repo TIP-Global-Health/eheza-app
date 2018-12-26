@@ -270,7 +270,7 @@ view language currentDate user backend cache model =
                                                         options =
                                                             emptyOption
                                                                 :: [ ( toString Divorced, translate language <| Translate.MaritalStatus Divorced )
-                                                                   , ( toString Maried, translate language <| Translate.MaritalStatus Maried )
+                                                                   , ( toString Married, translate language <| Translate.MaritalStatus Married )
                                                                    , ( toString Single, translate language <| Translate.MaritalStatus Single )
                                                                    , ( toString Widowed, translate language <| Translate.MaritalStatus Widowed )
                                                                    ]
