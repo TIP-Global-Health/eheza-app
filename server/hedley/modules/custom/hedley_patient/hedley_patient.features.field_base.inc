@@ -207,7 +207,7 @@ function hedley_patient_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'o' => 'Divorced',
+        0 => 'Divorced',
         1 => 'Maried',
         2 => 'Single',
         3 => 'Widowed',

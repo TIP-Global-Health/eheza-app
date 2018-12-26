@@ -143,18 +143,7 @@ function _hedley_migrate_preprocess_xss($entity_type, $bundle, $entity) {
       continue;
     }
 
-    // Handle each column.
-    foreach ($field['columns'] as $column => $column_info) {
-      if ($column == 'format') {
-        // We should not allow full html format for XSS attempt.
-        if ($wrapper->{$field_name}->format->value() == 'full_html') {
-          $wrapper->{$field_name}->format->set('filtered_html');
-        }
-      }
-      else {
-        $wrapper->{$field_name}->{$column}->set("<script>alert('XSS-{$entity_type}-{$bundle}-{$field_name}')</script>");
-      }
-    }
+    $wrapper->{$field_name}->set("<script>alert('XSS-{$entity_type}-{$bundle}-{$field_name}')</script>");
   }
 }
 
@@ -190,6 +179,15 @@ function _hedley_migrate_preprocess_child($node, Generator $faker) {
 function _hedley_migrate_preprocess_mother($node, Generator $faker) {
   $wrapper = entity_metadata_wrapper('node', $node);
   $wrapper->title->set($faker->firstNameFemale);
+  $wrapper->field_first_name->set($faker->firstNameFemale);
+  $wrapper->field_second_name->set($faker->lastName);
+  $wrapper->field_national_id_number->set($faker->numberBetween(1000, 9999));
+  $wrapper->field_profession->set($faker->jobTitle);
+  $wrapper->field_marital_status->set($faker->numberBetween(0, 3));
+  $wrapper->field_hiv_status->set($faker->numberBetween(0, 2));
+  $wrapper->field_household_size->set($faker->numberBetween(0, 30));
+  $wrapper->field_number_of_children->set($faker->numberBetween(0, 20));
+  $wrapper->field_phone_number->set($faker->phoneNumber);
 }
 
 /**
@@ -202,7 +200,7 @@ function _hedley_migrate_preprocess_weight($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
 
   // Adjust children's weight to realistic figures.
-  $wrapper->field_weight->set(rand(0.5, 60));
+  $wrapper->field_weight->set(rand(1, 60));
 }
 
 /**
