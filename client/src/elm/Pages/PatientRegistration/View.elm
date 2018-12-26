@@ -25,6 +25,7 @@ import Utils.Html exposing (script)
 view : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
 view language currentDate user backend cache model =
     let
+        -- FORM FIELDS --
         firstName =
             Form.getFieldAsString "firstName" model.registrationForm
 
@@ -86,33 +87,35 @@ view language currentDate user backend cache model =
         telephoneNumber =
             Form.getFieldAsString "telephoneNumber" model.registrationForm
 
+        -- END STEP 2 FIELDS --
         healthCenterName =
             Form.getFieldAsString "healthCenterName" model.registrationForm
 
         -- END STEP 3 FIELDS --
-        getFieldValue field =
-            unwrap
-                0
-                (\value ->
-                    case String.toInt value of
-                        Ok value ->
-                            value
-
-                        _ ->
-                            0
-                )
-                field.value
-
-        birthDay =
-            getFieldValue dayOfBirth
-
-        birthMonth =
-            getFieldValue monthOfBirth
-
-        birthYear =
-            getFieldValue yearOfBirth
-
         maybeAgeDateDelta =
+            let
+                getFieldValue field =
+                    unwrap
+                        0
+                        (\value ->
+                            case String.toInt value of
+                                Ok value ->
+                                    value
+
+                                _ ->
+                                    0
+                        )
+                        field.value
+
+                birthDay =
+                    getFieldValue dayOfBirth
+
+                birthMonth =
+                    getFieldValue monthOfBirth
+
+                birthYear =
+                    getFieldValue yearOfBirth
+            in
             if birthDay > 0 && birthMonth > 0 && birthYear > 0 then
                 Time.Date.delta currentDate (Time.Date.date birthYear birthMonth birthDay) |> Just
 
@@ -129,12 +132,16 @@ view language currentDate user backend cache model =
                         staticComponents =
                             let
                                 dayOptions =
-                                    List.repeat 31 "."
-                                        |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
+                                    emptyOption
+                                        :: (List.repeat 31 "."
+                                                |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
+                                           )
 
                                 monthOptions =
-                                    List.repeat 12 "."
-                                        |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
+                                    emptyOption
+                                        :: (List.repeat 12 "."
+                                                |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
+                                           )
 
                                 currentYear =
                                     Time.Date.year currentDate
@@ -143,9 +150,11 @@ view language currentDate user backend cache model =
                                     currentYear - 99
 
                                 yearOptions =
-                                    List.repeat 100 "."
-                                        |> List.indexedMap (\index _ -> ( toString <| index + startFromYear, toString <| index + startFromYear ))
-                                        |> List.reverse
+                                    emptyOption
+                                        :: (List.repeat 100 "."
+                                                |> List.indexedMap (\index _ -> ( toString <| index + startFromYear, toString <| index + startFromYear ))
+                                                |> List.reverse
+                                           )
                             in
                             [ div [ class "ui grid" ]
                                 [ div [ class "six wide column required" ]
@@ -228,14 +237,15 @@ view language currentDate user backend cache model =
                                                 viewLevelOfEducation =
                                                     let
                                                         options =
-                                                            [ ( toString NoSchooling, translate language <| Translate.LevelOfEducation NoSchooling )
-                                                            , ( toString PrimarySchool, translate language <| Translate.LevelOfEducation PrimarySchool )
-                                                            , ( toString VocationalTrainingSchool, translate language <| Translate.LevelOfEducation VocationalTrainingSchool )
-                                                            , ( toString SecondarySchool, translate language <| Translate.LevelOfEducation SecondarySchool )
-                                                            , ( toString DiplomaProgram, translate language <| Translate.LevelOfEducation DiplomaProgram )
-                                                            , ( toString HigherEducation, translate language <| Translate.LevelOfEducation HigherEducation )
-                                                            , ( toString AdvancedDiploma, translate language <| Translate.LevelOfEducation AdvancedDiploma )
-                                                            ]
+                                                            emptyOption
+                                                                :: [ ( toString NoSchooling, translate language <| Translate.LevelOfEducation NoSchooling )
+                                                                   , ( toString PrimarySchool, translate language <| Translate.LevelOfEducation PrimarySchool )
+                                                                   , ( toString VocationalTrainingSchool, translate language <| Translate.LevelOfEducation VocationalTrainingSchool )
+                                                                   , ( toString SecondarySchool, translate language <| Translate.LevelOfEducation SecondarySchool )
+                                                                   , ( toString DiplomaProgram, translate language <| Translate.LevelOfEducation DiplomaProgram )
+                                                                   , ( toString HigherEducation, translate language <| Translate.LevelOfEducation HigherEducation )
+                                                                   , ( toString AdvancedDiploma, translate language <| Translate.LevelOfEducation AdvancedDiploma )
+                                                                   ]
                                                     in
                                                     div [ class "ui grid" ]
                                                         [ div [ class "six wide column required" ]
@@ -272,10 +282,11 @@ view language currentDate user backend cache model =
                                                 viewHIVStatus =
                                                     let
                                                         options =
-                                                            [ ( toString NA, translate language <| Translate.HIVStatus NA )
-                                                            , ( toString Negative, translate language <| Translate.HIVStatus Negative )
-                                                            , ( toString Positive, translate language <| Translate.HIVStatus Positive )
-                                                            ]
+                                                            emptyOption
+                                                                :: [ ( toString NA, translate language <| Translate.HIVStatus NA )
+                                                                   , ( toString Negative, translate language <| Translate.HIVStatus Negative )
+                                                                   , ( toString Positive, translate language <| Translate.HIVStatus Positive )
+                                                                   ]
                                                     in
                                                     div [ class "ui grid" ]
                                                         [ div [ class "six wide column required" ]
@@ -320,11 +331,12 @@ view language currentDate user backend cache model =
                             let
                                 options =
                                     -- TODO: verify which values are required and translate.
-                                    [ ( toString Ubudehe1, toString Ubudehe1 )
-                                    , ( toString Ubudehe2, toString Ubudehe2 )
-                                    , ( toString Ubudehe3, toString Ubudehe3 )
-                                    , ( toString Ubudehe4, toString Ubudehe4 )
-                                    ]
+                                    emptyOption
+                                        :: [ ( toString Ubudehe1, toString Ubudehe1 )
+                                           , ( toString Ubudehe2, toString Ubudehe2 )
+                                           , ( toString Ubudehe3, toString Ubudehe3 )
+                                           , ( toString Ubudehe4, toString Ubudehe4 )
+                                           ]
                             in
                             div [ class "ui grid" ]
                                 [ div [ class "six wide column required" ]
@@ -351,8 +363,10 @@ view language currentDate user backend cache model =
                         viewNumberOfChildren =
                             let
                                 options =
-                                    List.repeat 21 "."
-                                        |> List.indexedMap (\index _ -> ( toString index, toString index ))
+                                    emptyOption
+                                        :: (List.repeat 21 "."
+                                                |> List.indexedMap (\index _ -> ( toString index, toString index ))
+                                           )
                             in
                             div [ class "ui grid" ]
                                 [ div [ class "six wide column required" ]
@@ -490,13 +504,13 @@ view language currentDate user backend cache model =
                         First ->
                             ( Translate.Next
                             , SetRegistrationStep Second
-                            , List.all isFieldSet [ firstName, secondName ] |> not
+                            , not <| List.all isFieldSet [ firstName, secondName, dayOfBirth, monthOfBirth, yearOfBirth, levelOfEducation, hivStatus ]
                             )
 
                         Second ->
                             ( Translate.Next
                             , SetRegistrationStep Third
-                            , List.all isFieldSet [ district, sector, cell, village ] |> not
+                            , not <| List.all isFieldSet [ familyUbudehe, numberOfChildren, district, sector, cell, village ]
                             )
 
                         Third ->
