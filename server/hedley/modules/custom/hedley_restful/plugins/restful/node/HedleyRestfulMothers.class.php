@@ -20,6 +20,14 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       'callback' => 'static::getType',
     ];
 
+    $public_fields['first_name'] = [
+      'property' => 'field_first_name',
+    ];
+
+    $public_fields['second_name'] = [
+      'property' => 'field_second_name',
+    ];
+
     $date_field_names = [];
 
     foreach ($date_field_names as $field_name) {
@@ -51,19 +59,43 @@ class HedleyRestfulMothers extends HedleyRestfulEntityBaseNode {
       ];
     }
 
-    $public_fields['children'] = [
-      'property' => 'nid',
-      'process_callbacks' => [
-        [$this, 'getChildren'],
-      ],
-    ];
-
     $public_fields['ubudehe'] = [
       'property' => 'field_ubudehe',
     ];
 
     $public_fields['education_level'] = [
       'property' => 'field_education_level',
+    ];
+
+    $public_fields['profession'] = [
+      'property' => 'field_profession',
+    ];
+
+    $public_fields['marital_status'] = [
+      'property' => 'field_marital_status',
+    ];
+
+    $public_fields['hiv_status'] = [
+      'property' => 'field_hiv_status',
+    ];
+
+    $public_fields['household_size'] = [
+      'property' => 'field_household_size',
+    ];
+
+    $public_fields['phone_number'] = [
+      'property' => 'field_phone_number',
+    ];
+
+    $public_fields['number_of_children'] = [
+      'property' => 'field_number_of_children',
+    ];
+
+    $public_fields['children'] = [
+      'property' => 'nid',
+      'process_callbacks' => [
+        [$this, 'getChildren'],
+      ],
     ];
 
     return $public_fields;
