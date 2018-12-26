@@ -717,8 +717,6 @@ h3.ui.header {
     }
   }
 
-
-
   .ui.grid.photo {
     margin-top: 20px;
   }
@@ -740,6 +738,15 @@ h3.ui.header {
     height: 50px;
     width: 406px;
     color: $color-text;
+  }
+
+  .select-day-input,
+  .select-month-input {
+    width: 100px;
+  }
+
+  .select-year-input {
+    width: 120px;
   }
 }
 
