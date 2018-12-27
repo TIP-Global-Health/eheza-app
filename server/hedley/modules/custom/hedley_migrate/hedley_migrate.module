@@ -178,9 +178,12 @@ function _hedley_migrate_preprocess_child($node, Generator $faker) {
  */
 function _hedley_migrate_preprocess_mother($node, Generator $faker) {
   $wrapper = entity_metadata_wrapper('node', $node);
-  $wrapper->title->set($faker->firstNameFemale);
-  $wrapper->field_first_name->set($faker->firstNameFemale);
-  $wrapper->field_second_name->set($faker->lastName);
+
+  $first_name = $faker->firstNameFemale;
+  $second_name = $faker->lastName;
+  $wrapper->title->set("$first_name $second_name");
+  $wrapper->field_first_name->set($first_name);
+  $wrapper->field_second_name->set($second_name);
   $wrapper->field_national_id_number->set($faker->numberBetween(1000, 9999));
   $wrapper->field_profession->set($faker->jobTitle);
   $wrapper->field_marital_status->set($faker->numberBetween(0, 3));
