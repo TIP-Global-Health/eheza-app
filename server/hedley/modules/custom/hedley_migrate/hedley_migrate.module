@@ -25,6 +25,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateClinics' => [
         'class_name' => 'HedleyMigrateClinics',
       ],
+      'HedleyMigrateCatchmentAreas' => [
+        'class_name' => 'HedleyMigrateCatchmentAreas',
+      ],
       'HedleyMigrateMissingHeights' => [
         'class_name' => 'HedleyMigrateMissingHeights',
         'group_name' => 'missing',

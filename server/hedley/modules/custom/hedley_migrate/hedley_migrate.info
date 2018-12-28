@@ -15,3 +15,4 @@ files[] = handlers/node/HedleyMigrateClinics.php
 files[] = handlers/node/HedleyMigrateMissingHeights.php
 files[] = handlers/node/HedleyMigrateMissingWeights.php
 files[] = handlers/node/HedleyMigrateMissingMuacs.php
+files[] = handlers/node/HedleyMigrateCatchmentAreas.php
