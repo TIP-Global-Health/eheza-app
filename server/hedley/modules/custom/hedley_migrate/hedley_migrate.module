@@ -17,6 +17,9 @@ function hedley_migrate_migrate_api() {
       'missing' => [
         'title' => t('Missing Data'),
       ],
+      'live' => [
+        'title' => t('For live site'),
+      ],
     ],
     'migrations' => [
       'HedleyMigrateUsers' => [
@@ -28,8 +31,16 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateCatchmentAreas' => [
         'class_name' => 'HedleyMigrateCatchmentAreas',
       ],
+      'HedleyMigrateCatchmentAreasLive' => [
+        'class_name' => 'HedleyMigrateCatchmentAreasLive',
+        'group_name' => 'live',
+      ],
       'HedleyMigrateHealthCenters' => [
         'class_name' => 'HedleyMigrateHealthCenters',
+      ],
+      'HedleyMigrateHealthCentersLive' => [
+        'class_name' => 'HedleyMigrateHealthCentersLive',
+        'group_name' => 'live',
       ],
       'HedleyMigrateMissingHeights' => [
         'class_name' => 'HedleyMigrateMissingHeights',
