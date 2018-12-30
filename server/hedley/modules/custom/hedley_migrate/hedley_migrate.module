@@ -145,9 +145,6 @@ function _hedley_migrate_process_column(&$data, &$locator, $value, $index, $row,
   $locator_index = implode('-', array_slice($row, 0, $index + 1));
 
   if (!empty($locator[$locator_index])) {
-    if ($index == 4) {
-      dpm($locator_index);
-    }
     return;
   }
 
@@ -171,7 +168,7 @@ function _hedley_migrate_process_column(&$data, &$locator, $value, $index, $row,
 }
 
 function hedley_migrate_generate_geo_terms_for_client() {
-  // Todo: Load vacabulary and query for provinces according to it's ID.
+  // Todo: Load vocabulary and query for provinces according to it's ID.
 
   $provinces_tids = _hedley_migrate_get_terms_by_parent([0]);
   $provinces = [];
