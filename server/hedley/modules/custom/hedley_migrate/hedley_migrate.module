@@ -234,7 +234,7 @@ function hedley_migrate_generate_geo_terms_for_client() {
     $wrapper = entity_metadata_wrapper('taxonomy_term', $village);
     $parent_tids = $wrapper->parent->value(['identifier' => TRUE]);
     $parent_tid = reset($parent_tids);
-    $id = 'toEntityId ' . $cell->tid;
+    $id = 'toEntityId ' . $village->tid;
     $name = $village->name;
     $parent = '(Just <| toEntityId ' . $parent_tid . ')';
 
