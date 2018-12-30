@@ -97,6 +97,164 @@ function hedley_migrate_hedley_faker_taxonomy_term_generate($term, Generator $fa
   _hedley_migrate_preprocess_xss('taxonomy_term', $term->vocabulary_machine_name, $term);
 }
 
+function hedley_migrate_generate_geo_terms_vocabulary() {
+  if (taxonomy_vocabulary_machine_name_load('ihangane_villages')) {
+    return;
+  }
+
+  $vocabulary = (object) array(
+    'name' => 'Ihangane villages vocabulary',
+    'description' => 'This vocabulary lists all villages',
+    'machine_name' => 'ihangane_villages',
+  );
+  taxonomy_vocabulary_save($vocabulary);
+
+  $migrate_dir = variable_get('hedley_migrate_directory', FALSE) ? variable_get('hedley_migrate_directory') : drupal_get_path('module', 'hedley_migrate');
+  $source_file = $migrate_dir . '/csv/villages.csv';
+
+  $index_mapping = [
+    'province',
+    'district',
+    'sector',
+    'cell',
+    'village',
+  ];
+  $column_mapping = array_flip($index_mapping);
+
+  $data = [
+    $mapping['province'] = [],
+    $mapping['district'] = [],
+    $mapping['sector'] = [],
+    $mapping['cell'] = [],
+    $mapping['village'] = [],
+  ];
+
+  $locator = [];
+
+  $handler = fopen($source_file, 'r');
+  while ($row = fgetcsv($handler)) {
+    foreach ($row as $index => $column) {
+      _hedley_migrate_process_column($data, $locator, $column, $index, $row, $vocabulary, $column_mapping, $index_mapping);
+    }
+  }
+
+  fclose($handler);
+}
+
+function _hedley_migrate_process_column(&$data, &$locator, $value, $index, $row, $vocab, $mapping, $flipped_mapping) {
+  $locator_index = implode('-', array_slice($row, 0, $index + 1));
+
+  if (!empty($locator[$locator_index])) {
+    if ($index == 4) {
+      dpm($locator_index);
+    }
+    return;
+  }
+
+  if ($index != $mapping['province']) {
+    $parent_key = $row[$index - 1];
+    $parent = $data[$index - 1][$parent_key];
+  }
+  else {
+    $parent = 0;
+  }
+
+  $term = (object) [
+    'name' => $value,
+    'description' => ucfirst($flipped_mapping[$index]) . ' ' . $value,
+    'vid' => $vocab->vid,
+    'parent' => $parent,
+  ];
+
+  taxonomy_term_save($term);
+  $data[$index][$value] = $locator[$locator_index] = $term->tid;
+}
+
+function hedley_migrate_generate_geo_terms_for_client() {
+  // Todo: Load vacabulary and query for provinces according to it's ID.
+
+  $provinces_tids = _hedley_migrate_get_terms_by_parent([0]);
+  $provinces = [];
+  foreach (taxonomy_term_load_multiple($provinces_tids) as $province) {
+    $id = 'toEntityId ' . $province->tid;
+    $name = $province->name;
+
+    $provinces[] = "( $id, GeoLocation ($id) \"$name\" Nothing)";
+  }
+
+  dpm('[ ' . implode("\n, ", $provinces) . ' ]');
+
+  $districts_tids = _hedley_migrate_get_terms_by_parent($provinces_tids);
+
+  $districts = [];
+  foreach (taxonomy_term_load_multiple($districts_tids) as $district) {
+    $wrapper = entity_metadata_wrapper('taxonomy_term', $district);
+
+    $parent_tid = reset($wrapper->parent->value(['identifier' => TRUE]));
+    $id = 'toEntityId ' . $district->tid;
+    $name = $district->name;
+    $parent = '(Just <| toEntityId ' . $parent_tid . ')';
+
+    $districts[] = "( $id, GeoLocation ($id) \"$name\" $parent)";
+  }
+
+  dpm('[ ' . implode("\n, ", $districts) . ' ]');
+
+  $sectors_tids = _hedley_migrate_get_terms_by_parent($districts_tids);
+  $sectors = [];
+  foreach (taxonomy_term_load_multiple($sectors_tids) as $sector) {
+    $wrapper = entity_metadata_wrapper('taxonomy_term', $sector);
+
+    $parent_tid = reset($wrapper->parent->value(['identifier' => TRUE]));
+    $id = 'toEntityId ' . $sector->tid;
+    $name = $sector->name;
+    $parent = '(Just <| toEntityId ' . $parent_tid . ')';
+
+    $sectors[] = "( $id, GeoLocation ($id) \"$name\" $parent)";
+  }
+
+  dpm('[ ' . implode("\n, ", $sectors) . ' ]');
+
+  $cells_tids = _hedley_migrate_get_terms_by_parent($sectors_tids);
+  $cells = [];
+  foreach (taxonomy_term_load_multiple($cells_tids) as $cell) {
+    $wrapper = entity_metadata_wrapper('taxonomy_term', $cell);
+
+    $parent_tid = reset($wrapper->parent->value(['identifier' => TRUE]));
+    $id = 'toEntityId ' . $cell->tid;
+    $name = $cell->name;
+    $parent = '(Just <| toEntityId ' . $parent_tid . ')';
+
+    $cells[] = "( $id, GeoLocation ($id) \"$name\" $parent)";
+  }
+
+  dpm('[ ' . implode("\n, ", $cells) . ' ]');
+
+
+  $villages_tids = _hedley_migrate_get_terms_by_parent($cells_tids);
+  $villages = [];
+  foreach (taxonomy_term_load_multiple($villages_tids) as $village) {
+    $wrapper = entity_metadata_wrapper('taxonomy_term', $village);
+
+    $parent_tid = reset($wrapper->parent->value(['identifier' => TRUE]));
+    $id = 'toEntityId ' . $cell->tid;
+    $name = $village->name;
+    $parent = '(Just <| toEntityId ' . $parent_tid . ')';
+
+    $villages[] = "( $id, GeoLocation ($id) \"$name\" $parent)";
+  }
+
+  dpm('[ ' . implode("\n, ", $villages) . ' ]');
+}
+
+function _hedley_migrate_get_terms_by_parent($parents) {
+  return db_select('taxonomy_term_hierarchy', 'hierarchy')
+    ->fields('hierarchy', ['tid'])
+    ->condition('hierarchy.parent', $parents, 'IN')
+    ->execute()
+    ->fetchCol();
+}
+
 /**
  * Alters devel generated Sites to satisfy business logic.
  *
