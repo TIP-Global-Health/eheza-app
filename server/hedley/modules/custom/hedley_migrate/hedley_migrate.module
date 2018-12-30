@@ -229,19 +229,25 @@ function hedley_migrate_generate_geo_terms_for_client() {
 
 
   $villages_tids = _hedley_migrate_get_terms_by_parent($cells_tids);
-  $villages = [];
-  foreach (taxonomy_term_load_multiple($villages_tids) as $village) {
-    $wrapper = entity_metadata_wrapper('taxonomy_term', $village);
-    $parent_tids = $wrapper->parent->value(['identifier' => TRUE]);
-    $parent_tid = reset($parent_tids);
-    $id = 'toEntityId ' . $village->tid;
-    $name = $village->name;
-    $parent = '(Just <| toEntityId ' . $parent_tid . ')';
+  $tids_chunks = array_chunk($villages_tids, 256);
+  $chunks = [];
+  foreach ($tids_chunks as $tid_chunk) {
+    $villages = [];
+    foreach (taxonomy_term_load_multiple($tid_chunk) as $village) {
+      $wrapper = entity_metadata_wrapper('taxonomy_term', $village);
+      $parent_tids = $wrapper->parent->value(['identifier' => TRUE]);
+      $parent_tid = reset($parent_tids);
+      $id = 'toEntityId ' . $village->tid;
+      $name = $village->name;
+      $parent = '(Just <| toEntityId ' . $parent_tid . ')';
 
-    $villages[] = "( $id, GeoLocation ($id) \"$name\" $parent)";
+      $villages[] = "( $id, GeoLocation ($id) \"$name\" $parent)";
+    }
+
+    $chunks[] = '[ ' . implode("\n, ", $villages) . ' ]';
   }
 
-  dpm('[ ' . implode("\n, ", $villages) . ' ]');
+  dpm(implode(" ++ \n ", $chunks));
 }
 
 function _hedley_migrate_get_terms_by_parent($parents) {
