@@ -189,8 +189,8 @@ function hedley_migrate_generate_geo_terms_for_client() {
   $districts = [];
   foreach (taxonomy_term_load_multiple($districts_tids) as $district) {
     $wrapper = entity_metadata_wrapper('taxonomy_term', $district);
-
-    $parent_tid = reset($wrapper->parent->value(['identifier' => TRUE]));
+    $parent_tids = $wrapper->parent->value(['identifier' => TRUE]);
+    $parent_tid = reset($parent_tids);
     $id = 'toEntityId ' . $district->tid;
     $name = $district->name;
     $parent = '(Just <| toEntityId ' . $parent_tid . ')';
@@ -204,8 +204,8 @@ function hedley_migrate_generate_geo_terms_for_client() {
   $sectors = [];
   foreach (taxonomy_term_load_multiple($sectors_tids) as $sector) {
     $wrapper = entity_metadata_wrapper('taxonomy_term', $sector);
-
-    $parent_tid = reset($wrapper->parent->value(['identifier' => TRUE]));
+    $parent_tids = $wrapper->parent->value(['identifier' => TRUE]);
+    $parent_tid = reset($parent_tids);
     $id = 'toEntityId ' . $sector->tid;
     $name = $sector->name;
     $parent = '(Just <| toEntityId ' . $parent_tid . ')';
@@ -219,8 +219,8 @@ function hedley_migrate_generate_geo_terms_for_client() {
   $cells = [];
   foreach (taxonomy_term_load_multiple($cells_tids) as $cell) {
     $wrapper = entity_metadata_wrapper('taxonomy_term', $cell);
-
-    $parent_tid = reset($wrapper->parent->value(['identifier' => TRUE]));
+    $parent_tids = $wrapper->parent->value(['identifier' => TRUE]);
+    $parent_tid = reset($parent_tids);
     $id = 'toEntityId ' . $cell->tid;
     $name = $cell->name;
     $parent = '(Just <| toEntityId ' . $parent_tid . ')';
@@ -235,8 +235,8 @@ function hedley_migrate_generate_geo_terms_for_client() {
   $villages = [];
   foreach (taxonomy_term_load_multiple($villages_tids) as $village) {
     $wrapper = entity_metadata_wrapper('taxonomy_term', $village);
-
-    $parent_tid = reset($wrapper->parent->value(['identifier' => TRUE]));
+    $parent_tids = $wrapper->parent->value(['identifier' => TRUE]);
+    $parent_tid = reset($parent_tids);
     $id = 'toEntityId ' . $cell->tid;
     $name = $village->name;
     $parent = '(Just <| toEntityId ' . $parent_tid . ')';
