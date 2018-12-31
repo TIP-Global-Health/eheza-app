@@ -271,6 +271,7 @@ type TranslationId
     | PleaseSelectClinic
     | PreviousFloatMeasurement Float
     | Profession
+    | Province
     | ReadyToBeginSession
     | RegisterPatient
     | RegisterNewPatient
@@ -1366,6 +1367,11 @@ translationSet trans =
 
         Profession ->
             { english = "Profession"
+            , kinyarwanda = Nothing
+            }
+
+        Province ->
+            { english = "Province"
             , kinyarwanda = Nothing
             }
 
