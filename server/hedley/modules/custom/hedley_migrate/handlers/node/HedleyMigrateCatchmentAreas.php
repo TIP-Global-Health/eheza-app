@@ -24,8 +24,8 @@ class HedleyMigrateCatchmentAreas extends HedleyMigrateBase {
     $this->dependencies = [];
 
     $columns = [
-      ['id', t('id')],
-      ['title', t('title')],
+      ['id', 'id'],
+      ['title', 'title'],
     ];
 
     $source_file = $this->getMigrateDirectory() . '/csv/catchment-areas.csv';

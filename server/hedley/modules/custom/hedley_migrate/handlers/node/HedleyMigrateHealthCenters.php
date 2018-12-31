@@ -26,9 +26,9 @@ class HedleyMigrateHealthCenters extends HedleyMigrateBase {
     ];
 
     $columns = [
-      ['id', t('id')],
-      ['title', t('title')],
-      ['field_catchment_area', t('Catchment Area')],
+      ['id', 'id'],
+      ['title', 'title'],
+      ['field_catchment_area', 'Catchment Area'],
     ];
 
     $source_file = $this->getMigrateDirectory() . '/csv/health-centers.csv';
