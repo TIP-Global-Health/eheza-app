@@ -19,6 +19,7 @@ import Maybe.Extra exposing (unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRegistration.Model exposing (Model, Msg(..), RegistrationStep(..))
+import Participant.Model exposing (ParticipantType(..))
 import Time.Date
 import Translate exposing (Language(..), TranslationId, translate)
 import User.Model exposing (User)
@@ -128,6 +129,17 @@ view language currentDate user backend cache model =
             else
                 Nothing
 
+        maybeRegistratingParticipant =
+            maybeAgeDateDelta
+                |> Maybe.andThen
+                    (\delta ->
+                        if delta.years > 12 then
+                            Just <| MotherParticipant delta
+
+                        else
+                            Just <| ChildParticipant delta
+                    )
+
         emptyOption =
             ( "", "" )
 
@@ -193,51 +205,52 @@ view language currentDate user backend cache model =
                             ]
 
                         dynamicComponents =
-                            case maybeAgeDateDelta of
-                                Just delta ->
+                            let
+                                viewAge delta =
                                     let
-                                        viewAge =
-                                            let
-                                                age =
-                                                    if delta.years > 0 then
-                                                        if delta.years == 1 then
-                                                            translate language <| Translate.ChartPhrase Translate.OneYear
+                                        age =
+                                            if delta.years > 0 then
+                                                if delta.years == 1 then
+                                                    translate language <| Translate.ChartPhrase Translate.OneYear
 
-                                                        else
-                                                            translate language <| Translate.ChartPhrase (Translate.YearsPlural delta.years)
+                                                else
+                                                    translate language <| Translate.ChartPhrase (Translate.YearsPlural delta.years)
 
-                                                    else if delta.months > 0 then
-                                                        if delta.months == 1 then
-                                                            translate language <| Translate.AgeSingleMonthWithoutDay 1
+                                            else if delta.months > 0 then
+                                                if delta.months == 1 then
+                                                    translate language <| Translate.AgeSingleMonthWithoutDay 1
 
-                                                        else
-                                                            translate language <| Translate.AgeMonthsWithoutDay delta.months
+                                                else
+                                                    translate language <| Translate.AgeMonthsWithoutDay delta.months
 
-                                                    else if delta.days == 1 then
-                                                        translate language <| Translate.AgeSingleDayWithoutMonth 0 1
+                                            else if delta.days == 1 then
+                                                translate language <| Translate.AgeSingleDayWithoutMonth 0 1
 
-                                                    else
-                                                        translate language <| Translate.AgeDays delta.days
-                                            in
-                                            div [ class "ui grid" ]
-                                                [ div [ class "six wide column" ]
-                                                    [ text "Age:" ]
-                                                , div [ class "ten wide column" ]
-                                                    [ text age ]
-                                                ]
+                                            else
+                                                translate language <| Translate.AgeDays delta.days
+                                    in
+                                    div [ class "ui grid" ]
+                                        [ div [ class "six wide column" ]
+                                            [ text "Age:" ]
+                                        , div [ class "ten wide column" ]
+                                            [ text age ]
+                                        ]
 
-                                        viewGender =
-                                            div [ class "ui grid" ]
-                                                [ div [ class "six wide column" ]
-                                                    [ text <| translate language Translate.GenderLabel ++ ":" ]
-                                                , Form.Input.checkboxInput isMale [ class "two wide column" ]
-                                                , div [ class "three wide column" ]
-                                                    [ text <| translate language (Translate.Gender Male) ]
-                                                , Form.Input.checkboxInput isFemale [ class "two wide column" ]
-                                                , div [ class "two wide column" ]
-                                                    [ text <| translate language (Translate.Gender Female) ]
-                                                ]
-
+                                viewGender =
+                                    div [ class "ui grid" ]
+                                        [ div [ class "six wide column" ]
+                                            [ text <| translate language Translate.GenderLabel ++ ":" ]
+                                        , Form.Input.checkboxInput isMale [ class "two wide column" ]
+                                        , div [ class "three wide column" ]
+                                            [ text <| translate language (Translate.Gender Male) ]
+                                        , Form.Input.checkboxInput isFemale [ class "two wide column" ]
+                                        , div [ class "two wide column" ]
+                                            [ text <| translate language (Translate.Gender Female) ]
+                                        ]
+                            in
+                            case maybeRegistratingParticipant of
+                                Just (MotherParticipant age) ->
+                                    let
                                         motherInputs =
                                             let
                                                 viewLevelOfEducation =
@@ -307,7 +320,11 @@ view language currentDate user backend cache model =
                                             , viewMaritalStatus
                                             , viewHIVStatus
                                             ]
+                                    in
+                                    viewAge age :: motherInputs
 
+                                Just (ChildParticipant age) ->
+                                    let
                                         childInputs =
                                             let
                                                 viewModeOfDelivery =
@@ -331,13 +348,7 @@ view language currentDate user backend cache model =
                                             , viewModeOfDelivery
                                             ]
                                     in
-                                    viewAge
-                                        :: (if delta.years > 12 then
-                                                motherInputs
-
-                                            else
-                                                childInputs
-                                           )
+                                    viewAge age :: childInputs
 
                                 Nothing ->
                                     []
@@ -528,9 +539,23 @@ view language currentDate user backend cache model =
                 ( label, action, disabled ) =
                     case model.registrationStep of
                         First ->
+                            let
+                                requiredFields =
+                                    [ firstName, secondName, dayOfBirth, monthOfBirth, yearOfBirth ]
+                                        ++ (case maybeRegistratingParticipant of
+                                                Just (MotherParticipant _) ->
+                                                    [ levelOfEducation, hivStatus ]
+
+                                                Just (ChildParticipant _) ->
+                                                    [ modeOfDelivery ]
+
+                                                Nothing ->
+                                                    []
+                                           )
+                            in
                             ( Translate.Next
                             , SetRegistrationStep Second
-                            , not <| List.all isFieldSet [ firstName, secondName, dayOfBirth, monthOfBirth, yearOfBirth, levelOfEducation, hivStatus ]
+                            , not <| List.all isFieldSet requiredFields
                             )
 
                         Second ->
