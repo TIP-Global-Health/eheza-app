@@ -361,9 +361,9 @@ function hedley_patient_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'svg-episiotomy' => 'Spontaneous vaginal delivery with episiotomy',
-        'svg-no-episiotomy' => 'Spontaneous vaginal delivery without episiotomy',
-        'vg-vacuum' => 'Vaginal delivery with vacuum extraction',
+        'svd-episiotomy' => 'Spontaneous vaginal delivery with episiotomy',
+        'svd-no-episiotomy' => 'Spontaneous vaginal delivery without episiotomy',
+        'vd-vacuum' => 'Vaginal delivery with vacuum extraction',
         'cesarean-delivery' => 'Cesarean delivery',
       ),
       'allowed_values_function' => '',

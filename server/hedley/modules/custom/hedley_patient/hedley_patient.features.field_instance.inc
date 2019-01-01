@@ -441,7 +441,7 @@ function hedley_patient_field_default_field_instances() {
     'bundle' => 'child',
     'default_value' => array(
       0 => array(
-        'value' => 'svg-no-episiotomy',
+        'value' => 'svd-no-episiotomy',
       ),
     ),
     'deleted' => 0,
