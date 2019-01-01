@@ -161,6 +161,8 @@ type TranslationId
     | BeginHealthAssessment
     | Born
     | Cancel
+    | CaregiverName
+    | CaregiverNationalId
     | CentimeterShorthand
     | Cell
     | ChartPhrase ChartPhrase
@@ -205,6 +207,8 @@ type TranslationId
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
     | Fetch
+    | FatherName
+    | FatherNationalId
     | FirstName
     | FormError (ErrorValue ValidationError)
     | FormField String
@@ -236,6 +240,8 @@ type TranslationId
     | MonthsOld
     | Mother
     | MotherName String
+    | MotherNameLabel
+    | MotherNationalId
     | Mothers
     | MuacIndication MuacIndication
     | MyAccount
@@ -642,6 +648,16 @@ translationSet trans =
             , kinyarwanda = Just "Guhagarika"
             }
 
+        CaregiverName ->
+            { english = "Caregiver's Name"
+            , kinyarwanda = Nothing
+            }
+
+        CaregiverNationalId ->
+            { english = "Caregiver's National ID"
+            , kinyarwanda = Nothing
+            }
+
         Cell ->
             { english = "Cell"
             , kinyarwanda = Nothing
@@ -961,6 +977,16 @@ translationSet trans =
             , kinyarwanda = Just "Gushakisha"
             }
 
+        FatherName ->
+            { english = "Father's Name"
+            , kinyarwanda = Nothing
+            }
+
+        FatherNationalId ->
+            { english = "Father's National ID"
+            , kinyarwanda = Nothing
+            }
+
         FirstName ->
             { english = "First Name"
             , kinyarwanda = Nothing
@@ -1045,8 +1071,8 @@ translationSet trans =
             }
 
         LevelOfEducationLabel ->
-            { english = "Level of Education: "
-            , kinyarwanda = Just <| "Amashuri wize: "
+            { english = "Level of Education"
+            , kinyarwanda = Just <| "Amashuri wize"
             }
 
         LevelOfEducation educationLevel ->
@@ -1199,6 +1225,16 @@ translationSet trans =
         MotherName name ->
             { english = "Mother: " ++ name
             , kinyarwanda = Just <| "Umubyeyi: " ++ name
+            }
+
+        MotherNameLabel ->
+            { english = "Mother's Name"
+            , kinyarwanda = Nothing
+            }
+
+        MotherNationalId ->
+            { english = "Mother's National ID"
+            , kinyarwanda = Nothing
             }
 
         Mothers ->

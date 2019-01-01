@@ -58,7 +58,14 @@ type alias RegistrationForm =
     , hivStatus : String
     , modeOfDelivery : String
     , familyUbudehe : String
+    , householdSize : String
     , numberOfChildren : String
+    , motherName : String
+    , motherNationalId : String
+    , fatherName : String
+    , fatherNationalId : String
+    , caregiverName : String
+    , caregiverNationalId : String
     , district : String
     , sector : String
     , cell : String
@@ -85,7 +92,14 @@ validateRegistrationForm =
         |> andMap (field "hivStatus" string)
         |> andMap (field "modeOfDelivery" string)
         |> andMap (field "familyUbudehe" string)
+        |> andMap (field "householdSize" string)
         |> andMap (field "numberOfChildren" string)
+        |> andMap (field "motherName" string)
+        |> andMap (field "motherNationalId" string)
+        |> andMap (field "fatherName" string)
+        |> andMap (field "fatherNationalId" string)
+        |> andMap (field "caregiverName" string)
+        |> andMap (field "caregiverNationalId" string)
         |> andMap (field "district" string)
         |> andMap (field "sector" string)
         |> andMap (field "cell" string)

@@ -74,7 +74,25 @@ view language currentDate user backend cache model =
             Form.getFieldAsString "familyUbudehe" model.registrationForm
 
         householdSize =
-            Form.getFieldAsString "familyUbudehe" model.registrationForm
+            Form.getFieldAsString "householdSize" model.registrationForm
+
+        motherName =
+            Form.getFieldAsString "motherName" model.registrationForm
+
+        motherNationalId =
+            Form.getFieldAsString "motherNationalId" model.registrationForm
+
+        fatherName =
+            Form.getFieldAsString "fatherName" model.registrationForm
+
+        fatherNationalId =
+            Form.getFieldAsString "fatherNationalId" model.registrationForm
+
+        caregiverName =
+            Form.getFieldAsString "caregiverName" model.registrationForm
+
+        caregiverNationalId =
+            Form.getFieldAsString "caregiverNationalId" model.registrationForm
 
         numberOfChildren =
             Form.getFieldAsString "numberOfChildren" model.registrationForm
@@ -174,31 +192,16 @@ view language currentDate user backend cache model =
                                                 |> List.reverse
                                            )
                             in
-                            [ div [ class "ui grid" ]
-                                [ div [ class "six wide column required" ]
-                                    [ text <| translate language Translate.FirstName ++ ":" ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.textInput firstName [] ]
-                                ]
-                            , div [ class "ui grid" ]
-                                [ div [ class "six wide column required" ]
-                                    [ text <| translate language Translate.SecondName ++ ":" ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.textInput secondName [] ]
-                                ]
-                            , div [ class "ui grid" ]
-                                [ div [ class "six wide column" ]
-                                    [ text <| translate language Translate.NationalIdNumber ++ ":" ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.textInput nationalIdNumber [] ]
-                                ]
+                            [ viewTextInput language Translate.FirstName firstName True
+                            , viewTextInput language Translate.SecondName secondName True
+                            , viewTextInput language Translate.NationalIdNumber nationalIdNumber False
                             , div [ class "ui grid" ]
                                 [ div [ class "six wide column required" ]
                                     [ text <| translate language Translate.DateOfBirth ++ ":" ]
                                 , div [ class "three wide column" ]
-                                    [ Form.Input.selectInput dayOptions dayOfBirth [ class "select-day-input" ] ]
-                                , div [ class "three wide column" ]
                                     [ Form.Input.selectInput monthOptions monthOfBirth [ class "select-month-input" ] ]
+                                , div [ class "three wide column" ]
+                                    [ Form.Input.selectInput dayOptions dayOfBirth [ class "select-day-input" ] ]
                                 , div [ class "four wide column" ]
                                     [ Form.Input.selectInput yearOptions yearOfBirth [ class "select-year-input" ] ]
                                 ]
@@ -266,20 +269,10 @@ view language currentDate user backend cache model =
                                                                    , ( toString AdvancedDiploma, translate language <| Translate.LevelOfEducation AdvancedDiploma )
                                                                    ]
                                                     in
-                                                    div [ class "ui grid" ]
-                                                        [ div [ class "six wide column required" ]
-                                                            [ text <| translate language Translate.LevelOfEducationLabel ]
-                                                        , div [ class "ten wide column" ]
-                                                            [ Form.Input.selectInput options levelOfEducation [ class "select-input" ] ]
-                                                        ]
+                                                    viewSelectInput language Translate.LevelOfEducationLabel options levelOfEducation "ten" [ class "select-input" ] True
 
                                                 viewProfession =
-                                                    div [ class "ui grid" ]
-                                                        [ div [ class "six wide column" ]
-                                                            [ text <| translate language Translate.Profession ++ ":" ]
-                                                        , div [ class "ten wide column" ]
-                                                            [ Form.Input.textInput profession [] ]
-                                                        ]
+                                                    viewTextInput language Translate.Profession profession False
 
                                                 viewMaritalStatus =
                                                     let
@@ -291,12 +284,7 @@ view language currentDate user backend cache model =
                                                                    , ( toString Widowed, translate language <| Translate.MaritalStatus Widowed )
                                                                    ]
                                                     in
-                                                    div [ class "ui grid" ]
-                                                        [ div [ class "six wide column" ]
-                                                            [ text <| translate language Translate.MaritalStatusLabel ++ ":" ]
-                                                        , div [ class "ten wide column" ]
-                                                            [ Form.Input.selectInput options maritalStatus [ class "select-input" ] ]
-                                                        ]
+                                                    viewSelectInput language Translate.MaritalStatusLabel options maritalStatus "ten" [ class "select-input" ] True
 
                                                 viewHIVStatus =
                                                     let
@@ -307,12 +295,7 @@ view language currentDate user backend cache model =
                                                                    , ( toString Positive, translate language <| Translate.HIVStatus Positive )
                                                                    ]
                                                     in
-                                                    div [ class "ui grid" ]
-                                                        [ div [ class "six wide column required" ]
-                                                            [ text <| translate language Translate.HIVStatusLabel ++ ":" ]
-                                                        , div [ class "ten wide column" ]
-                                                            [ Form.Input.selectInput options hivStatus [ class "select-input" ] ]
-                                                        ]
+                                                    viewSelectInput language Translate.HIVStatusLabel options hivStatus "ten" [ class "select-input" ] True
                                             in
                                             [ viewGender
                                             , viewLevelOfEducation
@@ -337,12 +320,7 @@ view language currentDate user backend cache model =
                                                                    , ( modeOfDeliveryToValue CesareanDelivery, translate language <| Translate.ModeOfDelivery CesareanDelivery )
                                                                    ]
                                                     in
-                                                    div [ class "ui grid" ]
-                                                        [ div [ class "six wide column required" ]
-                                                            [ text <| translate language Translate.ModeOfDeliveryLabel ++ ":" ]
-                                                        , div [ class "ten wide column" ]
-                                                            [ Form.Input.selectInput options modeOfDelivery [ class "select-input" ] ]
-                                                        ]
+                                                    viewSelectInput language Translate.ModeOfDeliveryLabel options modeOfDelivery "ten" [ class "select-input" ] True
                                             in
                                             [ viewGender
                                             , viewModeOfDelivery
@@ -375,42 +353,49 @@ view language currentDate user backend cache model =
                                            , ( toString Ubudehe4, toString Ubudehe4 )
                                            ]
                             in
-                            div [ class "ui grid" ]
-                                [ div [ class "six wide column required" ]
-                                    [ text <| translate language Translate.FamilyUbudehe ++ ":" ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.selectInput options familyUbudehe [ class "select-input" ] ]
-                                ]
+                            viewSelectInput language Translate.FamilyUbudehe options familyUbudehe "ten" [ class "select-input" ] True
 
-                        viewHouseholdSize =
-                            let
-                                options =
-                                    emptyOption
-                                        :: (List.repeat 30 "."
-                                                |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
-                                           )
-                            in
-                            div [ class "ui grid" ]
-                                [ div [ class "six wide column" ]
-                                    [ text <| translate language Translate.HouseholdSize ++ ":" ]
-                                , div [ class "four wide column" ]
-                                    [ Form.Input.selectInput options householdSize [] ]
-                                ]
+                        familyInfoInputs =
+                            viewFamilyUbudehe
+                                :: (case maybeRegistratingParticipant of
+                                        Just (MotherParticipant _) ->
+                                            let
+                                                viewHouseholdSize =
+                                                    let
+                                                        options =
+                                                            emptyOption
+                                                                :: (List.repeat 30 "."
+                                                                        |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
+                                                                   )
+                                                    in
+                                                    viewSelectInput language Translate.HouseholdSize options householdSize "four" [] False
 
-                        viewNumberOfChildren =
-                            let
-                                options =
-                                    emptyOption
-                                        :: (List.repeat 21 "."
-                                                |> List.indexedMap (\index _ -> ( toString index, toString index ))
-                                           )
-                            in
-                            div [ class "ui grid" ]
-                                [ div [ class "six wide column required" ]
-                                    [ text <| translate language Translate.NumberOfChildren ++ ":" ]
-                                , div [ class "four wide column" ]
-                                    [ Form.Input.selectInput options numberOfChildren [] ]
-                                ]
+                                                viewNumberOfChildren =
+                                                    let
+                                                        options =
+                                                            emptyOption
+                                                                :: (List.repeat 21 "."
+                                                                        |> List.indexedMap (\index _ -> ( toString index, toString index ))
+                                                                   )
+                                                    in
+                                                    viewSelectInput language Translate.NumberOfChildren options numberOfChildren "four" [] True
+                                            in
+                                            [ viewHouseholdSize, viewNumberOfChildren ]
+
+                                        Just (ChildParticipant _) ->
+                                            [ viewTextInput language Translate.MotherNameLabel motherName True
+                                            , viewTextInput language Translate.MotherNationalId motherNationalId False
+                                            , viewTextInput language Translate.FatherName fatherName True
+                                            , viewTextInput language Translate.FatherNationalId fatherNationalId False
+                                            , viewTextInput language Translate.CaregiverName caregiverName False
+                                            , viewTextInput language Translate.CaregiverNationalId caregiverNationalId False
+                                            ]
+
+                                        -- We should never get here, as at second step
+                                        -- registrating participant is already determined.
+                                        Nothing ->
+                                            []
+                                   )
 
                         viewDistrict =
                             div [ class "ui grid" ]
@@ -445,21 +430,13 @@ view language currentDate user backend cache model =
                                 ]
 
                         viewTelephoneNumber =
-                            div [ class "ui grid" ]
-                                [ div [ class "six wide column" ]
-                                    [ text <| translate language Translate.TelephoneNumber ++ ":" ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.textInput telephoneNumber [] ]
-                                ]
+                            viewTextInput language Translate.TelephoneNumber telephoneNumber False
                     in
                     [ h3 [ class "ui header" ]
                         [ text <| translate language Translate.FamilyInformation ++ ":" ]
                     , Html.map MsgRegistrationForm <|
                         fieldset [ class "registration-form family-info" ]
-                            [ viewFamilyUbudehe
-                            , viewHouseholdSize
-                            , viewNumberOfChildren
-                            ]
+                            familyInfoInputs
                     , h3 [ class "ui header" ]
                         [ text <| translate language Translate.AddressInformation ++ ":" ]
                     , Html.map MsgRegistrationForm <|
@@ -559,9 +536,23 @@ view language currentDate user backend cache model =
                             )
 
                         Second ->
+                            let
+                                requiredFields =
+                                    [ familyUbudehe, district, sector, cell, village ]
+                                        ++ (case maybeRegistratingParticipant of
+                                                Just (MotherParticipant _) ->
+                                                    [ numberOfChildren ]
+
+                                                Just (ChildParticipant _) ->
+                                                    [ motherName, fatherName ]
+
+                                                Nothing ->
+                                                    []
+                                           )
+                            in
                             ( Translate.Next
                             , SetRegistrationStep Third
-                            , not <| List.all isFieldSet [ familyUbudehe, numberOfChildren, district, sector, cell, village ]
+                            , not <| List.all isFieldSet requiredFields
                             )
 
                         Third ->
@@ -604,6 +595,44 @@ view language currentDate user backend cache model =
             , div [ class "registration-form actions" ]
                 [ leftButton, rightButton ]
             ]
+        ]
+
+
+viewTextInput : Language -> TranslationId -> Form.FieldState e String -> Bool -> Html Form.Msg
+viewTextInput language labelId field isRequired =
+    div [ class "ui grid" ]
+        [ div
+            [ classList
+                [ ( "six wide column", True )
+                , ( "required", isRequired )
+                ]
+            ]
+            [ text <| translate language labelId ++ ":" ]
+        , div [ class "ten wide column" ]
+            [ Form.Input.textInput field [] ]
+        ]
+
+
+viewSelectInput :
+    Language
+    -> TranslationId
+    -> List ( String, String )
+    -> Form.FieldState e String
+    -> String
+    -> List (Attribute Form.Msg)
+    -> Bool
+    -> Html Form.Msg
+viewSelectInput language labelId options field width attributes isRequired =
+    div [ class "ui grid" ]
+        [ div
+            [ classList
+                [ ( "six wide column", True )
+                , ( "required", isRequired )
+                ]
+            ]
+            [ text <| translate language labelId ++ ":" ]
+        , div [ class <| width ++ " wide column" ]
+            [ Form.Input.selectInput options field attributes ]
         ]
 
 
