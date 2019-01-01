@@ -232,6 +232,11 @@ function _hedley_migrate_preprocess_mother($node, Generator $faker) {
   $wrapper->field_phone_number->set($faker->phoneNumber);
 }
 
+/**
+ * Helper params to generate participants fields.
+ *
+ * @return array
+ */
 function _hedley_migrate_participant_helpers() {
   return [
     'gender' =>
@@ -245,7 +250,6 @@ function _hedley_migrate_participant_helpers() {
     ],
   ];
 }
-
 
 /**
  * Alters devel generated Sites to satisfy business logic.
