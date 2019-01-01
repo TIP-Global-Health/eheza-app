@@ -1009,18 +1009,28 @@ translationSet trans =
 
         HIVStatus status ->
             case status of
+                HIVExposedInfant ->
+                    { english = "HIV-exposed Infant"
+                    , kinyarwanda = Nothing
+                    }
+
                 Negative ->
                     { english = "Negative"
                     , kinyarwanda = Nothing
                     }
 
-                NA ->
-                    { english = "N/A"
+                NegativeDiscordantCouple ->
+                    { english = "Negative - discordant couple"
                     , kinyarwanda = Nothing
                     }
 
                 Positive ->
                     { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                Unknown ->
+                    { english = "Unknown"
                     , kinyarwanda = Nothing
                     }
 
