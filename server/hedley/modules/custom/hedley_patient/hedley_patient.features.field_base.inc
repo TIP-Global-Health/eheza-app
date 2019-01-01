@@ -292,10 +292,11 @@ function hedley_patient_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'indeterminate' => 'Indeterminate',
+        'hiv-exposed-infant' => 'HIV-exposed infant',
         'negative' => 'Negative',
-        'not-applicable' => 'Not Applicable',
+        'negative-dc' => 'Negative - discordant couple',
         'positive' => 'Positive',
+        'unknown' => 'Unknown',
       ),
       'allowed_values_function' => '',
     ),

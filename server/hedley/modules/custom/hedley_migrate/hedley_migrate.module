@@ -217,7 +217,7 @@ function _hedley_migrate_preprocess_mother($node, Generator $faker) {
   $marital_status = ['divorced', 'married', 'single', 'widowed'];
   $wrapper->field_marital_status->set($marital_status[$faker->numberBetween(0, 3)]);
 
-  $hiv_status = ['indeterminate', 'negative', 'not-applicable', 'positive'];
+  $hiv_status = ['hiv-exposed-infant', 'negative', 'negative-dc', 'positive', 'unknown'];
   $wrapper->field_hiv_status->set($hiv_status[$faker->numberBetween(0, 3)]);
   $wrapper->field_household_size->set($faker->numberBetween(0, 30));
   $wrapper->field_number_of_children->set($faker->numberBetween(0, 20));

@@ -1224,7 +1224,7 @@ function hedley_patient_field_default_field_instances() {
     'bundle' => 'mother',
     'default_value' => array(
       0 => array(
-        'value' => 'indeterminate',
+        'value' => 'unknown',
       ),
     ),
     'deleted' => 0,
@@ -1235,7 +1235,7 @@ function hedley_patient_field_default_field_instances() {
         'module' => 'list',
         'settings' => array(),
         'type' => 'list_default',
-        'weight' => 21,
+        'weight' => 28,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -1246,7 +1246,7 @@ function hedley_patient_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_hiv_status',
-    'label' => 'HIV Status',
+    'label' => 'HIV status',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -1725,7 +1725,7 @@ function hedley_patient_field_default_field_instances() {
   t('Father\'s National ID');
   t('First name');
   t('Gender');
-  t('HIV Status');
+  t('HIV status');
   t('Household size');
   t('Marital status');
   t('Mode of delivery');
