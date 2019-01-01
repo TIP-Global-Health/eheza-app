@@ -10,6 +10,27 @@
 function hedley_patient_field_default_field_bases() {
   $field_bases = array();
 
+  // Exported field_base: 'field_cell'.
+  $field_bases['field_cell'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_cell',
+    'indexes' => array(
+      'format' => array(
+        0 => 'format',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'text',
+    'settings' => array(
+      'max_length' => 255,
+    ),
+    'translatable' => 0,
+    'type' => 'text',
+  );
+
   // Exported field_base: 'field_child'.
   $field_bases['field_child'] = array(
     'active' => 1,
@@ -72,6 +93,27 @@ function hedley_patient_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'datestamp',
+  );
+
+  // Exported field_base: 'field_district'.
+  $field_bases['field_district'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_district',
+    'indexes' => array(
+      'format' => array(
+        0 => 'format',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'text',
+    'settings' => array(
+      'max_length' => 255,
+    ),
+    'translatable' => 0,
+    'type' => 'text',
   );
 
   // Exported field_base: 'field_education_level'.
@@ -166,9 +208,10 @@ function hedley_patient_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        0 => 'NA',
-        1 => 'Negative',
-        2 => 'Positive',
+        'indeterminate' => 'Indeterminate',
+        'negative' => 'Negative',
+        'not-applicable' => 'Not Applicable',
+        'positive' => 'Positive',
       ),
       'allowed_values_function' => '',
     ),
@@ -207,10 +250,10 @@ function hedley_patient_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        0 => 'Divorced',
-        1 => 'Married',
-        2 => 'Single',
-        3 => 'Widowed',
+        'divorced' => 'Divorced',
+        'married' => 'Married',
+        'single' => 'Single',
+        'widowed' => 'Widowed',
       ),
       'allowed_values_function' => '',
     ),
@@ -333,6 +376,27 @@ function hedley_patient_field_default_field_bases() {
     'type' => 'text',
   );
 
+  // Exported field_base: 'field_province'.
+  $field_bases['field_province'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_province',
+    'indexes' => array(
+      'format' => array(
+        0 => 'format',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'text',
+    'settings' => array(
+      'max_length' => 255,
+    ),
+    'translatable' => 0,
+    'type' => 'text',
+  );
+
   // Exported field_base: 'field_second_name'.
   $field_bases['field_second_name'] = array(
     'active' => 1,
@@ -340,6 +404,27 @@ function hedley_patient_field_default_field_bases() {
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_second_name',
+    'indexes' => array(
+      'format' => array(
+        0 => 'format',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'text',
+    'settings' => array(
+      'max_length' => 255,
+    ),
+    'translatable' => 0,
+    'type' => 'text',
+  );
+
+  // Exported field_base: 'field_sector'.
+  $field_bases['field_sector'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_sector',
     'indexes' => array(
       'format' => array(
         0 => 'format',
@@ -379,6 +464,27 @@ function hedley_patient_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_integer',
+  );
+
+  // Exported field_base: 'field_village'.
+  $field_bases['field_village'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_village',
+    'indexes' => array(
+      'format' => array(
+        0 => 'format',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'text',
+    'settings' => array(
+      'max_length' => 255,
+    ),
+    'translatable' => 0,
+    'type' => 'text',
   );
 
   return $field_bases;
