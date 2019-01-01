@@ -245,8 +245,8 @@ function _hedley_migrate_participant_helpers() {
       ['Amajyaruguru', 'Gakenke', 'Busengo', 'Birambo', 'Birambo'],
       ['Amajyaruguru', 'Gakenke', 'Ruli', 'Gikingo', 'Nyamugari'],
       ['Amajyaruguru', 'Gakenke', 'Rushashi', 'Joma', 'Kineza'],
-      ['Amajyaruguru', 'Rulindo', 'Burega',	'Butangampundu', 'Kibiraro'],
-      ['Amajyaruguru', 'Rulindo',	'BUSHOKI', 'Mukoto', 'Muko'],
+      ['Amajyaruguru', 'Rulindo', 'Burega', 'Butangampundu', 'Kibiraro'],
+      ['Amajyaruguru', 'Rulindo', 'Bushoki', 'Mukoto', 'Muko'],
     ],
   ];
 }
