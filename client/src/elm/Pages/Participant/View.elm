@@ -294,7 +294,7 @@ viewFoundMother language ( motherId, mother ) session model =
                                 Maybe.map
                                     (\educationLevel ->
                                         p [ class "education-level-wrapper" ]
-                                            [ label [] [ text <| translate language Trans.LevelOfEducationLabel ]
+                                            [ label [] [ text <| translate language Trans.LevelOfEducationLabel ++ ": " ]
                                             , span [] [ text <| translate language <| Trans.LevelOfEducation educationLevel ]
                                             ]
                                     )
