@@ -3,7 +3,7 @@ module Pages.PatientRegistration.View exposing (view)
 {-| The purpose of this page is
 -}
 
-import Backend.Child.Model exposing (Gender(..))
+import Backend.Child.Model exposing (Gender(..), ModeOfDelivery(..), modeOfDeliveryToValue)
 import Backend.Measurement.Model exposing (PhotoValue)
 import Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..))
 import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Ubudehe(..))
@@ -64,6 +64,9 @@ view language currentDate user backend cache model =
 
         hivStatus =
             Form.getFieldAsString "hivStatus" model.registrationForm
+
+        modeOfDelivery =
+            Form.getFieldAsString "modeOfDelivery" model.registrationForm
 
         -- END STEP 1 FIELDS --
         familyUbudehe =
@@ -223,20 +226,20 @@ view language currentDate user backend cache model =
                                                     [ text age ]
                                                 ]
 
+                                        viewGender =
+                                            div [ class "ui grid" ]
+                                                [ div [ class "six wide column" ]
+                                                    [ text <| translate language Translate.GenderLabel ++ ":" ]
+                                                , Form.Input.checkboxInput isMale [ class "two wide column" ]
+                                                , div [ class "three wide column" ]
+                                                    [ text <| translate language (Translate.Gender Male) ]
+                                                , Form.Input.checkboxInput isFemale [ class "two wide column" ]
+                                                , div [ class "two wide column" ]
+                                                    [ text <| translate language (Translate.Gender Female) ]
+                                                ]
+
                                         motherInputs =
                                             let
-                                                viewGender =
-                                                    div [ class "ui grid" ]
-                                                        [ div [ class "six wide column" ]
-                                                            [ text <| translate language Translate.GenderLabel ++ ":" ]
-                                                        , Form.Input.checkboxInput isMale [ class "two wide column" ]
-                                                        , div [ class "three wide column" ]
-                                                            [ text <| translate language (Translate.Gender Male) ]
-                                                        , Form.Input.checkboxInput isFemale [ class "two wide column" ]
-                                                        , div [ class "two wide column" ]
-                                                            [ text <| translate language (Translate.Gender Female) ]
-                                                        ]
-
                                                 viewLevelOfEducation =
                                                     let
                                                         options =
@@ -306,7 +309,27 @@ view language currentDate user backend cache model =
                                             ]
 
                                         childInputs =
-                                            [ div [] [ text "Placeholder for child inputs" ] ]
+                                            let
+                                                viewModeOfDelivery =
+                                                    let
+                                                        options =
+                                                            emptyOption
+                                                                :: [ ( modeOfDeliveryToValue SpontaneousVaginalDeliveryWithEpisiotomy, translate language <| Translate.ModeOfDelivery SpontaneousVaginalDeliveryWithEpisiotomy )
+                                                                   , ( modeOfDeliveryToValue SpontaneousVaginalDeliveryWithoutEpisiotomy, translate language <| Translate.ModeOfDelivery SpontaneousVaginalDeliveryWithoutEpisiotomy )
+                                                                   , ( modeOfDeliveryToValue VaginalDeliveryWithVacuumExtraction, translate language <| Translate.ModeOfDelivery VaginalDeliveryWithVacuumExtraction )
+                                                                   , ( modeOfDeliveryToValue CesareanDelivery, translate language <| Translate.ModeOfDelivery CesareanDelivery )
+                                                                   ]
+                                                    in
+                                                    div [ class "ui grid" ]
+                                                        [ div [ class "six wide column required" ]
+                                                            [ text <| translate language Translate.ModeOfDeliveryLabel ++ ":" ]
+                                                        , div [ class "ten wide column" ]
+                                                            [ Form.Input.selectInput options modeOfDelivery [ class "select-input" ] ]
+                                                        ]
+                                            in
+                                            [ viewGender
+                                            , viewModeOfDelivery
+                                            ]
                                     in
                                     viewAge
                                         :: (if delta.years > 12 then

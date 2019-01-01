@@ -1,7 +1,7 @@
 module Translate exposing (ChartPhrase(..), Language(..), LoginPhrase(..), TranslationId(..), TranslationSet, ValidationError(..), allLanguages, languageFromCode, languageFromString, languageToCode, selectLanguage, translate, translateActivePage, translateChartPhrase, translateFormError, translateFormField, translateHttpError, translateLoginPhrase, translateMonth, translateValidationError, translationSet)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
-import Backend.Child.Model exposing (Gender(..))
+import Backend.Child.Model exposing (Gender(..), ModeOfDelivery(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
 import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..))
@@ -230,6 +230,8 @@ type TranslationId
     | MeasurementGained Float
     | MeasurementLost Float
     | MinutesAgo Int
+    | ModeOfDelivery ModeOfDelivery
+    | ModeOfDeliveryLabel
     | MonthAbbrev
     | MonthsOld
     | Mother
@@ -1149,6 +1151,33 @@ translationSet trans =
 
                 else
                     toString minutes ++ " minutes ago"
+            , kinyarwanda = Nothing
+            }
+
+        ModeOfDelivery mode ->
+            case mode of
+                SpontaneousVaginalDeliveryWithEpisiotomy ->
+                    { english = "Spontaneous vaginal delivery with episiotomy"
+                    , kinyarwanda = Nothing
+                    }
+
+                SpontaneousVaginalDeliveryWithoutEpisiotomy ->
+                    { english = "Spontaneous vaginal delivery without episiotomy"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaginalDeliveryWithVacuumExtraction ->
+                    { english = "Vaginal delivery with vacuum extraction"
+                    , kinyarwanda = Nothing
+                    }
+
+                CesareanDelivery ->
+                    { english = "Cesarean delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+        ModeOfDeliveryLabel ->
+            { english = "Mode of delivery"
             , kinyarwanda = Nothing
             }
 
