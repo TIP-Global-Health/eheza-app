@@ -160,7 +160,7 @@ function _hedley_migrate_preprocess_child($node, Generator $faker) {
 
   $helpers = _hedley_migrate_participant_helpers();
 
-  $gender = $helpers['gender'][$faker->numberBetween(0, 1)];
+  $gender = $helpers['gender'][$faker->numberBetween(0, count($helpers['gender']) - 1)];
   $wrapper->field_gender->set($gender);
 
   $first_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
@@ -170,9 +170,9 @@ function _hedley_migrate_preprocess_child($node, Generator $faker) {
   $wrapper->field_second_name->set($second_name);
 
   $mode_of_delivery = ['svd-episiotomy', 'svd-no-episiotomy', 'vd-vacuum', 'cesarean-delivery'];
-  $wrapper->field_mode_of_delivery->set($mode_of_delivery[$faker->numberBetween(0, 3)]);
+  $wrapper->field_mode_of_delivery->set($mode_of_delivery[$faker->numberBetween(0, count($mode_of_delivery) - 1)]);
 
-  $geolocation_info = $helpers['geolocation_info'][$faker->numberBetween(0, 4)];
+  $geolocation_info = $helpers['geolocation_info'][$faker->numberBetween(0, count($helpers['geolocation_info']) - 1)];
   $wrapper->field_province->set($geolocation_info[0]);
   $wrapper->field_district->set($geolocation_info[1]);
   $wrapper->field_sector->set($geolocation_info[2]);
@@ -203,7 +203,7 @@ function _hedley_migrate_preprocess_mother($node, Generator $faker) {
 
   $helpers = _hedley_migrate_participant_helpers();
 
-  $gender = $helpers['gender'][$faker->numberBetween(0, 1)];
+  $gender = $helpers['gender'][$faker->numberBetween(0, count($helpers['gender']) - 1)];
   $wrapper->field_gender->set($gender);
 
   $first_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
@@ -215,14 +215,14 @@ function _hedley_migrate_preprocess_mother($node, Generator $faker) {
   $wrapper->field_profession->set($faker->jobTitle);
 
   $marital_status = ['divorced', 'married', 'single', 'widowed'];
-  $wrapper->field_marital_status->set($marital_status[$faker->numberBetween(0, 3)]);
+  $wrapper->field_marital_status->set($marital_status[$faker->numberBetween(0, count($marital_status) - 1)]);
 
   $hiv_status = ['hiv-exposed-infant', 'negative', 'negative-dc', 'positive', 'unknown'];
-  $wrapper->field_hiv_status->set($hiv_status[$faker->numberBetween(0, 3)]);
+  $wrapper->field_hiv_status->set($hiv_status[$faker->numberBetween(0, count($hiv_status) - 1)]);
   $wrapper->field_household_size->set($faker->numberBetween(0, 30));
   $wrapper->field_number_of_children->set($faker->numberBetween(0, 20));
 
-  $geolocation_info = $helpers['geolocation_info'][$faker->numberBetween(0, 4)];
+  $geolocation_info = $helpers['geolocation_info'][$faker->numberBetween(0, count($helpers['geolocation_info']) - 1)];
   $wrapper->field_province->set($geolocation_info[0]);
   $wrapper->field_district->set($geolocation_info[1]);
   $wrapper->field_sector->set($geolocation_info[2]);
