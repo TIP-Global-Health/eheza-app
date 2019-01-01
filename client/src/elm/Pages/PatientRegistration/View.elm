@@ -423,12 +423,7 @@ view language currentDate user backend cache model =
                                     emptyOption
                                         :: geoLocationDictToOptions model.geoInfo.provinces
                             in
-                            div [ class "ui grid" ]
-                                [ div [ class "six wide column required" ]
-                                    [ text <| translate language Translate.Province ++ ":" ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.selectInput options province [ class "select-input" ] ]
-                                ]
+                            viewSelectInput language Translate.Province options province "ten" [ class "select-input" ] True
 
                         viewDistrict =
                             let
@@ -444,12 +439,7 @@ view language currentDate user backend cache model =
                                                         |> geoLocationDictToOptions
                                            )
                             in
-                            div [ class "ui grid" ]
-                                [ div [ class "six wide column required" ]
-                                    [ text <| translate language Translate.District ++ ":" ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.selectInput options district [ class "select-input" ] ]
-                                ]
+                            viewSelectInput language Translate.District options district "ten" [ class "select-input" ] True
 
                         viewSector =
                             let
@@ -465,12 +455,7 @@ view language currentDate user backend cache model =
                                                         |> geoLocationDictToOptions
                                            )
                             in
-                            div [ class "ui grid" ]
-                                [ div [ class "six wide column required" ]
-                                    [ text <| translate language Translate.Sector ++ ":" ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.selectInput options sector [ class "select-input" ] ]
-                                ]
+                            viewSelectInput language Translate.Sector options sector "ten" [ class "select-input" ] True
 
                         viewCell =
                             let
@@ -486,12 +471,7 @@ view language currentDate user backend cache model =
                                                         |> geoLocationDictToOptions
                                            )
                             in
-                            div [ class "ui grid" ]
-                                [ div [ class "six wide column required" ]
-                                    [ text <| translate language Translate.Cell ++ ":" ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.selectInput options cell [ class "select-input" ] ]
-                                ]
+                            viewSelectInput language Translate.Cell options cell "ten" [ class "select-input" ] True
 
                         viewVillage =
                             let
@@ -507,12 +487,7 @@ view language currentDate user backend cache model =
                                                         |> geoLocationDictToOptions
                                            )
                             in
-                            div [ class "ui grid" ]
-                                [ div [ class "six wide column required" ]
-                                    [ text <| translate language Translate.Village ++ ":" ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.selectInput options village [ class "select-input" ] ]
-                                ]
+                            viewSelectInput language Translate.Village options village "ten" [ class "select-input" ] True
 
                         viewTelephoneNumber =
                             viewTextInput language Translate.TelephoneNumber telephoneNumber False
