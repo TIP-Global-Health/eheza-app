@@ -8,26 +8,18 @@
 include_once 'hedley_user.features.inc';
 
 /**
- * Assign the random PIN code.
+ * Implements hook_user_presave().
  */
 function hedley_user_user_presave(&$edit, $account, $category) {
-  $old_pin = empty($account->field_pin_code[LANGUAGE_NONE][0]['value']) ? '' : $account->field_pin_code[LANGUAGE_NONE][0]['value'];
-  $edited_pin = empty($edit['field_pin_code'][LANGUAGE_NONE][0]['value']) ? '' : $edit['field_pin_code'][LANGUAGE_NONE][0]['value'];
+  $original_pin = empty($account->field_pin_code[LANGUAGE_NONE][0]['value']) ? '' : $account->field_pin_code[LANGUAGE_NONE][0]['value'];
+  $new_pin = empty($edit['field_pin_code'][LANGUAGE_NONE][0]['value']) ? '' : $edit['field_pin_code'][LANGUAGE_NONE][0]['value'];
 
-  if (empty($edited_pin)) {
-    if (empty($old_pin)) {
-      $new_pin = hedley_user_get_unique_pincode();
-    }
-    else {
-      $new_pin = $old_pin;
-    }
+  if (empty($new_pin)) {
+    $new_pin = $original_pin ? $original_pin : hedley_user_get_unique_pincode();
   }
   else {
-    $new_pin = $edited_pin;
-    if ($old_pin != $edited_pin) {
-      if (!hedley_user_check_unique_pincode($edited_pin)) {
-        throw new Exception('The provided PIN code was not unique.');
-      }
+    if ($original_pin != $new_pin && !hedley_user_check_unique_pincode($new_pin)) {
+      throw new Exception('The provided PIN code was not unique.');
     }
   }
 
@@ -44,6 +36,7 @@ function hedley_user_get_unique_pincode() {
   $rand = rand(1000, 9999);
 
   if (hedley_user_check_unique_pincode($rand)) {
+    // Pincode is unique.
     return $rand;
   }
 
@@ -56,15 +49,23 @@ function hedley_user_get_unique_pincode() {
  *
  * @param string $code
  *   The pin code to check.
+ * @param string $uid
+ *   A user ID to ignore.
  *
  * @return bool
  *   TRUE if the supplied pincode is unique
  */
-function hedley_user_check_unique_pincode($code) {
+function hedley_user_check_unique_pincode($code, $uid) {
   $query = new EntityFieldQuery();
   $query
     ->entityCondition('entity_type', 'user')
-    ->fieldCondition('field_pin_code', 'value', $code);
+    ->fieldCondition('field_pin_code', 'value', $code)
+    // Enough to know if there is one more.
+    ->range(0, 1);
+
+  if ($uid) {
+    $query->propertyCondition('uid', $uid, 'NOT');
+  }
 
   $count = $query
     ->count()
