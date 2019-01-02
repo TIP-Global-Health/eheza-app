@@ -11,19 +11,19 @@ include_once 'hedley_user.features.inc';
  * Implements hook_user_presave().
  */
 function hedley_user_user_presave(&$edit, $account, $category) {
-  $original_pin = empty($account->field_pin_code[LANGUAGE_NONE][0]['value']) ? '' : $account->field_pin_code[LANGUAGE_NONE][0]['value'];
+  $wrapper = entity_metadata_wrapper('user', $account);
+
+  $original_pin = $wrapper->field_pin_code->value();
   $new_pin = empty($edit['field_pin_code'][LANGUAGE_NONE][0]['value']) ? '' : $edit['field_pin_code'][LANGUAGE_NONE][0]['value'];
 
   if (empty($new_pin)) {
-    $new_pin = $original_pin ? $original_pin : hedley_user_get_unique_pincode();
+    $edit['field_pin_code'][LANGUAGE_NONE][0]['value'] = $original_pin ? $original_pin : hedley_user_get_unique_pincode();
   }
   else {
-    if ($original_pin != $new_pin && !hedley_user_check_unique_pincode($new_pin)) {
+    if (!hedley_user_check_unique_pincode($new_pin, $wrapper->getIdentifier())) {
       throw new Exception('The provided PIN code was not unique.');
     }
   }
-
-  $edit['field_pin_code'][LANGUAGE_NONE][0]['value'] = $new_pin;
 }
 
 /**
@@ -64,7 +64,7 @@ function hedley_user_check_unique_pincode($code, $uid = NULL) {
     ->range(0, 1);
 
   if ($uid) {
-    $query->propertyCondition('uid', $uid, 'NOT');
+    $query->propertyCondition('uid', $uid, '<>');
   }
 
   $count = $query
