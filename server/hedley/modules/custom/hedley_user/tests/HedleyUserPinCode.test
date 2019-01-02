@@ -1,0 +1,44 @@
+<?php
+
+/**
+ * @file
+ * Test functionality related to PIN code.
+ */
+
+/**
+ * HedleyUserPinCode tests.
+ */
+class HedleyUserPinCode extends HedleyWebTestBase {
+
+  /**
+   * Activates the User-related modules for the tests.
+   *
+   * @inheritdoc
+   */
+  public function setUp() {
+    parent::setUp(['hedley_user']);
+  }
+
+  /**
+   * Info hook.
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'HedleyUserPinCode tests',
+      'description' => 'Tests functionality related to user PIN codes.',
+      'group' => 'Hedley',
+    ];
+  }
+
+  /**
+   * Test that PIN code gets created for a new user.
+   */
+  public function testNewUserGetsPinCode() {
+    $user = $this->drupalCreateUser();
+
+    $wrapper = entity_metadata_wrapper('user', $user);
+
+    $this->assertTrue($wrapper->field_pin_code->value());
+  }
+
+}

@@ -73,3 +73,4 @@ features[user_permission][] = edit own weight content
 features[variable][] = user_pictures
 files[] = tests/HedleyUserTestPermission.test
 files[] = tests/HedleyUserAccess.test
+files[] = tests/HedleyUserPinCode.test

@@ -55,7 +55,7 @@ function hedley_user_get_unique_pincode() {
  * @return bool
  *   TRUE if the supplied pincode is unique
  */
-function hedley_user_check_unique_pincode($code, $uid) {
+function hedley_user_check_unique_pincode($code, $uid = NULL) {
   $query = new EntityFieldQuery();
   $query
     ->entityCondition('entity_type', 'user')
