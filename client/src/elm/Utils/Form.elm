@@ -1,5 +1,6 @@
-module Utils.Form exposing (onError)
+module Utils.Form exposing (isFormFieldSet, onError)
 
+import Form exposing (..)
 import Form.Error exposing (..)
 import Form.Validate exposing (..)
 
@@ -14,3 +15,16 @@ onError callback validation field =
 
         Err err ->
             callback err field
+
+
+isFormFieldSet : Form.FieldState e String -> Bool
+isFormFieldSet field =
+    case field.value of
+        Nothing ->
+            False
+
+        Just "" ->
+            False
+
+        _ ->
+            True

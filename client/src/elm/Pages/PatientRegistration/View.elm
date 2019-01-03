@@ -19,10 +19,12 @@ import Maybe.Extra exposing (unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRegistration.Model exposing (Model, Msg(..), RegistrationStep(..))
+import Pages.PatientRegistration.Utils exposing (getFormFieldValue)
 import Participant.Model exposing (ParticipantType(..))
 import Time.Date
 import Translate exposing (Language(..), TranslationId, translate)
 import User.Model exposing (User)
+import Utils.Form exposing (isFormFieldSet)
 import Utils.Html exposing (script)
 
 
@@ -41,6 +43,9 @@ view language currentDate user backend cache model =
 
         dayOfBirth =
             Form.getFieldAsString "dayOfBirth" model.registrationForm
+
+        log =
+            Debug.log "dayOfBirth" dayOfBirth
 
         monthOfBirth =
             Form.getFieldAsString "monthOfBirth" model.registrationForm
@@ -119,27 +124,14 @@ view language currentDate user backend cache model =
         -- END STEP 3 FIELDS --
         maybeAgeDateDelta =
             let
-                getFieldValue field =
-                    unwrap
-                        0
-                        (\value ->
-                            case String.toInt value of
-                                Ok value ->
-                                    value
-
-                                _ ->
-                                    0
-                        )
-                        field.value
-
                 birthDay =
-                    getFieldValue dayOfBirth
+                    getFormFieldValue dayOfBirth
 
                 birthMonth =
-                    getFieldValue monthOfBirth
+                    getFormFieldValue monthOfBirth
 
                 birthYear =
-                    getFieldValue yearOfBirth
+                    getFormFieldValue yearOfBirth
             in
             if birthDay > 0 && birthMonth > 0 && birthYear > 0 then
                 Time.Date.delta currentDate (Time.Date.date birthYear birthMonth birthDay) |> Just
@@ -502,17 +494,6 @@ view language currentDate user backend cache model =
 
         rightButton =
             let
-                isFieldSet field =
-                    case field.value of
-                        Nothing ->
-                            False
-
-                        Just "" ->
-                            False
-
-                        _ ->
-                            True
-
                 ( label, action, disabled ) =
                     case model.registrationStep of
                         First ->
@@ -532,7 +513,7 @@ view language currentDate user backend cache model =
                             in
                             ( Translate.Next
                             , SetRegistrationStep Second
-                            , not <| List.all isFieldSet requiredFields
+                            , not <| List.all isFormFieldSet requiredFields
                             )
 
                         Second ->
@@ -552,7 +533,7 @@ view language currentDate user backend cache model =
                             in
                             ( Translate.Next
                             , SetRegistrationStep Third
-                            , not <| List.all isFieldSet requiredFields
+                            , not <| List.all isFormFieldSet requiredFields
                             )
 
                         Third ->
