@@ -19,3 +19,4 @@ features[variable][] = menu_parent_device
 features[variable][] = node_options_device
 features[variable][] = node_preview_device
 features[variable][] = node_submitted_device
+files[] = tests/HedleyDevicePairingCode.test

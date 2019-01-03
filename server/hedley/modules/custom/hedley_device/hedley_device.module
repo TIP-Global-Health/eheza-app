@@ -6,3 +6,78 @@
  */
 
 include_once 'hedley_device.features.inc';
+
+/**
+ * Implements hook_node_presave().
+ */
+function hedley_device_node_presave($node) {
+  if ($node->type != 'device') {
+    // Not a device.
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  if (empty($node->nid)) {
+    // New device, so we generate a pairing code.
+    $wrapper->field_pairing_code->set(hedley_device_get_unique_pairing_code());
+  }
+  elseif (!hedley_device_check_unique_pairing_code($wrapper->field_pairing_code->value(), $wrapper->getIdentifier())) {
+    // Existing device, so throw error if it's not unique.
+    throw new Exception('The provided pairing code was not unique.');
+  }
+}
+
+/**
+ * Return an 8-digit unique pairing code.
+ *
+ * @return int
+ *   The pincode.
+ */
+function hedley_device_get_unique_pairing_code() {
+  $rand = rand(10000000, 99999999);
+
+  if (hedley_device_check_unique_pairing_code($rand)) {
+    // Pairing code is unique.
+    return $rand;
+  }
+
+  // Try again.
+  return hedley_device_get_unique_pairing_code();
+}
+
+/**
+ * Check whether the supplied pairing code is already used.
+ *
+ * @param string $code
+ *   The pairing code to check.
+ * @param null|int $nid
+ *   Optional; A node ID to ignore.
+ *
+ * @return bool
+ *   TRUE if the supplied pairing code is unique
+ */
+function hedley_device_check_unique_pairing_code($code, $nid = NULL) {
+  if (empty($code)) {
+    // An empty pairing code is permissible.
+    return TRUE;
+  }
+
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'device')
+    ->fieldCondition('field_pairing_code', 'value', $code)
+    // Enough to know if there is one more.
+    ->range(0, 1);
+
+  if ($nid) {
+    $query->propertyCondition('nid', $nid, '<>');
+  }
+
+  $count = $query
+    ->count()
+    ->execute();
+
+  return $count == 0;
+}
