@@ -188,7 +188,7 @@ function _hedley_migrate_process_column(&$data, &$locator, $index, $row, $vocabu
 
   // Create the term.
   $term = (object) [
-    'name' => $row[$index],
+    'name' => ucfirst(strtolower($row[$index])),
     'description' => ucfirst($column_mapping[$index]) . ' ' . $row[$index],
     'vid' => $vocabulary_id,
     'parent' => $parent,
@@ -219,7 +219,8 @@ function hedley_migrate_generate_geolocation_structure_for_client() {
       _hedley_migrate_get_children_by_parents($data[$index - 1]['tids']);
 
     $data[$index]['structure'] = hedley_migrate_generate_structure_for_terms_of_type($column, $data[$index]['tids']);
-    dpm($data[$index]['structure']);
+    // Uncomment this when generating new structure.
+    // dpm($data[$index]['structure']);
   }
 }
 
