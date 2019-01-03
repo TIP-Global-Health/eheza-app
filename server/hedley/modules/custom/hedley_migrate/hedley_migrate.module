@@ -252,7 +252,7 @@ function hedley_migrate_generate_structure_for_terms_of_type($type, array $tids,
         $wrapper = entity_metadata_wrapper('taxonomy_term', $term);
         $parent_tids = $wrapper->parent->value(['identifier' => TRUE]);
         $parent_tid = reset($parent_tids);
-        $parent = '(Just <| toEntityId ' . $parent_tid . ')';
+        $parent = "(Just <| toEntityId $parent_tid)";
       }
 
       $entities[] = "( $id, GeoLocation \"$name\" $parent)";
