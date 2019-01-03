@@ -78,6 +78,7 @@ testConfigModel =
     in
     { config = testConfig
     , loginPage = Pages.Login.Model.emptyModel
+    , patientRegistrationPage = Pages.PatientRegistration.Model.emptyModel
     , login = loginStatus
     }
 
