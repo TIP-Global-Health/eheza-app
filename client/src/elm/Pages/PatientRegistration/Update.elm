@@ -31,12 +31,12 @@ update currentDate msg model =
             let
                 extraMsgs =
                     case subMsg of
-                        -- If "isMale" checkbox gets enabled, disable isFemale" checkbox.
                         Form.Input "isMale" Form.Checkbox (Bool True) ->
+                            -- "isMale" checkbox gets enabled => disable isFemale" checkbox.
                             [ MsgRegistrationForm (Form.Input "isFemale" Form.Checkbox (Bool False)) ]
 
-                        -- If "isFemale" checkbox gets enabled, disable isMale" checkbox.
                         Form.Input "isFemale" Form.Checkbox (Bool True) ->
+                            -- "isFemale" checkbox gets enabled => disable isMale" checkbox.
                             [ MsgRegistrationForm (Form.Input "isMale" Form.Checkbox (Bool False)) ]
 
                         Form.Input input Form.Select (String value) ->
@@ -61,6 +61,7 @@ update currentDate msg model =
                                         year =
                                             getFormFieldValue fieldYear
                                     in
+                                    -- All 3 inputs are set.
                                     if day > 0 && month > 0 && year > 0 then
                                         let
                                             inputDate =
@@ -97,7 +98,7 @@ update currentDate msg model =
                                         else if day /= inputDay then
                                             -- We got invalid day as input, and this was fixed by Time.Date.date.
                                             -- Need to update input day to fixed value.
-                                            [ MsgRegistrationForm (Form.Input "dayOfBirth" Form.Select (String (toString currentDay))) ]
+                                            [ MsgRegistrationForm (Form.Input "dayOfBirth" Form.Select (String (toString day))) ]
 
                                         else
                                             []
@@ -107,12 +108,15 @@ update currentDate msg model =
                             in
                             case input of
                                 "dayOfBirth" ->
+                                    -- Simulate new value for dayOfBirth.
                                     birthDateExtraMsgs { dayOfBirth | value = Just value } monthOfBirth yearOfBirth
 
                                 "monthOfBirth" ->
+                                    -- Simulate new value for monthOfBirth.
                                     birthDateExtraMsgs dayOfBirth { monthOfBirth | value = Just value } yearOfBirth
 
                                 "yearOfBirth" ->
+                                    -- Simulate new value for yearOfBirth.
                                     birthDateExtraMsgs dayOfBirth monthOfBirth { yearOfBirth | value = Just value }
 
                                 _ ->
