@@ -122,6 +122,17 @@ view language currentDate user backend cache model =
             Form.getFieldAsString "healthCenterName" model.registrationForm
 
         -- END STEP 3 FIELDS --
+        isFieldSet field =
+            case field.value of
+                Nothing ->
+                    False
+
+                Just "" ->
+                    False
+
+                _ ->
+                    True
+
         getFieldValue field =
             unwrap
                 0
@@ -402,14 +413,12 @@ view language currentDate user backend cache model =
                                             []
                                    )
 
-                        -- We want to send text value to backend, hence, we
-                        -- don't set geoLocation ID as a value, but geoLocation name.
                         geoLocationDictToOptions dict =
                             dict
                                 |> EveryDict.toList
                                 |> List.map
-                                    (\( _, geoLocation ) ->
-                                        ( geoLocation.name, geoLocation.name )
+                                    (\( id, geoLocation ) ->
+                                        ( toString <| fromEntityId id, geoLocation.name )
                                     )
 
                         filterGeoLocationDictByParent parentId dict =
@@ -419,13 +428,31 @@ view language currentDate user backend cache model =
                                         (Just <| toEntityId parentId) == geoLocation.parent
                                     )
 
+                        geoLocationInputAttributes isDisabled =
+                            class "select-input"
+                                :: (if isDisabled then
+                                        [ attribute "disabled" "" ]
+
+                                    else
+                                        []
+                                   )
+
                         viewProvince =
                             let
                                 options =
                                     emptyOption
                                         :: geoLocationDictToOptions model.geoInfo.provinces
+
+                                disabled =
+                                    isFieldSet district
                             in
-                            viewSelectInput language Translate.Province options province "ten" [ class "select-input" ] True
+                            viewSelectInput language
+                                Translate.Province
+                                options
+                                province
+                                "ten"
+                                (geoLocationInputAttributes disabled)
+                                True
 
                         viewDistrict =
                             let
@@ -440,8 +467,17 @@ view language currentDate user backend cache model =
                                                         |> filterGeoLocationDictByParent provinceId
                                                         |> geoLocationDictToOptions
                                            )
+
+                                disabled =
+                                    isFieldSet sector
                             in
-                            viewSelectInput language Translate.District options district "ten" [ class "select-input" ] True
+                            viewSelectInput language
+                                Translate.District
+                                options
+                                district
+                                "ten"
+                                (geoLocationInputAttributes disabled)
+                                True
 
                         viewSector =
                             let
@@ -456,8 +492,17 @@ view language currentDate user backend cache model =
                                                         |> filterGeoLocationDictByParent districtId
                                                         |> geoLocationDictToOptions
                                            )
+
+                                disabled =
+                                    isFieldSet cell
                             in
-                            viewSelectInput language Translate.Sector options sector "ten" [ class "select-input" ] True
+                            viewSelectInput language
+                                Translate.Sector
+                                options
+                                sector
+                                "ten"
+                                (geoLocationInputAttributes disabled)
+                                True
 
                         viewCell =
                             let
@@ -472,8 +517,17 @@ view language currentDate user backend cache model =
                                                         |> filterGeoLocationDictByParent sectorId
                                                         |> geoLocationDictToOptions
                                            )
+
+                                disabled =
+                                    isFieldSet village
                             in
-                            viewSelectInput language Translate.Cell options cell "ten" [ class "select-input" ] True
+                            viewSelectInput language
+                                Translate.Cell
+                                options
+                                cell
+                                "ten"
+                                (geoLocationInputAttributes disabled)
+                                True
 
                         viewVillage =
                             let
@@ -489,7 +543,13 @@ view language currentDate user backend cache model =
                                                         |> geoLocationDictToOptions
                                            )
                             in
-                            viewSelectInput language Translate.Village options village "ten" [ class "select-input" ] True
+                            viewSelectInput language
+                                Translate.Village
+                                options
+                                village
+                                "ten"
+                                (geoLocationInputAttributes False)
+                                True
 
                         viewTelephoneNumber =
                             viewTextInput language Translate.TelephoneNumber telephoneNumber False
@@ -565,17 +625,6 @@ view language currentDate user backend cache model =
 
         rightButton =
             let
-                isFieldSet field =
-                    case field.value of
-                        Nothing ->
-                            False
-
-                        Just "" ->
-                            False
-
-                        _ ->
-                            True
-
                 ( label, action, disabled ) =
                     case model.registrationStep of
                         First ->
