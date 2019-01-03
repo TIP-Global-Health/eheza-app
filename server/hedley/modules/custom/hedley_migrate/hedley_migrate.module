@@ -97,58 +97,88 @@ function hedley_migrate_hedley_faker_taxonomy_term_generate($term, Generator $fa
   _hedley_migrate_preprocess_xss('taxonomy_term', $term->vocabulary_machine_name, $term);
 }
 
+/**
+ * Function creates Taxonomy vocabulary that describes GeoLocations.
+ *
+ * Currently, it's only use is to generate GeoLocation data structure that
+ * will be set on client.
+ *
+ * Structure:
+ *  - Level 0: province
+ *  - Level 1: district
+ *  - Level 2: sector
+ *  - Level 3: cell
+ *  - Level 4: village
+ */
 function hedley_migrate_generate_geo_terms_vocabulary() {
-  if (taxonomy_vocabulary_machine_name_load('ihangane_villages')) {
+  if (taxonomy_vocabulary_machine_name_load('ihangane_geolocation')) {
+    // Vocabulary already exists.
     return;
   }
 
+  // Create new vocabulary.
   $vocabulary = (object) array(
-    'name' => 'Ihangane villages vocabulary',
-    'description' => 'This vocabulary lists all villages',
-    'machine_name' => 'ihangane_villages',
+    'name' => 'Ihangane geolocation vocabulary',
+    'description' => 'This vocabulary lists all geolocations',
+    'machine_name' => 'ihangane_geolocation',
   );
   taxonomy_vocabulary_save($vocabulary);
 
+  // Load input file.
   $migrate_dir = variable_get('hedley_migrate_directory', FALSE) ? variable_get('hedley_migrate_directory') : drupal_get_path('module', 'hedley_migrate');
   $source_file = $migrate_dir . '/csv/villages.csv';
 
-  $index_mapping = [
-    'province',
-    'district',
-    'sector',
-    'cell',
-    'village',
-  ];
-  $column_mapping = array_flip($index_mapping);
+  $column_mapping = ['province', 'district', 'sector', 'cell', 'village'];
 
-  $data = [
-    $mapping['province'] = [],
-    $mapping['district'] = [],
-    $mapping['sector'] = [],
-    $mapping['cell'] = [],
-    $mapping['village'] = [],
-  ];
+  foreach ($column_mapping as $column) {
+    $data[] = [];
+  }
 
+  // Used to check if term exists (was previously created), so we can
+  // skip it.
   $locator = [];
 
   $handler = fopen($source_file, 'r');
   while ($row = fgetcsv($handler)) {
     foreach ($row as $index => $column) {
-      _hedley_migrate_process_column($data, $locator, $column, $index, $row, $vocabulary, $column_mapping, $index_mapping);
+      _hedley_migrate_process_column($data, $locator, $index, $row, $vocabulary->vid, $column_mapping);
     }
   }
 
   fclose($handler);
 }
 
-function _hedley_migrate_process_column(&$data, &$locator, $value, $index, $row, $vocab, $mapping, $flipped_mapping) {
+/**
+ * Processes a column form input file row.
+ *
+ * Row contains 5 columns:
+ *  [ province, district, sector, cell, village ]
+ *
+ * Function is invoked for each column in a row.
+ *
+ * @param array $data
+ *   Terms created so far.
+ * @param array $locator
+ *   Locator array, that helps to determine if term requires creation.
+ * @param int $index
+ *   Index of column that is being processed.
+ * @param array $row
+ *   The row that contains processed column.
+ * @param int $vocabulary_id
+ *   The ID of vocabulary to which terms are added.
+ * @param array $column_mapping
+ *   Columns mapping array.
+ */
+function _hedley_migrate_process_column(&$data, &$locator, $index, $row, $vocabulary_id, $column_mapping) {
   $locator_index = implode('-', array_slice($row, 0, $index + 1));
 
   if (!empty($locator[$locator_index])) {
+    // Term already exists.
     return;
   }
 
-  if ($index != $mapping['province']) {
+  // Resolve term parent.
+  if ($index != 0) {
     $parent_key = $row[$index - 1];
     $parent = $data[$index - 1][$parent_key];
   }
@@ -156,106 +186,111 @@ function _hedley_migrate_process_column(&$data, &$locator, $value, $index, $row,
     $parent = 0;
   }
 
+  // Create the term.
   $term = (object) [
-    'name' => $value,
-    'description' => ucfirst($flipped_mapping[$index]) . ' ' . $value,
-    'vid' => $vocab->vid,
+    'name' => $row[$index],
+    'description' => ucfirst($column_mapping[$index]) . ' ' . $row[$index],
+    'vid' => $vocabulary_id,
     'parent' => $parent,
   ];
-
   taxonomy_term_save($term);
-  $data[$index][$value] = $locator[$locator_index] = $term->tid;
+
+  // Update data and locator arrays with new term.
+  $data[$index][$row[$index]] = $locator[$locator_index] = $term->tid;
 }
 
-function hedley_migrate_generate_geo_terms_for_client() {
-  // Todo: Load vocabulary and query for provinces according to it's ID.
-
-  $provinces_tids = _hedley_migrate_get_terms_by_parent([0]);
-  $provinces = [];
-  foreach (taxonomy_term_load_multiple($provinces_tids) as $province) {
-    $id = 'toEntityId ' . $province->tid;
-    $name = $province->name;
-
-    $provinces[] = "( $id, GeoLocation ($id) \"$name\" Nothing)";
+/**
+ * Generates static geolocation structure to be used by client.
+ */
+function hedley_migrate_generate_geolocation_structure_for_client() {
+  if (!$vocabulary = taxonomy_vocabulary_machine_name_load('ihangane_geolocation')) {
+    // Vocabulary does not exist.
+    return;
   }
 
-  dpm('[ ' . implode("\n, ", $provinces) . ' ]');
+  $column_mapping = ['province', 'district', 'sector', 'cell', 'village'];
+  foreach ($column_mapping as $index => $column) {
+    $data[$index] = [];
 
-  $districts_tids = _hedley_migrate_get_terms_by_parent($provinces_tids);
+    $data[$index]['tids'] = $index == 0 ?
+      // We specify vocabulary ID only for top level.
+      _hedley_migrate_get_children_by_parents([0], $vocabulary->vid) :
+      // We know for sure that all other levels belong to same vocabulary.
+      _hedley_migrate_get_children_by_parents($data[$index - 1]['tids']);
 
-  $districts = [];
-  foreach (taxonomy_term_load_multiple($districts_tids) as $district) {
-    $wrapper = entity_metadata_wrapper('taxonomy_term', $district);
-    $parent_tids = $wrapper->parent->value(['identifier' => TRUE]);
-    $parent_tid = reset($parent_tids);
-    $id = 'toEntityId ' . $district->tid;
-    $name = $district->name;
-    $parent = '(Just <| toEntityId ' . $parent_tid . ')';
-
-    $districts[] = "( $id, GeoLocation ($id) \"$name\" $parent)";
+    $data[$index]['structure'] = hedley_migrate_generate_structure_for_terms_of_type($column, $data[$index]['tids']);
+    dpm($data[$index]['structure']);
   }
+}
 
-  dpm('[ ' . implode("\n, ", $districts) . ' ]');
-
-  $sectors_tids = _hedley_migrate_get_terms_by_parent($districts_tids);
-  $sectors = [];
-  foreach (taxonomy_term_load_multiple($sectors_tids) as $sector) {
-    $wrapper = entity_metadata_wrapper('taxonomy_term', $sector);
-    $parent_tids = $wrapper->parent->value(['identifier' => TRUE]);
-    $parent_tid = reset($parent_tids);
-    $id = 'toEntityId ' . $sector->tid;
-    $name = $sector->name;
-    $parent = '(Just <| toEntityId ' . $parent_tid . ')';
-
-    $sectors[] = "( $id, GeoLocation ($id) \"$name\" $parent)";
-  }
-
-  dpm('[ ' . implode("\n, ", $sectors) . ' ]');
-
-  $cells_tids = _hedley_migrate_get_terms_by_parent($sectors_tids);
-  $cells = [];
-  foreach (taxonomy_term_load_multiple($cells_tids) as $cell) {
-    $wrapper = entity_metadata_wrapper('taxonomy_term', $cell);
-    $parent_tids = $wrapper->parent->value(['identifier' => TRUE]);
-    $parent_tid = reset($parent_tids);
-    $id = 'toEntityId ' . $cell->tid;
-    $name = $cell->name;
-    $parent = '(Just <| toEntityId ' . $parent_tid . ')';
-
-    $cells[] = "( $id, GeoLocation ($id) \"$name\" $parent)";
-  }
-
-  dpm('[ ' . implode("\n, ", $cells) . ' ]');
-
-
-  $villages_tids = _hedley_migrate_get_terms_by_parent($cells_tids);
-  $tids_chunks = array_chunk($villages_tids, 256);
+/**
+ * Generates structure for all terms of specified type.
+ *
+ * @param string $type
+ *   Type that term represents - province/district/sector/cell/village.
+ * @param array $tids
+ *   All term IDs for provided type.
+ * @param int $chunk_size
+ *   Number of terms in single chunk, while processing terms array.
+ *
+ * @return string
+ *   Structure that is generated for provided input.
+ */
+function hedley_migrate_generate_structure_for_terms_of_type($type, array $tids, $chunk_size = 256) {
+  $tids_chunks = array_chunk($tids, $chunk_size);
   $chunks = [];
-  foreach ($tids_chunks as $tid_chunk) {
-    $villages = [];
-    foreach (taxonomy_term_load_multiple($tid_chunk) as $village) {
-      $wrapper = entity_metadata_wrapper('taxonomy_term', $village);
-      $parent_tids = $wrapper->parent->value(['identifier' => TRUE]);
-      $parent_tid = reset($parent_tids);
-      $id = 'toEntityId ' . $village->tid;
-      $name = $village->name;
-      $parent = '(Just <| toEntityId ' . $parent_tid . ')';
 
-      $villages[] = "( $id, GeoLocation ($id) \"$name\" $parent)";
+  foreach ($tids_chunks as $tid_chunk) {
+    $entities = [];
+    foreach (taxonomy_term_load_multiple($tid_chunk) as $term) {
+      $id = 'toEntityId ' . $term->tid;
+      $name = $term->name;
+
+      if ($type == 'province' ) {
+        $parent = 'Nothing';
+      }
+      else {
+        $wrapper = entity_metadata_wrapper('taxonomy_term', $term);
+        $parent_tids = $wrapper->parent->value(['identifier' => TRUE]);
+        $parent_tid = reset($parent_tids);
+        $parent = '(Just <| toEntityId ' . $parent_tid . ')';
+      }
+
+      $entities[] = "( $id, GeoLocation \"$name\" $parent)";
     }
 
-    $chunks[] = '[ ' . implode("\n, ", $villages) . ' ]';
+    $chunks[] = '[ ' . implode("\n, ", $entities) . ' ]';
   }
 
-  dpm(implode(" ++ \n ", $chunks));
+  return implode(" ++ \n ", $chunks);
 }
 
-function _hedley_migrate_get_terms_by_parent($parents) {
-  return db_select('taxonomy_term_hierarchy', 'hierarchy')
+/**
+ * IDs of all children terms for specified parents term IDs.
+ *
+ * @param array $parents
+ *   The IDs of parent terms.
+ * @param int|bool $vocabulary_id
+ *   The ID of vocabulary to which terms belong. False if it's not important.
+ *
+ * @return array
+ *   The IDs of all children terms for specified parents.
+ */
+function _hedley_migrate_get_children_by_parents($parents, $vocabulary_id = FALSE) {
+  $query = db_select('taxonomy_term_hierarchy', 'hierarchy');
+  if ($vocabulary_id) {
+    $query->innerJoin('taxonomy_term_data', 'data', 'hierarchy.tid = data.tid');
+  }
+
+  $query
     ->fields('hierarchy', ['tid'])
-    ->condition('hierarchy.parent', $parents, 'IN')
-    ->execute()
-    ->fetchCol();
+    ->condition('hierarchy.parent', $parents, 'IN');
+
+  if ($vocabulary_id) {
+    $query->condition('data.vid', $vocabulary_id);
+  }
+
+  return $query->execute()->fetchCol();
 }
 
 /**
