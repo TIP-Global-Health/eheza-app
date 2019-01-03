@@ -15,7 +15,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
-import Maybe.Extra exposing (unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRegistration.Model exposing (Model, Msg(..), RegistrationStep(..))
@@ -43,9 +42,6 @@ view language currentDate user backend cache model =
 
         dayOfBirth =
             Form.getFieldAsString "dayOfBirth" model.registrationForm
-
-        log =
-            Debug.log "dayOfBirth" dayOfBirth
 
         monthOfBirth =
             Form.getFieldAsString "monthOfBirth" model.registrationForm

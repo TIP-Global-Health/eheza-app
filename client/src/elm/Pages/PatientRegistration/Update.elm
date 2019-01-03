@@ -64,17 +64,17 @@ update currentDate msg model =
                                     -- All 3 inputs are set.
                                     if day > 0 && month > 0 && year > 0 then
                                         let
-                                            inputDate =
+                                            adjustedInputDate =
                                                 Time.Date.date year month day
 
-                                            inputDay =
-                                                Time.Date.day inputDate
+                                            adjustedInputDay =
+                                                Time.Date.day adjustedInputDate
 
-                                            inputMonth =
-                                                Time.Date.month inputDate
+                                            adjustedInputMonth =
+                                                Time.Date.month adjustedInputDate
 
-                                            inputYear =
-                                                Time.Date.year inputDate
+                                            adjustedInputYear =
+                                                Time.Date.year adjustedInputDate
 
                                             currentDay =
                                                 Time.Date.day currentDate
@@ -85,20 +85,20 @@ update currentDate msg model =
                                             currentYear =
                                                 Time.Date.year currentDate
                                         in
-                                        if currentYear == inputYear && currentMonth < inputMonth then
+                                        if currentYear == adjustedInputYear && currentMonth < adjustedInputMonth then
                                             -- Per selected month, we understand that we got future date as input.
                                             -- Need to update input month to current month.
                                             [ MsgRegistrationForm (Form.Input "monthOfBirth" Form.Select (String (toString currentMonth))) ]
 
-                                        else if currentYear == inputYear && currentMonth == inputMonth && currentDay < inputDay then
+                                        else if currentYear == adjustedInputYear && currentMonth == adjustedInputMonth && currentDay < adjustedInputDay then
                                             -- Per selected day, we understand that we got future date as input.
                                             -- Need to update input day to current day.
                                             [ MsgRegistrationForm (Form.Input "dayOfBirth" Form.Select (String (toString currentDay))) ]
 
-                                        else if day /= inputDay then
+                                        else if day /= adjustedInputDay then
                                             -- We got invalid day as input, and this was fixed by Time.Date.date.
                                             -- Need to update input day to fixed value.
-                                            [ MsgRegistrationForm (Form.Input "dayOfBirth" Form.Select (String (toString day))) ]
+                                            [ MsgRegistrationForm (Form.Input "dayOfBirth" Form.Select (String (toString adjustedInputDay))) ]
 
                                         else
                                             []
