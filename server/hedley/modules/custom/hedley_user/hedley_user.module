@@ -19,10 +19,8 @@ function hedley_user_user_presave(&$edit, $account, $category) {
   if (empty($new_pin)) {
     $edit['field_pin_code'][LANGUAGE_NONE][0]['value'] = $original_pin ? $original_pin : hedley_user_get_unique_pincode();
   }
-  else {
-    if (!hedley_user_check_unique_pincode($new_pin, $wrapper->getIdentifier())) {
-      throw new Exception('The provided PIN code was not unique.');
-    }
+  elseif (!hedley_user_check_unique_pincode($new_pin, $wrapper->getIdentifier())) {
+    throw new Exception('The provided PIN code was not unique.');
   }
 }
 
@@ -49,8 +47,8 @@ function hedley_user_get_unique_pincode() {
  *
  * @param string $code
  *   The pin code to check.
- * @param string $uid
- *   A user ID to ignore.
+ * @param null|string $uid
+ *   Optional; A user ID to ignore.
  *
  * @return bool
  *   TRUE if the supplied pincode is unique

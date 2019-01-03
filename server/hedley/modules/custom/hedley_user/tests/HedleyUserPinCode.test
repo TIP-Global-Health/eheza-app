@@ -48,7 +48,6 @@ class HedleyUserPinCode extends HedleyWebTestBase {
     $account = $this->drupalCreateUser();
     $wrapper = entity_metadata_wrapper('user', $account);
 
-    $wrapper->field_phone->set('555-1212');
     $wrapper->save();
 
     $this->pass('Saved with unchanged PIN without exception.');
@@ -83,8 +82,9 @@ class HedleyUserPinCode extends HedleyWebTestBase {
     $account = $this->drupalCreateUser();
     $wrapper = entity_metadata_wrapper('user', $account);
 
+    $wrapper->field_pin_code->set('1234');
+
     try {
-      $wrapper->field_pin_code->set('1234');
       $wrapper->save();
 
       $this->fail('Failed to throw exception for duplicate PIN code');
