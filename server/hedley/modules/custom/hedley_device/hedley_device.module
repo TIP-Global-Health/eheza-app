@@ -21,6 +21,9 @@ function hedley_device_node_presave($node) {
   if (empty($node->nid)) {
     // New device, so we generate a pairing code.
     $wrapper->field_pairing_code->set(hedley_device_get_unique_pairing_code());
+
+    // And we make an access token.
+    $wrapper->field_access_token->set(drupal_random_key());
   }
   elseif (!hedley_device_check_unique_pairing_code($wrapper->field_pairing_code->value(), $wrapper->getIdentifier())) {
     // Existing device, so throw error if it's not unique.
