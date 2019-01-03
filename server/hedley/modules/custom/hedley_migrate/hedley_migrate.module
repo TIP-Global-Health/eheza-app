@@ -169,7 +169,7 @@ function hedley_migrate_generate_geo_terms_vocabulary() {
  * @param array $column_mapping
  *   Columns mapping array.
  */
-function _hedley_migrate_process_column(&$data, &$locator, $index, $row, $vocabulary_id, $column_mapping) {
+function _hedley_migrate_process_column(array &$data, array &$locator, $index, array $row, $vocabulary_id, array $column_mapping) {
   $locator_index = implode('-', array_slice($row, 0, $index + 1));
 
   if (!empty($locator[$locator_index])) {
@@ -219,8 +219,6 @@ function hedley_migrate_generate_geolocation_structure_for_client() {
       _hedley_migrate_get_children_by_parents($data[$index - 1]['tids']);
 
     $data[$index]['structure'] = hedley_migrate_generate_structure_for_terms_of_type($column, $data[$index]['tids']);
-    // Uncomment this when generating new structure.
-    // dpm($data[$index]['structure']);
   }
 }
 
@@ -247,7 +245,7 @@ function hedley_migrate_generate_structure_for_terms_of_type($type, array $tids,
       $id = 'toEntityId ' . $term->tid;
       $name = $term->name;
 
-      if ($type == 'province' ) {
+      if ($type == 'province') {
         $parent = 'Nothing';
       }
       else {
@@ -277,7 +275,7 @@ function hedley_migrate_generate_structure_for_terms_of_type($type, array $tids,
  * @return array
  *   The IDs of all children terms for specified parents.
  */
-function _hedley_migrate_get_children_by_parents($parents, $vocabulary_id = FALSE) {
+function _hedley_migrate_get_children_by_parents(array $parents, $vocabulary_id = FALSE) {
   $query = db_select('taxonomy_term_hierarchy', 'hierarchy');
   if ($vocabulary_id) {
     $query->innerJoin('taxonomy_term_data', 'data', 'hierarchy.tid = data.tid');
