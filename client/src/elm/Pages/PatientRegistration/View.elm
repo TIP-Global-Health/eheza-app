@@ -402,12 +402,14 @@ view language currentDate user backend cache model =
                                             []
                                    )
 
+                        -- We want to send text value to backend, hence, we
+                        -- don't set geoLocation ID as a value, but geoLocation name.
                         geoLocationDictToOptions dict =
                             dict
-                                |> EveryDict.values
+                                |> EveryDict.toList
                                 |> List.map
-                                    (\geoLocation ->
-                                        ( toString <| fromEntityId geoLocation.id, geoLocation.name )
+                                    (\( _, geoLocation ) ->
+                                        ( geoLocation.name, geoLocation.name )
                                     )
 
                         filterGeoLocationDictByParent parentId dict =
