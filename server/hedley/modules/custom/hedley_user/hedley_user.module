@@ -8,6 +8,71 @@
 include_once 'hedley_user.features.inc';
 
 /**
+ * Implements hook_user_presave().
+ */
+function hedley_user_user_presave(&$edit, $account, $category) {
+  $wrapper = entity_metadata_wrapper('user', $account);
+
+  $original_pin = $wrapper->field_pin_code->value();
+  $new_pin = empty($edit['field_pin_code'][LANGUAGE_NONE][0]['value']) ? '' : $edit['field_pin_code'][LANGUAGE_NONE][0]['value'];
+
+  if (empty($new_pin)) {
+    $edit['field_pin_code'][LANGUAGE_NONE][0]['value'] = $original_pin ? $original_pin : hedley_user_get_unique_pincode();
+  }
+  elseif (!hedley_user_check_unique_pincode($new_pin, $wrapper->getIdentifier())) {
+    throw new Exception('The provided PIN code was not unique.');
+  }
+}
+
+/**
+ * Return a 4 digit unique pincode.
+ *
+ * @return int
+ *   The pincode.
+ */
+function hedley_user_get_unique_pincode() {
+  $rand = rand(1000, 9999);
+
+  if (hedley_user_check_unique_pincode($rand)) {
+    // Pincode is unique.
+    return $rand;
+  }
+
+  // Try again.
+  return hedley_user_get_unique_pincode();
+}
+
+/**
+ * Check whether the supplied pincode is already used.
+ *
+ * @param string $code
+ *   The pin code to check.
+ * @param null|string $uid
+ *   Optional; A user ID to ignore.
+ *
+ * @return bool
+ *   TRUE if the supplied pincode is unique
+ */
+function hedley_user_check_unique_pincode($code, $uid = NULL) {
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'user')
+    ->fieldCondition('field_pin_code', 'value', $code)
+    // Enough to know if there is one more.
+    ->range(0, 1);
+
+  if ($uid) {
+    $query->propertyCondition('uid', $uid, '<>');
+  }
+
+  $count = $query
+    ->count()
+    ->execute();
+
+  return $count == 0;
+}
+
+/**
  * Implements hook_menu_alter().
  */
 function hedley_user_menu_alter(&$menu) {
