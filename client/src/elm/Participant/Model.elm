@@ -1,4 +1,4 @@
-module Participant.Model exposing (Participant)
+module Participant.Model exposing (Participant, ParticipantType(..))
 
 {-| This module provides a type which allows us to do certain things
 with either children or mothers, by providing a typeclass-like
@@ -17,6 +17,7 @@ import EveryDict exposing (EveryDict)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html)
 import Pages.Activity.Model
+import Time.Date
 import Translate exposing (Language)
 import ZScore.Model
 
@@ -42,3 +43,8 @@ type alias Participant id value activity msg =
     , toMotherId : id -> Maybe MotherId
     , viewMeasurements : Language -> NominalDate -> ZScore.Model.Model -> id -> activity -> EditableSession -> Html (Pages.Activity.Model.Msg id msg)
     }
+
+
+type ParticipantType
+    = ChildParticipant Time.Date.DateDelta
+    | MotherParticipant Time.Date.DateDelta

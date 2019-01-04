@@ -1,7 +1,7 @@
 module Translate exposing (ChartPhrase(..), Language(..), LoginPhrase(..), TranslationId(..), TranslationSet, ValidationError(..), allLanguages, languageFromCode, languageFromString, languageToCode, selectLanguage, translate, translateActivePage, translateChartPhrase, translateFormError, translateFormField, translateHttpError, translateLoginPhrase, translateMonth, translateValidationError, translationSet)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
-import Backend.Child.Model exposing (Gender(..))
+import Backend.Child.Model exposing (Gender(..), ModeOfDelivery(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
 import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..))
@@ -161,6 +161,8 @@ type TranslationId
     | BeginHealthAssessment
     | Born
     | Cancel
+    | CaregiverName
+    | CaregiverNationalId
     | CentimeterShorthand
     | Cell
     | ChartPhrase ChartPhrase
@@ -205,6 +207,8 @@ type TranslationId
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
     | Fetch
+    | FatherName
+    | FatherNationalId
     | FirstName
     | FormError (ErrorValue ValidationError)
     | FormField String
@@ -230,10 +234,14 @@ type TranslationId
     | MeasurementGained Float
     | MeasurementLost Float
     | MinutesAgo Int
+    | ModeOfDelivery ModeOfDelivery
+    | ModeOfDeliveryLabel
     | MonthAbbrev
     | MonthsOld
     | Mother
     | MotherName String
+    | MotherNameLabel
+    | MotherNationalId
     | Mothers
     | MuacIndication MuacIndication
     | MyAccount
@@ -640,6 +648,16 @@ translationSet trans =
             , kinyarwanda = Just "Guhagarika"
             }
 
+        CaregiverName ->
+            { english = "Caregiver's Name"
+            , kinyarwanda = Nothing
+            }
+
+        CaregiverNationalId ->
+            { english = "Caregiver's National ID"
+            , kinyarwanda = Nothing
+            }
+
         Cell ->
             { english = "Cell"
             , kinyarwanda = Nothing
@@ -959,6 +977,16 @@ translationSet trans =
             , kinyarwanda = Just "Gushakisha"
             }
 
+        FatherName ->
+            { english = "Father's Name"
+            , kinyarwanda = Nothing
+            }
+
+        FatherNationalId ->
+            { english = "Father's National ID"
+            , kinyarwanda = Nothing
+            }
+
         FirstName ->
             { english = "First Name"
             , kinyarwanda = Nothing
@@ -1053,8 +1081,8 @@ translationSet trans =
             }
 
         LevelOfEducationLabel ->
-            { english = "Level of Education: "
-            , kinyarwanda = Just <| "Amashuri wize: "
+            { english = "Level of Education"
+            , kinyarwanda = Just <| "Amashuri wize"
             }
 
         LevelOfEducation educationLevel ->
@@ -1162,6 +1190,33 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        ModeOfDelivery mode ->
+            case mode of
+                SpontaneousVaginalDeliveryWithEpisiotomy ->
+                    { english = "Spontaneous vaginal delivery with episiotomy"
+                    , kinyarwanda = Nothing
+                    }
+
+                SpontaneousVaginalDeliveryWithoutEpisiotomy ->
+                    { english = "Spontaneous vaginal delivery without episiotomy"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaginalDeliveryWithVacuumExtraction ->
+                    { english = "Vaginal delivery with vacuum extraction"
+                    , kinyarwanda = Nothing
+                    }
+
+                CesareanDelivery ->
+                    { english = "Cesarean delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+        ModeOfDeliveryLabel ->
+            { english = "Mode of delivery"
+            , kinyarwanda = Nothing
+            }
+
         MonthAbbrev ->
             { english = "mo"
             , kinyarwanda = Just "amezi"
@@ -1180,6 +1235,16 @@ translationSet trans =
         MotherName name ->
             { english = "Mother: " ++ name
             , kinyarwanda = Just <| "Umubyeyi: " ++ name
+            }
+
+        MotherNameLabel ->
+            { english = "Mother's Name"
+            , kinyarwanda = Nothing
+            }
+
+        MotherNationalId ->
+            { english = "Mother's National ID"
+            , kinyarwanda = Nothing
             }
 
         Mothers ->

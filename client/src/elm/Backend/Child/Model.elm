@@ -1,4 +1,4 @@
-module Backend.Child.Model exposing (Child, Gender(..))
+module Backend.Child.Model exposing (Child, Gender(..), ModeOfDelivery(..), modeOfDeliveryToValue)
 
 import Backend.Entities exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
@@ -19,3 +19,26 @@ type alias Child =
     , birthDate : NominalDate
     , gender : Gender
     }
+
+
+type ModeOfDelivery
+    = SpontaneousVaginalDeliveryWithEpisiotomy
+    | SpontaneousVaginalDeliveryWithoutEpisiotomy
+    | VaginalDeliveryWithVacuumExtraction
+    | CesareanDelivery
+
+
+modeOfDeliveryToValue : ModeOfDelivery -> String
+modeOfDeliveryToValue mode =
+    case mode of
+        SpontaneousVaginalDeliveryWithEpisiotomy ->
+            "svd-episiotomy"
+
+        SpontaneousVaginalDeliveryWithoutEpisiotomy ->
+            "svd-no-episiotomy"
+
+        VaginalDeliveryWithVacuumExtraction ->
+            "vd-vacuum"
+
+        CesareanDelivery ->
+            "cesarean-delivery"
