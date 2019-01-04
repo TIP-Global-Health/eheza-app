@@ -6,6 +6,7 @@ import App.View exposing (view)
 import Dict
 import Maybe exposing (withDefault)
 import Pages.Login.Model
+import Pages.PatientRegistration.Model
 import Pusher.Model exposing (Cluster(..), PusherAppKey)
 import RemoteData exposing (RemoteData(..))
 import Restful.Login exposing (checkCachedCredentials)
@@ -78,6 +79,7 @@ testConfigModel =
     in
     { config = testConfig
     , loginPage = Pages.Login.Model.emptyModel
+    , patientRegistrationPage = Pages.PatientRegistration.Model.emptyModel
     , login = loginStatus
     }
 
