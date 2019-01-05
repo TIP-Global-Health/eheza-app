@@ -2,6 +2,7 @@ module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..)
 
 import Backend.Model
 import Config.Model
+import Device.Model exposing (Device)
 import Dict exposing (Dict)
 import Http
 import Json.Encode exposing (Value)
@@ -87,6 +88,7 @@ type alias ConfiguredModel =
     { config : Config.Model.Model
     , loginPage : Pages.Login.Model.Model
     , login : UserAndData () User LoggedInModel
+    , device : WebData Device
     }
 
 

@@ -97,6 +97,7 @@ init flags =
                             { config = config
                             , loginPage = Pages.Login.Model.emptyModel
                             , login = loginStatus
+                            , device = NotAsked
                             }
                     in
                     ( { model | configuration = Success configuredModel }

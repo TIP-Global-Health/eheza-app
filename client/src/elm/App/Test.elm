@@ -79,6 +79,7 @@ testConfigModel =
     { config = testConfig
     , loginPage = Pages.Login.Model.emptyModel
     , login = loginStatus
+    , device = NotAsked
     }
 
 
