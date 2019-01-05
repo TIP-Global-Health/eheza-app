@@ -1528,6 +1528,11 @@ translationSet trans =
 translateActivePage : Page -> TranslationSet
 translateActivePage page =
     case page of
+        DevicePage ->
+            { english = "Device Status"
+            , kinyarwanda = Nothing
+            }
+
         LoginPage ->
             { english = "Login"
             , kinyarwanda = Just "Kwinjira"

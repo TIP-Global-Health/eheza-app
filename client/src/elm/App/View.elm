@@ -4,6 +4,7 @@ import App.Model exposing (..)
 import Backend.Model exposing (CachedSessionError(..))
 import Config.View
 import Date
+import Device.View
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
@@ -95,15 +96,33 @@ don't have one.
 -}
 viewConfiguredModel : Model -> ConfiguredModel -> Html Msg
 viewConfiguredModel model configured =
-    if model.serviceWorker.active then
-        viewEditableSession model configured
-
-    else
+    if not model.serviceWorker.active then
         -- If our service worker is not active, then the only thing we allow
         -- is showing the status of the service worker. (Since we need the
-        -- service worker for the normal operatio of the app).
+        -- service worker for the normal operation of the app).
         ServiceWorker.View.view model.currentTime model.language model.serviceWorker
             |> Html.map MsgServiceWorker
+
+    else
+        case model.activePage of
+            DevicePage ->
+                Device.View.view model.language configured.device
+
+            LoginPage ->
+                text "todo"
+
+            PageNotFound url ->
+                Pages.PageNotFound.View.view model.language url
+
+            ServiceWorkerPage ->
+                ServiceWorker.View.view model.currentTime model.language model.serviceWorker
+                    |> Html.map MsgServiceWorker
+
+            SessionPage subPage ->
+                text "todo"
+
+            UserPage userPage ->
+                text "todo"
 
 
 viewEditableSession : Model -> ConfiguredModel -> Html Msg
@@ -152,6 +171,9 @@ viewEditableSession model configured =
                     -- automatic, since we want to let the user keep working locally
                     -- until they are able to relogin.
                     case model.activePage of
+                        DevicePage ->
+                            Device.View.view model.language configured.device
+
                         LoginPage ->
                             -- The user is already logged in, but wants to see the
                             -- login page. This is basically sensible ... we could put
