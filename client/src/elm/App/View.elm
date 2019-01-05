@@ -4,13 +4,13 @@ import App.Model exposing (..)
 import Backend.Model exposing (CachedSessionError(..))
 import Config.View
 import Date
-import Device.View
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
 import Pages.Admin.View
 import Pages.Clinics.View
+import Pages.Device.View
 import Pages.Login.View
 import Pages.MyAccount.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
@@ -106,7 +106,7 @@ viewConfiguredModel model configured =
     else
         case model.activePage of
             DevicePage ->
-                Device.View.view model.language configured.device
+                Pages.Device.View.view model.language configured.device
 
             LoginPage ->
                 text "todo"
@@ -172,7 +172,7 @@ viewEditableSession model configured =
                     -- until they are able to relogin.
                     case model.activePage of
                         DevicePage ->
-                            Device.View.view model.language configured.device
+                            Pages.Device.View.view model.language configured.device
 
                         LoginPage ->
                             -- The user is already logged in, but wants to see the

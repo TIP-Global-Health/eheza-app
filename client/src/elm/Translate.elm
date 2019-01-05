@@ -181,6 +181,7 @@ type TranslationId
     | Day
     | Days
     | Delete
+    | DeviceStatus
     | DownloadHealthAssessment
     | DownloadSession1
     | DownloadSession2
@@ -768,6 +769,11 @@ translationSet trans =
 
         Delete ->
             { english = "Delete"
+            , kinyarwanda = Nothing
+            }
+
+        DeviceStatus ->
+            { english = "Device Status"
             , kinyarwanda = Nothing
             }
 

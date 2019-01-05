@@ -1,9 +1,10 @@
-module Device.View exposing (view)
+module Pages.Device.View exposing (view)
 
 import Device.Model exposing (..)
 import Html exposing (..)
+import Html.Attributes exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language)
+import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewError)
 
 
@@ -12,6 +13,22 @@ we show its status. Otherwise, we show a UI that allows for authorization.
 -}
 view : Language -> WebData Device -> Html msg
 view language device =
+    div [ class "wrap wrap-alt-2" ]
+        [ div
+            [ class "ui basic head segment" ]
+            [ h1
+                [ class "ui header" ]
+                [ text <| translate language Translate.DeviceStatus ]
+            ]
+        , div
+            [ class "ui basic segment" ]
+            [ viewContent language device
+            ]
+        ]
+
+
+viewContent : Language -> WebData Device -> Html msg
+viewContent language device =
     case device of
         NotAsked ->
             text "NotAsked"
