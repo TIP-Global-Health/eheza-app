@@ -265,7 +265,7 @@ update msg model =
                 (\configured ->
                     let
                         ( subModel, subCmd, appMsgs ) =
-                            Pages.PatientRegistration.Update.update subMsg configured.patientRegistrationPage
+                            Pages.PatientRegistration.Update.update currentDate subMsg configured.patientRegistrationPage
                     in
                     ( { configured | patientRegistrationPage = subModel }
                     , Cmd.map MsgPagePatientRegistration subCmd

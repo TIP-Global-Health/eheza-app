@@ -738,6 +738,10 @@ h3.ui.header {
     height: 50px;
     width: 406px;
     color: $color-text;
+
+    &.error {
+      border-color: $color-red;
+    }
   }
 
   .select-day-input,
