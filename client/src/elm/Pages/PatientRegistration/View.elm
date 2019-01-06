@@ -8,6 +8,7 @@ import Backend.Measurement.Model exposing (PhotoValue)
 import Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..))
 import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Ubudehe(..))
 import Form
+import Form.Error
 import Form.Input
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -23,7 +24,7 @@ import Participant.Model exposing (ParticipantType(..))
 import Time.Date
 import Translate exposing (Language(..), TranslationId, translate)
 import User.Model exposing (User)
-import Utils.Form exposing (isFormFieldSet)
+import Utils.Form exposing (isFormFieldSet, isFormFieldValid)
 import Utils.Html exposing (script)
 
 
@@ -257,7 +258,7 @@ view language currentDate user backend cache model =
                                                                    , ( toString AdvancedDiploma, translate language <| Translate.LevelOfEducation AdvancedDiploma )
                                                                    ]
                                                     in
-                                                    viewSelectInput language Translate.LevelOfEducationLabel options levelOfEducation "ten" [ class "select-input" ] True
+                                                    viewSelectInput language Translate.LevelOfEducationLabel options levelOfEducation "ten" "select-input" True
 
                                                 viewProfession =
                                                     viewTextInput language Translate.Profession profession False
@@ -272,7 +273,7 @@ view language currentDate user backend cache model =
                                                                    , ( toString Widowed, translate language <| Translate.MaritalStatus Widowed )
                                                                    ]
                                                     in
-                                                    viewSelectInput language Translate.MaritalStatusLabel options maritalStatus "ten" [ class "select-input" ] True
+                                                    viewSelectInput language Translate.MaritalStatusLabel options maritalStatus "ten" "select-input" True
 
                                                 viewHIVStatus =
                                                     let
@@ -283,7 +284,7 @@ view language currentDate user backend cache model =
                                                                    , ( toString Positive, translate language <| Translate.HIVStatus Positive )
                                                                    ]
                                                     in
-                                                    viewSelectInput language Translate.HIVStatusLabel options hivStatus "ten" [ class "select-input" ] True
+                                                    viewSelectInput language Translate.HIVStatusLabel options hivStatus "ten" "select-input" True
                                             in
                                             [ viewGender
                                             , viewLevelOfEducation
@@ -308,7 +309,7 @@ view language currentDate user backend cache model =
                                                                    , ( modeOfDeliveryToValue CesareanDelivery, translate language <| Translate.ModeOfDelivery CesareanDelivery )
                                                                    ]
                                                     in
-                                                    viewSelectInput language Translate.ModeOfDeliveryLabel options modeOfDelivery "ten" [ class "select-input" ] True
+                                                    viewSelectInput language Translate.ModeOfDeliveryLabel options modeOfDelivery "ten" "select-input" True
                                             in
                                             [ viewGender
                                             , viewModeOfDelivery
@@ -341,7 +342,7 @@ view language currentDate user backend cache model =
                                            , ( toString Ubudehe4, toString Ubudehe4 )
                                            ]
                             in
-                            viewSelectInput language Translate.FamilyUbudehe options familyUbudehe "ten" [ class "select-input" ] True
+                            viewSelectInput language Translate.FamilyUbudehe options familyUbudehe "ten" "select-input" True
 
                         familyInfoInputs =
                             viewFamilyUbudehe
@@ -356,7 +357,7 @@ view language currentDate user backend cache model =
                                                                         |> List.indexedMap (\index _ -> ( toString <| index + 1, toString <| index + 1 ))
                                                                    )
                                                     in
-                                                    viewSelectInput language Translate.HouseholdSize options householdSize "four" [] False
+                                                    viewSelectInput language Translate.HouseholdSize options householdSize "four" "" False
 
                                                 viewNumberOfChildren =
                                                     let
@@ -366,7 +367,7 @@ view language currentDate user backend cache model =
                                                                         |> List.indexedMap (\index _ -> ( toString index, toString index ))
                                                                    )
                                                     in
-                                                    viewSelectInput language Translate.NumberOfChildren options numberOfChildren "four" [] True
+                                                    viewSelectInput language Translate.NumberOfChildren options numberOfChildren "four" "" True
                                             in
                                             [ viewHouseholdSize, viewNumberOfChildren ]
 
@@ -494,6 +495,9 @@ view language currentDate user backend cache model =
                     case model.registrationStep of
                         First ->
                             let
+                                validatedFields =
+                                    [ nationalIdNumber ]
+
                                 requiredFields =
                                     [ firstName, secondName, dayOfBirth, monthOfBirth, yearOfBirth ]
                                         ++ (case maybeRegistratingParticipant of
@@ -509,27 +513,33 @@ view language currentDate user backend cache model =
                             in
                             ( Translate.Next
                             , SetRegistrationStep Second
-                            , not <| List.all isFormFieldSet requiredFields
+                            , not (List.all isFormFieldSet requiredFields && List.all isFormFieldValid validatedFields)
                             )
 
                         Second ->
                             let
-                                requiredFields =
-                                    [ familyUbudehe, district, sector, cell, village ]
-                                        ++ (case maybeRegistratingParticipant of
-                                                Just (MotherParticipant _) ->
-                                                    [ numberOfChildren ]
+                                ( requiredFields, validatedFields ) =
+                                    let
+                                        requiredCommon =
+                                            [ familyUbudehe, district, sector, cell, village ]
+                                    in
+                                    case maybeRegistratingParticipant of
+                                        Just (MotherParticipant _) ->
+                                            ( requiredCommon ++ [ numberOfChildren ]
+                                            , []
+                                            )
 
-                                                Just (ChildParticipant _) ->
-                                                    [ motherName, fatherName ]
+                                        Just (ChildParticipant _) ->
+                                            ( requiredCommon ++ [ motherName, fatherName ]
+                                            , [ motherNationalId, fatherNationalId, caregiverNationalId ]
+                                            )
 
-                                                Nothing ->
-                                                    []
-                                           )
+                                        Nothing ->
+                                            ( requiredCommon, [] )
                             in
                             ( Translate.Next
                             , SetRegistrationStep Third
-                            , not <| List.all isFormFieldSet requiredFields
+                            , not (List.all isFormFieldSet requiredFields && List.all isFormFieldValid validatedFields)
                             )
 
                         Third ->
@@ -577,6 +587,10 @@ view language currentDate user backend cache model =
 
 viewTextInput : Language -> TranslationId -> Form.FieldState e String -> Bool -> Html Form.Msg
 viewTextInput language labelId field isRequired =
+    let
+        formatValidationError =
+            not isRequired && field.error == Just Form.Error.InvalidFormat
+    in
     div [ class "ui grid" ]
         [ div
             [ classList
@@ -586,7 +600,7 @@ viewTextInput language labelId field isRequired =
             ]
             [ text <| translate language labelId ++ ":" ]
         , div [ class "ten wide column" ]
-            [ Form.Input.textInput field [] ]
+            [ Form.Input.textInput field [ classList [ ( "error", formatValidationError ) ] ] ]
         ]
 
 
@@ -596,10 +610,10 @@ viewSelectInput :
     -> List ( String, String )
     -> Form.FieldState e String
     -> String
-    -> List (Attribute Form.Msg)
+    -> String
     -> Bool
     -> Html Form.Msg
-viewSelectInput language labelId options field width attributes isRequired =
+viewSelectInput language labelId options field width inputClass isRequired =
     div [ class "ui grid" ]
         [ div
             [ classList
@@ -609,7 +623,7 @@ viewSelectInput language labelId options field width attributes isRequired =
             ]
             [ text <| translate language labelId ++ ":" ]
         , div [ class <| width ++ " wide column" ]
-            [ Form.Input.selectInput options field attributes ]
+            [ Form.Input.selectInput options field [ class inputClass ] ]
         ]
 
 

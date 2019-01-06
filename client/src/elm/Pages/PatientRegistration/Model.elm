@@ -9,9 +9,11 @@ module Pages.PatientRegistration.Model exposing
 
 import Backend.Measurement.Model exposing (PhotoValue)
 import Form exposing (Form)
-import Form.Validate exposing (Validation, andMap, bool, field, string, succeed)
+import Form.Error exposing (ErrorValue(..))
+import Form.Validate exposing (Validation, andMap, andThen, bool, emptyString, field, format, mapError, oneOf, string, succeed)
 import Measurement.Model exposing (DropZoneFile)
 import Pages.Page exposing (Page)
+import Regex exposing (Regex)
 
 
 type alias Model =
@@ -80,7 +82,7 @@ validateRegistrationForm =
     succeed RegistrationForm
         |> andMap (field "firstName" string)
         |> andMap (field "secondName" string)
-        |> andMap (field "nationalIdNumber" string)
+        |> andMap (field "nationalIdNumber" (oneOf [ emptyString, validateAlphanumeric ]))
         |> andMap (field "dayOfBirth" string)
         |> andMap (field "monthOfBirth" string)
         |> andMap (field "yearOfBirth" string)
@@ -95,14 +97,29 @@ validateRegistrationForm =
         |> andMap (field "householdSize" string)
         |> andMap (field "numberOfChildren" string)
         |> andMap (field "motherName" string)
-        |> andMap (field "motherNationalId" string)
+        |> andMap (field "motherNationalId" (oneOf [ emptyString, validateAlphanumeric ]))
         |> andMap (field "fatherName" string)
-        |> andMap (field "fatherNationalId" string)
+        |> andMap (field "fatherNationalId" (oneOf [ emptyString, validateAlphanumeric ]))
         |> andMap (field "caregiverName" string)
-        |> andMap (field "caregiverNationalId" string)
+        |> andMap (field "caregiverNationalId" (oneOf [ emptyString, validateAlphanumeric ]))
         |> andMap (field "district" string)
         |> andMap (field "sector" string)
         |> andMap (field "cell" string)
         |> andMap (field "village" string)
         |> andMap (field "telephoneNumber" string)
         |> andMap (field "healthCenterName" string)
+
+
+validateAlphanumeric : Validation e String
+validateAlphanumeric =
+    string
+        |> andThen
+            (\s ->
+                format alphanumericPattern s
+                    |> mapError (\_ -> Form.Error.value InvalidFormat)
+            )
+
+
+alphanumericPattern : Regex
+alphanumericPattern =
+    Regex.regex "^[a-zA-Z0-9]*$"

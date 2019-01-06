@@ -1,8 +1,9 @@
-module Utils.Form exposing (isFormFieldSet, onError)
+module Utils.Form exposing (isFormFieldSet, isFormFieldValid, onError)
 
 import Form exposing (..)
 import Form.Error exposing (..)
 import Form.Validate exposing (..)
+import Maybe.Extra exposing (isNothing)
 
 
 {-| Possibly recover from an error.
@@ -28,3 +29,8 @@ isFormFieldSet field =
 
         _ ->
             True
+
+
+isFormFieldValid : Form.FieldState e String -> Bool
+isFormFieldValid field =
+    isNothing field.error
