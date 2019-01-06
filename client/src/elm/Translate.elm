@@ -176,7 +176,9 @@ type TranslationId
     | Clinic
     | Clinics
     | Closed
+    | ConfirmationRequired
     | ConfirmDeleteTrainingSessions
+    | ConfirmRegisterPatient
     | Connected
     | ContactInformation
     | Continue
@@ -247,6 +249,7 @@ type TranslationId
     | MyAccount
     | NationalIdNumber
     | Next
+    | No
     | NoActiveIncidents
     | NoActivitiesCompleted
     | NoActivitiesCompletedForThisParticipant
@@ -345,6 +348,7 @@ type TranslationId
     | ViewProgressReport
     | Village
     | WelcomeUser String
+    | Yes
     | YouAreNotAnAdmin
     | YouHaveACompletedSession
     | YourSessionHasBeenSaved
@@ -785,8 +789,18 @@ translationSet trans =
             , kinyarwanda = Just "Gufunga"
             }
 
+        ConfirmationRequired ->
+            { english = "Please confirm:"
+            , kinyarwanda = Nothing
+            }
+
         ConfirmDeleteTrainingSessions ->
             { english = "Are you sure you want to delete all training sessions?"
+            , kinyarwanda = Nothing
+            }
+
+        ConfirmRegisterPatient ->
+            { english = "Are you sure you want to save this patient's data?"
             , kinyarwanda = Nothing
             }
 
@@ -1271,6 +1285,11 @@ translationSet trans =
 
         Next ->
             { english = "Next"
+            , kinyarwanda = Nothing
+            }
+
+        No ->
+            { english = "No"
             , kinyarwanda = Nothing
             }
 
@@ -1767,6 +1786,11 @@ translationSet trans =
         WelcomeUser name ->
             { english = "Welcome " ++ name
             , kinyarwanda = Just <| "Murakaza neza " ++ name
+            }
+
+        Yes ->
+            { english = "Yes"
+            , kinyarwanda = Nothing
             }
 
         YouAreNotAnAdmin ->

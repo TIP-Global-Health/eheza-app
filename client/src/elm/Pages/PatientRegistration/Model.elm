@@ -1,5 +1,6 @@
 module Pages.PatientRegistration.Model exposing
-    ( Model
+    ( DialogState(..)
+    , Model
     , Msg(..)
     , RegistrationForm
     , RegistrationStep(..)
@@ -20,6 +21,7 @@ type alias Model =
     { photo : Maybe PhotoValue
     , registrationForm : Form () RegistrationForm
     , registrationStep : RegistrationStep
+    , dialogState : Maybe DialogState
     }
 
 
@@ -28,6 +30,7 @@ emptyModel =
     { photo = Nothing
     , registrationForm = Form.initial [] validateRegistrationForm
     , registrationStep = First
+    , dialogState = Nothing
     }
 
 
@@ -41,8 +44,13 @@ type Msg
     = DropZoneComplete DropZoneFile
     | MsgRegistrationForm Form.Msg
     | SetActivePage Page
+    | SetDialogState (Maybe DialogState)
     | SetRegistrationStep RegistrationStep
     | Submit
+
+
+type DialogState
+    = ConfirmSubmision
 
 
 type alias RegistrationForm =

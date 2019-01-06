@@ -18,14 +18,14 @@ import Html.Events exposing (..)
 import Json.Decode
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.PatientRegistration.Model exposing (Model, Msg(..), RegistrationStep(..))
+import Pages.PatientRegistration.Model exposing (DialogState(..), Model, Msg(..), RegistrationStep(..))
 import Pages.PatientRegistration.Utils exposing (getFormFieldValue)
 import Participant.Model exposing (ParticipantType(..))
 import Time.Date
 import Translate exposing (Language(..), TranslationId, translate)
 import User.Model exposing (User)
 import Utils.Form exposing (isFormFieldSet, isFormFieldValid)
-import Utils.Html exposing (script)
+import Utils.Html exposing (script, viewModal)
 
 
 view : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
@@ -544,7 +544,7 @@ view language currentDate user backend cache model =
 
                         Third ->
                             ( Translate.Submit
-                            , Submit
+                            , SetDialogState <| Just ConfirmSubmision
                             , False
                             )
             in
@@ -582,7 +582,43 @@ view language currentDate user backend cache model =
             , div [ class "registration-form actions" ]
                 [ leftButton, rightButton ]
             ]
+        , viewModal <| viewDialog language model.dialogState
         ]
+
+
+viewDialog : Language -> Maybe DialogState -> Maybe (Html Msg)
+viewDialog language dialogState =
+    dialogState
+        |> Maybe.andThen
+            (\state ->
+                case state of
+                    ConfirmSubmision ->
+                        Just <|
+                            div [ class "ui tiny active modal" ]
+                                [ div
+                                    [ class "header" ]
+                                    [ text <| translate language Translate.ConfirmationRequired ]
+                                , div
+                                    [ class "content" ]
+                                    [ text <| translate language Translate.ConfirmRegisterPatient ]
+                                , div
+                                    [ class "actions" ]
+                                    [ div
+                                        [ class "two ui buttons" ]
+                                        [ button
+                                            [ class "ui  fluid button"
+                                            , onClick <| SetDialogState Nothing
+                                            ]
+                                            [ text <| translate language Translate.No ]
+                                        , button
+                                            [ class "ui  primary fluid button"
+                                            , onClick Submit
+                                            ]
+                                            [ text <| translate language Translate.Yes ]
+                                        ]
+                                    ]
+                                ]
+            )
 
 
 viewTextInput : Language -> TranslationId -> Form.FieldState e String -> Bool -> Html Form.Msg
