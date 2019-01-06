@@ -17,6 +17,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
+import Maybe.Extra exposing (unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRegistration.Model exposing (Model, Msg(..), RegistrationStep(..))
@@ -430,13 +431,13 @@ view language currentDate user backend cache model =
                                         (Just <| toEntityId parentId) == geoLocation.parent
                                     )
 
-                        geoLocationInputAttributes isDisabled =
-                            class "select-input"
-                                :: (if isDisabled then
-                                        [ attribute "disabled" "" ]
+                        geoLocationInputClass isDisabled =
+                            "select-input"
+                                ++ (if isDisabled then
+                                        " disabled"
 
                                     else
-                                        []
+                                        ""
                                    )
 
                         viewProvince =
@@ -453,7 +454,7 @@ view language currentDate user backend cache model =
                                 options
                                 province
                                 "ten"
-                                (geoLocationInputAttributes disabled)
+                                (geoLocationInputClass disabled)
                                 True
 
                         viewDistrict =
@@ -478,7 +479,7 @@ view language currentDate user backend cache model =
                                 options
                                 district
                                 "ten"
-                                (geoLocationInputAttributes disabled)
+                                (geoLocationInputClass disabled)
                                 True
 
                         viewSector =
@@ -503,7 +504,7 @@ view language currentDate user backend cache model =
                                 options
                                 sector
                                 "ten"
-                                (geoLocationInputAttributes disabled)
+                                (geoLocationInputClass disabled)
                                 True
 
                         viewCell =
@@ -528,7 +529,7 @@ view language currentDate user backend cache model =
                                 options
                                 cell
                                 "ten"
-                                (geoLocationInputAttributes disabled)
+                                (geoLocationInputClass disabled)
                                 True
 
                         viewVillage =
@@ -550,7 +551,7 @@ view language currentDate user backend cache model =
                                 options
                                 village
                                 "ten"
-                                (geoLocationInputAttributes False)
+                                (geoLocationInputClass False)
                                 True
 
                         viewTelephoneNumber =
