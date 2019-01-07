@@ -50,6 +50,9 @@ view language currentDate user backend cache model =
         yearOfBirth =
             Form.getFieldAsString "yearOfBirth" model.registrationForm
 
+        isDateOfBirthEstimated =
+            Form.getFieldAsBool "isDateOfBirthEstimated" model.registrationForm
+
         isMale =
             Form.getFieldAsBool "isMale" model.registrationForm
 
@@ -195,7 +198,7 @@ view language currentDate user backend cache model =
                                     [ Form.Input.selectInput yearOptions yearOfBirth [ class "select-year-input" ] ]
                                 , div [ class "one wide column estimated" ]
                                     [ span [] [ text <| translate language Translate.Estimated ]
-                                    , Form.Input.checkboxInput isFemale []
+                                    , Form.Input.checkboxInput isDateOfBirthEstimated []
                                     ]
                                 ]
                             ]
