@@ -230,12 +230,12 @@ view language currentDate user backend cache model =
 
                                 viewGender =
                                     div [ class "ui grid" ]
-                                        [ div [ class "six wide column" ]
+                                        [ div [ class "eight wide column" ]
                                             [ text <| translate language Translate.GenderLabel ++ ":" ]
-                                        , Form.Input.checkboxInput isMale [ class "two wide column" ]
+                                        , Form.Input.checkboxInput isMale [ class "one wide column" ]
                                         , div [ class "three wide column" ]
                                             [ text <| translate language (Translate.Gender Male) ]
-                                        , Form.Input.checkboxInput isFemale [ class "two wide column" ]
+                                        , Form.Input.checkboxInput isFemale [ class "one wide column" ]
                                         , div [ class "two wide column" ]
                                             [ text <| translate language (Translate.Gender Female) ]
                                         ]
