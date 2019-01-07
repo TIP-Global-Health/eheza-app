@@ -234,11 +234,21 @@ update msg model =
             updateConfigured
                 (\configured ->
                     let
-                        ( subModel, subCmd ) =
+                        ( subModel, subCmd, extraMsgs ) =
                             Pages.Device.Update.update subMsg configured.devicePage
                     in
                     ( { configured | devicePage = subModel }
                     , Cmd.map MsgPageDevice subCmd
+                    , extraMsgs
+                    )
+                )
+                model
+
+        TryPairingCode code ->
+            updateConfigured
+                (\configured ->
+                    ( { configured | device = Loading }
+                    , Cmd.none
                     , []
                     )
                 )

@@ -161,6 +161,7 @@ type Msg
     | MsgSession Pages.Model.MsgSession
     | MsgServiceWorker ServiceWorker.Model.Msg
     | MsgZScore ZScore.Model.Msg
+    | TryPairingCode String
     | SendRollbar Rollbar.Level String (Dict String Value)
     | HandleRollbar (Result Http.Error Uuid)
     | SetActivePage Page
