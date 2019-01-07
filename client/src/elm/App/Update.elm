@@ -14,6 +14,8 @@ import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
 import Maybe.Extra
 import Pages.Admin.Update
+import Pages.Device.Model
+import Pages.Device.Update
 import Pages.Login.Model
 import Pages.Login.Update
 import Pages.Model
@@ -98,6 +100,7 @@ init flags =
                             , loginPage = Pages.Login.Model.emptyModel
                             , login = loginStatus
                             , device = NotAsked
+                            , devicePage = Pages.Device.Model.emptyModel
                             }
                     in
                     ( { model | configuration = Success configuredModel }
@@ -223,6 +226,20 @@ update msg model =
                     ( { configured | login = subModel }
                     , cmd
                     , extraMsgs
+                    )
+                )
+                model
+
+        MsgPageDevice subMsg ->
+            updateConfigured
+                (\configured ->
+                    let
+                        ( subModel, subCmd ) =
+                            Pages.Device.Update.update subMsg configured.devicePage
+                    in
+                    ( { configured | devicePage = subModel }
+                    , Cmd.map MsgPageDevice subCmd
+                    , []
                     )
                 )
                 model

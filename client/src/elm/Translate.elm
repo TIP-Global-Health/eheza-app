@@ -181,6 +181,8 @@ type TranslationId
     | Day
     | Days
     | Delete
+    | Device
+    | DeviceNotAuthorized
     | DeviceStatus
     | DownloadHealthAssessment
     | DownloadSession1
@@ -190,6 +192,7 @@ type TranslationId
     | DownloadingSession2
     | DropzoneDefaultMessage
     | EndSession
+    | EnterPairingCode
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
     | ErrorFetchingCachedSessionTitle
@@ -287,6 +290,7 @@ type TranslationId
     | StartEndDate
     | StartDate
     | EndDate
+    | SubmitPairingCode
     | Success
     | ThisActionCannotBeUndone
     | ThisClinicHasNoMothers
@@ -772,6 +776,21 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Device ->
+            { english = "Device"
+            , kinyarwanda = Nothing
+            }
+
+        DeviceNotAuthorized ->
+            { english =
+                """This device has not yet been authorized to sync data with the backend, or the
+                authorization has expired or been revoked. To authorize or re-authorize this
+                device, enter a pairing code below. This will permit sensitive data to be stored
+                on this device and updated to the backend. You should only authorize devices that
+                are under your control and which are secure."""
+            , kinyarwanda = Nothing
+            }
+
         DeviceStatus ->
             { english = "Device Status"
             , kinyarwanda = Nothing
@@ -815,6 +834,16 @@ translationSet trans =
         EndSession ->
             { english = "End Session"
             , kinyarwanda = Just "Kurangiza ipima (gupima)"
+            }
+
+        EnterPairingCode ->
+            { english = "Enter pairing code"
+            , kinyarwanda = Nothing
+            }
+
+        SubmitPairingCode ->
+            { english = "Submit Pairing Code"
+            , kinyarwanda = Nothing
             }
 
         ErrorCheckLocalConfig ->

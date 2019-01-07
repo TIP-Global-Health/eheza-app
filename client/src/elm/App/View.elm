@@ -106,7 +106,8 @@ viewConfiguredModel model configured =
     else
         case model.activePage of
             DevicePage ->
-                Pages.Device.View.view model.language configured.device
+                Pages.Device.View.view model.language configured.device configured.devicePage
+                    |> Html.map MsgPageDevice
 
             LoginPage ->
                 text "todo"
@@ -172,7 +173,8 @@ viewEditableSession model configured =
                     -- until they are able to relogin.
                     case model.activePage of
                         DevicePage ->
-                            Pages.Device.View.view model.language configured.device
+                            Pages.Device.View.view model.language configured.device configured.devicePage
+                                |> Html.map MsgPageDevice
 
                         LoginPage ->
                             -- The user is already logged in, but wants to see the
