@@ -753,6 +753,20 @@ h3.ui.header {
     width: 120px;
   }
 
+  .estimated {
+    margin-top: -26px;
+
+    span {
+      font-size: 15px;
+      margin-left: 30px;
+    }
+
+    input {
+      width: 30px;
+      margin-left: 50px;
+    }
+  }
+
   .required:before {
     content: " *";
     margin-left: -20px;

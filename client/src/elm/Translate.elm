@@ -205,6 +205,7 @@ type TranslationId
     | ErrorConfigurationError
     | ErrorFetchingCachedSessionTitle
     | ErrorFetchingCachedSessionMessage
+    | Estimated
     | FamilyInformation
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
@@ -936,6 +937,11 @@ translationSet trans =
                 device is online). Contact the Ihangane project for further
                 instructions.
                 """
+            , kinyarwanda = Nothing
+            }
+
+        Estimated ->
+            { english = "Estimated"
             , kinyarwanda = Nothing
             }
 

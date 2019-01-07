@@ -191,8 +191,12 @@ view language currentDate user backend cache model =
                                     [ Form.Input.selectInput monthOptions monthOfBirth [ class "select-month-input" ] ]
                                 , div [ class "three wide column" ]
                                     [ Form.Input.selectInput dayOptions dayOfBirth [ class "select-day-input" ] ]
-                                , div [ class "four wide column" ]
+                                , div [ class "three wide column" ]
                                     [ Form.Input.selectInput yearOptions yearOfBirth [ class "select-year-input" ] ]
+                                , div [ class "one wide column estimated" ]
+                                    [ span [] [ text <| translate language Translate.Estimated ]
+                                    , Form.Input.checkboxInput isFemale []
+                                    ]
                                 ]
                             ]
 
