@@ -239,6 +239,7 @@ type TranslationId
     | MinutesAgo Int
     | ModeOfDelivery ModeOfDelivery
     | ModeOfDeliveryLabel
+    | Month
     | MonthAbbrev
     | MonthsOld
     | Mother
@@ -349,6 +350,7 @@ type TranslationId
     | ViewProgressReport
     | Village
     | WelcomeUser String
+    | Year
     | Yes
     | YouAreNotAnAdmin
     | YouHaveACompletedSession
@@ -851,7 +853,7 @@ translationSet trans =
             }
 
         Day ->
-            { english = "day"
+            { english = "Day"
             , kinyarwanda = Just "Umunsi"
             }
 
@@ -1224,6 +1226,11 @@ translationSet trans =
 
         ModeOfDeliveryLabel ->
             { english = "Mode of delivery"
+            , kinyarwanda = Nothing
+            }
+
+        Month ->
+            { english = "Month"
             , kinyarwanda = Nothing
             }
 
@@ -1792,6 +1799,11 @@ translationSet trans =
         WelcomeUser name ->
             { english = "Welcome " ++ name
             , kinyarwanda = Just <| "Murakaza neza " ++ name
+            }
+
+        Year ->
+            { english = "Year"
+            , kinyarwanda = Nothing
             }
 
         Yes ->
