@@ -31,7 +31,7 @@ class HedleyDevicePairingCode extends HedleyWebTestBase {
   }
 
   /**
-   * Entry point.
+   * Test "Device pairing" functionality.
    */
   public function testPairingCode() {
     $device = $this->drupalCreateNode([
