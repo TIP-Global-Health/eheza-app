@@ -62,7 +62,7 @@ class HedleyRestfulDevices extends HedleyRestfulEntityBaseNode {
         'id' => $wrapper->getIdentifier(),
         'access_token' => $wrapper->field_access_token->value(),
         'label' => $wrapper->label(),
-      ]
+      ],
     ];
 
   }
