@@ -41,14 +41,13 @@ class HedleyRestfulDevices extends HedleyRestfulEntityBaseNode {
     }
 
     $query = new EntityFieldQuery();
-    $query
+    $result = $query
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', 'device')
       ->propertyCondition('status', NODE_PUBLISHED)
       ->fieldCondition('field_pairing_code', 'value', $request['pairing_code'])
-      ->range(0, 1);
-
-    $result = $query->execute();
+      ->range(0, 1)
+      ->execute();
 
     $nids = empty($result['node']) ? [] : array_keys($result['node']);
 

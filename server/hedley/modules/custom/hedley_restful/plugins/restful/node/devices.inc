@@ -15,4 +15,5 @@ $plugin = array(
   'class' => 'HedleyRestfulDevices',
   // Knowing the pairing code is sufficient, without further authentication.
   'authentication_types' => [],
+  'authentication_optional' => TRUE,
 );
