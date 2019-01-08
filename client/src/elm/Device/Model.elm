@@ -10,4 +10,5 @@ type alias DeviceId =
 type alias Device =
     { id : DeviceId
     , name : String
+    , accessToken : String
     }

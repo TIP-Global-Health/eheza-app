@@ -162,6 +162,7 @@ type Msg
     | MsgServiceWorker ServiceWorker.Model.Msg
     | MsgZScore ZScore.Model.Msg
     | TryPairingCode String
+    | HandlePairedDevice (WebData Device)
     | SendRollbar Rollbar.Level String (Dict String Value)
     | HandleRollbar (Result Http.Error Uuid)
     | SetActivePage Page

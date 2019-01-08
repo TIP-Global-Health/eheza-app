@@ -7,9 +7,11 @@ import Backend.Update
 import Backend.Utils exposing (withEditableSession)
 import Config
 import Date
+import Device.Decoder
 import Dict
 import EverySet
 import Gizra.NominalDate exposing (fromLocalDateTime)
+import HttpBuilder
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
 import Maybe.Extra
@@ -22,7 +24,7 @@ import Pages.Model
 import Pages.Page exposing (Page(..), UserPage(AdminPage, ClinicsPage))
 import Pages.Update
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (decodeSingleDrupalEntity)
+import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity)
 import Restful.Login exposing (AuthenticatedUser, Credentials, LoginEvent(..), UserAndData(..), checkCachedCredentials)
 import Rollbar
 import ServiceWorker.Model
@@ -247,7 +249,26 @@ update msg model =
         TryPairingCode code ->
             updateConfigured
                 (\configured ->
+                    let
+                        cmd =
+                            HttpBuilder.post (configured.config.backendUrl </> "api/devices")
+                                |> HttpBuilder.withJsonBody (Json.Encode.object [ ( "pairing_code", Json.Encode.string code ) ])
+                                |> HttpBuilder.withExpectJson (decodeSingleDrupalEntity Device.Decoder.decode)
+                                |> HttpBuilder.toTask
+                                |> RemoteData.fromTask
+                                |> Task.perform HandlePairedDevice
+                    in
                     ( { configured | device = Loading }
+                    , cmd
+                    , []
+                    )
+                )
+                model
+
+        HandlePairedDevice device ->
+            updateConfigured
+                (\configured ->
+                    ( { configured | device = device }
                     , Cmd.none
                     , []
                     )
