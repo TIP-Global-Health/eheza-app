@@ -12,6 +12,7 @@ import Device.Encoder
 import Dict
 import EverySet
 import Gizra.NominalDate exposing (fromLocalDateTime)
+import Http exposing (Error(..))
 import HttpBuilder
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
@@ -80,6 +81,29 @@ init flags =
                             -- we were provided.
                             checkCachedCredentials loginConfig config.backendUrl (Just flags.credentials)
 
+                        fetchCachedDevice =
+                            HttpBuilder.get "/sw/config/device"
+                                |> HttpBuilder.withExpectJson Device.Decoder.decode
+                                |> HttpBuilder.toTask
+                                |> RemoteData.fromTask
+                                |> Task.map
+                                    (\response ->
+                                        -- We convert 404s to NotAsked ...  if
+                                        -- we can't find it locally, we'll ask
+                                        -- for a pairing code.
+                                        case response of
+                                            Failure (BadStatus { status }) ->
+                                                if status.code == 404 then
+                                                    NotAsked
+
+                                                else
+                                                    response
+
+                                            _ ->
+                                                response
+                                    )
+                                |> Task.perform HandlePairedDevice
+
                         cmd =
                             -- We always check the cache for an offline session, since that affects
                             -- the UI we'll offer to show at a basic level. (An alternative would be
@@ -95,6 +119,7 @@ init flags =
                                   -}
                                   Task.perform Tick Time.now
                                 , loginCmd
+                                , fetchCachedDevice
                                 , Backend.Update.fetchEditableSession ()
                                 ]
 
@@ -102,7 +127,7 @@ init flags =
                             { config = config
                             , loginPage = Pages.Login.Model.emptyModel
                             , login = loginStatus
-                            , device = NotAsked
+                            , device = Loading
                             , devicePage = Pages.Device.Model.emptyModel
                             }
                     in
