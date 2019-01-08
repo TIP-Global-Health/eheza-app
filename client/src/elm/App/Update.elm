@@ -8,6 +8,7 @@ import Backend.Utils exposing (withEditableSession)
 import Config
 import Date
 import Device.Decoder
+import Device.Encoder
 import Dict
 import EverySet
 import Gizra.NominalDate exposing (fromLocalDateTime)
@@ -250,11 +251,21 @@ update msg model =
             updateConfigured
                 (\configured ->
                     let
-                        cmd =
+                        postCode =
                             HttpBuilder.post (configured.config.backendUrl </> "api/devices")
                                 |> HttpBuilder.withJsonBody (Json.Encode.object [ ( "pairing_code", Json.Encode.string code ) ])
                                 |> HttpBuilder.withExpectJson (decodeSingleDrupalEntity Device.Decoder.decode)
                                 |> HttpBuilder.toTask
+
+                        cacheDevice device =
+                            HttpBuilder.put "/sw/config/device"
+                                |> HttpBuilder.withJsonBody (Device.Encoder.encode device)
+                                |> HttpBuilder.toTask
+                                |> Task.map (always device)
+
+                        cmd =
+                            postCode
+                                |> Task.andThen cacheDevice
                                 |> RemoteData.fromTask
                                 |> Task.perform HandlePairedDevice
                     in
