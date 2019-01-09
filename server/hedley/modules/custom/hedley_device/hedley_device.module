@@ -8,9 +8,40 @@
 include_once 'hedley_device.features.inc';
 
 /**
+ * Indicate whether to create a revision.
+ *
+ * Invoked from hedley_device_node_presave.
+ *
+ * @param object $node
+ *   The node being saved.
+ *
+ * @return bool
+ *   TRUE if we should make a revision.
+ */
+function hedley_device_create_revision($node) {
+  return $node->type == 'device';
+}
+
+/**
  * Implements hook_node_presave().
  */
 function hedley_device_node_presave($node) {
+  // Reset the revision flag.
+  unset($node->revision);
+
+  foreach (module_implements('create_revision') as $module) {
+    $function = $module . '_create_revision';
+    if (!$function($node)) {
+      continue;
+    }
+
+    // Create a revision for this node.
+    $node->revision = TRUE;
+
+    // Once a hook ask for a revision there is no point to keep checking.
+    break;
+  }
+
   if ($node->type != 'device') {
     // Not a device.
     return;

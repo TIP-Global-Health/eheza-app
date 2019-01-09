@@ -8,6 +8,26 @@
 include_once 'hedley_schedule.features.inc';
 
 /**
+ * Indicate whether to create a revision.
+ *
+ * Invoked from hedley_device_node_presave.
+ *
+ * @param object $node
+ *   The node being saved.
+ *
+ * @return bool
+ *   TRUE if we should make a revision.
+ */
+function hedley_schedule_create_revision($node) {
+  return in_array($node->type, [
+    'catchment_area',
+    'clinic',
+    'health_center',
+    'session',
+  ]);
+}
+
+/**
  * Implements hook_node_presave().
  *
  * @throws \Exception
