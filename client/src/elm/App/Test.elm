@@ -5,6 +5,7 @@ import App.Update exposing (loginConfig)
 import App.View exposing (view)
 import Dict
 import Maybe exposing (withDefault)
+import Pages.Device.Model
 import Pages.Login.Model
 import Pusher.Model exposing (Cluster(..), PusherAppKey)
 import RemoteData exposing (RemoteData(..))
@@ -79,6 +80,8 @@ testConfigModel =
     { config = testConfig
     , loginPage = Pages.Login.Model.emptyModel
     , login = loginStatus
+    , device = NotAsked
+    , devicePage = Pages.Device.Model.emptyModel
     }
 
 

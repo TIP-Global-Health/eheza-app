@@ -14,6 +14,9 @@ caller could provide it.
 delta2url : Page -> Page -> Maybe UrlChange
 delta2url previous current =
     case current of
+        DevicePage ->
+            Just <| UrlChange NewEntry "#device"
+
         LoginPage ->
             Just <| UrlChange NewEntry "#login"
 
@@ -88,6 +91,7 @@ parseUrl =
         , map (UserPage << ClinicsPage << Just << toEntityId) (s "clinics" </> int)
         , map (UserPage (ClinicsPage Nothing)) (s "clinics")
         , map (UserPage AdminPage) (s "admin")
+        , map DevicePage (s "device")
         , map LoginPage (s "login")
         , map ServiceWorkerPage (s "deployment")
         , map (UserPage MyAccountPage) (s "my-account")
@@ -99,5 +103,5 @@ parseUrl =
         -- special Page called `Root`?  Or, we could eventually redirect to an
         -- appropriate page. But it might be simpler to record the user's
         -- intention to be at the "root" page.
-        , map LoginPage top
+        , map DevicePage top
         ]
