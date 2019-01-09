@@ -110,7 +110,7 @@ viewConfiguredModel model configured =
                     |> Html.map MsgPageDevice
 
             LoginPage ->
-                text "todo"
+                viewEditableSession model configured
 
             PageNotFound url ->
                 Pages.PageNotFound.View.view model.language url
@@ -120,10 +120,10 @@ viewConfiguredModel model configured =
                     |> Html.map MsgServiceWorker
 
             SessionPage subPage ->
-                text "todo"
+                viewEditableSession model configured
 
             UserPage userPage ->
-                text "todo"
+                viewEditableSession model configured
 
 
 viewEditableSession : Model -> ConfiguredModel -> Html Msg
