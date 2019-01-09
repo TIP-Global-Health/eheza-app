@@ -297,8 +297,8 @@ function hedley_activity_weight_for_session($session_id, $child_id) {
  * @param string $measurement_bundle
  *   The measurement node bundle.
  *
- * @return array|null
- *   Node IDs if they exist or nothing if no nodes exist.
+ * @return array
+ *   Node IDs if they exist or empty array if no nodes exist.
  */
 function hedley_activity_get_measurements_by_session($session_id, $measurement_bundle) {
   $query = new EntityFieldQuery();
@@ -310,5 +310,5 @@ function hedley_activity_get_measurements_by_session($session_id, $measurement_b
     ->range(0, 100)
     ->execute();
 
-  return !empty($result['node']) ? array_keys($result['node']) : NULL;
+  return !empty($result['node']) ? array_keys($result['node']) : [];
 }
