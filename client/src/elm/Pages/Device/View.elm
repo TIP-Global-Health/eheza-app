@@ -34,15 +34,6 @@ view language device model =
 viewDeviceStatus : Language -> WebData Device -> Model -> Html Msg
 viewDeviceStatus language device model =
     case device of
-        NotAsked ->
-            viewPairingForm language device model
-
-        Loading ->
-            viewPairingForm language device model
-
-        Failure err ->
-            viewPairingForm language device model
-
         Success device ->
             p []
                 [ text <| translate language Translate.Device
@@ -52,6 +43,9 @@ viewDeviceStatus language device model =
                 , text <| device.name
                 ]
 
+        _ ->
+            viewPairingForm language device model
+
 
 viewPairingForm : Language -> WebData Device -> Model -> Html Msg
 viewPairingForm language device model =
@@ -59,8 +53,12 @@ viewPairingForm language device model =
         isLoading =
             RemoteData.isLoading device
 
-        disableSubmitButton =
-            isLoading || model.code == ""
+        ( disableSubmitButton, formAttr ) =
+            if isLoading || model.code == "" then
+                ( True, [] )
+
+            else
+                ( False, [ onSubmit HandlePairClicked ] )
 
         formState =
             case device of
@@ -86,9 +84,7 @@ viewPairingForm language device model =
                     emptyNode
     in
     Html.form
-        [ onSubmit HandlePairClicked
-        , action "javascript:void(0);"
-        ]
+        (action "javascript:void(0);" :: formAttr)
         [ div
             [ class "ui form"
             , class formState

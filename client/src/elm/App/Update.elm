@@ -289,6 +289,9 @@ update msg model =
                                 |> Task.map (always device)
 
                         cmd =
+                            -- Try to get the device's access token from the
+                            -- backend, and if it succeeds, cache it on the
+                            -- service worker
                             postCode
                                 |> Task.andThen cacheDevice
                                 |> RemoteData.fromTask
