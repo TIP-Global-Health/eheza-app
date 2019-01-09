@@ -23,23 +23,35 @@ function hedley_device_create_revision($node) {
 }
 
 /**
+ * Calls _create_revision hooks in all modules.
+ *
+ * @param object $node
+ *   The node being saved.
+ *
+ * @return bool
+ *   TRUE if any module thinks we should make a revision.
+ */
+function hedley_device_check_create_revision($node) {
+  foreach (module_implements('create_revision') as $module) {
+    $function = $module . '_create_revision';
+    if ($function($node)) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+/**
  * Implements hook_node_presave().
  */
 function hedley_device_node_presave($node) {
   // Reset the revision flag.
   unset($node->revision);
 
-  foreach (module_implements('create_revision') as $module) {
-    $function = $module . '_create_revision';
-    if (!$function($node)) {
-      continue;
-    }
-
+  if (hedley_device_check_create_revision($node)) {
     // Create a revision for this node.
     $node->revision = TRUE;
-
-    // Once a hook ask for a revision there is no point to keep checking.
-    break;
   }
 
   if ($node->type != 'device') {
@@ -59,6 +71,21 @@ function hedley_device_node_presave($node) {
   elseif (!hedley_device_check_unique_pairing_code($wrapper->field_pairing_code->value(), $wrapper->getIdentifier())) {
     // Existing device, so throw error if it's not unique.
     throw new Exception('The provided pairing code was not unique.');
+  }
+}
+
+/**
+ * Implements hook_node_delete().
+ */
+function hedley_device_node_delete($node) {
+  // Allow to manually skip this exception.
+  if (!empty($node->allow_delete)) {
+    return;
+  }
+
+  if (hedley_device_check_create_revision($node)) {
+    // Don't allow deletion if we're making revisions.
+    throw new Exception('Cannot delete this node. Consider unpublishing it instead.');
   }
 }
 
