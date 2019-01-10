@@ -33,21 +33,6 @@ function hedley_activity_get_measurements_content_types() {
 }
 
 /**
- * Indicate whether to create a revision.
- *
- * Invoked from hedley_device_node_presave.
- *
- * @param object $node
- *   The node being saved.
- *
- * @return bool
- *   TRUE if we should make a revision.
- */
-function hedley_activity_create_revision($node) {
-  return in_array($node->type, hedley_activity_get_measurements_content_types());
-}
-
-/**
  * Implements hook_node_insert().
  */
 function hedley_activity_node_insert($node) {
