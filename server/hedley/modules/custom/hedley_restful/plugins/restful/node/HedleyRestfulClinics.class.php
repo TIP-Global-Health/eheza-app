@@ -29,5 +29,4 @@ class HedleyRestfulClinics extends HedleyRestfulSyncBase {
     return $public_fields;
   }
 
-
 }
