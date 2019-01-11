@@ -11,6 +11,9 @@ include_once 'hedley_device.features.inc';
  * Implements hook_node_presave().
  */
 function hedley_device_node_presave($node) {
+  // Create a revision for all nodes.
+  $node->revision = TRUE;
+
   if ($node->type != 'device') {
     // Not a device.
     return;
@@ -29,6 +32,18 @@ function hedley_device_node_presave($node) {
     // Existing device, so throw error if it's not unique.
     throw new Exception('The provided pairing code was not unique.');
   }
+}
+
+/**
+ * Implements hook_node_delete().
+ */
+function hedley_device_node_delete($node) {
+  // Allow to manually skip this exception.
+  if (!empty($node->allow_delete)) {
+    return;
+  }
+
+  throw new Exception('Cannot delete this node. Consider unpublishing it instead.');
 }
 
 /**

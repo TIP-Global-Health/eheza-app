@@ -165,7 +165,12 @@ class HedleyRestfulTrainingSessionActions extends HedleyRestfulEntityBaseNode {
     // Eventually, should switch to queuing the action, or use db_select and
     // db_delete.
     hedley_restful_query_in_batches($query, 50, function ($offset, $count, $session_nids) {
-      entity_delete_multiple('node', $session_nids);
+      // We need to unpublish rather than delete, for syncing purposes.
+      $nodes = node_load_multiple($session_nids);
+      foreach ($nodes as $node) {
+        $node->status = NODE_NOT_PUBLISHED;
+        node_save($node);
+      }
     });
   }
 
