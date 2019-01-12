@@ -11,16 +11,6 @@
 class HedleyRestfulFamilyPlannings extends HedleyRestfulMotherActivityBase {
 
   /**
-   * Return the type of the activity.
-   *
-   * @return string
-   *   The type name.
-   */
-  protected static function getType() {
-    return 'family_planning';
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function publicFieldsInfo() {
