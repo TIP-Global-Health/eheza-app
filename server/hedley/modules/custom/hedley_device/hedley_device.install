@@ -1,0 +1,27 @@
+<?php
+
+/**
+ * @file
+ * Install and update functions.
+ */
+
+/**
+ * Implements hook_update_N().
+ *
+ * Add a role and user for devices when authenticating.
+ */
+function hedley_device_update_7001() {
+  $sync_role = new stdClass();
+  $sync_role->name = 'sync';
+  user_role_save($sync_role);
+
+  $fields = [
+    'name' => 'sync',
+    'status' => 1,
+    'roles' => [
+      $sync_role->rid => 'sync',
+    ],
+  ];
+
+  user_save(NULL, $fields);
+}

@@ -163,10 +163,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     // doesn't have yet).
     $account = $this->getAccount();
 
-    // Temporary, until we have an authentication plugin for this that checks
-    // devices and authorizes a "sync" user.
-    $account = user_load(1);
-
     $output = [];
     foreach ($optimized as $item) {
       $handler_name = $handlersForTypes[$item->type];
@@ -299,10 +295,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     // revisions out-of-order then we might reference entities the client
     // doesn't have yet).
     $account = $this->getAccount();
-
-    // Temporary, until we have an authentication plugin for this that checks
-    // devices and authorizes a "sync" user.
-    $account = user_load(1);
 
     $output = [];
     foreach ($optimized as $item) {

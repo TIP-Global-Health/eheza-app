@@ -11,4 +11,5 @@ $plugin = array(
   'name' => 'sync',
   'description' => t('Sync with devices.'),
   'class' => 'HedleyRestfulSync',
+  'authentication_types' => ['device-token'],
 );
