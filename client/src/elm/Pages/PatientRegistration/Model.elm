@@ -1,5 +1,6 @@
 module Pages.PatientRegistration.Model exposing
-    ( GeoLocation
+    ( DialogState(..)
+    , GeoLocation
     , Model
     , Msg(..)
     , RegistrationForm
@@ -25,6 +26,7 @@ type alias Model =
     , registrationForm : Form () RegistrationForm
     , registrationStep : RegistrationStep
     , geoInfo : GeoInfo
+    , dialogState : Maybe DialogState
     }
 
 
@@ -34,8 +36,9 @@ emptyModel =
     , registrationForm = Form.initial [] validateRegistrationForm
     , registrationStep = First
     , geoInfo = GeoInfo getGeoProvinces getGeoDistricts getGeoSectors getGeoCells getGeoVillages
+    , dialogState = Nothing    
     }
-
+    
 
 type alias GeoInfo =
     { provinces : EveryDict GeoLocationId GeoLocation
@@ -56,6 +59,7 @@ type Msg
     = DropZoneComplete DropZoneFile
     | MsgRegistrationForm Form.Msg
     | SetActivePage Page
+    | SetDialogState (Maybe DialogState)
     | SetRegistrationStep RegistrationStep
     | Submit
 
@@ -64,17 +68,22 @@ type alias GeoLocation =
     { name : String
     , parent : Maybe GeoLocationId
     }
+    
+    
+type DialogState
+    = ConfirmSubmision
 
 
 type alias RegistrationForm =
     { firstName : String
+    , middleName : String
     , secondName : String
     , nationalIdNumber : String
     , dayOfBirth : String
     , monthOfBirth : String
     , yearOfBirth : String
-    , isMale : Bool
-    , isFemale : Bool
+    , isDateOfBirthEstimated : Bool
+    , gender : String
     , levelOfEducation : String
     , profession : String
     , maritalStatus : String
@@ -103,13 +112,14 @@ validateRegistrationForm : Validation () RegistrationForm
 validateRegistrationForm =
     succeed RegistrationForm
         |> andMap (field "firstName" string)
+        |> andMap (field "middleName" string)
         |> andMap (field "secondName" string)
         |> andMap (field "nationalIdNumber" (oneOf [ emptyString, validateAlphanumeric ]))
         |> andMap (field "dayOfBirth" string)
         |> andMap (field "monthOfBirth" string)
         |> andMap (field "yearOfBirth" string)
-        |> andMap (field "isMale" bool)
-        |> andMap (field "isFemale" bool)
+        |> andMap (field "isDateOfBirthEstimated" bool)
+        |> andMap (field "gender" string)
         |> andMap (field "levelOfEducation" string)
         |> andMap (field "profession" string)
         |> andMap (field "maritalStatus" string)

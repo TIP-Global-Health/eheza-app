@@ -176,7 +176,9 @@ type TranslationId
     | Clinic
     | Clinics
     | Closed
+    | ConfirmationRequired
     | ConfirmDeleteTrainingSessions
+    | ConfirmRegisterPatient
     | Connected
     | ContactInformation
     | Continue
@@ -190,6 +192,9 @@ type TranslationId
     | DateOfBirth
     | Days
     | Delete
+    | Device
+    | DeviceNotAuthorized
+    | DeviceStatus
     | District
     | DownloadHealthAssessment
     | DownloadSession1
@@ -199,10 +204,12 @@ type TranslationId
     | DownloadingSession2
     | DropzoneDefaultMessage
     | EndSession
+    | EnterPairingCode
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
     | ErrorFetchingCachedSessionTitle
     | ErrorFetchingCachedSessionMessage
+    | Estimated
     | FamilyInformation
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
@@ -233,9 +240,11 @@ type TranslationId
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
+    | MiddleName
     | MinutesAgo Int
     | ModeOfDelivery ModeOfDelivery
     | ModeOfDeliveryLabel
+    | Month
     | MonthAbbrev
     | MonthsOld
     | Mother
@@ -247,6 +256,7 @@ type TranslationId
     | MyAccount
     | NationalIdNumber
     | Next
+    | No
     | NoActiveIncidents
     | NoActivitiesCompleted
     | NoActivitiesCompletedForThisParticipant
@@ -324,6 +334,7 @@ type TranslationId
     | StartDate
     | EndDate
     | Submit
+    | SubmitPairingCode
     | Success
     | TelephoneNumber
     | ThisActionCannotBeUndone
@@ -346,6 +357,8 @@ type TranslationId
     | ViewProgressReport
     | Village
     | WelcomeUser String
+    | Year
+    | Yes
     | YouAreNotAnAdmin
     | YouHaveACompletedSession
     | YourSessionHasBeenSaved
@@ -786,8 +799,18 @@ translationSet trans =
             , kinyarwanda = Just "Gufunga"
             }
 
+        ConfirmationRequired ->
+            { english = "Please confirm:"
+            , kinyarwanda = Nothing
+            }
+
         ConfirmDeleteTrainingSessions ->
             { english = "Are you sure you want to delete all training sessions?"
+            , kinyarwanda = Nothing
+            }
+
+        ConfirmRegisterPatient ->
+            { english = "Are you sure you want to save this patient's data?"
             , kinyarwanda = Nothing
             }
 
@@ -837,7 +860,7 @@ translationSet trans =
             }
 
         Day ->
-            { english = "day"
+            { english = "Day"
             , kinyarwanda = Just "Umunsi"
             }
 
@@ -853,6 +876,26 @@ translationSet trans =
 
         Delete ->
             { english = "Delete"
+            , kinyarwanda = Nothing
+            }
+
+        Device ->
+            { english = "Device"
+            , kinyarwanda = Nothing
+            }
+
+        DeviceNotAuthorized ->
+            { english =
+                """This device has not yet been authorized to sync data with the backend, or the
+                authorization has expired or been revoked. To authorize or re-authorize this
+                device, enter a pairing code below. This will permit sensitive data to be stored
+                on this device and updated to the backend. You should only authorize devices that
+                are under your control and which are secure."""
+            , kinyarwanda = Nothing
+            }
+
+        DeviceStatus ->
+            { english = "Device Status"
             , kinyarwanda = Nothing
             }
 
@@ -901,6 +944,16 @@ translationSet trans =
             , kinyarwanda = Just "Kurangiza ipima (gupima)"
             }
 
+        EnterPairingCode ->
+            { english = "Enter pairing code"
+            , kinyarwanda = Nothing
+            }
+
+        SubmitPairingCode ->
+            { english = "Submit Pairing Code"
+            , kinyarwanda = Nothing
+            }
+
         ErrorCheckLocalConfig ->
             { english = "Check your LocalConfig.elm file and make sure you have defined the enviorement properly"
             , kinyarwanda = Nothing
@@ -923,6 +976,11 @@ translationSet trans =
                 device is online). Contact the Ihangane project for further
                 instructions.
                 """
+            , kinyarwanda = Nothing
+            }
+
+        Estimated ->
+            { english = "Estimated"
             , kinyarwanda = Nothing
             }
 
@@ -1168,6 +1226,11 @@ translationSet trans =
             , kinyarwanda = Just <| "Kwiyongera " ++ toString amount
             }
 
+        MiddleName ->
+            { english = "Middle Name"
+            , kinyarwanda = Nothing
+            }
+
         MinutesAgo minutes ->
             { english =
                 if minutes == 0 then
@@ -1205,6 +1268,11 @@ translationSet trans =
 
         ModeOfDeliveryLabel ->
             { english = "Mode of delivery"
+            , kinyarwanda = Nothing
+            }
+
+        Month ->
+            { english = "Month"
             , kinyarwanda = Nothing
             }
 
@@ -1272,6 +1340,11 @@ translationSet trans =
 
         Next ->
             { english = "Next"
+            , kinyarwanda = Nothing
+            }
+
+        No ->
+            { english = "No"
             , kinyarwanda = Nothing
             }
 
@@ -1775,6 +1848,16 @@ translationSet trans =
             , kinyarwanda = Just <| "Murakaza neza " ++ name
             }
 
+        Year ->
+            { english = "Year"
+            , kinyarwanda = Nothing
+            }
+
+        Yes ->
+            { english = "Yes"
+            , kinyarwanda = Nothing
+            }
+
         YouAreNotAnAdmin ->
             { english = "You are not logged in as an Administrator."
             , kinyarwanda = Nothing
@@ -1814,6 +1897,11 @@ translationSet trans =
 translateActivePage : Page -> TranslationSet
 translateActivePage page =
     case page of
+        DevicePage ->
+            { english = "Device Status"
+            , kinyarwanda = Nothing
+            }
+
         LoginPage ->
             { english = "Login"
             , kinyarwanda = Just "Kwinjira"

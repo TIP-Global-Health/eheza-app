@@ -10,6 +10,94 @@
 function hedley_schedule_field_default_field_instances() {
   $field_instances = array();
 
+  // Exported field_instance: 'node-clinic-field_health_center'.
+  $field_instances['node-clinic-field_health_center'] = array(
+    'bundle' => 'clinic',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 0,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_health_center',
+    'label' => 'Health Center',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => -4,
+    ),
+  );
+
+  // Exported field_instance: 'node-health_center-field_catchment_area'.
+  $field_instances['node-health_center-field_catchment_area'] = array(
+    'bundle' => 'health_center',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 0,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_catchment_area',
+    'label' => 'Catchment Area',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => -4,
+    ),
+  );
+
   // Exported field_instance: 'node-session-field_clinic'.
   $field_instances['node-session-field_clinic'] = array(
     'bundle' => 'session',
@@ -197,10 +285,12 @@ This should not be used on the "live" site -- it is only intended for the "sandb
 
   // Translatables
   // Included for use with string extractors like potx.
+  t('Catchment Area');
   t('Clinic');
   t('Closed');
   t('Enter the clinic for which data-entry is being scheduled.');
   t('Has the session been explicitly closed by the user?');
+  t('Health Center');
   t('If checked, indicates that this is a "training" session that should be deleted when deleting all training sessions. (Other sessions in the training site would remain, to populate the progress report).
 
 This should not be used on the "live" site -- it is only intended for the "sandbox" site.');

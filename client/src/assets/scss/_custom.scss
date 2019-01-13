@@ -744,13 +744,50 @@ h3.ui.header {
     }
   }
 
-  .select-day-input,
-  .select-month-input {
-    width: 100px;
+  .birtdate-label {
+    margin-top: 45px;
   }
 
-  .select-year-input {
-    width: 120px;
+  .day-input,
+  .month-input {
+    text-align: center;
+
+    span {
+      font-size: 15px;
+    }
+
+    select {
+      width: 100px;
+    }
+  }
+
+  .year-input {
+    text-align: center;
+
+    span {
+      font-size: 15px;
+    }
+
+    select {
+      width: 120px;
+    }
+  }
+
+  .gender-input {
+    margin-left: 15px;
+  }
+
+  .estimated-input {
+    span {
+      font-size: 15px;
+      margin-left: 30px;
+    }
+
+    input {
+      width: 35px;
+      margin-left: 45px;
+      margin-top: 5px;
+    }
   }
 
   .required:before {
