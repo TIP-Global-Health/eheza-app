@@ -35,6 +35,9 @@ view language currentDate user backend cache model =
         firstName =
             Form.getFieldAsString "firstName" model.registrationForm
 
+        middleName =
+            Form.getFieldAsString "middleName" model.registrationForm
+
         secondName =
             Form.getFieldAsString "secondName" model.registrationForm
 
@@ -185,6 +188,7 @@ view language currentDate user backend cache model =
                                            )
                             in
                             [ viewTextInput language Translate.FirstName firstName True
+                            , viewTextInput language Translate.MiddleName middleName False
                             , viewTextInput language Translate.SecondName secondName True
                             , viewTextInput language Translate.NationalIdNumber nationalIdNumber False
                             , div [ class "ui grid" ]

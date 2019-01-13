@@ -240,6 +240,7 @@ type TranslationId
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
+    | MiddleName
     | MinutesAgo Int
     | ModeOfDelivery ModeOfDelivery
     | ModeOfDeliveryLabel
@@ -1222,6 +1223,11 @@ translationSet trans =
         MeasurementLost amount ->
             { english = "Lost " ++ toString amount
             , kinyarwanda = Just <| "Kwiyongera " ++ toString amount
+            }
+
+        MiddleName ->
+            { english = "Middle Name"
+            , kinyarwanda = Nothing
             }
 
         MinutesAgo minutes ->

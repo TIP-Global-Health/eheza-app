@@ -55,6 +55,7 @@ type DialogState
 
 type alias RegistrationForm =
     { firstName : String
+    , middleName : String
     , secondName : String
     , nationalIdNumber : String
     , dayOfBirth : String
@@ -90,6 +91,7 @@ validateRegistrationForm : Validation () RegistrationForm
 validateRegistrationForm =
     succeed RegistrationForm
         |> andMap (field "firstName" string)
+        |> andMap (field "middleName" string)
         |> andMap (field "secondName" string)
         |> andMap (field "nationalIdNumber" (oneOf [ emptyString, validateAlphanumeric ]))
         |> andMap (field "dayOfBirth" string)
