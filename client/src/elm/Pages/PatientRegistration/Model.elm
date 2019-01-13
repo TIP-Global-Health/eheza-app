@@ -8,20 +8,37 @@ module Pages.PatientRegistration.Model exposing
     , validateRegistrationForm
     )
 
+import Backend.Child.Model exposing (Child)
+import Backend.Entities exposing (ChildId, MotherId)
 import Backend.Measurement.Model exposing (PhotoValue)
+import Backend.Mother.Model exposing (Mother)
+import EveryDict exposing (EveryDict)
 import Form exposing (Form)
 import Form.Error exposing (ErrorValue(..))
 import Form.Validate exposing (Validation, andMap, andThen, bool, emptyString, field, format, mapError, oneOf, string, succeed)
 import Measurement.Model exposing (DropZoneFile)
 import Pages.Page exposing (Page)
 import Regex exposing (Regex)
+import Uuid exposing (Uuid)
 
 
 type alias Model =
     { photo : Maybe PhotoValue
     , registrationForm : Form () RegistrationForm
     , registrationStep : RegistrationStep
+    , participantsData : ParticipantsData
     , dialogState : Maybe DialogState
+    }
+
+
+type alias ParticipantsData =
+    { -- This should mode to Backend Model.
+      motheres : EveryDict MotherId Mother
+
+    -- This should mode to Backend Model.
+    , children : EveryDict ChildId Child
+    , mothersToRegister : EveryDict Uuid Mother
+    , childrenToRegister : EveryDict Uuid Child
     }
 
 
@@ -30,7 +47,17 @@ emptyModel =
     { photo = Nothing
     , registrationForm = Form.initial [] validateRegistrationForm
     , registrationStep = First
+    , participantsData = emptyParticipantsData
     , dialogState = Nothing
+    }
+
+
+emptyParticipantsData : ParticipantsData
+emptyParticipantsData =
+    { motheres = EveryDict.empty
+    , children = EveryDict.empty
+    , mothersToRegister = EveryDict.empty
+    , childrenToRegister = EveryDict.empty
     }
 
 
