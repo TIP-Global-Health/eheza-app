@@ -896,11 +896,11 @@ translationSet trans =
             { english = "Device Status"
             , kinyarwanda = Nothing
             }
-            
+
         District ->
-            { english = "District"   
+            { english = "District"
             , kinyarwanda = Nothing
-            }            
+            }
 
         DownloadHealthAssessment ->
             { english = "Download Health Assessment"
