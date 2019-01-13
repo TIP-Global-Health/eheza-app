@@ -170,9 +170,11 @@ function _hedley_migrate_preprocess_child($node, Generator $faker) {
   $wrapper->field_gender->set($gender);
 
   $first_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
+  $middle_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
   $second_name = $faker->lastName;
-  $wrapper->title->set("$first_name $second_name");
+  $wrapper->title->set("$first_name $middle_name $second_name");
   $wrapper->field_first_name->set($first_name);
+  $wrapper->field_middle_name->set($middle_name);
   $wrapper->field_second_name->set($second_name);
 
   $mode_of_delivery = [
@@ -218,10 +220,13 @@ function _hedley_migrate_preprocess_mother($node, Generator $faker) {
   $wrapper->field_gender->set($gender);
 
   $first_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
+  $middle_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
   $second_name = $faker->lastName;
-  $wrapper->title->set("$first_name $second_name");
+  $wrapper->title->set("$first_name $middle_name $second_name");
   $wrapper->field_first_name->set($first_name);
+  $wrapper->field_middle_name->set($middle_name);
   $wrapper->field_second_name->set($second_name);
+
   $wrapper->field_national_id_number->set($faker->numberBetween(1000, 9999));
   $wrapper->field_profession->set($faker->jobTitle);
 
