@@ -11,8 +11,6 @@
 function hedley_admin_views_data() {
   $data = [];
 
-  error_log('Hello from hedley_admin_views_data');
-
   $data['node']['zscore_wfa'] = [
     'title' => t('ZScore WFA'),
     'help' => t('Virtual field for WFA ZScore'),

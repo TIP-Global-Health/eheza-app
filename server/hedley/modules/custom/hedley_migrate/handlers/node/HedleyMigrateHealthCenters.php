@@ -2,46 +2,46 @@
 
 /**
  * @file
- * Contains \HedleyMigrateClinics.
+ * Contains \HedleyMigrateHealthCenters.
  */
 
 /**
- * Class HedleyMigrateClinics.
+ * Class HedleyMigrateHealthCenters.
  */
-class HedleyMigrateClinics extends HedleyMigrateBase {
+class HedleyMigrateHealthCenters extends HedleyMigrateBase {
 
   public $entityType = 'node';
-  public $bundle = 'clinic';
+  public $bundle = 'health_center';
 
   /**
-   * HedleyMigrateClinics constructor.
+   * HedleyMigrateHealthCenters constructor.
    *
    * {@inheritdoc}
    */
   public function __construct($arguments) {
     parent::__construct($arguments);
-    $this->description = t('Import clinics from the CSV.');
+    $this->description = t('Import health centers from the CSV.');
     $this->dependencies = [
-      'HedleyMigrateHealthCenters',
+      'HedleyMigrateCatchmentAreas',
     ];
 
     $columns = [
-      ['id', 'ID'],
-      ['title', 'Clinic Name'],
-      ['field_health_center', 'Health Center'],
+      ['id', 'id'],
+      ['title', 'title'],
+      ['field_catchment_area', 'Catchment Area'],
     ];
 
-    $source_file = $this->getMigrateDirectory() . '/csv/clinics.csv';
+    $source_file = $this->getMigrateDirectory() . '/csv/health-centers.csv';
     $options = ['header_rows' => 1];
     $this->source = new MigrateSourceCSV($source_file, $columns, $options);
 
-    $key = array(
+    $key = [
       'id' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
       ],
-    );
+    ];
 
     $this->destination = new MigrateDestinationNode($this->bundle);
 
@@ -50,8 +50,8 @@ class HedleyMigrateClinics extends HedleyMigrateBase {
     $this->addFieldMapping('title', 'title');
 
     $this
-      ->addFieldMapping('field_health_center', 'field_health_center')
-      ->sourceMigration('HedleyMigrateHealthCenters');
+      ->addFieldMapping('field_catchment_area', 'field_catchment_area')
+      ->sourceMigration('HedleyMigrateCatchmentAreas');
   }
 
 }
