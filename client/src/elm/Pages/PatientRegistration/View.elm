@@ -56,11 +56,8 @@ view language currentDate user backend cache model =
         isDateOfBirthEstimated =
             Form.getFieldAsBool "isDateOfBirthEstimated" model.registrationForm
 
-        isMale =
-            Form.getFieldAsBool "isMale" model.registrationForm
-
-        isFemale =
-            Form.getFieldAsBool "isFemale" model.registrationForm
+        gender =
+            Form.getFieldAsString "gender" model.registrationForm
 
         levelOfEducation =
             Form.getFieldAsString "levelOfEducation" model.registrationForm
@@ -247,13 +244,13 @@ view language currentDate user backend cache model =
 
                                 viewGender =
                                     div [ class "ui grid" ]
-                                        [ div [ class "eight wide column" ]
+                                        [ div [ class "six wide column" ]
                                             [ text <| translate language Translate.GenderLabel ++ ":" ]
-                                        , Form.Input.checkboxInput isMale [ class "one wide column" ]
+                                        , Form.Input.radioInput "male" gender [ class "one wide column gender-input" ]
                                         , div [ class "three wide column" ]
                                             [ text <| translate language (Translate.Gender Male) ]
-                                        , Form.Input.checkboxInput isFemale [ class "one wide column" ]
-                                        , div [ class "two wide column" ]
+                                        , Form.Input.radioInput "female" gender [ class "one wide column gender-input" ]
+                                        , div [ class "three wide column" ]
                                             [ text <| translate language (Translate.Gender Female) ]
                                         ]
                             in

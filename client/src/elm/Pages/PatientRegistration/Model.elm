@@ -62,8 +62,7 @@ type alias RegistrationForm =
     , monthOfBirth : String
     , yearOfBirth : String
     , isDateOfBirthEstimated : Bool
-    , isMale : Bool
-    , isFemale : Bool
+    , gender : String
     , levelOfEducation : String
     , profession : String
     , maritalStatus : String
@@ -98,8 +97,7 @@ validateRegistrationForm =
         |> andMap (field "monthOfBirth" string)
         |> andMap (field "yearOfBirth" string)
         |> andMap (field "isDateOfBirthEstimated" bool)
-        |> andMap (field "isMale" bool)
-        |> andMap (field "isFemale" bool)
+        |> andMap (field "gender" string)
         |> andMap (field "levelOfEducation" string)
         |> andMap (field "profession" string)
         |> andMap (field "maritalStatus" string)
