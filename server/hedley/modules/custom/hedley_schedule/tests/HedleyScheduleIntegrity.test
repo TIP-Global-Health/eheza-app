@@ -30,16 +30,19 @@ class HedleyScheduleIntegrity extends HedleyWebTestBase {
 
     // Make sure we can get it the session now.
     $session_node = node_load($session_nid);
+
     // Should retrieve session we just created.
     $this->assertTrue($session_node);
 
-    // Delete the session node.
-    node_delete($session_nid);
+    // Unpublish the session node.
+    $session_node->status = NODE_NOT_PUBLISHED;
+    node_save($session_node);
 
-    // Make sure we really deleted it.
+    // Make sure we really unpublished it.
     $session_node = node_load($session_nid);
-    // Session should no longer exist.
-    $this->assertFalse($session_node);
+
+    // Session should no longer be published.
+    $this->assertEqual($session_node->status, NODE_NOT_PUBLISHED);
   }
 
   /**
@@ -57,22 +60,27 @@ class HedleyScheduleIntegrity extends HedleyWebTestBase {
 
     // Make sure we can get it the session now.
     $session_node = node_load($session_nid);
+
     // Should retrieve session we just created.
     $this->assertTrue($session_node);
 
-    // Delete the session node.
-    node_delete($session_nid);
+    // Unpublish the session node.
+    $session_node->status = NODE_NOT_PUBLISHED;
+    node_save($session_node);
 
-    // Make sure we really deleted it.
+    // Make sure we really unpublished it.
     $session_node = node_load($session_nid);
     $height_node = node_load($height_nid);
     $weight_node = node_load($weight_nid);
-    // Session should no longer exist.
-    $this->assertFalse($session_node);
-    // Height measurement should no longer exist.
-    $this->assertFalse($height_node);
-    // Weight measurement should no longer exist.
-    $this->assertFalse($weight_node);
+
+    // Session should be unpublished.
+    $this->assertEqual($session_node->status, NODE_NOT_PUBLISHED);
+
+    // Height measurement should be unpublished.
+    $this->assertEqual($height_node->status, NODE_NOT_PUBLISHED);
+
+    // Weight measurement should be unpublished.
+    $this->assertEqual($weight_node->status, NODE_NOT_PUBLISHED);
   }
 
 }

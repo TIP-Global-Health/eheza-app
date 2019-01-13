@@ -1,0 +1,52 @@
+<?php
+
+/**
+ * @file
+ * Test functionality related to revisions.
+ */
+
+/**
+ * HedleyDeviceRevisions tests.
+ */
+class HedleyDeviceRevisions extends HedleyWebTestBase {
+
+  /**
+   * Activates modules for the tests.
+   *
+   * @inheritdoc
+   */
+  public function setUp() {
+    parent::setUp(['hedley_device']);
+  }
+
+  /**
+   * Info hook.
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'HedleyDeviceRevisions tests',
+      'description' => 'Tests functionality related to revisions.',
+      'group' => 'Hedley',
+    ];
+  }
+
+  /**
+   * Test revisions functionality.
+   */
+  public function testRevisions() {
+    $device = $this->drupalCreateNode([
+      'type' => 'device',
+      'title' => $this->randomName(),
+    ]);
+
+    try {
+      node_delete($device->nid);
+
+      $this->fail('Failed to throw exception for deleting node.');
+    }
+    catch (Exception $e) {
+      $this->assertEqual($e->getMessage(), 'Cannot delete this node. Consider unpublishing it instead.');
+    }
+  }
+
+}

@@ -1,0 +1,97 @@
+<?php
+
+/**
+ * @file
+ * Test functionality related to PIN code.
+ */
+
+/**
+ * HedleyUserPinCode tests.
+ */
+class HedleyUserPinCode extends HedleyWebTestBase {
+
+  /**
+   * Activates the User-related modules for the tests.
+   *
+   * @inheritdoc
+   */
+  public function setUp() {
+    parent::setUp(['hedley_user']);
+  }
+
+  /**
+   * Info hook.
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'HedleyUserPinCode tests',
+      'description' => 'Tests functionality related to user PIN codes.',
+      'group' => 'Hedley',
+    ];
+  }
+
+  /**
+   * Test that PIN code gets created for a new user.
+   */
+  public function testNewUserGetsPinCode() {
+    $account = $this->drupalCreateUser();
+
+    $wrapper = entity_metadata_wrapper('user', $account);
+
+    $this->assertTrue($wrapper->field_pin_code->value());
+  }
+
+  /**
+   * Test saving a user without changing PIN code.
+   */
+  public function testSavedUserRetainsPinCode() {
+    $account = $this->drupalCreateUser();
+    $wrapper = entity_metadata_wrapper('user', $account);
+
+    $wrapper->save();
+
+    $this->pass('Saved with unchanged PIN without exception.');
+  }
+
+  /**
+   * Test saving a user with changing PIN code.
+   */
+  public function testSavedUserNewPinCode() {
+    $account = $this->drupalCreateUser();
+    $wrapper = entity_metadata_wrapper('user', $account);
+
+    $wrapper->field_pin_code->set('1234');
+    $wrapper->save();
+
+    $account = user_load($wrapper->getIdentifier());
+    $wrapper = entity_metadata_wrapper('user', $account);
+
+    $this->assertEqual($wrapper->field_pin_code->value(), '1234');
+  }
+
+  /**
+   * Test saving a user with duplicate PIN code.
+   */
+  public function testSavedUserDuplicatePinCode() {
+    $account = $this->drupalCreateUser();
+    $wrapper = entity_metadata_wrapper('user', $account);
+
+    $wrapper->field_pin_code->set('1234');
+    $wrapper->save();
+
+    $account = $this->drupalCreateUser();
+    $wrapper = entity_metadata_wrapper('user', $account);
+
+    $wrapper->field_pin_code->set('1234');
+
+    try {
+      $wrapper->save();
+
+      $this->fail('Failed to throw exception for duplicate PIN code');
+    }
+    catch (Exception $e) {
+      $this->assertEqual($e->getMessage(), 'The provided PIN code was not unique.');
+    }
+  }
+
+}

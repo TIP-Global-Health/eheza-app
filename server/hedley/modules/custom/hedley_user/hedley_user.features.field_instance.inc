@@ -122,9 +122,45 @@ function hedley_user_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'user-user-field_pin_code'.
+  $field_instances['user-user-field_pin_code'] = array(
+    'bundle' => 'user',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'A code which users can provide on devices to identify themselves.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 3,
+      ),
+    ),
+    'entity_type' => 'user',
+    'field_name' => 'field_pin_code',
+    'label' => 'PIN code',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => 1,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 4,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 10,
+    ),
+  );
+
   // Translatables
   // Included for use with string extractors like potx.
+  t('A code which users can provide on devices to identify themselves.');
   t('Clinics');
+  t('PIN code');
   t('Phone');
   t('Profile photo');
   t('Which clinics is this user allowed to participate in?');

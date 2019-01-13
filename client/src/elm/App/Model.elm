@@ -2,10 +2,12 @@ module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..)
 
 import Backend.Model
 import Config.Model
+import Device.Model exposing (Device)
 import Dict exposing (Dict)
 import Http
 import Json.Encode exposing (Value)
 import Pages.Admin.Model
+import Pages.Device.Model
 import Pages.Login.Model
 import Pages.Model
 import Pages.Page exposing (Page(LoginPage))
@@ -89,6 +91,8 @@ type alias ConfiguredModel =
     , loginPage : Pages.Login.Model.Model
     , patientRegistrationPage : Pages.PatientRegistration.Model.Model
     , login : UserAndData () User LoggedInModel
+    , device : WebData Device
+    , devicePage : Pages.Device.Model.Model
     }
 
 
@@ -152,6 +156,7 @@ In any event, that will need some thought at some point.
 -}
 type Msg
     = MsgCache Backend.Model.MsgCached
+    | MsgPageDevice Pages.Device.Model.Msg
     | MsgLoggedIn MsgLoggedIn
     | MsgLogin (Restful.Login.Msg User)
     | MsgPageLogin Pages.Login.Model.Msg
@@ -159,6 +164,8 @@ type Msg
     | MsgSession Pages.Model.MsgSession
     | MsgServiceWorker ServiceWorker.Model.Msg
     | MsgZScore ZScore.Model.Msg
+    | TryPairingCode String
+    | HandlePairedDevice (WebData Device)
     | SendRollbar Rollbar.Level String (Dict String Value)
     | HandleRollbar (Result Http.Error Uuid)
     | SetActivePage Page
