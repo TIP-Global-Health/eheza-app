@@ -11,6 +11,11 @@ include_once 'hedley_user.features.inc';
  * Implements hook_node_presave().
  */
 function hedley_user_node_presave($node) {
+  if ($node->type != 'user') {
+    // Not a user.
+    return;
+  }
+
   $wrapper = entity_metadata_wrapper('node', $node);
 
   if (empty($node->nid)) {
