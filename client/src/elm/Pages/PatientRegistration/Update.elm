@@ -1,16 +1,19 @@
 module Pages.PatientRegistration.Update exposing (update)
 
 import App.Model
+import Date
 import Form
 import Form.Field exposing (FieldValue(..))
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Pages.PatientRegistration.Model exposing (..)
-import Pages.PatientRegistration.Utils exposing (getFormFieldValue, sequenceExtra)
+import Pages.PatientRegistration.Utils exposing (generateUuid, getFormFieldValue, sequenceExtra)
+import Time exposing (Time)
 import Time.Date
+import Uuid
 
 
-update : NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate msg model =
+update : Time -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentTime msg model =
     case msg of
         DropZoneComplete result ->
             -- The `fid` being Nothing signifies that we haven't uploaded this to
@@ -29,6 +32,9 @@ update currentDate msg model =
 
         MsgRegistrationForm subMsg ->
             let
+                currentDate =
+                    fromLocalDateTime <| Date.fromTime currentTime
+
                 extraMsgs =
                     case subMsg of
                         Form.Input "isMale" Form.Checkbox (Bool True) ->
@@ -126,7 +132,7 @@ update currentDate msg model =
                             []
             in
             ( { model | registrationForm = Form.update validateRegistrationForm subMsg model.registrationForm }, Cmd.none, [] )
-                |> sequenceExtra (update currentDate) extraMsgs
+                |> sequenceExtra (update currentTime) extraMsgs
 
         SetActivePage page ->
             ( model, Cmd.none, [ App.Model.SetActivePage page ] )
@@ -138,4 +144,8 @@ update currentDate msg model =
             ( { model | registrationStep = step }, Cmd.none, [] )
 
         Submit ->
+            let
+                log =
+                    Debug.log "UUID" <| Uuid.toString <| generateUuid currentTime
+            in
             ( model, Cmd.none, [] )

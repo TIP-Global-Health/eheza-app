@@ -1,8 +1,20 @@
-module Pages.PatientRegistration.Utils exposing (getFormFieldValue, sequenceExtra)
+module Pages.PatientRegistration.Utils exposing (generateUuid, getFormFieldValue, sequenceExtra)
 
 import Form
 import List
 import Maybe.Extra exposing (unwrap)
+import Random.Pcg exposing (initialSeed, step)
+import Time exposing (Time)
+import Uuid exposing (Uuid, uuidGenerator)
+
+
+generateUuid : Time -> Uuid
+generateUuid currentTime =
+    let
+        ( uuid, _ ) =
+            step uuidGenerator (initialSeed <| round currentTime)
+    in
+    uuid
 
 
 getFormFieldValue : Form.FieldState e String -> Int

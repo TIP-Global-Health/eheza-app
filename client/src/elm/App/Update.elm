@@ -34,7 +34,7 @@ import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
 import Task
-import Time exposing (minute)
+import Time exposing (second)
 import Translate exposing (Language(..), languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
 import User.Decoder exposing (decodeUser)
@@ -353,7 +353,7 @@ update msg model =
                 (\configured ->
                     let
                         ( subModel, subCmd, appMsgs ) =
-                            Pages.PatientRegistration.Update.update currentDate subMsg configured.patientRegistrationPage
+                            Pages.PatientRegistration.Update.update model.currentTime subMsg configured.patientRegistrationPage
                     in
                     ( { configured | patientRegistrationPage = subModel }
                     , Cmd.map MsgPagePatientRegistration subCmd
@@ -530,7 +530,7 @@ updateLoggedIn func model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Time.every minute Tick
+        [ Time.every second Tick
         , offline SetOffline
         , Sub.map MsgCache Backend.Update.subscriptions
         , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
