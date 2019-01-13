@@ -8,18 +8,17 @@
 include_once 'hedley_user.features.inc';
 
 /**
- * Implements hook_user_presave().
+ * Implements hook_node_presave().
  */
-function hedley_user_user_presave(&$edit, $account, $category) {
-  $wrapper = entity_metadata_wrapper('user', $account);
+function hedley_user_node_presave($node) {
+  $wrapper = entity_metadata_wrapper('node', $node);
 
-  $original_pin = $wrapper->field_pin_code->value();
-  $new_pin = empty($edit['field_pin_code'][LANGUAGE_NONE][0]['value']) ? '' : $edit['field_pin_code'][LANGUAGE_NONE][0]['value'];
-
-  if (empty($new_pin)) {
-    $edit['field_pin_code'][LANGUAGE_NONE][0]['value'] = $original_pin ? $original_pin : hedley_user_get_unique_pincode();
+  if (empty($node->nid)) {
+    // New user, so we generate a PIN code.
+    $wrapper->field_pin_code->set(hedley_user_get_unique_pincode());
   }
-  elseif (!hedley_user_check_unique_pincode($new_pin, $wrapper->getIdentifier())) {
+  elseif (!hedley_user_check_unique_pincode($wrapper->field_pin_code->value(), $wrapper->getIdentifier())) {
+    // Existing user, so throw error if it's not unique.
     throw new Exception('The provided PIN code was not unique.');
   }
 }
@@ -47,22 +46,23 @@ function hedley_user_get_unique_pincode() {
  *
  * @param string $code
  *   The pin code to check.
- * @param null|string $uid
- *   Optional; A user ID to ignore.
+ * @param null|string $nid
+ *   Optional; A node ID to ignore.
  *
  * @return bool
  *   TRUE if the supplied pincode is unique
  */
-function hedley_user_check_unique_pincode($code, $uid = NULL) {
+function hedley_user_check_unique_pincode($code, $nid = NULL) {
   $query = new EntityFieldQuery();
   $query
-    ->entityCondition('entity_type', 'user')
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'user')
     ->fieldCondition('field_pin_code', 'value', $code)
     // Enough to know if there is one more.
     ->range(0, 1);
 
-  if ($uid) {
-    $query->propertyCondition('uid', $uid, '<>');
+  if ($nid) {
+    $query->propertyCondition('nid', $nid, '<>');
   }
 
   $count = $query
