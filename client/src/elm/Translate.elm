@@ -1202,8 +1202,6 @@ translationSet trans =
 
         RegisterAPatient ->
             { english = "Register a patient"
-
-            -- TODO: add translation
             , kinyarwanda = Nothing
             }
 
