@@ -131,6 +131,9 @@ update currentDate msg model =
         SetActivePage page ->
             ( model, Cmd.none, [ App.Model.SetActivePage page ] )
 
+        SetDialogState state ->
+            ( { model | dialogState = state }, Cmd.none, [] )
+
         SetRegistrationStep step ->
             ( { model | registrationStep = step }, Cmd.none, [] )
 

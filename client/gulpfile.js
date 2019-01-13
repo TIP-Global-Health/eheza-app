@@ -329,6 +329,7 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function(callback)
     skipWaiting: false,
     importScripts: [
         'bower_components/dexie/dist/dexie.min.js',
+        'config.js',
         'lifecycle.js',
         'photos.js',
         'rollbar.js'
@@ -348,6 +349,7 @@ gulp.task('pwa:prod', function (callback) {
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
     importScripts: [
         'bower_components/dexie/dist/dexie.min.js',
+        'config.js',
         'lifecycle.js',
         'photos.js',
         'rollbar.js'

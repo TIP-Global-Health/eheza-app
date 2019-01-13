@@ -18,14 +18,14 @@ import Html.Events exposing (..)
 import Json.Decode
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.PatientRegistration.Model exposing (Model, Msg(..), RegistrationStep(..))
+import Pages.PatientRegistration.Model exposing (DialogState(..), Model, Msg(..), RegistrationStep(..))
 import Pages.PatientRegistration.Utils exposing (getFormFieldValue)
 import Participant.Model exposing (ParticipantType(..))
 import Time.Date
 import Translate exposing (Language(..), TranslationId, translate)
 import User.Model exposing (User)
 import Utils.Form exposing (isFormFieldSet, isFormFieldValid)
-import Utils.Html exposing (script)
+import Utils.Html exposing (script, viewModal)
 
 
 view : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
@@ -49,6 +49,9 @@ view language currentDate user backend cache model =
 
         yearOfBirth =
             Form.getFieldAsString "yearOfBirth" model.registrationForm
+
+        isDateOfBirthEstimated =
+            Form.getFieldAsBool "isDateOfBirthEstimated" model.registrationForm
 
         isMale =
             Form.getFieldAsBool "isMale" model.registrationForm
@@ -185,14 +188,24 @@ view language currentDate user backend cache model =
                             , viewTextInput language Translate.SecondName secondName True
                             , viewTextInput language Translate.NationalIdNumber nationalIdNumber False
                             , div [ class "ui grid" ]
-                                [ div [ class "six wide column required" ]
+                                [ div [ class "six wide column birtdate-label required" ]
                                     [ text <| translate language Translate.DateOfBirth ++ ":" ]
-                                , div [ class "three wide column" ]
-                                    [ Form.Input.selectInput monthOptions monthOfBirth [ class "select-month-input" ] ]
-                                , div [ class "three wide column" ]
-                                    [ Form.Input.selectInput dayOptions dayOfBirth [ class "select-day-input" ] ]
-                                , div [ class "four wide column" ]
-                                    [ Form.Input.selectInput yearOptions yearOfBirth [ class "select-year-input" ] ]
+                                , div [ class "three wide column month-input" ]
+                                    [ span [] [ text <| translate language Translate.Month ]
+                                    , Form.Input.selectInput monthOptions monthOfBirth []
+                                    ]
+                                , div [ class "three wide column day-input" ]
+                                    [ span [] [ text <| translate language Translate.Day ]
+                                    , Form.Input.selectInput dayOptions dayOfBirth []
+                                    ]
+                                , div [ class "three wide column year-input" ]
+                                    [ span [] [ text <| translate language Translate.Year ]
+                                    , Form.Input.selectInput yearOptions yearOfBirth []
+                                    ]
+                                , div [ class "one wide column estimated-input" ]
+                                    [ span [] [ text <| translate language Translate.Estimated ]
+                                    , Form.Input.checkboxInput isDateOfBirthEstimated []
+                                    ]
                                 ]
                             ]
 
@@ -230,12 +243,12 @@ view language currentDate user backend cache model =
 
                                 viewGender =
                                     div [ class "ui grid" ]
-                                        [ div [ class "six wide column" ]
+                                        [ div [ class "eight wide column" ]
                                             [ text <| translate language Translate.GenderLabel ++ ":" ]
-                                        , Form.Input.checkboxInput isMale [ class "two wide column" ]
+                                        , Form.Input.checkboxInput isMale [ class "one wide column" ]
                                         , div [ class "three wide column" ]
                                             [ text <| translate language (Translate.Gender Male) ]
-                                        , Form.Input.checkboxInput isFemale [ class "two wide column" ]
+                                        , Form.Input.checkboxInput isFemale [ class "one wide column" ]
                                         , div [ class "two wide column" ]
                                             [ text <| translate language (Translate.Gender Female) ]
                                         ]
@@ -546,7 +559,7 @@ view language currentDate user backend cache model =
 
                         Third ->
                             ( Translate.Submit
-                            , Submit
+                            , SetDialogState <| Just ConfirmSubmision
                             , False
                             )
             in
@@ -584,7 +597,43 @@ view language currentDate user backend cache model =
             , div [ class "registration-form actions" ]
                 [ leftButton, rightButton ]
             ]
+        , viewModal <| viewDialog language model.dialogState
         ]
+
+
+viewDialog : Language -> Maybe DialogState -> Maybe (Html Msg)
+viewDialog language dialogState =
+    dialogState
+        |> Maybe.andThen
+            (\state ->
+                case state of
+                    ConfirmSubmision ->
+                        Just <|
+                            div [ class "ui tiny active modal" ]
+                                [ div
+                                    [ class "header" ]
+                                    [ text <| translate language Translate.ConfirmationRequired ]
+                                , div
+                                    [ class "content" ]
+                                    [ text <| translate language Translate.ConfirmRegisterPatient ]
+                                , div
+                                    [ class "actions" ]
+                                    [ div
+                                        [ class "two ui buttons" ]
+                                        [ button
+                                            [ class "ui  fluid button"
+                                            , onClick <| SetDialogState Nothing
+                                            ]
+                                            [ text <| translate language Translate.No ]
+                                        , button
+                                            [ class "ui  primary fluid button"
+                                            , onClick Submit
+                                            ]
+                                            [ text <| translate language Translate.Yes ]
+                                        ]
+                                    ]
+                                ]
+            )
 
 
 viewTextInput : Language -> TranslationId -> Form.FieldState e String -> Bool -> Html Form.Msg

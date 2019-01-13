@@ -12,7 +12,7 @@ import RemoteData exposing (RemoteData(..))
 import Restful.Login exposing (AuthenticatedUser, LoginError(..), LoginMethod(..), LoginProgress(..), UserAndData(..))
 import Translate exposing (Language, translate)
 import User.Model exposing (Role(Administrator), User)
-import Utils.Html exposing (spinner)
+import Utils.Html exposing (spinner, viewLogo)
 import Utils.WebData exposing (viewError)
 
 
@@ -287,26 +287,3 @@ viewLoginError language error =
     div
         [ class "ui error message" ]
         [ text <| translate language <| Translate.LoginPhrase translationId ]
-
-
-{-| Show the logo and name of the app.
--}
-viewLogo : Language -> Html any
-viewLogo language =
-    let
-        appName =
-            translate language Translate.AppName
-    in
-    div
-        [ class "logo" ]
-        [ img
-            [ alt appName
-            , class "img-logo"
-            , height 245
-            , width 245
-            , src "assets/images/logo-app.svg"
-            ]
-            []
-        , br [] []
-        , text appName
-        ]

@@ -7,13 +7,19 @@ import Backend.Update
 import Backend.Utils exposing (withEditableSession)
 import Config
 import Date
+import Device.Decoder
+import Device.Encoder
 import Dict
 import EverySet
 import Gizra.NominalDate exposing (fromLocalDateTime)
+import Http exposing (Error(..))
+import HttpBuilder
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
 import Maybe.Extra
 import Pages.Admin.Update
+import Pages.Device.Model
+import Pages.Device.Update
 import Pages.Login.Model
 import Pages.Login.Update
 import Pages.Model
@@ -22,7 +28,7 @@ import Pages.PatientRegistration.Model
 import Pages.PatientRegistration.Update
 import Pages.Update
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (decodeSingleDrupalEntity)
+import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity)
 import Restful.Login exposing (AuthenticatedUser, Credentials, LoginEvent(..), UserAndData(..), checkCachedCredentials)
 import Rollbar
 import ServiceWorker.Model
@@ -77,6 +83,29 @@ init flags =
                             -- we were provided.
                             checkCachedCredentials loginConfig config.backendUrl (Just flags.credentials)
 
+                        fetchCachedDevice =
+                            HttpBuilder.get "/sw/config/device"
+                                |> HttpBuilder.withExpectJson Device.Decoder.decode
+                                |> HttpBuilder.toTask
+                                |> RemoteData.fromTask
+                                |> Task.map
+                                    (\response ->
+                                        -- We convert 404s to NotAsked ...  if
+                                        -- we can't find it locally, we'll ask
+                                        -- for a pairing code.
+                                        case response of
+                                            Failure (BadStatus { status }) ->
+                                                if status.code == 404 then
+                                                    NotAsked
+
+                                                else
+                                                    response
+
+                                            _ ->
+                                                response
+                                    )
+                                |> Task.perform HandlePairedDevice
+
                         cmd =
                             -- We always check the cache for an offline session, since that affects
                             -- the UI we'll offer to show at a basic level. (An alternative would be
@@ -92,6 +121,7 @@ init flags =
                                   -}
                                   Task.perform Tick Time.now
                                 , loginCmd
+                                , fetchCachedDevice
                                 , Backend.Update.fetchEditableSession ()
                                 ]
 
@@ -100,6 +130,8 @@ init flags =
                             , loginPage = Pages.Login.Model.emptyModel
                             , patientRegistrationPage = Pages.PatientRegistration.Model.emptyModel
                             , login = loginStatus
+                            , device = Loading
+                            , devicePage = Pages.Device.Model.emptyModel
                             }
                     in
                     ( { model | configuration = Success configuredModel }
@@ -225,6 +257,62 @@ update msg model =
                     ( { configured | login = subModel }
                     , cmd
                     , extraMsgs
+                    )
+                )
+                model
+
+        MsgPageDevice subMsg ->
+            updateConfigured
+                (\configured ->
+                    let
+                        ( subModel, subCmd, extraMsgs ) =
+                            Pages.Device.Update.update subMsg configured.devicePage
+                    in
+                    ( { configured | devicePage = subModel }
+                    , Cmd.map MsgPageDevice subCmd
+                    , extraMsgs
+                    )
+                )
+                model
+
+        TryPairingCode code ->
+            updateConfigured
+                (\configured ->
+                    let
+                        postCode =
+                            HttpBuilder.post (configured.config.backendUrl </> "api/devices")
+                                |> HttpBuilder.withJsonBody (Json.Encode.object [ ( "pairing_code", Json.Encode.string code ) ])
+                                |> HttpBuilder.withExpectJson (decodeSingleDrupalEntity Device.Decoder.decode)
+                                |> HttpBuilder.toTask
+
+                        cacheDevice device =
+                            HttpBuilder.put "/sw/config/device"
+                                |> HttpBuilder.withJsonBody (Device.Encoder.encode device)
+                                |> HttpBuilder.toTask
+                                |> Task.map (always device)
+
+                        cmd =
+                            -- Try to get the device's access token from the
+                            -- backend, and if it succeeds, cache it on the
+                            -- service worker
+                            postCode
+                                |> Task.andThen cacheDevice
+                                |> RemoteData.fromTask
+                                |> Task.perform HandlePairedDevice
+                    in
+                    ( { configured | device = Loading }
+                    , cmd
+                    , []
+                    )
+                )
+                model
+
+        HandlePairedDevice device ->
+            updateConfigured
+                (\configured ->
+                    ( { configured | device = device }
+                    , Cmd.none
+                    , []
                     )
                 )
                 model

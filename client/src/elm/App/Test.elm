@@ -5,6 +5,7 @@ import App.Update exposing (loginConfig)
 import App.View exposing (view)
 import Dict
 import Maybe exposing (withDefault)
+import Pages.Device.Model
 import Pages.Login.Model
 import Pages.PatientRegistration.Model
 import Pusher.Model exposing (Cluster(..), PusherAppKey)
@@ -81,6 +82,8 @@ testConfigModel =
     , loginPage = Pages.Login.Model.emptyModel
     , patientRegistrationPage = Pages.PatientRegistration.Model.emptyModel
     , login = loginStatus
+    , device = NotAsked
+    , devicePage = Pages.Device.Model.emptyModel
     }
 
 

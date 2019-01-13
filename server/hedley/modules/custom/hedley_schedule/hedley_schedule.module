@@ -41,49 +41,41 @@ function hedley_schedule_node_presave($node) {
       }
     }
   }
-}
 
-/**
- * Implements hook_node_delete().
- *
- * When deleting a "session" node, check if it's a training session and delete
- * all it's measurements if it is, if not, then we check if it has any
- * measurements at all and stop the deletion request if it does.
- *
- * @throws \Exception
- *   Doesn't allow deleting a session if it's not a training session and it has
- *   any measurements at all.
- */
-function hedley_schedule_node_delete($node) {
-  if ($node->type != 'session') {
-    // Handles only "session" nodes deletions.
+  // When unpublishing a "session" node, check if it's a training session and
+  // unpublish all its measurements if it is. Otherwise, don't let it be
+  // unpublished.
+  if (empty($node->original)) {
+    // This isn't a modification.
     return;
   }
 
-  $wrapper = entity_metadata_wrapper('node', $node);
-  $session_nid = $wrapper->getIdentifier();
+  if (($node->status != NODE_NOT_PUBLISHED) || ($node->original->status != NODE_PUBLISHED)) {
+    // We're not unpublishing the node.
+    return;
+  }
 
   // The measurements content types.
   $measurement_types = hedley_activity_get_measurements_content_types();
 
-  // We need to delete the sessions measurements if the session is valid for
-  // deletion.
+  // We need to unpublsh the session's measurements if the session is valid for
+  // being unpublished.
   if ($wrapper->field_training->value()) {
-    $measurement_nodes = [];
     foreach ($measurement_types as $measurement_type) {
-      if ($add_measurement_nodes = hedley_activity_get_measurements_by_session($session_nid, $measurement_type)) {
-        $measurement_nodes = array_merge($add_measurement_nodes, $measurement_nodes);
+      $nids = hedley_activity_get_measurements_by_session($wrapper->getIdentifier(), $measurement_type);
+      $nodes = node_load_multiple($nids);
+      foreach ($nodes as $node) {
+        $node->status = NODE_NOT_PUBLISHED;
+        node_save($node);
       }
     }
-
-    node_delete_multiple($measurement_nodes);
   }
   else {
     foreach ($measurement_types as $measurement_type) {
       $has_measurements = !empty(hedley_activity_get_measurements_by_session($wrapper->getIdentifier(), $measurement_type));
 
       if ($has_measurements) {
-        throw new Exception('This session cannot be deleted because it has existing measurements');
+        throw new Exception('This session cannot be unpublished because it has existing measurements');
       }
     }
   }
