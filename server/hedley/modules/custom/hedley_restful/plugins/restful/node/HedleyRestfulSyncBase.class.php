@@ -77,11 +77,11 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
     // `checkEntityAccess` was working OK at one point, but now is throwing an
     // exception where I don't expect one. For now, can omit this, since the
     // caller is already doing authorization.
-    /*
-    if ($this->checkEntityAccess('view', 'node', $node) === FALSE) {
-      throw new RestfulForbiddenException(format_string('You do not have access to nid @nid vid @vid of resource @resource', $params));
+    if (FALSE) {
+      if ($this->checkEntityAccess('view', 'node', $node) === FALSE) {
+        throw new RestfulForbiddenException(format_string('You do not have access to nid @nid vid @vid of resource @resource', $params));
+      }
     }
-    */
 
     $values = [];
     $limit_fields = !empty($request['fields']) ? explode(',', $request['fields']) : array();
