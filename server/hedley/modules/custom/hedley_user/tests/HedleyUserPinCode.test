@@ -31,56 +31,31 @@ class HedleyUserPinCode extends HedleyWebTestBase {
   }
 
   /**
-   * Test that PIN code gets created for a new user.
+   * Test PIN codes.
    */
-  public function testNewUserGetsPinCode() {
-    $account = $this->drupalCreateUser();
+  public function testPinCodes() {
+    $u = $this->drupalCreateNode(['type' => 'user']);
+    $wrapper = entity_metadata_wrapper('node', $u);
 
-    $wrapper = entity_metadata_wrapper('user', $account);
-
+    // Check that it gets a PIN code on save.
+    $wrapper->save();
     $this->assertTrue($wrapper->field_pin_code->value());
-  }
 
-  /**
-   * Test saving a user without changing PIN code.
-   */
-  public function testSavedUserRetainsPinCode() {
-    $account = $this->drupalCreateUser();
-    $wrapper = entity_metadata_wrapper('user', $account);
-
+    // Check that we can save it again without an exception.
     $wrapper->save();
-
     $this->pass('Saved with unchanged PIN without exception.');
-  }
 
-  /**
-   * Test saving a user with changing PIN code.
-   */
-  public function testSavedUserNewPinCode() {
-    $account = $this->drupalCreateUser();
-    $wrapper = entity_metadata_wrapper('user', $account);
-
+    // Check that we can change the PIN code.
     $wrapper->field_pin_code->set('1234');
     $wrapper->save();
 
-    $account = user_load($wrapper->getIdentifier());
-    $wrapper = entity_metadata_wrapper('user', $account);
-
+    $u = node_load($wrapper->getIdentifier());
+    $wrapper = entity_metadata_wrapper('node', $u);
     $this->assertEqual($wrapper->field_pin_code->value(), '1234');
-  }
 
-  /**
-   * Test saving a user with duplicate PIN code.
-   */
-  public function testSavedUserDuplicatePinCode() {
-    $account = $this->drupalCreateUser();
-    $wrapper = entity_metadata_wrapper('user', $account);
-
-    $wrapper->field_pin_code->set('1234');
-    $wrapper->save();
-
-    $account = $this->drupalCreateUser();
-    $wrapper = entity_metadata_wrapper('user', $account);
+    // Test tht we get an error if we make a duplicate.
+    $u = $this->drupalCreateNode(['type' => 'user']);
+    $wrapper = entity_metadata_wrapper('node', $u);
 
     $wrapper->field_pin_code->set('1234');
 
