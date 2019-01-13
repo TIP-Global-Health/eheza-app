@@ -28,6 +28,13 @@ function hedley_migrate_drush_command() {
     'aliases' => ['cst'],
   ];
 
+  $items['migrate-users'] = [
+    'callback' => 'hedley_migrate_migrate_users',
+    'description' => 'Create a User content type for each user entity',
+    'arguments' => [],
+    'options' => [],
+  ];
+
   return $items;
 }
 
@@ -120,5 +127,62 @@ function hedley_delete_child_measurements($child_id) {
 
   if ($result['node']) {
     node_delete_multiple(array_keys($result['node']));
+  }
+}
+
+/**
+ * Create a User for every user.
+ */
+function hedley_migrate_migrate_users() {
+  $nurse_role = user_role_load_by_name('nurse');
+  $admin_role = user_role_load_by_name('administrator');
+
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'user');
+
+  $result = $query->execute();
+  $users = user_load_multiple(array_keys($result['user']));
+
+  foreach ($users as $account) {
+    $roles = [];
+
+    if (user_has_role($nurse_role->rid, $account)) {
+      $roles[] = 'nurse';
+    }
+
+    if (user_has_role($admin_role->rid, $account)) {
+      $roles[] = 'admin';
+    }
+
+    if (empty($roles)) {
+      // Not an admin or nurse, so skip.
+      continue;
+    }
+
+    $user_wrapper = entity_metadata_wrapper('user', $account);
+
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'user')
+      ->propertyCondition('title', $account->name)
+      ->execute();
+
+    if (empty($result['node'])) {
+      $node = entity_create('node', ['type' => 'user']);
+      $node_wrapper = entity_metadata_wrapper('node', $node);
+    }
+    else {
+      $node_wrapper = entity_metadata_wrapper('node', key($result['node']));
+    }
+
+    $node_wrapper->title->set($account->name);
+    $node_wrapper->field_email->set($account->mail);
+    $node_wrapper->field_role->set($roles);
+    $node_wrapper->field_clinics->set($user_wrapper->field_clinics->value());
+
+    $node_wrapper->save();
+
+    drush_print('Migrated user ' . $account->name);
   }
 }
