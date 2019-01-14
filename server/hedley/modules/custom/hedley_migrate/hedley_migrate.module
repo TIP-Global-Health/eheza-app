@@ -22,6 +22,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateUsers' => [
         'class_name' => 'HedleyMigrateUsers',
       ],
+      'HedleyMigrateDevices' => [
+        'class_name' => 'HedleyMigrateDevices',
+      ],
       'HedleyMigrateClinics' => [
         'class_name' => 'HedleyMigrateClinics',
       ],

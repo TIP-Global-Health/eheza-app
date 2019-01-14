@@ -11,9 +11,7 @@ $plugin = array(
   'name' => 'devices',
   'entity_type' => 'node',
   'bundle' => 'device',
-  'description' => t('Checks device pairing.'),
+  'description' => t('Exports the Device bundle.'),
   'class' => 'HedleyRestfulDevices',
-  // Knowing the pairing code is sufficient, without further authentication.
-  'authentication_types' => [],
-  'authentication_optional' => TRUE,
+  'authentication_types' => TRUE,
 );

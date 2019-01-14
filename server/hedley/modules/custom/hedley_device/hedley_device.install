@@ -6,22 +6,27 @@
  */
 
 /**
+ * Implements hook_install().
+ */
+function hedley_device_install() {
+  hedley_device_create_sync_role();
+}
+
+/**
  * Implements hook_update_N().
- *
- * Add a role and user for devices when authenticating.
  */
 function hedley_device_update_7001() {
+  hedley_device_create_sync_role();
+}
+
+/**
+ * Add a role for devices that will allow syncing.
+ */
+function hedley_device_create_sync_role() {
   $sync_role = new stdClass();
   $sync_role->name = 'sync';
   user_role_save($sync_role);
 
-  $fields = [
-    'name' => 'sync',
-    'status' => 1,
-    'roles' => [
-      $sync_role->rid => 'sync',
-    ],
-  ];
-
-  user_save(NULL, $fields);
+  $permissions = ['view revisions'];
+  user_role_grant_permissions($sync_role->rid, $permissions);
 }

@@ -74,13 +74,8 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
       throw new RestfulUnprocessableEntityException(format_string('The nid @id vid @vid is not a valid @resource.', $params));
     }
 
-    // `checkEntityAccess` was working OK at one point, but now is throwing an
-    // exception where I don't expect one. For now, can omit this, since the
-    // caller is already doing authorization.
-    if (FALSE) {
-      if ($this->checkEntityAccess('view', 'node', $node) === FALSE) {
-        throw new RestfulForbiddenException(format_string('You do not have access to nid @nid vid @vid of resource @resource', $params));
-      }
+    if ($this->checkEntityAccess('view', 'node', $node) === FALSE) {
+      throw new RestfulForbiddenException(format_string('You do not have access to nid @nid vid @vid of resource @resource', $params));
     }
 
     $values = [];
