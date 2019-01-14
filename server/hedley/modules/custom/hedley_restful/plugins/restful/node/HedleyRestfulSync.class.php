@@ -185,7 +185,11 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       $handler_name = $handlersForTypes[$item->type];
       $sub_handler = restful_get_restful_handler($handler_name);
       $sub_handler->setAccount($account);
-      $output[] = $sub_handler->viewNodeRevision($item->nid, $item->vid);
+      $rendered = $sub_handler->viewNodeRevision($item->nid, $item->vid);
+
+      // Also add in the timestamp.
+      $rendered['timestamp'] = $item->timestamp;
+      $output[] = $rendered;
     }
 
     return [
@@ -337,7 +341,11 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       $handler_name = $handlersForTypes[$item->type];
       $sub_handler = restful_get_restful_handler($handler_name);
       $sub_handler->setAccount($account);
-      $output[] = $sub_handler->viewNodeRevision($item->nid, $item->vid);
+      $rendered = $sub_handler->viewNodeRevision($item->nid, $item->vid);
+
+      // Also add in the timestamp.
+      $rendered['timestamp'] = $item->timestamp;
+      $output[] = $rendered;
     }
 
     return [
