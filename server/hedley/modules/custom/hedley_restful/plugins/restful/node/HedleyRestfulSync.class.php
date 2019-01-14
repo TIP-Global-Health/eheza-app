@@ -10,9 +10,6 @@
  */
 class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInterface {
 
-  // The number of revisions we'll send in a single batch.
-  const BATCH_SIZE = 50;
-
   /**
    * Overrides \RestfulBase::controllersInfo().
    */
@@ -115,24 +112,43 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     $base = $request['base_revision'];
 
+    // Start building up a query, which we'll use in a couple of ways.
     $query = db_select('node_revision', 'nr');
     $query->join('node', 'n', 'n.nid = nr.nid');
 
     $query
-      ->fields('nr', ['nid', 'vid'])
+      ->fields('nr', ['nid', 'vid', 'timestamp'])
       ->fields('n', ['type'])
-      ->orderBy('nr.vid', 'ASC')
-      ->condition('nr.vid', $base, '>')
       ->condition('n.type', array_keys($handlersForTypes), 'IN');
 
-    // First, get the total number of revisions that are greater than the base
+    // Get the timestamp of the last revision. We'll also get a count of
+    // remaining revisions, but the timestamp of the last revision will also
+    // help us display how far out-of-date the client is.
+    $last_revision_query = clone $query;
+
+    $last_revision = $last_revision_query
+      ->orderBy('nr.vid', 'DESC')
+      ->range(0, 1)
+      ->execute()
+      ->fetchObject();
+
+    $last_timestamp = $last_revision ? $last_revision->timestamp : 0;
+
+    // Restrict to revisions the client doesn't already have.
+    $query->condition('nr.vid', $base, '>');
+
+    // Get the total number of revisions that are greater than the base
     // revision. This will help the client show progress. Note that this
     // includes the revisions in the batch we will return (but not earlier
     // revisions).
     $count = $query->countQuery()->execute()->fetchField();
 
     // Then, get one batch worth of results.
-    $batch = $query->range(0, self::BATCH_SIZE)->execute()->fetchAll();
+    $batch = $query
+      ->orderBy('nr.vid', 'ASC')
+      ->range(0, $this->getRange())
+      ->execute()
+      ->fetchAll();
 
     // As an optimization, if the same node ID occurs multiple times in this
     // batch, just send the last one. In principle, it would be nice to enable
@@ -174,6 +190,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     return [
       'base_revision' => $base,
+      'last_timestamp' => $last_timestamp,
       'revision_count' => $count,
       'batch' => $output,
     ];
@@ -251,12 +268,26 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     );
 
     $query
-      ->fields('nr', ['nid', 'vid'])
+      ->fields('nr', ['nid', 'vid', 'timestamp'])
       ->fields('n', ['type'])
-      ->orderBy('nr.vid', 'ASC')
       ->condition('hc.field_health_center_target_id', $id)
-      ->condition('nr.vid', $base, '>')
       ->condition('n.type', array_keys($handlersForTypes), 'IN');
+
+    // Get the timestamp of the last revision. We'll also get a count of
+    // remaining revisions, but the timestamp of the last revision will also
+    // help us display how far out-of-date the client is.
+    $last_revision_query = clone $query;
+
+    $last_revision = $last_revision_query
+      ->orderBy('nr.vid', 'DESC')
+      ->range(0, 1)
+      ->execute()
+      ->fetchObject();
+
+    $last_timestamp = $last_revision ? $last_revision->timestamp : 0;
+
+    // Restrict to revisions the client doesn't already have.
+    $query->condition('nr.vid', $base, '>');
 
     // First, get the total number of revisions that are greater than the base
     // revision. This will help the client show progress. Note that this
@@ -265,7 +296,11 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $count = $query->countQuery()->execute()->fetchField();
 
     // Then, get one batch worth of results.
-    $batch = $query->range(0, self::BATCH_SIZE)->execute()->fetchAll();
+    $batch = $query
+      ->orderBy('nr.vid', 'ASC')
+      ->range(0, $this->getRange())
+      ->execute()
+      ->fetchAll();
 
     // As an optimization, if the same node ID occurs multiple times in this
     // batch, just send the last one. In principle, it would be nice to enable
@@ -307,6 +342,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     return [
       'base_revision' => $base,
+      'last_timestamp' => $last_timestamp,
       'revision_count' => $count,
       'batch' => $output,
     ];
