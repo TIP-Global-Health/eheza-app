@@ -103,8 +103,8 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-family_planning-field_measured_by'.
-  $field_instances['node-family_planning-field_measured_by'] = array(
+  // Exported field_instance: 'node-family_planning-field_nurse'.
+  $field_instances['node-family_planning-field_nurse'] = array(
     'bundle' => 'family_planning',
     'default_value' => NULL,
     'deleted' => 0,
@@ -128,8 +128,8 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_measured_by',
-    'label' => 'Measured By',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -380,8 +380,8 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-height-field_measured_by'.
-  $field_instances['node-height-field_measured_by'] = array(
+  // Exported field_instance: 'node-height-field_nurse'.
+  $field_instances['node-height-field_nurse'] = array(
     'bundle' => 'height',
     'default_value' => NULL,
     'deleted' => 0,
@@ -405,8 +405,8 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_measured_by',
-    'label' => 'Measured By',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -612,8 +612,8 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-muac-field_measured_by'.
-  $field_instances['node-muac-field_measured_by'] = array(
+  // Exported field_instance: 'node-muac-field_nurse'.
+  $field_instances['node-muac-field_nurse'] = array(
     'bundle' => 'muac',
     'default_value' => NULL,
     'deleted' => 0,
@@ -637,8 +637,8 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_measured_by',
-    'label' => 'Measured By',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -845,8 +845,8 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-nutrition-field_measured_by'.
-  $field_instances['node-nutrition-field_measured_by'] = array(
+  // Exported field_instance: 'node-nutrition-field_nurse'.
+  $field_instances['node-nutrition-field_nurse'] = array(
     'bundle' => 'nutrition',
     'default_value' => NULL,
     'deleted' => 0,
@@ -870,8 +870,8 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_measured_by',
-    'label' => 'Measured By',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -1069,8 +1069,8 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-photo-field_measured_by'.
-  $field_instances['node-photo-field_measured_by'] = array(
+  // Exported field_instance: 'node-photo-field_nurse'.
+  $field_instances['node-photo-field_nurse'] = array(
     'bundle' => 'photo',
     'default_value' => NULL,
     'deleted' => 0,
@@ -1094,8 +1094,8 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_measured_by',
-    'label' => 'Measured By',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -1351,8 +1351,8 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-weight-field_measured_by'.
-  $field_instances['node-weight-field_measured_by'] = array(
+  // Exported field_instance: 'node-weight-field_nurse'.
+  $field_instances['node-weight-field_nurse'] = array(
     'bundle' => 'weight',
     'default_value' => NULL,
     'deleted' => 0,
@@ -1376,8 +1376,8 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_measured_by',
-    'label' => 'Measured By',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -1631,8 +1631,8 @@ function hedley_activity_field_default_field_instances() {
   t('Family Planning');
   t('Height');
   t('MUAC');
-  t('Measured By');
   t('Mother');
+  t('Nurse');
   t('Nutrition Signs');
   t('Photo');
   t('Refers to the date-entry session which this measurement was taken in.');

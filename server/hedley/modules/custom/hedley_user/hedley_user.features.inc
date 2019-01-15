@@ -18,10 +18,10 @@ function hedley_user_ctools_plugin_api($module = NULL, $api = NULL) {
  */
 function hedley_user_node_info() {
   $items = array(
-    'user' => array(
-      'name' => t('User'),
+    'nurse' => array(
+      'name' => t('Nurse'),
       'base' => 'node_content',
-      'description' => t('A user who has a PIN code to identify themselves on a device.'),
+      'description' => t('A person who has a PIN code to identify themselves on a device.'),
       'has_title' => '1',
       'title_label' => t('Title'),
       'help' => '',

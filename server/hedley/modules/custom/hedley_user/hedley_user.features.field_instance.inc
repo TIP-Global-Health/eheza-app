@@ -10,9 +10,9 @@
 function hedley_user_field_default_field_instances() {
   $field_instances = array();
 
-  // Exported field_instance: 'node-user-field_clinics'.
-  $field_instances['node-user-field_clinics'] = array(
-    'bundle' => 'user',
+  // Exported field_instance: 'node-nurse-field_clinics'.
+  $field_instances['node-nurse-field_clinics'] = array(
+    'bundle' => 'nurse',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => 'Which clinics is this user authorized to work with?',
@@ -50,9 +50,9 @@ function hedley_user_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-user-field_email'.
-  $field_instances['node-user-field_email'] = array(
-    'bundle' => 'user',
+  // Exported field_instance: 'node-nurse-field_email'.
+  $field_instances['node-nurse-field_email'] = array(
+    'bundle' => 'nurse',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -90,9 +90,9 @@ function hedley_user_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-user-field_pin_code'.
-  $field_instances['node-user-field_pin_code'] = array(
-    'bundle' => 'user',
+  // Exported field_instance: 'node-nurse-field_pin_code'.
+  $field_instances['node-nurse-field_pin_code'] = array(
+    'bundle' => 'nurse',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -130,9 +130,9 @@ function hedley_user_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-user-field_role'.
-  $field_instances['node-user-field_role'] = array(
-    'bundle' => 'user',
+  // Exported field_instance: 'node-nurse-field_role'.
+  $field_instances['node-nurse-field_role'] = array(
+    'bundle' => 'nurse',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',

@@ -11,8 +11,8 @@ include_once 'hedley_user.features.inc';
  * Implements hook_node_presave().
  */
 function hedley_user_node_presave($node) {
-  if ($node->type != 'user') {
-    // Not a user.
+  if ($node->type != 'nurse') {
+    // Not a nurse.
     return;
   }
 
@@ -61,7 +61,7 @@ function hedley_user_check_unique_pincode($code, $nid = NULL) {
   $query = new EntityFieldQuery();
   $query
     ->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', 'user')
+    ->entityCondition('bundle', 'nurse')
     ->fieldCondition('field_pin_code', 'value', $code)
     // Enough to know if there is one more.
     ->range(0, 1);

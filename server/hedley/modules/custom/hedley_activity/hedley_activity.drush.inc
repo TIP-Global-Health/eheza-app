@@ -17,9 +17,9 @@ function hedley_activity_drush_command() {
     'aliases' => ['rzs'],
   ];
 
-  $items['set-measured-by'] = [
-    'callback' => 'hedley_activity_set_measured_by',
-    'description' => 'Fill in measured by where null',
+  $items['populate-field-nurse'] = [
+    'callback' => 'hedley_activity_populate_field_nurse',
+    'description' => 'Fill in field_nurse where null',
     'arguments' => [],
     'options' => [],
     'aliases' => [],
@@ -90,16 +90,16 @@ function hedley_activity_recalculate_zscores() {
 }
 
 /**
- * Fill in field_measured_by.
+ * Fill in field_nurse.
  */
-function hedley_activity_set_measured_by() {
+function hedley_activity_populate_field_nurse() {
   $bundles = hedley_activity_get_measurements_content_types();
 
   $query = db_select('node', 'n');
 
   $users = $query
     ->fields('n', ['nid', 'title'])
-    ->condition('n.type', 'user', '=')
+    ->condition('n.type', 'nurse', '=')
     ->execute()
     ->fetchAllAssoc('title');
 
@@ -108,7 +108,7 @@ function hedley_activity_set_measured_by() {
   $query->join('users', 'u', 'n.uid = u.uid');
 
   $query->leftJoin(
-    'field_data_field_measured_by',
+    'field_data_field_nurse',
     'mb',
     'n.nid = mb.entity_id'
   );
@@ -116,7 +116,7 @@ function hedley_activity_set_measured_by() {
   $result = $query
     ->fields('n', ['nid'])
     ->fields('u', ['name'])
-    ->isNull('mb.field_measured_by_target_id')
+    ->isNull('mb.field_nurse_target_id')
     ->condition('n.type', $bundles, 'IN')
     ->execute()
     ->fetchAll();
@@ -125,7 +125,7 @@ function hedley_activity_set_measured_by() {
     if (!empty($users[$node->name])) {
       drush_print('Updating node ' . $node->nid);
       $wrapper = entity_metadata_wrapper('node', $node->nid);
-      $wrapper->field_measured_by->set($users[$node->name]->nid);
+      $wrapper->field_nurse->set($users[$node->name]->nid);
       $wrapper->save();
     }
   }

@@ -28,9 +28,9 @@ function hedley_migrate_drush_command() {
     'aliases' => ['cst'],
   ];
 
-  $items['migrate-users'] = [
-    'callback' => 'hedley_migrate_migrate_users',
-    'description' => 'Create a User content type for each user entity',
+  $items['migrate-nurse-to-nurse-content-type'] = [
+    'callback' => 'hedley_migrate_nurses_to_content_type',
+    'description' => 'Create a nurse content type for each user entity',
     'arguments' => [],
     'options' => [],
   ];
@@ -131,9 +131,9 @@ function hedley_delete_child_measurements($child_id) {
 }
 
 /**
- * Create a User for every user.
+ * Create a nurse entity for every user.
  */
-function hedley_migrate_migrate_users() {
+function hedley_migrate_nurses_to_content_type() {
   $nurse_role = user_role_load_by_name('nurse');
   $admin_role = user_role_load_by_name('administrator');
 
@@ -164,12 +164,12 @@ function hedley_migrate_migrate_users() {
     $query = new EntityFieldQuery();
     $result = $query
       ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', 'user')
+      ->entityCondition('bundle', 'nurse')
       ->propertyCondition('title', $account->name)
       ->execute();
 
     if (empty($result['node'])) {
-      $node = entity_create('node', ['type' => 'user']);
+      $node = entity_create('node', ['type' => 'nurse']);
       $node_wrapper = entity_metadata_wrapper('node', $node);
     }
     else {

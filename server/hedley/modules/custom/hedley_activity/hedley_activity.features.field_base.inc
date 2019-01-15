@@ -103,13 +103,13 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_float',
   );
 
-  // Exported field_base: 'field_measured_by'.
-  $field_bases['field_measured_by'] = array(
+  // Exported field_base: 'field_nurse'.
+  $field_bases['field_nurse'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_measured_by',
+    'field_name' => 'field_nurse',
     'indexes' => array(
       'target_id' => array(
         0 => 'target_id',
