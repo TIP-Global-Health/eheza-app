@@ -138,8 +138,6 @@ type TranslationId
     | ActivitiesToComplete Int
     | ActivityProgressReport ActivityType
     | ActivePage Page
-    | AddChild
-    | AddChildToFamily
     | Admin
     | AddressInformation
     | AgeWord
@@ -558,16 +556,6 @@ translationSet trans =
 
         ActivePage page ->
             translateActivePage page
-
-        AddChild ->
-            { english = "Add a Child"
-            , kinyarwanda = Nothing
-            }
-
-        AddChildToFamily ->
-            { english = "Add a child to this family"
-            , kinyarwanda = Nothing
-            }
 
         Age months days ->
             { english = toString months ++ " months " ++ toString days ++ " days"
