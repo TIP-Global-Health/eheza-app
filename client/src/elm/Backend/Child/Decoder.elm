@@ -21,6 +21,7 @@ decodeChild =
                 ]
             )
         |> required "mother" (nullable decodeEntityId)
+        |> hardcoded Nothing
         |> required "date_birth" decodeYYYYMMDD
         |> required "gender" decodeGender
 

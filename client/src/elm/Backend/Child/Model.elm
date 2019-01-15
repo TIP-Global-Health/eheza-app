@@ -2,6 +2,7 @@ module Backend.Child.Model exposing (Child, Gender(..), ModeOfDelivery(..), mode
 
 import Backend.Entities exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
+import Uuid exposing (Uuid)
 
 
 type Gender
@@ -16,6 +17,7 @@ type alias Child =
     { name : String
     , avatarUrl : Maybe String
     , motherId : Maybe MotherId
+    , motherUuid : Maybe Uuid
     , birthDate : NominalDate
     , gender : Gender
     }
