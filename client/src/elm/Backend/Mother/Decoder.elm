@@ -1,6 +1,8 @@
 module Backend.Mother.Decoder exposing (decodeMother)
 
 import Backend.Mother.Model exposing (..)
+import Backend.Patient.Decoder exposing (decodeGender, decodeUbudehe)
+import Backend.Patient.Model exposing (Gender(..))
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, at, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
@@ -13,6 +15,13 @@ decodeMother : Decoder Mother
 decodeMother =
     decode Mother
         |> required "label" string
+        -- There 3 are first, middle and second names.
+        -- We do not pull actual values from server yet.
+        |> hardcoded ""
+        |> hardcoded Nothing
+        |> hardcoded ""
+        -- National ID Number
+        |> hardcoded Nothing
         -- We accommodate the JSON from the server or from the cache
         |> custom
             (oneOf
@@ -23,31 +32,24 @@ decodeMother =
             )
         |> required "children" (oneOf [ list decodeEntityId, decodeNullAsEmptyArray ])
         |> required "date_birth" decodeYYYYMMDD
-        |> optional "ubudehe" (nullable decodeUbudehe) Nothing
+        -- Is birth date estimated
+        |> hardcoded False
+        -- Gender
+        |> hardcoded Female
         |> optional "education_level" (nullable decodeEducationLevel) Nothing
-
-
-decodeUbudehe : Decoder Ubudehe
-decodeUbudehe =
-    decodeInt
-        |> andThen
-            (\ubudehe ->
-                case ubudehe of
-                    1 ->
-                        succeed Ubudehe1
-
-                    2 ->
-                        succeed Ubudehe2
-
-                    3 ->
-                        succeed Ubudehe3
-
-                    4 ->
-                        succeed Ubudehe4
-
-                    _ ->
-                        fail <| toString ubudehe ++ " is out of range for Ubudehe"
-            )
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> optional "ubudehe" (nullable decodeUbudehe) Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
 
 
 decodeEducationLevel : Decoder EducationLevel

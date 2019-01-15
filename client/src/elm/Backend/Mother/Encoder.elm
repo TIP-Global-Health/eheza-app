@@ -1,6 +1,7 @@
-module Backend.Mother.Encoder exposing (encodeEducationLevel, encodeMother, encodeUbudehe)
+module Backend.Mother.Encoder exposing (encodeEducationLevel, encodeMother)
 
 import Backend.Mother.Model exposing (..)
+import Backend.Patient.Encoder exposing (encodeUbudehe)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
@@ -16,22 +17,6 @@ encodeMother mother =
     , ( "ubudehe", maybe encodeUbudehe mother.ubudehe )
     , ( "education_level", maybe encodeEducationLevel mother.educationLevel )
     ]
-
-
-encodeUbudehe : Ubudehe -> Value
-encodeUbudehe ubudehe =
-    case ubudehe of
-        Ubudehe1 ->
-            int 1
-
-        Ubudehe2 ->
-            int 2
-
-        Ubudehe3 ->
-            int 3
-
-        Ubudehe4 ->
-            int 4
 
 
 encodeEducationLevel : EducationLevel -> Value

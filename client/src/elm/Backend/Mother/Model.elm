@@ -1,24 +1,36 @@
-module Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother, Ubudehe(..))
+module Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother)
 
 import Backend.Entities exposing (..)
+import Backend.Patient.Model exposing (Gender, Ubudehe)
 import Gizra.NominalDate exposing (NominalDate)
 
 
 type alias Mother =
     { name : String
+    , firstName : String
+    , middleName : Maybe String
+    , secondName : String
+    , nationalIdNumber : Maybe String
     , avatarUrl : Maybe String
     , children : List ChildId
     , birthDate : NominalDate
-    , ubudehe : Maybe Ubudehe
+    , isDateOfBirthEstimated : Bool
+    , gender : Gender
     , educationLevel : Maybe EducationLevel
+    , profession : Maybe String
+    , maritalStatus : Maybe MaritalStatus
+    , hivStatus : Maybe HIVStatus
+    , ubudehe : Maybe Ubudehe
+    , householdSize : Maybe Int
+    , numberOfChildren : Maybe Int
+    , province : Maybe String
+    , district : Maybe String
+    , sector : Maybe String
+    , cell : Maybe String
+    , village : Maybe String
+    , telephoneNumber : Maybe String
+    , healthCenterName : Maybe String
     }
-
-
-type Ubudehe
-    = Ubudehe1
-    | Ubudehe2
-    | Ubudehe3
-    | Ubudehe4
 
 
 type EducationLevel

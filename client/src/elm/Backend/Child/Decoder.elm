@@ -1,6 +1,7 @@
 module Backend.Child.Decoder exposing (decodeChild)
 
 import Backend.Child.Model exposing (..)
+import Backend.Patient.Decoder exposing (decodeGender)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, at, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required)
@@ -11,6 +12,13 @@ decodeChild : Decoder Child
 decodeChild =
     decode Child
         |> required "label" string
+        -- There 3 are first, middle and second names.
+        -- We do not pull actual values from server yet.
+        |> hardcoded ""
+        |> hardcoded Nothing
+        |> hardcoded ""
+        -- National ID Number
+        |> hardcoded Nothing
         -- We're accommodating the JSON from the backend and the JSON
         -- we store in the cache.
         |> custom
@@ -23,20 +31,27 @@ decodeChild =
         |> required "mother" (nullable decodeEntityId)
         |> hardcoded Nothing
         |> required "date_birth" decodeYYYYMMDD
+        -- Is birth date estimated
+        |> hardcoded False
         |> required "gender" decodeGender
+        -- Mode of delivery
+        |> hardcoded Nothing
+        -- Ubudehe
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
+        |> hardcoded Nothing
 
 
-decodeGender : Decoder Gender
-decodeGender =
-    string
-        |> andThen
-            (\gender ->
-                if gender == "female" then
-                    succeed Female
 
-                else if gender == "male" then
-                    succeed Male
-
-                else
-                    fail (gender ++ " is not a recognized 'type' for Gender.")
-            )
+-- |> hardcoded Nothing

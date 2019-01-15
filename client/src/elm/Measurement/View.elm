@@ -4,10 +4,11 @@ module Measurement.View exposing (viewChild, viewMother, viewMuacIndication)
 -}
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
-import Backend.Child.Model exposing (Child, Gender)
+import Backend.Child.Model exposing (Child)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (applyEdit, mapMeasurementData, muacIndication)
+import Backend.Patient.Model exposing (Gender)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)

@@ -1,10 +1,11 @@
 module Translate exposing (ChartPhrase(..), Language(..), LoginPhrase(..), TranslationId(..), TranslationSet, ValidationError(..), allLanguages, languageFromCode, languageFromString, languageToCode, selectLanguage, translate, translateActivePage, translateChartPhrase, translateFormError, translateFormField, translateHttpError, translateLoginPhrase, translateMonth, translateValidationError, translationSet)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
-import Backend.Child.Model exposing (Gender(..), ModeOfDelivery(..))
+import Backend.Child.Model exposing (ModeOfDelivery(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
 import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..))
+import Backend.Patient.Model exposing (Gender(..))
 import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http

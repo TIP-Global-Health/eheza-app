@@ -3,10 +3,11 @@ module Pages.PatientRegistration.View exposing (view)
 {-| The purpose of this page is
 -}
 
-import Backend.Child.Model exposing (Gender(..), ModeOfDelivery(..), modeOfDeliveryToValue)
+import Backend.Child.Model exposing (ModeOfDelivery(..), modeOfDeliveryToValue)
 import Backend.Measurement.Model exposing (PhotoValue)
 import Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..))
-import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Ubudehe(..))
+import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..))
+import Backend.Patient.Model exposing (Gender(..), Ubudehe(..))
 import Form
 import Form.Error
 import Form.Input

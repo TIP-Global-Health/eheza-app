@@ -1,10 +1,11 @@
 module Pages.ProgressReport.View exposing (view)
 
 import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
-import Backend.Child.Model exposing (Child, Gender(..))
+import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (Height, HeightInCm(..), MuacInCm(..), MuacIndication(..), Weight, WeightInKg(..))
 import Backend.Measurement.Utils exposing (currentValue, currentValueWithId, mapMeasurementData, muacIndication)
+import Backend.Patient.Model exposing (Gender(..))
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother)
 import EveryDict
