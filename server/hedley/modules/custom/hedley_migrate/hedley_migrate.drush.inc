@@ -183,6 +183,11 @@ function hedley_migrate_nurses_to_content_type() {
 
     $node_wrapper->save();
 
-    drush_print('Migrated user ' . $account->name);
+    $params = [
+      '@name' => $account->name,
+      '@nid' => $node_wrapper->getIdentifier(),
+    ];
+
+    drush_print(dt('Migrates user @name to node ID @nid', $params));
   }
 }
