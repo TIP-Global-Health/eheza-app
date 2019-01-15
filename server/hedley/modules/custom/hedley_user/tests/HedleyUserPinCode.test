@@ -54,7 +54,7 @@ class HedleyUserPinCode extends HedleyWebTestBase {
     $this->assertEqual($wrapper->field_pin_code->value(), '1234');
 
     // Test tht we get an error if we make a duplicate.
-    $node = $this->drupalCreateNode(['type' => 'node']);
+    $node = $this->drupalCreateNode(['type' => 'nurse']);
     $wrapper = entity_metadata_wrapper('node', $node);
 
     $wrapper->field_pin_code->set('1234');
