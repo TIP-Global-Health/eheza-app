@@ -6,7 +6,7 @@ module Pages.PatientRegistration.View exposing (view)
 import Backend.Child.Model exposing (ModeOfDelivery(..), modeOfDeliveryToValue)
 import Backend.Measurement.Model exposing (PhotoValue)
 import Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..))
-import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..))
+import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), toStringEducationLevel)
 import Backend.Patient.Model exposing (Gender(..), Ubudehe(..))
 import Form
 import Form.Error
@@ -82,6 +82,9 @@ view language currentDate user backend cache model =
         householdSize =
             Form.getFieldAsString "householdSize" model.registrationForm
 
+        numberOfChildren =
+            Form.getFieldAsString "numberOfChildren" model.registrationForm
+
         motherName =
             Form.getFieldAsString "motherName" model.registrationForm
 
@@ -99,9 +102,6 @@ view language currentDate user backend cache model =
 
         caregiverNationalId =
             Form.getFieldAsString "caregiverNationalId" model.registrationForm
-
-        numberOfChildren =
-            Form.getFieldAsString "numberOfChildren" model.registrationForm
 
         district =
             Form.getFieldAsString "district" model.registrationForm
@@ -242,13 +242,13 @@ view language currentDate user backend cache model =
                                                     let
                                                         options =
                                                             emptyOption
-                                                                :: [ ( toString NoSchooling, translate language <| Translate.LevelOfEducation NoSchooling )
-                                                                   , ( toString PrimarySchool, translate language <| Translate.LevelOfEducation PrimarySchool )
-                                                                   , ( toString VocationalTrainingSchool, translate language <| Translate.LevelOfEducation VocationalTrainingSchool )
-                                                                   , ( toString SecondarySchool, translate language <| Translate.LevelOfEducation SecondarySchool )
-                                                                   , ( toString DiplomaProgram, translate language <| Translate.LevelOfEducation DiplomaProgram )
-                                                                   , ( toString HigherEducation, translate language <| Translate.LevelOfEducation HigherEducation )
-                                                                   , ( toString AdvancedDiploma, translate language <| Translate.LevelOfEducation AdvancedDiploma )
+                                                                :: [ ( toStringEducationLevel NoSchooling, translate language <| Translate.LevelOfEducation NoSchooling )
+                                                                   , ( toStringEducationLevel PrimarySchool, translate language <| Translate.LevelOfEducation PrimarySchool )
+                                                                   , ( toStringEducationLevel VocationalTrainingSchool, translate language <| Translate.LevelOfEducation VocationalTrainingSchool )
+                                                                   , ( toStringEducationLevel SecondarySchool, translate language <| Translate.LevelOfEducation SecondarySchool )
+                                                                   , ( toStringEducationLevel DiplomaProgram, translate language <| Translate.LevelOfEducation DiplomaProgram )
+                                                                   , ( toStringEducationLevel HigherEducation, translate language <| Translate.LevelOfEducation HigherEducation )
+                                                                   , ( toStringEducationLevel AdvancedDiploma, translate language <| Translate.LevelOfEducation AdvancedDiploma )
                                                                    ]
                                                     in
                                                     viewSelectInput language Translate.LevelOfEducationLabel options levelOfEducation "ten" "select-input" True
@@ -260,10 +260,10 @@ view language currentDate user backend cache model =
                                                     let
                                                         options =
                                                             emptyOption
-                                                                :: [ ( toString Divorced, translate language <| Translate.MaritalStatus Divorced )
-                                                                   , ( toString Maried, translate language <| Translate.MaritalStatus Maried )
-                                                                   , ( toString Single, translate language <| Translate.MaritalStatus Single )
-                                                                   , ( toString Widowed, translate language <| Translate.MaritalStatus Widowed )
+                                                                :: [ ( String.toLower <| toString Divorced, translate language <| Translate.MaritalStatus Divorced )
+                                                                   , ( String.toLower <| toString Maried, translate language <| Translate.MaritalStatus Maried )
+                                                                   , ( String.toLower <| toString Single, translate language <| Translate.MaritalStatus Single )
+                                                                   , ( String.toLower <| toString Widowed, translate language <| Translate.MaritalStatus Widowed )
                                                                    ]
                                                     in
                                                     viewSelectInput language Translate.MaritalStatusLabel options maritalStatus "ten" "select-input" True
@@ -272,9 +272,9 @@ view language currentDate user backend cache model =
                                                     let
                                                         options =
                                                             emptyOption
-                                                                :: [ ( toString NA, translate language <| Translate.HIVStatus NA )
-                                                                   , ( toString Negative, translate language <| Translate.HIVStatus Negative )
-                                                                   , ( toString Positive, translate language <| Translate.HIVStatus Positive )
+                                                                :: [ ( String.toLower <| toString NA, translate language <| Translate.HIVStatus NA )
+                                                                   , ( String.toLower <| toString Negative, translate language <| Translate.HIVStatus Negative )
+                                                                   , ( String.toLower <| toString Positive, translate language <| Translate.HIVStatus Positive )
                                                                    ]
                                                     in
                                                     viewSelectInput language Translate.HIVStatusLabel options hivStatus "ten" "select-input" True

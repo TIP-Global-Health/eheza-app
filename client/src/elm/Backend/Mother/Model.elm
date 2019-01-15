@@ -1,4 +1,4 @@
-module Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother)
+module Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother, toStringEducationLevel)
 
 import Backend.Entities exposing (..)
 import Backend.Patient.Model exposing (Gender, Ubudehe)
@@ -54,3 +54,28 @@ type HIVStatus
     = Negative
     | NA
     | Positive
+
+
+toStringEducationLevel : EducationLevel -> String
+toStringEducationLevel educationLevel =
+    case educationLevel of
+        NoSchooling ->
+            "0"
+
+        PrimarySchool ->
+            "1"
+
+        VocationalTrainingSchool ->
+            "2"
+
+        SecondarySchool ->
+            "3"
+
+        DiplomaProgram ->
+            "4"
+
+        HigherEducation ->
+            "5"
+
+        AdvancedDiploma ->
+            "6"

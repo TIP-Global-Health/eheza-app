@@ -2,7 +2,7 @@ module Pages.PatientRegistration.Update exposing (update)
 
 import App.Model
 import Backend.Child.Model exposing (Child, ModeOfDelivery(..))
-import Backend.Mother.Model exposing (Mother)
+import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother)
 import Backend.Patient.Model exposing (Gender(..), Ubudehe(..))
 import Date
 import EveryDict
@@ -379,10 +379,128 @@ update currentTime msg model =
 
                         MotherParticipant _ ->
                             let
+                                children =
+                                    []
+
+                                levelOfEducation =
+                                    Form.getFieldAsString "levelOfEducation" model.registrationForm
+                                        |> .value
+                                        |> Maybe.andThen
+                                            (\level ->
+                                                case level of
+                                                    "0" ->
+                                                        Just NoSchooling
+
+                                                    "1" ->
+                                                        Just PrimarySchool
+
+                                                    "2" ->
+                                                        Just VocationalTrainingSchool
+
+                                                    "3" ->
+                                                        Just SecondarySchool
+
+                                                    "4" ->
+                                                        Just DiplomaProgram
+
+                                                    "5" ->
+                                                        Just HigherEducation
+
+                                                    "6" ->
+                                                        Just AdvancedDiploma
+
+                                                    _ ->
+                                                        Nothing
+                                            )
+
+                                profession =
+                                    Form.getFieldAsString "profession" model.registrationForm
+                                        |> .value
+
+                                maritalStatus =
+                                    Form.getFieldAsString "maritalStatus" model.registrationForm
+                                        |> .value
+                                        |> Maybe.andThen
+                                            (\status ->
+                                                case status of
+                                                    "divorced" ->
+                                                        Just Divorced
+
+                                                    "maried" ->
+                                                        Just Maried
+
+                                                    "single" ->
+                                                        Just Single
+
+                                                    "widowed" ->
+                                                        Just Widowed
+
+                                                    _ ->
+                                                        Nothing
+                                            )
+
+                                hivStatus =
+                                    Form.getFieldAsString "hivStatus" model.registrationForm
+                                        |> .value
+                                        |> Maybe.andThen
+                                            (\status ->
+                                                case status of
+                                                    "negative" ->
+                                                        Just Negative
+
+                                                    "na" ->
+                                                        Just NA
+
+                                                    "positive" ->
+                                                        Just Positive
+
+                                                    _ ->
+                                                        Nothing
+                                            )
+
+                                householdSize =
+                                    Form.getFieldAsString "householdSize" model.registrationForm
+                                        |> getFormFieldValue
+                                        |> Just
+
+                                numberOfChildren =
+                                    Form.getFieldAsString "numberOfChildren" model.registrationForm
+                                        |> getFormFieldValue
+                                        |> Just
+
                                 mother =
-                                    Nothing
+                                    Mother name
+                                        (firstName |> Maybe.withDefault "")
+                                        middleName
+                                        (secondName |> Maybe.withDefault "")
+                                        nationalIdNumber
+                                        avatarUrl
+                                        children
+                                        birthDate
+                                        isDateOfBirthEstimated
+                                        gender
+                                        levelOfEducation
+                                        profession
+                                        maritalStatus
+                                        hivStatus
+                                        familyUbudehe
+                                        householdSize
+                                        numberOfChildren
+                                        province
+                                        district
+                                        sector
+                                        cell
+                                        village
+                                        telephoneNumber
+                                        healthCenterName
                             in
-                            ( model, Cmd.none, [] )
+                            let
+                                updatedParticipantsData =
+                                    { mothersToRegister = EveryDict.insert (generateUuid currentTime) mother model.participantsData.mothersToRegister
+                                    , childrenToRegister = model.participantsData.childrenToRegister
+                                    }
+                            in
+                            ( { model | participantsData = updatedParticipantsData }, Cmd.none, [] )
 
                 Nothing ->
                     ( model, Cmd.none, [] )

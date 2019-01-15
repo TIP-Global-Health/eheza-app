@@ -9,7 +9,6 @@ module Pages.PatientRegistration.Model exposing
     )
 
 import Backend.Child.Model exposing (Child)
-import Backend.Entities exposing (ChildId, MotherId)
 import Backend.Measurement.Model exposing (PhotoValue)
 import Backend.Mother.Model exposing (Mother)
 import EveryDict exposing (EveryDict)
