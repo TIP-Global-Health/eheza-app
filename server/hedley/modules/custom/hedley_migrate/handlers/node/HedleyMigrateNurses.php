@@ -22,7 +22,7 @@ class HedleyMigrateNurses extends HedleyMigrateBase {
     parent::__construct($arguments);
     $this->description = t('Import nurses from the CSV.');
     $this->dependencies = [
-      'HedleyMigrateClinics'
+      'HedleyMigrateClinics',
     ];
 
     $columns = [
