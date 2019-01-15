@@ -10,6 +10,7 @@ import Form
 import Form.Field exposing (FieldValue(..))
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Maybe.Extra exposing (unwrap)
+import Pages.Page
 import Pages.PatientRegistration.Model exposing (..)
 import Pages.PatientRegistration.Utils
     exposing
@@ -27,6 +28,9 @@ import Uuid
 update : Time -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentTime msg model =
     case msg of
+        AddNewPatient uuid ->
+            ( initModel model, Cmd.none, [] )
+
         DropZoneComplete result ->
             -- The `fid` being Nothing signifies that we haven't uploaded this to
             -- the backend yet, so we don't know what file ID the backend will
@@ -145,6 +149,10 @@ update currentTime msg model =
             in
             ( { model | registrationForm = Form.update validateRegistrationForm subMsg model.registrationForm }, Cmd.none, [] )
                 |> sequenceExtra (update currentTime) extraMsgs
+
+        Reset ->
+            ( initModel model, Cmd.none, [] )
+                |> sequenceExtra (update currentTime) [ SetActivePage Pages.Page.LoginPage ]
 
         SetActivePage page ->
             ( model, Cmd.none, [ App.Model.SetActivePage page ] )

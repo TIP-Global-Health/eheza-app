@@ -5,6 +5,7 @@ module Pages.PatientRegistration.Model exposing
     , RegistrationForm
     , RegistrationStep(..)
     , emptyModel
+    , initModel
     , validateRegistrationForm
     )
 
@@ -46,6 +47,11 @@ emptyModel =
     }
 
 
+initModel : Model -> Model
+initModel model =
+    { emptyModel | participantsData = model.participantsData }
+
+
 emptyParticipantsData : ParticipantsData
 emptyParticipantsData =
     { mothersToRegister = EveryDict.empty
@@ -60,8 +66,10 @@ type RegistrationStep
 
 
 type Msg
-    = DropZoneComplete DropZoneFile
+    = AddNewPatient (Maybe Uuid)
+    | DropZoneComplete DropZoneFile
     | MsgRegistrationForm Form.Msg
+    | Reset
     | SetActivePage Page
     | SetDialogState (Maybe DialogState)
     | SetRegistrationStep RegistrationStep
@@ -70,6 +78,7 @@ type Msg
 
 type DialogState
     = ConfirmSubmision
+    | SuccessfulSubmision
 
 
 type alias RegistrationForm =

@@ -294,6 +294,8 @@ type TranslationId
     | RegisterPatient
     | RegisterNewPatient
     | RegistratingHealthCenter
+    | RegistartionSuccessful
+    | RegistartionSuccessfulAddNewPatient
     | ReportAge String
     | ReportDOB String
     | ReportRemaining Int
@@ -1525,6 +1527,16 @@ translationSet trans =
 
         RegistratingHealthCenter ->
             { english = "Registrating Health Center"
+            , kinyarwanda = Nothing
+            }
+
+        RegistartionSuccessful ->
+            { english = "Registartion Successful"
+            , kinyarwanda = Nothing
+            }
+
+        RegistartionSuccessfulAddNewPatient ->
+            { english = "The patient has been added to E-Heza. Would you like to add a child to this patient?"
             , kinyarwanda = Nothing
             }
 

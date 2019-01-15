@@ -586,32 +586,67 @@ viewDialog language dialogState =
             (\state ->
                 case state of
                     ConfirmSubmision ->
-                        Just <|
-                            div [ class "ui tiny active modal" ]
-                                [ div
-                                    [ class "header" ]
-                                    [ text <| translate language Translate.ConfirmationRequired ]
-                                , div
-                                    [ class "content" ]
-                                    [ text <| translate language Translate.ConfirmRegisterPatient ]
-                                , div
-                                    [ class "actions" ]
-                                    [ div
-                                        [ class "two ui buttons" ]
-                                        [ button
-                                            [ class "ui  fluid button"
-                                            , onClick <| SetDialogState Nothing
-                                            ]
-                                            [ text <| translate language Translate.No ]
-                                        , button
-                                            [ class "ui  primary fluid button"
-                                            , onClick Submit
-                                            ]
-                                            [ text <| translate language Translate.Yes ]
-                                        ]
-                                    ]
-                                ]
+                        Just <| confirmSubmisionDialog language
+
+                    SuccessfulSubmision ->
+                        Just <| successfulSubmisionDialog language
             )
+
+
+confirmSubmisionDialog : Language -> Html Msg
+confirmSubmisionDialog language =
+    div [ class "ui tiny active modal" ]
+        [ div
+            [ class "header" ]
+            [ text <| translate language Translate.ConfirmationRequired ]
+        , div
+            [ class "content" ]
+            [ text <| translate language Translate.ConfirmRegisterPatient ]
+        , div
+            [ class "actions" ]
+            [ div
+                [ class "two ui buttons" ]
+                [ button
+                    [ class "ui  fluid button"
+                    , onClick <| SetDialogState Nothing
+                    ]
+                    [ text <| translate language Translate.No ]
+                , button
+                    [ class "ui  primary fluid button"
+                    , onClick Submit
+                    ]
+                    [ text <| translate language Translate.Yes ]
+                ]
+            ]
+        ]
+
+
+successfulSubmisionDialog : Language -> Html Msg
+successfulSubmisionDialog language =
+    div [ class "ui tiny active modal" ]
+        [ div
+            [ class "header" ]
+            [ text <| translate language Translate.RegistartionSuccessful ]
+        , div
+            [ class "content" ]
+            [ text <| translate language Translate.RegistartionSuccessfulAddNewPatient ]
+        , div
+            [ class "actions" ]
+            [ div
+                [ class "two ui buttons" ]
+                [ button
+                    [ class "ui  fluid button"
+                    , onClick Reset
+                    ]
+                    [ text <| translate language Translate.No ]
+                , button
+                    [ class "ui  primary fluid button"
+                    , onClick <| AddNewPatient Nothing
+                    ]
+                    [ text <| translate language Translate.Yes ]
+                ]
+            ]
+        ]
 
 
 viewTextInput : Language -> TranslationId -> Form.FieldState e String -> Bool -> Html Form.Msg
