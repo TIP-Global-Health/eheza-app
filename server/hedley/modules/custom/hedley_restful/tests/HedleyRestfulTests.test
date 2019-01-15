@@ -22,17 +22,6 @@ class HedleyRestfulTests extends HedleyWebTestBase {
   }
 
   /**
-   * Overrides \DrupalWebTestCase::setUp().
-   */
-  public function setUp() {
-    parent::setUp();
-
-    // This module is creating exception messages because of "Undefined index",
-    // we don't need it, so just disabling it for the tests.
-    module_disable(['restful_token_auth']);
-  }
-
-  /**
    * Tests access for training sessions for sandbox website.
    */
   public function testAccessTrainingSessions() {
