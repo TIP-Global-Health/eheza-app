@@ -1,10 +1,13 @@
-module Pages.PatientRegistration.Utils exposing (generateUuid, getFormFieldValue, sequenceExtra)
+module Pages.PatientRegistration.Utils exposing (generateUuid, getFormFieldValue, getRegistratingParticipant, sequenceExtra)
 
 import Form
+import Gizra.NominalDate exposing (NominalDate)
 import List
 import Maybe.Extra exposing (unwrap)
+import Participant.Model exposing (ParticipantType(..))
 import Random.Pcg exposing (initialSeed, step)
 import Time exposing (Time)
+import Time.Date
 import Uuid exposing (Uuid, uuidGenerator)
 
 
@@ -30,6 +33,23 @@ getFormFieldValue field =
                     0
         )
         field.value
+
+
+getRegistratingParticipant : NominalDate -> Int -> Int -> Int -> Maybe ParticipantType
+getRegistratingParticipant currentDate birthDay birthMonth birthYear =
+    if birthDay > 0 && birthMonth > 0 && birthYear > 0 then
+        let
+            delta =
+                Time.Date.delta currentDate (Time.Date.date birthYear birthMonth birthDay)
+        in
+        if delta.years > 12 then
+            Just <| MotherParticipant delta
+
+        else
+            Just <| ChildParticipant delta
+
+    else
+        Nothing
 
 
 {-| Like `Update.Extra.sequence`, but for `update` signatures that also

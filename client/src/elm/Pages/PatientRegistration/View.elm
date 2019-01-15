@@ -20,7 +20,7 @@ import Json.Decode
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRegistration.Model exposing (DialogState(..), Model, Msg(..), RegistrationStep(..))
-import Pages.PatientRegistration.Utils exposing (getFormFieldValue)
+import Pages.PatientRegistration.Utils exposing (getFormFieldValue, getRegistratingParticipant)
 import Participant.Model exposing (ParticipantType(..))
 import Time.Date
 import Translate exposing (Language(..), TranslationId, translate)
@@ -123,33 +123,11 @@ view language currentDate user backend cache model =
             Form.getFieldAsString "healthCenterName" model.registrationForm
 
         -- END STEP 3 FIELDS --
-        maybeAgeDateDelta =
-            let
-                birthDay =
-                    getFormFieldValue dayOfBirth
-
-                birthMonth =
-                    getFormFieldValue monthOfBirth
-
-                birthYear =
-                    getFormFieldValue yearOfBirth
-            in
-            if birthDay > 0 && birthMonth > 0 && birthYear > 0 then
-                Time.Date.delta currentDate (Time.Date.date birthYear birthMonth birthDay) |> Just
-
-            else
-                Nothing
-
         maybeRegistratingParticipant =
-            maybeAgeDateDelta
-                |> Maybe.andThen
-                    (\delta ->
-                        if delta.years > 12 then
-                            Just <| MotherParticipant delta
-
-                        else
-                            Just <| ChildParticipant delta
-                    )
+            getRegistratingParticipant currentDate
+                (getFormFieldValue dayOfBirth)
+                (getFormFieldValue monthOfBirth)
+                (getFormFieldValue yearOfBirth)
 
         emptyOption =
             ( "", "" )

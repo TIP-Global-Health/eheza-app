@@ -1,12 +1,24 @@
 module Pages.PatientRegistration.Update exposing (update)
 
 import App.Model
+import Backend.Child.Model exposing (Child, ModeOfDelivery(..))
+import Backend.Mother.Model exposing (Mother)
+import Backend.Patient.Model exposing (Gender(..), Ubudehe(..))
 import Date
+import EveryDict
 import Form
 import Form.Field exposing (FieldValue(..))
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
+import Maybe.Extra exposing (unwrap)
 import Pages.PatientRegistration.Model exposing (..)
-import Pages.PatientRegistration.Utils exposing (generateUuid, getFormFieldValue, sequenceExtra)
+import Pages.PatientRegistration.Utils
+    exposing
+        ( generateUuid
+        , getFormFieldValue
+        , getRegistratingParticipant
+        , sequenceExtra
+        )
+import Participant.Model exposing (ParticipantType(..))
 import Time exposing (Time)
 import Time.Date
 import Uuid
@@ -145,7 +157,232 @@ update currentTime msg model =
 
         Submit ->
             let
+                currentDate =
+                    fromLocalDateTime <| Date.fromTime currentTime
+
+                dayOfBirth =
+                    Form.getFieldAsString "dayOfBirth" model.registrationForm
+                        |> getFormFieldValue
+
+                monthOfBirth =
+                    Form.getFieldAsString "monthOfBirth" model.registrationForm
+                        |> getFormFieldValue
+
+                yearOfBirth =
+                    Form.getFieldAsString "yearOfBirth" model.registrationForm
+                        |> getFormFieldValue
+
+                maybeRegistratingParticipant =
+                    getRegistratingParticipant currentDate dayOfBirth monthOfBirth yearOfBirth
+
                 log =
                     Debug.log "UUID" <| Uuid.toString <| generateUuid currentTime
             in
-            ( model, Cmd.none, [] )
+            case maybeRegistratingParticipant of
+                Just participant ->
+                    let
+                        firstName =
+                            Form.getFieldAsString "firstName" model.registrationForm
+                                |> .value
+
+                        middleName =
+                            Form.getFieldAsString "middleName" model.registrationForm
+                                |> .value
+
+                        secondName =
+                            Form.getFieldAsString "secondName" model.registrationForm
+                                |> .value
+
+                        name =
+                            (firstName
+                                |> Maybe.withDefault ""
+                            )
+                                ++ (case middleName of
+                                        Just mName ->
+                                            " " ++ mName ++ " "
+
+                                        Nothing ->
+                                            " "
+                                   )
+                                ++ (secondName
+                                        |> Maybe.withDefault ""
+                                   )
+
+                        nationalIdNumber =
+                            Form.getFieldAsString "nationalIdNumber" model.registrationForm
+                                |> .value
+
+                        avatarUrl =
+                            model.photo |> Maybe.andThen (.url >> Just)
+
+                        birthDate =
+                            Time.Date.date yearOfBirth monthOfBirth dayOfBirth
+
+                        isDateOfBirthEstimated =
+                            Form.getFieldAsBool "isDateOfBirthEstimated" model.registrationForm
+                                |> .value
+                                |> Maybe.withDefault False
+
+                        gender =
+                            Form.getFieldAsString "gender" model.registrationForm
+                                |> .value
+                                |> unwrap
+                                    Male
+                                    (\gender ->
+                                        case gender of
+                                            "female" ->
+                                                Female
+
+                                            _ ->
+                                                Male
+                                    )
+
+                        familyUbudehe =
+                            Form.getFieldAsString "familyUbudehe" model.registrationForm
+                                |> .value
+                                |> Maybe.andThen
+                                    (\ubudehe ->
+                                        case ubudehe of
+                                            "1" ->
+                                                Just Ubudehe1
+
+                                            "2" ->
+                                                Just Ubudehe2
+
+                                            "3" ->
+                                                Just Ubudehe3
+
+                                            "4" ->
+                                                Just Ubudehe4
+
+                                            _ ->
+                                                Nothing
+                                    )
+
+                        province =
+                            Nothing
+
+                        district =
+                            Form.getFieldAsString "district" model.registrationForm
+                                |> .value
+
+                        sector =
+                            Form.getFieldAsString "sector" model.registrationForm
+                                |> .value
+
+                        cell =
+                            Form.getFieldAsString "cell" model.registrationForm
+                                |> .value
+
+                        village =
+                            Form.getFieldAsString "village" model.registrationForm
+                                |> .value
+
+                        telephoneNumber =
+                            Form.getFieldAsString "telephoneNumber" model.registrationForm
+                                |> .value
+
+                        healthCenterName =
+                            Form.getFieldAsString "healthCenterName" model.registrationForm
+                                |> .value
+                    in
+                    case participant of
+                        ChildParticipant _ ->
+                            let
+                                motherID =
+                                    Nothing
+
+                                motherUuid =
+                                    Nothing
+
+                                modeOfDelivery =
+                                    Form.getFieldAsString "modeOfDelivery" model.registrationForm
+                                        |> .value
+                                        |> Maybe.andThen
+                                            (\mode ->
+                                                case mode of
+                                                    "svd-episiotomy" ->
+                                                        Just SpontaneousVaginalDeliveryWithEpisiotomy
+
+                                                    "svd-no-episiotomy" ->
+                                                        Just SpontaneousVaginalDeliveryWithoutEpisiotomy
+
+                                                    "vd-vacuum" ->
+                                                        Just VaginalDeliveryWithVacuumExtraction
+
+                                                    "cesarean-delivery" ->
+                                                        Just CesareanDelivery
+
+                                                    _ ->
+                                                        Nothing
+                                            )
+
+                                motherName =
+                                    Form.getFieldAsString "motherName" model.registrationForm
+                                        |> .value
+
+                                motherNationalId =
+                                    Form.getFieldAsString "motherNationalId" model.registrationForm
+                                        |> .value
+
+                                fatherName =
+                                    Form.getFieldAsString "fatherName" model.registrationForm
+                                        |> .value
+
+                                fatherNationalId =
+                                    Form.getFieldAsString "fatherNationalId" model.registrationForm
+                                        |> .value
+
+                                caregiverName =
+                                    Form.getFieldAsString "caregiverName" model.registrationForm
+                                        |> .value
+
+                                caregiverNationalId =
+                                    Form.getFieldAsString "caregiverNationalId" model.registrationForm
+                                        |> .value
+
+                                child =
+                                    Child name
+                                        (firstName |> Maybe.withDefault "")
+                                        middleName
+                                        (secondName |> Maybe.withDefault "")
+                                        nationalIdNumber
+                                        avatarUrl
+                                        motherID
+                                        motherUuid
+                                        birthDate
+                                        isDateOfBirthEstimated
+                                        gender
+                                        modeOfDelivery
+                                        familyUbudehe
+                                        motherName
+                                        motherNationalId
+                                        fatherName
+                                        fatherNationalId
+                                        caregiverName
+                                        caregiverNationalId
+                                        province
+                                        district
+                                        sector
+                                        cell
+                                        village
+                                        telephoneNumber
+                                        healthCenterName
+                            in
+                            let
+                                updatedParticipantsData =
+                                    { mothersToRegister = model.participantsData.mothersToRegister
+                                    , childrenToRegister = EveryDict.insert (generateUuid currentTime) child model.participantsData.childrenToRegister
+                                    }
+                            in
+                            ( { model | participantsData = updatedParticipantsData }, Cmd.none, [] )
+
+                        MotherParticipant _ ->
+                            let
+                                mother =
+                                    Nothing
+                            in
+                            ( model, Cmd.none, [] )
+
+                Nothing ->
+                    ( model, Cmd.none, [] )

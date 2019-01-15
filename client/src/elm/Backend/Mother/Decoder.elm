@@ -34,8 +34,7 @@ decodeMother =
         |> required "date_birth" decodeYYYYMMDD
         -- Is birth date estimated
         |> hardcoded False
-        -- Gender
-        |> hardcoded Female
+        |> required "gender" decodeGender
         |> optional "education_level" (nullable decodeEducationLevel) Nothing
         |> hardcoded Nothing
         |> hardcoded Nothing

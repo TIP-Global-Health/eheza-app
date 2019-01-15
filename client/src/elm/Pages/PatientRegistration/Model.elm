@@ -32,12 +32,7 @@ type alias Model =
 
 
 type alias ParticipantsData =
-    { -- This should mode to Backend Model.
-      motheres : EveryDict MotherId Mother
-
-    -- This should mode to Backend Model.
-    , children : EveryDict ChildId Child
-    , mothersToRegister : EveryDict Uuid Mother
+    { mothersToRegister : EveryDict Uuid Mother
     , childrenToRegister : EveryDict Uuid Child
     }
 
@@ -54,9 +49,7 @@ emptyModel =
 
 emptyParticipantsData : ParticipantsData
 emptyParticipantsData =
-    { motheres = EveryDict.empty
-    , children = EveryDict.empty
-    , mothersToRegister = EveryDict.empty
+    { mothersToRegister = EveryDict.empty
     , childrenToRegister = EveryDict.empty
     }
 
