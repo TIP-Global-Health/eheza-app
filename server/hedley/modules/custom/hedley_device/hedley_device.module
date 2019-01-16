@@ -25,8 +25,21 @@ function hedley_device_node_presave($node) {
     // New device, so we generate a pairing code.
     $wrapper->field_pairing_code->set(hedley_device_get_unique_pairing_code());
 
-    // And we make an access token.
-    $wrapper->field_access_token->set(drupal_random_key());
+    // And we make a robot user to authenticate for syncing.
+    $role = user_role_load_by_name('sync');
+
+    $account = entity_create('user', [
+      'name' => $node->title . ' Robot',
+      'mail' => 'robot@no-reply.com',
+      'roles' => [$role->rid => $role->name],
+      'status' => TRUE,
+    ]);
+
+    $wrapper = entity_metadata_wrapper('user', $account);
+    $wrapper->save();
+
+    // Set the author.
+    $node->uid = $account->uid;
   }
   elseif (!hedley_device_check_unique_pairing_code($wrapper->field_pairing_code->value(), $wrapper->getIdentifier())) {
     // Existing device, so throw error if it's not unique.

@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulChildren.
  */
-class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
+class HedleyRestfulChildren extends HedleyRestfulSyncBase {
 
   /**
    * {@inheritdoc}
@@ -16,10 +16,8 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $field_names = [];
-
-    $public_fields['type'] = [
-      'callback' => 'static::getType',
+    $field_names = [
+      'field_gender',
     ];
 
     foreach ($field_names as $field_name) {
@@ -38,16 +36,12 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
     ];
 
     $public_fields['mother'] = [
-      'property' => 'nid',
-      'process_callbacks' => [
-        [$this, 'getMother'],
-      ],
-    ];
-
-    $public_fields['sibling'] = [
-      'property' => 'nid',
-      'process_callbacks' => [
-        [$this, 'getSibling'],
+      'property' => 'field_mother',
+      'resource' => [
+        'mother' => [
+          'name' => 'mothers',
+          'full_view' => FALSE,
+        ],
       ],
     ];
 
@@ -65,64 +59,7 @@ class HedleyRestfulChildren extends HedleyRestfulEntityBaseNode {
       ];
     }
 
-    $public_fields['gender'] = [
-      'property' => 'field_gender',
-    ];
-
     return $public_fields;
-  }
-
-  /**
-   * Return the type of the patient.
-   *
-   * @return string
-   *   The type name.
-   */
-  protected static function getType() {
-    return 'child';
-  }
-
-  /**
-   * Return the mother of the child.
-   *
-   * @param int $nid
-   *   The child node ID.
-   *
-   * @return int
-   *   The Mother node ID.
-   */
-  public static function getMother($nid) {
-    $child_wrapper = entity_metadata_wrapper('node', $nid);
-    return $child_wrapper->field_mother->getIdentifier();
-  }
-
-  /**
-   * Return the sibling of the child.
-   *
-   * @param int $nid
-   *   The child node ID.
-   *
-   * @return mixed|null
-   *   Sibling node ID, or NULL, if none exist.
-   */
-  public static function getSibling($nid) {
-    $mother_nid = self::getMother($nid);
-    if (!$mother_nid) {
-      return NULL;
-    }
-
-    $query = new EntityFieldQuery();
-    $result = $query
-      ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', 'child')
-      ->propertyCondition('nid', $nid, '<>')
-      ->propertyCondition('status', NODE_PUBLISHED)
-      ->fieldCondition('field_mother', 'target_id', $mother_nid)
-      // Child may have up to one sibling.
-      ->range(0, 1)
-      ->execute();
-
-    return empty($result['node']) ? NULL : key($result['node']);
   }
 
 }
