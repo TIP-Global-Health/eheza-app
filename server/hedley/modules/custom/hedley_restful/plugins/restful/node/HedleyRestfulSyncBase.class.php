@@ -24,6 +24,10 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
       'property' => 'vid',
     ];
 
+    $public_fields['uuid'] = [
+      'property' => 'field_uuid',
+    ];
+
     return $public_fields;
   }
 
