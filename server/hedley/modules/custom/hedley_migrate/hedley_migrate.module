@@ -156,7 +156,7 @@ function _hedley_migrate_preprocess_xss($entity_type, $bundle, $entity) {
     }
 
     if ($field_name === 'field_uuid') {
-      // Exception thrown for this field, for some reason
+      // This is an auto-populated field.
       continue;
     }
 
