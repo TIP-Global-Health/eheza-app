@@ -50,12 +50,22 @@ function hedley_device_node_presave($node) {
   // Create a revision for all nodes.
   $node->revision = TRUE;
 
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  // Check validity of UUID. If it's empty, it will be assigned in
+  // hook_node_insert, once we know the node ID.
+  if ($wrapper->__isset('field_uuid')) {
+    $uuid = $wrapper->field_uuid->value();
+    if (!empty($uuid) && !Uuid::isValid($uuid)) {
+      $message = "The supplied UUID '$uuid' is not a valid UUID. Leave it blank to auto-generate.";
+      throw new Exception($message);
+    }
+  }
+
   if ($node->type != 'device') {
     // Not a device.
     return;
   }
-
-  $wrapper = entity_metadata_wrapper('node', $node);
 
   if (empty($node->nid)) {
     // New device, so we generate a pairing code.
