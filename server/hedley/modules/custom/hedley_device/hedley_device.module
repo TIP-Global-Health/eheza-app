@@ -17,33 +17,6 @@ include_once 'hedley_device.features.inc';
 define('HEDLEY_DEVICE_BACKEND_UUID', 'c700aec4-92c1-46b2-8894-8f4f82869c79');
 
 /**
- * Implements hook_node_insert().
- *
- * We assign the UUID in hodk_node_insert because at that point we have a
- * locally-unique node ID that we can use.
- */
-function hedley_device_node_insert($node) {
-  $wrapper = entity_metadata_wrapper('node', $node);
-
-  if (!$wrapper->__isset('field_uuid')) {
-    // We don't have a UUID field to set.
-    return;
-  }
-
-  if (!empty($wrapper->field_uuid->value())) {
-    // The UUID has already been set by a device.
-    return;
-  }
-
-  $uuid = Uuid::uuid5(HEDLEY_DEVICE_BACKEND_UUID, $node->nid);
-  $wrapper->field_uuid->set($uuid->toString());
-
-  // We're already inside the database transaction, so we need to actually
-  // update the database in this manner.
-  field_attach_update('node', $node);
-}
-
-/**
  * Implements hook_node_presave().
  */
 function hedley_device_node_presave($node) {
@@ -52,11 +25,17 @@ function hedley_device_node_presave($node) {
 
   $wrapper = entity_metadata_wrapper('node', $node);
 
-  // Check validity of UUID. If it's empty, it will be assigned in
-  // hook_node_insert, once we know the node ID.
   if ($wrapper->__isset('field_uuid')) {
+    // This node type has a field_uuid.
     $uuid = $wrapper->field_uuid->value();
-    if (!empty($uuid) && !Uuid::isValid($uuid)) {
+
+    if (empty($uuid)) {
+      // If we don't have a UUID, then make one.
+      $uuid = Uuid::uuid5(HEDLEY_DEVICE_BACKEND_UUID, uniqid('', TRUE));
+      $wrapper->field_uuid->set($uuid->toString());
+    }
+    elseif (!Uuid::isValid($uuid)) {
+      // If we do have a UUID, then validate it.
       $message = "The supplied UUID '$uuid' is not a valid UUID. Leave it blank to auto-generate.";
       throw new Exception($message);
     }
