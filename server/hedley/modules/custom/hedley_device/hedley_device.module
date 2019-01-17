@@ -39,6 +39,15 @@ function hedley_device_node_presave($node) {
       $message = "The supplied UUID '$uuid' is not a valid UUID. Leave it blank to auto-generate.";
       throw new Exception($message);
     }
+    elseif (!empty($node->original)) {
+      // If we had a UUID, prevent modifying it.
+      $original_wrapper = entity_metadata_wrapper('node', $node->original);
+      $original_uuid = $original_wrapper->field_uuid->value();
+
+      if (!empty($original_uuid) && $uuid != $original_uuid) {
+        throw new Exception('You cannot modify a UUID once it is assigned.');
+      }
+    }
   }
 
   if ($node->type != 'device') {
