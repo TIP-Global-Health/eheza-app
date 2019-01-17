@@ -155,6 +155,11 @@ function _hedley_migrate_preprocess_xss($entity_type, $bundle, $entity) {
       continue;
     }
 
+    if ($field_name === 'field_uuid') {
+      // Exception thrown for this field, for some reason
+      continue;
+    }
+
     // Handle each column.
     foreach ($field['columns'] as $column => $column_info) {
       if ($column == 'format') {
