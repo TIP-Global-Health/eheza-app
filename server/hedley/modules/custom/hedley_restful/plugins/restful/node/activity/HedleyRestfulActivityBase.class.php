@@ -28,6 +28,9 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
       'sub_property' => 'field_uuid',
     ];
 
+    // The label is purely decorative.
+    unset($public_fields['label']);
+
     return $public_fields;
   }
 

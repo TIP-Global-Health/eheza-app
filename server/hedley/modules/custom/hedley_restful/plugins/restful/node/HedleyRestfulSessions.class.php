@@ -36,6 +36,9 @@ class HedleyRestfulSessions extends HedleyRestfulSyncBase {
       'sub_property' => 'field_uuid',
     ];
 
+    // The label is decorative only.
+    unset($public_fields['label']);
+
     return $public_fields;
   }
 
