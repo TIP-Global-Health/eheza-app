@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Contains \HedleyRestfulUserNodes.
+ * Contains \HedleyRestfulNurses.
  */
 
 /**
- * Class HedleyRestfulUserNodes.
+ * Class HedleyRestfulNurses.
  */
-class HedleyRestfulUserNodes extends HedleyRestfulSyncBase {
+class HedleyRestfulNurses extends HedleyRestfulSyncBase {
 
   /**
    * {@inheritdoc}
