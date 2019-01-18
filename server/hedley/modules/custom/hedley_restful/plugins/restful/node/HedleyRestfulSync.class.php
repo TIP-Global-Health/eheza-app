@@ -64,7 +64,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'health_center' => 'health_centers',
       'mother' => 'mothers',
       'session' => 'sessions',
-      'user' => 'user_nodes',
+      'nurse' => 'nurses',
     ];
   }
 
