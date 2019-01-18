@@ -33,12 +33,7 @@ class HedleyRestfulSessions extends HedleyRestfulSyncBase {
 
     $public_fields['clinic'] = [
       'property' => 'field_clinic',
-      'resource' => [
-        'clinic' => [
-          'name' => 'clinics',
-          'full_view' => FALSE,
-        ],
-      ],
+      'sub_property' => 'field_uuid',
     ];
 
     return $public_fields;

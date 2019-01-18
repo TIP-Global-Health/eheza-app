@@ -18,12 +18,7 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
 
     $public_fields['clinics'] = [
       'property' => 'field_clinics',
-      'resource' => [
-        'clinic' => [
-          'name' => 'clinics',
-          'full_view' => FALSE,
-        ],
-      ],
+      'sub_property' => 'field_uuid',
     ];
 
     $public_fields['pin_code'] = [

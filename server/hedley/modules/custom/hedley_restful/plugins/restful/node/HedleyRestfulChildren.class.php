@@ -37,12 +37,7 @@ class HedleyRestfulChildren extends HedleyRestfulSyncBase {
 
     $public_fields['mother'] = [
       'property' => 'field_mother',
-      'resource' => [
-        'mother' => [
-          'name' => 'mothers',
-          'full_view' => FALSE,
-        ],
-      ],
+      'sub_property' => 'field_uuid',
     ];
 
     foreach (array_keys(field_info_instances($this->getEntityType(), $this->getBundle())) as $field_name) {
