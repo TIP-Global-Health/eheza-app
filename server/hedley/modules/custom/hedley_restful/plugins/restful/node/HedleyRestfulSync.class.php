@@ -205,15 +205,15 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    *
    * This is for those things that are relevant to the specified health center.
    *
-   * @param int $id
-   *   The ID of the health center.
+   * @param string $uuid
+   *   The UUID of the health center.
    *
    * @return array
    *   A representation of the required revisions
    *
    * @throws \RestfulBadRequestException
    */
-  public function getForHealthCenter($id) {
+  public function getForHealthCenter($uuid) {
     $request = $this->getRequest();
     $handlersForTypes = $this->entitiesForHealthCenters();
 
@@ -271,10 +271,17 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'hc.entity_id = clinic.field_clinic_target_id'
     );
 
+    // And, then we need the UUID of the health center.
+    $query->leftJoin(
+      'field_data_field_uuid',
+      'uuid',
+      'uuid.entity_id = hc.field_health_center_target_id'
+    );
+
     $query
       ->fields('nr', ['nid', 'vid', 'timestamp'])
       ->fields('n', ['type'])
-      ->condition('hc.field_health_center_target_id', $id)
+      ->condition('uuid.field_uuid_value', $uuid)
       ->condition('n.type', array_keys($handlersForTypes), 'IN');
 
     // Get the timestamp of the last revision. We'll also get a count of
