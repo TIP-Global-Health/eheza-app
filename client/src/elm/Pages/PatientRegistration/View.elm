@@ -31,6 +31,168 @@ import Utils.Html exposing (script, viewModal)
 
 view : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
 view language currentDate user backend cache model =
+    div [ class "wrap wrap-alt-2" ]
+        [ viewHeader language currentDate user backend cache model
+        , div
+            [ class "ui full segment blue" ]
+            [ viewBody language currentDate user backend cache model
+            , viewActions language currentDate user backend cache model
+            ]
+        , viewModal <| viewDialog language model.dialogState
+        ]
+
+
+viewHeader : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
+viewHeader language currentDate user backend cache model =
+    div
+        [ class "ui basic segment head" ]
+        [ h1
+            [ class "ui header" ]
+            [ text <| translate language Translate.RegisterNewPatient ]
+        , a
+            [ class "link-back"
+            , onClick <| SetActivePage LoginPage
+            ]
+            [ span [ class "icon-back" ] []
+            , span [] []
+            ]
+        ]
+
+
+viewBody : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
+viewBody language currentDate user backend cache model =
+    div [ class "content" ]
+        [ div [ class "wrap-list" ]
+            [ viewRegistrationForm language currentDate user backend cache model ]
+        ]
+
+
+viewActions : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
+viewActions language currentDate user backend cache model =
+    let
+        leftButton =
+            let
+                action =
+                    case model.registrationStep of
+                        First ->
+                            SetActivePage LoginPage
+
+                        Second ->
+                            SetRegistrationStep First
+
+                        Third ->
+                            SetRegistrationStep Second
+            in
+            button
+                [ class "ui primary button"
+                , onClick action
+                ]
+                [ text <| "< " ++ translate language Translate.Back ]
+
+        rightButton =
+            let
+                dayOfBirth =
+                    Form.getFieldAsString "dayOfBirth" model.registrationForm
+
+                monthOfBirth =
+                    Form.getFieldAsString "monthOfBirth" model.registrationForm
+
+                yearOfBirth =
+                    Form.getFieldAsString "yearOfBirth" model.registrationForm
+
+                maybeRegistratingParticipant =
+                    getRegistratingParticipant currentDate
+                        (getFormFieldValue dayOfBirth)
+                        (getFormFieldValue monthOfBirth)
+                        (getFormFieldValue yearOfBirth)
+
+                ( label, action, disabled ) =
+                    case model.registrationStep of
+                        First ->
+                            let
+                                validatedFields =
+                                    [ Form.getFieldAsString "nationalIdNumber" model.registrationForm ]
+
+                                requiredFields =
+                                    [ Form.getFieldAsString "firstName" model.registrationForm
+                                    , Form.getFieldAsString "secondName" model.registrationForm
+                                    , dayOfBirth
+                                    , monthOfBirth
+                                    , yearOfBirth
+                                    ]
+                                        ++ (case maybeRegistratingParticipant of
+                                                Just (MotherParticipant _) ->
+                                                    [ Form.getFieldAsString "levelOfEducation" model.registrationForm
+                                                    , Form.getFieldAsString "hivStatus" model.registrationForm
+                                                    ]
+
+                                                Just (ChildParticipant _) ->
+                                                    [ Form.getFieldAsString "modeOfDelivery" model.registrationForm ]
+
+                                                Nothing ->
+                                                    []
+                                           )
+                            in
+                            ( Translate.Next
+                            , SetRegistrationStep Second
+                            , not (List.all isFormFieldSet requiredFields && List.all isFormFieldValid validatedFields)
+                            )
+
+                        Second ->
+                            let
+                                ( requiredFields, validatedFields ) =
+                                    let
+                                        requiredCommon =
+                                            [ Form.getFieldAsString "familyUbudehe" model.registrationForm
+                                            , Form.getFieldAsString "district" model.registrationForm
+                                            , Form.getFieldAsString "sector" model.registrationForm
+                                            , Form.getFieldAsString "cell" model.registrationForm
+                                            , Form.getFieldAsString "village" model.registrationForm
+                                            ]
+                                    in
+                                    case maybeRegistratingParticipant of
+                                        Just (MotherParticipant _) ->
+                                            ( requiredCommon ++ [ Form.getFieldAsString "numberOfChildren" model.registrationForm ]
+                                            , []
+                                            )
+
+                                        Just (ChildParticipant _) ->
+                                            ( requiredCommon ++ [ Form.getFieldAsString "motherName" model.registrationForm, Form.getFieldAsString "fatherName" model.registrationForm ]
+                                            , [ Form.getFieldAsString "motherNationalId" model.registrationForm
+                                              , Form.getFieldAsString "fatherNationalId" model.registrationForm
+                                              , Form.getFieldAsString "caregiverNationalId" model.registrationForm
+                                              ]
+                                            )
+
+                                        Nothing ->
+                                            ( requiredCommon, [] )
+                            in
+                            ( Translate.Next
+                            , SetRegistrationStep Third
+                            , not (List.all isFormFieldSet requiredFields && List.all isFormFieldValid validatedFields)
+                            )
+
+                        Third ->
+                            ( Translate.Submit
+                            , SetDialogState <| Just ConfirmSubmision
+                            , False
+                            )
+            in
+            button
+                [ classList
+                    [ ( "ui primary button", True )
+                    , ( "disabled", disabled )
+                    ]
+                , onClick action
+                ]
+                [ text <| translate language label ++ " >" ]
+    in
+    div [ class "registration-form actions" ]
+        [ leftButton, rightButton ]
+
+
+viewRegistrationForm : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
+viewRegistrationForm language currentDate user backend cache model =
     let
         -- FORM FIELDS --
         firstName =
@@ -451,121 +613,9 @@ view language currentDate user backend cache model =
                         fieldset [ class "registration-form registrating-health-center" ]
                             [ viewHealthCenterName ]
                     ]
-
-        leftButton =
-            let
-                action =
-                    case model.registrationStep of
-                        First ->
-                            SetActivePage LoginPage
-
-                        Second ->
-                            SetRegistrationStep First
-
-                        Third ->
-                            SetRegistrationStep Second
-            in
-            button
-                [ class "ui primary button"
-                , onClick action
-                ]
-                [ text <| "< " ++ translate language Translate.Back ]
-
-        rightButton =
-            let
-                ( label, action, disabled ) =
-                    case model.registrationStep of
-                        First ->
-                            let
-                                validatedFields =
-                                    [ nationalIdNumber ]
-
-                                requiredFields =
-                                    [ firstName, secondName, dayOfBirth, monthOfBirth, yearOfBirth ]
-                                        ++ (case maybeRegistratingParticipant of
-                                                Just (MotherParticipant _) ->
-                                                    [ levelOfEducation, hivStatus ]
-
-                                                Just (ChildParticipant _) ->
-                                                    [ modeOfDelivery ]
-
-                                                Nothing ->
-                                                    []
-                                           )
-                            in
-                            ( Translate.Next
-                            , SetRegistrationStep Second
-                            , not (List.all isFormFieldSet requiredFields && List.all isFormFieldValid validatedFields)
-                            )
-
-                        Second ->
-                            let
-                                ( requiredFields, validatedFields ) =
-                                    let
-                                        requiredCommon =
-                                            [ familyUbudehe, district, sector, cell, village ]
-                                    in
-                                    case maybeRegistratingParticipant of
-                                        Just (MotherParticipant _) ->
-                                            ( requiredCommon ++ [ numberOfChildren ]
-                                            , []
-                                            )
-
-                                        Just (ChildParticipant _) ->
-                                            ( requiredCommon ++ [ motherName, fatherName ]
-                                            , [ motherNationalId, fatherNationalId, caregiverNationalId ]
-                                            )
-
-                                        Nothing ->
-                                            ( requiredCommon, [] )
-                            in
-                            ( Translate.Next
-                            , SetRegistrationStep Third
-                            , not (List.all isFormFieldSet requiredFields && List.all isFormFieldValid validatedFields)
-                            )
-
-                        Third ->
-                            ( Translate.Submit
-                            , SetDialogState <| Just ConfirmSubmision
-                            , False
-                            )
-            in
-            button
-                [ classList
-                    [ ( "ui primary button", True )
-                    , ( "disabled", disabled )
-                    ]
-                , onClick action
-                ]
-                [ text <| translate language label ++ " >" ]
     in
-    div [ class "wrap wrap-alt-2" ]
-        [ div
-            [ class "ui basic segment head" ]
-            [ h1
-                [ class "ui header" ]
-                [ text <| translate language Translate.RegisterNewPatient ]
-            , a
-                [ class "link-back"
-                , onClick <| SetActivePage LoginPage
-                ]
-                [ span [ class "icon-back" ] []
-                , span [] []
-                ]
-            ]
-        , div
-            [ class "ui full segment blue" ]
-            [ div [ class "content" ]
-                [ div [ class "wrap-list" ]
-                    [ div [ class "ui form registration" ]
-                        formContent
-                    ]
-                ]
-            , div [ class "registration-form actions" ]
-                [ leftButton, rightButton ]
-            ]
-        , viewModal <| viewDialog language model.dialogState
-        ]
+    div [ class "ui form registration" ]
+        formContent
 
 
 viewDialog : Language -> Maybe DialogState -> Maybe (Html Msg)
