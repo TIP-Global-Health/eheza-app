@@ -1,4 +1,23 @@
-module Translate exposing (Adherence(..), ChartPhrase(..), Feedback(..), Language, LoginPhrase(..), TranslationId(..), ValidationError(..), translate, translateActivePage, translateAdherence, translateChartPhrase, translateCounselingTimingHeading, translateFeedback, translateFormError, translateFormField, translateHttpError, translateLoginPhrase, translateMonth, translateValidationError, translationSet)
+module Translate exposing
+    ( Adherence(..)
+    , ChartPhrase(..)
+    , Language
+    , LoginPhrase(..)
+    , TranslationId(..)
+    , ValidationError(..)
+    , translate
+    , translateActivePage
+    , translateAdherence
+    , translateChartPhrase
+    , translateCounselingTimingHeading
+    , translateFormError
+    , translateFormField
+    , translateHttpError
+    , translateLoginPhrase
+    , translateMonth
+    , translateValidationError
+    , translationSet
+    )
 
 {-| This module has just the translations ... for types and
 general utilities, see `Translate.Model` and `Translate.Utils`.
@@ -89,15 +108,6 @@ type Adherence
     | Adhering
 
 
-type Feedback
-    = FeedbackQuestionnaire
-    | Question
-    | PleaseAsk
-    | Question1
-    | Question2
-    | Question3
-
-
 type TranslationId
     = AccessDenied
     | Activities
@@ -169,7 +179,6 @@ type TranslationId
     | ErrorConfigurationError
     | ErrorFetchingCachedSession
     | FamilyPlanningSignLabel FamilyPlanningSign
-    | Feedback Feedback
     | Fetch
     | FormError (ErrorValue ValidationError)
     | FormField String
@@ -866,9 +875,6 @@ translationSet trans =
                     , kinyarwanda = Just "nta buryo bwo kuboneza urubyaro akoresha"
                     }
 
-        Feedback feedback ->
-            translateFeedback feedback
-
         Fetch ->
             { english = "Fetch"
             , kinyarwanda = Just "Gushakisha"
@@ -1531,40 +1537,6 @@ translateAdherence adherence =
         Adhering ->
             { english = "Based on your conversations with her, do you think she is adhering to her ARV regimen?"
             , kinyarwanda = Just "Ugendeye ku kiganiro mwagiranye, utekereza ko ari gufata imiti ye neza?"
-            }
-
-
-translateFeedback : Feedback -> TranslationSet String
-translateFeedback feedback =
-    case feedback of
-        FeedbackQuestionnaire ->
-            { english = "Feedback Questionnaire"
-            , kinyarwanda = Just "Ibibazo by’isuzuma"
-            }
-
-        Question ->
-            { english = "Question"
-            , kinyarwanda = Just "Ikibazo cya"
-            }
-
-        PleaseAsk ->
-            { english = "Please ask participants exiting the program to provide their feedback in order to help us improve the NHI program."
-            , kinyarwanda = Just "Saba abarangije porogaramu gutanga amakuru kucyo batekereza cyakosorwa muri porogaramu ya NHI."
-            }
-
-        Question1 ->
-            { english = "What is your favorite thing about the NHI program? Why?"
-            , kinyarwanda = Just "Ni ikihe kintu cyagushimishije/wakunze cyane muri gahunda y’imirire myiza ku bana bavuka ku babyeyi babana n’ubwandu bw’agakoko gatera SIDA? Kubera iki?"
-            }
-
-        Question2 ->
-            { english = "What is the most challenging part of participating in the NHI program for you? Why?"
-            , kinyarwanda = Just "Ni ikihe gice cyagukomereye kwitabira muri gahunda y’imirire myiza ku bana bavuka ku babyeyi babana n’ubwandu bw’agakoko gatera SIDA? Kubera iki?"
-            }
-
-        Question3 ->
-            { english = "Would you recommend the NHI program to your friends? Why or why not?"
-            , kinyarwanda = Just "Ushobora gushishikariza inshuti zawe kujya muri gahunda y’imirire ku bana bavuka ku babyeyi babana n’ubwandu bw’agakoko gatera SIDA? Kubera iki? Cyangwa se kuki utabikora?"
             }
 
 
