@@ -265,7 +265,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['title_1']['operator'] = 'word';
   $handler->display->display_options['filters']['title_1']['exposed'] = TRUE;
   $handler->display->display_options['filters']['title_1']['expose']['operator_id'] = 'title_1_op';
-  $handler->display->display_options['filters']['title_1']['expose']['label'] = 'Mother name';
+  $handler->display->display_options['filters']['title_1']['expose']['label'] = 'Mother/Caregiver name';
   $handler->display->display_options['filters']['title_1']['expose']['operator'] = 'title_1_op';
   $handler->display->display_options['filters']['title_1']['expose']['identifier'] = 'mother_name';
   $handler->display->display_options['filters']['title_1']['expose']['remember_roles'] = array(
@@ -594,7 +594,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['title']['group'] = 1;
   $handler->display->display_options['filters']['title']['exposed'] = TRUE;
   $handler->display->display_options['filters']['title']['expose']['operator_id'] = 'title_op';
-  $handler->display->display_options['filters']['title']['expose']['label'] = 'Mother name';
+  $handler->display->display_options['filters']['title']['expose']['label'] = 'Mother/Caregiver name';
   $handler->display->display_options['filters']['title']['expose']['operator'] = 'title_op';
   $handler->display->display_options['filters']['title']['expose']['identifier'] = 'mother_name';
   $handler->display->display_options['filters']['title']['expose']['remember_roles'] = array(
@@ -1619,7 +1619,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['title_1']['group'] = 1;
   $handler->display->display_options['filters']['title_1']['exposed'] = TRUE;
   $handler->display->display_options['filters']['title_1']['expose']['operator_id'] = 'title_1_op';
-  $handler->display->display_options['filters']['title_1']['expose']['label'] = 'Mother';
+  $handler->display->display_options['filters']['title_1']['expose']['label'] = 'Mother/Caregiver';
   $handler->display->display_options['filters']['title_1']['expose']['operator'] = 'title_1_op';
   $handler->display->display_options['filters']['title_1']['expose']['identifier'] = 'title_1';
   $handler->display->display_options['filters']['title_1']['expose']['remember_roles'] = array(
@@ -1858,7 +1858,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['title_1']['group'] = 1;
   $handler->display->display_options['filters']['title_1']['exposed'] = TRUE;
   $handler->display->display_options['filters']['title_1']['expose']['operator_id'] = 'title_1_op';
-  $handler->display->display_options['filters']['title_1']['expose']['label'] = 'Mother';
+  $handler->display->display_options['filters']['title_1']['expose']['label'] = 'Mother/Caregiver';
   $handler->display->display_options['filters']['title_1']['expose']['operator'] = 'title_1_op';
   $handler->display->display_options['filters']['title_1']['expose']['identifier'] = 'title_1';
   $handler->display->display_options['filters']['title_1']['expose']['remember_roles'] = array(

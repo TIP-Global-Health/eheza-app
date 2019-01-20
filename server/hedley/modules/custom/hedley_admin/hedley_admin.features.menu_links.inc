@@ -112,14 +112,14 @@ function hedley_admin_menu_default_menu_links() {
     'weight' => -45,
     'customized' => 1,
   );
-  // Exported menu link: main-menu_mothers:admin/content/mothers.
-  $menu_links['main-menu_mothers:admin/content/mothers'] = array(
+  // Exported menu link: main-menu_mothers--caregivers:admin/content/mothers.
+  $menu_links['main-menu_mothers--caregivers:admin/content/mothers'] = array(
     'menu_name' => 'main-menu',
     'link_path' => 'admin/content/mothers',
     'router_path' => 'admin/content/mothers',
     'link_title' => 'Mothers / Caregivers',
     'options' => array(
-      'identifier' => 'main-menu_mothers:admin/content/mothers',
+      'identifier' => 'main-menu_mothers--caregivers:admin/content/mothers',
     ),
     'module' => 'system',
     'hidden' => 0,
