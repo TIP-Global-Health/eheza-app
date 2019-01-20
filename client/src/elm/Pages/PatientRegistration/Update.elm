@@ -182,9 +182,6 @@ update currentTime msg model =
 
                 maybeRegistratingParticipant =
                     getRegistratingParticipant currentDate dayOfBirth monthOfBirth yearOfBirth
-
-                log =
-                    Debug.log "UUID" <| Uuid.toString <| generateUuid currentTime
             in
             case maybeRegistratingParticipant of
                 Just participant ->
@@ -383,7 +380,7 @@ update currentTime msg model =
                                     , childrenToRegister = EveryDict.insert (generateUuid currentTime) child model.participantsData.childrenToRegister
                                     }
                             in
-                            ( { model | participantsData = updatedParticipantsData }, Cmd.none, [] )
+                            ( { model | participantsData = updatedParticipantsData, dialogState = Just SuccessfulSubmision }, Cmd.none, [] )
 
                         MotherParticipant _ ->
                             let
@@ -508,7 +505,8 @@ update currentTime msg model =
                                     , childrenToRegister = model.participantsData.childrenToRegister
                                     }
                             in
-                            ( { model | participantsData = updatedParticipantsData }, Cmd.none, [] )
+                            ( { model | participantsData = updatedParticipantsData, dialogState = Just SuccessfulSubmision }, Cmd.none, [] )
 
                 Nothing ->
+                    -- We should not get here, so we have this to satisfy the compiler,
                     ( model, Cmd.none, [] )
