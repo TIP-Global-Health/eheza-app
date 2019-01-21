@@ -277,9 +277,8 @@ update msg model =
                 (\configured ->
                     let
                         postCode =
-                            HttpBuilder.post (configured.config.backendUrl </> "api/devices")
-                                |> HttpBuilder.withJsonBody (Json.Encode.object [ ( "pairing_code", Json.Encode.string code ) ])
-                                |> HttpBuilder.withExpectJson (decodeSingleDrupalEntity Device.Decoder.decode)
+                            HttpBuilder.get (configured.config.backendUrl </> "api/pairing-code" </> code)
+                                |> HttpBuilder.withExpectJson (Json.Decode.field "data" Device.Decoder.decode)
                                 |> HttpBuilder.toTask
 
                         cacheDevice device =

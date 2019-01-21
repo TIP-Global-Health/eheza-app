@@ -37,10 +37,6 @@ viewDeviceStatus language device model =
         Success device ->
             p []
                 [ text <| translate language Translate.Device
-                , text " "
-                , text <| toString device.id
-                , text " "
-                , text <| device.name
                 ]
 
         _ ->
