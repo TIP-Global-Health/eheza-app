@@ -47,15 +47,15 @@
             return cache.match(credentialsUrl);
         }).then(function (response) {
             return response.json();
-        }).then(function (json) {
+        }).then(function (credentials) {
             return db.open().then(function () {
                 return db.nodes.orderBy('vid').last().then(function (last) {
                     return last ? last.vid : 0;
                 }).catch(function () {
                     return 0;
                 }).then(function (baseRevision) {
-                    var token = json.access_token;
-                    var backendUrl = json.backend_url;
+                    var token = credentials.access_token;
+                    var backendUrl = credentials.backend_url;
                     var dbVersion = db.verno;
 
                     var url = backendUrl + '/api/v1.0/sync?base_revision=' + baseRevision + '&access_token=' + token + '&db_version=' + dbVersion;
