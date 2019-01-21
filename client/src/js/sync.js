@@ -68,6 +68,8 @@
                     return fetch(url).then(function (response) {
                         return response.json();
                     }).then (function (json) {
+                        var remaining = 0;
+
                         return db.transaction('rw', db.nodes, db.syncMetadata, function () {
                             var promises = json.data.batch.map(function (item) {
                                 item.vid = parseInt(item.vid);
@@ -77,7 +79,7 @@
                                 return db.nodes.put(item);
                             });
 
-                            var remaining = parseInt(json.data.revision_count) - json.data.batch.length;
+                            remaining = parseInt(json.data.revision_count) - json.data.batch.length;
 
                             var metadata = {
                                 uuid: nodesUuid,
@@ -88,6 +90,13 @@
                             promises.push(db.syncMetadata.put(metadata));
 
                             return Promise.all(promises);
+                        }).then(function () {
+                            // If our transaction commits, we'll see if there
+                            // were any remaining revisions ... if so, we'll
+                            // ask for another sync.
+                            if (remaining > 0) {
+                                registration.sync.register(syncTag);
+                            }
                         });
                     }).catch(function (err) {
                         // Should inspect error.
