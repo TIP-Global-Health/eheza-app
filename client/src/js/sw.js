@@ -10,3 +10,5 @@ var configCache = 'config';
 var configUrlRegex = /\/sw\/config/;
 var credentialsUrlRegex = /\/sw\/config\/device$/;
 var credentialsUrl = '/sw/config/device';
+
+var nodesUuid = "78cf21d1-b3f4-496a-b312-d8ae73041f09";

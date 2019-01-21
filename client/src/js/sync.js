@@ -26,7 +26,12 @@
         // What we're specifying here is a comma-separate list of the fields to
         // index. The first field is the primary key, and the `&` indicates
         // that it should be unique.
-        nodes: '&uuid,type,vid'
+        nodes: '&uuid,type,vid',
+
+        // Metadata that tracks information about the sync process. The uuid is
+        // the UUID of the health center (for the things that we sync by health
+        // center). For the general nodes store, we use a static UUID.
+        syncMetadata: '&uuid'
     });
 
     self.addEventListener('sync', function(event) {
@@ -63,13 +68,24 @@
                     return fetch(url).then(function (response) {
                         return response.json();
                     }).then (function (json) {
-                        return db.transaction('rw', db.nodes, function () {
+                        return db.transaction('rw', db.nodes, db.syncMetadata, function () {
                             var promises = json.data.batch.map(function (item) {
                                 item.vid = parseInt(item.vid);
                                 item.id = parseInt(item.id);
+                                item.timestamp = parseInt(item.timestamp);
 
                                 return db.nodes.put(item);
                             });
+
+                            var remaining = parseInt(json.data.revision_count) - json.data.batch.length;
+
+                            var metadata = {
+                                uuid: nodesUuid,
+                                last_timestamp: parseInt(json.data.last_timestamp),
+                                remaining: remaining
+                            };
+
+                            promises.push(db.syncMetadata.put(metadata));
 
                             return Promise.all(promises);
                         });
