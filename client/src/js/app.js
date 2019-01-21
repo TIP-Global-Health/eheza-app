@@ -43,6 +43,16 @@ var elmApp = Elm.Main.fullscreen({
     activeLanguage : localStorage.getItem('language') || ''
 });
 
+elmApp.ports.trySyncing.subscribe(function () {
+    // This manually kicks off a sync attempt. Normally, we'll manage this
+    // automatically, but it's nice to be able to kick one off directly.
+    navigator.serviceWorker.getRegistration().then(function (reg) {
+        if (reg.active) {
+            reg.active.postMessage('sync');
+        }
+    });
+});
+
 elmApp.ports.cacheCredentials.subscribe(function(params) {
     // The `backendUrl` isn't actually used, for the moment ... we just save
     // the credentials without trying to distinguish amongst backends.

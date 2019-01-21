@@ -328,11 +328,13 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function(callback)
     clientsClaim: true,
     skipWaiting: false,
     importScripts: [
+        'sw.js',
         'bower_components/dexie/dist/dexie.min.js',
         'config.js',
         'lifecycle.js',
         'photos.js',
-        'rollbar.js'
+        'rollbar.js',
+        'sync.js'
     ]
   }, callback);
 });
@@ -347,12 +349,16 @@ gulp.task('pwa:prod', function (callback) {
     staticFileGlobs: precacheProd,
     stripPrefix: rootDir,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
+    clientsClaim: true,
+    skipWaiting: false,
     importScripts: [
+        'sw.js',
         'bower_components/dexie/dist/dexie.min.js',
         'config.js',
         'lifecycle.js',
         'photos.js',
-        'rollbar.js'
+        'rollbar.js',
+        'sync.js'
     ]
   }, callback);
 });

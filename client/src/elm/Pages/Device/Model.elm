@@ -16,3 +16,4 @@ emptyModel =
 type Msg
     = SetCode String
     | HandlePairClicked
+    | TrySyncing

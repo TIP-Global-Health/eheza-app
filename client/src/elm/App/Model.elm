@@ -169,6 +169,7 @@ type Msg
     | SetLanguage Language
     | SetOffline Bool
     | Tick Time
+    | TrySyncing
 
 
 {-| Messages we can only handle if we're logged in.

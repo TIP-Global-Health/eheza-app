@@ -7,4 +7,5 @@ module Device.Model exposing (Device)
 type alias Device =
     { accessToken : String
     , refreshToken : String
+    , backendUrl : String
     }

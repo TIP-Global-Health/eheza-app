@@ -9,4 +9,5 @@ encode device =
     object
         [ ( "access_token", string device.accessToken )
         , ( "refresh_token", string device.refreshToken )
+        , ( "backend_url", string device.backendUrl )
         ]

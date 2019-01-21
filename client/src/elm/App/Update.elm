@@ -83,7 +83,7 @@ init flags =
 
                         fetchCachedDevice =
                             HttpBuilder.get "/sw/config/device"
-                                |> HttpBuilder.withExpectJson Device.Decoder.decode
+                                |> HttpBuilder.withExpectJson (Device.Decoder.decode config.backendUrl)
                                 |> HttpBuilder.toTask
                                 |> RemoteData.fromTask
                                 |> Task.map
@@ -278,7 +278,7 @@ update msg model =
                     let
                         postCode =
                             HttpBuilder.get (configured.config.backendUrl </> "api/pairing-code" </> code)
-                                |> HttpBuilder.withExpectJson (Json.Decode.field "data" Device.Decoder.decode)
+                                |> HttpBuilder.withExpectJson (Json.Decode.field "data" (Device.Decoder.decode configured.config.backendUrl))
                                 |> HttpBuilder.toTask
 
                         cacheDevice device =
@@ -457,6 +457,10 @@ update msg model =
             )
                 |> sequence update extraMsgs
 
+        TrySyncing ->
+            -- Normally handled automatically, but sometimes nice to trigger manually
+            ( model, trySyncing () )
+
 
 {-| Convenience function to process a msg which depends on having a configuration.
 
@@ -522,6 +526,11 @@ subscriptions model =
 {-| Saves credentials provided by `Restful.Login`.
 -}
 port cacheCredentials : ( String, String ) -> Cmd msg
+
+
+{-| Manually kick off a sync event. Normally, handled automatically.
+-}
+port trySyncing : () -> Cmd msg
 
 
 {-| Send Pusher key and cluster to JS.

@@ -35,9 +35,11 @@ viewDeviceStatus : Language -> WebData Device -> Model -> Html Msg
 viewDeviceStatus language device model =
     case device of
         Success device ->
-            p []
-                [ text <| translate language Translate.Device
+            button
+                [ class "ui fluid primary button"
+                , onClick TrySyncing
                 ]
+                [ text <| translate language Translate.TrySyncing ]
 
         _ ->
             viewPairingForm language device model

@@ -298,6 +298,7 @@ type TranslationId
     | Training
     | TrainingSessionCreateSuccessMessage
     | TrainingSessionDeleteSuccessMessage
+    | TrySyncing
     | UbudeheLabel
     | UnableToDownload
     | UnableToUpload
@@ -1455,6 +1456,11 @@ translationSet trans =
 
         TrainingSessionDeleteSuccessMessage ->
             { english = "Training sessions were deleted."
+            , kinyarwanda = Nothing
+            }
+
+        TrySyncing ->
+            { english = "Try syncing with backend"
             , kinyarwanda = Nothing
             }
 

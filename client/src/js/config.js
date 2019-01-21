@@ -23,13 +23,10 @@
 'use strict';
 
 (function () {
-    var cacheName = 'config';
-    var configUrl = /\/sw\/config/;
-
     self.addEventListener('fetch', function (event) {
-        if (configUrl.test(event.request.url)) {
+        if (configUrlRegex.test(event.request.url)) {
             if (event.request.method === 'GET') {
-                var response = caches.open(cacheName).then(function (cache) {
+                var response = caches.open(configCache).then(function (cache) {
                     return cache.match(event.request.url).then(function(response) {
                         if (response) {
                             return response;
@@ -46,7 +43,7 @@
             }
 
             if (event.request.method === 'PUT') {
-                var response = caches.open(cacheName).then(function (cache) {
+                var response = caches.open(configCache).then(function (cache) {
                     return event.request.text().then(function (body) {
                         var cachedResponse = new Response (body, {
                             status: 200,
@@ -62,6 +59,11 @@
                         });
 
                         return cache.put(cachedRequest, cachedResponse).then(function () {
+                            if (credentialsUrlRegex.test(event.request.url)) {
+                                // If we have new credentials, kick off a background sync.
+                                registration.sync.register(syncTag);
+                            }
+
                             return new Response ('', {
                                 status: 201,
                                 statusText: 'Created',
@@ -82,7 +84,7 @@
             }
 
             if (event.request.method === 'DELETE') {
-                var response = caches.open(cacheName).then(function (cache) {
+                var response = caches.open(configCache).then(function (cache) {
                     var cachedRequest = new Request (event.request.url, {
                         method: 'GET'
                     });

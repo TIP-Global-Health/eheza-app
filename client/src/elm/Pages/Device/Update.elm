@@ -18,3 +18,9 @@ update msg model =
             , Cmd.none
             , [ App.Model.TryPairingCode model.code ]
             )
+
+        TrySyncing ->
+            ( model
+            , Cmd.none
+            , [ App.Model.TrySyncing ]
+            )
