@@ -34,32 +34,126 @@
         syncMetadata: '&uuid'
     });
 
+    // Here is a list of possible values for the 'tag` field for our status,
+    // along with other fields to look for.
+    //
+    // The only thing we will automatically retry via background sync is
+    // a NetworkError, since that's the only thing that can reasonably
+    // benefit from an automatic retry. However, the background sync
+    // will only retry so many times.
+    //
+    // Loading {revision, timestamp}
+    // DatabaseError {message, timestamp}
+    // NetworkError {message, timestamp, willRetry}
+    // NoCredentials {timestamp}
+    // BadResponse {timestamp, status, statusText}
+    // BadJson {timestamp}
+    // Success {timestamp}
+
+    // This is for cases where we've scheduled a background sync.
     self.addEventListener('sync', function(event) {
         if (event.tag === syncTag) {
-            return event.waitUntil(trySyncing());
-        }
+            var action = db.open().catch(databaseError).then(function () {
+                return trySyncing();
+            }).then(function (meta) {
+                // We suceeded!
+                meta.status = {
+                    tag: 'Success',
+                    timestamp: Date.now()
+                };
+
+                meta.uuid = nodesUuid;
+
+                if (meta.remaining > 0) {
+                    // Keep going if there are more.
+                    registration.sync.register(syncTag);
+                }
+
+                return db.syncMetadata.put(meta);
+            }, function (err) {
+                // We failed!
+                if (err.tag === 'NetworkError') {
+                    err.willRetry = !event.lastChance;
+                }
+
+                return recordStatus(err).then(function () {
+                    if (err.tag === 'NetworkError') {
+                        return Promise.reject();
+                    } else {
+                        // It's only the NetworkErrors that can be usefully
+                        // retried automatically. So, for other errors, we tell
+                        // background sync that we don't need to try again.
+                        return Promise.resolve();
+                    }
+                });
+            });
+
+            return event.waitUntil(action);
+         }
     });
 
     // This is for cases where we want to manually try a sync right away.
     self.addEventListener('message', function(event) {
         if (event.data === syncTag) {
-            return event.waitUntil(trySyncing());
+            var action = db.open().catch(databaseError).then(function () {
+                return manualSync();
+            });
+
+            return event.waitUntil(action);
         }
     });
 
+    function manualSync() {
+        return trySyncing().then(function (meta) {
+            // We suceeded!
+            meta.status = {
+                tag: 'Success',
+                timestamp: Date.now()
+            };
+
+            meta.uuid = nodesUuid;
+
+            return db.syncMetadata.put(meta).then(function () {
+                if (meta.remaining > 0) {
+                    // Schedule another if the backend says there are more.
+                    return manualSync();
+                } else {
+                    return Promise.resolve();
+                }
+            });
+        }, function (err) {
+            // We failed!
+            if (err.tag === 'NetworkError') {
+                err.willRetry = true;
+                registration.sync.register(syncTag);
+            }
+
+            return recordStatus(err);
+        });
+    }
+
+    function databaseError(err) {
+        return Promise.reject({
+            tag: 'DatabaseError',
+            message: JSON.stringify(err),
+            timestamp: Date.now()
+        });
+    }
+
     function recordStatus(status) {
-        return db.syncMetadata.get(nodesUuid).catch(function () {
-            return Promise.resolve(null);
-        }).then(function (meta) {
+        return db.syncMetadata.get(nodesUuid).then(function (meta) {
             if (!meta) {
                 meta = {
-                    uuid: nodesUuid,
-                    last_timestamp: null,
-                    remaining: null,
+                    uuid: nodesUuid
                 };
             }
 
-            meta.status = status;
+            // For some reason, Dexie seems to add a _promise field to the
+            // status. So, remove it in a copy.
+            var withoutPromise = Object.assign({}, status);
+            delete withoutPromise._promise;
+
+            meta.status = withoutPromise;
 
             return db.syncMetadata.put(meta);
         });
@@ -79,60 +173,63 @@
         });
     }
 
-    function trySyncing() {
-        return getCredentials().then(function (credentials) {
-            return db.open().then(function () {
-                return getLastVid().then(function (baseRevision) {
-                    var token = credentials.access_token;
-                    var backendUrl = credentials.backend_url;
-                    var dbVersion = db.verno;
+    // Resolves with metadata, or rejects with a status message.
+    function trySyncing () {
+        return getCredentials().catch(function (err) {
+            return Promise.reject({
+                tag: 'NoCredentials',
+                timestamp: Date.now()
+            });
+        }).then(function (credentials) {
+            return getLastVid().catch(databaseError).then(function (baseRevision) {
+                var token = credentials.access_token;
+                var backendUrl = credentials.backend_url;
+                var dbVersion = db.verno;
 
-                    var url = backendUrl + '/api/v1.0/sync?base_revision=' + baseRevision + '&access_token=' + token + '&db_version=' + dbVersion;
+                var url = backendUrl + '/api/v1.0/sync?base_revision=' + baseRevision + '&access_token=' + token + '&db_version=' + dbVersion;
 
-                    return recordStatus({
-                        type: 'Loading',
-                        revision: baseRevision
-                    }).then(function () {
-                        return fetchFromBackend(url);
-                    });
+                return recordStatus({
+                    tag: 'Loading',
+                    revision: baseRevision,
+                    timestamp: Date.now()
+                }).catch(databaseError).then(function () {
+                    return fetchFromBackend(url, credentials);
                 });
             });
         });
     }
 
-    function fetchFromBackend (url) {
+    function fetchFromBackend (url, credentials) {
         return fetch(url).catch(function (err) {
-            return recordStatus({
-                type: 'NetworkError',
-                message: err.message
-            }).then(function () {
-                // Schedule an attempt to try this again.
-                registration.sync.register(syncTag);
-
-                // We reject, so that the sync mechanism will retry
-                // after a backoff.
-                return Promise.reject(err);
+            return Promise.reject({
+                tag: 'NetworkError',
+                message: err.message,
+                timestamp: Date.now()
             });
         }).then(function (response) {
-            return handleResponse(response);
+            return handleResponse(response, credentials);
         });
     }
 
-    function handleResponse (response) {
+    function handleResponse (response, credentials) {
         if (!response.ok) {
-            return recordStatus({
-                type: 'BadResponse',
-                status: response.status,
-                statusText: response.statusText
-            }).then(function () {
-                // We don't want to retry these automatically, so
-                // we'll actually indicate success here. The client
-                // app will display the failure and allow for the
-                // user to take some action.
-                return Promise.resolve();
-            });
+            if (response.status === 401) {
+                return tryRefreshToken(credentials);
+            } else {
+                return Promise.reject({
+                    tag: 'BadResponse',
+                    status: response.status,
+                    statusText: response.statusText,
+                    timestamp: Date.now()
+                });
+            }
         } else {
-            return response.json().then (function (json) {
+            return response.json().catch(function (err) {
+               return Promise.reject({
+                    tag: 'BadJson',
+                    timestamp: Date.now()
+                });
+            }).then (function (json) {
                 var remaining = parseInt(json.data.revision_count) - json.data.batch.length;
 
                 return db.transaction('rw', db.nodes, db.syncMetadata, function () {
@@ -144,33 +241,73 @@
                         return db.nodes.put(item);
                     });
 
-
-                    var metadata = {
-                        uuid: nodesUuid,
+                    return Promise.all(promises);
+                }).catch(databaseError).then(function () {
+                    return Promise.resolve({
                         last_timestamp: parseInt(json.data.last_timestamp),
                         last_contact: Date.now(),
-                        remaining: remaining,
-                        status: {
-                            type: 'Success'
-                        }
-                    };
-
-                    promises.push(db.syncMetadata.put(metadata));
-
-                    return Promise.all(promises);
-                }).then(function () {
-                    // If our transaction commits, we'll see if there
-                    // were any remaining revisions ... if so, we'll
-                    // ask for another sync.
-                    if (remaining > 0) {
-                        registration.sync.register(syncTag);
-                    }
-
-                    // And indicate success!
-                    return Promise.resolve();
+                        remaining: remaining
+                    });
                 });
             });
         }
+    }
+
+    function tryRefreshToken(credentials) {
+        var refreshUrl = credentials.backend_url + '/api/refresh-token/' + credentials.refresh_token;
+
+        return fetch(refreshUrl).catch (function (err) {
+            return Promise.reject({
+                tag: 'NetworkError',
+                message: err.message,
+                timestamp: Date.now()
+            });
+        }).then(function (response) {
+            if (!response.ok) {
+                return Promise.reject({
+                    tag: 'BadResponse',
+                    status: response.status,
+                    statusText: response.statusText,
+                    timestamp: Date.now()
+                });
+            } else {
+                return response.json().catch(function (err) {
+                    return Promise.reject({
+                        tag: 'BadJson',
+                        timestamp: Date.now()
+                    });
+                }).then (function (json) {
+                    return storeCredentials(credentials, json).catch(databaseError).then(function () {
+                        return trySyncing();
+                    });
+                });
+            }
+        });
+    }
+
+    function storeCredentials (credentials, json) {
+        var body = JSON.stringify({
+            backend_url: credentials.backend_url,
+            access_token: json.access_token,
+            refresh_token: json.refresh_token
+        });
+
+        return caches.open(configCache).then(function (cache) {
+            var cachedResponse = new Response (body, {
+                status: 200,
+                statusText: 'OK',
+                headers: {
+                    'Content-Length': body.length,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            var cachedRequest = new Request (credentialsUrl, {
+                method: 'GET'
+            });
+
+            return cache.put(cachedRequest, cachedResponse);
+        });
     }
 
 })();
