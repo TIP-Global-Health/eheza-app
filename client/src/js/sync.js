@@ -90,7 +90,8 @@
                     var url = backendUrl + '/api/v1.0/sync?base_revision=' + baseRevision + '&access_token=' + token + '&db_version=' + dbVersion;
 
                     return recordStatus({
-                        type: 'Loading'
+                        type: 'Loading',
+                        revision: baseRevision
                     }).then(function () {
                         return fetch(url).catch(function (err) {
                             return recordStatus({
