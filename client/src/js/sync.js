@@ -43,7 +43,7 @@
     // This is for cases where we want to manually try a sync right away.
     self.addEventListener('message', function(event) {
         if (event.data === syncTag) {
-            trySyncing();
+            return event.waitUntil(trySyncing());
         }
     });
 
