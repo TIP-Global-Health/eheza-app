@@ -8,17 +8,13 @@
 /**
  * Class HedleyRestfulActivityBase.
  */
-abstract class HedleyRestfulActivityBase extends HedleyRestfulEntityBaseNode {
+abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
 
   /**
    * {@inheritdoc}
    */
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
-
-    $public_fields['type'] = [
-      'callback' => 'static::getType',
-    ];
 
     $public_fields['date_measured'] = [
       'property' => 'field_date_measured',
