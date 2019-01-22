@@ -47,60 +47,111 @@
         }
     });
 
-    function trySyncing() {
+    function recordError(err) {
+        return db.syncMetadata.get(nodesUuid).catch(function () {
+            return Promise.resolve(null);
+        }).then(function (meta) {
+            if (!meta) {
+                meta = {
+                    uuid: nodesUuid,
+                    last_timestamp: null,
+                    remaining: null,
+                    error: null
+                };
+            }
+
+            meta.error = err;
+
+            return db.syncMetadata.put(meta);
+        });
+    }
+
+    function getLastVid() {
+        return db.nodes.orderBy('vid').last().then(function (last) {
+            return last ? last.vid : 0;
+        });
+    }
+
+    function getCredentials() {
         return caches.open(configCache).then(function (cache) {
             return cache.match(credentialsUrl);
         }).then(function (response) {
             return response.json();
-        }).then(function (credentials) {
+        });
+    }
+
+    function trySyncing() {
+        return getCredentials().then(function (credentials) {
             return db.open().then(function () {
-                return db.nodes.orderBy('vid').last().then(function (last) {
-                    return last ? last.vid : 0;
-                }).catch(function () {
-                    return 0;
-                }).then(function (baseRevision) {
+                return getLastVid().then(function (baseRevision) {
                     var token = credentials.access_token;
                     var backendUrl = credentials.backend_url;
                     var dbVersion = db.verno;
 
                     var url = backendUrl + '/api/v1.0/sync?base_revision=' + baseRevision + '&access_token=' + token + '&db_version=' + dbVersion;
 
-                    return fetch(url).then(function (response) {
-                        return response.json();
-                    }).then (function (json) {
-                        var remaining = 0;
-
-                        return db.transaction('rw', db.nodes, db.syncMetadata, function () {
-                            var promises = json.data.batch.map(function (item) {
-                                item.vid = parseInt(item.vid);
-                                item.id = parseInt(item.id);
-                                item.timestamp = parseInt(item.timestamp);
-
-                                return db.nodes.put(item);
-                            });
-
-                            remaining = parseInt(json.data.revision_count) - json.data.batch.length;
-
-                            var metadata = {
-                                uuid: nodesUuid,
-                                last_timestamp: parseInt(json.data.last_timestamp),
-                                remaining: remaining
-                            };
-
-                            promises.push(db.syncMetadata.put(metadata));
-
-                            return Promise.all(promises);
+                    return fetch(url).catch(function (err) {
+                        return recordError({
+                            type: 'NetworkError',
+                            message: err.message
                         }).then(function () {
-                            // If our transaction commits, we'll see if there
-                            // were any remaining revisions ... if so, we'll
-                            // ask for another sync.
-                            if (remaining > 0) {
-                                registration.sync.register(syncTag);
-                            }
+                            // Schedule an attempt to try this again.
+                            registration.sync.register(syncTag);
+
+                            // We reject, so that the sync mechanism will retry
+                            // after a backoff.
+                            return Promise.reject(err);
                         });
-                    }).catch(function (err) {
-                        // Should inspect error.
-                        return Promise.reject(err);
+                    }).then(function (response) {
+                        if (!response.ok) {
+                            return recordError({
+                                type: 'BadResponse',
+                                status: response.status,
+                                statusText: response.statusText
+                            }).then(function () {
+                                // We don't want to retry these automatically, so
+                                // we'll actually indicate success here. The client
+                                // app will display the failure and allow for the
+                                // user to take some action.
+                                return Promise.resolve();
+                            });
+                        } else {
+                            return response.json().then (function (json) {
+                                var remaining = parseInt(json.data.revision_count) - json.data.batch.length;
+
+                                return db.transaction('rw', db.nodes, db.syncMetadata, function () {
+                                    var promises = json.data.batch.map(function (item) {
+                                        item.vid = parseInt(item.vid);
+                                        item.id = parseInt(item.id);
+                                        item.timestamp = parseInt(item.timestamp);
+
+                                        return db.nodes.put(item);
+                                    });
+
+
+                                    var metadata = {
+                                        uuid: nodesUuid,
+                                        last_timestamp: parseInt(json.data.last_timestamp),
+                                        remaining: remaining,
+                                        error: null
+                                    };
+
+                                    promises.push(db.syncMetadata.put(metadata));
+
+                                    return Promise.all(promises);
+                                }).then(function () {
+                                    // If our transaction commits, we'll see if there
+                                    // were any remaining revisions ... if so, we'll
+                                    // ask for another sync.
+                                    if (remaining > 0) {
+                                        registration.sync.register(syncTag);
+                                    }
+
+                                    // And indicate success!
+                                    return Promise.resolve();
+                                });
+                            });
+                        }
                     });
                 });
             });
