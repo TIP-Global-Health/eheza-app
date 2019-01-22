@@ -148,6 +148,7 @@
                     var metadata = {
                         uuid: nodesUuid,
                         last_timestamp: parseInt(json.data.last_timestamp),
+                        last_contact: Date.now(),
                         remaining: remaining,
                         status: {
                             type: 'Success'
