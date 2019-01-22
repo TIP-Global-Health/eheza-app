@@ -80,10 +80,10 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $account = $this->drupalCreateUser();
 
     $role = user_role_load_by_name('administrator');
-    user_multiple_role_edit([$account->uid], 'add_role', $role->rid);
+    $account->roles[$role->rid] = $role->name;
+    user_save($account);
 
-    // Load the user to update the roles.
-    return user_load($account->uid);
+    return $account;
   }
 
   /**
@@ -99,14 +99,14 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $account = $this->drupalCreateUser();
 
     $role = user_role_load_by_name('nurse');
-    user_multiple_role_edit([$account->uid], 'add_role', $role->rid);
+    $account->roles[$role->rid] = $role->name;
+    user_save($account);
 
     $wrapper = entity_metadata_wrapper('user', $account);
     $wrapper->field_clinics->set([$clinic_id]);
     $wrapper->save();
 
-    // Load the user to update the roles.
-    return user_load($account->uid);
+    return $account;
   }
 
   /**
