@@ -23,14 +23,4 @@ class HedleyRestfulMuacs extends HedleyRestfulChildActivityBase {
     return $public_fields;
   }
 
-  /**
-   * Return the type of the activity.
-   *
-   * @return string
-   *   The type name.
-   */
-  protected static function getType() {
-    return 'muac';
-  }
-
 }

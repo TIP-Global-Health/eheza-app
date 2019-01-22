@@ -8,17 +8,13 @@
 /**
  * Class HedleyRestfulSessions.
  */
-class HedleyRestfulSessions extends HedleyRestfulEntityBaseNode {
+class HedleyRestfulSessions extends HedleyRestfulSyncBase {
 
   /**
    * {@inheritdoc}
    */
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
-
-    $public_fields['type'] = [
-      'callback' => 'static::getType',
-    ];
 
     $public_fields['closed'] = [
       'property' => 'field_closed',
@@ -90,16 +86,6 @@ class HedleyRestfulSessions extends HedleyRestfulEntityBaseNode {
     }
 
     return $query;
-  }
-
-  /**
-   * Return the type of the entity.
-   *
-   * @return string
-   *   The type name.
-   */
-  protected static function getType() {
-    return 'session';
   }
 
   /**
