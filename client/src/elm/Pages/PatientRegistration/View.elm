@@ -8,7 +8,7 @@ import Backend.Measurement.Model exposing (PhotoValue)
 import Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..))
 import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), toStringEducationLevel)
 import Backend.Patient.Model exposing (Gender(..), Ubudehe(..))
-import Form
+import Form exposing (Form)
 import Form.Error
 import Form.Input
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -19,7 +19,16 @@ import Html.Events exposing (..)
 import Json.Decode
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.PatientRegistration.Model exposing (DialogState(..), Model, Msg(..), RegistrationStep(..))
+import Pages.PatientRegistration.Model
+    exposing
+        ( DialogState(..)
+        , Model
+        , Msg(..)
+        , ParticipantsData
+        , RegistrationForm
+        , RegistrationPhase(..)
+        , RegistrationStep(..)
+        )
 import Pages.PatientRegistration.Utils exposing (getFormFieldValue, getRegistratingParticipant)
 import Participant.Model exposing (ParticipantType(..))
 import Time.Date
@@ -36,7 +45,6 @@ view language currentDate user backend cache model =
         , div
             [ class "ui full segment blue" ]
             [ viewBody language currentDate user backend cache model
-            , viewActions language currentDate user backend cache model
             ]
         , viewModal <| viewDialog language model.dialogState
         ]
@@ -61,228 +69,120 @@ viewHeader language currentDate user backend cache model =
 
 viewBody : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
 viewBody language currentDate user backend cache model =
-    div [ class "content" ]
-        [ div [ class "wrap-list" ]
-            [ viewRegistrationForm language currentDate user backend cache model ]
-        ]
-
-
-viewActions : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
-viewActions language currentDate user backend cache model =
     let
-        leftButton =
-            let
-                action =
-                    case model.registrationStep of
-                        First ->
-                            SetActivePage LoginPage
+        body =
+            case model.registrationPhase of
+                ParticipantSearch ->
+                    viewSearchForm language currentDate user backend cache model.participantsData
 
-                        Second ->
-                            SetRegistrationStep First
-
-                        Third ->
-                            SetRegistrationStep Second
-            in
-            button
-                [ class "ui primary button"
-                , onClick action
-                ]
-                [ text <| "< " ++ translate language Translate.Back ]
-
-        rightButton =
-            let
-                dayOfBirth =
-                    Form.getFieldAsString "dayOfBirth" model.registrationForm
-
-                monthOfBirth =
-                    Form.getFieldAsString "monthOfBirth" model.registrationForm
-
-                yearOfBirth =
-                    Form.getFieldAsString "yearOfBirth" model.registrationForm
-
-                maybeRegistratingParticipant =
-                    getRegistratingParticipant currentDate
-                        (getFormFieldValue dayOfBirth)
-                        (getFormFieldValue monthOfBirth)
-                        (getFormFieldValue yearOfBirth)
-
-                ( label, action, disabled ) =
-                    case model.registrationStep of
-                        First ->
-                            let
-                                validatedFields =
-                                    [ Form.getFieldAsString "nationalIdNumber" model.registrationForm ]
-
-                                requiredFields =
-                                    [ Form.getFieldAsString "firstName" model.registrationForm
-                                    , Form.getFieldAsString "secondName" model.registrationForm
-                                    , dayOfBirth
-                                    , monthOfBirth
-                                    , yearOfBirth
-                                    ]
-                                        ++ (case maybeRegistratingParticipant of
-                                                Just (MotherParticipant _) ->
-                                                    [ Form.getFieldAsString "levelOfEducation" model.registrationForm
-                                                    , Form.getFieldAsString "hivStatus" model.registrationForm
-                                                    ]
-
-                                                Just (ChildParticipant _) ->
-                                                    [ Form.getFieldAsString "modeOfDelivery" model.registrationForm ]
-
-                                                Nothing ->
-                                                    []
-                                           )
-                            in
-                            ( Translate.Next
-                            , SetRegistrationStep Second
-                            , not (List.all isFormFieldSet requiredFields && List.all isFormFieldValid validatedFields)
-                            )
-
-                        Second ->
-                            let
-                                ( requiredFields, validatedFields ) =
-                                    let
-                                        requiredCommon =
-                                            [ Form.getFieldAsString "familyUbudehe" model.registrationForm
-                                            , Form.getFieldAsString "district" model.registrationForm
-                                            , Form.getFieldAsString "sector" model.registrationForm
-                                            , Form.getFieldAsString "cell" model.registrationForm
-                                            , Form.getFieldAsString "village" model.registrationForm
-                                            ]
-                                    in
-                                    case maybeRegistratingParticipant of
-                                        Just (MotherParticipant _) ->
-                                            ( requiredCommon ++ [ Form.getFieldAsString "numberOfChildren" model.registrationForm ]
-                                            , []
-                                            )
-
-                                        Just (ChildParticipant _) ->
-                                            ( requiredCommon ++ [ Form.getFieldAsString "motherName" model.registrationForm, Form.getFieldAsString "fatherName" model.registrationForm ]
-                                            , [ Form.getFieldAsString "motherNationalId" model.registrationForm
-                                              , Form.getFieldAsString "fatherNationalId" model.registrationForm
-                                              , Form.getFieldAsString "caregiverNationalId" model.registrationForm
-                                              ]
-                                            )
-
-                                        Nothing ->
-                                            ( requiredCommon, [] )
-                            in
-                            ( Translate.Next
-                            , SetRegistrationStep Third
-                            , not (List.all isFormFieldSet requiredFields && List.all isFormFieldValid validatedFields)
-                            )
-
-                        Third ->
-                            ( Translate.Submit
-                            , SetDialogState <| Just ConfirmSubmision
-                            , False
-                            )
-            in
-            button
-                [ classList
-                    [ ( "ui primary button", True )
-                    , ( "disabled", disabled )
-                    ]
-                , onClick action
-                ]
-                [ text <| translate language label ++ " >" ]
+                ParticipantRegistration step ->
+                    viewRegistrationForm language currentDate user backend cache step model.registrationForm model.photo
     in
-    div [ class "registration-form actions" ]
-        [ leftButton, rightButton ]
+    div [ class "content" ]
+        [ body ]
 
 
-viewRegistrationForm : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
-viewRegistrationForm language currentDate user backend cache model =
+viewRegistrationForm :
+    Language
+    -> NominalDate
+    -> User
+    -> ModelBackend
+    -> ModelCached
+    -> RegistrationStep
+    -> Form () RegistrationForm
+    -> Maybe PhotoValue
+    -> Html Msg
+viewRegistrationForm language currentDate user backend cache step registrationForm photo =
     let
         -- FORM FIELDS --
         firstName =
-            Form.getFieldAsString "firstName" model.registrationForm
+            Form.getFieldAsString "firstName" registrationForm
 
         middleName =
-            Form.getFieldAsString "middleName" model.registrationForm
+            Form.getFieldAsString "middleName" registrationForm
 
         secondName =
-            Form.getFieldAsString "secondName" model.registrationForm
+            Form.getFieldAsString "secondName" registrationForm
 
         nationalIdNumber =
-            Form.getFieldAsString "nationalIdNumber" model.registrationForm
+            Form.getFieldAsString "nationalIdNumber" registrationForm
 
         dayOfBirth =
-            Form.getFieldAsString "dayOfBirth" model.registrationForm
+            Form.getFieldAsString "dayOfBirth" registrationForm
 
         monthOfBirth =
-            Form.getFieldAsString "monthOfBirth" model.registrationForm
+            Form.getFieldAsString "monthOfBirth" registrationForm
 
         yearOfBirth =
-            Form.getFieldAsString "yearOfBirth" model.registrationForm
+            Form.getFieldAsString "yearOfBirth" registrationForm
 
         isDateOfBirthEstimated =
-            Form.getFieldAsBool "isDateOfBirthEstimated" model.registrationForm
+            Form.getFieldAsBool "isDateOfBirthEstimated" registrationForm
 
         gender =
-            Form.getFieldAsString "gender" model.registrationForm
+            Form.getFieldAsString "gender" registrationForm
 
         levelOfEducation =
-            Form.getFieldAsString "levelOfEducation" model.registrationForm
+            Form.getFieldAsString "levelOfEducation" registrationForm
 
         profession =
-            Form.getFieldAsString "profession" model.registrationForm
+            Form.getFieldAsString "profession" registrationForm
 
         maritalStatus =
-            Form.getFieldAsString "maritalStatus" model.registrationForm
+            Form.getFieldAsString "maritalStatus" registrationForm
 
         hivStatus =
-            Form.getFieldAsString "hivStatus" model.registrationForm
+            Form.getFieldAsString "hivStatus" registrationForm
 
         modeOfDelivery =
-            Form.getFieldAsString "modeOfDelivery" model.registrationForm
+            Form.getFieldAsString "modeOfDelivery" registrationForm
 
         -- END STEP 1 FIELDS --
         familyUbudehe =
-            Form.getFieldAsString "familyUbudehe" model.registrationForm
+            Form.getFieldAsString "familyUbudehe" registrationForm
 
         householdSize =
-            Form.getFieldAsString "householdSize" model.registrationForm
+            Form.getFieldAsString "householdSize" registrationForm
 
         numberOfChildren =
-            Form.getFieldAsString "numberOfChildren" model.registrationForm
+            Form.getFieldAsString "numberOfChildren" registrationForm
 
         motherName =
-            Form.getFieldAsString "motherName" model.registrationForm
+            Form.getFieldAsString "motherName" registrationForm
 
         motherNationalId =
-            Form.getFieldAsString "motherNationalId" model.registrationForm
+            Form.getFieldAsString "motherNationalId" registrationForm
 
         fatherName =
-            Form.getFieldAsString "fatherName" model.registrationForm
+            Form.getFieldAsString "fatherName" registrationForm
 
         fatherNationalId =
-            Form.getFieldAsString "fatherNationalId" model.registrationForm
+            Form.getFieldAsString "fatherNationalId" registrationForm
 
         caregiverName =
-            Form.getFieldAsString "caregiverName" model.registrationForm
+            Form.getFieldAsString "caregiverName" registrationForm
 
         caregiverNationalId =
-            Form.getFieldAsString "caregiverNationalId" model.registrationForm
+            Form.getFieldAsString "caregiverNationalId" registrationForm
 
         district =
-            Form.getFieldAsString "district" model.registrationForm
+            Form.getFieldAsString "district" registrationForm
 
         sector =
-            Form.getFieldAsString "sector" model.registrationForm
+            Form.getFieldAsString "sector" registrationForm
 
         cell =
-            Form.getFieldAsString "cell" model.registrationForm
+            Form.getFieldAsString "cell" registrationForm
 
         village =
-            Form.getFieldAsString "village" model.registrationForm
+            Form.getFieldAsString "village" registrationForm
 
         telephoneNumber =
-            Form.getFieldAsString "telephoneNumber" model.registrationForm
+            Form.getFieldAsString "telephoneNumber" registrationForm
 
         -- END STEP 2 FIELDS --
         healthCenterName =
-            Form.getFieldAsString "healthCenterName" model.registrationForm
+            Form.getFieldAsString "healthCenterName" registrationForm
 
         -- END STEP 3 FIELDS --
         maybeRegistratingParticipant =
@@ -295,7 +195,7 @@ viewRegistrationForm language currentDate user backend cache model =
             ( "", "" )
 
         formContent =
-            case model.registrationStep of
+            case step of
                 First ->
                     let
                         staticComponents =
@@ -477,7 +377,7 @@ viewRegistrationForm language currentDate user backend cache model =
                     in
                     [ h3 [ class "ui header" ]
                         [ text <| translate language Translate.PatientDemographicInformation ++ ":" ]
-                    , viewPhoto language model.photo
+                    , viewPhoto language photo
                     , Html.map MsgRegistrationForm <|
                         fieldset [ class "registration-form" ] <|
                             staticComponents
@@ -613,9 +513,121 @@ viewRegistrationForm language currentDate user backend cache model =
                         fieldset [ class "registration-form registrating-health-center" ]
                             [ viewHealthCenterName ]
                     ]
+
+        leftButton =
+            let
+                action =
+                    case step of
+                        First ->
+                            SetActivePage LoginPage
+
+                        Second ->
+                            SetRegistrationPhase (ParticipantRegistration First)
+
+                        Third ->
+                            SetRegistrationPhase (ParticipantRegistration Second)
+            in
+            button
+                [ class "ui primary button"
+                , onClick action
+                ]
+                [ text <| "< " ++ translate language Translate.Back ]
+
+        rightButton =
+            let
+                maybeRegistratingParticipant =
+                    getRegistratingParticipant currentDate
+                        (getFormFieldValue dayOfBirth)
+                        (getFormFieldValue monthOfBirth)
+                        (getFormFieldValue yearOfBirth)
+
+                ( label, action, disabled ) =
+                    case step of
+                        First ->
+                            let
+                                validatedFields =
+                                    [ nationalIdNumber ]
+
+                                requiredFields =
+                                    [ firstName, secondName, dayOfBirth, monthOfBirth, yearOfBirth ]
+                                        ++ (case maybeRegistratingParticipant of
+                                                Just (MotherParticipant _) ->
+                                                    [ levelOfEducation
+                                                    , hivStatus
+                                                    ]
+
+                                                Just (ChildParticipant _) ->
+                                                    [ modeOfDelivery ]
+
+                                                Nothing ->
+                                                    []
+                                           )
+                            in
+                            ( Translate.Next
+                            , SetRegistrationPhase (ParticipantRegistration Second)
+                            , not (List.all isFormFieldSet requiredFields && List.all isFormFieldValid validatedFields)
+                            )
+
+                        Second ->
+                            let
+                                ( requiredFields, validatedFields ) =
+                                    let
+                                        requiredCommon =
+                                            [ familyUbudehe, district, sector, cell, village ]
+                                    in
+                                    case maybeRegistratingParticipant of
+                                        Just (MotherParticipant _) ->
+                                            ( requiredCommon ++ [ numberOfChildren ]
+                                            , []
+                                            )
+
+                                        Just (ChildParticipant _) ->
+                                            ( requiredCommon ++ [ motherName, fatherName ]
+                                            , [ motherNationalId, fatherNationalId, caregiverNationalId ]
+                                            )
+
+                                        Nothing ->
+                                            ( requiredCommon, [] )
+                            in
+                            ( Translate.Next
+                            , SetRegistrationPhase (ParticipantRegistration Third)
+                            , not (List.all isFormFieldSet requiredFields && List.all isFormFieldValid validatedFields)
+                            )
+
+                        Third ->
+                            ( Translate.Submit
+                            , SetDialogState <| Just ConfirmSubmision
+                            , False
+                            )
+            in
+            button
+                [ classList
+                    [ ( "ui primary button", True )
+                    , ( "disabled", disabled )
+                    ]
+                , onClick action
+                ]
+                [ text <| translate language label ++ " >" ]
     in
-    div [ class "ui form registration" ]
-        formContent
+    div [ class "wrap-list" ]
+        [ div [ class "ui form registration" ]
+            formContent
+        , div [ class "registration-form actions" ]
+            [ leftButton, rightButton ]
+        ]
+
+
+viewSearchForm :
+    Language
+    -> NominalDate
+    -> User
+    -> ModelBackend
+    -> ModelCached
+    -> ParticipantsData
+    -> Html Msg
+viewSearchForm language currentDate user backend cache participantsData =
+    div [ class "wrap-list" ]
+        [ text "search form" ]
 
 
 viewDialog : Language -> Maybe DialogState -> Maybe (Html Msg)

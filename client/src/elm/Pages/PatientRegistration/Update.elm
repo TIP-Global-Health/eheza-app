@@ -160,8 +160,8 @@ update currentTime msg model =
         SetDialogState state ->
             ( { model | dialogState = state }, Cmd.none, [] )
 
-        SetRegistrationStep step ->
-            ( { model | registrationStep = step }, Cmd.none, [] )
+        SetRegistrationPhase phase ->
+            ( { model | registrationPhase = phase }, Cmd.none, [] )
 
         Submit ->
             let

@@ -2,7 +2,9 @@ module Pages.PatientRegistration.Model exposing
     ( DialogState(..)
     , Model
     , Msg(..)
+    , ParticipantsData
     , RegistrationForm
+    , RegistrationPhase(..)
     , RegistrationStep(..)
     , emptyModel
     , initModel
@@ -25,7 +27,7 @@ import Uuid exposing (Uuid)
 type alias Model =
     { photo : Maybe PhotoValue
     , registrationForm : Form () RegistrationForm
-    , registrationStep : RegistrationStep
+    , registrationPhase : RegistrationPhase
     , participantsData : ParticipantsData
     , dialogState : Maybe DialogState
     }
@@ -41,7 +43,7 @@ emptyModel : Model
 emptyModel =
     { photo = Nothing
     , registrationForm = Form.initial [] validateRegistrationForm
-    , registrationStep = First
+    , registrationPhase = ParticipantSearch
     , participantsData = emptyParticipantsData
     , dialogState = Nothing
     }
@@ -59,6 +61,11 @@ emptyParticipantsData =
     }
 
 
+type RegistrationPhase
+    = ParticipantSearch
+    | ParticipantRegistration RegistrationStep
+
+
 type RegistrationStep
     = First
     | Second
@@ -72,7 +79,7 @@ type Msg
     | Reset
     | SetActivePage Page
     | SetDialogState (Maybe DialogState)
-    | SetRegistrationStep RegistrationStep
+    | SetRegistrationPhase RegistrationPhase
     | Submit
 
 
