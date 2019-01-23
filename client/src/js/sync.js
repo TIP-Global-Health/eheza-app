@@ -1,6 +1,5 @@
 /*
- * This is a service worker script which sw-precache will import,
- * to handle sending reports to Rollbar while offline.
+ * This is a service worker script which sw-precache will import.
  *
  * This gets 'included' in service-worker.js via an `importScripts`.
  * Note that it runs **in that context**, so we create a separate
