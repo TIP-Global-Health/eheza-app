@@ -9,31 +9,6 @@
 'use strict';
 
 (function () {
-    var db = new Dexie('sync');
-
-    // Note that this code only configures ... the actual database upgrade will
-    // only take place once the db is opened, which only happens once we're
-    // the active service worker.
-    db.version(1).stores({
-        // It's not entirely clear whether it will be more convenient to split
-        // up the content-types into their own stores, or keep them together.
-        // Intuitively, it seems as though it will be more convenient to keep
-        // them together, but we can revisit that if necessary. IndexedDB is
-        // fundamentally a NoSQL-type database, so each item need not have
-        // the same shape. And, there are no SQL-type joins, so using many
-        // stores is inconvenient.
-        //
-        // What we're specifying here is a comma-separate list of the fields to
-        // index. The first field is the primary key, and the `&` indicates
-        // that it should be unique.
-        nodes: '&uuid,type,vid',
-
-        // Metadata that tracks information about the sync process. The uuid is
-        // the UUID of the health center (for the things that we sync by health
-        // center). For the general nodes store, we use a static UUID.
-        syncMetadata: '&uuid'
-    });
-
     // Here is a list of possible values for the 'tag` field for our status,
     // along with other fields to look for.
     //
@@ -53,7 +28,7 @@
     // This is for cases where we've scheduled a background sync.
     self.addEventListener('sync', function(event) {
         if (event.tag === syncTag) {
-            var action = db.open().catch(databaseError).then(function () {
+            var action = dbSync.open().catch(databaseError).then(function () {
                 return trySyncing();
             }).then(function (meta) {
                 // We suceeded!
@@ -69,7 +44,7 @@
                     registration.sync.register(syncTag);
                 }
 
-                return db.syncMetadata.put(meta);
+                return dbSync.syncMetadata.put(meta);
             }, function (err) {
                 // We failed!
                 if (err.tag === 'NetworkError') {
@@ -95,7 +70,7 @@
     // This is for cases where we want to manually try a sync right away.
     self.addEventListener('message', function(event) {
         if (event.data === syncTag) {
-            var action = db.open().catch(databaseError).then(function () {
+            var action = dbSync.open().catch(databaseError).then(function () {
                 return manualSync();
             });
 
@@ -113,7 +88,7 @@
 
             meta.uuid = nodesUuid;
 
-            return db.syncMetadata.put(meta).then(function () {
+            return dbSync.syncMetadata.put(meta).then(function () {
                 if (meta.remaining > 0) {
                     // Schedule another if the backend says there are more.
                     return manualSync();
@@ -141,7 +116,7 @@
     }
 
     function recordStatus(status) {
-        return db.syncMetadata.get(nodesUuid).then(function (meta) {
+        return dbSync.syncMetadata.get(nodesUuid).then(function (meta) {
             if (!meta) {
                 meta = {
                     uuid: nodesUuid
@@ -155,12 +130,12 @@
 
             meta.status = withoutPromise;
 
-            return db.syncMetadata.put(meta);
+            return dbSync.syncMetadata.put(meta);
         });
     }
 
     function getLastVid() {
-        return db.nodes.orderBy('vid').last().then(function (last) {
+        return dbSync.nodes.orderBy('vid').last().then(function (last) {
             return last ? last.vid : 0;
         });
     }
@@ -184,7 +159,7 @@
             return getLastVid().catch(databaseError).then(function (baseRevision) {
                 var token = credentials.access_token;
                 var backendUrl = credentials.backend_url;
-                var dbVersion = db.verno;
+                var dbVersion = dbSync.verno;
 
                 var url = backendUrl + '/api/v1.0/sync?base_revision=' + baseRevision + '&access_token=' + token + '&db_version=' + dbVersion;
 
@@ -232,13 +207,13 @@
             }).then (function (json) {
                 var remaining = parseInt(json.data.revision_count) - json.data.batch.length;
 
-                return db.transaction('rw', db.nodes, db.syncMetadata, function () {
+                return dbSync.transaction('rw', dbSync.nodes, dbSync.syncMetadata, function () {
                     var promises = json.data.batch.map(function (item) {
                         item.vid = parseInt(item.vid);
                         item.id = parseInt(item.id);
                         item.timestamp = parseInt(item.timestamp);
 
-                        return db.nodes.put(item);
+                        return dbSync.nodes.put(item);
                     });
 
                     return Promise.all(promises);
