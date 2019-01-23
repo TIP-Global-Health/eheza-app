@@ -154,6 +154,13 @@ update currentTime msg model =
             ( initModel model, Cmd.none, [] )
                 |> sequenceExtra (update currentTime) [ SetActivePage Pages.Page.LoginPage ]
 
+        SearchForParticipant searchString ->
+            let
+                log =
+                    Debug.log "searchString" searchString
+            in
+            ( model, Cmd.none, [] )
+
         SetActivePage page ->
             ( model, Cmd.none, [ App.Model.SetActivePage page ] )
 

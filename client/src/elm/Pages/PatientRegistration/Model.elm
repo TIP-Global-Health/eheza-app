@@ -43,7 +43,7 @@ emptyModel : Model
 emptyModel =
     { photo = Nothing
     , registrationForm = Form.initial [] validateRegistrationForm
-    , registrationPhase = ParticipantSearch
+    , registrationPhase = ParticipantSearch ""
     , participantsData = emptyParticipantsData
     , dialogState = Nothing
     }
@@ -62,7 +62,7 @@ emptyParticipantsData =
 
 
 type RegistrationPhase
-    = ParticipantSearch
+    = ParticipantSearch String
     | ParticipantRegistration RegistrationStep
 
 
@@ -77,6 +77,7 @@ type Msg
     | DropZoneComplete DropZoneFile
     | MsgRegistrationForm Form.Msg
     | Reset
+    | SearchForParticipant String
     | SetActivePage Page
     | SetDialogState (Maybe DialogState)
     | SetRegistrationPhase RegistrationPhase

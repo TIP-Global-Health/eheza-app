@@ -72,8 +72,8 @@ viewBody language currentDate user backend cache model =
     let
         body =
             case model.registrationPhase of
-                ParticipantSearch ->
-                    viewSearchForm language currentDate user backend cache model.participantsData
+                ParticipantSearch searchString ->
+                    viewSearchForm language currentDate user backend cache model.participantsData searchString
 
                 ParticipantRegistration step ->
                     viewRegistrationForm language currentDate user backend cache step model.registrationForm model.photo
@@ -624,10 +624,57 @@ viewSearchForm :
     -> ModelBackend
     -> ModelCached
     -> ParticipantsData
+    -> String
     -> Html Msg
-viewSearchForm language currentDate user backend cache participantsData =
+viewSearchForm language currentDate user backend cache participantsData searchString =
     div [ class "wrap-list" ]
-        [ text "search form" ]
+        [ h3 [ class "ui header" ]
+            [ text "Patient Information:" ]
+        , span [] [ text "Search to see if patient already exists in E-Heza." ]
+        , h3 [ class "ui header" ]
+            [ text "Participant Directory:" ]
+        , Html.form
+            [ onSubmit <| SearchForParticipant searchString
+            , action "javascript:void(0);"
+            ]
+            [ div
+                [ class "ui search form" ]
+                [ div []
+                    [ input
+                        [ placeholder "Enter patient name here"
+
+                        -- , placeholder <| translateLogin Translate.Username
+                        , type_ "text"
+
+                        -- , name "username"
+                        , onInput <| SetRegistrationPhase << ParticipantSearch
+                        , value searchString
+                        , autofocus True
+                        ]
+                        []
+
+                    -- , i [ class "icon icon-username" ] []
+                    ]
+                ]
+            , button
+                [ class "ui fluid primary button"
+
+                -- , disabled disableSubmitButton
+                , type_ "submit"
+                ]
+                [ text "Search" ]
+
+            -- [ span
+            --     [ hidden <| not isLoading ]
+            --     [ spinner ]
+            -- , span
+            --     [ hidden isLoading ]
+            --     [ text <| translateLogin Translate.SignIn ]
+            -- ]
+            ]
+
+        -- [ text <| translate language Translate.PatientDemographicInformation ++ ":" ]
+        ]
 
 
 viewDialog : Language -> Maybe DialogState -> Maybe (Html Msg)
