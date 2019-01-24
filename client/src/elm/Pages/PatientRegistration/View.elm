@@ -8,6 +8,7 @@ import Backend.Measurement.Model exposing (PhotoValue)
 import Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..))
 import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), toStringEducationLevel)
 import Backend.Patient.Model exposing (Gender(..), Ubudehe(..))
+import EveryDict
 import Form exposing (Form)
 import Form.Error
 import Form.Input
@@ -17,6 +18,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
+import Maybe.Extra exposing (unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRegistration.Model
@@ -73,7 +75,7 @@ viewBody language currentDate user backend cache model =
         body =
             case model.registrationPhase of
                 ParticipantSearch searchString ->
-                    viewSearchForm language currentDate user backend cache model.participantsData searchString
+                    viewSearchForm language currentDate user backend cache model.participantsData searchString model.submittedSearch
 
                 ParticipantRegistration step ->
                     viewRegistrationForm language currentDate user backend cache step model.registrationForm model.photo
@@ -624,54 +626,98 @@ viewSearchForm :
     -> ModelBackend
     -> ModelCached
     -> ParticipantsData
-    -> String
+    -> Maybe String
+    -> Maybe String
     -> Html Msg
-viewSearchForm language currentDate user backend cache participantsData searchString =
+viewSearchForm language currentDate user backend cache participantsData searchString submittedSearch =
+    let
+        ( disableSubmitButton, searchValue ) =
+            case searchString of
+                Just string ->
+                    ( String.length string < 3, string )
+
+                Nothing ->
+                    ( True, "" )
+
+        searchForm =
+            Html.form
+                [ onSubmit <| SearchForParticipant searchValue
+                , action "javascript:void(0);"
+                ]
+                [ div
+                    [ class "ui search form" ]
+                    [ div []
+                        [ input
+                            [ placeholder "Enter patient name here"
+
+                            -- , placeholder <| translateLogin Translate.Username
+                            , type_ "text"
+                            , onInput <| SetRegistrationPhase << ParticipantSearch << Just
+                            , value searchValue
+                            , autofocus True
+                            ]
+                            []
+
+                        -- , i [ class "icon icon-username" ] []
+                        ]
+                    ]
+                , button
+                    [ class "ui fluid primary button"
+                    , disabled disableSubmitButton
+                    , type_ "submit"
+                    ]
+                    [ text "Search" ]
+
+                -- [ span
+                --     [ hidden <| not isLoading ]
+                --     [ spinner ]
+                -- , span
+                --     [ hidden isLoading ]
+                --     [ text <| translateLogin Translate.SignIn ]
+                -- ]
+                ]
+
+        ( searchResultsSummary, searchResultsPatients ) =
+            submittedSearch
+                |> unwrap
+                    ( span [] [ text "There are 0 participants that match your search." ]
+                    , emptyNode
+                    )
+                    (\searchValue ->
+                        let
+                            mothers =
+                                participantsData.mothersToRegister
+                                    |> EveryDict.toList
+                                    |> List.filter
+                                        (\( id, mother ) ->
+                                            String.contains searchValue mother.name
+                                        )
+
+                            children =
+                                participantsData.childrenToRegister
+                                    |> EveryDict.toList
+                                    |> List.filter
+                                        (\( id, child ) ->
+                                            String.contains searchValue child.name
+                                        )
+
+                            total =
+                                List.length mothers + List.length children
+                        in
+                        ( span [] [ text <| "There are " ++ toString total ++ " participants that match your search." ]
+                        , emptyNode
+                        )
+                    )
+    in
     div [ class "wrap-list" ]
         [ h3 [ class "ui header" ]
             [ text "Patient Information:" ]
         , span [] [ text "Search to see if patient already exists in E-Heza." ]
         , h3 [ class "ui header" ]
             [ text "Participant Directory:" ]
-        , Html.form
-            [ onSubmit <| SearchForParticipant searchString
-            , action "javascript:void(0);"
-            ]
-            [ div
-                [ class "ui search form" ]
-                [ div []
-                    [ input
-                        [ placeholder "Enter patient name here"
-
-                        -- , placeholder <| translateLogin Translate.Username
-                        , type_ "text"
-
-                        -- , name "username"
-                        , onInput <| SetRegistrationPhase << ParticipantSearch
-                        , value searchString
-                        , autofocus True
-                        ]
-                        []
-
-                    -- , i [ class "icon icon-username" ] []
-                    ]
-                ]
-            , button
-                [ class "ui fluid primary button"
-
-                -- , disabled disableSubmitButton
-                , type_ "submit"
-                ]
-                [ text "Search" ]
-
-            -- [ span
-            --     [ hidden <| not isLoading ]
-            --     [ spinner ]
-            -- , span
-            --     [ hidden isLoading ]
-            --     [ text <| translateLogin Translate.SignIn ]
-            -- ]
-            ]
+        , searchForm
+        , searchResultsSummary
+        , searchResultsPatients
 
         -- [ text <| translate language Translate.PatientDemographicInformation ++ ":" ]
         ]

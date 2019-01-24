@@ -14,13 +14,16 @@ module Pages.PatientRegistration.Model exposing
 import Backend.Child.Model exposing (Child)
 import Backend.Measurement.Model exposing (PhotoValue)
 import Backend.Mother.Model exposing (Mother)
+import Backend.Patient.Model exposing (Gender(..))
 import EveryDict exposing (EveryDict)
 import Form exposing (Form)
 import Form.Error exposing (ErrorValue(..))
 import Form.Validate exposing (Validation, andMap, andThen, bool, emptyString, field, format, mapError, oneOf, string, succeed)
 import Measurement.Model exposing (DropZoneFile)
 import Pages.Page exposing (Page)
+import Pages.PatientRegistration.Utils exposing (generateUuid)
 import Regex exposing (Regex)
+import Time.Date exposing (date)
 import Uuid exposing (Uuid)
 
 
@@ -29,6 +32,7 @@ type alias Model =
     , registrationForm : Form () RegistrationForm
     , registrationPhase : RegistrationPhase
     , participantsData : ParticipantsData
+    , submittedSearch : Maybe String
     , dialogState : Maybe DialogState
     }
 
@@ -43,8 +47,9 @@ emptyModel : Model
 emptyModel =
     { photo = Nothing
     , registrationForm = Form.initial [] validateRegistrationForm
-    , registrationPhase = ParticipantSearch ""
-    , participantsData = emptyParticipantsData
+    , registrationPhase = ParticipantSearch Nothing
+    , participantsData = dummyParticipantsData
+    , submittedSearch = Nothing
     , dialogState = Nothing
     }
 
@@ -52,6 +57,13 @@ emptyModel =
 initModel : Model -> Model
 initModel model =
     { emptyModel | participantsData = model.participantsData }
+
+
+dummyParticipantsData : ParticipantsData
+dummyParticipantsData =
+    { mothersToRegister = EveryDict.fromList [ ( generateUuid 11, mother1 ), ( generateUuid 12, mother2 ), ( generateUuid 13, mother3 ), ( generateUuid 14, mother4 ) ]
+    , childrenToRegister = EveryDict.fromList [ ( generateUuid 21, child1 ), ( generateUuid 22, child2 ), ( generateUuid 23, child3 ), ( generateUuid 24, child4 ) ]
+    }
 
 
 emptyParticipantsData : ParticipantsData
@@ -62,7 +74,7 @@ emptyParticipantsData =
 
 
 type RegistrationPhase
-    = ParticipantSearch String
+    = ParticipantSearch (Maybe String)
     | ParticipantRegistration RegistrationStep
 
 
@@ -169,3 +181,227 @@ validateAlphanumeric =
 alphanumericPattern : Regex
 alphanumericPattern =
     Regex.regex "^[a-zA-Z0-9]*$"
+
+
+child1 =
+    Child "child1 child1"
+        "child1"
+        Nothing
+        "child1"
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        (date 2016 1 1)
+        False
+        Male
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+
+
+child2 =
+    Child "child2 child2"
+        "child2"
+        Nothing
+        "child2"
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        (date 2014 2 2)
+        True
+        Female
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+
+
+child3 =
+    Child "child3 child3"
+        "child3"
+        Nothing
+        "child3"
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        (date 2013 3 3)
+        True
+        Male
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+
+
+child4 =
+    Child "child4 child4"
+        "child4"
+        Nothing
+        "child4"
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        (date 2011 4 4)
+        False
+        Female
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+
+
+mother1 =
+    Mother "mother1 mother1"
+        "mother1"
+        Nothing
+        "mother1"
+        Nothing
+        Nothing
+        []
+        (date 2001 1 1)
+        False
+        Female
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+
+
+mother2 =
+    Mother "mother2 mother2"
+        "mother2"
+        Nothing
+        "mother2"
+        Nothing
+        Nothing
+        []
+        (date 2002 2 2)
+        True
+        Female
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+
+
+mother3 =
+    Mother "mother3 mother3"
+        "mother3"
+        Nothing
+        "mother3"
+        Nothing
+        Nothing
+        []
+        (date 2003 3 3)
+        True
+        Female
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+
+
+mother4 =
+    Mother "mother4 mother4"
+        "mother4"
+        Nothing
+        "mother4"
+        Nothing
+        Nothing
+        []
+        (date 2004 4 4)
+        False
+        Male
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
