@@ -2,6 +2,7 @@ module Backend.Mother.Decoder exposing (decodeMother)
 
 import Backend.Mother.Model exposing (..)
 import Backend.Patient.Decoder exposing (decodeGender, decodeUbudehe)
+import Backend.Patient.Model exposing (Gender(..))
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, at, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
@@ -29,11 +30,11 @@ decodeMother =
                 , succeed Nothing
                 ]
             )
-        |> required "children" (oneOf [ list decodeEntityId, decodeNullAsEmptyArray ])
+        |> optional "children" (oneOf [ list decodeEntityId, decodeNullAsEmptyArray ]) []
         |> required "date_birth" decodeYYYYMMDD
         -- Is birth date estimated
         |> hardcoded False
-        |> required "gender" decodeGender
+        |> optional "gender" decodeGender Female
         |> optional "education_level" (nullable decodeEducationLevel) Nothing
         |> hardcoded Nothing
         |> hardcoded Nothing

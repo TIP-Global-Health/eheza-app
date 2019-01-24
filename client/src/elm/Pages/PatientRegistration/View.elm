@@ -37,7 +37,7 @@ import Time.Date
 import Translate exposing (Language(..), TranslationId, translate)
 import User.Model exposing (User)
 import Utils.Form exposing (isFormFieldSet, isFormFieldValid)
-import Utils.Html exposing (script, viewModal)
+import Utils.Html exposing (script, thumbnailImage, viewModal)
 
 
 view : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
@@ -703,9 +703,49 @@ viewSearchForm language currentDate user backend cache participantsData searchSt
 
                             total =
                                 List.length mothers + List.length children
+
+                            viewParticipant participantType participant =
+                                div
+                                    [ class "search-results-item" ]
+                                    [ div
+                                        [ class "ui image" ]
+                                        [ thumbnailImage participantType participant.avatarUrl participant.name 60 60 ]
+                                    , div
+                                        [ class "content" ]
+                                        [ h2
+                                            [ class "ui header" ]
+                                            [ text participant.name ]
+                                        , p []
+                                            [ label [] [ text "DOB: " ]
+                                            , span [] [ text "" ]
+                                            ]
+                                        , showMaybe <|
+                                            Maybe.map
+                                                (\village ->
+                                                    p []
+                                                        [ label [] [ text "Village: " ]
+                                                        , span [] [ text village ]
+                                                        ]
+                                                )
+                                                participant.village
+                                        , p []
+                                            [ label [] [ text "Health Center: " ]
+                                            , span [] [ text "" ]
+                                            ]
+
+                                        -- , viewFamilyLinks motherParticipant language motherId session
+                                        ]
+                                    ]
                         in
                         ( span [] [ text <| "There are " ++ toString total ++ " participants that match your search." ]
-                        , emptyNode
+                        , div [ class "search-results-participantrs" ] <|
+                            ((mothers
+                                |> List.map (\( _, mother ) -> viewParticipant "mother" mother)
+                             )
+                                ++ (children
+                                        |> List.map (\( _, child ) -> viewParticipant "child" child)
+                                   )
+                            )
                         )
                     )
     in

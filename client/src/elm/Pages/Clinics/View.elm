@@ -297,6 +297,10 @@ viewDownloadProgress language request photos validSession =
                         ]
 
             Failure err ->
+                let
+                    log =
+                        Debug.log "err" err
+                in
                 -- TODO: We could do something with the err ...
                 Just <|
                     div

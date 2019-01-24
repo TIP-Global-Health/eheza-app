@@ -183,6 +183,7 @@ alphanumericPattern =
     Regex.regex "^[a-zA-Z0-9]*$"
 
 
+child1 : Child
 child1 =
     Child "child1 child1"
         "child1"
@@ -212,6 +213,7 @@ child1 =
         Nothing
 
 
+child2 : Child
 child2 =
     Child "child2 child2"
         "child2"
@@ -241,6 +243,7 @@ child2 =
         Nothing
 
 
+child3 : Child
 child3 =
     Child "child3 child3"
         "child3"
@@ -270,6 +273,7 @@ child3 =
         Nothing
 
 
+child4 : Child
 child4 =
     Child "child4 child4"
         "child4"
@@ -299,6 +303,7 @@ child4 =
         Nothing
 
 
+mother1 : Mother
 mother1 =
     Mother "mother1 mother1"
         "mother1"
@@ -326,6 +331,7 @@ mother1 =
         Nothing
 
 
+mother2 : Mother
 mother2 =
     Mother "mother2 mother2"
         "mother2"
@@ -353,6 +359,7 @@ mother2 =
         Nothing
 
 
+mother3 : Mother
 mother3 =
     Mother "mother3 mother3"
         "mother3"
@@ -380,6 +387,7 @@ mother3 =
         Nothing
 
 
+mother4 : Mother
 mother4 =
     Mother "mother4 mother4"
         "mother4"
