@@ -164,6 +164,15 @@ update msg model =
             )
                 |> sequence update extraMsgs
 
+        MsgIndexedDb subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    Backend.Update.updateIndexedDb subMsg model.indexedDb
+            in
+            ( { model | indexedDb = subModel }
+            , Cmd.map MsgIndexedDb subCmd
+            )
+
         MsgLoggedIn loggedInMsg ->
             updateLoggedIn
                 (\credentials data ->

@@ -1,4 +1,4 @@
-port module Backend.Update exposing (fetchEditableSession, subscriptions, updateBackend, updateCache)
+port module Backend.Update exposing (fetchEditableSession, subscriptions, updateBackend, updateCache, updateIndexedDb)
 
 {-| This could perhaps be distributed one level down, to
 `Backend.Session.Update`, `Backend.Clinic.Update` etc. Or, perhaps it is nicer
@@ -11,6 +11,8 @@ import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
+import Backend.HealthCenter.Decoder exposing (decodeHealthCenter)
+import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Measurement.Decoder exposing (decodeMeasurementEdits)
 import Backend.Measurement.Encoder exposing (encodeMeasurementEdits)
 import Backend.Measurement.Model exposing (Edit(..))
@@ -32,15 +34,32 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Http exposing (Error)
 import HttpBuilder
-import Json.Decode exposing (field, succeed)
+import Json.Decode exposing (Decoder, field, succeed)
 import Json.Encode exposing (Value, object)
 import Json.Encode.Extra
 import Maybe.Extra exposing (toList)
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityId, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityId, endpoint, fromEntityId, toCmd, toEntityId, withParamsEncoder, withValueEncoder, withoutDecoder)
+import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityId, decodeEntityUuid, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityId, endpoint, fromEntityId, fromEntityUuid, toCmd, toEntityId, toEntityUuid, withKeyEncoder, withParamsEncoder, withValueEncoder, withoutDecoder)
 import Rollbar
 import Utils.WebData exposing (resetError, resetSuccess)
+
+
+{-| Construct an endpoint that talks to our local service worker in terms of UUIDs.
+-}
+swEndpoint : String -> Decoder value -> ReadOnlyEndPoint Error (EntityUuid a) value p
+swEndpoint path decodeValue =
+    let
+        decodeKey =
+            Json.Decode.map toEntityUuid (field "uuid" Json.Decode.string)
+    in
+    endpoint path decodeKey decodeValue drupalBackend
+        |> withKeyEncoder (fromEntityUuid >> toString)
+
+
+healthCenterEndpoint : ReadOnlyEndPoint Error HealthCenterUuid HealthCenter ()
+healthCenterEndpoint =
+    swEndpoint "nodes/health_center" decodeHealthCenter
 
 
 clinicEndpoint : ReadWriteEndPoint Error ClinicId Clinic Clinic ()
@@ -86,6 +105,25 @@ offlineSessionEndpoint : ReadWriteEndPoint Error SessionId OfflineSession Offlin
 offlineSessionEndpoint =
     drupalEndpoint "api/offline_sessions" decodeOfflineSession
         |> withValueEncoder (object << encodeOfflineSession)
+
+
+updateIndexedDb : MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb )
+updateIndexedDb msg model =
+    let
+        sw =
+            applyBackendUrl "/sw"
+    in
+    case msg of
+        FetchHealthCenters ->
+            ( { model | healthCenters = Loading }
+            , sw.select healthCenterEndpoint ()
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedHealthCenters)
+            )
+
+        HandleFetchedHealthCenters data ->
+            ( { model | healthCenters = data }
+            , Cmd.none
+            )
 
 
 updateBackend : BackendUrl -> String -> MsgBackend -> ModelBackend -> ( ModelBackend, Cmd MsgBackend, List MsgCached )

@@ -328,10 +328,11 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function(callback)
     clientsClaim: true,
     skipWaiting: false,
     importScripts: [
-        'sw.js',
         'bower_components/dexie/dist/dexie.min.js',
+        'sw.js',
         'config.js',
         'lifecycle.js',
+        'nodes.js',
         'photos.js',
         'rollbar.js',
         'sync.js'
@@ -352,10 +353,11 @@ gulp.task('pwa:prod', function (callback) {
     clientsClaim: true,
     skipWaiting: false,
     importScripts: [
-        'sw.js',
         'bower_components/dexie/dist/dexie.min.js',
+        'sw.js',
         'config.js',
         'lifecycle.js',
+        'nodes.js',
         'photos.js',
         'rollbar.js',
         'sync.js'

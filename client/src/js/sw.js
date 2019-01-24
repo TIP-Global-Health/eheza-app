@@ -6,8 +6,10 @@
 
 // Various constants that get used in multiple places.
 var syncTag = 'sync';
+
 var configCache = 'config';
 var configUrlRegex = /\/sw\/config/;
+
 var credentialsUrlRegex = /\/sw\/config\/device$/;
 var credentialsUrl = '/sw/config/device';
 

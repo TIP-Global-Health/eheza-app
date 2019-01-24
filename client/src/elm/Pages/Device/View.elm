@@ -1,6 +1,10 @@
 module Pages.Device.View exposing (view)
 
+import Backend.Entities exposing (..)
+import Backend.HealthCenter.Model exposing (HealthCenter)
+import Backend.Model exposing (ModelIndexedDb)
 import Device.Model exposing (..)
+import EveryDictList
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -9,14 +13,14 @@ import Pages.Device.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner)
-import Utils.WebData exposing (viewError)
+import Utils.WebData exposing (viewError, viewOrFetch)
 
 
 {-| We call this if we have an active service worker. If the device is authorized,
 we show its status. Otherwise, we show a UI that allows for authorization.
 -}
-view : Language -> WebData Device -> Model -> Html Msg
-view language device model =
+view : Language -> WebData Device -> ModelIndexedDb -> Model -> Html Msg
+view language device db model =
     div [ class "wrap wrap-alt-2" ]
         [ div
             [ class "ui basic head segment" ]
@@ -26,23 +30,50 @@ view language device model =
             ]
         , div
             [ class "ui segment" ]
-            [ viewDeviceStatus language device model
+            [ viewDeviceStatus language device db model
             ]
         ]
 
 
-viewDeviceStatus : Language -> WebData Device -> Model -> Html Msg
-viewDeviceStatus language device model =
+viewDeviceStatus : Language -> WebData Device -> ModelIndexedDb -> Model -> Html Msg
+viewDeviceStatus language device db model =
     case device of
         Success device ->
-            button
-                [ class "ui fluid primary button"
-                , onClick TrySyncing
+            div []
+                [ button
+                    [ class "ui fluid primary button"
+                    , onClick TrySyncing
+                    ]
+                    [ text <| translate language Translate.TrySyncing ]
+                , viewHealthCenters language db
                 ]
-                [ text <| translate language Translate.TrySyncing ]
 
         _ ->
             viewPairingForm language device model
+
+
+viewHealthCenters : Language -> ModelIndexedDb -> Html Msg
+viewHealthCenters language db =
+    case db.healthCenters of
+        NotAsked ->
+            spinner
+
+        Loading ->
+            spinner
+
+        Failure err ->
+            viewError language err
+
+        Success data ->
+            data
+                |> EveryDictList.map viewHealthCenter
+                |> EveryDictList.values
+                |> ul []
+
+
+viewHealthCenter : HealthCenterUuid -> HealthCenter -> Html Msg
+viewHealthCenter uuid model =
+    li [] [ text model.name ]
 
 
 viewPairingForm : Language -> WebData Device -> Model -> Html Msg

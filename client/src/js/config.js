@@ -49,7 +49,6 @@
                             status: 200,
                             statusText: 'OK',
                             headers: {
-                                'Content-Length': body.length,
                                 'Content-Type': 'application/json'
                             }
                         });

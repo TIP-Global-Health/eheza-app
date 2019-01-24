@@ -106,7 +106,7 @@ viewConfiguredModel model configured =
     else
         case model.activePage of
             DevicePage ->
-                Pages.Device.View.view model.language configured.device configured.devicePage
+                Pages.Device.View.view model.language configured.device model.indexedDb configured.devicePage
                     |> Html.map MsgPageDevice
 
             LoginPage ->
@@ -173,7 +173,7 @@ viewEditableSession model configured =
                     -- until they are able to relogin.
                     case model.activePage of
                         DevicePage ->
-                            Pages.Device.View.view model.language configured.device configured.devicePage
+                            Pages.Device.View.view model.language configured.device model.indexedDb configured.devicePage
                                 |> Html.map MsgPageDevice
 
                         LoginPage ->

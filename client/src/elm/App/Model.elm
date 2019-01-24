@@ -46,6 +46,10 @@ type alias Model =
     -- least for the moment.
     , cache : Backend.Model.ModelCached
 
+    -- If we end up doing some client-side access control, this would probably
+    -- move behind that structure.
+    , indexedDb : Backend.Model.ModelIndexedDb
+
     -- TODO: This doesn't really belong here ... we shouldn't have this unless
     -- we have a session ... but I've done enough restructuring for now!
     , sessionPages : Pages.Model.SessionPages
@@ -154,6 +158,7 @@ In any event, that will need some thought at some point.
 -}
 type Msg
     = MsgCache Backend.Model.MsgCached
+    | MsgIndexedDb Backend.Model.MsgIndexedDb
     | MsgPageDevice Pages.Device.Model.Msg
     | MsgLoggedIn MsgLoggedIn
     | MsgLogin (Restful.Login.Msg User)
@@ -194,6 +199,7 @@ emptyModel flags =
     -- sensible anyway.
     { activePage = LoginPage
     , cache = Backend.Model.emptyModelCached
+    , indexedDb = Backend.Model.emptyModelIndexedDb
     , configuration = NotAsked
 
     -- We start at 1970, which might be nice to avoid, but probably more

@@ -1,4 +1,4 @@
-module Backend.Model exposing (CachedSessionError(..), ModelBackend, ModelCached, MsgBackend(..), MsgCached(..), TrainingSessionAction(..), TrainingSessionRequest, emptyModelBackend, emptyModelCached)
+module Backend.Model exposing (CachedSessionError(..), ModelBackend, ModelCached, ModelIndexedDb, MsgBackend(..), MsgCached(..), MsgIndexedDb(..), TrainingSessionAction(..), TrainingSessionRequest, emptyModelBackend, emptyModelCached, emptyModelIndexedDb)
 
 {-| The `Backend` hierarchy is for code that represents entities from the
 backend. It is reponsible for fetching them, saving them, etc.
@@ -19,6 +19,7 @@ in the UI.
 
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
+import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Measurement.Model exposing (MeasurementEdits, Photo)
 import Backend.Session.Model exposing (EditableSession, MsgEditableSession, OfflineSession, Session)
 import CacheStorage.Model
@@ -117,6 +118,25 @@ type MsgBackend
     | ResetUploadEditsRequest
     | UploadEdits SessionId MeasurementEdits
     | UploadPhoto Photo
+
+
+{-| This tracks data we fetch from IndexedDB via the service worker. Gradually, we'll
+move things here from ModelBackend and ModelCached.
+-}
+type alias ModelIndexedDb =
+    { healthCenters : WebData (EveryDictList HealthCenterUuid HealthCenter)
+    }
+
+
+emptyModelIndexedDb : ModelIndexedDb
+emptyModelIndexedDb =
+    { healthCenters = NotAsked
+    }
+
+
+type MsgIndexedDb
+    = FetchHealthCenters
+    | HandleFetchedHealthCenters (WebData (EveryDictList HealthCenterUuid HealthCenter))
 
 
 {-| This models things which we cache locally ... so, like `ModelBackend`, but
