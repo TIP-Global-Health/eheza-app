@@ -142,6 +142,9 @@ type MsgIndexedDb
     | FetchSyncData
     | HandleFetchedHealthCenters (WebData (EveryDictList HealthCenterUuid HealthCenter))
     | HandleFetchedSyncData (WebData (EveryDictList HealthCenterUuid SyncData))
+    | SaveSyncData HealthCenterUuid SyncData
+    | DeleteSyncData HealthCenterUuid
+    | IgnoreResponse
 
 
 {-| This models things which we cache locally ... so, like `ModelBackend`, but

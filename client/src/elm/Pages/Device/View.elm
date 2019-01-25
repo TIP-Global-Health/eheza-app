@@ -141,7 +141,7 @@ viewHealthCenter language db uuid model =
                                     [ text <| toString data
                                     , button
                                         [ class "ui button"
-                                        , onClick (SetSyncing uuid True)
+                                        , onClick (SetSyncing uuid False)
                                         ]
                                         [ text <| translate language Translate.StopSyncing ]
                                     ]
@@ -149,7 +149,7 @@ viewHealthCenter language db uuid model =
                             Nothing ->
                                 button
                                     [ class "ui button"
-                                    , onClick (SetSyncing uuid False)
+                                    , onClick (SetSyncing uuid True)
                                     ]
                                     [ text <| translate language Translate.StartSyncing ]
                     )

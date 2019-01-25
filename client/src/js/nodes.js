@@ -40,8 +40,74 @@
                     return event.respondWith(index(url, type));
                 }
             }
+
+            if (event.request.method === 'DELETE') {
+                if (uuid) {
+                    return event.respondWith(deleteNode(url, type, uuid));
+                }
+            }
+
+            if (event.request.method === 'PUT') {
+                if (uuid) {
+                    return event.respondWith(putNode(event.request, type, uuid));
+                }
+            }
         }
     });
+
+    function deleteNode (url, type, uuid) {
+        return dbSync.open().catch(databaseError).then(function () {
+            if (type === 'syncmetadata') {
+                // For the syncmetadata type, we actually delete
+                return dbSync.syncMetadata.delete(uuid).catch(databaseError).then(function () {
+                    var response = new Response(null, {
+                        status: 204,
+                        statusText: 'Deleted'
+                    });
+
+                    return Promise.resolve(response);
+                });
+            } else {
+                // Otherwise, we set the status to unpublished
+                return dbSync.nodes.update(uuid, {status: 0}).catch(databaseError).then(function (updated) {
+                    var response = new Response(null, {
+                        status: 204,
+                        statusText: 'Deleted'
+                    });
+
+                    return Promise.resolve(response);
+                });
+            }
+        }).catch(sendErrorResponses);
+    }
+
+    function putNode (request, type, uuid) {
+        return dbSync.open().catch(databaseError).then(function () {
+            var table = dbSync.nodes;
+
+            // For the syncmetadata type, we use the syncMetadata table instead
+            if (type === 'syncmetadata') {
+                table = dbSync.syncMetadata;
+            }
+
+            return request.json().catch(jsonError).then(function (json) {
+                json.uuid = uuid;
+                json.type = type;
+
+                return table.put(json).catch(databaseError).then(function () {
+                    var response = new Response(JSON.stringify(json), {
+                        status: 200,
+                        statusText: 'OK',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    return Promise.resolve(response);
+                });
+            });
+        }).catch(sendErrorResponses);
+    }
 
     function view (url, type, uuid) {
         return dbSync.open().catch(databaseError).then(function () {
@@ -141,6 +207,15 @@
         var response = new Response(JSON.stringify(err), {
             status: 500,
             statusText: 'Database Error'
+        });
+
+        return Promise.reject(response);
+    }
+
+    function jsonError (err) {
+        var response = new Response(JSON.stringify(err), {
+            status: 400,
+            statusText: 'Bad JSON'
         });
 
         return Promise.reject(response);

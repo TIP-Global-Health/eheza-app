@@ -1,4 +1,4 @@
-module Backend.SyncData.Model exposing (SyncAttempt(..), SyncData, SyncError(..), SyncStatus)
+module Backend.SyncData.Model exposing (SyncAttempt(..), SyncData, SyncError(..), SyncStatus, emptySyncData)
 
 import Backend.Entities exposing (..)
 import Date exposing (Date)
@@ -7,6 +7,13 @@ import Date exposing (Date)
 type alias SyncData =
     { status : Maybe SyncStatus
     , attempt : SyncAttempt
+    }
+
+
+emptySyncData : SyncData
+emptySyncData =
+    { status = Nothing
+    , attempt = NotAsked
     }
 
 

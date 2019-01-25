@@ -23,6 +23,7 @@ import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSess
 import Backend.Session.Model exposing (EditableSession, MsgEditableSession(..), OfflineSession, Session)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData, getPhotoUrls, makeEditableSession, mapChildEdits, mapMotherEdits, setPhotoFileId)
 import Backend.SyncData.Decoder exposing (decodeSyncData)
+import Backend.SyncData.Encoder exposing (encodeSyncData)
 import Backend.SyncData.Model exposing (SyncData)
 import Backend.Utils exposing (withEditableSession)
 import CacheStorage.Model exposing (cachePhotos, clearCachedPhotos)
@@ -56,7 +57,7 @@ swEndpoint path decodeValue =
             Json.Decode.map toEntityUuid (field "uuid" Json.Decode.string)
     in
     endpoint path decodeKey decodeValue drupalBackend
-        |> withKeyEncoder (fromEntityUuid >> toString)
+        |> withKeyEncoder fromEntityUuid
 
 
 healthCenterEndpoint : ReadOnlyEndPoint Error HealthCenterUuid HealthCenter ()
@@ -64,9 +65,10 @@ healthCenterEndpoint =
     swEndpoint "nodes/health_center" decodeHealthCenter
 
 
-syncDataEndpoint : ReadOnlyEndPoint Error HealthCenterUuid SyncData ()
+syncDataEndpoint : ReadWriteEndPoint Error HealthCenterUuid SyncData SyncData ()
 syncDataEndpoint =
     swEndpoint "nodes/syncmetadata" decodeSyncData
+        |> withValueEncoder encodeSyncData
 
 
 clinicEndpoint : ReadWriteEndPoint Error ClinicId Clinic Clinic ()
@@ -142,6 +144,22 @@ updateIndexedDb msg model =
             ( { model | syncData = data }
             , Cmd.none
             )
+
+        SaveSyncData uuid data ->
+            ( model
+            , sw.put syncDataEndpoint uuid data
+                |> withoutDecoder
+                |> toCmd (always IgnoreResponse)
+            )
+
+        DeleteSyncData uuid ->
+            ( model
+            , sw.delete syncDataEndpoint uuid
+                |> toCmd (always IgnoreResponse)
+            )
+
+        IgnoreResponse ->
+            ( model, Cmd.none )
 
 
 updateBackend : BackendUrl -> String -> MsgBackend -> ModelBackend -> ( ModelBackend, Cmd MsgBackend, List MsgCached )
