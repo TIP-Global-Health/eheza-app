@@ -1,11 +1,12 @@
 module Pages.Device.View exposing (view)
 
+import App.Model
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Model exposing (ModelIndexedDb)
 import Device.Model exposing (..)
 import EveryDictList
-import Gizra.Html exposing (emptyNode)
+import Gizra.Html exposing (emptyNode, showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -19,8 +20,8 @@ import Utils.WebData exposing (viewError, viewOrFetch)
 {-| We call this if we have an active service worker. If the device is authorized,
 we show its status. Otherwise, we show a UI that allows for authorization.
 -}
-view : Language -> WebData Device -> ModelIndexedDb -> Model -> Html Msg
-view language device db model =
+view : Language -> WebData Device -> App.Model.Model -> Model -> Html Msg
+view language device app model =
     div [ class "wrap wrap-alt-2" ]
         [ div
             [ class "ui basic head segment" ]
@@ -30,13 +31,13 @@ view language device db model =
             ]
         , div
             [ class "ui segment" ]
-            [ viewDeviceStatus language device db model
+            [ viewDeviceStatus language device app model
             ]
         ]
 
 
-viewDeviceStatus : Language -> WebData Device -> ModelIndexedDb -> Model -> Html Msg
-viewDeviceStatus language device db model =
+viewDeviceStatus : Language -> WebData Device -> App.Model.Model -> Model -> Html Msg
+viewDeviceStatus language device app model =
     case device of
         Success device ->
             div []
@@ -45,11 +46,23 @@ viewDeviceStatus language device db model =
                     , onClick TrySyncing
                     ]
                     [ text <| translate language Translate.TrySyncing ]
-                , viewHealthCenters language db
+                , viewStorageStatus language app
+                , viewHealthCenters language app.indexedDb
                 ]
 
         _ ->
             viewPairingForm language device model
+
+
+viewStorageStatus : Language -> App.Model.Model -> Html Msg
+viewStorageStatus language app =
+    app.persistentStorage
+        |> Maybe.map
+            (\persistent ->
+                div []
+                    [ text <| translate language <| Translate.PersistentStorage persistent ]
+            )
+        |> showMaybe
 
 
 viewHealthCenters : Language -> ModelIndexedDb -> Html Msg

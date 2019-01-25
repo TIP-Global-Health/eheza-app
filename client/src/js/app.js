@@ -43,6 +43,11 @@ var elmApp = Elm.Main.fullscreen({
     activeLanguage : localStorage.getItem('language') || ''
 });
 
+// Request persistent storage, and report whether it was granted.
+navigator.storage.persist().then(function (granted) {
+    elmApp.ports.persistentStorage.send(granted);
+});
+
 elmApp.ports.trySyncing.subscribe(function () {
     // This manually kicks off a sync attempt. Normally, we'll manage this
     // automatically, but it's nice to be able to kick one off directly.

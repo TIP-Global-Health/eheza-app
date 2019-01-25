@@ -441,6 +441,11 @@ update msg model =
             , setLanguage <| languageToCode language
             )
 
+        SetPersistentStorage data ->
+            ( { model | persistentStorage = Just data }
+            , Cmd.none
+            )
+
         Tick time ->
             let
                 extraMsgs =
@@ -523,6 +528,7 @@ subscriptions model =
         [ Time.every minute Tick
         , Sub.map MsgCache Backend.Update.subscriptions
         , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
+        , persistentStorage SetPersistentStorage
         ]
 
 
@@ -544,3 +550,8 @@ port pusherKey : ( String, String, List String ) -> Cmd msg
 {-| Set the user's current language.
 -}
 port setLanguage : String -> Cmd msg
+
+
+{-| Let the Javascript tell us if we've successfully requested persistent storage.
+-}
+port persistentStorage : (Bool -> msg) -> Sub msg

@@ -50,6 +50,12 @@ type alias Model =
     -- move behind that structure.
     , indexedDb : Backend.Model.ModelIndexedDb
 
+    -- Have we successfully asked the browser to make our storage persistent?
+    -- (This means the browser won't automatically delete our storage when
+    -- it thinks space is low). It is a Maybe because in our initial state we
+    -- don't know if it is true or false.
+    , persistentStorage : Maybe Bool
+
     -- TODO: This doesn't really belong here ... we shouldn't have this unless
     -- we have a session ... but I've done enough restructuring for now!
     , sessionPages : Pages.Model.SessionPages
@@ -171,6 +177,7 @@ type Msg
     | HandleRollbar (Result Http.Error Uuid)
     | SetActivePage Page
     | SetLanguage Language
+    | SetPersistentStorage Bool
     | Tick Time
     | TrySyncing
 
@@ -199,6 +206,7 @@ emptyModel flags =
     , cache = Backend.Model.emptyModelCached
     , indexedDb = Backend.Model.emptyModelIndexedDb
     , configuration = NotAsked
+    , persistentStorage = Nothing
 
     -- We start at 1970, which might be nice to avoid, but probably more
     -- trouble than it's worth ... this will almost immediately get updated

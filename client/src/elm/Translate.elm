@@ -245,6 +245,7 @@ type TranslationId
     | PageNotFoundMsg
     | Participants
     | ParticipantSummary
+    | PersistentStorage Bool
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
     | PlaceholderEnterWeight
@@ -1194,6 +1195,17 @@ translationSet trans =
             { english = "Participant Summary"
             , kinyarwanda = Just "Umwirondoro w’urera umwana"
             }
+
+        PersistentStorage authorized ->
+            if authorized then
+                { english = "Persistent storage has been authorized. The browser will not delete locally cached data without your approval."
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "Persistent storage has not been authorized. The browser may delete locally cached data if storage runs low."
+                , kinyarwanda = Nothing
+                }
 
         PlaceholderEnterHeight ->
             { english = "Enter height here…"
