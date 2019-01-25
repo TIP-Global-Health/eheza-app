@@ -1,8 +1,6 @@
 module Pages.Device.Fetch exposing (fetch)
 
-import Backend.Entities exposing (..)
 import Backend.Model
-import RemoteData exposing (RemoteData(..), WebData)
 import Utils.WebData exposing (whenNotAsked)
 
 
