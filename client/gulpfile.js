@@ -298,6 +298,7 @@ var precacheLocalDev = [
   'serve/bower_components/dropzone/dist/min/dropzone.min.css',
   'serve/bower_components/dropzone/dist/min/dropzone.min.js',
   'serve/bower_components/dexie/dist/dexie.min.js',
+  'serve/bower_components/semantic/dist/themes/**/' + precacheFileGlob,
   'serve/bower_components/semantic/dist/semantic.min.css'
 ];
 
@@ -310,6 +311,7 @@ var precacheProd = [
   'dist/bower_components/dropzone/dist/min/dropzone.min.*.css',
   'dist/bower_components/dropzone/dist/min/dropzone.min.*.js',
   'dist/bower_components/dexie/dist/dexie.min.*.js',
+  'dist/bower_components/semantic/dist/themes/**/' + precacheFileGlob,
   'dist/bower_components/semantic/dist/semantic.min.*.css'
 ];
 
