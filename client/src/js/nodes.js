@@ -45,7 +45,14 @@
 
     function view (url, type, uuid) {
         return dbSync.open().catch(databaseError).then(function () {
-            return dbSync.nodes.get(uuid).catch(databaseError).then(function (node) {
+            var table = dbSync.nodes;
+
+            // For the syncmetadata type, we use the syncMetadata table instead
+            if (type === 'syncmetadata') {
+                table = dbSync.syncMetadata;
+            }
+
+            return table.get(uuid).catch(databaseError).then(function (node) {
                 // We could also check that the type is the expected type.
                 if (node) {
                     var body = JSON.stringify({
@@ -81,6 +88,11 @@
 
         return dbSync.open().catch(databaseError).then(function () {
             var query = dbSync.nodes.where('type').equals(type);
+
+            // If type is syncmetadata, we use a different table
+            if (type === 'syncmetadata') {
+                query = dbSync.syncMetadata;
+            }
 
             return query.clone().count().catch(databaseError).then(function (count) {
                 if (offset > 0) {

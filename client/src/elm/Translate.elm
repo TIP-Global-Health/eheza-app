@@ -291,9 +291,12 @@ type TranslationId
     | StartEndDate
     | StartDate
     | EndDate
+    | StartSyncing
+    | StopSyncing
     | StorageQuota { usage : Int, quota : Int }
     | SubmitPairingCode
     | Success
+    | SyncGeneral
     | ThisActionCannotBeUndone
     | ThisClinicHasNoMothers
     | TitleHealthAssessment
@@ -1442,9 +1445,24 @@ translationSet trans =
             , kinyarwanda = Just "Itariki urangirijeho"
             }
 
+        StartSyncing ->
+            { english = "Start Syncing"
+            , kinyarwanda = Nothing
+            }
+
+        StopSyncing ->
+            { english = "Stop Syncing"
+            , kinyarwanda = Nothing
+            }
+
         Success ->
             { english = "Success"
             , kinyarwanda = Just "Byagezweho"
+            }
+
+        SyncGeneral ->
+            { english = "Sync status (general)"
+            , kinyarwanda = Nothing
             }
 
         ThisActionCannotBeUndone ->

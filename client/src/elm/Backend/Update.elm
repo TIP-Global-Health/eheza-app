@@ -22,6 +22,8 @@ import Backend.Session.Decoder exposing (decodeOfflineSession, decodeSession, de
 import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession, encodeTrainingSessionRequest)
 import Backend.Session.Model exposing (EditableSession, MsgEditableSession(..), OfflineSession, Session)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData, getPhotoUrls, makeEditableSession, mapChildEdits, mapMotherEdits, setPhotoFileId)
+import Backend.SyncData.Decoder exposing (decodeSyncData)
+import Backend.SyncData.Model exposing (SyncData)
 import Backend.Utils exposing (withEditableSession)
 import CacheStorage.Model exposing (cachePhotos, clearCachedPhotos)
 import CacheStorage.Update
@@ -60,6 +62,11 @@ swEndpoint path decodeValue =
 healthCenterEndpoint : ReadOnlyEndPoint Error HealthCenterUuid HealthCenter ()
 healthCenterEndpoint =
     swEndpoint "nodes/health_center" decodeHealthCenter
+
+
+syncDataEndpoint : ReadOnlyEndPoint Error HealthCenterUuid SyncData ()
+syncDataEndpoint =
+    swEndpoint "nodes/syncmetadata" decodeSyncData
 
 
 clinicEndpoint : ReadWriteEndPoint Error ClinicId Clinic Clinic ()
@@ -122,6 +129,17 @@ updateIndexedDb msg model =
 
         HandleFetchedHealthCenters data ->
             ( { model | healthCenters = data }
+            , Cmd.none
+            )
+
+        FetchSyncData ->
+            ( { model | syncData = Loading }
+            , sw.select syncDataEndpoint ()
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedSyncData)
+            )
+
+        HandleFetchedSyncData data ->
+            ( { model | syncData = data }
             , Cmd.none
             )
 

@@ -9,7 +9,9 @@ import Json.Decode.Pipeline exposing (..)
 
 decodeSyncData : Decoder SyncData
 decodeSyncData =
-    map2 SyncData (maybe decodeSyncStatus) decodeSyncAttempt
+    map2 SyncData
+        (maybe decodeSyncStatus)
+        (field "status" decodeSyncAttempt)
 
 
 decodeSyncStatus : Decoder SyncStatus

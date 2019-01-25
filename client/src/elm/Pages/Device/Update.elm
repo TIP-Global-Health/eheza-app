@@ -19,6 +19,12 @@ update msg model =
             , [ App.Model.TryPairingCode model.code ]
             )
 
+        SetSyncing uuid start ->
+            ( { model | code = "" }
+            , Cmd.none
+            , []
+            )
+
         TrySyncing ->
             ( model
             , Cmd.none

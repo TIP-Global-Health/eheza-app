@@ -4,6 +4,7 @@ import App.Model
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.SyncData.Model exposing (SyncData)
 import Device.Model exposing (..)
 import EveryDictList
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -12,9 +13,20 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Device.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
+import Restful.Endpoint exposing (toEntityUuid)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner)
 import Utils.WebData exposing (viewError, viewOrFetch)
+
+
+{-| We organize our SyncData by health center. However, there is also a bunch
+of nodes that we get no matter which health center we're interesting in. So,
+this is the "magic" UUID that represents "all the health centers" (or, "no
+health center", depending on how you look at it).
+-}
+nodesUuid : HealthCenterUuid
+nodesUuid =
+    toEntityUuid "78cf21d1-b3f4-496a-b312-d8ae73041f09"
 
 
 {-| We call this if we have an active service worker. If the device is authorized,
@@ -47,6 +59,7 @@ viewDeviceStatus language device app model =
                     ]
                     [ text <| translate language Translate.TrySyncing ]
                 , viewStorageStatus language app
+                , viewNodes language app.indexedDb
                 , viewHealthCenters language app.indexedDb
                 ]
 
@@ -72,28 +85,81 @@ viewStorageStatus language app =
         |> div []
 
 
-viewHealthCenters : Language -> ModelIndexedDb -> Html Msg
-viewHealthCenters language db =
-    case db.healthCenters of
-        NotAsked ->
-            spinner
-
-        Loading ->
-            spinner
+viewNodes : Language -> ModelIndexedDb -> Html Msg
+viewNodes language db =
+    case db.syncData of
+        Success syncData ->
+            syncData
+                |> EveryDictList.get nodesUuid
+                |> Maybe.map
+                    (\data ->
+                        div []
+                            [ h3 [] [ text <| translate language Translate.SyncGeneral ]
+                            , viewSyncData language data
+                            ]
+                    )
+                |> showMaybe
 
         Failure err ->
             viewError language err
 
-        Success data ->
-            data
-                |> EveryDictList.map viewHealthCenter
-                |> EveryDictList.values
-                |> ul []
+        Loading ->
+            spinner
+
+        NotAsked ->
+            spinner
 
 
-viewHealthCenter : HealthCenterUuid -> HealthCenter -> Html Msg
-viewHealthCenter uuid model =
-    li [] [ text model.name ]
+viewSyncData : Language -> SyncData -> Html Msg
+viewSyncData language data =
+    div [] [ text <| toString data ]
+
+
+viewHealthCenters : Language -> ModelIndexedDb -> Html Msg
+viewHealthCenters language db =
+    db.healthCenters
+        |> RemoteData.map
+            (\data ->
+                data
+                    |> EveryDictList.map (viewHealthCenter language db)
+                    |> EveryDictList.values
+                    |> div []
+            )
+        |> RemoteData.withDefault spinner
+
+
+viewHealthCenter : Language -> ModelIndexedDb -> HealthCenterUuid -> HealthCenter -> Html Msg
+viewHealthCenter language db uuid model =
+    let
+        sync =
+            db.syncData
+                |> RemoteData.map
+                    (\syncData ->
+                        case EveryDictList.get uuid syncData of
+                            Just data ->
+                                div []
+                                    [ text <| toString data
+                                    , button
+                                        [ class "ui button"
+                                        , onClick (SetSyncing uuid True)
+                                        ]
+                                        [ text <| translate language Translate.StopSyncing ]
+                                    ]
+
+                            Nothing ->
+                                button
+                                    [ class "ui button"
+                                    , onClick (SetSyncing uuid False)
+                                    ]
+                                    [ text <| translate language Translate.StartSyncing ]
+                    )
+                |> RemoteData.toMaybe
+                |> showMaybe
+    in
+    div []
+        [ h3 [] [ text <| model.name ]
+        , sync
+        ]
 
 
 viewPairingForm : Language -> WebData Device -> Model -> Html Msg

@@ -6,9 +6,7 @@ import Utils.WebData exposing (whenNotAsked)
 
 fetch : Backend.Model.ModelIndexedDb -> List Backend.Model.MsgIndexedDb
 fetch backend =
-    let
-        fetchHealthCenters =
-            whenNotAsked Backend.Model.FetchHealthCenters backend.healthCenters
-    in
     List.filterMap identity
-        [ fetchHealthCenters ]
+        [ whenNotAsked Backend.Model.FetchHealthCenters backend.healthCenters
+        , whenNotAsked Backend.Model.FetchSyncData backend.syncData
+        ]

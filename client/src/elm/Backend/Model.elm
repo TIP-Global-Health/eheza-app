@@ -22,6 +22,7 @@ import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Measurement.Model exposing (MeasurementEdits, Photo)
 import Backend.Session.Model exposing (EditableSession, MsgEditableSession, OfflineSession, Session)
+import Backend.SyncData.Model exposing (SyncData)
 import CacheStorage.Model
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
@@ -125,18 +126,22 @@ move things here from ModelBackend and ModelCached.
 -}
 type alias ModelIndexedDb =
     { healthCenters : WebData (EveryDictList HealthCenterUuid HealthCenter)
+    , syncData : WebData (EveryDictList HealthCenterUuid SyncData)
     }
 
 
 emptyModelIndexedDb : ModelIndexedDb
 emptyModelIndexedDb =
     { healthCenters = NotAsked
+    , syncData = NotAsked
     }
 
 
 type MsgIndexedDb
     = FetchHealthCenters
+    | FetchSyncData
     | HandleFetchedHealthCenters (WebData (EveryDictList HealthCenterUuid HealthCenter))
+    | HandleFetchedSyncData (WebData (EveryDictList HealthCenterUuid SyncData))
 
 
 {-| This models things which we cache locally ... so, like `ModelBackend`, but
