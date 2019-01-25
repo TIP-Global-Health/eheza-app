@@ -74,7 +74,7 @@
                     }).catch(function (e) {
                         return new Response (e.toString(), {
                             status: 500,
-                            statusText: 'Cache upload error',
+                            statusText: 'Cache upload error'
                         });
                     });
                 });
