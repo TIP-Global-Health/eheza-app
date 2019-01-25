@@ -16,6 +16,7 @@
     // benefit from an automatic retry. However, the background sync
     // will only retry so many times.
     //
+    // NotAsked
     // Loading {revision, timestamp}
     // DatabaseError {message, timestamp}
     // NetworkError {message, timestamp, willRetry}
