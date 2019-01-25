@@ -20,6 +20,10 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
       'property' => 'type',
     ];
 
+    $public_fields['status'] = [
+      'property' => 'status',
+    ];
+
     $public_fields['vid'] = [
       'property' => 'vid',
     ];

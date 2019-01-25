@@ -88,13 +88,15 @@
 
         return dbSync.open().catch(databaseError).then(function () {
             var query = dbSync.nodes.where('type').equals(type);
+            var countQuery = query.clone();
 
             // If type is syncmetadata, we use a different table
             if (type === 'syncmetadata') {
                 query = dbSync.syncMetadata;
+                countQuery = query;
             }
 
-            return query.clone().count().catch(databaseError).then(function (count) {
+            return countQuery.count().catch(databaseError).then(function (count) {
                 if (offset > 0) {
                     query.offset(offset);
                 }

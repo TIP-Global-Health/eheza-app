@@ -209,9 +209,7 @@
 
                 return dbSync.transaction('rw', dbSync.nodes, dbSync.syncMetadata, function () {
                     var promises = json.data.batch.map(function (item) {
-                        item.vid = parseInt(item.vid);
-                        item.id = parseInt(item.id);
-                        item.timestamp = parseInt(item.timestamp);
+                        formatNode(item);
 
                         return dbSync.nodes.put(item);
                     });
@@ -226,6 +224,13 @@
                 });
             });
         }
+    }
+
+    function formatNode (node) {
+        node.vid = parseInt(node.vid);
+        node.id = parseInt(node.id);
+        node.timestamp = parseInt(node.timestamp);
+        node.status = parseInt(node.status);
     }
 
     function tryRefreshToken(credentials) {
