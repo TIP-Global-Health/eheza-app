@@ -298,8 +298,7 @@ var precacheLocalDev = [
   'serve/bower_components/dropzone/dist/min/dropzone.min.css',
   'serve/bower_components/dropzone/dist/min/dropzone.min.js',
   'serve/bower_components/dexie/dist/dexie.min.js',
-  'serve/bower_components/semantic/dist/semantic.min.css',
-  'serve/bower_components/offline/offline.min.js'
+  'serve/bower_components/semantic/dist/semantic.min.css'
 ];
 
 // There may be a better way to do this, but for the moment we have some
@@ -311,8 +310,7 @@ var precacheProd = [
   'dist/bower_components/dropzone/dist/min/dropzone.min.*.css',
   'dist/bower_components/dropzone/dist/min/dropzone.min.*.js',
   'dist/bower_components/dexie/dist/dexie.min.*.js',
-  'dist/bower_components/semantic/dist/semantic.min.*.css',
-  'dist/bower_components/offline/offline.min.*.js'
+  'dist/bower_components/semantic/dist/semantic.min.*.css'
 ];
 
 // For offline use while developing

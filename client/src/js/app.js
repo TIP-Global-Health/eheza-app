@@ -107,14 +107,6 @@ elmApp.ports.setLanguage.subscribe(function(language) {
     localStorage.setItem('language', language);
 });
 
-Offline.on('down', function() {
-    elmApp.ports.offline.send(true);
-});
-
-Offline.on('up', function() {
-    elmApp.ports.offline.send(false);
-});
-
 // Dropzone.
 
 var dropZone = undefined;

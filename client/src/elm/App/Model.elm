@@ -57,7 +57,6 @@ type alias Model =
     , currentTime : Time
     , language : Language
     , serviceWorker : ServiceWorker.Model.Model
-    , offline : Bool
     , zscores : ZScore.Model.Model
     }
 
@@ -172,7 +171,6 @@ type Msg
     | HandleRollbar (Result Http.Error Uuid)
     | SetActivePage Page
     | SetLanguage Language
-    | SetOffline Bool
     | Tick Time
     | TrySyncing
 
@@ -207,7 +205,6 @@ emptyModel flags =
     -- with the real date.
     , currentTime = 0
     , language = English
-    , offline = False
     , sessionPages = Pages.Model.emptySessionPages
     , serviceWorker = ServiceWorker.Model.emptyModel flags.activeServiceWorker
     , zscores = ZScore.Model.emptyModel

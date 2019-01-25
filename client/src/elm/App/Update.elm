@@ -441,11 +441,6 @@ update msg model =
             , setLanguage <| languageToCode language
             )
 
-        SetOffline offline ->
-            ( { model | offline = offline }
-            , Cmd.none
-            )
-
         Tick time ->
             let
                 extraMsgs =
@@ -526,7 +521,6 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Time.every minute Tick
-        , offline SetOffline
         , Sub.map MsgCache Backend.Update.subscriptions
         , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
         ]
@@ -545,11 +539,6 @@ port trySyncing : () -> Cmd msg
 {-| Send Pusher key and cluster to JS.
 -}
 port pusherKey : ( String, String, List String ) -> Cmd msg
-
-
-{-| Get a signal if internet connection is lost or regained.
--}
-port offline : (Bool -> msg) -> Sub msg
 
 
 {-| Set the user's current language.
