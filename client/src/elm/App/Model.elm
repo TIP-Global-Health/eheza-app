@@ -1,4 +1,4 @@
-module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..), MsgLoggedIn(..), Version, emptyLoggedInModel, emptyModel)
+module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..), MsgLoggedIn(..), StorageQuota, Version, emptyLoggedInModel, emptyModel)
 
 import Backend.Model
 import Config.Model
@@ -56,6 +56,9 @@ type alias Model =
     -- don't know if it is true or false.
     , persistentStorage : Maybe Bool
 
+    -- How close are we to our storage quota?
+    , storageQuota : Maybe StorageQuota
+
     -- TODO: This doesn't really belong here ... we shouldn't have this unless
     -- we have a session ... but I've done enough restructuring for now!
     , sessionPages : Pages.Model.SessionPages
@@ -64,6 +67,12 @@ type alias Model =
     , language : Language
     , serviceWorker : ServiceWorker.Model.Model
     , zscores : ZScore.Model.Model
+    }
+
+
+type alias StorageQuota =
+    { quota : Int
+    , usage : Int
     }
 
 
@@ -178,6 +187,7 @@ type Msg
     | SetActivePage Page
     | SetLanguage Language
     | SetPersistentStorage Bool
+    | SetStorageQuota StorageQuota
     | Tick Time
     | TrySyncing
 
@@ -207,6 +217,7 @@ emptyModel flags =
     , indexedDb = Backend.Model.emptyModelIndexedDb
     , configuration = NotAsked
     , persistentStorage = Nothing
+    , storageQuota = Nothing
 
     -- We start at 1970, which might be nice to avoid, but probably more
     -- trouble than it's worth ... this will almost immediately get updated

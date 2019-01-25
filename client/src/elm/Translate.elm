@@ -291,6 +291,7 @@ type TranslationId
     | StartEndDate
     | StartDate
     | EndDate
+    | StorageQuota { usage : Int, quota : Int }
     | SubmitPairingCode
     | Success
     | ThisActionCannotBeUndone
@@ -840,6 +841,11 @@ translationSet trans =
 
         EnterPairingCode ->
             { english = "Enter pairing code"
+            , kinyarwanda = Nothing
+            }
+
+        StorageQuota quota ->
+            { english = "Used " ++ toString (quota.usage // (1024 * 1024)) ++ " MB of available " ++ toString (quota.quota // (1024 * 1024)) ++ " MB"
             , kinyarwanda = Nothing
             }
 

@@ -446,6 +446,11 @@ update msg model =
             , Cmd.none
             )
 
+        SetStorageQuota quota ->
+            ( { model | storageQuota = Just quota }
+            , Cmd.none
+            )
+
         Tick time ->
             let
                 extraMsgs =
@@ -529,6 +534,7 @@ subscriptions model =
         , Sub.map MsgCache Backend.Update.subscriptions
         , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
         , persistentStorage SetPersistentStorage
+        , storageQuota SetStorageQuota
         ]
 
 
@@ -552,6 +558,12 @@ port pusherKey : ( String, String, List String ) -> Cmd msg
 port setLanguage : String -> Cmd msg
 
 
-{-| Let the Javascript tell us if we've successfully requested persistent storage.
+{-| Let the Javascript tell us if we've successfully requested persistent
+storage.
 -}
 port persistentStorage : (Bool -> msg) -> Sub msg
+
+
+{-| Let the Javascript tell us about our storage quota.
+-}
+port storageQuota : (StorageQuota -> msg) -> Sub msg

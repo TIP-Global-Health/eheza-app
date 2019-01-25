@@ -56,13 +56,20 @@ viewDeviceStatus language device app model =
 
 viewStorageStatus : Language -> App.Model.Model -> Html Msg
 viewStorageStatus language app =
-    app.persistentStorage
-        |> Maybe.map
-            (\persistent ->
-                div []
-                    [ text <| translate language <| Translate.PersistentStorage persistent ]
-            )
-        |> showMaybe
+    let
+        viewPersistent persistent =
+            div []
+                [ text <| translate language <| Translate.PersistentStorage persistent ]
+
+        viewQuota quota =
+            div []
+                [ text <| translate language <| Translate.StorageQuota quota ]
+    in
+    [ Maybe.map viewQuota app.storageQuota
+    , Maybe.map viewPersistent app.persistentStorage
+    ]
+        |> List.filterMap identity
+        |> div []
 
 
 viewHealthCenters : Language -> ModelIndexedDb -> Html Msg

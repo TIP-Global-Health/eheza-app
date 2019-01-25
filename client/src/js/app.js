@@ -48,6 +48,19 @@ navigator.storage.persist().then(function (granted) {
     elmApp.ports.persistentStorage.send(granted);
 });
 
+// Report our quota status.
+function reportQuota () {
+    navigator.storage.estimate().then(function (quota) {
+        elmApp.ports.storageQuota.send(quota);
+    });
+}
+
+// Do it right away.
+reportQuota();
+
+// And, then every minute.
+setInterval(reportQuota, 60 * 1000);
+
 elmApp.ports.trySyncing.subscribe(function () {
     // This manually kicks off a sync attempt. Normally, we'll manage this
     // automatically, but it's nice to be able to kick one off directly.
