@@ -39,3 +39,21 @@ dbSync.version(1).stores({
     // center). For the general nodes store, we use a static UUID.
     syncMetadata: '&uuid'
 });
+
+// For when any sync metadata changes, send it all to the app
+function sendSyncData () {
+    return dbSync.syncMetadata.toArray().then (function (syncData) {
+        var message = {
+            tag: 'SyncData',
+            data: syncData
+        };
+
+        return self.clients.matchAll().then(function (clients) {
+            clients.forEach(function (client) {
+                client.postMessage(message);
+            });
+
+            return Promise.resolve();
+        });
+    });
+}

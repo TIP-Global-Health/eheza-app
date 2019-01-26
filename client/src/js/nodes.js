@@ -59,7 +59,7 @@
         return dbSync.open().catch(databaseError).then(function () {
             if (type === 'syncmetadata') {
                 // For the syncmetadata type, we actually delete
-                return dbSync.syncMetadata.delete(uuid).catch(databaseError).then(function () {
+                return dbSync.syncMetadata.delete(uuid).catch(databaseError).then(sendSyncData).then(function () {
                     var response = new Response(null, {
                         status: 204,
                         statusText: 'Deleted'
@@ -103,7 +103,13 @@
                         }
                     });
 
-                    return Promise.resolve(response);
+                    if (type === 'syncmetadata') {
+                        return sendSyncData().then(function () {
+                            return Promise.resolve(response);
+                        });
+                    } else {
+                        return Promise.resolve(response);
+                    }
                 });
             });
         }).catch(sendErrorResponses);

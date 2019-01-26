@@ -3,6 +3,9 @@ module ServiceWorker.Model exposing (IncomingMsg(..), Model, Msg(..), NewWorker(
 {-| Some state we maintain relating to service workers.
 -}
 
+import Backend.Entities exposing (..)
+import Backend.SyncData.Model exposing (SyncData)
+import EveryDictList exposing (EveryDictList)
 import Json.Encode exposing (Value)
 import RemoteData exposing (RemoteData(..))
 import Time exposing (Time)
@@ -58,6 +61,7 @@ type IncomingMsg
     = RegistrationSucceeded
     | RegistrationFailed String
     | SetNewWorker NewWorker
+    | SetSyncData (EveryDictList HealthCenterUuid SyncData)
 
 
 type OutgoingMsg

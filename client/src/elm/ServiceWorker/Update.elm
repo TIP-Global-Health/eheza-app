@@ -8,6 +8,7 @@ via sending messages through the `update` function.
 -}
 
 import App.Model
+import Backend.Model
 import Gizra.Update exposing (sequenceExtra)
 import Json.Decode exposing (Value, decodeValue)
 import Pages.Page
@@ -73,6 +74,15 @@ handleIncomingMsg currentTime msg model =
             , []
             )
                 |> sequenceExtra (update currentTime) extraMsgs
+
+        SetSyncData data ->
+            ( model
+            , Cmd.none
+            , [ Success data
+                    |> Backend.Model.HandleFetchedSyncData
+                    |> App.Model.MsgIndexedDb
+              ]
+            )
 
 
 sendOutgoingMsg : Time -> OutgoingMsg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

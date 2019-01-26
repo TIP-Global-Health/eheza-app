@@ -1,6 +1,10 @@
 module ServiceWorker.Decoder exposing (decodeIncomingMsg)
 
+import Backend.SyncData.Decoder exposing (decodeSyncData)
+import Backend.SyncData.Model exposing (SyncData)
+import EveryDictList exposing (decodeArray2)
 import Json.Decode exposing (..)
+import Restful.Endpoint exposing (decodeEntityUuid)
 import ServiceWorker.Model exposing (..)
 
 
@@ -23,6 +27,10 @@ decodeIncomingMsg =
                     "SetNewWorker" ->
                         field "state" decodeNewWorker
                             |> map SetNewWorker
+
+                    "SyncData" ->
+                        field "data" (EveryDictList.decodeArray2 (field "uuid" decodeEntityUuid) decodeSyncData)
+                            |> map SetSyncData
 
                     _ ->
                         fail <|

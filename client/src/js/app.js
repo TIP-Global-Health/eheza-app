@@ -191,6 +191,11 @@ function makeCustomEvent (eventName, detail) {
     }
 }
 
+// Pass along messages from the service worker
+navigator.serviceWorker.addEventListener('message', function (event) {
+    elmApp.ports.serviceWorkerIn.send(event.data);
+});
+
 navigator.serviceWorker.addEventListener('controllerchange', function () {
     // If we detect a controller change, that means we're being managed
     // by a new service worker. In that case, we need to reload the page,

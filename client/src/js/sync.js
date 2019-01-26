@@ -44,7 +44,7 @@
                     registration.sync.register(syncTag);
                 }
 
-                return dbSync.syncMetadata.put(meta);
+                return dbSync.syncMetadata.put(meta).then(sendSyncData);
             }, function (err) {
                 // We failed!
                 if (err.tag === 'NetworkError') {
@@ -88,7 +88,7 @@
 
             meta.uuid = nodesUuid;
 
-            return dbSync.syncMetadata.put(meta).then(function () {
+            return dbSync.syncMetadata.put(meta).then(sendSyncData).then(function () {
                 if (meta.remaining > 0) {
                     // Schedule another if the backend says there are more.
                     return manualSync();
@@ -130,7 +130,7 @@
 
             meta.status = withoutPromise;
 
-            return dbSync.syncMetadata.put(meta);
+            return dbSync.syncMetadata.put(meta).then(sendSyncData);
         });
     }
 
@@ -207,7 +207,7 @@
             }).then (function (json) {
                 var remaining = parseInt(json.data.revision_count) - json.data.batch.length;
 
-                return dbSync.transaction('rw', dbSync.nodes, dbSync.syncMetadata, function () {
+                return dbSync.transaction('rw', dbSync.nodes, function () {
                     var promises = json.data.batch.map(function (item) {
                         formatNode(item);
 
