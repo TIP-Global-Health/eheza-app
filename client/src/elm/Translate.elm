@@ -195,6 +195,7 @@ type TranslationId
     | DeviceNotAuthorized
     | DeviceStatus
     | District
+    | DOB
     | DownloadHealthAssessment
     | DownloadSession1
     | DownloadSession2
@@ -222,6 +223,7 @@ type TranslationId
     | Gender Gender
     | GenderLabel
     | GoHome
+    | HealthCenter
     | HealthCenterName
     | HIVStatusLabel
     | HIVStatus HIVStatus
@@ -277,11 +279,14 @@ type TranslationId
     | Page
     | Page404
     | PageNotFoundMsg
+    | ParticipantDirectory
     | Participants
     | ParticipantSummary
     | PatientDemographicInformation
+    | PatientInformation
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
+    | PlaceholderEnterPatientName
     | PlaceholderEnterWeight
     | PlaceholderTextGroupDate
     | PlaceholderTextJoined
@@ -289,6 +294,8 @@ type TranslationId
     | PreviousFloatMeasurement Float
     | Profession
     | ReadyToBeginSession
+    | Register
+    | RegisterHelper
     | RegisterPatient
     | RegisterNewPatient
     | RegistratingHealthCenter
@@ -297,13 +304,16 @@ type TranslationId
     | ReportAge String
     | ReportDOB String
     | ReportRemaining Int
+    | ReportResultsOfSearch Int
     | ReloadParticipant
     | ReportCompleted { pending : Int, total : Int }
     | ResolveMonth Month
     | Retry
     | Save
     | SaveError
+    | Search
     | SearchByName
+    | SearchHelper
     | SecondName
     | Sector
     | SelectClinic
@@ -894,6 +904,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        DOB ->
+            { english = "DOB"
+            , kinyarwanda = Nothing
+            }
+
         DownloadHealthAssessment ->
             { english = "Download Health Assessment"
             , kinyarwanda = Just "Gukurura Igikorwa cy’ipima"
@@ -1072,6 +1087,11 @@ translationSet trans =
         GoHome ->
             { english = "Go to main page"
             , kinyarwanda = Just "Kujya ahabanza"
+            }
+
+        HealthCenter ->
+            { english = "Health Center"
+            , kinyarwanda = Nothing
             }
 
         HealthCenterName ->
@@ -1443,6 +1463,11 @@ translationSet trans =
             , kinyarwanda = Just "Mutwihanganire ntabwo ubufasha mwasabye mubashije kuboneka."
             }
 
+        ParticipantDirectory ->
+            { english = "Participant Directory"
+            , kinyarwanda = Nothing
+            }
+
         Participants ->
             { english = "Participants"
             , kinyarwanda = Just "Ubwitabire"
@@ -1458,6 +1483,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PatientInformation ->
+            { english = "Patient Information"
+            , kinyarwanda = Nothing
+            }
+
         PlaceholderEnterHeight ->
             { english = "Enter height here…"
             , kinyarwanda = Just "Andika uburebure hano…"
@@ -1466,6 +1496,11 @@ translationSet trans =
         PlaceholderEnterMUAC ->
             { english = "Enter MUAC here…"
             , kinyarwanda = Just "Andika uburebure hano…"
+            }
+
+        PlaceholderEnterPatientName ->
+            { english = "Enter patient name here"
+            , kinyarwanda = Nothing
             }
 
         PlaceholderEnterWeight ->
@@ -1501,6 +1536,16 @@ translationSet trans =
         ReadyToBeginSession ->
             { english = "You are now ready to begin your session."
             , kinyarwanda = Just "Ubu ushobora gutangira ibikorwa byawe."
+            }
+
+        Register ->
+            { english = "Register"
+            , kinyarwanda = Nothing
+            }
+
+        RegisterHelper ->
+            { english = "Not the patient you were looking for?"
+            , kinyarwanda = Nothing
             }
 
         RegisterPatient ->
@@ -1543,6 +1588,18 @@ translationSet trans =
             , kinyarwanda = Just <| toString remaining ++ " iyibutswa rya raporo"
             }
 
+        ReportResultsOfSearch total ->
+            case total of
+                1 ->
+                    { english = "There is 1 participant that matches your search."
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = "There are " ++ toString total ++ " participants that match your search."
+                    , kinyarwanda = Nothing
+                    }
+
         ReloadParticipant ->
             { english = "Re-load Participant"
             , kinyarwanda = Just "Ishakisha ryabaritabira"
@@ -1571,9 +1628,19 @@ translationSet trans =
             , kinyarwanda = Just "Kubika error (ikosa mu kubika)"
             }
 
+        Search ->
+            { english = "Search"
+            , kinyarwanda = Nothing
+            }
+
         SearchByName ->
             { english = "Search by Name"
             , kinyarwanda = Just "Gushakisha izina"
+            }
+
+        SearchHelper ->
+            { english = "Search to see if patient already exists in E-Heza. If the person you are looking for does not appear in the search, please create a new record for them."
+            , kinyarwanda = Nothing
             }
 
         SecondName ->

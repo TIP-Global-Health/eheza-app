@@ -38,6 +38,7 @@ import Translate exposing (Language(..), TranslationId, translate)
 import User.Model exposing (User)
 import Utils.Form exposing (isFormFieldSet, isFormFieldValid)
 import Utils.Html exposing (script, thumbnailImage, viewModal)
+import Utils.NominalDate exposing (renderDate)
 
 
 view : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
@@ -648,9 +649,7 @@ viewSearchForm language currentDate user backend cache participantsData searchSt
                     [ class "ui search form" ]
                     [ div []
                         [ input
-                            [ placeholder "Enter patient name here"
-
-                            -- , placeholder <| translateLogin Translate.Username
+                            [ placeholder <| translate language Translate.PlaceholderEnterPatientName
                             , type_ "text"
                             , onInput <| SetRegistrationPhase << ParticipantSearch << Just
                             , value searchValue
@@ -666,22 +665,14 @@ viewSearchForm language currentDate user backend cache participantsData searchSt
                     , disabled disableSubmitButton
                     , type_ "submit"
                     ]
-                    [ text "Search" ]
-
-                -- [ span
-                --     [ hidden <| not isLoading ]
-                --     [ spinner ]
-                -- , span
-                --     [ hidden isLoading ]
-                --     [ text <| translateLogin Translate.SignIn ]
-                -- ]
+                    [ text <| translate language Translate.Search ]
                 ]
 
         ( searchResultsSummary, searchResultsPatients ) =
             submittedSearch
                 |> unwrap
-                    ( span [] [ text "There are 0 participants that match your search." ]
-                    , emptyNode
+                    ( [ text <| translate language <| Translate.ReportResultsOfSearch 0 ]
+                    , []
                     )
                     (\searchValue ->
                         let
@@ -706,60 +697,73 @@ viewSearchForm language currentDate user backend cache participantsData searchSt
 
                             viewParticipant participantType participant =
                                 div
-                                    [ class "search-results-item" ]
+                                    [ class "item" ]
                                     [ div
                                         [ class "ui image" ]
-                                        [ thumbnailImage participantType participant.avatarUrl participant.name 60 60 ]
+                                        [ thumbnailImage participantType participant.avatarUrl participant.name 120 120 ]
                                     , div
                                         [ class "content" ]
                                         [ h2
                                             [ class "ui header" ]
                                             [ text participant.name ]
                                         , p []
-                                            [ label [] [ text "DOB: " ]
-                                            , span [] [ text "" ]
+                                            [ label [] [ text <| translate language Translate.DOB ++ ": " ]
+                                            , span []
+                                                [ renderDate language participant.birthDate
+                                                    |> text
+                                                ]
                                             ]
-                                        , showMaybe <|
-                                            Maybe.map
-                                                (\village ->
-                                                    p []
-                                                        [ label [] [ text "Village: " ]
-                                                        , span [] [ text village ]
-                                                        ]
-                                                )
-                                                participant.village
                                         , p []
-                                            [ label [] [ text "Health Center: " ]
-                                            , span [] [ text "" ]
+                                            [ label [] [ text <| translate language Translate.Village ++ ": " ]
+                                            , span [] [ text "Unknown" ]
+                                            ]
+
+                                        -- , showMaybe <|
+                                        --     Maybe.map
+                                        --         (\village ->
+                                        --             p []
+                                        --                 [ label [] [ text "Village: " ]
+                                        --                 , span [] [ text village ]
+                                        --                 ]
+                                        --         )
+                                        --         participant.village
+                                        , p []
+                                            [ label [] [ text <| translate language Translate.HealthCenter ++ ": " ]
+                                            , span [] [ participant.village |> Maybe.withDefault "" |> text ]
                                             ]
 
                                         -- , viewFamilyLinks motherParticipant language motherId session
                                         ]
                                     ]
                         in
-                        ( span [] [ text <| "There are " ++ toString total ++ " participants that match your search." ]
-                        , div [ class "search-results-participantrs" ] <|
-                            ((mothers
-                                |> List.map (\( _, mother ) -> viewParticipant "mother" mother)
-                             )
-                                ++ (children
-                                        |> List.map (\( _, child ) -> viewParticipant "child" child)
-                                   )
-                            )
+                        ( [ text <| translate language <| Translate.ReportResultsOfSearch total ]
+                        , (mothers
+                            |> List.map (\( _, mother ) -> viewParticipant "mother" mother)
+                          )
+                            ++ (children
+                                    |> List.map (\( _, child ) -> viewParticipant "child" child)
+                               )
                         )
                     )
     in
-    div [ class "wrap-list" ]
+    div [ class "wrap-list patients-search" ]
         [ h3 [ class "ui header" ]
-            [ text "Patient Information:" ]
-        , span [] [ text "Search to see if patient already exists in E-Heza." ]
+            [ text <| translate language Translate.PatientInformation ++ ": " ]
+        , span [ class "search-helper" ] [ text <| translate language Translate.SearchHelper ]
         , h3 [ class "ui header" ]
-            [ text "Participant Directory:" ]
+            [ text <| translate language Translate.ParticipantDirectory ++ ": " ]
         , searchForm
-        , searchResultsSummary
-        , searchResultsPatients
-
-        -- [ text <| translate language Translate.PatientDemographicInformation ++ ":" ]
+        , div [ class "results-summary" ]
+            searchResultsSummary
+        , div [ class "ui unstackable items search-results" ]
+            searchResultsPatients
+        , div [ class "register-helper" ]
+            [ text <| translate language Translate.RegisterHelper ]
+        , button
+            [ class "ui primary button register-button"
+            , onClick <| SetRegistrationPhase (ParticipantRegistration First)
+            ]
+            [ text <| translate language Translate.RegisterNewPatient ]
         ]
 
 
