@@ -22,7 +22,6 @@ import Pages.PatientRegistration.Utils
 import Participant.Model exposing (ParticipantType(..))
 import Time exposing (Time)
 import Time.Date
-import Uuid
 
 
 update : Time -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -390,6 +389,9 @@ update currentTime msg model =
                                 children =
                                     []
 
+                                childrenUuids =
+                                    []
+
                                 levelOfEducation =
                                     Form.getFieldAsString "levelOfEducation" model.registrationForm
                                         |> .value
@@ -484,6 +486,7 @@ update currentTime msg model =
                                         nationalIdNumber
                                         avatarUrl
                                         children
+                                        childrenUuids
                                         birthDate
                                         isDateOfBirthEstimated
                                         gender

@@ -684,11 +684,14 @@ h3.ui.header {
     margin-bottom: 15px;
   }
 
-  .items.search-results {
+  .items {
     color: $color-gray;
-    height: 600px;
     margin-bottom: 50px;
     overflow-y: auto;
+
+    &.results {
+      height: 600px;
+    }
 
     .item .content {
 
@@ -751,14 +754,14 @@ h3.ui.header {
   }
 }
 
-.ui.form.registration {
+.separator-line {
+  border-top: 2px solid $color-gray;
+  width: 620px;
+  margin-top: 70px;
+  margin-bottom: 70px;
+}
 
-  .separator-line {
-    border-top: 2px solid $color-gray;
-    width: 620px;
-    margin-top: 70px;
-    margin-bottom: 70px;
-  }
+.ui.form.registration {
 
   .icon-participant.mother {
     background-color: white;

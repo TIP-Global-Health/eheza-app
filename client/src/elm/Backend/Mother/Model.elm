@@ -3,6 +3,7 @@ module Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), Marital
 import Backend.Entities exposing (..)
 import Backend.Patient.Model exposing (Gender, Ubudehe)
 import Gizra.NominalDate exposing (NominalDate)
+import Uuid exposing (Uuid)
 
 
 type alias Mother =
@@ -13,6 +14,7 @@ type alias Mother =
     , nationalIdNumber : Maybe String
     , avatarUrl : Maybe String
     , children : List ChildId
+    , childrenUuids : List Uuid
     , birthDate : NominalDate
     , isDateOfBirthEstimated : Bool
     , gender : Gender

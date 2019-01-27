@@ -31,6 +31,7 @@ decodeMother =
                 ]
             )
         |> optional "children" (oneOf [ list decodeEntityId, decodeNullAsEmptyArray ]) []
+        |> hardcoded []
         |> required "date_birth" decodeYYYYMMDD
         -- Is birth date estimated
         |> hardcoded False

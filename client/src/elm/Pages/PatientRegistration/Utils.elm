@@ -1,4 +1,4 @@
-module Pages.PatientRegistration.Utils exposing (generateUuid, getFormFieldValue, getRegistratingParticipant, sequenceExtra)
+module Pages.PatientRegistration.Utils exposing (generateUuid, getCommonDetails, getFormFieldValue, getRegistratingParticipant, sequenceExtra)
 
 import Form
 import Gizra.NominalDate exposing (NominalDate)
@@ -18,6 +18,17 @@ generateUuid currentTime =
             step uuidGenerator (initialSeed <| round currentTime)
     in
     uuid
+
+
+getCommonDetails :
+    { r | name : String, avatarUrl : Maybe String, birthDate : NominalDate, village : Maybe String }
+    -> { name : String, avatarUrl : Maybe String, birthDate : NominalDate, village : Maybe String }
+getCommonDetails record =
+    { name = record.name
+    , avatarUrl = record.avatarUrl
+    , birthDate = record.birthDate
+    , village = record.village
+    }
 
 
 getFormFieldValue : Form.FieldState e String -> Int

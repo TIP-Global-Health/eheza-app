@@ -32,7 +32,7 @@ import Pages.PatientRegistration.Model
         , RegistrationPhase(..)
         , RegistrationStep(..)
         )
-import Pages.PatientRegistration.Utils exposing (getFormFieldValue, getRegistratingParticipant)
+import Pages.PatientRegistration.Utils exposing (getCommonDetails, getFormFieldValue, getRegistratingParticipant)
 import Participant.Model exposing (ParticipantType(..))
 import Time.Date
 import Translate exposing (Language(..), TranslationId, translate)
@@ -83,7 +83,7 @@ viewBody language currentDate user backend cache model =
                     viewRegistrationForm language currentDate user backend cache step model.registrationForm model.photo
 
                 ParticipantView patientType ->
-                    viewParticipantDetailsForm language currentDate user backend cache patientType
+                    viewPatientDetailsForm language currentDate user backend cache patientType model.participantsData
     in
     div [ class "content" ]
         [ body ]
@@ -698,62 +698,13 @@ viewSearchForm language currentDate user backend cache participantsData searchSt
 
                             total =
                                 List.length mothers + List.length children
-
-                            viewParticipant patientType =
-                                let
-                                    ( typeForThumbnail, avatarUrl, name, birthDate, village, healthCenter ) =
-                                        case patientType of
-                                            PatientMother mother ->
-                                                ( "mother", mother.avatarUrl, mother.name, mother.birthDate, mother.village, "Unknown" )
-
-                                            PatientChild child ->
-                                                ( "child", child.avatarUrl, child.name, child.birthDate, child.village, "Unknown" )
-                                in
-                                div
-                                    [ class "item" ]
-                                    [ div
-                                        [ class "ui image" ]
-                                        [ thumbnailImage typeForThumbnail avatarUrl name 120 120 ]
-                                    , div
-                                        [ class "content" ]
-                                        [ div [ class "details" ]
-                                            [ h2
-                                                [ class "ui header" ]
-                                                [ text name ]
-                                            , p []
-                                                [ label [] [ text <| translate language Translate.DOB ++ ": " ]
-                                                , span []
-                                                    [ renderDate language birthDate
-                                                        |> text
-                                                    ]
-                                                ]
-                                            , p []
-                                                [ label [] [ text <| translate language Translate.Village ++ ": " ]
-                                                , span [] [ village |> Maybe.withDefault "" |> text ]
-                                                ]
-                                            , p []
-                                                [ label [] [ text <| translate language Translate.HealthCenter ++ ": " ]
-                                                , span [] [ text healthCenter ]
-                                                ]
-                                            ]
-                                        , div [ class "action" ]
-                                            [ div [ class "action-icon-wrapper" ]
-                                                [ span
-                                                    [ class "action-icon"
-                                                    , onClick <| SetRegistrationPhase <| ParticipantView patientType
-                                                    ]
-                                                    []
-                                                ]
-                                            ]
-                                        ]
-                                    ]
                         in
                         ( [ text <| translate language <| Translate.ReportResultsOfSearch total ]
                         , (mothers
-                            |> List.map (\( _, mother ) -> PatientMother mother |> viewParticipant)
+                            |> List.map (\( _, mother ) -> viewPatient language (PatientMother mother) True)
                           )
                             ++ (children
-                                    |> List.map (\( _, child ) -> PatientChild child |> viewParticipant)
+                                    |> List.map (\( _, child ) -> viewPatient language (PatientChild child) True)
                                )
                         )
                     )
@@ -767,7 +718,7 @@ viewSearchForm language currentDate user backend cache participantsData searchSt
         , searchForm
         , div [ class "results-summary" ]
             searchResultsSummary
-        , div [ class "ui unstackable items search-results" ]
+        , div [ class "ui unstackable items results" ]
             searchResultsPatients
         , div [ class "register-helper" ]
             [ text <| translate language Translate.RegisterHelper ]
@@ -779,16 +730,130 @@ viewSearchForm language currentDate user backend cache participantsData searchSt
         ]
 
 
-viewParticipantDetailsForm :
+viewPatientDetailsForm :
     Language
     -> NominalDate
     -> User
     -> ModelBackend
     -> ModelCached
     -> PatientType
+    -> ParticipantsData
     -> Html Msg
-viewParticipantDetailsForm language currentDate user backend cache patientType =
-    div [] [ text "Hello" ]
+viewPatientDetailsForm language currentDate user backend cache viewedPatient participantsData =
+    let
+        familyMembers =
+            case viewedPatient of
+                PatientMother mother ->
+                    participantsData.childrenToRegister
+                        |> EveryDict.toList
+                        |> List.filterMap
+                            (\( uuid, child ) ->
+                                if List.member uuid mother.childrenUuids then
+                                    Just <| ( uuid, PatientChild child )
+
+                                else
+                                    Nothing
+                            )
+
+                PatientChild child ->
+                    child.motherUuid
+                        |> unwrap
+                            []
+                            (\motherUuid ->
+                                case EveryDict.get motherUuid participantsData.mothersToRegister of
+                                    Just mother ->
+                                        [ ( motherUuid, PatientMother mother ) ]
+
+                                    Nothing ->
+                                        []
+                            )
+
+        viewFamilyMembers =
+            case viewedPatient of
+                PatientChild _ ->
+                    case familyMembers of
+                        [ ( uuid, patientMother ) ] ->
+                            div [ class "ui unstackable items" ]
+                                [ viewPatient language patientMother False ]
+
+                        _ ->
+                            div [] [ text "No mother attached" ]
+
+                PatientMother _ ->
+                    if List.isEmpty familyMembers then
+                        div [] [ text "No children attached" ]
+
+                    else
+                        familyMembers
+                            |> List.map (\( uuid, childPatient ) -> viewPatient language childPatient False)
+                            |> div [ class "ui unstackable items" ]
+    in
+    div [ class "wrap-list patients-search" ]
+        [ h3 [ class "ui header" ]
+            [ text <| translate language Translate.PatientDemographicInformation ++ ": " ]
+        , div [ class "ui unstackable items" ]
+            [ viewPatient language viewedPatient False ]
+        , div [ class "separator-line" ] []
+        , viewFamilyMembers
+        ]
+
+
+viewPatient : Language -> PatientType -> Bool -> Html Msg
+viewPatient language patientType addAction =
+    let
+        ( typeForThumbnail, details, healthCenter ) =
+            case patientType of
+                PatientMother mother ->
+                    ( "mother", getCommonDetails mother, "Unknown" )
+
+                PatientChild child ->
+                    ( "child", getCommonDetails child, "Unknown" )
+
+        content =
+            div [ class "content" ] <|
+                div [ class "details" ]
+                    [ h2
+                        [ class "ui header" ]
+                        [ text details.name ]
+                    , p []
+                        [ label [] [ text <| translate language Translate.DOB ++ ": " ]
+                        , span []
+                            [ renderDate language details.birthDate
+                                |> text
+                            ]
+                        ]
+                    , p []
+                        [ label [] [ text <| translate language Translate.Village ++ ": " ]
+                        , span [] [ details.village |> Maybe.withDefault "" |> text ]
+                        ]
+                    , p []
+                        [ label [] [ text <| translate language Translate.HealthCenter ++ ": " ]
+                        , span [] [ text healthCenter ]
+                        ]
+                    ]
+                    :: (if addAction then
+                            [ div [ class "action" ]
+                                [ div [ class "action-icon-wrapper" ]
+                                    [ span
+                                        [ class "action-icon"
+                                        , onClick <| SetRegistrationPhase <| ParticipantView patientType
+                                        ]
+                                        []
+                                    ]
+                                ]
+                            ]
+
+                        else
+                            []
+                       )
+    in
+    div
+        [ class "item patient-view" ]
+        [ div
+            [ class "ui image" ]
+            [ thumbnailImage typeForThumbnail details.avatarUrl details.name 120 120 ]
+        , content
+        ]
 
 
 viewDialog : Language -> Maybe DialogState -> Maybe (Html Msg)

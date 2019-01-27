@@ -62,8 +62,8 @@ initModel model =
 
 dummyParticipantsData : ParticipantsData
 dummyParticipantsData =
-    { mothersToRegister = EveryDict.fromList [ ( generateUuid 11, mother1 ), ( generateUuid 12, mother2 ), ( generateUuid 13, mother3 ), ( generateUuid 14, mother4 ) ]
-    , childrenToRegister = EveryDict.fromList [ ( generateUuid 21, child1 ), ( generateUuid 22, child2 ), ( generateUuid 23, child3 ), ( generateUuid 24, child4 ) ]
+    { mothersToRegister = EveryDict.fromList [ ( mother1Uuid, mother1 ), ( mother2Uuid, mother2 ), ( mother3Uuid, mother3 ), ( mother4Uuid, mother4 ) ]
+    , childrenToRegister = EveryDict.fromList [ ( child1Uuid, child1 ), ( child2Uuid, child2 ), ( child3Uuid, child3 ), ( child4Uuid, child4 ) ]
     }
 
 
@@ -190,6 +190,46 @@ alphanumericPattern =
     Regex.regex "^[a-zA-Z0-9]*$"
 
 
+child1Uuid : Uuid
+child1Uuid =
+    generateUuid 21
+
+
+child2Uuid : Uuid
+child2Uuid =
+    generateUuid 22
+
+
+child3Uuid : Uuid
+child3Uuid =
+    generateUuid 23
+
+
+child4Uuid : Uuid
+child4Uuid =
+    generateUuid 24
+
+
+mother1Uuid : Uuid
+mother1Uuid =
+    generateUuid 11
+
+
+mother2Uuid : Uuid
+mother2Uuid =
+    generateUuid 12
+
+
+mother3Uuid : Uuid
+mother3Uuid =
+    generateUuid 13
+
+
+mother4Uuid : Uuid
+mother4Uuid =
+    generateUuid 14
+
+
 child1 : Child
 child1 =
     Child "child1 child1"
@@ -199,7 +239,7 @@ child1 =
         Nothing
         Nothing
         Nothing
-        Nothing
+        (Just mother1Uuid)
         (date 2016 1 1)
         False
         Male
@@ -231,7 +271,7 @@ child2 =
         Nothing
         Nothing
         Nothing
-        Nothing
+        (Just mother1Uuid)
         (date 2014 2 2)
         True
         Female
@@ -263,7 +303,7 @@ child3 =
         Nothing
         Nothing
         Nothing
-        Nothing
+        (Just mother2Uuid)
         (date 2013 3 3)
         True
         Male
@@ -295,7 +335,7 @@ child4 =
         Nothing
         Nothing
         Nothing
-        Nothing
+        (Just mother2Uuid)
         (date 2011 4 4)
         False
         Female
@@ -327,6 +367,7 @@ mother1 =
         Nothing
         Nothing
         []
+        [ child1Uuid, child2Uuid ]
         (date 2001 1 1)
         False
         Female
@@ -357,6 +398,7 @@ mother2 =
         Nothing
         Nothing
         []
+        [ child3Uuid ]
         (date 2002 2 2)
         True
         Female
@@ -387,6 +429,7 @@ mother3 =
         Nothing
         Nothing
         []
+        [ child4Uuid ]
         (date 2003 3 3)
         True
         Female
@@ -416,6 +459,7 @@ mother4 =
         "mother4"
         Nothing
         Nothing
+        []
         []
         (date 2004 4 4)
         False
