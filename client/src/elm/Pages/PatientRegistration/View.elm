@@ -703,33 +703,29 @@ viewSearchForm language currentDate user backend cache participantsData searchSt
                                         [ thumbnailImage participantType participant.avatarUrl participant.name 120 120 ]
                                     , div
                                         [ class "content" ]
-                                        [ h2
-                                            [ class "ui header" ]
-                                            [ text participant.name ]
-                                        , p []
-                                            [ label [] [ text <| translate language Translate.DOB ++ ": " ]
-                                            , span []
-                                                [ renderDate language participant.birthDate
-                                                    |> text
+                                        [ div [ class "details" ]
+                                            [ h2
+                                                [ class "ui header" ]
+                                                [ text participant.name ]
+                                            , p []
+                                                [ label [] [ text <| translate language Translate.DOB ++ ": " ]
+                                                , span []
+                                                    [ renderDate language participant.birthDate
+                                                        |> text
+                                                    ]
+                                                ]
+                                            , p []
+                                                [ label [] [ text <| translate language Translate.Village ++ ": " ]
+                                                , span [] [ text "Unknown" ]
+                                                ]
+                                            , p []
+                                                [ label [] [ text <| translate language Translate.HealthCenter ++ ": " ]
+                                                , span [] [ participant.village |> Maybe.withDefault "" |> text ]
                                                 ]
                                             ]
-                                        , p []
-                                            [ label [] [ text <| translate language Translate.Village ++ ": " ]
-                                            , span [] [ text "Unknown" ]
-                                            ]
-
-                                        -- , showMaybe <|
-                                        --     Maybe.map
-                                        --         (\village ->
-                                        --             p []
-                                        --                 [ label [] [ text "Village: " ]
-                                        --                 , span [] [ text village ]
-                                        --                 ]
-                                        --         )
-                                        --         participant.village
-                                        , p []
-                                            [ label [] [ text <| translate language Translate.HealthCenter ++ ": " ]
-                                            , span [] [ participant.village |> Maybe.withDefault "" |> text ]
+                                        , div [ class "action" ]
+                                            [ div [ class "action-icon-wrapper" ]
+                                                [ span [ class "action-icon" ] [] ]
                                             ]
 
                                         -- , viewFamilyLinks motherParticipant language motherId session
