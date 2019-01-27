@@ -3,6 +3,7 @@ module Pages.PatientRegistration.Model exposing
     , Model
     , Msg(..)
     , ParticipantsData
+    , PatientType(..)
     , RegistrationForm
     , RegistrationPhase(..)
     , RegistrationStep(..)
@@ -76,12 +77,18 @@ emptyParticipantsData =
 type RegistrationPhase
     = ParticipantSearch (Maybe String)
     | ParticipantRegistration RegistrationStep
+    | ParticipantView PatientType
 
 
 type RegistrationStep
     = First
     | Second
     | Third
+
+
+type PatientType
+    = PatientMother Mother
+    | PatientChild Child
 
 
 type Msg
