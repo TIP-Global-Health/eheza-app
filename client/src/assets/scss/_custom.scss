@@ -670,33 +670,31 @@ h3.ui.header {
   color: $color-text;
 }
 
-.patients-search {
+.registration-page {
 
-  .ui.form.search input,
-  .ui.form.search input:focus {
-    height: 60px;
-    margin-bottom: 30px;
-    text-align: left;
-    width: 100%;
-  }
+  &.search {
 
-  .results-summary {
-    margin-top: 30px;
-    margin-bottom: 15px;
-  }
-
-  .items {
-    color: $color-gray;
-    margin-bottom: 50px;
-    overflow-y: auto;
-    overflow-x: hidden;
-
-    &.results {
-      height: 600px;
+    .ui.form.search input,
+    .ui.form.search input:focus {
+      height: 60px;
+      margin-bottom: 30px;
+      text-align: left;
+      width: 100%;
     }
 
-    &.family {
-      height: 600px;
+    .results-summary {
+      margin-top: 30px;
+      margin-bottom: 15px;
+    }
+
+    .register-helper {
+      margin-bottom: 10px;
+    }
+  }
+
+  &.view {
+
+    .items.patients-list {
 
       .icon-participant.add {
         background-color: white;
@@ -732,164 +730,174 @@ h3.ui.header {
       }
     }
 
-    .item .content {
+    .separator-line {
+      border-top: 2px solid $color-gray;
+      width: 620px;
+      margin-top: 70px;
+      margin-bottom: 70px;
+    }
+  }
 
-      .details {
-        float:left;
-        width: 70%;
+  &.view,
+  &.search {
 
-        .ui.header {
-          color: $color-gray;
-          font-size: 24px;
-          font-weight: bold;
-          margin-top: 3px;
-          margin-bottom: 7px;
-        }
+    .items {
+      color: $color-gray;
+      margin-bottom: 50px;
+      overflow-y: auto;
+      overflow-x: hidden;
 
-        p {
-          margin-bottom: 0;
-          font-size: 20px;
+      &.patients-list {
+        height: 600px;
+      }
 
-          label {
+      .item .content {
+
+        .details {
+          float:left;
+          width: 70%;
+
+          .ui.header {
+            color: $color-gray;
+            font-size: 24px;
             font-weight: bold;
+            margin-top: 3px;
+            margin-bottom: 7px;
+          }
+
+          p {
+            margin-bottom: 0;
+            font-size: 20px;
+
+            label {
+              font-weight: bold;
+            }
+          }
+        }
+
+        .action {
+          float:left;
+          margin-top: -20px;
+          width: 20%;
+
+          .action-icon-wrapper {
+            height: 50px;
+            border: 2px solid gray;
+            border-radius: 28px;
+            width: 50px;
+            margin-top: 60px;
+            margin-left: 50px;
+
+            .action-icon {
+              background: url(#{$img-path}icon-forward.svg) no-repeat center;
+              background-size: 62% 62%;
+              cursor: pointer;
+              display: block;
+              height: 40px;
+              width: 40px;
+              margin-left: 2px;
+              margin-top: 2px;
+            }
           }
         }
       }
+    }
 
-      .action {
-        float:left;
-        margin-top: -20px;
-        width: 20%;
+    .actions button {
+      width: 100%;
+    }
+  }
 
-        .action-icon-wrapper {
-          height: 50px;
-          border: 2px solid gray;
-          border-radius: 28px;
-          width: 50px;
-          margin-top: 60px;
-          margin-left: 50px;
+  &.form {
 
-          .action-icon {
-            background: url(#{$img-path}icon-forward.svg) no-repeat center;
-            background-size: 62% 62%;
-            cursor: pointer;
-            display: block;
-            height: 40px;
-            width: 40px;
-            margin-left: 2px;
-            margin-top: 2px;
-          }
+    .ui.form.registration {
+
+      .ui.grid.photo {
+        margin-top: 20px;
+      }
+
+      fieldset {
+        border:none;
+        margin-top: 35px;
+      }
+
+      input,
+      input:focus,
+      .select-input {
+        background: none;
+        font-size: 2rem;
+        border: 2px solid $color-gray;
+        padding: 0 0.5em;
+        line-height: 0.5;
+        text-align: left;
+        height: 50px;
+        width: 406px;
+        color: $color-text;
+
+        &.error {
+          border-color: $color-red;
         }
       }
-    }
-  }
 
-  .register-helper {
-    margin-bottom: 10px;
-  }
+      .birtdate-label {
+        margin-top: 45px;
+      }
 
-  .button.register-button {
-    width: 100%;
-  }
+      .day-input,
+      .month-input {
+        text-align: center;
 
-  .separator-line {
-    border-top: 2px solid $color-gray;
-    width: 620px;
-    margin-top: 70px;
-    margin-bottom: 70px;
-  }
+        span {
+          font-size: 15px;
+        }
 
-  .actions button {
-    width: 100%;
-  }
-}
+        select {
+          width: 100px;
+        }
+      }
 
-.ui.form.registration {
+      .year-input {
+        text-align: center;
 
-  .ui.grid.photo {
-    margin-top: 20px;
-  }
+        span {
+          font-size: 15px;
+        }
 
-  fieldset {
-    border:none;
-    margin-top: 35px;
-  }
+        select {
+          width: 120px;
+        }
+      }
 
-  input,
-  input:focus,
-  .select-input {
-    background: none;
-    font-size: 2rem;
-    border: 2px solid $color-gray;
-    padding: 0 0.5em;
-    line-height: 0.5;
-    text-align: left;
-    height: 50px;
-    width: 406px;
-    color: $color-text;
+      .gender-input {
+        margin-left: 15px;
+      }
 
-    &.error {
-      border-color: $color-red;
-    }
-  }
+      .estimated-input {
+        span {
+          font-size: 15px;
+          margin-left: 30px;
+        }
 
-  .birtdate-label {
-    margin-top: 45px;
-  }
+        input {
+          width: 35px;
+          margin-left: 45px;
+          margin-top: 5px;
+        }
+      }
 
-  .day-input,
-  .month-input {
-    text-align: center;
-
-    span {
-      font-size: 15px;
+      .required:before {
+        content: " *";
+        margin-left: -20px;
+        padding-right: 10px;
+      }
     }
 
-    select {
-      width: 100px;
+    .actions button {
+      float: left;
+      margin: 0;
+      width: 50%;
     }
   }
-
-  .year-input {
-    text-align: center;
-
-    span {
-      font-size: 15px;
-    }
-
-    select {
-      width: 120px;
-    }
-  }
-
-  .gender-input {
-    margin-left: 15px;
-  }
-
-  .estimated-input {
-    span {
-      font-size: 15px;
-      margin-left: 30px;
-    }
-
-    input {
-      width: 35px;
-      margin-left: 45px;
-      margin-top: 5px;
-    }
-  }
-
-  .required:before {
-    content: " *";
-    margin-left: -20px;
-    padding-right: 10px;
-  }
-}
-
-.registration-form.actions button {
-  float: left;
-  margin: 0;
-  width: 50%;
 }
 
 input::placeholder {

@@ -601,10 +601,10 @@ viewRegistrationForm language currentDate user backend cache step registrationFo
                 ]
                 [ text <| translate language label ++ " >" ]
     in
-    div [ class "wrap-list" ]
+    div [ class "wrap-list registration-page form" ]
         [ div [ class "ui form registration" ]
             formContent
-        , div [ class "registration-form actions" ]
+        , div [ class "actions" ]
             [ viewBackButton language maybePreviousPhase, rightButton ]
         ]
 
@@ -693,7 +693,7 @@ viewSearchForm language currentDate user backend cache participantsData searchSt
                         )
                     )
     in
-    div [ class "wrap-list patients-search" ]
+    div [ class "wrap-list registration-page search" ]
         [ h3 [ class "ui header" ]
             [ text <| translate language Translate.PatientInformation ++ ": " ]
         , span [ class "search-helper" ] [ text <| translate language Translate.SearchHelper ]
@@ -702,15 +702,17 @@ viewSearchForm language currentDate user backend cache participantsData searchSt
         , searchForm
         , div [ class "results-summary" ]
             searchResultsSummary
-        , div [ class "ui unstackable items results" ]
+        , div [ class "ui unstackable items patients-list" ]
             searchResultsPatients
         , div [ class "register-helper" ]
             [ text <| translate language Translate.RegisterHelper ]
-        , button
-            [ class "ui primary button register-button"
-            , onClick <| SetRegistrationPhase (ParticipantRegistration First)
+        , div [ class "actions" ]
+            [ button
+                [ class "ui primary button"
+                , onClick <| SetRegistrationPhase (ParticipantRegistration First)
+                ]
+                [ text <| translate language Translate.RegisterNewPatient ]
             ]
-            [ text <| translate language Translate.RegisterNewPatient ]
         ]
 
 
@@ -794,7 +796,7 @@ viewPatientDetailsForm language currentDate user backend cache viewedPatient par
                             |> List.append [ addChildModal ]
                             |> List.reverse
     in
-    div [ class "wrap-list patients-search" ]
+    div [ class "wrap-list registration-page view" ]
         [ h3 [ class "ui header" ]
             [ text <| translate language topLabel ++ ": " ]
         , div [ class "ui unstackable items" ]
@@ -802,7 +804,7 @@ viewPatientDetailsForm language currentDate user backend cache viewedPatient par
         , div [ class "separator-line" ] []
         , h3 [ class "ui header" ]
             [ text <| translate language bottomLabel ++ ": " ]
-        , div [ class "ui unstackable items family" ]
+        , div [ class "ui unstackable items patients-list" ]
             familyMembers
         , div [ class "actions" ]
             [ viewBackButton language maybePreviousPhase ]
