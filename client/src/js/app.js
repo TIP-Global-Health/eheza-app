@@ -48,6 +48,13 @@ navigator.storage.persist().then(function (granted) {
     elmApp.ports.persistentStorage.send(granted);
 });
 
+
+// Milliseconds for the specified minutes
+function minutesToMillis(minutes) {
+    return minutes * 60 * 1000;
+}
+
+
 // Report our quota status.
 function reportQuota () {
     navigator.storage.estimate().then(function (quota) {
@@ -59,15 +66,27 @@ function reportQuota () {
 reportQuota();
 
 // And, then every minute.
-setInterval(reportQuota, 60 * 1000);
+setInterval(reportQuota, minutesToMillis(1));
 
-elmApp.ports.trySyncing.subscribe(function () {
-    // This manually kicks off a sync attempt. Normally, we'll manage this
-    // automatically, but it's nice to be able to kick one off directly.
+
+// Kick off a sync. If we're offline, the browser's sync mechanism will wait
+// until we're online.
+function trySyncing() {
     navigator.serviceWorker.ready.then(function (reg) {
         reg.sync.register('sync');
     });
-});
+}
+
+// Do it on launch.
+trySyncing();
+
+// And try a sync every 5 minutes. In future, we may react to Pusher messages
+// instead of polling.
+setInterval(trySyncing, minutesToMillis(5));
+
+// And allow a manual attempt.
+elmApp.ports.trySyncing.subscribe(trySyncing);
+
 
 elmApp.ports.cacheCredentials.subscribe(function(params) {
     // The `backendUrl` isn't actually used, for the moment ... we just save
