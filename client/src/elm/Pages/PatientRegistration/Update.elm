@@ -27,9 +27,6 @@ import Time.Date
 update : Time -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentTime msg model =
     case msg of
-        AddNewPatient uuid ->
-            ( initModel model, Cmd.none, [] )
-
         DropZoneComplete result ->
             -- The `fid` being Nothing signifies that we haven't uploaded this to
             -- the backend yet, so we don't know what file ID the backend will

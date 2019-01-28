@@ -916,7 +916,7 @@ viewDialog language dialogState =
                         Just <| confirmSubmisionDialog language
 
                     SuccessfulSubmision maybePatientType ->
-                        Just <| successfulSubmisionDialog language
+                        Just <| successfulSubmisionDialog language maybePatientType
             )
 
 
@@ -948,31 +948,56 @@ confirmSubmisionDialog language =
         ]
 
 
-successfulSubmisionDialog : Language -> Html Msg
-successfulSubmisionDialog language =
+successfulSubmisionDialog : Language -> Maybe PatientType -> Html Msg
+successfulSubmisionDialog language maybePatientType =
+    let
+        ( helper, resetButtonLabel ) =
+            case maybePatientType of
+                Just (PatientMother _ _) ->
+                    ( Translate.RegistartionSuccessfulAddChild, Translate.No )
+
+                Just (PatientChild _ _) ->
+                    ( Translate.RegistartionSuccessfulAddMother, Translate.No )
+
+                Nothing ->
+                    ( Translate.RegistartionSuccessfulRelationCreated, Translate.OK )
+
+        buttons =
+            div
+                [ classList
+                    [ ( "one", isNothing maybePatientType )
+                    , ( "two", isJust maybePatientType )
+                    , ( "ui buttons", True )
+                    ]
+                ]
+            <|
+                button
+                    [ class "ui fluid button"
+                    , onClick Reset
+                    ]
+                    [ text <| translate language resetButtonLabel ]
+                    :: (if isJust maybePatientType then
+                            [ button
+                                [ class "ui primary fluid button"
+                                , onClick <| SetRelationPatient maybePatientType
+                                ]
+                                [ text <| translate language Translate.Yes ]
+                            ]
+
+                        else
+                            []
+                       )
+    in
     div [ class "ui tiny active modal" ]
         [ div
             [ class "header" ]
             [ text <| translate language Translate.RegistartionSuccessful ]
         , div
             [ class "content" ]
-            [ text <| translate language Translate.RegistartionSuccessfulAddNewPatient ]
+            [ text <| translate language helper ]
         , div
             [ class "actions" ]
-            [ div
-                [ class "two ui buttons" ]
-                [ button
-                    [ class "ui  fluid button"
-                    , onClick Reset
-                    ]
-                    [ text <| translate language Translate.No ]
-                , button
-                    [ class "ui  primary fluid button"
-                    , onClick <| AddNewPatient Nothing
-                    ]
-                    [ text <| translate language Translate.Yes ]
-                ]
-            ]
+            [ buttons ]
         ]
 
 

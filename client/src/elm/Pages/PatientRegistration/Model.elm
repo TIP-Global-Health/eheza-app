@@ -99,8 +99,7 @@ type PatientType
 
 
 type Msg
-    = AddNewPatient (Maybe Uuid)
-    | DropZoneComplete DropZoneFile
+    = DropZoneComplete DropZoneFile
     | GoBack
     | MsgRegistrationForm Form.Msg
     | Reset
