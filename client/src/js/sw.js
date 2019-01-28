@@ -34,10 +34,20 @@ dbSync.version(1).stores({
     // that it should be unique.
     nodes: '&uuid,type,vid',
 
-    // Metadata that tracks information about the sync process. The uuid is
-    // the UUID of the health center (for the things that we sync by health
-    // center). For the general nodes store, we use a static UUID.
-    syncMetadata: '&uuid'
+    // Metadata that tracks information about the sync process. The uuid is the
+    // UUID of the shard we are syncing. So, for things we sync by health
+    // center, it's the UUID of the health center. For things in the nodes
+    // table, which every device gets, we use a static UUID here (`nodesUuid`).
+    syncMetadata: '&uuid',
+
+    // This is like the `nodes` table, but for the things that we don't
+    // download onto all devices -- that is, for the things for which we are
+    // "sharding" the database by health center.
+    //
+    // The `uuid` is the UUID of the node. The `shard` is the UUID of the
+    // health center which is the reason we're downloading this node to this
+    // device.
+    shards: '&uuid,type,vid,shard'
 });
 
 // For when any sync metadata changes, send it all to the app
