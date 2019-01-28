@@ -915,7 +915,7 @@ viewDialog language dialogState =
                     ConfirmSubmision ->
                         Just <| confirmSubmisionDialog language
 
-                    SuccessfulSubmision ->
+                    SuccessfulSubmision maybePatientType ->
                         Just <| successfulSubmisionDialog language
             )
 

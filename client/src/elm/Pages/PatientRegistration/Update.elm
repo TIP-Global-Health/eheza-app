@@ -9,7 +9,7 @@ import EveryDict
 import Form
 import Form.Field exposing (FieldValue(..))
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
-import Maybe.Extra exposing (unwrap)
+import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page
 import Pages.PatientRegistration.Model exposing (..)
 import Pages.PatientRegistration.Utils
@@ -407,14 +407,46 @@ update currentTime msg model =
                                         village
                                         telephoneNumber
                                         healthCenterName
+
+                                newUuid =
+                                    generateUuid currentTime
+
+                                ( newDialogState, updatedParticipantsData ) =
+                                    case model.relationPatient of
+                                        Just (PatientMother motherUuid mother) ->
+                                            let
+                                                childAfterRelation =
+                                                    { child | motherUuid = Just motherUuid }
+
+                                                motherAfterRelation =
+                                                    { mother | childrenUuids = newUuid :: mother.childrenUuids }
+                                            in
+                                            ( Just <| SuccessfulSubmision Nothing
+                                            , { mothersToRegister = EveryDict.insert motherUuid motherAfterRelation model.participantsData.mothersToRegister
+                                              , childrenToRegister = EveryDict.insert newUuid childAfterRelation model.participantsData.childrenToRegister
+                                              }
+                                            )
+
+                                        -- We're registering a child, so we should never gets
+                                        -- here, since we're not supposed to relate a child with
+                                        -- another child.
+                                        Just (PatientChild childUuid _) ->
+                                            ( Nothing, model.participantsData )
+
+                                        Nothing ->
+                                            ( Just <| SuccessfulSubmision <| Just <| PatientChild newUuid child
+                                            , { mothersToRegister = model.participantsData.mothersToRegister
+                                              , childrenToRegister = EveryDict.insert newUuid child model.participantsData.childrenToRegister
+                                              }
+                                            )
                             in
-                            let
-                                updatedParticipantsData =
-                                    { mothersToRegister = model.participantsData.mothersToRegister
-                                    , childrenToRegister = EveryDict.insert (generateUuid currentTime) child model.participantsData.childrenToRegister
-                                    }
-                            in
-                            ( { model | participantsData = updatedParticipantsData, dialogState = Just SuccessfulSubmision }, Cmd.none, [] )
+                            ( { model
+                                | participantsData = updatedParticipantsData
+                                , dialogState = newDialogState
+                              }
+                            , Cmd.none
+                            , []
+                            )
 
                         MotherParticipant _ ->
                             let
@@ -536,14 +568,46 @@ update currentTime msg model =
                                         village
                                         telephoneNumber
                                         healthCenterName
+
+                                newUuid =
+                                    generateUuid currentTime
+
+                                ( newDialogState, updatedParticipantsData ) =
+                                    case model.relationPatient of
+                                        -- We're registering a mother, so we should never gets
+                                        -- here, since we're not supposed to relate a mother with
+                                        -- another mother.
+                                        Just (PatientMother motherUuid mother) ->
+                                            ( Nothing, model.participantsData )
+
+                                        Just (PatientChild childUuid child) ->
+                                            let
+                                                motherAfterRelation =
+                                                    { mother | childrenUuids = [ childUuid ] }
+
+                                                childAfterRelation =
+                                                    { child | motherUuid = Just newUuid }
+                                            in
+                                            ( Just <| SuccessfulSubmision Nothing
+                                            , { mothersToRegister = EveryDict.insert newUuid motherAfterRelation model.participantsData.mothersToRegister
+                                              , childrenToRegister = EveryDict.insert childUuid childAfterRelation model.participantsData.childrenToRegister
+                                              }
+                                            )
+
+                                        Nothing ->
+                                            ( Just <| SuccessfulSubmision <| Just <| PatientMother newUuid mother
+                                            , { mothersToRegister = EveryDict.insert newUuid mother model.participantsData.mothersToRegister
+                                              , childrenToRegister = model.participantsData.childrenToRegister
+                                              }
+                                            )
                             in
-                            let
-                                updatedParticipantsData =
-                                    { mothersToRegister = EveryDict.insert (generateUuid currentTime) mother model.participantsData.mothersToRegister
-                                    , childrenToRegister = model.participantsData.childrenToRegister
-                                    }
-                            in
-                            ( { model | participantsData = updatedParticipantsData, dialogState = Just SuccessfulSubmision }, Cmd.none, [] )
+                            ( { model
+                                | participantsData = updatedParticipantsData
+                                , dialogState = newDialogState
+                              }
+                            , Cmd.none
+                            , []
+                            )
 
                 Nothing ->
                     -- We should not get here, so we have this to satisfy the compiler,

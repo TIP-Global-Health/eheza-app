@@ -114,7 +114,7 @@ type Msg
 
 type DialogState
     = ConfirmSubmision
-    | SuccessfulSubmision
+    | SuccessfulSubmision (Maybe PatientType)
 
 
 type alias RegistrationForm =
