@@ -335,7 +335,7 @@ child4 =
         Nothing
         Nothing
         Nothing
-        (Just mother2Uuid)
+        Nothing
         (date 2011 4 4)
         False
         Female
@@ -429,7 +429,7 @@ mother3 =
         Nothing
         Nothing
         []
-        [ child4Uuid ]
+        []
         (date 2003 3 3)
         True
         Female

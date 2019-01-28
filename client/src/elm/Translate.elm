@@ -138,6 +138,8 @@ type TranslationId
     | ActivitiesToComplete Int
     | ActivityProgressReport ActivityType
     | ActivePage Page
+    | AddChild
+    | AddMother
     | Admin
     | AddressInformation
     | AgeWord
@@ -166,6 +168,7 @@ type TranslationId
     | Cell
     | ChartPhrase ChartPhrase
     | CheckIn
+    | ChildDemographicInformation
     | ChildNutritionSignLabel ChildNutritionSign
     | ChildNutritionSignReport ChildNutritionSign
     | ChildOf
@@ -249,6 +252,7 @@ type TranslationId
     | MonthAbbrev
     | MonthsOld
     | Mother
+    | MotherDemographicInformation
     | MotherName String
     | MotherNameLabel
     | MotherNationalId
@@ -384,6 +388,16 @@ translationSet trans =
         AccessDenied ->
             { english = "Access denied"
             , kinyarwanda = Just "Kwinjira ntibyemera"
+            }
+
+        AddChild ->
+            { english = "Add Child"
+            , kinyarwanda = Nothing
+            }
+
+        AddMother ->
+            { english = "Add Mother"
+            , kinyarwanda = Nothing
             }
 
         Admin ->
@@ -688,6 +702,11 @@ translationSet trans =
         CheckIn ->
             { english = "Check in:"
             , kinyarwanda = Just "Kureba abaje"
+            }
+
+        ChildDemographicInformation ->
+            { english = "Child Demographic Information"
+            , kinyarwanda = Nothing
             }
 
         ChildNutritionSignLabel sign ->
@@ -1299,6 +1318,11 @@ translationSet trans =
         Mother ->
             { english = "Mother"
             , kinyarwanda = Just "Umubyeyi"
+            }
+
+        MotherDemographicInformation ->
+            { english = "Mother Demographic Information"
+            , kinyarwanda = Nothing
             }
 
         MotherName name ->

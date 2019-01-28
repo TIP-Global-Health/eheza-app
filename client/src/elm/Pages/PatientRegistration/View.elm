@@ -739,10 +739,12 @@ viewPatientDetailsForm :
     -> Html Msg
 viewPatientDetailsForm language currentDate user backend cache viewedPatient participantsData =
     let
-        familyMembers =
+        ( topLabel, bottomLabel, familyMembersList ) =
             case viewedPatient of
                 PatientMother mother ->
-                    participantsData.childrenToRegister
+                    ( Translate.MotherDemographicInformation
+                    , Translate.Children
+                    , participantsData.childrenToRegister
                         |> EveryDict.toList
                         |> List.filterMap
                             (\( uuid, child ) ->
@@ -752,9 +754,12 @@ viewPatientDetailsForm language currentDate user backend cache viewedPatient par
                                 else
                                     Nothing
                             )
+                    )
 
                 PatientChild child ->
-                    child.motherUuid
+                    ( Translate.ChildDemographicInformation
+                    , Translate.Mother
+                    , child.motherUuid
                         |> unwrap
                             []
                             (\motherUuid ->
@@ -765,34 +770,53 @@ viewPatientDetailsForm language currentDate user backend cache viewedPatient par
                                     Nothing ->
                                         []
                             )
+                    )
 
-        viewFamilyMembers =
+        familyMembers =
+            let
+                addPatientModal patientClass label =
+                    div [ class "ui grid" ]
+                        [ div [ class "four wide column" ]
+                            [ span [ class <| "icon-participant add " ++ patientClass ] [] ]
+                        , div [ class "eight wide column add-patient-label" ]
+                            [ text <| translate language label ]
+                        , div [ class "three wide column" ]
+                            [ div [ class "add-patient-icon-wrapper" ] [ span [ class "add-patient-icon" ] [] ] ]
+                        ]
+            in
             case viewedPatient of
                 PatientChild _ ->
-                    case familyMembers of
+                    case familyMembersList of
                         [ ( uuid, patientMother ) ] ->
-                            div [ class "ui unstackable items" ]
-                                [ viewPatient language patientMother False ]
+                            [ viewPatient language patientMother False ]
 
                         _ ->
-                            div [] [ text "No mother attached" ]
+                            [ addPatientModal "mother" Translate.AddMother ]
 
                 PatientMother _ ->
-                    if List.isEmpty familyMembers then
-                        div [] [ text "No children attached" ]
+                    let
+                        addChildModal =
+                            addPatientModal "child" Translate.AddChild
+                    in
+                    if List.isEmpty familyMembersList then
+                        [ addChildModal ]
 
                     else
-                        familyMembers
+                        familyMembersList
                             |> List.map (\( uuid, childPatient ) -> viewPatient language childPatient False)
-                            |> div [ class "ui unstackable items" ]
+                            |> List.append [ addChildModal ]
+                            |> List.reverse
     in
     div [ class "wrap-list patients-search" ]
         [ h3 [ class "ui header" ]
-            [ text <| translate language Translate.PatientDemographicInformation ++ ": " ]
+            [ text <| translate language topLabel ++ ": " ]
         , div [ class "ui unstackable items" ]
             [ viewPatient language viewedPatient False ]
         , div [ class "separator-line" ] []
-        , viewFamilyMembers
+        , h3 [ class "ui header" ]
+            [ text <| translate language bottomLabel ++ ": " ]
+        , div [ class "ui unstackable items family" ]
+            familyMembers
         ]
 
 
