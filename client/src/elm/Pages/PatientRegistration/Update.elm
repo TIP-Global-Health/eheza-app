@@ -193,6 +193,10 @@ update currentTime msg model =
             in
             ( { model | registrationPhase = phase, previousPhases = updatedPreviousPhases }, Cmd.none, [] )
 
+        SetRelationPatient patientType ->
+            ( { model | relationPatient = patientType, submittedSearch = Nothing }, Cmd.none, [] )
+                |> sequenceExtra (update currentTime) [ SetRegistrationPhase <| ParticipantSearch Nothing ]
+
         Submit ->
             let
                 currentDate =

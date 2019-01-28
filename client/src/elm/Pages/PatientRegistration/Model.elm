@@ -34,6 +34,7 @@ type alias Model =
     , registrationPhase : RegistrationPhase
     , previousPhases : List RegistrationPhase
     , participantsData : ParticipantsData
+    , relationPatient : Maybe PatientType
     , submittedSearch : Maybe String
     , dialogState : Maybe DialogState
     }
@@ -52,6 +53,7 @@ emptyModel =
     , registrationPhase = ParticipantSearch Nothing
     , previousPhases = []
     , participantsData = dummyParticipantsData
+    , relationPatient = Nothing
     , submittedSearch = Nothing
     , dialogState = Nothing
     }
@@ -89,8 +91,8 @@ type RegistrationStep
 
 
 type PatientType
-    = PatientMother Mother
-    | PatientChild Child
+    = PatientMother Uuid Mother
+    | PatientChild Uuid Child
 
 
 type Msg
@@ -103,6 +105,7 @@ type Msg
     | SetActivePage Page
     | SetDialogState (Maybe DialogState)
     | SetRegistrationPhase RegistrationPhase
+    | SetRelationPatient (Maybe PatientType)
     | Submit
 
 

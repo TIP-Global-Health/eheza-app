@@ -685,10 +685,10 @@ viewSearchForm language currentDate user backend cache participantsData searchSt
                         in
                         ( [ text <| translate language <| Translate.ReportResultsOfSearch total ]
                         , (mothers
-                            |> List.map (\( _, mother ) -> viewPatient language (PatientMother mother) True)
+                            |> List.map (\( uuid, mother ) -> viewPatient language (PatientMother uuid mother) True)
                           )
                             ++ (children
-                                    |> List.map (\( _, child ) -> viewPatient language (PatientChild child) True)
+                                    |> List.map (\( uuid, child ) -> viewPatient language (PatientChild uuid child) True)
                                )
                         )
                     )
@@ -730,7 +730,7 @@ viewPatientDetailsForm language currentDate user backend cache viewedPatient par
     let
         ( topLabel, bottomLabel, familyMembersList ) =
             case viewedPatient of
-                PatientMother mother ->
+                PatientMother _ mother ->
                     ( Translate.MotherDemographicInformation
                     , Translate.Children
                     , participantsData.childrenToRegister
@@ -738,14 +738,14 @@ viewPatientDetailsForm language currentDate user backend cache viewedPatient par
                         |> List.filterMap
                             (\( uuid, child ) ->
                                 if List.member uuid mother.childrenUuids then
-                                    Just <| ( uuid, PatientChild child )
+                                    Just <| PatientChild uuid child
 
                                 else
                                     Nothing
                             )
                     )
 
-                PatientChild child ->
+                PatientChild _ child ->
                     ( Translate.ChildDemographicInformation
                     , Translate.Mother
                     , child.motherUuid
@@ -754,7 +754,7 @@ viewPatientDetailsForm language currentDate user backend cache viewedPatient par
                             (\motherUuid ->
                                 case EveryDict.get motherUuid participantsData.mothersToRegister of
                                     Just mother ->
-                                        [ ( motherUuid, PatientMother mother ) ]
+                                        [ PatientMother motherUuid mother ]
 
                                     Nothing ->
                                         []
@@ -770,19 +770,26 @@ viewPatientDetailsForm language currentDate user backend cache viewedPatient par
                         , div [ class "eight wide column add-patient-label" ]
                             [ text <| translate language label ]
                         , div [ class "three wide column" ]
-                            [ div [ class "add-patient-icon-wrapper" ] [ span [ class "add-patient-icon" ] [] ] ]
+                            [ div [ class "add-patient-icon-wrapper" ]
+                                [ span
+                                    [ class "add-patient-icon"
+                                    , onClick <| SetRelationPatient <| Just viewedPatient
+                                    ]
+                                    []
+                                ]
+                            ]
                         ]
             in
             case viewedPatient of
-                PatientChild _ ->
+                PatientChild _ _ ->
                     case familyMembersList of
-                        [ ( uuid, patientMother ) ] ->
+                        [ patientMother ] ->
                             [ viewPatient language patientMother False ]
 
                         _ ->
                             [ addPatientModal "mother" Translate.AddMother ]
 
-                PatientMother _ ->
+                PatientMother _ _ ->
                     let
                         addChildModal =
                             addPatientModal "child" Translate.AddChild
@@ -792,7 +799,7 @@ viewPatientDetailsForm language currentDate user backend cache viewedPatient par
 
                     else
                         familyMembersList
-                            |> List.map (\( uuid, childPatient ) -> viewPatient language childPatient False)
+                            |> List.map (\childPatient -> viewPatient language childPatient False)
                             |> List.append [ addChildModal ]
                             |> List.reverse
     in
@@ -816,10 +823,10 @@ viewPatient language patientType addAction =
     let
         ( typeForThumbnail, details, healthCenter ) =
             case patientType of
-                PatientMother mother ->
+                PatientMother _ mother ->
                     ( "mother", getCommonDetails mother, "Unknown" )
 
-                PatientChild child ->
+                PatientChild _ child ->
                     ( "child", getCommonDetails child, "Unknown" )
 
         content =
