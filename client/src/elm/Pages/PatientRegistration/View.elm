@@ -18,7 +18,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
-import Maybe.Extra exposing (isJust, unwrap)
+import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRegistration.Model
@@ -80,10 +80,10 @@ viewBody language currentDate user backend cache model =
         body =
             case model.registrationPhase of
                 ParticipantSearch searchString ->
-                    viewSearchForm language currentDate user backend cache model.participantsData searchString model.submittedSearch previousPhase
+                    viewSearchForm language currentDate user backend cache model.participantsData searchString model.submittedSearch model.relationPatient
 
                 ParticipantRegistration step ->
-                    viewRegistrationForm language currentDate user backend cache step model.registrationForm model.photo previousPhase
+                    viewRegistrationForm language currentDate user backend cache step model.registrationForm model.photo model.relationPatient previousPhase
 
                 ParticipantView patientType ->
                     viewPatientDetailsForm language currentDate user backend cache patientType model.participantsData previousPhase
@@ -101,9 +101,10 @@ viewRegistrationForm :
     -> RegistrationStep
     -> Form () RegistrationForm
     -> Maybe PhotoValue
+    -> Maybe PatientType
     -> Maybe RegistrationPhase
     -> Html Msg
-viewRegistrationForm language currentDate user backend cache step registrationForm photo maybePreviousPhase =
+viewRegistrationForm language currentDate user backend cache step registrationForm photo maybeRelationPatient maybePreviousPhase =
     let
         -- FORM FIELDS --
         firstName =
@@ -201,6 +202,7 @@ viewRegistrationForm language currentDate user backend cache step registrationFo
                 (getFormFieldValue dayOfBirth)
                 (getFormFieldValue monthOfBirth)
                 (getFormFieldValue yearOfBirth)
+                maybeRelationPatient
 
         emptyOption =
             ( "", "" )
@@ -226,12 +228,22 @@ viewRegistrationForm language currentDate user backend cache step registrationFo
                                 currentYear =
                                     Time.Date.year currentDate
 
-                                startFromYear =
-                                    currentYear - 99
+                                ( totalYears, startFromYear ) =
+                                    maybeRelationPatient
+                                        |> unwrap
+                                            ( 100, currentYear - 99 )
+                                            (\relationPatient ->
+                                                case relationPatient of
+                                                    PatientChild _ _ ->
+                                                        ( 88, currentYear - 99 )
+
+                                                    PatientMother _ _ ->
+                                                        ( 13, currentYear - 12 )
+                                            )
 
                                 yearOptions =
                                     emptyOption
-                                        :: (List.repeat 100 "."
+                                        :: (List.repeat totalYears "."
                                                 |> List.indexedMap (\index _ -> ( toString <| index + startFromYear, toString <| index + startFromYear ))
                                                 |> List.reverse
                                            )
@@ -532,6 +544,7 @@ viewRegistrationForm language currentDate user backend cache step registrationFo
                         (getFormFieldValue dayOfBirth)
                         (getFormFieldValue monthOfBirth)
                         (getFormFieldValue yearOfBirth)
+                        maybeRelationPatient
 
                 ( label, action, disabled ) =
                     case step of
@@ -618,9 +631,9 @@ viewSearchForm :
     -> ParticipantsData
     -> Maybe String
     -> Maybe String
-    -> Maybe RegistrationPhase
+    -> Maybe PatientType
     -> Html Msg
-viewSearchForm language currentDate user backend cache participantsData searchString submittedSearch maybePreviousPhase =
+viewSearchForm language currentDate user backend cache participantsData searchString submittedSearch maybeRelationPatient =
     let
         ( disableSubmitButton, searchValue ) =
             case searchString of
@@ -664,20 +677,37 @@ viewSearchForm language currentDate user backend cache participantsData searchSt
                     ( [], [] )
                     (\searchValue ->
                         let
+                            -- When relation patient is set, if it's a child, search search results
+                            -- should display only mothers.
+                            -- If it's a mother, search results should display only children that
+                            -- are not attached to mother.
+                            ( relationPatientConditionMother, relationPatientConditionChild ) =
+                                maybeRelationPatient
+                                    |> unwrap
+                                        ( \mother -> True, \child -> True )
+                                        (\relationPatient ->
+                                            case relationPatient of
+                                                PatientMother _ _ ->
+                                                    ( \mother -> False, \child -> isNothing child.motherUuid )
+
+                                                PatientChild _ _ ->
+                                                    ( \mother -> True, \child -> False )
+                                        )
+
                             mothers =
                                 participantsData.mothersToRegister
                                     |> EveryDict.toList
                                     |> List.filter
-                                        (\( id, mother ) ->
-                                            String.contains searchValue mother.name
+                                        (\( _, mother ) ->
+                                            String.contains searchValue mother.name && relationPatientConditionMother mother
                                         )
 
                             children =
                                 participantsData.childrenToRegister
                                     |> EveryDict.toList
                                     |> List.filter
-                                        (\( id, child ) ->
-                                            String.contains searchValue child.name
+                                        (\( _, child ) ->
+                                            String.contains searchValue child.name && relationPatientConditionChild child
                                         )
 
                             total =

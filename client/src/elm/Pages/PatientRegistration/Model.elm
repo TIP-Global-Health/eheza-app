@@ -12,6 +12,8 @@ module Pages.PatientRegistration.Model exposing
     , validateRegistrationForm
     )
 
+-- import Pages.PatientRegistration.Utils exposing (generateUuid)
+
 import Backend.Child.Model exposing (Child)
 import Backend.Measurement.Model exposing (PhotoValue)
 import Backend.Mother.Model exposing (Mother)
@@ -22,10 +24,11 @@ import Form.Error exposing (ErrorValue(..))
 import Form.Validate exposing (Validation, andMap, andThen, bool, emptyString, field, format, mapError, oneOf, string, succeed)
 import Measurement.Model exposing (DropZoneFile)
 import Pages.Page exposing (Page)
-import Pages.PatientRegistration.Utils exposing (generateUuid)
+import Random.Pcg exposing (initialSeed, step)
 import Regex exposing (Regex)
+import Time exposing (Time)
 import Time.Date exposing (date)
-import Uuid exposing (Uuid)
+import Uuid exposing (Uuid, uuidGenerator)
 
 
 type alias Model =
@@ -194,6 +197,19 @@ validateAlphanumeric =
 alphanumericPattern : Regex
 alphanumericPattern =
     Regex.regex "^[a-zA-Z0-9]*$"
+
+
+
+-- Temporary copy of function from Utils to solve cyclic dependency.
+
+
+generateUuid : Time -> Uuid
+generateUuid currentTime =
+    let
+        ( uuid, _ ) =
+            step uuidGenerator (initialSeed <| round currentTime)
+    in
+    uuid
 
 
 child1Uuid : Uuid

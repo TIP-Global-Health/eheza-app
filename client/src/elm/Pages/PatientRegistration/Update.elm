@@ -215,7 +215,7 @@ update currentTime msg model =
                         |> getFormFieldValue
 
                 maybeRegistratingParticipant =
-                    getRegistratingParticipant currentDate dayOfBirth monthOfBirth yearOfBirth
+                    getRegistratingParticipant currentDate dayOfBirth monthOfBirth yearOfBirth model.relationPatient
             in
             case maybeRegistratingParticipant of
                 Just participant ->
