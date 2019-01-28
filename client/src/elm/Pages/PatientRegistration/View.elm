@@ -675,9 +675,7 @@ viewSearchForm language currentDate user backend cache participantsData searchSt
         ( searchResultsSummary, searchResultsPatients ) =
             submittedSearch
                 |> unwrap
-                    ( [ text <| translate language <| Translate.ReportResultsOfSearch 0 ]
-                    , []
-                    )
+                    ( [], [] )
                     (\searchValue ->
                         let
                             mothers =
