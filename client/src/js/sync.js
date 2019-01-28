@@ -67,46 +67,6 @@
          }
     });
 
-    // This is for cases where we want to manually try a sync right away.
-    self.addEventListener('message', function(event) {
-        if (event.data === syncTag) {
-            var action = dbSync.open().catch(databaseError).then(function () {
-                return manualSync();
-            });
-
-            return event.waitUntil(action);
-        }
-    });
-
-    function manualSync() {
-        return trySyncing().then(function (meta) {
-            // We suceeded!
-            meta.status = {
-                tag: 'Success',
-                timestamp: Date.now()
-            };
-
-            meta.uuid = nodesUuid;
-
-            return dbSync.syncMetadata.put(meta).then(sendSyncData).then(function () {
-                if (meta.remaining > 0) {
-                    // Schedule another if the backend says there are more.
-                    return manualSync();
-                } else {
-                    return Promise.resolve();
-                }
-            });
-        }, function (err) {
-            // We failed!
-            if (err.tag === 'NetworkError') {
-                err.willRetry = true;
-                registration.sync.register(syncTag);
-            }
-
-            return recordStatus(err);
-        });
-    }
-
     function databaseError(err) {
         return Promise.reject({
             tag: 'DatabaseError',

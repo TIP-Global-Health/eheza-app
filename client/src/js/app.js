@@ -64,10 +64,8 @@ setInterval(reportQuota, 60 * 1000);
 elmApp.ports.trySyncing.subscribe(function () {
     // This manually kicks off a sync attempt. Normally, we'll manage this
     // automatically, but it's nice to be able to kick one off directly.
-    navigator.serviceWorker.getRegistration().then(function (reg) {
-        if (reg.active) {
-            reg.active.postMessage('sync');
-        }
+    navigator.serviceWorker.ready.then(function (reg) {
+        reg.sync.register('sync');
     });
 });
 
