@@ -32,7 +32,7 @@ dbSync.version(1).stores({
     // What we're specifying here is a comma-separate list of the fields to
     // index. The first field is the primary key, and the `&` indicates
     // that it should be unique.
-    nodes: '&uuid,type,vid',
+    nodes: '&uuid,type,vid,status',
 
     // Metadata that tracks information about the sync process. The uuid is the
     // UUID of the shard we are syncing. So, for things we sync by health
@@ -47,7 +47,7 @@ dbSync.version(1).stores({
     // The `uuid` is the UUID of the node. The `shard` is the UUID of the
     // health center which is the reason we're downloading this node to this
     // device.
-    shards: '&uuid,type,vid,shard'
+    shards: '&uuid,type,vid,status,shard'
 });
 
 // For when any sync metadata changes, send it all to the app
