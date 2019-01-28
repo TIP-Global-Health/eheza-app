@@ -42,7 +42,6 @@ decodeSyncAttempt =
                     "NetworkError" ->
                         succeed NetworkError
                             |> required "message" string
-                            |> required "willRetry" bool
                             |> decodeFailure
 
                     "NoCredentials" ->

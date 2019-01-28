@@ -11,215 +11,313 @@
     // Here is a list of possible values for the 'tag` field for our status,
     // along with other fields to look for.
     //
-    // The only thing we will automatically retry via background sync is
-    // a NetworkError, since that's the only thing that can reasonably
-    // benefit from an automatic retry. However, the background sync
-    // will only retry so many times.
-    //
-    // NotAsked
+    // NotAsked {timestamp}
     // Loading {revision, timestamp}
     // DatabaseError {message, timestamp}
-    // NetworkError {message, timestamp, willRetry}
+    // NetworkError {message, timestamp}
     // NoCredentials {timestamp}
     // BadResponse {timestamp, status, statusText}
     // BadJson {timestamp}
     // Success {timestamp}
 
-    // This is for cases where we've scheduled a background sync.
-    self.addEventListener('sync', function(event) {
+    // Tag values
+    var NotAsked = 'NotAsked';
+    var Loading = 'Loading';
+    var DatabaseError = 'DatabaseError';
+    var NetworkError = 'NetworkError';
+    var NoCredentials = 'NoCredentials';
+    var BadResponse = 'BadResponse';
+    var BadJson = 'BadJson';
+    var Success = 'Success';
+
+    // Transaction constants
+    var rw = 'rw';
+
+    // Listen for background sync requests. We can get here in one of several
+    // ways:
+    //
+    // - In app.js, we trigger this on startup, and poll every 5 minutes. We
+    //   also can trigger this manually from the Elm app.
+    //
+    // - If we get a NetworkError while we are executing one of these, we'll
+    //   reject, and the browser will retry eventually.
+    //
+    // The browser will wait to trigger this event until it thinks we're online.
+    // So, we can issue as many of these as we like while offline -- we'll just
+    // receive one event here, once we're online again.
+    self.addEventListener('sync', function (event) {
         if (event.tag === syncTag) {
-            var action = dbSync.open().catch(databaseError).then(function () {
-                return trySyncing();
-            }).then(function (meta) {
-                // We suceeded!
-                meta.status = {
-                    tag: 'Success',
-                    timestamp: Date.now()
-                };
-
-                meta.uuid = nodesUuid;
-
-                if (meta.remaining > 0) {
-                    // Keep going if there are more.
-                    registration.sync.register(syncTag);
+            var action = syncAllShards().catch(function (status) {
+                // Decide whether to indicate to background sync that we want
+                // an automatic retry.
+                if (status.tag === NetworkError) {
+                    // A `NetworkError` could benefit from automatic retry, so
+                    // we reject.
+                    return Promise.reject();
+                } else {
+                    // Other error will not benefit from automatic retry, so we
+                    // resolve. We'll still try again in the polling interval.
+                    return Promise.resolve();
                 }
-
-                return dbSync.syncMetadata.put(meta).then(sendSyncData);
-            }, function (err) {
-                // We failed!
-                if (err.tag === 'NetworkError') {
-                    err.willRetry = !event.lastChance;
-                }
-
-                return recordStatus(err).then(function () {
-                    if (err.tag === 'NetworkError') {
-                        return Promise.reject();
-                    } else {
-                        // It's only the NetworkErrors that can be usefully
-                        // retried automatically. So, for other errors, we tell
-                        // background sync that we don't need to try again.
-                        return Promise.resolve();
-                    }
-                });
             });
 
             return event.waitUntil(action);
-         }
+        }
     });
 
-    function databaseError(err) {
+    // Checks our `syncMetadata` table for shards that we ought to sync.  Also
+    // creates the metadata for our `nodesUuid` shard if it doesn't exist yet.
+    function shardsToSync () {
+        return dbSync.transaction(rw, dbSync.syncMetadata, function () {
+            return dbSync.syncMetadata.get(nodesUuid).then(function (item) {
+                // If we don't have metadata for nodesUuid yet, create it.
+                if (item) {
+                    return Promise.resolve(item.uuid);
+                } else {
+                    return dbSync.syncMetadata.add({
+                        uuid: nodesUuid,
+                        status: {
+                            tag: NotAsked,
+                            timestamp: Date.now()
+                        }
+                    });
+                }
+            }).then(function () {
+                // Then, get all the metadata entries that are not currently in
+                // a `Loading` state. (So, `Loading` is a kind of a lock, but
+                // we break it after 10 minutes).
+               var tenMinutesAgo = Date.now() - (10 * 60 * 1000);
+
+                return dbSync.syncMetadata.filter(function (item) {
+                    return (item.status.tag !== Loading) || (item.status.timestamp < tenMinutesAgo);
+                }).toArray();
+            })
+        }).catch(formatDatabaseError).catch(function (status) {
+            // If we get an error at this level, record it against the
+            // nodesUUID, so we'll see it, and then re-throw, so we
+            // won't continue.
+            return recordStatus(nodesUuid, status).then(function () {
+                return Promise.reject(status);
+            });
+        });
+    }
+
+    // This kicks off the sync process for all shards. So, resolves if all
+    // succeed, and rejects if any reject. (However, each shard will record
+    // its own success or failure).
+    function syncAllShards () {
+        return getCredentials().then(function (credentials) {
+            return dbSync.open().then(function () {
+                return shardsToSync().then(function (shards) {
+                    var actions = shards.map(function (shard) {
+                        return syncSingleShard(shard, credentials);
+                    });
+
+                    return Promise.all(actions).catch(function (err) {
+                        if ((err.tag === BadResponse) && (err.status === 401)) {
+                            return tryRefreshToken(credentials).catch(function () {
+                                // If we couldn't get a new access token,
+                                // then reject with our original error.
+                                return Promise.reject(err);
+                            }).then(function () {
+                                // If we could, then try again.
+                                return syncAllShards();
+                            });
+                        } else {
+                            return Promise.reject(err);
+                        }
+                    });
+                });
+            });
+        });
+    }
+
+    // Resolves with metadata, or rejects with a status message. In either
+    // case, the result has been recorded once this resolves or rejects.
+    //
+    // The parameter is our shard metadata.
+    function syncSingleShard (shard, credentials) {
+        return getLastVid(shard.uuid).then(function (baseRevision) {
+            var token = credentials.access_token;
+            var backendUrl = credentials.backend_url;
+            var dbVersion = dbSync.verno;
+
+            var shardUrlPart = shard.uuid === nodesUuid ? '' : '/' + shard.uuid;
+
+            var url = backendUrl + '/api/v1.0/sync' + shardUrlPart + '?base_revision=' + baseRevision + '&access_token=' + token + '&db_version=' + dbVersion;
+
+            return recordStatus(shard.uuid, {
+                tag: Loading,
+                revision: baseRevision,
+                timestamp: Date.now()
+            }).then(function () {
+                return fetchFromBackend(shard.uuid, url, credentials).catch(function (err) {
+                    return recordStatus(shard.uuid, err).then(function () {
+                        return Promise.reject(err);
+                    });
+                }).then(function (meta) {
+                    meta.status = {
+                        tag: Success,
+                        timestamp: Date.now()
+                    };
+
+                    meta.uuid = shard.uuid;
+
+                    var action = dbSync.syncMetadata.put(meta).then(sendSyncData);
+
+                    if (meta.remaining > 0) {
+                        // Keep going if there are more.
+                        return action.then(syncSingleShard(shard, credentials));
+                    } else {
+                        return action;
+                    }
+                });
+            });
+        });
+    }
+
+    function formatDatabaseError (err) {
         return Promise.reject({
-            tag: 'DatabaseError',
-            message: JSON.stringify(err),
+            tag: DatabaseError,
+            message: err.message,
             timestamp: Date.now()
         });
     }
 
-    function recordStatus(status) {
-        return dbSync.syncMetadata.get(nodesUuid).then(function (meta) {
-            if (!meta) {
-                meta = {
-                    uuid: nodesUuid
-                };
-            }
+    function recordStatus (shardUuid, status) {
+        return dbSync.transaction(rw, dbSync.syncMetadata, function () {
+            return dbSync.syncMetadata.get(shardUuid).then(function (meta) {
+                if (!meta) {
+                    meta = {
+                        uuid: shardUuid
+                    };
+                }
 
-            // For some reason, Dexie seems to add a _promise field to the
-            // status. So, remove it in a copy.
-            var withoutPromise = Object.assign({}, status);
-            delete withoutPromise._promise;
+                // For some reason, Dexie seems to add a _promise field to the
+                // status. So, remove it in a copy.
+                var withoutPromise = Object.assign({}, status);
+                delete withoutPromise._promise;
 
-            meta.status = withoutPromise;
+                meta.status = withoutPromise;
 
-            return dbSync.syncMetadata.put(meta).then(sendSyncData);
-        });
+                return dbSync.syncMetadata.put(meta);
+            });
+        }).catch(formatDatabaseError).then(sendSyncData);
     }
 
-    function getLastVid() {
-        return dbSync.nodes.orderBy('vid').last().then(function (last) {
+    function getLastVid (shardUuid) {
+        // We can only use one index at a time, so we use a compound index.
+        // The result will be sorted in the way we want.
+        var collection = dbSync.shards.where('[shard+vid]').between(
+            [shardUuid, Dexie.minKey],
+            [shardUuid, Dexie.maxKey]
+        );
+
+        // Or, this simpler version if we're looking for the general shard.
+        if (shardUuid === nodesUuid) {
+            collection = dbSync.nodes.orderBy('vid');
+        }
+
+        return collection.last().then(function (last) {
             return last ? last.vid : 0;
-        });
+        }).catch(formatDatabaseError);
     }
 
-    function getCredentials() {
+    function getCredentials () {
         return caches.open(configCache).then(function (cache) {
             return cache.match(credentialsUrl);
         }).then(function (response) {
             return response.json();
-        });
-    }
-
-    // Resolves with metadata, or rejects with a status message.
-    function trySyncing () {
-        return getCredentials().catch(function (err) {
+        }).catch(function (err) {
             return Promise.reject({
-                tag: 'NoCredentials',
+                tag: NoCredentials,
                 timestamp: Date.now()
             });
-        }).then(function (credentials) {
-            return getLastVid().catch(databaseError).then(function (baseRevision) {
-                var token = credentials.access_token;
-                var backendUrl = credentials.backend_url;
-                var dbVersion = dbSync.verno;
-
-                var url = backendUrl + '/api/v1.0/sync?base_revision=' + baseRevision + '&access_token=' + token + '&db_version=' + dbVersion;
-
-                return recordStatus({
-                    tag: 'Loading',
-                    revision: baseRevision,
-                    timestamp: Date.now()
-                }).catch(databaseError).then(function () {
-                    return fetchFromBackend(url, credentials);
-                });
-            });
         });
     }
 
-    function fetchFromBackend (url, credentials) {
+    function fetchFromBackend (shardUuid, url) {
         return fetch(url).catch(function (err) {
             return Promise.reject({
-                tag: 'NetworkError',
+                tag: NetworkError,
                 message: err.message,
                 timestamp: Date.now()
             });
         }).then(function (response) {
-            return handleResponse(response, credentials);
-        });
-    }
+            if (response.ok) {
+                return response.json().catch(function (err) {
+                    return Promise.reject({
+                        tag: BadJson,
+                        timestamp: Date.now()
+                    });
+                }).then (function (json) {
+                    var remaining = parseInt(json.data.revision_count) - json.data.batch.length;
 
-    function handleResponse (response, credentials) {
-        if (!response.ok) {
-            if (response.status === 401) {
-                return tryRefreshToken(credentials);
+                    var table = shardUuid === nodesUuid ? dbSync.nodes : dbSync.shards;
+
+                    return dbSync.transaction(rw, dbSync.nodes, dbSync.shards, function () {
+                        var promises = json.data.batch.map(function (item) {
+                            formatNode(item, shardUuid);
+
+                            return table.put(item);
+                        });
+
+                        return Promise.all(promises);
+                    }).catch(formatDatabaseError).then(function () {
+                        return Promise.resolve({
+                            last_timestamp: parseInt(json.data.last_timestamp),
+                            last_contact: Date.now(),
+                            remaining: remaining
+                        });
+                    });
+                });
             } else {
                 return Promise.reject({
-                    tag: 'BadResponse',
+                    tag: BadResponse,
                     status: response.status,
                     statusText: response.statusText,
                     timestamp: Date.now()
                 });
             }
-        } else {
-            return response.json().catch(function (err) {
-               return Promise.reject({
-                    tag: 'BadJson',
-                    timestamp: Date.now()
-                });
-            }).then (function (json) {
-                var remaining = parseInt(json.data.revision_count) - json.data.batch.length;
-
-                return dbSync.transaction('rw', dbSync.nodes, function () {
-                    var promises = json.data.batch.map(function (item) {
-                        formatNode(item);
-
-                        return dbSync.nodes.put(item);
-                    });
-
-                    return Promise.all(promises);
-                }).catch(databaseError).then(function () {
-                    return Promise.resolve({
-                        last_timestamp: parseInt(json.data.last_timestamp),
-                        last_contact: Date.now(),
-                        remaining: remaining
-                    });
-                });
-            });
-        }
+        });
     }
 
-    function formatNode (node) {
+    function formatNode (node, shardUuid) {
+        if (shardUuid !== nodesUuid) {
+            node.shard = shardUuid;
+        }
+
         node.vid = parseInt(node.vid);
         node.id = parseInt(node.id);
         node.timestamp = parseInt(node.timestamp);
         node.status = parseInt(node.status);
     }
 
-    function tryRefreshToken(credentials) {
+    function tryRefreshToken (credentials) {
         var refreshUrl = credentials.backend_url + '/api/refresh-token/' + credentials.refresh_token;
 
         return fetch(refreshUrl).catch (function (err) {
             return Promise.reject({
-                tag: 'NetworkError',
+                tag: NetworkError,
                 message: err.message,
                 timestamp: Date.now()
             });
         }).then(function (response) {
-            if (!response.ok) {
-                return Promise.reject({
-                    tag: 'BadResponse',
-                    status: response.status,
-                    statusText: response.statusText,
-                    timestamp: Date.now()
-                });
-            } else {
+            if (response.ok) {
                 return response.json().catch(function (err) {
                     return Promise.reject({
-                        tag: 'BadJson',
+                        tag: BadJson,
                         timestamp: Date.now()
                     });
                 }).then (function (json) {
-                    return storeCredentials(credentials, json).catch(databaseError).then(function () {
-                        return trySyncing();
-                    });
+                    return storeCredentials(credentials, json);
+                });
+            } else {
+                return Promise.reject({
+                    tag: BadResponse,
+                    status: response.status,
+                    statusText: response.statusText,
+                    timestamp: Date.now()
                 });
             }
         });
@@ -237,7 +335,6 @@
                 status: 200,
                 statusText: 'OK',
                 headers: {
-                    'Content-Length': body.length,
                     'Content-Type': 'application/json'
                 }
             });

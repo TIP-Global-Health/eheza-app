@@ -46,8 +46,9 @@ dbSync.version(1).stores({
     //
     // The `uuid` is the UUID of the node. The `shard` is the UUID of the
     // health center which is the reason we're downloading this node to this
-    // device.
-    shards: '&uuid,type,vid,status,shard'
+    // device. We need a compound key with shard and vid, because IndexedDb
+    // is a bit weird about using indexes -- you can only use one at a time.
+    shards: '&uuid,type,vid,status,[shard+vid]'
 });
 
 // For when any sync metadata changes, send it all to the app

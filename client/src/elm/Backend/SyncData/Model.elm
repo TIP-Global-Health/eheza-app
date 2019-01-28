@@ -38,7 +38,7 @@ type SyncAttempt
 
 type SyncError
     = DatabaseError String
-    | NetworkError String Bool -- the bool indicates whether an automatic retry is queued
+    | NetworkError String
     | NoCredentials
     | BadResponse Int String
     | BadJson

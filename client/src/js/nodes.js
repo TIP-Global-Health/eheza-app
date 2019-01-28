@@ -104,6 +104,9 @@
                     });
 
                     if (type === 'syncmetadata') {
+                        // If our syncmetadata changes, kick off a sync
+                        self.registration.sync.register('sync');
+
                         return sendSyncData().then(function () {
                             return Promise.resolve(response);
                         });

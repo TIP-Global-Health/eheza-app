@@ -48,10 +48,9 @@ encodeSyncAttempt data =
                                 , ( "message", string message )
                                 ]
 
-                            NetworkError message retry ->
+                            NetworkError message ->
                                 [ ( "tag", string "NetworkError" )
                                 , ( "message", string message )
-                                , ( "willRetry", bool retry )
                                 ]
 
                             NoCredentials ->
