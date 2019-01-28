@@ -18,7 +18,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
-import Maybe.Extra exposing (unwrap)
+import Maybe.Extra exposing (isJust, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRegistration.Model
@@ -74,16 +74,19 @@ viewHeader language currentDate user backend cache model =
 viewBody : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
 viewBody language currentDate user backend cache model =
     let
+        previousPhase =
+            List.head model.previousPhases
+
         body =
             case model.registrationPhase of
                 ParticipantSearch searchString ->
-                    viewSearchForm language currentDate user backend cache model.participantsData searchString model.submittedSearch
+                    viewSearchForm language currentDate user backend cache model.participantsData searchString model.submittedSearch previousPhase
 
                 ParticipantRegistration step ->
-                    viewRegistrationForm language currentDate user backend cache step model.registrationForm model.photo
+                    viewRegistrationForm language currentDate user backend cache step model.registrationForm model.photo previousPhase
 
                 ParticipantView patientType ->
-                    viewPatientDetailsForm language currentDate user backend cache patientType model.participantsData
+                    viewPatientDetailsForm language currentDate user backend cache patientType model.participantsData previousPhase
     in
     div [ class "content" ]
         [ body ]
@@ -98,8 +101,9 @@ viewRegistrationForm :
     -> RegistrationStep
     -> Form () RegistrationForm
     -> Maybe PhotoValue
+    -> Maybe RegistrationPhase
     -> Html Msg
-viewRegistrationForm language currentDate user backend cache step registrationForm photo =
+viewRegistrationForm language currentDate user backend cache step registrationForm photo maybePreviousPhase =
     let
         -- FORM FIELDS --
         firstName =
@@ -521,25 +525,6 @@ viewRegistrationForm language currentDate user backend cache step registrationFo
                             [ viewHealthCenterName ]
                     ]
 
-        leftButton =
-            let
-                action =
-                    case step of
-                        First ->
-                            SetActivePage LoginPage
-
-                        Second ->
-                            SetRegistrationPhase (ParticipantRegistration First)
-
-                        Third ->
-                            SetRegistrationPhase (ParticipantRegistration Second)
-            in
-            button
-                [ class "ui primary button"
-                , onClick action
-                ]
-                [ text <| "< " ++ translate language Translate.Back ]
-
         rightButton =
             let
                 maybeRegistratingParticipant =
@@ -620,7 +605,7 @@ viewRegistrationForm language currentDate user backend cache step registrationFo
         [ div [ class "ui form registration" ]
             formContent
         , div [ class "registration-form actions" ]
-            [ leftButton, rightButton ]
+            [ viewBackButton language maybePreviousPhase, rightButton ]
         ]
 
 
@@ -633,8 +618,9 @@ viewSearchForm :
     -> ParticipantsData
     -> Maybe String
     -> Maybe String
+    -> Maybe RegistrationPhase
     -> Html Msg
-viewSearchForm language currentDate user backend cache participantsData searchString submittedSearch =
+viewSearchForm language currentDate user backend cache participantsData searchString submittedSearch maybePreviousPhase =
     let
         ( disableSubmitButton, searchValue ) =
             case searchString of
@@ -736,8 +722,9 @@ viewPatientDetailsForm :
     -> ModelCached
     -> PatientType
     -> ParticipantsData
+    -> Maybe RegistrationPhase
     -> Html Msg
-viewPatientDetailsForm language currentDate user backend cache viewedPatient participantsData =
+viewPatientDetailsForm language currentDate user backend cache viewedPatient participantsData maybePreviousPhase =
     let
         ( topLabel, bottomLabel, familyMembersList ) =
             case viewedPatient of
@@ -817,6 +804,8 @@ viewPatientDetailsForm language currentDate user backend cache viewedPatient par
             [ text <| translate language bottomLabel ++ ": " ]
         , div [ class "ui unstackable items family" ]
             familyMembers
+        , div [ class "actions" ]
+            [ viewBackButton language maybePreviousPhase ]
         ]
 
 
@@ -1028,3 +1017,20 @@ viewPhotoThumb photo =
             ]
             []
         ]
+
+
+viewBackButton : Language -> Maybe RegistrationPhase -> Html Msg
+viewBackButton language maybePreviousPhase =
+    let
+        action =
+            if isJust maybePreviousPhase then
+                GoBack
+
+            else
+                SetActivePage LoginPage
+    in
+    button
+        [ class "ui primary button"
+        , onClick action
+        ]
+        [ text <| "< " ++ translate language Translate.Back ]

@@ -674,6 +674,7 @@ h3.ui.header {
 
   .ui.form.search input,
   .ui.form.search input:focus {
+    height: 60px;
     margin-bottom: 30px;
     text-align: left;
     width: 100%;
@@ -790,16 +791,18 @@ h3.ui.header {
   .button.register-button {
     width: 100%;
   }
+
+  .separator-line {
+    border-top: 2px solid $color-gray;
+    width: 620px;
+    margin-top: 70px;
+    margin-bottom: 70px;
+  }
+
+  .actions button {
+    width: 100%;
+  }
 }
-
-.separator-line {
-  border-top: 2px solid $color-gray;
-  width: 620px;
-  margin-top: 70px;
-  margin-bottom: 70px;
-}
-
-
 
 .ui.form.registration {
 

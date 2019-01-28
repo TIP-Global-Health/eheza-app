@@ -32,6 +32,7 @@ type alias Model =
     { photo : Maybe PhotoValue
     , registrationForm : Form () RegistrationForm
     , registrationPhase : RegistrationPhase
+    , previousPhases : List RegistrationPhase
     , participantsData : ParticipantsData
     , submittedSearch : Maybe String
     , dialogState : Maybe DialogState
@@ -49,6 +50,7 @@ emptyModel =
     { photo = Nothing
     , registrationForm = Form.initial [] validateRegistrationForm
     , registrationPhase = ParticipantSearch Nothing
+    , previousPhases = []
     , participantsData = dummyParticipantsData
     , submittedSearch = Nothing
     , dialogState = Nothing
@@ -94,6 +96,7 @@ type PatientType
 type Msg
     = AddNewPatient (Maybe Uuid)
     | DropZoneComplete DropZoneFile
+    | GoBack
     | MsgRegistrationForm Form.Msg
     | Reset
     | SearchForParticipant String

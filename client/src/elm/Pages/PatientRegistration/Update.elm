@@ -45,6 +45,14 @@ update currentTime msg model =
             , []
             )
 
+        GoBack ->
+            case model.previousPhases of
+                head :: rest ->
+                    ( { model | registrationPhase = head, previousPhases = rest }, Cmd.none, [] )
+
+                [] ->
+                    ( model, Cmd.none, [] )
+
         MsgRegistrationForm subMsg ->
             let
                 currentDate =
@@ -163,7 +171,27 @@ update currentTime msg model =
             ( { model | dialogState = state }, Cmd.none, [] )
 
         SetRegistrationPhase phase ->
-            ( { model | registrationPhase = phase }, Cmd.none, [] )
+            let
+                updatedPreviousPhases =
+                    case phase of
+                        -- We do not want to record every character typed during search.
+                        ParticipantSearch _ ->
+                            case model.previousPhases of
+                                head :: rest ->
+                                    case head of
+                                        ParticipantSearch _ ->
+                                            model.registrationPhase :: rest
+
+                                        _ ->
+                                            model.registrationPhase :: model.previousPhases
+
+                                [] ->
+                                    [ model.registrationPhase ]
+
+                        _ ->
+                            model.registrationPhase :: model.previousPhases
+            in
+            ( { model | registrationPhase = phase, previousPhases = updatedPreviousPhases }, Cmd.none, [] )
 
         Submit ->
             let
