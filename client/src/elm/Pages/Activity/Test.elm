@@ -6,7 +6,7 @@ import Expect
 import Fixtures exposing (..)
 import Pages.Activity.Model exposing (emptyModel)
 import Participant.Model
-import Restful.Endpoint exposing (toEntityId)
+import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
 
 
@@ -27,7 +27,7 @@ nextParticipantTest =
    let
        -- Here, we're just finishing exampleChildA.
        noPendingDict =
-           makeLoneChildDict (toEntityId 1) exampleChildA
+           makeLoneChildDict (toEntityUuid 1) exampleChildA
    in
        describe "A nurse visits the Weight activity" <|
            [ test "Then after completing all the participants, the process is completed" <|

@@ -43,7 +43,7 @@ import Json.Encode.Extra
 import Maybe.Extra exposing (toList)
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityId, decodeEntityUuid, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityId, endpoint, fromEntityId, fromEntityUuid, toCmd, toEntityId, toEntityUuid, withKeyEncoder, withParamsEncoder, withValueEncoder, withoutDecoder)
+import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityUuid, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityUuid, endpoint, fromEntityUuid, toCmd, toEntityUuid, withKeyEncoder, withParamsEncoder, withValueEncoder, withoutDecoder)
 import Rollbar
 import Utils.WebData exposing (resetError, resetSuccess)
 
@@ -60,12 +60,12 @@ swEndpoint path decodeValue =
         |> withKeyEncoder fromEntityUuid
 
 
-healthCenterEndpoint : ReadOnlyEndPoint Error HealthCenterUuid HealthCenter ()
+healthCenterEndpoint : ReadOnlyEndPoint Error HealthCenterId HealthCenter ()
 healthCenterEndpoint =
     swEndpoint "nodes/health_center" decodeHealthCenter
 
 
-syncDataEndpoint : ReadWriteEndPoint Error HealthCenterUuid SyncData SyncData ()
+syncDataEndpoint : ReadWriteEndPoint Error HealthCenterId SyncData SyncData ()
 syncDataEndpoint =
     swEndpoint "nodes/syncmetadata" decodeSyncData
         |> withValueEncoder encodeSyncData
@@ -73,7 +73,7 @@ syncDataEndpoint =
 
 clinicEndpoint : ReadWriteEndPoint Error ClinicId Clinic Clinic ()
 clinicEndpoint =
-    drupalEndpoint "api/clinics" decodeClinic
+    swEndpoint "nodes/clinic" decodeClinic
         |> withValueEncoder (object << encodeClinic)
 
 
@@ -93,7 +93,7 @@ encodeSessionParams params =
 
 sessionEndpoint : ReadWriteEndPoint Error SessionId Session Session SessionParams
 sessionEndpoint =
-    drupalEndpoint "api/sessions" decodeSession
+    swEndpoint "nodes/session" decodeSession
         |> withValueEncoder (object << encodeSession)
         |> withParamsEncoder encodeSessionParams
 
@@ -112,7 +112,7 @@ trainingSessionsEndpoint =
 
 offlineSessionEndpoint : ReadWriteEndPoint Error SessionId OfflineSession OfflineSession ()
 offlineSessionEndpoint =
-    drupalEndpoint "api/offline_sessions" decodeOfflineSession
+    swEndpoint "nodes/offline_session" decodeOfflineSession
         |> withValueEncoder (object << encodeOfflineSession)
 
 
@@ -615,7 +615,7 @@ updateCache currentDate msg model =
                         -- we indicate an error if it doesn't. If it does
                         -- succeed, we wrap it in `Just`.
                         Json.Decode.decodeString
-                            (Json.Decode.map2 (,) (Json.Decode.field "id" decodeEntityId) decodeOfflineSession)
+                            (Json.Decode.map2 (,) (Json.Decode.field "id" decodeEntityUuid) decodeOfflineSession)
                             offlineSessionJson
                             |> Result.map Just
 

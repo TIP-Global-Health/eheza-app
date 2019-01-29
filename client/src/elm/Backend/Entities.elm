@@ -1,4 +1,18 @@
-module Backend.Entities exposing (CatchmentAreaUuid, CatchmentAreaUuidType(..), ChildId, ChildIdType(..), ChildNutritionId, ChildNutritionIdType(..), ChildNutritionUuid, ChildNutritionUuidType(..), ChildUuid, ChildUuidType(..), ClinicId, ClinicIdType(..), ClinicUuid, ClinicUuidType(..), FamilyPlanningId, FamilyPlanningIdType(..), FamilyPlanningUuid, FamilyPlanningUuidType(..), HealthCenterUuid, HealthCenterUuidType(..), HeightId, HeightIdType(..), HeightUuid, HeightUuidType(..), MotherId, MotherIdType(..), MotherUuid, MotherUuidType(..), MuacId, MuacIdType(..), MuacUuid, MuacUuidType(..), NurseUuid, NurseUuidType(..), PhotoId, PhotoIdType(..), PhotoUuid, PhotoUuidType(..), SessionId, SessionIdType(..), SessionUuid, SessionUuidType(..), WeightId, WeightIdType(..), WeightUuid, WeightUuidType(..))
+module Backend.Entities exposing
+    ( CatchmentAreaId
+    , ChildId
+    , ChildNutritionId
+    , ClinicId
+    , FamilyPlanningId
+    , HealthCenterId
+    , HeightId
+    , MotherId
+    , MuacId
+    , NurseId
+    , PhotoId
+    , SessionId
+    , WeightId
+    )
 
 {-|
 
@@ -49,7 +63,7 @@ we need it.
 
 -}
 
-import Restful.Endpoint exposing (EntityId(..), EntityUuid(..))
+import Restful.Endpoint exposing (EntityUuid(..))
 
 
 
@@ -64,7 +78,7 @@ import Restful.Endpoint exposing (EntityId(..), EntityUuid(..))
 
     most of the time, rather than the more verbose
 
-        EntityId ChildId
+        EntityUuid ChildId
 
     There are some possibly-attractive variations on this.
 
@@ -87,7 +101,7 @@ import Restful.Endpoint exposing (EntityId(..), EntityUuid(..))
 -}
 
 
-type alias CatchmentAreaUuid =
+type alias CatchmentAreaId =
     EntityUuid CatchmentAreaUuidType
 
 
@@ -95,7 +109,7 @@ type CatchmentAreaUuidType
     = CatchmentAreaUuidType
 
 
-type alias ChildUuid =
+type alias ChildId =
     EntityUuid ChildUuidType
 
 
@@ -103,7 +117,7 @@ type ChildUuidType
     = ChildUuidType
 
 
-type alias ChildNutritionUuid =
+type alias ChildNutritionId =
     EntityUuid ChildNutritionUuidType
 
 
@@ -111,7 +125,7 @@ type ChildNutritionUuidType
     = ChildNutritionUuidType
 
 
-type alias ClinicUuid =
+type alias ClinicId =
     EntityUuid ClinicUuidType
 
 
@@ -119,7 +133,7 @@ type ClinicUuidType
     = ClinicUuidType
 
 
-type alias FamilyPlanningUuid =
+type alias FamilyPlanningId =
     EntityUuid FamilyPlanningUuidType
 
 
@@ -127,7 +141,7 @@ type FamilyPlanningUuidType
     = FamilyPlanningUuidType
 
 
-type alias HealthCenterUuid =
+type alias HealthCenterId =
     EntityUuid HealthCenterUuidType
 
 
@@ -135,7 +149,7 @@ type HealthCenterUuidType
     = HealthCenterUuidType
 
 
-type alias HeightUuid =
+type alias HeightId =
     EntityUuid HeightUuidType
 
 
@@ -143,7 +157,7 @@ type HeightUuidType
     = HeightUuidType
 
 
-type alias MotherUuid =
+type alias MotherId =
     EntityUuid MotherUuidType
 
 
@@ -151,7 +165,7 @@ type MotherUuidType
     = MotherUuidType
 
 
-type alias MuacUuid =
+type alias MuacId =
     EntityUuid MuacUuidType
 
 
@@ -159,15 +173,15 @@ type MuacUuidType
     = MuacUuidType
 
 
+type alias NurseId =
+    EntityUuid NurseUuidType
+
+
 type NurseUuidType
     = NurseUuidType
 
 
-type alias NurseUuid =
-    EntityUuid NurseUuidType
-
-
-type alias PhotoUuid =
+type alias PhotoId =
     EntityUuid PhotoUuidType
 
 
@@ -175,7 +189,7 @@ type PhotoUuidType
     = PhotoUuidType
 
 
-type alias SessionUuid =
+type alias SessionId =
     EntityUuid SessionUuidType
 
 
@@ -183,89 +197,9 @@ type SessionUuidType
     = SessionUuidType
 
 
-type alias WeightUuid =
+type alias WeightId =
     EntityUuid WeightUuidType
 
 
 type WeightUuidType
     = WeightUuidType
-
-
-type alias ChildId =
-    EntityId ChildIdType
-
-
-type ChildIdType
-    = ChildIdType
-
-
-type alias ChildNutritionId =
-    EntityId ChildNutritionIdType
-
-
-type ChildNutritionIdType
-    = ChildNutritionIdType
-
-
-type alias ClinicId =
-    EntityId ClinicIdType
-
-
-type ClinicIdType
-    = ClinicIdType
-
-
-type alias FamilyPlanningId =
-    EntityId FamilyPlanningIdType
-
-
-type FamilyPlanningIdType
-    = FamilyPlanningIdType
-
-
-type alias HeightId =
-    EntityId HeightIdType
-
-
-type HeightIdType
-    = HeightIdType
-
-
-type alias MotherId =
-    EntityId MotherIdType
-
-
-type MotherIdType
-    = MotherIdType
-
-
-type alias MuacId =
-    EntityId MuacIdType
-
-
-type MuacIdType
-    = MuacIdType
-
-
-type alias PhotoId =
-    EntityId PhotoIdType
-
-
-type PhotoIdType
-    = PhotoIdType
-
-
-type alias SessionId =
-    EntityId SessionIdType
-
-
-type SessionIdType
-    = SessionIdType
-
-
-type alias WeightId =
-    EntityId WeightIdType
-
-
-type WeightIdType
-    = WeightIdType

@@ -2,7 +2,7 @@ module Pages.Router exposing (delta2url, parseUrl)
 
 import Activity.Utils exposing (decodeActivityTypeFromString, defaultActivityType, encodeActivityTypeAsString)
 import Pages.Page exposing (..)
-import Restful.Endpoint exposing (fromEntityId, toEntityId)
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import RouteUrl exposing (HistoryEntry(..), UrlChange)
 import UrlParser exposing ((</>), Parser, int, map, oneOf, parseHash, s, string, top)
 
@@ -40,16 +40,16 @@ delta2url previous current =
                     Just <| UrlChange NewEntry "#attendance"
 
                 ChildPage id ->
-                    Just <| UrlChange NewEntry ("#child/" ++ toString (fromEntityId id))
+                    Just <| UrlChange NewEntry ("#child/" ++ toString (fromEntityUuid id))
 
                 MotherPage id ->
-                    Just <| UrlChange NewEntry ("#mother/" ++ toString (fromEntityId id))
+                    Just <| UrlChange NewEntry ("#mother/" ++ toString (fromEntityUuid id))
 
                 ParticipantsPage ->
                     Just <| UrlChange NewEntry "#participants"
 
                 ProgressReportPage id ->
-                    Just <| UrlChange NewEntry ("#progress/" ++ toString (fromEntityId id))
+                    Just <| UrlChange NewEntry ("#progress/" ++ toString (fromEntityUuid id))
 
         -- These are pages that required a logged-in user
         UserPage userPage ->
@@ -61,7 +61,7 @@ delta2url previous current =
                     let
                         clinic =
                             clinicId
-                                |> Maybe.map (\id -> "/" ++ toString (fromEntityId id))
+                                |> Maybe.map (\id -> "/" ++ toString (fromEntityUuid id))
                                 |> Maybe.withDefault ""
                     in
                     Just <| UrlChange NewEntry ("#clinics" ++ clinic)
@@ -86,16 +86,16 @@ parseUrl =
             (SessionPage << ActivityPage << Maybe.withDefault defaultActivityType << decodeActivityTypeFromString)
             (s "activity" </> string)
         , map (SessionPage AttendancePage) (s "attendance")
-        , map (SessionPage << ChildPage << toEntityId) (s "child" </> int)
-        , map (SessionPage << ProgressReportPage << toEntityId) (s "progress" </> int)
-        , map (UserPage << ClinicsPage << Just << toEntityId) (s "clinics" </> int)
+        , map (SessionPage << ChildPage << toEntityUuid) (s "child" </> string)
+        , map (SessionPage << ProgressReportPage << toEntityUuid) (s "progress" </> string)
+        , map (UserPage << ClinicsPage << Just << toEntityUuid) (s "clinics" </> string)
         , map (UserPage (ClinicsPage Nothing)) (s "clinics")
         , map (UserPage AdminPage) (s "admin")
         , map DevicePage (s "device")
         , map LoginPage (s "login")
         , map ServiceWorkerPage (s "deployment")
         , map (UserPage MyAccountPage) (s "my-account")
-        , map (SessionPage << MotherPage << toEntityId) (s "mother" </> int)
+        , map (SessionPage << MotherPage << toEntityUuid) (s "mother" </> string)
         , map (SessionPage ParticipantsPage) (s "participants")
 
         -- TODO: `top` represents the page without any segements ... i.e. the

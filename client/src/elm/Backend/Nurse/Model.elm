@@ -6,7 +6,7 @@ import Backend.Entities exposing (..)
 type alias Nurse =
     { name : String
     , pinCode : String
-    , clinics : List ClinicUuid
+    , clinics : List ClinicId
     , role : List Role
     , email : Maybe String
     }

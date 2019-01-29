@@ -153,8 +153,8 @@ postPhoto backendUrl accessToken childId model =
                command =
                    HttpBuilder.post (backendUrl ++ "/api/photos")
                        |> withQueryParams [ ( "access_token", accessToken ) ]
-                       -- TODO: Fix up types to avoid `toEntityId`
-                       |> withJsonBody (encodePhoto (toEntityId childId) fileId)
+                       -- TODO: Fix up types to avoid `toEntityUuid`
+                       |> withJsonBody (encodePhoto (toEntityUuid childId) fileId)
                        |> sendWithHandler decodePhotoFromResponse HandlePhotoSave
            in
                ( { model | status = Loading }

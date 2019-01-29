@@ -24,7 +24,7 @@ of nodes that we get no matter which health center we're interesting in. So,
 this is the "magic" UUID that represents "all the health centers" (or, "no
 health center", depending on how you look at it).
 -}
-nodesUuid : HealthCenterUuid
+nodesUuid : HealthCenterId
 nodesUuid =
     toEntityUuid "78cf21d1-b3f4-496a-b312-d8ae73041f09"
 
@@ -128,7 +128,7 @@ viewHealthCenters language db =
         |> RemoteData.withDefault spinner
 
 
-viewHealthCenter : Language -> ModelIndexedDb -> HealthCenterUuid -> HealthCenter -> Html Msg
+viewHealthCenter : Language -> ModelIndexedDb -> HealthCenterId -> HealthCenter -> Html Msg
 viewHealthCenter language db uuid model =
     let
         sync =

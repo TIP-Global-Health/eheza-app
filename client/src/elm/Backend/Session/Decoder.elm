@@ -15,7 +15,7 @@ import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (decodeDrupalRange, decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, at, bool, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
-import Restful.Endpoint exposing (decodeEntityId)
+import Restful.Endpoint exposing (decodeEntityUuid)
 import Time.Date
 
 
@@ -52,9 +52,9 @@ decodeSession =
             (oneOf
                 -- Work with "full_view" true or false, or with the
                 -- structure we encode for the cache.
-                [ field "clinic" decodeEntityId
-                , field "clinic_id" decodeEntityId
-                , at [ "clinic", "id" ] decodeEntityId
+                [ field "clinic" decodeEntityUuid
+                , field "clinic_id" decodeEntityUuid
+                , at [ "clinic", "id" ] decodeEntityUuid
                 ]
             )
         |> optional "closed" bool False
@@ -66,7 +66,7 @@ decodeSession =
 decodeOfflineSession : Decoder OfflineSession
 decodeOfflineSession =
     -- We need the ID in order to know which measurements belong to the current session.
-    field "id" decodeEntityId
+    field "id" decodeEntityUuid
         |> andThen
             (\id ->
                 decode OfflineSession
@@ -77,11 +77,11 @@ decodeOfflineSession =
                     -- re-fetch the data from the backend, we'll get the updated structure.
                     -- So, we could make this required at some point in the future.
                     |> optional "all_sessions"
-                        (EveryDictList.decodeArray2 (field "id" decodeEntityId) decodeSession)
+                        (EveryDictList.decodeArray2 (field "id" decodeEntityUuid) decodeSession)
                         EveryDictList.empty
                     -- We get **all** the basic clinic information, as a convenience for
                     -- presenting the UI while offline
-                    |> required "clinics" (EveryDictList.decodeArray2 (field "id" decodeEntityId) decodeClinic)
+                    |> required "clinics" (EveryDictList.decodeArray2 (field "id" decodeEntityUuid) decodeClinic)
                     |> requiredAt [ "participants", "mothers" ] decodeMothers
                     |> requiredAt [ "participants", "children" ] decodeChildren
                     |> custom decodeHistoricalMeasurements
@@ -213,11 +213,11 @@ getCurrentAndPrevious sessionId =
 
 decodeMothers : Decoder (EveryDictList MotherId Mother)
 decodeMothers =
-    EveryDictList.decodeArray2 (field "id" decodeEntityId) decodeMother
+    EveryDictList.decodeArray2 (field "id" decodeEntityUuid) decodeMother
 
 
 decodeChildren : Decoder (EveryDict ChildId Child)
 decodeChildren =
-    map2 (,) (field "id" decodeEntityId) decodeChild
+    map2 (,) (field "id" decodeEntityUuid) decodeChild
         |> list
         |> map EveryDict.fromList

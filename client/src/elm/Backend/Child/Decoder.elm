@@ -4,7 +4,7 @@ import Backend.Child.Model exposing (..)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, at, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required)
-import Restful.Endpoint exposing (decodeEntityId)
+import Restful.Endpoint exposing (decodeEntityUuid)
 
 
 decodeChild : Decoder Child
@@ -20,7 +20,7 @@ decodeChild =
                 , succeed Nothing
                 ]
             )
-        |> required "mother" (nullable decodeEntityId)
+        |> required "mother" (nullable decodeEntityUuid)
         |> required "date_birth" decodeYYYYMMDD
         |> required "gender" decodeGender
 

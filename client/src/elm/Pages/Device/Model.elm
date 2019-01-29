@@ -19,4 +19,4 @@ type Msg
     = SetCode String
     | HandlePairClicked
     | TrySyncing
-    | SetSyncing HealthCenterUuid Bool
+    | SetSyncing HealthCenterId Bool

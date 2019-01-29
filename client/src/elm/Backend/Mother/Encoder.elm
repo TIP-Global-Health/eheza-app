@@ -4,14 +4,14 @@ import Backend.Mother.Model exposing (..)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
-import Restful.Endpoint exposing (encodeEntityId)
+import Restful.Endpoint exposing (encodeEntityUuid)
 
 
 encodeMother : Mother -> List ( String, Value )
 encodeMother mother =
     [ ( "label", string mother.name )
     , ( "avatar", maybe string mother.avatarUrl )
-    , ( "children", list (List.map encodeEntityId mother.children) )
+    , ( "children", list (List.map encodeEntityUuid mother.children) )
     , ( "date_birth", encodeYYYYMMDD mother.birthDate )
     , ( "ubudehe", maybe encodeUbudehe mother.ubudehe )
     , ( "education_level", maybe encodeEducationLevel mother.educationLevel )

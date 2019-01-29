@@ -128,8 +128,8 @@ type MsgBackend
 move things here from ModelBackend and ModelCached.
 -}
 type alias ModelIndexedDb =
-    { healthCenters : WebData (EveryDictList HealthCenterUuid HealthCenter)
-    , syncData : WebData (EveryDictList HealthCenterUuid SyncData)
+    { healthCenters : WebData (EveryDictList HealthCenterId HealthCenter)
+    , syncData : WebData (EveryDictList HealthCenterId SyncData)
     }
 
 
@@ -143,32 +143,30 @@ emptyModelIndexedDb =
 type MsgIndexedDb
     = FetchHealthCenters
     | FetchSyncData
-    | HandleFetchedHealthCenters (WebData (EveryDictList HealthCenterUuid HealthCenter))
-    | HandleFetchedSyncData (WebData (EveryDictList HealthCenterUuid SyncData))
+    | HandleFetchedHealthCenters (WebData (EveryDictList HealthCenterId HealthCenter))
+    | HandleFetchedSyncData (WebData (EveryDictList HealthCenterId SyncData))
     | HandleRevisions (List Revision)
-    | SaveSyncData HealthCenterUuid SyncData
-    | DeleteSyncData HealthCenterUuid
+    | SaveSyncData HealthCenterId SyncData
+    | DeleteSyncData HealthCenterId
     | IgnoreResponse
 
 
 {-| Wrapper for all the revisions we can receive.
 -}
 type Revision
-    = CatchmentAreaRevision CatchmentAreaUuid CatchmentArea
-    | ChildRevision ChildUuid Child
-    | ClinicRevision ClinicUuid Clinic
-    | HealthCenterRevision HealthCenterUuid HealthCenter
-    | MotherRevision MotherUuid Mother
-    | SessionRevision SessionUuid Session
-    | NurseRevision NurseUuid Nurse
-    | FamilyPlanningRevision FamilyPlanningUuid FamilyPlanning
-    | HeightRevision HeightUuid Height
-    | MuacRevision MuacUuid Muac
-    | ChildNutritionRevision ChildNutritionUuid ChildNutrition
-    | PhotoRevision PhotoUuid Photo
-    | WeightRevision WeightUuid Weight
-      -- This last one is temporary, as we gradually convert from IDs to UUIDs
-    | NotYetImplemented
+    = CatchmentAreaRevision CatchmentAreaId CatchmentArea
+    | ChildRevision ChildId Child
+    | ClinicRevision ClinicId Clinic
+    | HealthCenterRevision HealthCenterId HealthCenter
+    | MotherRevision MotherId Mother
+    | SessionRevision SessionId Session
+    | NurseRevision NurseId Nurse
+    | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
+    | HeightRevision HeightId Height
+    | MuacRevision MuacId Muac
+    | ChildNutritionRevision ChildNutritionId ChildNutrition
+    | PhotoRevision PhotoId Photo
+    | WeightRevision WeightId Weight
 
 
 {-| This models things which we cache locally ... so, like `ModelBackend`, but

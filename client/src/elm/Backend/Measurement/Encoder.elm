@@ -6,7 +6,7 @@ import EverySet
 import Gizra.NominalDate
 import Json.Encode as Encoder exposing (Value, bool, float, int, list, object, string)
 import Json.Encode.Extra exposing (maybe)
-import Restful.Endpoint exposing (EntityId(..), encodeEntityId, fromEntityId)
+import Restful.Endpoint exposing (EntityUuid(..), encodeEntityUuid, fromEntityUuid)
 
 
 encodeHeight : Height -> List ( String, Value )
@@ -67,20 +67,20 @@ encodeFamilyPlanning =
         )
 
 
-encodeChildMeasurement : (value -> ( String, Value )) -> Measurement (EntityId a) value -> List ( String, Value )
+encodeChildMeasurement : (value -> ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
 encodeChildMeasurement =
     encodeMeasurement "child"
 
 
-encodeMotherMeasurement : (value -> ( String, Value )) -> Measurement (EntityId a) value -> List ( String, Value )
+encodeMotherMeasurement : (value -> ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
 encodeMotherMeasurement =
     encodeMeasurement "mother"
 
 
-encodeMeasurement : String -> (value -> ( String, Value )) -> Measurement (EntityId a) value -> List ( String, Value )
+encodeMeasurement : String -> (value -> ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
 encodeMeasurement participantField encoder measurement =
-    [ ( participantField, encodeEntityId measurement.participantId )
-    , ( "session", maybe encodeEntityId measurement.sessionId )
+    [ ( participantField, encodeEntityUuid measurement.participantId )
+    , ( "session", maybe encodeEntityUuid measurement.sessionId )
     , ( "date_measured", Gizra.NominalDate.encodeYYYYMMDD measurement.dateMeasured )
     , encoder measurement.value
     ]
@@ -153,7 +153,7 @@ encodeMeasurementEdits edits =
           , edits.mothers
                 |> EveryDict.toList
                 |> List.map
-                    (Tuple.mapFirst (fromEntityId >> toString)
+                    (Tuple.mapFirst (fromEntityUuid >> toString)
                         >> Tuple.mapSecond encodeMotherEdits
                     )
                 |> object
@@ -162,7 +162,7 @@ encodeMeasurementEdits edits =
           , edits.children
                 |> EveryDict.toList
                 |> List.map
-                    (Tuple.mapFirst (fromEntityId >> toString)
+                    (Tuple.mapFirst (fromEntityUuid >> toString)
                         >> Tuple.mapSecond encodeChildEdits
                     )
                 |> object
@@ -258,8 +258,8 @@ encodeMotherMeasurementList measurements =
         ]
 
 
-encodeEntity : (b -> List ( String, Value )) -> ( EntityId a, b ) -> Value
+encodeEntity : (b -> List ( String, Value )) -> ( EntityUuid a, b ) -> Value
 encodeEntity encoder ( id, value ) =
     object <|
-        ( "id", encodeEntityId id )
+        ( "id", encodeEntityUuid id )
             :: encoder value

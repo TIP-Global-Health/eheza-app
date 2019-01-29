@@ -20,7 +20,7 @@ import Maybe.Extra exposing (isJust)
 import Pages.Admin.Model exposing (..)
 import Pages.Page exposing (..)
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (fromEntityId)
+import Restful.Endpoint exposing (fromEntityUuid)
 import Set
 import Time.Date
 import Translate exposing (Language, ValidationError, translate)
@@ -121,7 +121,7 @@ viewCreateSessionForm config language backend model form clinics sessions =
             clinicIdState form
 
         clinicOption ( clinicId, clinic ) =
-            ( toString (fromEntityId clinicId), clinic.name )
+            ( toString (fromEntityUuid clinicId), clinic.name )
 
         clinicOptions =
             ( "", translate language Translate.SelectClinic )

@@ -24,8 +24,7 @@ decodeRevision =
                         decodeWithUuid CatchmentAreaRevision decodeCatchmentArea
 
                     "child" ->
-                        -- decodeWithUuid ChildRevision decodeChild
-                        succeed NotYetImplemented
+                        decodeWithUuid ChildRevision decodeChild
 
                     "clinic" ->
                         decodeWithUuid ClinicRevision decodeClinic
@@ -34,39 +33,31 @@ decodeRevision =
                         decodeWithUuid HealthCenterRevision decodeHealthCenter
 
                     "mother" ->
-                        -- decodeWithUuid MotherRevision decodeMother
-                        succeed NotYetImplemented
+                        decodeWithUuid MotherRevision decodeMother
 
                     "session" ->
-                        -- decodeWithUuid SessionRevision decodeSession
-                        succeed NotYetImplemented
+                        decodeWithUuid SessionRevision decodeSession
 
                     "nurse" ->
                         decodeWithUuid NurseRevision decodeNurse
 
                     "family_planning" ->
-                        -- decodeWithUuid FamilyPlanningRevision decodeFamilyPlanning
-                        succeed NotYetImplemented
+                        decodeWithUuid FamilyPlanningRevision decodeFamilyPlanning
 
                     "height" ->
-                        --decodeWithUuid HeightRevision decodeHeight
-                        succeed NotYetImplemented
+                        decodeWithUuid HeightRevision decodeHeight
 
                     "muac" ->
-                        -- decodeWithUuid MuacRevision decodeMuac
-                        succeed NotYetImplemented
+                        decodeWithUuid MuacRevision decodeMuac
 
                     "nutrition" ->
-                        -- decodeWithUuid ChildNutritionRevision decodeNutrition
-                        succeed NotYetImplemented
+                        decodeWithUuid ChildNutritionRevision decodeNutrition
 
                     "photo" ->
-                        -- decodeWithUuid PhotoRevision decodePhoto
-                        succeed NotYetImplemented
+                        decodeWithUuid PhotoRevision decodePhoto
 
                     "weight" ->
-                        -- decodeWithUuid WeightRevision decodeWeight
-                        succeed NotYetImplemented
+                        decodeWithUuid WeightRevision decodeWeight
 
                     _ ->
                         fail <|

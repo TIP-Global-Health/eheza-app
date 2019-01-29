@@ -9,7 +9,7 @@ import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
 import Pages.Page exposing (..)
-import Restful.Endpoint exposing (fromEntityId)
+import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 
 
@@ -1407,7 +1407,7 @@ translationSet trans =
         SessionClosed2 sessionId ->
             { english =
                 "You have stored data on the device for session "
-                    ++ toString (fromEntityId sessionId)
+                    ++ toString (fromEntityUuid sessionId)
                     ++ ", but it was not uploaded to the server and the session is closed. "
                     ++ "Please contact the Ihangane project for further instructions."
             , kinyarwanda = Nothing

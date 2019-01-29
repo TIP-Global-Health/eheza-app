@@ -2,7 +2,7 @@ module User.Encoder exposing (encodeUser)
 
 import EverySet exposing (EverySet)
 import Json.Encode exposing (Value, int, list, object, string)
-import Restful.Endpoint exposing (encodeEntityId)
+import Restful.Endpoint exposing (encodeEntityUuid)
 import User.Model exposing (Role(..), User)
 
 
@@ -15,7 +15,7 @@ encodeUser user =
         [ ( "id", int user.id )
         , ( "label", string user.name )
         , ( "avatar_url", string user.avatarUrl )
-        , ( "clinics", list (List.map encodeEntityId user.clinics) )
+        , ( "clinics", list (List.map encodeEntityUuid user.clinics) )
         , ( "roles", list (List.map encodeRole (EverySet.toList user.roles)) )
         ]
 

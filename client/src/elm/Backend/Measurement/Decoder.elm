@@ -1,4 +1,4 @@
-module Backend.Measurement.Decoder exposing (decodeChildEdits, decodeChildMeasurement, decodeChildMeasurementList, decodeChildNutritionSign, decodeEdit, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMeasurementEdits, decodeMotherEdits, decodeMotherMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodePhoto, decodeWeight, decodeWithEntityId, toEveryDict)
+module Backend.Measurement.Decoder exposing (decodeChildEdits, decodeChildMeasurement, decodeChildMeasurementList, decodeChildNutritionSign, decodeEdit, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMeasurementEdits, decodeMotherEdits, decodeMotherMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodePhoto, decodeWeight, decodeWithEntityUuid, toEveryDict)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -8,7 +8,7 @@ import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIn
 import Gizra.NominalDate
 import Json.Decode exposing (Decoder, andThen, at, bool, decodeValue, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed, value)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
-import Restful.Endpoint exposing (EntityId, decodeEntityId, toEntityId)
+import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid, toEntityUuid)
 import Utils.Json exposing (decodeEverySet)
 
 
@@ -16,21 +16,21 @@ import Utils.Json exposing (decodeEverySet)
 -}
 decodeChildMeasurement : Decoder value -> Decoder (Measurement ChildId value)
 decodeChildMeasurement =
-    decodeMeasurement (field "child" decodeEntityId)
+    decodeMeasurement (field "child" decodeEntityUuid)
 
 
 {-| Given a decoder for a value, produces a decoder for our `Measurement` type.
 -}
 decodeMotherMeasurement : Decoder value -> Decoder (Measurement MotherId value)
 decodeMotherMeasurement =
-    decodeMeasurement (field "mother" decodeEntityId)
+    decodeMeasurement (field "mother" decodeEntityUuid)
 
 
 decodeMeasurement : Decoder participantId -> Decoder value -> Decoder (Measurement participantId value)
 decodeMeasurement participantDecoder valueDecoder =
     decode Measurement
         |> custom participantDecoder
-        |> required "session" (nullable decodeEntityId)
+        |> required "session" (nullable decodeEntityUuid)
         |> required "date_measured" Gizra.NominalDate.decodeYYYYMMDD
         |> custom valueDecoder
 
@@ -43,13 +43,13 @@ decodeHistoricalMeasurements =
         |> requiredAt [ "participants", "mother_activity" ]
             (oneOf
                 [ decodeEmptyArrayAs EveryDict.empty
-                , map (toEveryDict toEntityId) (decodeIntDict decodeMotherMeasurementList)
+                , map (toEveryDict toEntityUuid) (dict decodeMotherMeasurementList)
                 ]
             )
         |> requiredAt [ "participants", "child_activity" ]
             (oneOf
                 [ decodeEmptyArrayAs EveryDict.empty
-                , map (toEveryDict toEntityId) (decodeIntDict decodeChildMeasurementList)
+                , map (toEveryDict toEntityUuid) (dict decodeChildMeasurementList)
                 ]
             )
 
@@ -61,27 +61,27 @@ toEveryDict func =
     Dict.foldl (\key value acc -> EveryDict.insert (func key) value acc) EveryDict.empty
 
 
-decodeWithEntityId : Decoder a -> Decoder ( EntityId b, a )
-decodeWithEntityId decoder =
+decodeWithEntityUuid : Decoder a -> Decoder ( EntityUuid b, a )
+decodeWithEntityUuid decoder =
     map2 (,)
-        (field "id" decodeEntityId)
+        (field "id" decodeEntityUuid)
         decoder
 
 
 decodeMotherMeasurementList : Decoder MotherMeasurementList
 decodeMotherMeasurementList =
     decode MotherMeasurementList
-        |> optional "family_planning" (list (decodeWithEntityId decodeFamilyPlanning)) []
+        |> optional "family_planning" (list (decodeWithEntityUuid decodeFamilyPlanning)) []
 
 
 decodeChildMeasurementList : Decoder ChildMeasurementList
 decodeChildMeasurementList =
     decode ChildMeasurementList
-        |> optional "height" (list (decodeWithEntityId decodeHeight)) []
-        |> optional "muac" (list (decodeWithEntityId decodeMuac)) []
-        |> optional "nutrition" (list (decodeWithEntityId decodeNutrition)) []
-        |> optional "photo" (list (decodeWithEntityId decodePhoto)) []
-        |> optional "weight" (list (decodeWithEntityId decodeWeight)) []
+        |> optional "height" (list (decodeWithEntityUuid decodeHeight)) []
+        |> optional "muac" (list (decodeWithEntityUuid decodeMuac)) []
+        |> optional "nutrition" (list (decodeWithEntityUuid decodeNutrition)) []
+        |> optional "photo" (list (decodeWithEntityUuid decodePhoto)) []
+        |> optional "weight" (list (decodeWithEntityUuid decodeWeight)) []
 
 
 {-| The `oneOf` provides some back-compat for locally stored values.
@@ -220,8 +220,8 @@ decodeMeasurementEdits : Decoder MeasurementEdits
 decodeMeasurementEdits =
     decode MeasurementEdits
         |> optional "closed" bool False
-        |> required "mothers" (map (toEveryDict toEntityId) (decodeIntDict decodeMotherEdits))
-        |> required "children" (map (toEveryDict toEntityId) (decodeIntDict decodeChildEdits))
+        |> required "mothers" (map (toEveryDict toEntityUuid) (dict decodeMotherEdits))
+        |> required "children" (map (toEveryDict toEntityUuid) (dict decodeChildEdits))
 
 
 {-| Decodes what `encodeChildEdits` produces.
