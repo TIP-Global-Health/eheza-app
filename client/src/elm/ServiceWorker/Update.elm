@@ -34,6 +34,10 @@ update currentTime msg model =
                     handleIncomingMsg currentTime incoming model
 
                 Err err ->
+                    let
+                        _ =
+                            Debug.log "decoder error" err
+                    in
                     ( model, Cmd.none, [] )
 
         SendOutgoingMsg msg ->
@@ -80,6 +84,15 @@ handleIncomingMsg currentTime msg model =
             , Cmd.none
             , [ Success data
                     |> Backend.Model.HandleFetchedSyncData
+                    |> App.Model.MsgIndexedDb
+              ]
+            )
+
+        NewRevisions data ->
+            ( model
+            , Cmd.none
+            , [ data
+                    |> Backend.Model.HandleRevisions
                     |> App.Model.MsgIndexedDb
               ]
             )

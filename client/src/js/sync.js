@@ -264,10 +264,14 @@
 
                         return Promise.all(promises);
                     }).catch(formatDatabaseError).then(function () {
-                        return Promise.resolve({
-                            last_timestamp: parseInt(json.data.last_timestamp),
-                            last_contact: Date.now(),
-                            remaining: remaining
+                        // If we've successfully saved the batch, then also send it
+                        // to the Elm app.
+                        return sendRevisions(json.data.batch).then(function () {
+                            return Promise.resolve({
+                                last_timestamp: parseInt(json.data.last_timestamp),
+                                last_contact: Date.now(),
+                                remaining: remaining
+                            });
                         });
                     });
                 });

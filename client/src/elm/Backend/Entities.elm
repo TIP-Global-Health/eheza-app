@@ -1,4 +1,4 @@
-module Backend.Entities exposing (CatchmentAreaUuid, CatchmentAreaUuidType(..), ChildId, ChildIdType(..), ChildNutritionId, ChildNutritionIdType(..), ClinicId, ClinicIdType(..), FamilyPlanningId, FamilyPlanningIdType(..), HealthCenterUuid, HealthCenterUuidType(..), HeightId, HeightIdType(..), MotherId, MotherIdType(..), MuacId, MuacIdType(..), PhotoId, PhotoIdType(..), SessionId, SessionIdType(..), WeightId, WeightIdType(..))
+module Backend.Entities exposing (CatchmentAreaUuid, CatchmentAreaUuidType(..), ChildId, ChildIdType(..), ChildNutritionId, ChildNutritionIdType(..), ChildNutritionUuid, ChildNutritionUuidType(..), ChildUuid, ChildUuidType(..), ClinicId, ClinicIdType(..), ClinicUuid, ClinicUuidType(..), FamilyPlanningId, FamilyPlanningIdType(..), FamilyPlanningUuid, FamilyPlanningUuidType(..), HealthCenterUuid, HealthCenterUuidType(..), HeightId, HeightIdType(..), HeightUuid, HeightUuidType(..), MotherId, MotherIdType(..), MotherUuid, MotherUuidType(..), MuacId, MuacIdType(..), MuacUuid, MuacUuidType(..), NurseUuid, NurseUuidType(..), PhotoId, PhotoIdType(..), PhotoUuid, PhotoUuidType(..), SessionId, SessionIdType(..), SessionUuid, SessionUuidType(..), WeightId, WeightIdType(..), WeightUuid, WeightUuidType(..))
 
 {-|
 
@@ -95,6 +95,102 @@ type CatchmentAreaUuidType
     = CatchmentAreaUuidType
 
 
+type alias ChildUuid =
+    EntityUuid ChildUuidType
+
+
+type ChildUuidType
+    = ChildUuidType
+
+
+type alias ChildNutritionUuid =
+    EntityUuid ChildNutritionUuidType
+
+
+type ChildNutritionUuidType
+    = ChildNutritionUuidType
+
+
+type alias ClinicUuid =
+    EntityUuid ClinicUuidType
+
+
+type ClinicUuidType
+    = ClinicUuidType
+
+
+type alias FamilyPlanningUuid =
+    EntityUuid FamilyPlanningUuidType
+
+
+type FamilyPlanningUuidType
+    = FamilyPlanningUuidType
+
+
+type alias HealthCenterUuid =
+    EntityUuid HealthCenterUuidType
+
+
+type HealthCenterUuidType
+    = HealthCenterUuidType
+
+
+type alias HeightUuid =
+    EntityUuid HeightUuidType
+
+
+type HeightUuidType
+    = HeightUuidType
+
+
+type alias MotherUuid =
+    EntityUuid MotherUuidType
+
+
+type MotherUuidType
+    = MotherUuidType
+
+
+type alias MuacUuid =
+    EntityUuid MuacUuidType
+
+
+type MuacUuidType
+    = MuacUuidType
+
+
+type NurseUuidType
+    = NurseUuidType
+
+
+type alias NurseUuid =
+    EntityUuid NurseUuidType
+
+
+type alias PhotoUuid =
+    EntityUuid PhotoUuidType
+
+
+type PhotoUuidType
+    = PhotoUuidType
+
+
+type alias SessionUuid =
+    EntityUuid SessionUuidType
+
+
+type SessionUuidType
+    = SessionUuidType
+
+
+type alias WeightUuid =
+    EntityUuid WeightUuidType
+
+
+type WeightUuidType
+    = WeightUuidType
+
+
 type alias ChildId =
     EntityId ChildIdType
 
@@ -125,14 +221,6 @@ type alias FamilyPlanningId =
 
 type FamilyPlanningIdType
     = FamilyPlanningIdType
-
-
-type alias HealthCenterUuid =
-    EntityUuid HealthCenterUuidType
-
-
-type HealthCenterUuidType
-    = HealthCenterUuidType
 
 
 type alias HeightId =

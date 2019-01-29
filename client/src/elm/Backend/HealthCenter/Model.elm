@@ -1,4 +1,4 @@
-module Backend.HealthCenter.Model exposing (HealthCenter)
+module Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 
 import Backend.Entities exposing (..)
 
@@ -8,4 +8,9 @@ import Backend.Entities exposing (..)
 type alias HealthCenter =
     { catchmentAreaUuid : CatchmentAreaUuid
     , name : String
+    }
+
+
+type alias CatchmentArea =
+    { name : String
     }

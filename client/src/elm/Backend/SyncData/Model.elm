@@ -1,6 +1,5 @@
 module Backend.SyncData.Model exposing (SyncAttempt(..), SyncData, SyncError(..), SyncStatus, emptySyncData)
 
-import Backend.Entities exposing (..)
 import Date exposing (Date)
 
 

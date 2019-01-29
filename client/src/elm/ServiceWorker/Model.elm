@@ -4,6 +4,7 @@ module ServiceWorker.Model exposing (IncomingMsg(..), Model, Msg(..), NewWorker(
 -}
 
 import Backend.Entities exposing (..)
+import Backend.Model exposing (Revision)
 import Backend.SyncData.Model exposing (SyncData)
 import EveryDictList exposing (EveryDictList)
 import Json.Encode exposing (Value)
@@ -62,6 +63,7 @@ type IncomingMsg
     | RegistrationFailed String
     | SetNewWorker NewWorker
     | SetSyncData (EveryDictList HealthCenterUuid SyncData)
+    | NewRevisions (List Revision)
 
 
 type OutgoingMsg

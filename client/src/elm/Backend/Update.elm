@@ -145,6 +145,11 @@ updateIndexedDb msg model =
             , Cmd.none
             )
 
+        HandleRevisions revisions ->
+            ( List.foldl handleRevision model revisions
+            , Cmd.none
+            )
+
         SaveSyncData uuid data ->
             ( model
             , sw.put syncDataEndpoint uuid data
@@ -160,6 +165,26 @@ updateIndexedDb msg model =
 
         IgnoreResponse ->
             ( model, Cmd.none )
+
+
+handleRevision : Revision -> ModelIndexedDb -> ModelIndexedDb
+handleRevision revision model =
+    case revision of
+        HealthCenterRevision uuid data ->
+            let
+                -- We don't do anything with revisions until we've fetched
+                -- some original data.
+                healthCenters =
+                    RemoteData.map
+                        (EveryDictList.insert uuid data)
+                        model.healthCenters
+            in
+            { model | healthCenters = healthCenters }
+
+        -- We only handle one for the moment ... as we move things into
+        -- ModelIndexedDB, we'll do more work here.
+        _ ->
+            model
 
 
 updateBackend : BackendUrl -> String -> MsgBackend -> ModelBackend -> ( ModelBackend, Cmd MsgBackend, List MsgCached )

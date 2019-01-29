@@ -1,4 +1,4 @@
-module Backend.Model exposing (CachedSessionError(..), ModelBackend, ModelCached, ModelIndexedDb, MsgBackend(..), MsgCached(..), MsgIndexedDb(..), TrainingSessionAction(..), TrainingSessionRequest, emptyModelBackend, emptyModelCached, emptyModelIndexedDb)
+module Backend.Model exposing (CachedSessionError(..), ModelBackend, ModelCached, ModelIndexedDb, MsgBackend(..), MsgCached(..), MsgIndexedDb(..), Revision(..), TrainingSessionAction(..), TrainingSessionRequest, emptyModelBackend, emptyModelCached, emptyModelIndexedDb)
 
 {-| The `Backend` hierarchy is for code that represents entities from the
 backend. It is reponsible for fetching them, saving them, etc.
@@ -17,10 +17,13 @@ in the UI.
 
 -}
 
+import Backend.Child.Model exposing (Child)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
-import Backend.HealthCenter.Model exposing (HealthCenter)
-import Backend.Measurement.Model exposing (MeasurementEdits, Photo)
+import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
+import Backend.Measurement.Model exposing (ChildNutrition, FamilyPlanning, Height, MeasurementEdits, Muac, Photo, Weight)
+import Backend.Mother.Model exposing (Mother)
+import Backend.Nurse.Model exposing (Nurse)
 import Backend.Session.Model exposing (EditableSession, MsgEditableSession, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
 import CacheStorage.Model
@@ -142,9 +145,30 @@ type MsgIndexedDb
     | FetchSyncData
     | HandleFetchedHealthCenters (WebData (EveryDictList HealthCenterUuid HealthCenter))
     | HandleFetchedSyncData (WebData (EveryDictList HealthCenterUuid SyncData))
+    | HandleRevisions (List Revision)
     | SaveSyncData HealthCenterUuid SyncData
     | DeleteSyncData HealthCenterUuid
     | IgnoreResponse
+
+
+{-| Wrapper for all the revisions we can receive.
+-}
+type Revision
+    = CatchmentAreaRevision CatchmentAreaUuid CatchmentArea
+    | ChildRevision ChildUuid Child
+    | ClinicRevision ClinicUuid Clinic
+    | HealthCenterRevision HealthCenterUuid HealthCenter
+    | MotherRevision MotherUuid Mother
+    | SessionRevision SessionUuid Session
+    | NurseRevision NurseUuid Nurse
+    | FamilyPlanningRevision FamilyPlanningUuid FamilyPlanning
+    | HeightRevision HeightUuid Height
+    | MuacRevision MuacUuid Muac
+    | ChildNutritionRevision ChildNutritionUuid ChildNutrition
+    | PhotoRevision PhotoUuid Photo
+    | WeightRevision WeightUuid Weight
+      -- This last one is temporary, as we gradually convert from IDs to UUIDs
+    | NotYetImplemented
 
 
 {-| This models things which we cache locally ... so, like `ModelBackend`, but

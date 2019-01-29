@@ -68,3 +68,19 @@ function sendSyncData () {
         });
     });
 }
+
+// When we download revisions, send them to the app.
+function sendRevisions (revisions) {
+    var message = {
+        tag: 'NewRevisions',
+        data: revisions
+    };
+
+    return self.clients.matchAll().then(function (clients) {
+        clients.forEach(function (client) {
+            client.postMessage(message);
+        });
+
+        return Promise.resolve();
+    });
+}
