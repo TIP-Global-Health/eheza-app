@@ -245,6 +245,7 @@ type TranslationId
     | PageNotFoundMsg
     | Participants
     | ParticipantSummary
+    | PersistentStorage Bool
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
     | PlaceholderEnterWeight
@@ -290,14 +291,19 @@ type TranslationId
     | StartEndDate
     | StartDate
     | EndDate
+    | StartSyncing
+    | StopSyncing
+    | StorageQuota { usage : Int, quota : Int }
     | SubmitPairingCode
     | Success
+    | SyncGeneral
     | ThisActionCannotBeUndone
     | ThisClinicHasNoMothers
     | TitleHealthAssessment
     | Training
     | TrainingSessionCreateSuccessMessage
     | TrainingSessionDeleteSuccessMessage
+    | TrySyncing
     | UbudeheLabel
     | UnableToDownload
     | UnableToUpload
@@ -841,6 +847,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        StorageQuota quota ->
+            { english = "Used " ++ toString (quota.usage // (1024 * 1024)) ++ " MB of available " ++ toString (quota.quota // (1024 * 1024)) ++ " MB"
+            , kinyarwanda = Nothing
+            }
+
         SubmitPairingCode ->
             { english = "Submit Pairing Code"
             , kinyarwanda = Nothing
@@ -1194,6 +1205,17 @@ translationSet trans =
             , kinyarwanda = Just "Umwirondoro w’urera umwana"
             }
 
+        PersistentStorage authorized ->
+            if authorized then
+                { english = "Persistent storage has been authorized. The browser will not delete locally cached data without your approval."
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "Persistent storage has not been authorized. The browser may delete locally cached data if storage runs low."
+                , kinyarwanda = Nothing
+                }
+
         PlaceholderEnterHeight ->
             { english = "Enter height here…"
             , kinyarwanda = Just "Andika uburebure hano…"
@@ -1423,9 +1445,24 @@ translationSet trans =
             , kinyarwanda = Just "Itariki urangirijeho"
             }
 
+        StartSyncing ->
+            { english = "Start Syncing"
+            , kinyarwanda = Nothing
+            }
+
+        StopSyncing ->
+            { english = "Stop Syncing"
+            , kinyarwanda = Nothing
+            }
+
         Success ->
             { english = "Success"
             , kinyarwanda = Just "Byagezweho"
+            }
+
+        SyncGeneral ->
+            { english = "Sync status (general)"
+            , kinyarwanda = Nothing
             }
 
         ThisActionCannotBeUndone ->
@@ -1455,6 +1492,11 @@ translationSet trans =
 
         TrainingSessionDeleteSuccessMessage ->
             { english = "Training sessions were deleted."
+            , kinyarwanda = Nothing
+            }
+
+        TrySyncing ->
+            { english = "Try syncing with backend"
             , kinyarwanda = Nothing
             }
 

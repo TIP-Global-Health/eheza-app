@@ -64,7 +64,6 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
     $handler->setAccount($this->user);
 
     $results = $handler->get('');
-    $this->assertEqual($results[0]['label'], $photo->title, 'Photo title is correct.');
     $this->assertEqual($results[0]['created'], date('c', $photo->created), 'Photo "created date" is correct.');
 
   }
@@ -87,7 +86,6 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
     $handler->setAccount($this->user);
 
     $results = $handler->get('');
-    $this->assertEqual($results[0]['label'], $nutrition->title, 'Nutrition title is correct.');
     $this->assertEqual($results[0]['created'], date('c', $nutrition->created), 'Nutrition "created date" is correct.');
 
   }
@@ -110,7 +108,6 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
     $handler->setAccount($this->user);
 
     $results = $handler->get('');
-    $this->assertEqual($results[0]['label'], $muac->title, 'Muac title is correct.');
     $this->assertEqual($results[0]['created'], date('c', $muac->created), 'Muac "created date" is correct.');
   }
 

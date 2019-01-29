@@ -298,8 +298,8 @@ var precacheLocalDev = [
   'serve/bower_components/dropzone/dist/min/dropzone.min.css',
   'serve/bower_components/dropzone/dist/min/dropzone.min.js',
   'serve/bower_components/dexie/dist/dexie.min.js',
-  'serve/bower_components/semantic/dist/semantic.min.css',
-  'serve/bower_components/offline/offline.min.js'
+  'serve/bower_components/semantic/dist/themes/**/' + precacheFileGlob,
+  'serve/bower_components/semantic/dist/semantic.min.css'
 ];
 
 // There may be a better way to do this, but for the moment we have some
@@ -311,8 +311,8 @@ var precacheProd = [
   'dist/bower_components/dropzone/dist/min/dropzone.min.*.css',
   'dist/bower_components/dropzone/dist/min/dropzone.min.*.js',
   'dist/bower_components/dexie/dist/dexie.min.*.js',
-  'dist/bower_components/semantic/dist/semantic.min.*.css',
-  'dist/bower_components/offline/offline.min.*.js'
+  'dist/bower_components/semantic/dist/themes/**/' + precacheFileGlob,
+  'dist/bower_components/semantic/dist/semantic.min.*.css'
 ];
 
 // For offline use while developing
@@ -329,10 +329,13 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function(callback)
     skipWaiting: false,
     importScripts: [
         'bower_components/dexie/dist/dexie.min.js',
+        'sw.js',
         'config.js',
         'lifecycle.js',
+        'nodes.js',
         'photos.js',
-        'rollbar.js'
+        'rollbar.js',
+        'sync.js'
     ]
   }, callback);
 });
@@ -347,12 +350,17 @@ gulp.task('pwa:prod', function (callback) {
     staticFileGlobs: precacheProd,
     stripPrefix: rootDir,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
+    clientsClaim: true,
+    skipWaiting: false,
     importScripts: [
         'bower_components/dexie/dist/dexie.min.js',
+        'sw.js',
         'config.js',
         'lifecycle.js',
+        'nodes.js',
         'photos.js',
-        'rollbar.js'
+        'rollbar.js',
+        'sync.js'
     ]
   }, callback);
 });

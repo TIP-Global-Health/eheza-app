@@ -1,4 +1,4 @@
-module Backend.Entities exposing (ChildId, ChildIdType(..), ChildNutritionId, ChildNutritionIdType(..), ClinicId, ClinicIdType(..), FamilyPlanningId, FamilyPlanningIdType(..), HeightId, HeightIdType(..), MotherId, MotherIdType(..), MuacId, MuacIdType(..), PhotoId, PhotoIdType(..), SessionId, SessionIdType(..), WeightId, WeightIdType(..))
+module Backend.Entities exposing (CatchmentAreaUuid, CatchmentAreaUuidType(..), ChildId, ChildIdType(..), ChildNutritionId, ChildNutritionIdType(..), ChildNutritionUuid, ChildNutritionUuidType(..), ChildUuid, ChildUuidType(..), ClinicId, ClinicIdType(..), ClinicUuid, ClinicUuidType(..), FamilyPlanningId, FamilyPlanningIdType(..), FamilyPlanningUuid, FamilyPlanningUuidType(..), HealthCenterUuid, HealthCenterUuidType(..), HeightId, HeightIdType(..), HeightUuid, HeightUuidType(..), MotherId, MotherIdType(..), MotherUuid, MotherUuidType(..), MuacId, MuacIdType(..), MuacUuid, MuacUuidType(..), NurseUuid, NurseUuidType(..), PhotoId, PhotoIdType(..), PhotoUuid, PhotoUuidType(..), SessionId, SessionIdType(..), SessionUuid, SessionUuidType(..), WeightId, WeightIdType(..), WeightUuid, WeightUuidType(..))
 
 {-|
 
@@ -49,7 +49,7 @@ we need it.
 
 -}
 
-import Restful.Endpoint exposing (EntityId(..))
+import Restful.Endpoint exposing (EntityId(..), EntityUuid(..))
 
 
 
@@ -65,36 +65,6 @@ import Restful.Endpoint exposing (EntityId(..))
     most of the time, rather than the more verbose
 
         EntityId ChildId
-
-    In fact, here's a simple code-generation process which you can adapt
-    to your preferred code-editor. Here's the list of base types:
-
-        Child
-        ChildNutrition
-        Clinic
-        FamilyPlanning
-        Height
-        Mother
-        Muac
-        Photo
-        Session
-        Weight
-
-    Now, to create a new one, use the following process:
-
-    1. Add it to the list above.
-    2. Delete everything below this comment.
-    3. Copy the list above below this comment.
-    4. Use search-and-replace to generate the code.
-
-    For vim, here's the pattern I use:
-
-    s/ *\(.*\)/type alias \1Id = EntityId \1IdType\rtype \1IdType=\1IdType/
-
-    Then, just save it and let elm-format make it pretty.
-
-    Eventually, you could imagine just having a file with a list
-    of our entity types, and a little script to generate the code below.
 
     There are some possibly-attractive variations on this.
 
@@ -115,6 +85,110 @@ import Restful.Endpoint exposing (EntityId(..))
      how it can be made to work.
 
 -}
+
+
+type alias CatchmentAreaUuid =
+    EntityUuid CatchmentAreaUuidType
+
+
+type CatchmentAreaUuidType
+    = CatchmentAreaUuidType
+
+
+type alias ChildUuid =
+    EntityUuid ChildUuidType
+
+
+type ChildUuidType
+    = ChildUuidType
+
+
+type alias ChildNutritionUuid =
+    EntityUuid ChildNutritionUuidType
+
+
+type ChildNutritionUuidType
+    = ChildNutritionUuidType
+
+
+type alias ClinicUuid =
+    EntityUuid ClinicUuidType
+
+
+type ClinicUuidType
+    = ClinicUuidType
+
+
+type alias FamilyPlanningUuid =
+    EntityUuid FamilyPlanningUuidType
+
+
+type FamilyPlanningUuidType
+    = FamilyPlanningUuidType
+
+
+type alias HealthCenterUuid =
+    EntityUuid HealthCenterUuidType
+
+
+type HealthCenterUuidType
+    = HealthCenterUuidType
+
+
+type alias HeightUuid =
+    EntityUuid HeightUuidType
+
+
+type HeightUuidType
+    = HeightUuidType
+
+
+type alias MotherUuid =
+    EntityUuid MotherUuidType
+
+
+type MotherUuidType
+    = MotherUuidType
+
+
+type alias MuacUuid =
+    EntityUuid MuacUuidType
+
+
+type MuacUuidType
+    = MuacUuidType
+
+
+type NurseUuidType
+    = NurseUuidType
+
+
+type alias NurseUuid =
+    EntityUuid NurseUuidType
+
+
+type alias PhotoUuid =
+    EntityUuid PhotoUuidType
+
+
+type PhotoUuidType
+    = PhotoUuidType
+
+
+type alias SessionUuid =
+    EntityUuid SessionUuidType
+
+
+type SessionUuidType
+    = SessionUuidType
+
+
+type alias WeightUuid =
+    EntityUuid WeightUuidType
+
+
+type WeightUuidType
+    = WeightUuidType
 
 
 type alias ChildId =

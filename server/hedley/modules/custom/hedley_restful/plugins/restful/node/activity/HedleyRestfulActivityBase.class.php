@@ -25,13 +25,11 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
 
     $public_fields['session'] = [
       'property' => 'field_session',
-      'resource' => [
-        'session' => [
-          'name' => 'sessions',
-          'full_view' => FALSE,
-        ],
-      ],
+      'sub_property' => 'field_uuid',
     ];
+
+    // The label is purely decorative.
+    unset($public_fields['label']);
 
     return $public_fields;
   }

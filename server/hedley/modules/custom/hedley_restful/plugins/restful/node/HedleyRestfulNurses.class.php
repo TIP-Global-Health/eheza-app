@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Contains \HedleyRestfulUserNodes.
+ * Contains \HedleyRestfulNurses.
  */
 
 /**
- * Class HedleyRestfulUserNodes.
+ * Class HedleyRestfulNurses.
  */
-class HedleyRestfulUserNodes extends HedleyRestfulSyncBase {
+class HedleyRestfulNurses extends HedleyRestfulSyncBase {
 
   /**
    * {@inheritdoc}
@@ -18,12 +18,7 @@ class HedleyRestfulUserNodes extends HedleyRestfulSyncBase {
 
     $public_fields['clinics'] = [
       'property' => 'field_clinics',
-      'resource' => [
-        'clinic' => [
-          'name' => 'clinics',
-          'full_view' => FALSE,
-        ],
-      ],
+      'sub_property' => 'field_uuid',
     ];
 
     $public_fields['pin_code'] = [
