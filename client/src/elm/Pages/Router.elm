@@ -17,9 +17,6 @@ delta2url previous current =
         DevicePage ->
             Just <| UrlChange NewEntry "#device"
 
-        LoginPage ->
-            Just <| UrlChange NewEntry "#login"
-
         PinCodePage ->
             Just <| UrlChange NewEntry "#pincode"
 
@@ -95,7 +92,6 @@ parseUrl =
         , map (UserPage (ClinicsPage Nothing)) (s "clinics")
         , map (UserPage AdminPage) (s "admin")
         , map DevicePage (s "device")
-        , map LoginPage (s "login")
         , map PinCodePage (s "pincode")
         , map ServiceWorkerPage (s "deployment")
         , map (UserPage MyAccountPage) (s "my-account")

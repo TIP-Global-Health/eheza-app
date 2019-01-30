@@ -29,15 +29,10 @@ if (location.hostname.endsWith('pantheonsite.io') && location.protocol == 'http:
     location.protocol = 'https:';
 }
 
-// The Elm side of the "credentials" mechanism allows us to distinguish between
-// credentials for multiple backends. However, we can't really make much use of
-// that at the "flags" stage, because on the JS side we don't know what the
-// backendUrl is. So, that' probably fine for the moment ... we can think of
-// something if we really need it. In any event, using local storage will
-// automatically distinguish based on the frontend URL, so that is probably
-// enough.
+
+// Start up our Elm app.
 var elmApp = Elm.Main.fullscreen({
-    credentials: localStorage.getItem('credentials') || '{}',
+    pinCode: localStorage.getItem('pinCode') || '',
     activeServiceWorker: !!navigator.serviceWorker.controller,
     hostname: window.location.hostname,
     activeLanguage : localStorage.getItem('language') || ''
@@ -88,13 +83,8 @@ setInterval(trySyncing, minutesToMillis(5));
 elmApp.ports.trySyncing.subscribe(trySyncing);
 
 
-elmApp.ports.cacheCredentials.subscribe(function(params) {
-    // The `backendUrl` isn't actually used, for the moment ... we just save
-    // the credentials without trying to distinguish amongst backends.
-    var backendUrl = params[0];
-    var credentials = params[1];
-
-    localStorage.setItem('credentials', credentials);
+elmApp.ports.cachePinCode.subscribe(function(pinCode) {
+    localStorage.setItem('pinCode', pinCode);
 });
 
 elmApp.ports.cacheEditableSession.subscribe(function(json) {

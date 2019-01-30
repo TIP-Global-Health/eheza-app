@@ -1,7 +1,7 @@
 module App.Fetch exposing (fetch)
 
 import App.Model exposing (..)
-import App.Utils exposing (getLoggedInModel, hasAccessToken)
+import App.Utils exposing (getLoggedInModel)
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Pages.Admin.Fetch

@@ -1612,11 +1612,6 @@ translateActivePage page =
             , kinyarwanda = Nothing
             }
 
-        LoginPage ->
-            { english = "Login"
-            , kinyarwanda = Just "Kwinjira"
-            }
-
         PinCodePage ->
             { english = "PIN Code"
             , kinyarwanda = Nothing

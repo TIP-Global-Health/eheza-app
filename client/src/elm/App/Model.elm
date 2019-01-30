@@ -10,17 +10,14 @@ import Http
 import Json.Encode exposing (Value)
 import Pages.Admin.Model
 import Pages.Device.Model
-import Pages.Login.Model
 import Pages.Model
 import Pages.Page exposing (Page(..))
 import Pages.PinCode.Model
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Login exposing (UserAndData)
 import Rollbar
 import ServiceWorker.Model
 import Time exposing (Time)
 import Translate exposing (Language(..))
-import User.Model exposing (User)
 import Uuid exposing (Uuid)
 import ZScore.Model
 
@@ -51,12 +48,6 @@ type alias Model =
 
     -- Access to things stored in IndexedDB.
     , indexedDb : Backend.Model.ModelIndexedDb
-
-    -- Do we have a nurse logged in locally with a PIN code?
-    , nurse : WebData ( NurseId, Nurse )
-
-    -- The page we use to log in a nurse.
-    , pinCodePage : Pages.PinCode.Model.Model
 
     -- Have we successfully asked the browser to make our storage persistent?
     -- (This means the browser won't automatically delete our storage when
@@ -96,27 +87,17 @@ type alias Version =
     }
 
 
-{-| Yay, we're configured!
-
-  - We'll definitely have a config
-  - We have a login UI
-  - We have the data showing whether we're logged in or not, and, if we're
-    logged in, some data that we only keep for people who are logged in.
-
-We could put additional fields here if there is some state that
-is common to people who are logged in or logged out.
-
-Note that our `Backend` and `Pages` aren't in here, becuase they are only
-for people who are logged in. But, `Pages.Login.Model` is here, of course,
-since we need a UI for logging in.
-
+{-| Things which depend on having a configuration.
 -}
 type alias ConfiguredModel =
     { config : Config.Model.Model
-    , loginPage : Pages.Login.Model.Model
-    , login : UserAndData () User LoggedInModel
     , device : WebData Device
     , devicePage : Pages.Device.Model.Model
+
+    -- The RemoteData tracks attempts to log in with a PIN code. The
+    -- LoggedInModel tracks data which we only have if we are logged in.
+    , loggedIn : WebData LoggedInModel
+    , pinCodePage : Pages.PinCode.Model.Model
     }
 
 
@@ -132,13 +113,15 @@ it at the appropriate moment.
 type alias LoggedInModel =
     { backend : Backend.Model.ModelBackend
     , adminPage : Pages.Admin.Model.Model
+    , nurse : ( NurseId, Nurse )
     }
 
 
-emptyLoggedInModel : LoggedInModel
-emptyLoggedInModel =
+emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
+emptyLoggedInModel nurse =
     { backend = Backend.Model.emptyModelBackend
     , adminPage = Pages.Admin.Model.emptyModel
+    , nurse = nurse
     }
 
 
@@ -183,8 +166,6 @@ type Msg
     | MsgIndexedDb Backend.Model.MsgIndexedDb
     | MsgPageDevice Pages.Device.Model.Msg
     | MsgLoggedIn MsgLoggedIn
-    | MsgLogin (Restful.Login.Msg User)
-    | MsgPageLogin Pages.Login.Model.Msg
     | MsgPagePinCode Pages.PinCode.Model.Msg
     | MsgSession Pages.Model.MsgSession
     | MsgServiceWorker ServiceWorker.Model.Msg
@@ -200,7 +181,7 @@ type Msg
     | Tick Time
     | TrySyncing
     | TryPinCode String
-    | SetNurse (WebData ( NurseId, Nurse ))
+    | SetLoggedIn (WebData ( NurseId, Nurse ))
 
 
 {-| Messages we can only handle if we're logged in.
@@ -211,7 +192,7 @@ type MsgLoggedIn
 
 
 type alias Flags =
-    { credentials : String
+    { pinCode : String
     , hostname : String
     , activeLanguage : String
     , activeServiceWorker : Bool
@@ -226,8 +207,6 @@ emptyModel flags =
     , configuration = NotAsked
     , persistentStorage = Nothing
     , storageQuota = Nothing
-    , nurse = NotAsked
-    , pinCodePage = Pages.PinCode.Model.emptyModel
 
     -- We start at 1970, which might be nice to avoid, but probably more
     -- trouble than it's worth ... this will almost immediately get updated

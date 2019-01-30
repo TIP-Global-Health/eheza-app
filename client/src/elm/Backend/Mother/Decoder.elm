@@ -5,8 +5,6 @@ import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, at, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required)
-import Restful.Endpoint exposing (decodeEntityUuid)
-import Utils.Json exposing (decodeDate, decodeNullAsEmptyArray)
 
 
 decodeMother : Decoder Mother
