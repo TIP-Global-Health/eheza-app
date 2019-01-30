@@ -12,6 +12,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Device.Model exposing (..)
+import Pages.Page exposing (Page(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
 import Translate exposing (Language, translate)
@@ -40,6 +41,13 @@ view language device app model =
             [ h1
                 [ class "ui header" ]
                 [ text <| translate language Translate.DeviceStatus ]
+            , a
+                [ class "link-back"
+                , onClick <| SetActivePage PinCodePage
+                ]
+                [ span [ class "icon-back" ] []
+                , span [] []
+                ]
             ]
         , div
             [ class "ui segment" ]
