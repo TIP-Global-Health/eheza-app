@@ -21,7 +21,8 @@ decodeMother =
                 , succeed Nothing
                 ]
             )
-        |> required "children" (oneOf [ list decodeEntityUuid, decodeNullAsEmptyArray ])
+        -- TODO: Remove the children!
+        |> hardcoded []
         |> required "date_birth" decodeYYYYMMDD
         |> optional "ubudehe" (nullable decodeUbudehe) Nothing
         |> optional "education_level" (nullable decodeEducationLevel) Nothing

@@ -1,6 +1,8 @@
 module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..), MsgLoggedIn(..), StorageQuota, Version, emptyLoggedInModel, emptyModel)
 
+import Backend.Entities exposing (..)
 import Backend.Model
+import Backend.Nurse.Model exposing (Nurse)
 import Config.Model
 import Device.Model exposing (Device)
 import Dict exposing (Dict)
@@ -10,7 +12,8 @@ import Pages.Admin.Model
 import Pages.Device.Model
 import Pages.Login.Model
 import Pages.Model
-import Pages.Page exposing (Page(LoginPage))
+import Pages.Page exposing (Page(..))
+import Pages.PinCode.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Login exposing (UserAndData)
 import Rollbar
@@ -46,9 +49,14 @@ type alias Model =
     -- least for the moment.
     , cache : Backend.Model.ModelCached
 
-    -- If we end up doing some client-side access control, this would probably
-    -- move behind that structure.
+    -- Access to things stored in IndexedDB.
     , indexedDb : Backend.Model.ModelIndexedDb
+
+    -- Do we have a nurse logged in locally with a PIN code?
+    , nurse : WebData ( NurseId, Nurse )
+
+    -- The page we use to log in a nurse.
+    , pinCodePage : Pages.PinCode.Model.Model
 
     -- Have we successfully asked the browser to make our storage persistent?
     -- (This means the browser won't automatically delete our storage when
@@ -177,6 +185,7 @@ type Msg
     | MsgLoggedIn MsgLoggedIn
     | MsgLogin (Restful.Login.Msg User)
     | MsgPageLogin Pages.Login.Model.Msg
+    | MsgPagePinCode Pages.PinCode.Model.Msg
     | MsgSession Pages.Model.MsgSession
     | MsgServiceWorker ServiceWorker.Model.Msg
     | MsgZScore ZScore.Model.Msg
@@ -190,6 +199,8 @@ type Msg
     | SetStorageQuota StorageQuota
     | Tick Time
     | TrySyncing
+    | TryPinCode String
+    | SetNurse (WebData ( NurseId, Nurse ))
 
 
 {-| Messages we can only handle if we're logged in.
@@ -209,15 +220,14 @@ type alias Flags =
 
 emptyModel : Flags -> Model
 emptyModel flags =
-    -- I suppose the login page is as logical as any.
-    -- if we auto-login, we'll transition to something
-    -- sensible anyway.
-    { activePage = LoginPage
+    { activePage = PinCodePage
     , cache = Backend.Model.emptyModelCached
     , indexedDb = Backend.Model.emptyModelIndexedDb
     , configuration = NotAsked
     , persistentStorage = Nothing
     , storageQuota = Nothing
+    , nurse = NotAsked
+    , pinCodePage = Pages.PinCode.Model.emptyModel
 
     -- We start at 1970, which might be nice to avoid, but probably more
     -- trouble than it's worth ... this will almost immediately get updated

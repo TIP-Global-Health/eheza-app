@@ -99,6 +99,8 @@ type LoginPhrase
     | LogoutInProgress
     | LogoutFailed
     | Password
+    | PinCode
+    | PinCodeRejected
     | SignIn
     | Username
     | WorkOffline
@@ -1615,6 +1617,11 @@ translateActivePage page =
             , kinyarwanda = Just "Kwinjira"
             }
 
+        PinCodePage ->
+            { english = "PIN Code"
+            , kinyarwanda = Nothing
+            }
+
         PageNotFound url ->
             { english = "Missing"
             , kinyarwanda = Just "Ibibura"
@@ -1820,6 +1827,16 @@ translateLoginPhrase phrase =
         Password ->
             { english = "Password"
             , kinyarwanda = Just "Ijambo ry'ibanga"
+            }
+
+        PinCode ->
+            { english = "PIN code"
+            , kinyarwanda = Nothing
+            }
+
+        PinCodeRejected ->
+            { english = "Your PIN code was not recognized."
+            , kinyarwanda = Nothing
             }
 
         SignIn ->

@@ -32,7 +32,7 @@ dbSync.version(1).stores({
     // What we're specifying here is a comma-separate list of the fields to
     // index. The first field is the primary key, and the `&` indicates
     // that it should be unique.
-    nodes: '&uuid,type,vid,status',
+    nodes: '&uuid,type,vid,status,[type+pin_code]',
 
     // Metadata that tracks information about the sync process. The uuid is the
     // UUID of the shard we are syncing. So, for things we sync by health

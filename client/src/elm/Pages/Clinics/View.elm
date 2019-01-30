@@ -80,7 +80,7 @@ viewClinicList language user clinicData cache =
                 [ text <| translate language Translate.Clinics ]
             , a
                 [ class "link-back"
-                , onClick <| SetActivePage LoginPage
+                , onClick <| SetActivePage PinCodePage
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []
@@ -204,7 +204,7 @@ viewLoadedClinic language currentDate clinicId clinics backend cache ( queryDate
             viewFoundClinic language currentDate clinicId clinic backend cache futureSessions
 
         Nothing ->
-            [ Pages.PageNotFound.View.viewPage language (SetActivePage LoginPage) <|
+            [ Pages.PageNotFound.View.viewPage language (SetActivePage PinCodePage) <|
                 UserPage <|
                     ClinicsPage <|
                         Just clinicId

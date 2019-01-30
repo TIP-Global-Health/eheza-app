@@ -35,7 +35,7 @@ view language zscores childId ( sessionId, session ) =
         Nothing ->
             ProgressReportPage childId
                 |> SessionPage
-                |> Pages.PageNotFound.View.viewPage language (SetActivePage LoginPage)
+                |> Pages.PageNotFound.View.viewPage language (SetActivePage PinCodePage)
 
 
 {-| This function is more complex than one would like ... when reviewing the

@@ -20,6 +20,9 @@ delta2url previous current =
         LoginPage ->
             Just <| UrlChange NewEntry "#login"
 
+        PinCodePage ->
+            Just <| UrlChange NewEntry "#pincode"
+
         PageNotFound url ->
             -- If we couldn't interpret the URL, we don't try to change it.
             Nothing
@@ -93,15 +96,13 @@ parseUrl =
         , map (UserPage AdminPage) (s "admin")
         , map DevicePage (s "device")
         , map LoginPage (s "login")
+        , map PinCodePage (s "pincode")
         , map ServiceWorkerPage (s "deployment")
         , map (UserPage MyAccountPage) (s "my-account")
         , map (SessionPage << MotherPage << toEntityUuid) (s "mother" </> string)
         , map (SessionPage ParticipantsPage) (s "participants")
 
-        -- TODO: `top` represents the page without any segements ... i.e. the
-        -- root page.  Should figure out how to handle this best. Possibly a
-        -- special Page called `Root`?  Or, we could eventually redirect to an
-        -- appropriate page. But it might be simpler to record the user's
-        -- intention to be at the "root" page.
-        , map DevicePage top
+        -- `top` represents the page without any segements ... i.e. the
+        -- root page.
+        , map PinCodePage top
         ]

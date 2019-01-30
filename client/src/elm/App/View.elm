@@ -15,6 +15,7 @@ import Pages.Login.View
 import Pages.MyAccount.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
+import Pages.PinCode.View
 import Pages.View exposing (viewFoundSession)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Login as RL
@@ -103,6 +104,12 @@ viewConfiguredModel model configured =
         ServiceWorker.View.view model.currentTime model.language model.serviceWorker
             |> Html.map MsgServiceWorker
 
+    else if not (RemoteData.isSuccess configured.device) then
+        -- If our device is not paired, then the only thing we allow is the pairing
+        -- of the device
+        Pages.Device.View.view model.language configured.device model configured.devicePage
+            |> Html.map MsgPageDevice
+
     else
         case model.activePage of
             DevicePage ->
@@ -111,6 +118,10 @@ viewConfiguredModel model configured =
 
             LoginPage ->
                 viewEditableSession model configured
+
+            PinCodePage ->
+                Pages.PinCode.View.view model.language model.activePage model.nurse model.pinCodePage
+                    |> Html.map MsgPagePinCode
 
             PageNotFound url ->
                 Pages.PageNotFound.View.view model.language url
@@ -184,6 +195,10 @@ viewEditableSession model configured =
                             -- status.
                             Pages.Login.View.view model.language model.activePage configured.login configured.loginPage (Maybe.map Tuple.second session)
                                 |> Html.map MsgPageLogin
+
+                        PinCodePage ->
+                            Pages.PinCode.View.view model.language model.activePage model.nurse model.pinCodePage
+                                |> Html.map MsgPagePinCode
 
                         UserPage userPage ->
                             case userPage of

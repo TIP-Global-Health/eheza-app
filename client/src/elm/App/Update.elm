@@ -1,6 +1,7 @@
 port module App.Update exposing (init, loginConfig, subscriptions, update)
 
 import App.Model exposing (..)
+import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Session.Model
 import Backend.Update
@@ -24,9 +25,11 @@ import Pages.Login.Model
 import Pages.Login.Update
 import Pages.Model
 import Pages.Page exposing (Page(..), UserPage(AdminPage, ClinicsPage))
+import Pages.PinCode.Model
+import Pages.PinCode.Update
 import Pages.Update
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity)
+import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, select, toCmd)
 import Restful.Login exposing (AuthenticatedUser, Credentials, LoginEvent(..), UserAndData(..), checkCachedCredentials)
 import Rollbar
 import ServiceWorker.Model
@@ -322,6 +325,32 @@ update msg model =
                 )
                 model
 
+        MsgPagePinCode subMsg ->
+            let
+                ( subModel, subCmd, outMsg ) =
+                    Pages.PinCode.Update.update subMsg model.pinCodePage
+
+                extraMsgs =
+                    outMsg
+                        |> Maybe.Extra.toList
+                        |> List.map
+                            (\out ->
+                                case out of
+                                    Pages.PinCode.Model.TryPinCode code ->
+                                        TryPinCode code
+
+                                    Pages.PinCode.Model.Logout ->
+                                        SetNurse NotAsked
+
+                                    Pages.PinCode.Model.SetActivePage page ->
+                                        SetActivePage page
+                            )
+            in
+            ( { model | pinCodePage = subModel }
+            , Cmd.map MsgPagePinCode subCmd
+            )
+                |> sequence update extraMsgs
+
         MsgPageLogin subMsg ->
             updateConfigured
                 (\configured ->
@@ -474,6 +503,21 @@ update msg model =
         TrySyncing ->
             -- Normally handled automatically, but sometimes nice to trigger manually
             ( model, trySyncing () )
+
+        TryPinCode code ->
+            let
+                formatResponse =
+                    .items >> List.head >> Maybe.map RemoteData.succeed >> Maybe.withDefault (RemoteData.Failure NetworkError)
+            in
+            ( { model | nurse = Loading }
+            , select "/sw" nurseEndpoint { pinCode = Just code }
+                |> toCmd (RemoteData.fromResult >> RemoteData.andThen formatResponse >> SetNurse)
+            )
+
+        SetNurse data ->
+            ( { model | nurse = data }
+            , Cmd.none
+            )
 
 
 {-| Convenience function to process a msg which depends on having a configuration.

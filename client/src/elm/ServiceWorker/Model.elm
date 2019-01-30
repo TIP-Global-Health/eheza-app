@@ -53,7 +53,7 @@ emptyModel active =
 
 
 type Msg
-    = BackToLoginPage
+    = BackToPinCodePage
     | HandleIncomingMsg Value
     | SendOutgoingMsg OutgoingMsg
 

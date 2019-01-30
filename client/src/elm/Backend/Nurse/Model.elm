@@ -1,13 +1,14 @@
 module Backend.Nurse.Model exposing (Nurse, Role(..))
 
 import Backend.Entities exposing (..)
+import EverySet exposing (EverySet)
 
 
 type alias Nurse =
     { name : String
     , pinCode : String
     , clinics : List ClinicId
-    , role : List Role
+    , roles : EverySet Role
     , email : Maybe String
     }
 

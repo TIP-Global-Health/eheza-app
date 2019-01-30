@@ -42,13 +42,13 @@ view config language currentDate user backend model =
 
         goBackMsg =
             -- If we're showing a create session form, then the back link
-            -- hides the form. Otherwise, it goes back to the LoginPage.
+            -- hides the form. Otherwise, it goes back to the PinCodePage.
             case model.createSession of
                 Just _ ->
                     ShowCreateSessionForm False
 
                 Nothing ->
-                    SetActivePage LoginPage
+                    SetActivePage PinCodePage
     in
     div [ class "wrap wrap-alt-2 admin-page" ]
         [ div

@@ -20,7 +20,7 @@ view language url =
             , h4 [] [ text url ]
             , button
                 [ class "ui fluid button"
-                , onClick <| SetActivePage LoginPage
+                , onClick <| SetActivePage PinCodePage
                 ]
                 [ text <| translate language Trans.GoHome ]
             ]

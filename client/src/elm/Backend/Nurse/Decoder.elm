@@ -1,6 +1,7 @@
 module Backend.Nurse.Decoder exposing (decodeNurse)
 
 import Backend.Nurse.Model exposing (..)
+import EverySet
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Restful.Endpoint exposing (decodeEntityUuid)
@@ -12,7 +13,7 @@ decodeNurse =
         |> required "label" string
         |> required "pin_code" string
         |> required "clinics" (list decodeEntityUuid)
-        |> required "role" (list decodeRole)
+        |> required "role" (map EverySet.fromList (list decodeRole))
         |> optional "email" (map Just string) Nothing
 
 

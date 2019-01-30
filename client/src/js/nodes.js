@@ -155,6 +155,11 @@
         }).catch(sendErrorResponses);
     }
 
+    // Fields which we index along with type, so we can search for them.
+    var searchFields = [
+        'pin_code'
+    ];
+
     function index (url, type) {
         var params = url.searchParams;
 
@@ -162,7 +167,20 @@
         var range = parseInt(params.get('range') || '0');
 
         return dbSync.open().catch(databaseError).then(function () {
-            var query = dbSync.nodes.where('type').equals(type);
+            var criteria = {type: type};
+
+            // We can do a limited kind of criteria ... can be expanded when
+            // necessary. This is most efficient if we have a compound index
+            // including all the criteria.
+            searchFields.forEach(function (field) {
+                var searchValue = params.get(field);
+
+                if (searchValue) {
+                    criteria[field] = searchValue;
+                }
+            });
+
+            var query = dbSync.nodes.where(criteria);
             var countQuery = query.clone();
 
             // If type is syncmetadata, we use a different table

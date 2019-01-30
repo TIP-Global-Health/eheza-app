@@ -74,6 +74,7 @@ a URL, we could end up with a URL we don't understand.
 -}
 type Page
     = DevicePage -- page that shows the status of the device
+    | PinCodePage -- page that allows for local login
     | LoginPage -- page that allows for login (or re-login, if a token has expired)
     | UserPage UserPage -- page that requires a logged-in user
     | PageNotFound String -- we couldn't interpret the URL ... the parameter is the URL
