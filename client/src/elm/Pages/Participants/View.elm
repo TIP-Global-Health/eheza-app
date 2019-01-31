@@ -61,6 +61,7 @@ view language editableSession model =
                         [ class "card"
                         , MotherPage motherId
                             |> SessionPage
+                            |> UserPage
                             |> SetRedirectPage
                             |> onClick
                         ]
@@ -146,13 +147,13 @@ view language editableSession model =
                     ]
                 , ul [ class "links-head" ]
                     [ li
-                        [ onClick <| SetRedirectPage <| SessionPage AttendancePage ]
+                        [ onClick <| SetRedirectPage <| UserPage <| SessionPage AttendancePage ]
                         [ a [] [ span [ class "icon-completed" ] [] ] ]
                     , li
                         [ class "active" ]
                         [ a [] [ span [ class "icon-mother" ] [] ] ]
                     , li
-                        [ onClick <| SetRedirectPage <| SessionPage ActivitiesPage ]
+                        [ onClick <| SetRedirectPage <| UserPage <| SessionPage ActivitiesPage ]
                         [ a [] [ span [ class "icon-measurements" ] [] ] ]
                     ]
                 ]

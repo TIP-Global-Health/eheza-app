@@ -77,7 +77,6 @@ type Page
     | PinCodePage -- page that allows for local login
     | UserPage UserPage -- page that requires a logged-in user
     | PageNotFound String -- we couldn't interpret the URL ... the parameter is the URL
-    | SessionPage SessionPage -- pages that require an `EditableSession`
     | ServiceWorkerPage -- shows status of the service worker
 
 
@@ -87,6 +86,7 @@ the login page instead.
 type UserPage
     = AdminPage -- a page that shows administrative tasks
     | ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
+    | SessionPage SessionPage -- pages that require an `EditableSession`
     | MyAccountPage -- shows information about the logged-in user
 
 

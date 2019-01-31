@@ -4,7 +4,7 @@ import Backend.Entities exposing (..)
 import Measurement.Model
 import Measurement.Update
 import Pages.Activity.Model exposing (Model, Msg(..))
-import Pages.Page exposing (Page(..), SessionPage(..))
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 
 
 {-| Ideally, these would be more generic, but it's easier to have
@@ -19,7 +19,7 @@ updateChild :
 updateChild msg model childForm =
     case msg of
         GoBackToActivitiesPage ->
-            ( model, Cmd.none, childForm, Nothing, Just <| SessionPage ActivitiesPage )
+            ( model, Cmd.none, childForm, Nothing, Just <| UserPage <| SessionPage ActivitiesPage )
 
         MsgMeasurement subMsg ->
             childForm
@@ -63,7 +63,7 @@ updateMother :
 updateMother msg model motherForm =
     case msg of
         GoBackToActivitiesPage ->
-            ( model, Cmd.none, Nothing, Nothing, Just <| SessionPage ActivitiesPage )
+            ( model, Cmd.none, Nothing, Nothing, Just <| UserPage <| SessionPage ActivitiesPage )
 
         MsgMeasurement subMsg ->
             motherForm

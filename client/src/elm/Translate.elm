@@ -1639,43 +1639,6 @@ translateActivePage page =
             , kinyarwanda = Nothing
             }
 
-        SessionPage sessionPage ->
-            case sessionPage of
-                ActivitiesPage ->
-                    { english = "Activities"
-                    , kinyarwanda = Just "Ibikorwa"
-                    }
-
-                ActivityPage activityType ->
-                    { english = "Activity"
-                    , kinyarwanda = Just "Igikorwa"
-                    }
-
-                AttendancePage ->
-                    { english = "Attendance"
-                    , kinyarwanda = Just "Ubwitabire"
-                    }
-
-                ParticipantsPage ->
-                    { english = "Participants"
-                    , kinyarwanda = Just "Abagenerwabikorwa"
-                    }
-
-                ChildPage childId ->
-                    { english = "Child"
-                    , kinyarwanda = Just "Umwana"
-                    }
-
-                MotherPage motherId ->
-                    { english = "Mother"
-                    , kinyarwanda = Just "Umubyeyi"
-                    }
-
-                ProgressReportPage childId ->
-                    { english = "Progress Report"
-                    , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
-                    }
-
         UserPage userPage ->
             case userPage of
                 AdminPage ->
@@ -1689,9 +1652,46 @@ translateActivePage page =
                     }
 
                 MyAccountPage ->
-                    { english = "'My Account'"
+                    { english = "My Account"
                     , kinyarwanda = Just "Compte"
                     }
+
+                SessionPage sessionPage ->
+                    case sessionPage of
+                        ActivitiesPage ->
+                            { english = "Activities"
+                            , kinyarwanda = Just "Ibikorwa"
+                            }
+
+                        ActivityPage activityType ->
+                            { english = "Activity"
+                            , kinyarwanda = Just "Igikorwa"
+                            }
+
+                        AttendancePage ->
+                            { english = "Attendance"
+                            , kinyarwanda = Just "Ubwitabire"
+                            }
+
+                        ParticipantsPage ->
+                            { english = "Participants"
+                            , kinyarwanda = Just "Abagenerwabikorwa"
+                            }
+
+                        ChildPage childId ->
+                            { english = "Child"
+                            , kinyarwanda = Just "Umwana"
+                            }
+
+                        MotherPage motherId ->
+                            { english = "Mother"
+                            , kinyarwanda = Just "Umubyeyi"
+                            }
+
+                        ProgressReportPage childId ->
+                            { english = "Progress Report"
+                            , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
+                            }
 
 
 translateChartPhrase : ChartPhrase -> TranslationSet

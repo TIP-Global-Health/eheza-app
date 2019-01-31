@@ -41,7 +41,7 @@ view language session model =
                 [ class "card" ]
                 [ div
                     [ class "image"
-                    , onClick <| SetRedirectPage <| SessionPage <| ActivityPage item.activityType
+                    , onClick <| SetRedirectPage <| UserPage <| SessionPage <| ActivityPage item.activityType
                     ]
                     [ span [ class <| "icon-task icon-task-" ++ getActivityIcon item.activityType ] [] ]
                 , div
@@ -113,10 +113,10 @@ view language session model =
                 ]
             , ul [ class "links-head" ]
                 [ li
-                    [ onClick <| SetRedirectPage <| SessionPage AttendancePage ]
+                    [ onClick <| SetRedirectPage <| UserPage <| SessionPage AttendancePage ]
                     [ a [] [ span [ class "icon-completed" ] [] ] ]
                 , li
-                    [ onClick <| SetRedirectPage <| SessionPage ParticipantsPage ]
+                    [ onClick <| SetRedirectPage <| UserPage <| SessionPage ParticipantsPage ]
                     [ a [] [ span [ class "icon-mother" ] [] ] ]
                 , li
                     [ class "active" ]

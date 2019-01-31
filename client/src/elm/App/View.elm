@@ -127,10 +127,6 @@ viewConfiguredModel model configured =
                 ServiceWorker.View.view model.currentTime model.language model.serviceWorker
                     |> Html.map MsgServiceWorker
 
-            SessionPage subPage ->
-                -- TODO: Re-implement
-                emptyNode
-
             UserPage userPage ->
                 viewUserPage userPage model configured
 
@@ -157,6 +153,10 @@ viewUserPage page model configured =
                 -- Pages.MyAccount.View.view model.language login.credentials.user
                 ClinicsPage clinicId ->
                     Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) clinicId model.indexedDb
+
+                SessionPage subPage ->
+                    -- TODO: Re-implement
+                    emptyNode
 
         Nothing ->
             Pages.PinCode.View.view model.language model.activePage (RemoteData.map .nurse configured.loggedIn) configured.pinCodePage

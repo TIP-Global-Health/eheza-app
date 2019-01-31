@@ -16,7 +16,7 @@ import Maybe.Extra
 import Measurement.Model
 import Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getMotherForm)
 import Measurement.View
-import Pages.Page exposing (Page(..), SessionPage(..))
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
 import Participant.Model exposing (Participant)
 import Participant.Utils exposing (childParticipant, motherParticipant)
@@ -133,6 +133,7 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
                     [ a
                         [ ProgressReportPage childId
                             |> SessionPage
+                            |> UserPage
                             |> Redirect
                             |> onClick
                         ]
@@ -408,6 +409,7 @@ viewHeader language =
         , a
             [ class "link-back"
             , SessionPage ParticipantsPage
+                |> UserPage
                 |> Redirect
                 |> onClick
             ]
@@ -453,6 +455,7 @@ viewFamilyLinks config language participantId session =
                     else
                         [ ChildPage childId
                             |> SessionPage
+                            |> UserPage
                             |> Redirect
                             |> onClick
                         ]
@@ -484,6 +487,7 @@ viewFamilyLinks config language participantId session =
                     else
                         [ MotherPage motherId
                             |> SessionPage
+                            |> UserPage
                             |> Redirect
                             |> onClick
                         ]

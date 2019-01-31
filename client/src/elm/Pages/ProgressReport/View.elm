@@ -16,7 +16,7 @@ import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra
 import Pages.Model exposing (MsgSession(..))
-import Pages.Page exposing (Page(..), SessionPage(..))
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import Translate exposing (Language(..), translate)
 import Utils.Html exposing (thumbnailImage)
@@ -35,6 +35,7 @@ view language zscores childId ( sessionId, session ) =
         Nothing ->
             ProgressReportPage childId
                 |> SessionPage
+                |> UserPage
                 |> Pages.PageNotFound.View.viewPage language (SetActivePage PinCodePage)
 
 
@@ -49,6 +50,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                 [ class "icon-back"
                 , ChildPage childId
                     |> SessionPage
+                    |> UserPage
                     |> SetActivePage
                     |> onClick
                 ]

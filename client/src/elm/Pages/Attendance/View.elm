@@ -54,10 +54,10 @@ view language session =
                     [ class "active" ]
                     [ a [] [ span [ class "icon-completed" ] [] ] ]
                 , li
-                    [ onClick <| SetActivePage <| SessionPage ParticipantsPage ]
+                    [ onClick <| SetActivePage <| UserPage <| SessionPage ParticipantsPage ]
                     [ a [] [ span [ class "icon-mother" ] [] ] ]
                 , li
-                    [ onClick <| SetActivePage <| SessionPage ActivitiesPage ]
+                    [ onClick <| SetActivePage <| UserPage <| SessionPage ActivitiesPage ]
                     [ a [] [ span [ class "icon-measurements" ] [] ] ]
                 ]
             ]
