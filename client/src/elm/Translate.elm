@@ -1656,7 +1656,7 @@ translateActivePage page =
                     , kinyarwanda = Just "Compte"
                     }
 
-                SessionPage sessionPage ->
+                SessionPage sessionId sessionPage ->
                     case sessionPage of
                         ActivitiesPage ->
                             { english = "Activities"

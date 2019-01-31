@@ -51,7 +51,7 @@ viewFoundSession user page ( sessionId, session ) model =
         case page of
             ActivitiesPage ->
                 model.sessionPages.activitiesPage
-                    |> Pages.Activities.View.view language session
+                    |> Pages.Activities.View.view language ( sessionId, session )
                     |> Html.map MsgActivities
 
             ActivityPage activityType ->
@@ -59,21 +59,21 @@ viewFoundSession user page ( sessionId, session ) model =
                     ChildActivity activity ->
                         EveryDict.get activity model.sessionPages.childActivityPages
                             |> Maybe.withDefault Pages.Activity.Model.emptyModel
-                            |> Pages.Activity.View.view childParticipant language currentDate zscores activity session
+                            |> Pages.Activity.View.view childParticipant language currentDate zscores activity ( sessionId, session )
                             |> Html.map (MsgChildActivity activity)
 
                     MotherActivity activity ->
                         EveryDict.get activity model.sessionPages.motherActivityPages
                             |> Maybe.withDefault Pages.Activity.Model.emptyModel
-                            |> Pages.Activity.View.view motherParticipant language currentDate zscores activity session
+                            |> Pages.Activity.View.view motherParticipant language currentDate zscores activity ( sessionId, session )
                             |> Html.map (MsgMotherActivity activity)
 
             AttendancePage ->
-                Pages.Attendance.View.view language session
+                Pages.Attendance.View.view language ( sessionId, session )
 
             ParticipantsPage ->
                 model.sessionPages.participantsPage
-                    |> Pages.Participants.View.view language session
+                    |> Pages.Participants.View.view language ( sessionId, session )
                     |> Html.map MsgParticipants
 
             ProgressReportPage childId ->
@@ -82,13 +82,13 @@ viewFoundSession user page ( sessionId, session ) model =
             ChildPage childId ->
                 EveryDict.get childId model.sessionPages.childPages
                     |> Maybe.withDefault Pages.Participant.Model.emptyModel
-                    |> Pages.Participant.View.viewChild language currentDate zscores childId session
+                    |> Pages.Participant.View.viewChild language currentDate zscores childId ( sessionId, session )
                     |> Html.map (MsgChild childId)
 
             MotherPage motherId ->
                 EveryDict.get motherId model.sessionPages.motherPages
                     |> Maybe.withDefault Pages.Participant.Model.emptyModel
-                    |> Pages.Participant.View.viewMother language motherId session
+                    |> Pages.Participant.View.viewMother language motherId ( sessionId, session )
                     |> Html.map (MsgMother motherId)
 
 

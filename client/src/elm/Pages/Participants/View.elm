@@ -1,6 +1,7 @@
 module Pages.Participants.View exposing (view)
 
 import Activity.Utils exposing (getTotalsNumberPerActivity, isCheckedIn, motherOrAnyChildHasAnyPendingActivity)
+import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import EveryDictList
 import Html exposing (..)
@@ -19,8 +20,8 @@ thumbnailDimensions =
     }
 
 
-view : Language -> EditableSession -> Model -> Html Msg
-view language editableSession model =
+view : Language -> ( SessionId, EditableSession ) -> Model -> Html Msg
+view language ( sessionId, editableSession ) model =
     let
         mothersInAttendance =
             editableSession.offlineSession.mothers
@@ -60,7 +61,7 @@ view language editableSession model =
                     div
                         [ class "card"
                         , MotherPage motherId
-                            |> SessionPage
+                            |> SessionPage sessionId
                             |> UserPage
                             |> SetRedirectPage
                             |> onClick
@@ -147,13 +148,13 @@ view language editableSession model =
                     ]
                 , ul [ class "links-head" ]
                     [ li
-                        [ onClick <| SetRedirectPage <| UserPage <| SessionPage AttendancePage ]
+                        [ onClick <| SetRedirectPage <| UserPage <| SessionPage sessionId AttendancePage ]
                         [ a [] [ span [ class "icon-completed" ] [] ] ]
                     , li
                         [ class "active" ]
                         [ a [] [ span [ class "icon-mother" ] [] ] ]
                     , li
-                        [ onClick <| SetRedirectPage <| UserPage <| SessionPage ActivitiesPage ]
+                        [ onClick <| SetRedirectPage <| UserPage <| SessionPage sessionId ActivitiesPage ]
                         [ a [] [ span [ class "icon-measurements" ] [] ] ]
                     ]
                 ]

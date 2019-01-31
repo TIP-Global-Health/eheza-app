@@ -1,6 +1,7 @@
 module Pages.Activity.View exposing (view)
 
 import Activity.Utils exposing (childHasPendingActivity, getActivityIcon, motherHasPendingActivity, onlyCheckedIn)
+import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
 import EveryDict exposing (EveryDict)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed)
@@ -24,8 +25,8 @@ thumbnailDimensions =
     }
 
 
-view : Participant id value activity msg -> Language -> NominalDate -> ZScore.Model.Model -> activity -> EditableSession -> Model id -> Html (Msg id msg)
-view config language currentDate zscores selectedActivity fullSession model =
+view : Participant id value activity msg -> Language -> NominalDate -> ZScore.Model.Model -> activity -> ( SessionId, EditableSession ) -> Model id -> Html (Msg id msg)
+view config language currentDate zscores selectedActivity ( sessionId, fullSession ) model =
     let
         checkedIn =
             onlyCheckedIn fullSession
@@ -141,7 +142,7 @@ view config language currentDate zscores selectedActivity fullSession model =
                     ]
                 , a
                     [ class "link-back"
-                    , onClick GoBackToActivitiesPage
+                    , onClick <| GoBackToActivitiesPage sessionId
                     ]
                     [ span [ class "icon-back" ] [] ]
                 ]

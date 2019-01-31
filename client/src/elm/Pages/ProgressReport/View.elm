@@ -34,7 +34,7 @@ view language zscores childId ( sessionId, session ) =
 
         Nothing ->
             ProgressReportPage childId
-                |> SessionPage
+                |> SessionPage sessionId
                 |> UserPage
                 |> Pages.PageNotFound.View.viewPage language (SetActivePage PinCodePage)
 
@@ -49,7 +49,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
             a
                 [ class "icon-back"
                 , ChildPage childId
-                    |> SessionPage
+                    |> SessionPage sessionId
                     |> UserPage
                     |> SetActivePage
                     |> onClick

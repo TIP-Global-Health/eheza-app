@@ -33,14 +33,14 @@ thumbnailDimensions =
     }
 
 
-viewChild : Language -> NominalDate -> ZScore.Model.Model -> ChildId -> EditableSession -> Model ChildActivityType -> Html (Msg ChildActivityType Measurement.Model.MsgChild)
-viewChild language currentDate zscores childId session model =
+viewChild : Language -> NominalDate -> ZScore.Model.Model -> ChildId -> ( SessionId, EditableSession ) -> Model ChildActivityType -> Html (Msg ChildActivityType Measurement.Model.MsgChild)
+viewChild language currentDate zscores childId ( sessionId, session ) model =
     -- It's nice to just pass in the childId. If the session is consistent, we
     -- should always be able to get the child.  But it would be hard to
     -- convince the compiler of that, so we put in a pro-forma error message.
     case getChild childId session.offlineSession of
         Just child ->
-            viewFoundChild language currentDate zscores ( childId, child ) session model
+            viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, session ) model
 
         Nothing ->
             -- TODO: Make this error a little nicer, and translatable ... it
@@ -55,8 +55,8 @@ viewChild language currentDate zscores childId session model =
 
 {-| This one needs the `currentDate` in order to calculate ages from dates of birth.
 -}
-viewFoundChild : Language -> NominalDate -> ZScore.Model.Model -> ( ChildId, Child ) -> EditableSession -> Model ChildActivityType -> Html (Msg ChildActivityType Measurement.Model.MsgChild)
-viewFoundChild language currentDate zscores ( childId, child ) session model =
+viewFoundChild : Language -> NominalDate -> ZScore.Model.Model -> ( ChildId, Child ) -> ( SessionId, EditableSession ) -> Model ChildActivityType -> Html (Msg ChildActivityType Measurement.Model.MsgChild)
+viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, session ) model =
     let
         maybeMother =
             child.motherId
@@ -132,7 +132,7 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
                     ]
                     [ a
                         [ ProgressReportPage childId
-                            |> SessionPage
+                            |> SessionPage sessionId
                             |> UserPage
                             |> Redirect
                             |> onClick
@@ -164,7 +164,7 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
     in
     divKeyed [ class "wrap" ] <|
         List.concat
-            [ [ viewHeader language |> keyed "header"
+            [ [ viewHeader language sessionId |> keyed "header"
               , div [ class "ui unstackable items participant-page child" ]
                     [ div
                         [ class "item" ]
@@ -179,7 +179,7 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
                             , p [] <|
                                 motherInfo
                                     ++ [ break, dateOfBirth, break, age, break, gender ]
-                            , viewFamilyLinks childParticipant language childId session
+                            , viewFamilyLinks childParticipant language childId ( sessionId, session )
                             ]
                         ]
                     ]
@@ -190,14 +190,14 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
             ]
 
 
-viewMother : Language -> MotherId -> EditableSession -> Model MotherActivityType -> Html (Msg MotherActivityType Measurement.Model.MsgMother)
-viewMother language motherId session model =
+viewMother : Language -> MotherId -> ( SessionId, EditableSession ) -> Model MotherActivityType -> Html (Msg MotherActivityType Measurement.Model.MsgMother)
+viewMother language motherId ( sessionId, session ) model =
     -- It's nice to just pass in the motherId. If the session is consistent, we
     -- should always be able to get the mother.  But it would be hard to
     -- convince the compiler of that, so we put in a pro-forma error message.
     case getMother motherId session.offlineSession of
         Just mother ->
-            viewFoundMother language ( motherId, mother ) session model
+            viewFoundMother language ( motherId, mother ) ( sessionId, session ) model
 
         Nothing ->
             -- TODO: Make this error a little nicer, and translatable ... it
@@ -210,8 +210,8 @@ viewMother language motherId session model =
                 ]
 
 
-viewFoundMother : Language -> ( MotherId, Mother ) -> EditableSession -> Model MotherActivityType -> Html (Msg MotherActivityType Measurement.Model.MsgMother)
-viewFoundMother language ( motherId, mother ) session model =
+viewFoundMother : Language -> ( MotherId, Mother ) -> ( SessionId, EditableSession ) -> Model MotherActivityType -> Html (Msg MotherActivityType Measurement.Model.MsgMother)
+viewFoundMother language ( motherId, mother ) ( sessionId, session ) model =
     let
         break =
             br [] []
@@ -278,7 +278,7 @@ viewFoundMother language ( motherId, mother ) session model =
     in
     divKeyed [ class "wrap" ] <|
         List.concat
-            [ [ viewHeader language |> keyed "header"
+            [ [ viewHeader language sessionId |> keyed "header"
               , div
                     [ class "ui unstackable items participant-page mother" ]
                     [ div
@@ -310,7 +310,7 @@ viewFoundMother language ( motherId, mother ) session model =
                                     )
                                     mother.ubudehe
                             , p [] childrenList
-                            , viewFamilyLinks motherParticipant language motherId session
+                            , viewFamilyLinks motherParticipant language motherId ( sessionId, session )
                             ]
                         ]
                     ]
@@ -399,8 +399,8 @@ viewActivityListItem config language selectedActivity activityItem =
         ]
 
 
-viewHeader : Language -> Html (Msg activity any)
-viewHeader language =
+viewHeader : Language -> SessionId -> Html (Msg activity any)
+viewHeader language id =
     div
         [ class "ui basic head segment" ]
         [ h1
@@ -408,7 +408,7 @@ viewHeader language =
             [ text <| translate language Trans.Assessment ]
         , a
             [ class "link-back"
-            , SessionPage ParticipantsPage
+            , SessionPage id ParticipantsPage
                 |> UserPage
                 |> Redirect
                 |> onClick
@@ -420,8 +420,8 @@ viewHeader language =
 {-| Given a mother or a child, this figures out who the whole family is, and shows links allowing
 you to switch between any family member.
 -}
-viewFamilyLinks : Participant id value activity msg -> Language -> id -> EditableSession -> Html (Msg activity any)
-viewFamilyLinks config language participantId session =
+viewFamilyLinks : Participant id value activity msg -> Language -> id -> ( SessionId, EditableSession ) -> Html (Msg activity any)
+viewFamilyLinks config language participantId ( sessionId, session ) =
     let
         -- Whether we've looking at a child or a mother, we figure out who the
         -- mother is. This will never be `Nothing` so long as the
@@ -454,7 +454,7 @@ viewFamilyLinks config language participantId session =
 
                     else
                         [ ChildPage childId
-                            |> SessionPage
+                            |> SessionPage sessionId
                             |> UserPage
                             |> Redirect
                             |> onClick
@@ -486,7 +486,7 @@ viewFamilyLinks config language participantId session =
 
                     else
                         [ MotherPage motherId
-                            |> SessionPage
+                            |> SessionPage sessionId
                             |> UserPage
                             |> Redirect
                             |> onClick

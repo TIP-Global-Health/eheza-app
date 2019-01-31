@@ -1,6 +1,7 @@
 module Pages.Activities.View exposing (view)
 
 import Activity.Utils exposing (getActivityIcon, getActivityList)
+import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -12,8 +13,8 @@ import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
 
 
-view : Language -> EditableSession -> Model -> Html Msg
-view language session model =
+view : Language -> ( SessionId, EditableSession ) -> Model -> Html Msg
+view language ( sessionId, session ) model =
     let
         allActivityList =
             getActivityList session
@@ -41,7 +42,7 @@ view language session model =
                 [ class "card" ]
                 [ div
                     [ class "image"
-                    , onClick <| SetRedirectPage <| UserPage <| SessionPage <| ActivityPage item.activityType
+                    , onClick <| SetRedirectPage <| UserPage <| SessionPage sessionId <| ActivityPage item.activityType
                     ]
                     [ span [ class <| "icon-task icon-task-" ++ getActivityIcon item.activityType ] [] ]
                 , div
@@ -113,10 +114,10 @@ view language session model =
                 ]
             , ul [ class "links-head" ]
                 [ li
-                    [ onClick <| SetRedirectPage <| UserPage <| SessionPage AttendancePage ]
+                    [ onClick <| SetRedirectPage <| UserPage <| SessionPage sessionId AttendancePage ]
                     [ a [] [ span [ class "icon-completed" ] [] ] ]
                 , li
-                    [ onClick <| SetRedirectPage <| UserPage <| SessionPage ParticipantsPage ]
+                    [ onClick <| SetRedirectPage <| UserPage <| SessionPage sessionId ParticipantsPage ]
                     [ a [] [ span [ class "icon-mother" ] [] ] ]
                 , li
                     [ class "active" ]

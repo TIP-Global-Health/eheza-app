@@ -30,6 +30,8 @@ We can only change the `selectedParticipant` and `selectedTab`.
 
 -}
 
+import Backend.Entities exposing (..)
+
 
 type alias Model id =
     { selectedParticipant : Maybe id
@@ -38,7 +40,7 @@ type alias Model id =
 
 
 type Msg id measurement
-    = GoBackToActivitiesPage
+    = GoBackToActivitiesPage SessionId
     | MsgMeasurement measurement
     | SetSelectedParticipant (Maybe id)
     | SetSelectedTab Tab

@@ -86,7 +86,7 @@ the login page instead.
 type UserPage
     = AdminPage -- a page that shows administrative tasks
     | ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
-    | SessionPage SessionPage -- pages that require an `EditableSession`
+    | SessionPage SessionId SessionPage -- pages that manipulate a group session
     | MyAccountPage -- shows information about the logged-in user
 
 

@@ -18,8 +18,8 @@ updateChild :
     -> ( Model ChildId, Cmd (Msg ChildId Measurement.Model.MsgChild), Maybe Measurement.Model.ModelChild, Maybe Measurement.Model.OutMsgChild, Maybe Page )
 updateChild msg model childForm =
     case msg of
-        GoBackToActivitiesPage ->
-            ( model, Cmd.none, childForm, Nothing, Just <| UserPage <| SessionPage ActivitiesPage )
+        GoBackToActivitiesPage sessionId ->
+            ( model, Cmd.none, childForm, Nothing, Just <| UserPage <| SessionPage sessionId ActivitiesPage )
 
         MsgMeasurement subMsg ->
             childForm
@@ -62,8 +62,8 @@ updateMother :
     -> ( Model MotherId, Cmd (Msg MotherId Measurement.Model.MsgMother), Maybe Measurement.Model.ModelMother, Maybe Measurement.Model.OutMsgMother, Maybe Page )
 updateMother msg model motherForm =
     case msg of
-        GoBackToActivitiesPage ->
-            ( model, Cmd.none, Nothing, Nothing, Just <| UserPage <| SessionPage ActivitiesPage )
+        GoBackToActivitiesPage sessionId ->
+            ( model, Cmd.none, Nothing, Nothing, Just <| UserPage <| SessionPage sessionId ActivitiesPage )
 
         MsgMeasurement subMsg ->
             motherForm

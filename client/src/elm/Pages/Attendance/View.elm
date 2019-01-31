@@ -21,8 +21,8 @@ import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 
 
-view : Language -> EditableSession -> Html MsgSession
-view language session =
+view : Language -> ( SessionId, EditableSession ) -> Html MsgSession
+view language ( sessionId, session ) =
     let
         mothers =
             if EveryDictList.isEmpty session.offlineSession.mothers then
@@ -54,10 +54,10 @@ view language session =
                     [ class "active" ]
                     [ a [] [ span [ class "icon-completed" ] [] ] ]
                 , li
-                    [ onClick <| SetActivePage <| UserPage <| SessionPage ParticipantsPage ]
+                    [ onClick <| SetActivePage <| UserPage <| SessionPage sessionId ParticipantsPage ]
                     [ a [] [ span [ class "icon-mother" ] [] ] ]
                 , li
-                    [ onClick <| SetActivePage <| UserPage <| SessionPage ActivitiesPage ]
+                    [ onClick <| SetActivePage <| UserPage <| SessionPage sessionId ActivitiesPage ]
                     [ a [] [ span [ class "icon-measurements" ] [] ] ]
                 ]
             ]
