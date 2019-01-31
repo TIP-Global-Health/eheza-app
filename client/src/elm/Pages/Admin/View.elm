@@ -27,7 +27,7 @@ import Translate exposing (Language, ValidationError, translate)
 import User.Model exposing (..)
 import Utils.Confirmation as Confirmation
 import Utils.Html exposing (spinner)
-import Utils.WebData exposing (viewError, viewOrFetch)
+import Utils.WebData exposing (viewError, viewWebData)
 
 
 view : Config.Model -> Language -> NominalDate -> User -> ModelBackend -> Model -> Html Msg
@@ -81,18 +81,22 @@ contentForOthers language =
 
 contentForAdmin : Config.Model -> Language -> NominalDate -> ModelBackend -> Model -> Html Msg
 contentForAdmin config language currentDate backend model =
-    div [] <|
-        viewOrFetch language
-            (MsgBackend Backend.Model.FetchClinics)
-            (viewLoadedClinics config language currentDate backend model)
-            identity
-            backend.clinics
+    div [] []
+
+
+
+{- TODO: reimplement
+   div [] <|
+       viewWebData language
+           (viewLoadedClinics config language currentDate backend model)
+           identity
+           backend.clinics
+-}
 
 
 viewLoadedClinics : Config.Model -> Language -> NominalDate -> ModelBackend -> Model -> EveryDictList ClinicId Clinic -> List (Html Msg)
 viewLoadedClinics config language currentDate backend model clinics =
-    viewOrFetch language
-        (MsgBackend <| Backend.Model.FetchFutureSessions currentDate)
+    viewWebData language
         (viewLoadedSessions config language backend model clinics)
         identity
         backend.futureSessions

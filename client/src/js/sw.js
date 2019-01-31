@@ -29,10 +29,15 @@ dbSync.version(1).stores({
     // the same shape. And, there are no SQL-type joins, so using many
     // stores is inconvenient.
     //
+    // (It turns out that you can only use one IndexedDB index at a time.
+    // This will make for a lot of indexes -- it may be nicer to split up
+    // the types into different tables. However, that will make it harder
+    // to calculate the maximum `vid`. So, we'll see).
+    //
     // What we're specifying here is a comma-separate list of the fields to
     // index. The first field is the primary key, and the `&` indicates
     // that it should be unique.
-    nodes: '&uuid,type,vid,status,[type+pin_code]',
+    nodes: '&uuid,type,vid,status,[type+pin_code],[type+clinic]',
 
     // Metadata that tracks information about the sync process. The uuid is the
     // UUID of the shard we are syncing. So, for things we sync by health

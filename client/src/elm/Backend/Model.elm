@@ -27,6 +27,7 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.Session.Model exposing (EditableSession, MsgEditableSession, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
 import CacheStorage.Model
+import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import Http exposing (Error)
@@ -39,11 +40,6 @@ on the backend. So, conceptually it is a kind of a local cache of some of the
 things on the backend.
 -}
 type alias ModelBackend =
-    -- For now, we fetch all the clinics from the backend at once when we need
-    -- any. So, the `WebData` tracks that request, and the `DictList` tracks
-    -- its result.
-    { clinics : WebData (EveryDictList ClinicId Clinic)
-
     -- This tracks future sessions ... that is, sessions which are either
     -- available now, or will be in the future. We remember which
     -- date we asked about, so that if the date changes (i.e. it becomes
@@ -59,7 +55,7 @@ type alias ModelBackend =
     -- since one would really always want to remember what query the results
     -- represent. (And, eventually, one would want to remember the `count`
     -- and which pages you have etc.).
-    , futureSessions : WebData ( NominalDate, EveryDictList SessionId Session )
+    { futureSessions : WebData ( NominalDate, EveryDictList SessionId Session )
 
     -- This is a flag which tracks our progress in downloading an
     -- offlineSession from the backend. We don't actually **store** the data
@@ -89,8 +85,7 @@ type alias ModelBackend =
 
 emptyModelBackend : ModelBackend
 emptyModelBackend =
-    { clinics = NotAsked
-    , futureSessions = NotAsked
+    { futureSessions = NotAsked
     , offlineSessionRequest = NotAsked
     , uploadEditsRequest = NotAsked
     , postSessionRequest = NotAsked
@@ -102,10 +97,8 @@ emptyModelBackend =
 putting things back into the backend.
 -}
 type MsgBackend
-    = FetchClinics
-    | FetchFutureSessions NominalDate
+    = FetchFutureSessions NominalDate
     | FetchOfflineSessionFromBackend SessionId
-    | HandleFetchedClinics (WebData (EveryDictList ClinicId Clinic))
     | HandleFetchedOfflineSessionFromBackend (Result Error ( SessionId, OfflineSession ))
     | HandleFetchedSessions NominalDate (WebData (EveryDictList SessionId Session))
     | HandleRefetchedOfflineSession (Result Error ( SessionId, OfflineSession ))
@@ -128,22 +121,30 @@ type MsgBackend
 move things here from ModelBackend and ModelCached.
 -}
 type alias ModelIndexedDb =
-    { healthCenters : WebData (EveryDictList HealthCenterId HealthCenter)
+    { clinics : WebData (EveryDictList ClinicId Clinic)
+    , healthCenters : WebData (EveryDictList HealthCenterId HealthCenter)
     , syncData : WebData (EveryDictList HealthCenterId SyncData)
+    , sessionsByClinic : EveryDict ClinicId (WebData (EveryDictList SessionId Session))
     }
 
 
 emptyModelIndexedDb : ModelIndexedDb
 emptyModelIndexedDb =
-    { healthCenters = NotAsked
+    { clinics = NotAsked
+    , healthCenters = NotAsked
     , syncData = NotAsked
+    , sessionsByClinic = EveryDict.empty
     }
 
 
 type MsgIndexedDb
-    = FetchHealthCenters
+    = FetchClinics
+    | FetchHealthCenters
+    | FetchSessionsByClinic ClinicId
     | FetchSyncData
+    | HandleFetchedClinics (WebData (EveryDictList ClinicId Clinic))
     | HandleFetchedHealthCenters (WebData (EveryDictList HealthCenterId HealthCenter))
+    | HandleFetchedSessionsByClinic ClinicId (WebData (EveryDictList SessionId Session))
     | HandleFetchedSyncData (WebData (EveryDictList HealthCenterId SyncData))
     | HandleRevisions (List Revision)
     | SaveSyncData HealthCenterId SyncData

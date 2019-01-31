@@ -1,6 +1,7 @@
 module App.View exposing (view)
 
 import App.Model exposing (..)
+import App.Utils exposing (getLoggedInModel)
 import Backend.Model exposing (CachedSessionError(..))
 import Config.View
 import Date
@@ -130,25 +131,36 @@ viewConfiguredModel model configured =
                 -- TODO: Re-implement
                 emptyNode
 
-            -- viewSessionPage login.credentials.user subPage model
             UserPage userPage ->
+                viewUserPage userPage model configured
+
+
+viewUserPage : UserPage -> Model -> ConfiguredModel -> Html Msg
+viewUserPage page model configured =
+    let
+        currentDate =
+            fromLocalDateTime <| Date.fromTime model.currentTime
+    in
+    case getLoggedInModel model of
+        Just loggedInModel ->
+            case page of
+                AdminPage ->
+                    emptyNode
+
                 -- TODO: Re-implement
-                emptyNode
+                -- Pages.Admin.View.view configured.config model.language currentDate login.credentials.user login.data.backend login.data.adminPage
+                --     |> Html.map (MsgLoggedIn << MsgPageAdmin)
+                MyAccountPage ->
+                    emptyNode
 
+                -- TODO: Re-implement
+                -- Pages.MyAccount.View.view model.language login.credentials.user
+                ClinicsPage clinicId ->
+                    Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) clinicId model.indexedDb
 
-
-{-
-   case userPage of
-       AdminPage ->
-           Pages.Admin.View.view configured.config model.language currentDate login.credentials.user login.data.backend login.data.adminPage
-               |> Html.map (MsgLoggedIn << MsgPageAdmin)
-
-       MyAccountPage ->
-           Pages.MyAccount.View.view model.language login.credentials.user
-
-       ClinicsPage clinicId ->
-           Pages.Clinics.View.view model.language currentDate login.credentials.user clinicId login.data.backend model.cache
--}
+        Nothing ->
+            Pages.PinCode.View.view model.language model.activePage (RemoteData.map .nurse configured.loggedIn) configured.pinCodePage
+                |> Html.map MsgPagePinCode
 
 
 {-| Just show a generic loading indicator, for cases that will resolve soon,

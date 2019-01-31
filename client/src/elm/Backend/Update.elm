@@ -47,6 +47,17 @@ updateIndexedDb msg model =
             applyBackendUrl "/sw"
     in
     case msg of
+        FetchClinics ->
+            ( { model | clinics = Loading }
+            , sw.select clinicEndpoint ()
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedClinics)
+            )
+
+        HandleFetchedClinics clinics ->
+            ( { model | clinics = clinics }
+            , Cmd.none
+            )
+
         FetchHealthCenters ->
             ( { model | healthCenters = Loading }
             , sw.select healthCenterEndpoint ()
@@ -66,6 +77,17 @@ updateIndexedDb msg model =
 
         HandleFetchedSyncData data ->
             ( { model | syncData = data }
+            , Cmd.none
+            )
+
+        FetchSessionsByClinic clinicId ->
+            ( { model | sessionsByClinic = EveryDict.insert clinicId Loading model.sessionsByClinic }
+            , sw.select sessionEndpoint { clinic = Just clinicId }
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedSessionsByClinic clinicId)
+            )
+
+        HandleFetchedSessionsByClinic clinicId data ->
+            ( { model | sessionsByClinic = EveryDict.insert clinicId data model.sessionsByClinic }
             , Cmd.none
             )
 
@@ -99,14 +121,28 @@ handleRevision revision model =
                 -- We don't do anything with revisions until we've fetched
                 -- some original data.
                 healthCenters =
-                    RemoteData.map
-                        (EveryDictList.insert uuid data)
-                        model.healthCenters
+                    RemoteData.map (EveryDictList.insert uuid data) model.healthCenters
             in
             { model | healthCenters = healthCenters }
 
-        -- We only handle one for the moment ... as we move things into
-        -- ModelIndexedDB, we'll do more work here.
+        ClinicRevision uuid data ->
+            let
+                clinics =
+                    RemoteData.map (EveryDictList.insert uuid data) model.clinics
+            in
+            { model | clinics = clinics }
+
+        SessionRevision uuid data ->
+            -- First, remove the session from all clinics (it might previously have been
+            -- in any). Then, add it in the right place.
+            let
+                sessionsByClinic =
+                    model.sessionsByClinic
+                        |> EveryDict.map (always (RemoteData.map (EveryDictList.remove uuid)))
+                        |> EveryDict.update data.clinicId (Maybe.map (RemoteData.map (EveryDictList.insert uuid data)))
+            in
+            { model | sessionsByClinic = sessionsByClinic }
+
         _ ->
             model
 
@@ -137,22 +173,6 @@ updateBackend backendUrl accessToken msg model =
                         []
     in
     case msg of
-        FetchClinics ->
-            -- Ultimately, it would be nice to preserve any existing value of clnics
-            -- if we're reloading ... will need an `UpdateableWebData` for that.
-            ( { model | clinics = Loading }
-            , crud.select clinicEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedClinics)
-            , []
-            )
-
-        HandleFetchedClinics clinics ->
-            ( { model | clinics = clinics }
-            , Cmd.none
-            , []
-            )
-                |> resetErrorsIfSucceeded clinics
-
         PostSession session ->
             ( { model | postSessionRequest = Loading }
             , crud.post sessionEndpoint session
@@ -215,11 +235,7 @@ updateBackend backendUrl accessToken msg model =
             ( newModel, Cmd.none, [] )
 
         FetchFutureSessions date ->
-            ( { model | futureSessions = Loading }
-            , crud.select sessionEndpoint (SessionParams (Just date))
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedSessions date)
-            , []
-            )
+            ( model, Cmd.none, [] )
 
         HandleFetchedSessions date result ->
             -- We remember the date as well as the result, so that we can
@@ -295,10 +311,7 @@ updateBackend backendUrl accessToken msg model =
         ResetErrors ->
             -- Reset some error conditions to `NotAsked`, so that they will
             -- be automatically retried if needed.
-            ( { model
-                | clinics = resetError model.clinics
-                , futureSessions = resetError model.futureSessions
-              }
+            ( { model | futureSessions = resetError model.futureSessions }
             , Cmd.none
             , []
             )

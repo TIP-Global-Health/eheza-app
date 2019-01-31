@@ -117,6 +117,13 @@ viewWhenLoggedIn language nurse =
                     |> text
                 ]
 
+        selectClinicButton =
+            button
+                [ class "ui primary button"
+                , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.ClinicsPage Nothing
+                ]
+                [ text <| translate language Translate.SelectYourClinic ]
+
         administrationButton =
             if EverySet.member RoleAdministrator nurse.roles then
                 Just <|
@@ -149,6 +156,7 @@ viewWhenLoggedIn language nurse =
     in
     [ Just loggedInAs
     , Just deviceStatusButton
+    , Just selectClinicButton
     , administrationButton
     , Just logoutButton
     ]

@@ -1,4 +1,4 @@
-module Utils.WebData exposing (resetError, resetSuccess, sendWithHandler, viewError, viewOrFetch, whenNotAsked)
+module Utils.WebData exposing (resetError, resetSuccess, sendWithHandler, viewError, viewWebData, whenNotAsked)
 
 import Html exposing (..)
 import Html.Attributes exposing (class)
@@ -82,28 +82,19 @@ whenNotAsked msg data =
 {-| Given:
 
   - some WebData
-  - a messages that would kick off a fetch
   - a function that would produce some HTML
   - a function that would wrap error HTML
 
-... return some HTML that will use a `Success` to make HTML, or provide
-some HTML to kick off the fetch.
+... return some HTML that will use a `Success` to make HTML, show a spinner
+if the webdata is loading, or show the error if it failed.
 
 -}
-viewOrFetch : Language -> msg -> (a -> List (Html msg)) -> (List (Html msg) -> List (Html msg)) -> WebData a -> List (Html msg)
-viewOrFetch language fetch view wrapError data =
+viewWebData : Language -> (a -> List (Html msg)) -> (List (Html msg) -> List (Html msg)) -> WebData a -> List (Html msg)
+viewWebData language view wrapError data =
     case data of
         NotAsked ->
             wrapError
-                [ div
-                    [ class "ui message" ]
-                    [ div
-                        [ class "ui primary button"
-                        , onClick fetch
-                        ]
-                        [ text <| translate language Translate.Fetch ]
-                    ]
-                ]
+                [ spinner ]
 
         Loading ->
             wrapError
@@ -114,11 +105,6 @@ viewOrFetch language fetch view wrapError data =
                 [ div
                     [ class "ui message error" ]
                     [ viewError language err ]
-                , button
-                    [ class "ui primary button"
-                    , onClick fetch
-                    ]
-                    [ text <| translate language Translate.Retry ]
                 ]
 
         Success a ->

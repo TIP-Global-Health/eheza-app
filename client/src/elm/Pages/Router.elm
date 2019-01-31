@@ -40,16 +40,16 @@ delta2url previous current =
                     Just <| UrlChange NewEntry "#attendance"
 
                 ChildPage id ->
-                    Just <| UrlChange NewEntry ("#child/" ++ toString (fromEntityUuid id))
+                    Just <| UrlChange NewEntry ("#child/" ++ fromEntityUuid id)
 
                 MotherPage id ->
-                    Just <| UrlChange NewEntry ("#mother/" ++ toString (fromEntityUuid id))
+                    Just <| UrlChange NewEntry ("#mother/" ++ fromEntityUuid id)
 
                 ParticipantsPage ->
                     Just <| UrlChange NewEntry "#participants"
 
                 ProgressReportPage id ->
-                    Just <| UrlChange NewEntry ("#progress/" ++ toString (fromEntityUuid id))
+                    Just <| UrlChange NewEntry ("#progress/" ++ fromEntityUuid id)
 
         -- These are pages that required a logged-in user
         UserPage userPage ->
@@ -61,7 +61,7 @@ delta2url previous current =
                     let
                         clinic =
                             clinicId
-                                |> Maybe.map (\id -> "/" ++ toString (fromEntityUuid id))
+                                |> Maybe.map (\id -> "/" ++ fromEntityUuid id)
                                 |> Maybe.withDefault ""
                     in
                     Just <| UrlChange NewEntry ("#clinics" ++ clinic)

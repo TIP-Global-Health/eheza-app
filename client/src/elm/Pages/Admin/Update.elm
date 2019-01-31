@@ -19,128 +19,135 @@ are done by passing up `msgs` in our third return param.
 -}
 update : NominalDate -> ModelBackend -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update date backend msg model =
-    let
-        -- If we don't have a list of clinics yet, we just pretend that all
-        -- clinic ID's are known. It will arrive eventually!
-        knownClinic clinicId =
-            backend.clinics
-                |> RemoteData.map (EveryDictList.member clinicId)
-                |> RemoteData.withDefault True
-    in
-    case msg of
-        SetActivePage page ->
-            ( model
-            , Cmd.none
-            , [ App.Model.SetActivePage page ]
-            )
+    ( model, Cmd.none, [] )
 
-        MsgBackend subMsg ->
-            ( model
-            , Cmd.none
-            , [ App.Model.MsgLoggedIn (App.Model.MsgBackend subMsg) ]
-            )
 
-        MsgConfirmation subMsg ->
-            let
-                ( subModel, subCmd, msgs ) =
-                    Confirmation.update subMsg model.confirmation
-            in
-            sequenceExtra (update date backend)
-                msgs
-                ( { model | confirmation = subModel }
-                , Cmd.map MsgConfirmation subCmd
-                , []
-                )
 
-        MsgCreateSession subMsg ->
-            let
-                createSession =
-                    model.createSession
-                        |> Maybe.map (Form.update (validateSession knownClinic) subMsg)
+{- TODO: reimplement
 
-                appMsgs =
-                    case subMsg of
-                        Form.Submit ->
-                            model.createSession
-                                |> Maybe.andThen Form.getOutput
-                                |> Maybe.map
-                                    (\session ->
-                                        [ session
-                                            |> Backend.Model.PostSession
-                                            |> App.Model.MsgBackend
-                                            |> App.Model.MsgLoggedIn
-                                        ]
-                                    )
-                                -- If we submit, but can't actually submit,
-                                -- then change the request status to
-                                -- `NotAsked` (to reset network errors
-                                -- etc.)
-                                |> Maybe.withDefault
-                                    [ Backend.Model.HandlePostedSession NotAsked
-                                        |> App.Model.MsgBackend
-                                        |> App.Model.MsgLoggedIn
-                                    ]
+   let
+       -- If we don't have a list of clinics yet, we just pretend that all
+       -- clinic ID's are known. It will arrive eventually!
+       knownClinic clinicId =
+           backend.clinics
+               |> RemoteData.map (EveryDictList.member clinicId)
+               |> RemoteData.withDefault True
+   in
+   case msg of
+       SetActivePage page ->
+           ( model
+           , Cmd.none
+           , [ App.Model.SetActivePage page ]
+           )
 
-                        _ ->
-                            []
-            in
-            ( { model | createSession = createSession }
-            , Cmd.none
-            , appMsgs
-            )
+       MsgBackend subMsg ->
+           ( model
+           , Cmd.none
+           , [ App.Model.MsgLoggedIn (App.Model.MsgBackend subMsg) ]
+           )
 
-        ResetCreateSessionForm ->
-            let
-                -- We'll default the dates to start today and finish three days later
-                initialDates =
-                    { start = date
-                    , end = addDays 3 date
-                    }
+       MsgConfirmation subMsg ->
+           let
+               ( subModel, subCmd, msgs ) =
+                   Confirmation.update subMsg model.confirmation
+           in
+           sequenceExtra (update date backend)
+               msgs
+               ( { model | confirmation = subModel }
+               , Cmd.map MsgConfirmation subCmd
+               , []
+               )
 
-                createSession =
-                    model.createSession
-                        |> Maybe.map (\_ -> Backend.Session.Form.emptyForm knownClinic initialDates)
-            in
-            ( { model | createSession = createSession }
-            , Cmd.none
-            , []
-            )
+       MsgCreateSession subMsg ->
+           let
+               createSession =
+                   model.createSession
+                       |> Maybe.map (Form.update (validateSession knownClinic) subMsg)
 
-        ShowCreateSessionForm show ->
-            let
-                -- We'll default the dates to start today and finish three days later
-                initialDates =
-                    { start = date
-                    , end = addDays 3 date
-                    }
+               appMsgs =
+                   case subMsg of
+                       Form.Submit ->
+                           model.createSession
+                               |> Maybe.andThen Form.getOutput
+                               |> Maybe.map
+                                   (\session ->
+                                       [ session
+                                           |> Backend.Model.PostSession
+                                           |> App.Model.MsgBackend
+                                           |> App.Model.MsgLoggedIn
+                                       ]
+                                   )
+                               -- If we submit, but can't actually submit,
+                               -- then change the request status to
+                               -- `NotAsked` (to reset network errors
+                               -- etc.)
+                               |> Maybe.withDefault
+                                   [ Backend.Model.HandlePostedSession NotAsked
+                                       |> App.Model.MsgBackend
+                                       |> App.Model.MsgLoggedIn
+                                   ]
 
-                -- We reset certain successful request if we're opening the form.
-                resetSessionRequests =
-                    Backend.Model.ResetSessionRequests
-                        |> App.Model.MsgBackend
-                        |> App.Model.MsgLoggedIn
+                       _ ->
+                           []
+           in
+           ( { model | createSession = createSession }
+           , Cmd.none
+           , appMsgs
+           )
 
-                ( newModel, appMsgs ) =
-                    case model.createSession of
-                        Just form ->
-                            if show then
-                                ( model, [] )
+       ResetCreateSessionForm ->
+           let
+               -- We'll default the dates to start today and finish three days later
+               initialDates =
+                   { start = date
+                   , end = addDays 3 date
+                   }
 
-                            else
-                                ( { model | createSession = Nothing }
-                                , []
-                                )
+               createSession =
+                   model.createSession
+                       |> Maybe.map (\_ -> Backend.Session.Form.emptyForm knownClinic initialDates)
+           in
+           ( { model | createSession = createSession }
+           , Cmd.none
+           , []
+           )
 
-                        Nothing ->
-                            if show then
-                                ( { model | createSession = Just <| Backend.Session.Form.emptyForm knownClinic initialDates }
-                                , [ resetSessionRequests ]
-                                )
+       ShowCreateSessionForm show ->
+           let
+               -- We'll default the dates to start today and finish three days later
+               initialDates =
+                   { start = date
+                   , end = addDays 3 date
+                   }
 
-                            else
-                                ( model, [] )
-            in
-            ( newModel
-            , Cmd.none
-            , appMsgs
-            )
+               -- We reset certain successful request if we're opening the form.
+               resetSessionRequests =
+                   Backend.Model.ResetSessionRequests
+                       |> App.Model.MsgBackend
+                       |> App.Model.MsgLoggedIn
+
+               ( newModel, appMsgs ) =
+                   case model.createSession of
+                       Just form ->
+                           if show then
+                               ( model, [] )
+
+                           else
+                               ( { model | createSession = Nothing }
+                               , []
+                               )
+
+                       Nothing ->
+                           if show then
+                               ( { model | createSession = Just <| Backend.Session.Form.emptyForm knownClinic initialDates }
+                               , [ resetSessionRequests ]
+                               )
+
+                           else
+                               ( model, [] )
+           in
+           ( newModel
+           , Cmd.none
+           , appMsgs
+           )
+-}

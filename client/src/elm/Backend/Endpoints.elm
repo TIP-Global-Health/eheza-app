@@ -73,14 +73,14 @@ encodeNurseParams params =
 {-| Type-safe params ... how nice!
 -}
 type alias SessionParams =
-    { openAfter : Maybe NominalDate
+    { clinic : Maybe ClinicId
     }
 
 
 encodeSessionParams : SessionParams -> List ( String, String )
 encodeSessionParams params =
-    params.openAfter
-        |> Maybe.map (\open -> ( "open_after", Gizra.NominalDate.formatYYYYMMDD open ))
+    params.clinic
+        |> Maybe.map (\clinic -> ( "clinic", fromEntityUuid clinic ))
         |> Maybe.Extra.toList
 
 

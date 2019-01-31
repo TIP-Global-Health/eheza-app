@@ -38,13 +38,8 @@ fetch model =
                 |> List.map MsgIndexedDb
 
         UserPage (ClinicsPage clinicId) ->
-            getLoggedInModel model
-                |> Maybe.map
-                    (\loggedIn ->
-                        Pages.Clinics.Fetch.fetch currentDate clinicId loggedIn.backend
-                            |> List.map (MsgLoggedIn << MsgBackend)
-                    )
-                |> Maybe.withDefault []
+            Pages.Clinics.Fetch.fetch clinicId model.indexedDb
+                |> List.map MsgIndexedDb
 
         UserPage AdminPage ->
             getLoggedInModel model

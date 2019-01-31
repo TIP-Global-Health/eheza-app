@@ -170,6 +170,7 @@ type TranslationId
     | ClinicNotFound
     | Clinic
     | Clinics
+    | ClinicUnauthorized
     | Closed
     | ConfirmDeleteTrainingSessions
     | Connected
@@ -260,6 +261,7 @@ type TranslationId
     | ReportDOB String
     | ReportRemaining Int
     | ReloadParticipant
+    | RecentAndUpcomingGroupSessions
     | ReportCompleted { pending : Int, total : Int }
     | ResolveMonth Month
     | Retry
@@ -722,6 +724,11 @@ translationSet trans =
         Closed ->
             { english = "Closed"
             , kinyarwanda = Just "Gufunga"
+            }
+
+        ClinicUnauthorized ->
+            { english = "You are not authorized to work with this clinic."
+            , kinyarwanda = Nothing
             }
 
         ConfirmDeleteTrainingSessions ->
@@ -1276,6 +1283,11 @@ translationSet trans =
         ReloadParticipant ->
             { english = "Re-load Participant"
             , kinyarwanda = Just "Ishakisha ryabaritabira"
+            }
+
+        RecentAndUpcomingGroupSessions ->
+            { english = "Recent and upcoming group sessions"
+            , kinyarwanda = Nothing
             }
 
         ReportCompleted { pending, total } ->

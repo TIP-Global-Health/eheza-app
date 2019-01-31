@@ -2,6 +2,7 @@ module Pages.Clinics.Fetch exposing (fetch)
 
 import Backend.Entities exposing (..)
 import Backend.Model
+import EveryDict
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
 import Utils.WebData exposing (whenNotAsked)
@@ -46,8 +47,8 @@ fetch in case of error (at least, not without a delay), since you wouldn't want
 to just automatically retry errors constantly.
 
 -}
-fetch : NominalDate -> Maybe ClinicId -> Backend.Model.ModelBackend -> List Backend.Model.MsgBackend
-fetch currentDate clinicId backend =
+fetch : Maybe ClinicId -> Backend.Model.ModelIndexedDb -> List Backend.Model.MsgIndexedDb
+fetch clinicId db =
     -- So, to recap, this is called by the parent's `fetch` function, to see
     -- whether any data needs to be fetched. We can return messages that will
     -- fetch needed data. The function is located here because it is kind of a
@@ -63,42 +64,24 @@ fetch currentDate clinicId backend =
     -- messages.
     let
         fetchClinics =
-            -- For now, at least, we fetch all the clinics if we want any of
-            -- them. The data is small enough that this should be fine ...
-            -- we can do something more complex in future if needed.
-            whenNotAsked Backend.Model.FetchClinics backend.clinics
+            whenNotAsked Backend.Model.FetchClinics db.clinics
 
+        fetchSyncData =
+            whenNotAsked Backend.Model.FetchSyncData db.syncData
+
+        -- If we're not showing a particular clinic, we don't need
+        -- the sessions yet.
         fetchSessions =
-            case clinicId of
-                Just _ ->
-                    case backend.futureSessions of
-                        NotAsked ->
-                            Just <| Backend.Model.FetchFutureSessions currentDate
-
-                        Loading ->
-                            Nothing
-
-                        Failure _ ->
-                            Nothing
-
-                        Success ( queryDate, _ ) ->
-                            -- We remember the date we queried about, so that
-                            -- if we are now on a different date, we know to
-                            -- redo the query. At least for now, if we get some
-                            -- of the sessions, we get all of them, so we don't
-                            -- need to consult the clinicId
-                            if queryDate == currentDate then
-                                Nothing
-
-                            else
-                                Just <| Backend.Model.FetchFutureSessions currentDate
-
-                Nothing ->
-                    -- If we're not showing a particular clinic, we don't need
-                    -- the sessions yet.
-                    Nothing
+            Maybe.andThen
+                (\id ->
+                    EveryDict.get id db.sessionsByClinic
+                        |> Maybe.withDefault NotAsked
+                        |> whenNotAsked (Backend.Model.FetchSessionsByClinic id)
+                )
+                clinicId
     in
     List.filterMap identity
         [ fetchClinics
         , fetchSessions
+        , fetchSyncData
         ]

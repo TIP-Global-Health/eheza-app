@@ -17,7 +17,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner)
-import Utils.WebData exposing (viewError, viewOrFetch)
+import Utils.WebData exposing (viewError)
 
 
 {-| We organize our SyncData by health center. However, there is also a bunch
