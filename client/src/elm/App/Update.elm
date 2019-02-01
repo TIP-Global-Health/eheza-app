@@ -12,6 +12,7 @@ import Dict
 import EverySet
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Json.Decode exposing (bool, decodeValue, oneOf)
+import Json.Encode
 import Maybe.Extra
 import Pages.Admin.Update
 import Pages.Login.Model
@@ -22,6 +23,7 @@ import Pages.Update
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (decodeSingleDrupalEntity, toEntityId)
 import Restful.Login exposing (AuthenticatedUser, Credentials, LoginEvent(..), UserAndData(..), checkCachedCredentials)
+import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
 import Task
@@ -32,6 +34,7 @@ import Update.Extra exposing (sequence)
 import User.Decoder exposing (decodeUser)
 import User.Encoder exposing (encodeUser)
 import User.Model exposing (Role(Administrator), User)
+import Version
 import ZScore.Model
 import ZScore.Update
 
@@ -61,6 +64,9 @@ init flags =
 
                 Err msg ->
                     English
+
+        model =
+            emptyModel flags
 
         ( updatedModel, cmd ) =
             case Dict.get flags.hostname Config.configs of
@@ -95,16 +101,16 @@ init flags =
                             , login = loginStatus
                             }
                     in
-                    ( { emptyModel | configuration = Success configuredModel }
+                    ( { model | configuration = Success configuredModel }
                     , cmd
                     )
                         |> sequence update
-                            [ MsgServiceWorker ServiceWorker.Model.Register
+                            [ MsgServiceWorker (ServiceWorker.Model.SendOutgoingMsg ServiceWorker.Model.Register)
                             , MsgZScore ZScore.Model.FetchAllTables
                             ]
 
                 Nothing ->
-                    ( { emptyModel | configuration = Failure <| "No config found for: " ++ flags.hostname }
+                    ( { model | configuration = Failure <| "No config found for: " ++ flags.hostname }
                     , Cmd.none
                     )
     in
@@ -113,16 +119,20 @@ init flags =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    let
+        currentDate =
+            fromLocalDateTime <| Date.fromTime model.currentTime
+    in
     case msg of
         MsgCache subMsg ->
             let
                 ( subModel, subCmd, extraMsgs ) =
-                    Backend.Update.updateCache (getUserId model) model.currentDate subMsg model.cache
+                    Backend.Update.updateCache (getUserId model) currentDate subMsg model.cache
             in
             ( { model | cache = subModel }
             , Cmd.map MsgCache subCmd
             )
-                |> sequence update (List.map (MsgLoggedIn << MsgBackend) extraMsgs)
+                |> sequence update extraMsgs
 
         MsgLoggedIn loggedInMsg ->
             updateLoggedIn
@@ -141,7 +151,7 @@ update msg model =
                         MsgPageAdmin subMsg ->
                             let
                                 ( newModel, cmd, appMsgs ) =
-                                    Pages.Admin.Update.update model.currentDate data.backend subMsg data.adminPage
+                                    Pages.Admin.Update.update currentDate data.backend subMsg data.adminPage
                             in
                             ( { data | adminPage = newModel }
                             , Cmd.map (MsgLoggedIn << MsgPageAdmin) cmd
@@ -251,12 +261,13 @@ update msg model =
 
         MsgServiceWorker subMsg ->
             let
-                ( subModel, subCmd ) =
-                    ServiceWorker.Update.update subMsg model.serviceWorker
+                ( subModel, subCmd, extraMsgs ) =
+                    ServiceWorker.Update.update model.currentTime subMsg model.serviceWorker
             in
             ( { model | serviceWorker = subModel }
             , Cmd.map MsgServiceWorker subCmd
             )
+                |> sequence update extraMsgs
 
         MsgSession subMsg ->
             -- TODO: Should ideally reflect the fact that an EditableSession is
@@ -300,6 +311,37 @@ update msg model =
                 , Cmd.none
                 )
 
+        SendRollbar level message data ->
+            updateConfigured
+                (\configured ->
+                    let
+                        version =
+                            Version.version
+                                |> .build
+                                |> Json.Encode.string
+
+                        cmd =
+                            Rollbar.send
+                                configured.config.rollbarToken
+                                (Rollbar.scope "user")
+                                (Rollbar.environment configured.config.name)
+                                0
+                                level
+                                message
+                                (Dict.insert "build" version data)
+                                |> Task.attempt HandleRollbar
+                    in
+                    ( configured
+                    , cmd
+                    , []
+                    )
+                )
+                model
+
+        HandleRollbar result ->
+            -- For now, we do nothing
+            ( model, Cmd.none )
+
         SetLanguage language ->
             ( { model | language = language }
             , setLanguage <| languageToCode language
@@ -312,20 +354,23 @@ update msg model =
 
         Tick time ->
             let
-                nominalDate =
-                    fromLocalDateTime (Date.fromTime time)
-            in
-            -- We don't update the model at all if the date hasn't
-            -- changed ...  this should be a small optimization, since
-            -- the new model will be referentially equal to the
-            -- previous one.
-            if nominalDate == model.currentDate then
-                ( model, Cmd.none )
+                extraMsgs =
+                    case model.serviceWorker.lastUpdateCheck of
+                        Nothing ->
+                            [ MsgServiceWorker <| ServiceWorker.Model.SendOutgoingMsg ServiceWorker.Model.Update ]
 
-            else
-                ( { model | currentDate = nominalDate }
-                , Cmd.none
-                )
+                        Just checked ->
+                            -- Automatically check for updates every hour
+                            if time - checked > 60 * Time.minute then
+                                [ MsgServiceWorker <| ServiceWorker.Model.SendOutgoingMsg ServiceWorker.Model.Update ]
+
+                            else
+                                []
+            in
+            ( { model | currentTime = time }
+            , Cmd.none
+            )
+                |> sequence update extraMsgs
 
 
 {-| Convenience function to process a msg which depends on having a configuration.

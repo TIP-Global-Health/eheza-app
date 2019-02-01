@@ -25,6 +25,16 @@ a {
   width: 800px;
   text-align: right;
   margin: 10px auto;
+  display: flex;
+  justify-content: space-between;
+
+  .version {
+    margin-right: 16px;
+    height: 24px;
+    color: white;
+    font-size: .6em;
+    cursor: pointer;
+  }
 
   .links-translate {
     margin: 0;
@@ -69,7 +79,6 @@ a {
       top: -4px;
       left: -4px;
     }
-
   }
 }
 

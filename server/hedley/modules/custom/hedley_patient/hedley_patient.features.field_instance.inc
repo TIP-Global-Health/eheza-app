@@ -460,7 +460,7 @@ function hedley_patient_field_default_field_instances() {
 
   // Translatables
   // Included for use with string extractors like potx.
-  t('Assign each mother to a clinic so that she will be included when data-entry sessions are scheduled for the clinic.');
+  t('Assign each mother/caregiver to a clinic so that she will be included when data-entry sessions are scheduled for the clinic.');
   t('Clinic');
   t('Date birth');
   t('Education Level');

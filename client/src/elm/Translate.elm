@@ -177,7 +177,8 @@ type TranslationId
     | EndSession
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
-    | ErrorFetchingCachedSession
+    | ErrorFetchingCachedSessionTitle
+    | ErrorFetchingCachedSessionMessage
     | FamilyPlanningSignLabel FamilyPlanningSign
     | Fetch
     | FormError (ErrorValue ValidationError)
@@ -187,6 +188,7 @@ type TranslationId
     | GoHome
     | HttpError Http.Error
     | KilogramShorthand
+    | LastChecked
     | LevelOfEducationLabel
     | LevelOfEducation EducationLevel
     | LinkToMother
@@ -195,6 +197,7 @@ type TranslationId
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
+    | MinutesAgo Int
     | MonthAbbrev
     | MonthsOld
     | Mother
@@ -248,6 +251,22 @@ type TranslationId
     | SelectClinic
     | SelectLanguage
     | SelectYourClinic
+    | ServiceWorkerActive
+    | ServiceWorkerCurrent
+    | ServiceWorkerCheckForUpdates
+    | ServiceWorkerInstalling
+    | ServiceWorkerInstalled
+    | ServiceWorkerSkipWaiting
+    | ServiceWorkerRestarting
+    | ServiceWorkerActivating
+    | ServiceWorkerActivated
+    | ServiceWorkerRedundant
+    | ServiceWorkerInactive
+    | ServiceWorkerRegNotAsked
+    | ServiceWorkerRegLoading
+    | ServiceWorkerRegErr
+    | ServiceWorkerRegSuccess
+    | ServiceWorkerStatus
     | SessionClosed
     | SessionClosed2 SessionId
     | SessionInProgress
@@ -275,6 +294,7 @@ type TranslationId
     | UploadingSession2
     | UploadSuccessful
     | ValidationErrors
+    | Version
     | ViewProgressReport
     | WelcomeUser String
     | YouAreNotAnAdmin
@@ -833,8 +853,18 @@ translationSet trans =
             , kinyarwanda = Just "Ikosa mu igena miterere"
             }
 
-        ErrorFetchingCachedSession ->
-            { english = "There was an error fetchhing the session stored on this device."
+        ErrorFetchingCachedSessionTitle ->
+            { english = "Error Loading Cached Session"
+            , kinyarwanda = Nothing
+            }
+
+        ErrorFetchingCachedSessionMessage ->
+            { english = """
+                There was an error loading the session data cached on this
+                device. An error report has been sent (or will be sent when the
+                device is online). Contact the Ihangane project for further
+                instructions.
+                """
             , kinyarwanda = Nothing
             }
 
@@ -916,6 +946,11 @@ translationSet trans =
             , kinyarwanda = Just "kg"
             }
 
+        LastChecked ->
+            { english = "Last checked"
+            , kinyarwanda = Nothing
+            }
+
         LevelOfEducationLabel ->
             { english = "Level of Education: "
             , kinyarwanda = Just <| "Amashuri wize: "
@@ -984,6 +1019,19 @@ translationSet trans =
         MeasurementLost amount ->
             { english = "Lost " ++ toString amount
             , kinyarwanda = Just <| "Kwiyongera " ++ toString amount
+            }
+
+        MinutesAgo minutes ->
+            { english =
+                if minutes == 0 then
+                    "just now"
+
+                else if minutes == 1 then
+                    "one minute ago"
+
+                else
+                    toString minutes ++ " minutes ago"
+            , kinyarwanda = Nothing
             }
 
         MonthAbbrev ->
@@ -1261,6 +1309,86 @@ translationSet trans =
             , kinyarwanda = Just "Guhitamo ikigo nderabuzima"
             }
 
+        ServiceWorkerActive ->
+            { english = "The app is installed on this device."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerCurrent ->
+            { english = "You have the current version of the app."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerCheckForUpdates ->
+            { english = "Check for updates"
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerInstalling ->
+            { english = "A new version of the app has been detected and is being downloaded. You can continue to work while this is in progress."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerInstalled ->
+            { english = "A new version of the app has been downloaded."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerSkipWaiting ->
+            { english = "Activate new version of the app"
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerRestarting ->
+            { english = "The app should reload momentarily with the new version."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerActivating ->
+            { english = "A new version of the app is preparing itself for use."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerActivated ->
+            { english = "A new version of the app is ready for use."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerRedundant ->
+            { english = "An error occurred installing a new version of the app."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerInactive ->
+            { english = "The app is not yet installed on this device."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerRegNotAsked ->
+            { english = "We have not yet attempted to install the app on this device."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerRegLoading ->
+            { english = "Installation of the app on this device is progressing."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerRegErr ->
+            { english = "There was an error installing the app on this device. To try again, reload this page."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerRegSuccess ->
+            { english = "The app was successfully registered with this device."
+            , kinyarwanda = Nothing
+            }
+
+        ServiceWorkerStatus ->
+            { english = "Deployment Status"
+            , kinyarwanda = Nothing
+            }
+
         SessionClosed ->
             { english = "Session closed"
             , kinyarwanda = Just "igikorwa kirafunze:"
@@ -1402,6 +1530,12 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        -- As in, the version the app
+        Version ->
+            { english = "Version"
+            , kinyarwanda = Nothing
+            }
+
         ViewProgressReport ->
             { english = "View Progress Report"
             , kinyarwanda = Just "Garagaza uruhererekane rw'imikurire y'umwana"
@@ -1459,6 +1593,11 @@ translateActivePage page =
         PageNotFound url ->
             { english = "Missing"
             , kinyarwanda = Just "Ibibura"
+            }
+
+        ServiceWorkerPage ->
+            { english = "Deployment"
+            , kinyarwanda = Nothing
             }
 
         SessionPage sessionPage ->

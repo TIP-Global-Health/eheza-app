@@ -2,6 +2,8 @@ module App.Fetch exposing (fetch)
 
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInModel, hasAccessToken)
+import Date
+import Gizra.NominalDate exposing (fromLocalDateTime)
 import Pages.Admin.Fetch
 import Pages.Clinics.Fetch
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -25,12 +27,16 @@ views. more often than that.
 -}
 fetch : Model -> List Msg
 fetch model =
+    let
+        currentDate =
+            fromLocalDateTime (Date.fromTime model.currentTime)
+    in
     case model.activePage of
         UserPage (ClinicsPage clinicId) ->
             getLoggedInModel model
                 |> Maybe.map
                     (\loggedIn ->
-                        Pages.Clinics.Fetch.fetch model.currentDate clinicId loggedIn.backend
+                        Pages.Clinics.Fetch.fetch currentDate clinicId loggedIn.backend
                             |> List.map (MsgLoggedIn << MsgBackend)
                     )
                 |> Maybe.withDefault []
@@ -39,7 +45,7 @@ fetch model =
             getLoggedInModel model
                 |> Maybe.map
                     (\loggedIn ->
-                        Pages.Admin.Fetch.fetch model.currentDate loggedIn.backend loggedIn.adminPage
+                        Pages.Admin.Fetch.fetch currentDate loggedIn.backend loggedIn.adminPage
                             |> List.map (MsgLoggedIn << MsgPageAdmin)
                     )
                 |> Maybe.withDefault []

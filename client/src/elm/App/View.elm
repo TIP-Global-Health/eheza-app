@@ -1,7 +1,10 @@
 module App.View exposing (view)
 
 import App.Model exposing (..)
+import Backend.Model exposing (CachedSessionError(..))
 import Config.View
+import Date
+import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
@@ -14,11 +17,12 @@ import Pages.PageNotFound.View
 import Pages.View exposing (viewFoundSession)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Login as RL
-import Translate exposing (Language, translate)
+import ServiceWorker.View
+import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
 import User.Model exposing (User)
 import Utils.Html exposing (spinner, wrapPage)
-import Utils.WebData exposing (viewError)
+import Version
 
 
 view : Model -> Html Msg
@@ -29,7 +33,7 @@ view model =
 
         Success configuration ->
             div [ class "container" ]
-                [ viewLanguageSwitcher model
+                [ viewLanguageSwitcherAndVersion model
 
                 -- We supply the model as well as the resolved configuration ...
                 -- it's easier that way.
@@ -45,8 +49,8 @@ view model =
 {-| The language switcher view which sets a preferred language for each user and
 saves the current language via the Update function in local storage.
 -}
-viewLanguageSwitcher : Model -> Html Msg
-viewLanguageSwitcher model =
+viewLanguageSwitcherAndVersion : Model -> Html Msg
+viewLanguageSwitcherAndVersion model =
     div
         [ class "ui language-switcher" ]
         [ ul
@@ -72,6 +76,15 @@ viewLanguageSwitcher model =
                 , a [] [ span [ class "icon-kinyarwanda" ] [] ]
                 ]
             ]
+        , span
+            [ class "version"
+            , onClick <| SetActivePage ServiceWorkerPage
+            ]
+            [ ServiceWorker.View.viewIcon model.serviceWorker
+            , text <| translate model.language Translate.Version
+            , text ": "
+            , text <| .build Version.version
+            ]
         ]
 
 
@@ -83,6 +96,23 @@ don't have one.
 -}
 viewConfiguredModel : Model -> ConfiguredModel -> Html Msg
 viewConfiguredModel model configured =
+    if model.serviceWorker.active then
+        viewEditableSession model configured
+
+    else
+        -- If our service worker is not active, then the only thing we allow
+        -- is showing the status of the service worker. (Since we need the
+        -- service worker for the normal operatio of the app).
+        ServiceWorker.View.view model.currentTime model.language model.serviceWorker
+            |> Html.map MsgServiceWorker
+
+
+viewEditableSession : Model -> ConfiguredModel -> Html Msg
+viewEditableSession model configured =
+    let
+        currentDate =
+            fromLocalDateTime <| Date.fromTime model.currentTime
+    in
     -- What we are able to do here depends on whether we've logged in or not.
     -- So, in effect, this is where we're doing what you would think of as
     -- "access control". And, we also want to wait until we know whether
@@ -102,6 +132,10 @@ viewConfiguredModel model configured =
                             case model.activePage of
                                 PageNotFound url ->
                                     Pages.PageNotFound.View.view model.language url
+
+                                ServiceWorkerPage ->
+                                    ServiceWorker.View.view model.currentTime model.language model.serviceWorker
+                                        |> Html.map MsgServiceWorker
 
                                 _ ->
                                     Pages.Login.View.view model.language model.activePage configured.login configured.loginPage (Maybe.map Tuple.second session)
@@ -131,14 +165,18 @@ viewConfiguredModel model configured =
                         UserPage userPage ->
                             case userPage of
                                 AdminPage ->
-                                    Pages.Admin.View.view configured.config model.language model.currentDate login.credentials.user login.data.backend login.data.adminPage
+                                    Pages.Admin.View.view configured.config model.language currentDate login.credentials.user login.data.backend login.data.adminPage
                                         |> Html.map (MsgLoggedIn << MsgPageAdmin)
 
                                 MyAccountPage ->
                                     Pages.MyAccount.View.view model.language login.credentials.user
 
                                 ClinicsPage clinicId ->
-                                    Pages.Clinics.View.view model.language model.currentDate login.credentials.user clinicId login.data.backend model.cache
+                                    Pages.Clinics.View.view model.language currentDate login.credentials.user clinicId login.data.backend model.cache
+
+                        ServiceWorkerPage ->
+                            ServiceWorker.View.view model.currentTime model.language model.serviceWorker
+                                |> Html.map MsgServiceWorker
 
                         PageNotFound url ->
                             Pages.PageNotFound.View.view model.language url
@@ -146,11 +184,10 @@ viewConfiguredModel model configured =
                         SessionPage subPage ->
                             viewSessionPage login.credentials.user subPage model
 
+        Failure err ->
+            viewCachedSessionError model.language err
+
         _ ->
-            -- TODO: What should we show if we have errors loading the
-            -- offlineSession from the cache? At the moment, we basically
-            -- always succeed, and report we don't have one if there was an
-            -- error.
             viewLoading
 
 
@@ -177,10 +214,7 @@ viewSessionPage user page model =
             wrapPage [ spinner ]
 
         Failure err ->
-            wrapPage
-                [ h4 [] [ text <| translate model.language Translate.ErrorFetchingCachedSession ]
-                , viewError model.language err
-                ]
+            viewCachedSessionError model.language err
 
         Success fetched ->
             case fetched of
@@ -203,3 +237,20 @@ viewSessionPage user page model =
                                 [ text <| translate model.language Translate.SelectYourClinic ]
                             ]
                         ]
+
+
+viewCachedSessionError : Language -> CachedSessionError -> Html any
+viewCachedSessionError language err =
+    div [ class "wrap wrap-alt-2" ]
+        [ div
+            [ class "ui basic head segment" ]
+            [ h1
+                [ class "ui header" ]
+                [ text <| translate language Translate.ErrorFetchingCachedSessionTitle ]
+            ]
+        , div
+            [ class "ui basic segment" ]
+            [ p []
+                [ text <| translate language Translate.ErrorFetchingCachedSessionMessage ]
+            ]
+        ]

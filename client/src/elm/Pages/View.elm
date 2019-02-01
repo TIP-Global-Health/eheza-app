@@ -5,8 +5,10 @@ import App.Model exposing (Model)
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (activeClinicName, isAuthorized, isClosed)
+import Date
 import EveryDict
 import Gizra.Html exposing (showMaybe)
+import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -34,7 +36,7 @@ viewFoundSession user page ( sessionId, session ) model =
             model.language
 
         currentDate =
-            model.currentDate
+            fromLocalDateTime <| Date.fromTime model.currentTime
 
         zscores =
             model.zscores

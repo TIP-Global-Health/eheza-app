@@ -18,6 +18,8 @@ var elm  = require('gulp-elm');
 var fs = require('fs');
 var path = require('path');
 var csvParse = require('csv-parse');
+var gitRev = require('git-rev');
+var sourceStream = require('vinyl-source-stream');
 
 // merge is used to merge the output from two different streams into the same stream
 var merge = require("merge-stream");
@@ -107,6 +109,20 @@ gulp.task("zscore", [], function () {
     ;
 });
 
+gulp.task('version', [], function () {
+  var stream = sourceStream('Version.elm');
+
+  gitRev.short(function (rev) {
+      stream.write('module Version exposing (version)\n');
+      stream.write('import App.Model exposing (Version)\n');
+      stream.write('version : Version\n');
+      stream.write('version = {build = "' + rev + '"}\n');
+      stream.end();
+  });
+
+  return stream.pipe(gulp.dest('src/generated'));
+});
+
 function capitalize (input) {
   return input.charAt(0).toUpperCase() + input.slice(1);
 }
@@ -125,15 +141,15 @@ gulp.task("images", function () {
     .pipe($.size({title: "images"}));
 });
 
-// Copy over fonts to the "dist" directory
-gulp.task("fonts", function () {
+// Copy fonts.
+gulp.task("copy:fonts", function () {
   return gulp.src("src/assets/fonts/**")
-    .pipe(gulp.dest("dist/assets/fonts"))
+    .pipe(gulp.dest("serve/assets/fonts"))
     .pipe($.size({ title: "fonts" }));
 });
 
 // Copy index.html and CNAME files to the "serve" directory
-gulp.task("copy:dev", ["copy:bower", "copy:images", "copy:favicon"], function () {
+gulp.task("copy:dev", ["copy:bower", "copy:images", "copy:favicon", "copy:fonts"], function () {
   return gulp.src(["src/index.html", "src/CNAME", "src/js/**/*"])
     .pipe(gulp.dest("serve"))
     .pipe($.size({ title: "index.html & CNAME" }))
@@ -141,8 +157,12 @@ gulp.task("copy:dev", ["copy:bower", "copy:images", "copy:favicon"], function ()
 
 // Copy bower.
 gulp.task("copy:bower", function () {
-  return gulp.src(["bower_components/**/*"])
-    .pipe(gulp.dest("serve/bower_components"))
+  // There are unused Dexie files that causes trouble for uglify later
+  return gulp.src([
+    "bower_components/**/*",
+    "!bower_components/**/*.es.js",
+    "!bower_components/semantic/tasks/config/admin/templates/*.js"
+  ]).pipe(gulp.dest("serve/bower_components"))
     .pipe($.size({ title: "Bower" }))
 });
 
@@ -216,7 +236,7 @@ gulp.task("deploy", [], function () {
 });
 
 gulp.task('elm-init', elm.init);
-gulp.task('elm', ['elm-init'], function(){
+gulp.task('elm', ['elm-init', 'version'], function(){
   return gulp.src('src/elm/Main.elm')
     .pipe(plumber())
     .pipe(elm({'debug': false, 'warn' : true}))
@@ -267,7 +287,7 @@ gulp.task("serve:prod", function () {
   });
 });
 
-var precacheFileGlob = '*.{js,html,css,png,jpg,gif,svg,eot,ttf,woff,json}';
+var precacheFileGlob = '*.{js,html,css,png,jpg,gif,svg,eot,ttf,woff,woff2,json}';
 
 // We cache bower_components individually, since they often include things
 // we don't need.
@@ -277,6 +297,8 @@ var precacheLocalDev = [
   'serve/bower_components/copy-button/bundled.min.js',
   'serve/bower_components/dropzone/dist/min/dropzone.min.css',
   'serve/bower_components/dropzone/dist/min/dropzone.min.js',
+  'serve/bower_components/dexie/dist/dexie.min.js',
+  'serve/bower_components/semantic/dist/semantic.min.css',
   'serve/bower_components/offline/offline.min.js'
 ];
 
@@ -288,26 +310,10 @@ var precacheProd = [
   'dist/bower_components/copy-button/bundled.min.*.js',
   'dist/bower_components/dropzone/dist/min/dropzone.min.*.css',
   'dist/bower_components/dropzone/dist/min/dropzone.min.*.js',
+  'dist/bower_components/dexie/dist/dexie.min.*.js',
+  'dist/bower_components/semantic/dist/semantic.min.*.css',
   'dist/bower_components/offline/offline.min.*.js'
 ];
-
-// In addition to local assets, we also cache some remote assets
-// that won't change ... i.e. CDN stuff.
-var cacheRemote = [{
-    urlPattern: /^https:\/\/js\.pusher\.com\//,
-    // The version is in the URL, so we don't need to check network
-    // if it's in the cache.
-    handler: 'cacheFirst'
-},{
-    urlPattern: /^https:\/\/cdn\.jsdelivr\.net\//,
-    handler: 'cacheFirst'
-},{
-    urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
-    handler: 'cacheFirst'
-},{
-    urlPattern: /^https:\/\/fonts\.gstatic\.com\//,
-    handler: 'cacheFirst'
-}];
 
 // For offline use while developing
 gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function(callback) {
@@ -318,9 +324,15 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function(callback)
     cacheId: 'ihangane',
     staticFileGlobs: precacheLocalDev,
     stripPrefix: rootDir,
-    runtimeCaching: cacheRemote,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
-    importScripts: ["photos.js"]
+    clientsClaim: true,
+    skipWaiting: false,
+    importScripts: [
+        'bower_components/dexie/dist/dexie.min.js',
+        'lifecycle.js',
+        'photos.js',
+        'rollbar.js'
+    ]
   }, callback);
 });
 
@@ -333,9 +345,13 @@ gulp.task('pwa:prod', function (callback) {
     cacheId: 'ihangane',
     staticFileGlobs: precacheProd,
     stripPrefix: rootDir,
-    runtimeCaching: cacheRemote,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
-    importScripts: ["photos.js"]
+    importScripts: [
+        'bower_components/dexie/dist/dexie.min.js',
+        'lifecycle.js',
+        'photos.js',
+        'rollbar.js'
+    ]
   }, callback);
 });
 
@@ -348,4 +364,4 @@ gulp.task("build", gulpSequence("clean:dev", ["styles", "zscore", "copy:dev", "e
 
 // Builds your site with the "build" command and then runs all the optimizations on
 // it and outputs it to "./dist"
-gulp.task("publish", gulpSequence(["build", "clean:prod"], ["minify", "cname", "images", "fonts"], "pwa:dev"));
+gulp.task("publish", gulpSequence(["build", "clean:prod"], ["minify", "cname", "images"], "pwa:dev"));
