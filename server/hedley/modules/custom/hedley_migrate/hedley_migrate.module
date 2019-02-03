@@ -350,18 +350,7 @@ function _hedley_migrate_preprocess_xss($entity_type, $bundle, $entity) {
       continue;
     }
 
-    // Handle each column.
-    foreach ($field['columns'] as $column => $column_info) {
-      if ($column == 'format') {
-        // We should not allow full html format for XSS attempt.
-        if ($wrapper->{$field_name}->format->value() == 'full_html') {
-          $wrapper->{$field_name}->format->set('filtered_html');
-        }
-      }
-      else {
-        $wrapper->{$field_name}->{$column}->set("<script>alert('XSS-{$entity_type}-{$bundle}-{$field_name}')</script>");
-      }
-    }
+    $wrapper->{$field_name}->set("<script>alert('XSS-{$entity_type}-{$bundle}-{$field_name}')</script>");
   }
 }
 
@@ -375,15 +364,44 @@ function _hedley_migrate_preprocess_xss($entity_type, $bundle, $entity) {
  */
 function _hedley_migrate_preprocess_child($node, Generator $faker) {
   $wrapper = entity_metadata_wrapper('node', $node);
-  $wrapper->title->set($faker->firstName);
+
+  $helpers = _hedley_migrate_participant_helpers();
+
+  $gender = $helpers['gender'][$faker->numberBetween(0, count($helpers['gender']) - 1)];
+  $wrapper->field_gender->set($gender);
+
+  $first_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
+  $middle_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
+  $second_name = $faker->lastName;
+  $wrapper->title->set("$first_name $middle_name $second_name");
+  $wrapper->field_first_name->set($first_name);
+  $wrapper->field_middle_name->set($middle_name);
+  $wrapper->field_second_name->set($second_name);
+
+  $mode_of_delivery = [
+    'svd-episiotomy',
+    'svd-no-episiotomy',
+    'vd-vacuum',
+    'cesarean-delivery',
+  ];
+  $wrapper->field_mode_of_delivery->set($mode_of_delivery[$faker->numberBetween(0, count($mode_of_delivery) - 1)]);
+
+  $geolocation_info = $helpers['geolocation_info'][$faker->numberBetween(0, count($helpers['geolocation_info']) - 1)];
+  $wrapper->field_province->set($geolocation_info[0]);
+  $wrapper->field_district->set($geolocation_info[1]);
+  $wrapper->field_sector->set($geolocation_info[2]);
+  $wrapper->field_cell->set($geolocation_info[3]);
+  $wrapper->field_village->set($geolocation_info[4]);
+
+  $wrapper->field_phone_number->set($faker->phoneNumber);
 
   $_hedley_devel_generate = &drupal_static(__FUNCTION__, FALSE);
 
   if ($_hedley_devel_generate) {
     return;
   }
-  $_hedley_devel_generate = TRUE;
 
+  $_hedley_devel_generate = TRUE;
 }
 
 /**
@@ -396,7 +414,65 @@ function _hedley_migrate_preprocess_child($node, Generator $faker) {
  */
 function _hedley_migrate_preprocess_mother($node, Generator $faker) {
   $wrapper = entity_metadata_wrapper('node', $node);
-  $wrapper->title->set($faker->firstNameFemale);
+
+  $helpers = _hedley_migrate_participant_helpers();
+
+  $gender = $helpers['gender'][$faker->numberBetween(0, count($helpers['gender']) - 1)];
+  $wrapper->field_gender->set($gender);
+
+  $first_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
+  $middle_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
+  $second_name = $faker->lastName;
+  $wrapper->title->set("$first_name $middle_name $second_name");
+  $wrapper->field_first_name->set($first_name);
+  $wrapper->field_middle_name->set($middle_name);
+  $wrapper->field_second_name->set($second_name);
+
+  $wrapper->field_national_id_number->set($faker->numberBetween(1000, 9999));
+  $wrapper->field_profession->set($faker->jobTitle);
+
+  $marital_status = ['divorced', 'married', 'single', 'widowed'];
+  $wrapper->field_marital_status->set($marital_status[$faker->numberBetween(0, count($marital_status) - 1)]);
+
+  $hiv_status = [
+    'hiv-exposed-infant',
+    'negative',
+    'negative-dc',
+    'positive',
+    'unknown',
+  ];
+  $wrapper->field_hiv_status->set($hiv_status[$faker->numberBetween(0, count($hiv_status) - 1)]);
+  $wrapper->field_household_size->set($faker->numberBetween(0, 30));
+  $wrapper->field_number_of_children->set($faker->numberBetween(0, 20));
+
+  $geolocation_info = $helpers['geolocation_info'][$faker->numberBetween(0, count($helpers['geolocation_info']) - 1)];
+  $wrapper->field_province->set($geolocation_info[0]);
+  $wrapper->field_district->set($geolocation_info[1]);
+  $wrapper->field_sector->set($geolocation_info[2]);
+  $wrapper->field_cell->set($geolocation_info[3]);
+  $wrapper->field_village->set($geolocation_info[4]);
+
+  $wrapper->field_phone_number->set($faker->phoneNumber);
+}
+
+/**
+ * Generates helper params for participants fields.
+ *
+ * @return array
+ *   Helper params to generate participants fields.
+ */
+function _hedley_migrate_participant_helpers() {
+  return [
+    'gender' =>
+      ['male', 'female'],
+    'geolocation_info' => [
+      ['Amajyaruguru', 'Gakenke', 'Busengo', 'Birambo', 'Birambo'],
+      ['Amajyaruguru', 'Gakenke', 'Ruli', 'Gikingo', 'Nyamugari'],
+      ['Amajyaruguru', 'Gakenke', 'Rushashi', 'Joma', 'Kineza'],
+      ['Amajyaruguru', 'Rulindo', 'Burega', 'Butangampundu', 'Kibiraro'],
+      ['Amajyaruguru', 'Rulindo', 'Bushoki', 'Mukoto', 'Muko'],
+    ],
+  ];
 }
 
 /**
@@ -409,7 +485,7 @@ function _hedley_migrate_preprocess_weight($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
 
   // Adjust children's weight to realistic figures.
-  $wrapper->field_weight->set(rand(0.5, 60));
+  $wrapper->field_weight->set(rand(1, 60));
 }
 
 /**

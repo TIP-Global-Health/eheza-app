@@ -6,7 +6,7 @@ module Pages.PatientRegistration.View exposing (view)
 import Backend.Child.Model exposing (Gender(..), ModeOfDelivery(..), modeOfDeliveryToValue)
 import Backend.Measurement.Model exposing (PhotoValue)
 import Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..))
-import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Ubudehe(..))
+import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Ubudehe(..), hivStatusToValue)
 import EveryDict
 import Form
 import Form.Error
@@ -312,7 +312,7 @@ view language currentDate user backend cache model =
                                                         options =
                                                             emptyOption
                                                                 :: [ ( toString Divorced, translate language <| Translate.MaritalStatus Divorced )
-                                                                   , ( toString Maried, translate language <| Translate.MaritalStatus Maried )
+                                                                   , ( toString Married, translate language <| Translate.MaritalStatus Married )
                                                                    , ( toString Single, translate language <| Translate.MaritalStatus Single )
                                                                    , ( toString Widowed, translate language <| Translate.MaritalStatus Widowed )
                                                                    ]
@@ -323,9 +323,11 @@ view language currentDate user backend cache model =
                                                     let
                                                         options =
                                                             emptyOption
-                                                                :: [ ( toString NA, translate language <| Translate.HIVStatus NA )
-                                                                   , ( toString Negative, translate language <| Translate.HIVStatus Negative )
-                                                                   , ( toString Positive, translate language <| Translate.HIVStatus Positive )
+                                                                :: [ ( hivStatusToValue HIVExposedInfant, translate language <| Translate.HIVStatus HIVExposedInfant )
+                                                                   , ( hivStatusToValue Negative, translate language <| Translate.HIVStatus Negative )
+                                                                   , ( hivStatusToValue NegativeDiscordantCouple, translate language <| Translate.HIVStatus NegativeDiscordantCouple )
+                                                                   , ( hivStatusToValue Positive, translate language <| Translate.HIVStatus Positive )
+                                                                   , ( hivStatusToValue Unknown, translate language <| Translate.HIVStatus Unknown )
                                                                    ]
                                                     in
                                                     viewSelectInput language Translate.HIVStatusLabel options hivStatus "ten" "select-input" True

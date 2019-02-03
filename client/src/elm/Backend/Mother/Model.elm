@@ -1,4 +1,4 @@
-module Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother, Ubudehe(..))
+module Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother, Ubudehe(..), hivStatusToValue)
 
 import Backend.Entities exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
@@ -33,12 +33,33 @@ type EducationLevel
 
 type MaritalStatus
     = Divorced
-    | Maried
+    | Married
     | Single
     | Widowed
 
 
 type HIVStatus
-    = Negative
-    | NA
+    = HIVExposedInfant
+    | Negative
+    | NegativeDiscordantCouple
     | Positive
+    | Unknown
+
+
+hivStatusToValue : HIVStatus -> String
+hivStatusToValue status =
+    case status of
+        HIVExposedInfant ->
+            "hiv-exposed-infant"
+
+        Negative ->
+            "negative"
+
+        NegativeDiscordantCouple ->
+            "negative-dc"
+
+        Positive ->
+            "positive"
+
+        Unknown ->
+            "unknown"
