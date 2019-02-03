@@ -789,7 +789,6 @@ h3.ui.header {
             margin-left: 50px;
 
             .action-icon {
-              background: url(#{$img-path}icon-forward.svg) no-repeat center;
               background-size: 62% 62%;
               cursor: pointer;
               display: block;
@@ -797,6 +796,14 @@ h3.ui.header {
               width: 40px;
               margin-left: 2px;
               margin-top: 2px;
+
+              &.forward {
+                background: url(#{$img-path}icon-forward.svg) no-repeat center;
+              }
+
+              &.link {
+                background: url(#{$img-path}icon-link.svg) no-repeat center;
+              }
             }
           }
         }

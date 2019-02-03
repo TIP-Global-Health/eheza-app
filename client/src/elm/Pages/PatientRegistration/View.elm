@@ -28,6 +28,7 @@ import Pages.PatientRegistration.Model
         , Model
         , Msg(..)
         , ParticipantsData
+        , PatientActionType(..)
         , PatientType(..)
         , RegistrationForm
         , RegistrationPhase(..)
@@ -809,6 +810,13 @@ viewSearchForm language currentDate user backend cache participantsData searchSt
                                                     ( \mother -> True, \child -> False )
                                         )
 
+                            relationDependentAction =
+                                if isJust maybeRelationPatient then
+                                    Just Link
+
+                                else
+                                    Just Forward
+
                             mothers =
                                 participantsData.mothersToRegister
                                     |> EveryDict.toList
@@ -830,10 +838,10 @@ viewSearchForm language currentDate user backend cache participantsData searchSt
                         in
                         ( [ text <| translate language <| Translate.ReportResultsOfSearch total ]
                         , (mothers
-                            |> List.map (\( uuid, mother ) -> viewPatient language (PatientMother uuid mother) True)
+                            |> List.map (\( uuid, mother ) -> viewPatient language (PatientMother uuid mother) relationDependentAction)
                           )
                             ++ (children
-                                    |> List.map (\( uuid, child ) -> viewPatient language (PatientChild uuid child) True)
+                                    |> List.map (\( uuid, child ) -> viewPatient language (PatientChild uuid child) relationDependentAction)
                                )
                         )
                     )
@@ -929,7 +937,7 @@ viewPatientDetailsForm language currentDate user backend cache viewedPatient par
                 PatientChild _ _ ->
                     case familyMembersList of
                         [ patientMother ] ->
-                            [ viewPatient language patientMother False ]
+                            [ viewPatient language patientMother Nothing ]
 
                         _ ->
                             [ addPatientModal "mother" Translate.AddMother ]
@@ -944,7 +952,7 @@ viewPatientDetailsForm language currentDate user backend cache viewedPatient par
 
                     else
                         familyMembersList
-                            |> List.map (\childPatient -> viewPatient language childPatient False)
+                            |> List.map (\childPatient -> viewPatient language childPatient Nothing)
                             |> List.append [ addChildModal ]
                             |> List.reverse
     in
@@ -952,7 +960,7 @@ viewPatientDetailsForm language currentDate user backend cache viewedPatient par
         [ h3 [ class "ui header" ]
             [ text <| translate language topLabel ++ ": " ]
         , div [ class "ui unstackable items" ]
-            [ viewPatient language viewedPatient False ]
+            [ viewPatient language viewedPatient Nothing ]
         , div [ class "separator-line" ] []
         , h3 [ class "ui header" ]
             [ text <| translate language bottomLabel ++ ": " ]
@@ -963,8 +971,8 @@ viewPatientDetailsForm language currentDate user backend cache viewedPatient par
         ]
 
 
-viewPatient : Language -> PatientType -> Bool -> Html Msg
-viewPatient language patientType addAction =
+viewPatient : Language -> PatientType -> Maybe PatientActionType -> Html Msg
+viewPatient language patientType maybeActionType =
     let
         ( typeForThumbnail, details, healthCenter ) =
             case patientType of
@@ -973,6 +981,9 @@ viewPatient language patientType addAction =
 
                 PatientChild _ child ->
                     ( "child", getCommonDetails child, "Unknown" )
+
+        log =
+            Debug.log "maybeActionType" maybeActionType
 
         content =
             div [ class "content" ] <|
@@ -996,20 +1007,30 @@ viewPatient language patientType addAction =
                         , span [] [ text healthCenter ]
                         ]
                     ]
-                    :: (if addAction then
-                            [ div [ class "action" ]
-                                [ div [ class "action-icon-wrapper" ]
-                                    [ span
-                                        [ class "action-icon"
-                                        , onClick <| SetRegistrationPhase <| ParticipantView patientType
+                    :: (case maybeActionType of
+                            Just actionType ->
+                                let
+                                    ( action, actionClass ) =
+                                        case actionType of
+                                            Forward ->
+                                                ( SetRegistrationPhase <| ParticipantView patientType, "forward" )
+
+                                            Link ->
+                                                ( MakeRelation patientType, "link" )
+                                in
+                                [ div [ class "action" ]
+                                    [ div [ class "action-icon-wrapper" ]
+                                        [ span
+                                            [ class <| "action-icon " ++ actionClass
+                                            , onClick action
+                                            ]
+                                            []
                                         ]
-                                        []
                                     ]
                                 ]
-                            ]
 
-                        else
-                            []
+                            Nothing ->
+                                []
                        )
     in
     div
@@ -1066,42 +1087,38 @@ confirmSubmisionDialog language =
 successfulSubmisionDialog : Language -> Maybe PatientType -> Html Msg
 successfulSubmisionDialog language maybePatientType =
     let
-        ( helper, resetButtonLabel ) =
+        helper =
             case maybePatientType of
                 Just (PatientMother _ _) ->
-                    ( Translate.RegistartionSuccessfulAddChild, Translate.No )
+                    Translate.RegistartionSuccessfulAddChild
 
                 Just (PatientChild _ _) ->
-                    ( Translate.RegistartionSuccessfulAddMother, Translate.No )
+                    Translate.RegistartionSuccessfulAddMother
 
                 Nothing ->
-                    ( Translate.RegistartionSuccessfulRelationCreated, Translate.OK )
+                    Translate.RegistartionSuccessfulRelationCreated
 
         buttons =
-            div
-                [ classList
-                    [ ( "one", isNothing maybePatientType )
-                    , ( "two", isJust maybePatientType )
-                    , ( "ui buttons", True )
+            if isJust maybePatientType then
+                div [ class "ui buttons two" ]
+                    [ button
+                        [ class "ui fluid button"
+                        , onClick Reset
+                        ]
+                        [ text <| translate language Translate.No ]
+                    , button
+                        [ class "ui primary fluid button"
+                        , onClick <| SetRelationPatient maybePatientType
+                        ]
+                        [ text <| translate language Translate.Yes ]
                     ]
-                ]
-            <|
-                button
-                    [ class "ui fluid button"
+
+            else
+                div
+                    [ class "ui primary fluid button no-side-margins"
                     , onClick Reset
                     ]
-                    [ text <| translate language resetButtonLabel ]
-                    :: (if isJust maybePatientType then
-                            [ button
-                                [ class "ui primary fluid button"
-                                , onClick <| SetRelationPatient maybePatientType
-                                ]
-                                [ text <| translate language Translate.Yes ]
-                            ]
-
-                        else
-                            []
-                       )
+                    [ text <| translate language Translate.OK ]
     in
     div [ class "ui tiny active modal" ]
         [ div

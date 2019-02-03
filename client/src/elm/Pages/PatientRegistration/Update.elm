@@ -50,6 +50,72 @@ update currentTime msg model =
                 [] ->
                     ( model, Cmd.none, [] )
 
+        MakeRelation patientType ->
+            let
+                ( newDialogState, updatedParticipantsData ) =
+                    case patientType of
+                        PatientMother motherUuid mother ->
+                            case model.relationPatient of
+                                -- We're make relation with a mother, so we should never
+                                -- get here, since we're not supposed to relate a
+                                -- mother with nother mother.
+                                Just (PatientMother _ _) ->
+                                    ( Nothing, model.participantsData )
+
+                                Just (PatientChild childUuid child) ->
+                                    let
+                                        motherAfterRelation =
+                                            { mother | childrenUuids = [ childUuid ] }
+
+                                        childAfterRelation =
+                                            { child | motherUuid = Just motherUuid }
+                                    in
+                                    ( Just <| SuccessfulSubmision Nothing
+                                    , { mothersToRegister = EveryDict.insert motherUuid motherAfterRelation model.participantsData.mothersToRegister
+                                      , childrenToRegister = EveryDict.insert childUuid childAfterRelation model.participantsData.childrenToRegister
+                                      }
+                                    )
+
+                                -- This should never happen, as there must be a
+                                -- relation patient in order to create a relation.
+                                Nothing ->
+                                    ( Nothing, model.participantsData )
+
+                        PatientChild childUuid child ->
+                            case model.relationPatient of
+                                Just (PatientMother motherUuid mother) ->
+                                    let
+                                        childAfterRelation =
+                                            { child | motherUuid = Just motherUuid }
+
+                                        motherAfterRelation =
+                                            { mother | childrenUuids = childUuid :: mother.childrenUuids }
+                                    in
+                                    ( Just <| SuccessfulSubmision Nothing
+                                    , { mothersToRegister = EveryDict.insert motherUuid motherAfterRelation model.participantsData.mothersToRegister
+                                      , childrenToRegister = EveryDict.insert childUuid childAfterRelation model.participantsData.childrenToRegister
+                                      }
+                                    )
+
+                                -- We're make relation with a child, so we should never
+                                -- get here, since we're not supposed to relate a
+                                -- child with another child.
+                                Just (PatientChild _ _) ->
+                                    ( Nothing, model.participantsData )
+
+                                -- This should never happen, as there must be a
+                                -- relation patient in order to create a relation.
+                                Nothing ->
+                                    ( Nothing, model.participantsData )
+            in
+            ( { model
+                | participantsData = updatedParticipantsData
+                , dialogState = newDialogState
+              }
+            , Cmd.none
+            , []
+            )
+
         MsgRegistrationForm subMsg ->
             let
                 currentDate =
@@ -191,7 +257,7 @@ update currentTime msg model =
             ( { model | registrationPhase = phase, previousPhases = updatedPreviousPhases }, Cmd.none, [] )
 
         SetRelationPatient patientType ->
-            ( { model | relationPatient = patientType, submittedSearch = Nothing }, Cmd.none, [] )
+            ( { model | relationPatient = patientType, submittedSearch = Nothing, dialogState = Nothing }, Cmd.none, [] )
                 |> sequenceExtra (update currentTime) [ SetRegistrationPhase <| ParticipantSearch Nothing ]
 
         Submit ->

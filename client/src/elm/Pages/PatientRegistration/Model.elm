@@ -5,6 +5,7 @@ module Pages.PatientRegistration.Model exposing
     , Model
     , Msg(..)
     , ParticipantsData
+    , PatientActionType(..)
     , PatientType(..)
     , RegistrationForm
     , RegistrationPhase(..)
@@ -113,9 +114,15 @@ type PatientType
     | PatientChild Uuid Child
 
 
+type PatientActionType
+    = Forward
+    | Link
+
+
 type Msg
     = DropZoneComplete DropZoneFile
     | GoBack
+    | MakeRelation PatientType
     | MsgRegistrationForm Form.Msg
     | Reset
     | SearchForParticipant String
