@@ -36,9 +36,9 @@ emptyModel =
     , registrationForm = Form.initial [] validateRegistrationForm
     , registrationStep = First
     , geoInfo = GeoInfo getGeoProvinces getGeoDistricts getGeoSectors getGeoCells getGeoVillages
-    , dialogState = Nothing    
+    , dialogState = Nothing
     }
-    
+
 
 type alias GeoInfo =
     { provinces : EveryDict GeoLocationId GeoLocation
@@ -68,8 +68,8 @@ type alias GeoLocation =
     { name : String
     , parent : Maybe GeoLocationId
     }
-    
-    
+
+
 type DialogState
     = ConfirmSubmision
 
