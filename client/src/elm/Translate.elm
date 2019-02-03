@@ -240,6 +240,7 @@ type TranslationId
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
+    | MiddleName
     | MinutesAgo Int
     | ModeOfDelivery ModeOfDelivery
     | ModeOfDeliveryLabel
@@ -288,6 +289,7 @@ type TranslationId
     | PleaseSelectClinic
     | PreviousFloatMeasurement Float
     | Profession
+    | Province
     | ReadyToBeginSession
     | RegisterPatient
     | RegisterNewPatient
@@ -896,11 +898,11 @@ translationSet trans =
             { english = "Device Status"
             , kinyarwanda = Nothing
             }
-            
+
         District ->
-            { english = "District"   
+            { english = "District"
             , kinyarwanda = Nothing
-            }            
+            }
 
         DownloadHealthAssessment ->
             { english = "Download Health Assessment"
@@ -1234,6 +1236,11 @@ translationSet trans =
             , kinyarwanda = Just <| "Kwiyongera " ++ toString amount
             }
 
+        MiddleName ->
+            { english = "Middle Name"
+            , kinyarwanda = Nothing
+            }
+
         MinutesAgo minutes ->
             { english =
                 if minutes == 0 then
@@ -1508,6 +1515,11 @@ translationSet trans =
 
         Profession ->
             { english = "Profession"
+            , kinyarwanda = Nothing
+            }
+
+        Province ->
+            { english = "Province"
             , kinyarwanda = Nothing
             }
 

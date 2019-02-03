@@ -53,7 +53,6 @@ function hedley_user_user_default_permissions() {
     'name' => 'create mother content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
     ),
     'module' => 'node',
   );
@@ -330,7 +329,6 @@ function hedley_user_user_default_permissions() {
     'name' => 'edit any mother content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
     ),
     'module' => 'node',
   );
@@ -427,7 +425,6 @@ function hedley_user_user_default_permissions() {
     'name' => 'edit own mother content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
     ),
     'module' => 'node',
   );

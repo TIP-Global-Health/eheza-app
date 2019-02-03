@@ -1,4 +1,4 @@
-module Backend.Entities exposing (ChildId, ChildIdType(..), ChildNutritionId, ChildNutritionIdType(..), ClinicId, ClinicIdType(..), FamilyPlanningId, FamilyPlanningIdType(..), HeightId, HeightIdType(..), MotherId, MotherIdType(..), MuacId, MuacIdType(..), PhotoId, PhotoIdType(..), SessionId, SessionIdType(..), WeightId, WeightIdType(..))
+module Backend.Entities exposing (ChildId, ChildIdType(..), ChildNutritionId, ChildNutritionIdType(..), ClinicId, ClinicIdType(..), FamilyPlanningId, FamilyPlanningIdType(..), GeoLocationId, GeoLocationIdType(..), HeightId, HeightIdType(..), MotherId, MotherIdType(..), MuacId, MuacIdType(..), PhotoId, PhotoIdType(..), SessionId, SessionIdType(..), WeightId, WeightIdType(..))
 
 {-|
 
@@ -147,6 +147,14 @@ type alias FamilyPlanningId =
 
 type FamilyPlanningIdType
     = FamilyPlanningIdType
+
+
+type alias GeoLocationId =
+    EntityId GeoLocationIdType
+
+
+type GeoLocationIdType
+    = GeoLocationIdType
 
 
 type alias HeightId =
