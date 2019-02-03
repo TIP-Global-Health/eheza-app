@@ -7,6 +7,7 @@ import Backend.Child.Model exposing (Gender(..), ModeOfDelivery(..), modeOfDeliv
 import Backend.Measurement.Model exposing (PhotoValue)
 import Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..))
 import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Ubudehe(..))
+import EveryDict
 import Form
 import Form.Error
 import Form.Input
@@ -16,11 +17,13 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
+import Maybe.Extra exposing (unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRegistration.Model exposing (DialogState(..), Model, Msg(..), RegistrationStep(..))
 import Pages.PatientRegistration.Utils exposing (getFormFieldValue)
 import Participant.Model exposing (ParticipantType(..))
+import Restful.Endpoint exposing (fromEntityId, toEntityId)
 import Time.Date
 import Translate exposing (Language(..), TranslationId, translate)
 import User.Model exposing (User)
@@ -102,6 +105,9 @@ view language currentDate user backend cache model =
         numberOfChildren =
             Form.getFieldAsString "numberOfChildren" model.registrationForm
 
+        province =
+            Form.getFieldAsString "province" model.registrationForm
+
         district =
             Form.getFieldAsString "district" model.registrationForm
 
@@ -122,6 +128,30 @@ view language currentDate user backend cache model =
             Form.getFieldAsString "healthCenterName" model.registrationForm
 
         -- END STEP 3 FIELDS --
+        isFieldSet field =
+            case field.value of
+                Nothing ->
+                    False
+
+                Just "" ->
+                    False
+
+                _ ->
+                    True
+
+        getFieldValue field =
+            unwrap
+                0
+                (\value ->
+                    case String.toInt value of
+                        Ok value ->
+                            value
+
+                        _ ->
+                            0
+                )
+                field.value
+
         maybeAgeDateDelta =
             let
                 birthDay =
@@ -400,37 +430,143 @@ view language currentDate user backend cache model =
                                             []
                                    )
 
+                        geoLocationDictToOptions dict =
+                            dict
+                                |> EveryDict.toList
+                                |> List.map
+                                    (\( id, geoLocation ) ->
+                                        ( toString <| fromEntityId id, geoLocation.name )
+                                    )
+
+                        filterGeoLocationDictByParent parentId dict =
+                            dict
+                                |> EveryDict.filter
+                                    (\_ geoLocation ->
+                                        (Just <| toEntityId parentId) == geoLocation.parent
+                                    )
+
+                        geoLocationInputClass isDisabled =
+                            "select-input"
+                                ++ (if isDisabled then
+                                        " disabled"
+
+                                    else
+                                        ""
+                                   )
+
+                        viewProvince =
+                            let
+                                options =
+                                    emptyOption
+                                        :: geoLocationDictToOptions model.geoInfo.provinces
+
+                                disabled =
+                                    isFieldSet district
+                            in
+                            viewSelectInput language
+                                Translate.Province
+                                options
+                                province
+                                "ten"
+                                (geoLocationInputClass disabled)
+                                True
+
                         viewDistrict =
-                            div [ class "ui grid" ]
-                                [ div [ class "six wide column required" ]
-                                    [ text <| translate language Translate.District ++ ":" ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.textInput district [] ]
-                                ]
+                            let
+                                options =
+                                    emptyOption
+                                        :: (case getFieldValue province of
+                                                0 ->
+                                                    []
+
+                                                provinceId ->
+                                                    model.geoInfo.districts
+                                                        |> filterGeoLocationDictByParent provinceId
+                                                        |> geoLocationDictToOptions
+                                           )
+
+                                disabled =
+                                    isFieldSet sector
+                            in
+                            viewSelectInput language
+                                Translate.District
+                                options
+                                district
+                                "ten"
+                                (geoLocationInputClass disabled)
+                                True
 
                         viewSector =
-                            div [ class "ui grid" ]
-                                [ div [ class "six wide column required" ]
-                                    [ text <| translate language Translate.Sector ++ ":" ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.textInput sector [] ]
-                                ]
+                            let
+                                options =
+                                    emptyOption
+                                        :: (case getFieldValue district of
+                                                0 ->
+                                                    []
+
+                                                districtId ->
+                                                    model.geoInfo.sectors
+                                                        |> filterGeoLocationDictByParent districtId
+                                                        |> geoLocationDictToOptions
+                                           )
+
+                                disabled =
+                                    isFieldSet cell
+                            in
+                            viewSelectInput language
+                                Translate.Sector
+                                options
+                                sector
+                                "ten"
+                                (geoLocationInputClass disabled)
+                                True
 
                         viewCell =
-                            div [ class "ui grid" ]
-                                [ div [ class "six wide column required" ]
-                                    [ text <| translate language Translate.Cell ++ ":" ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.textInput cell [] ]
-                                ]
+                            let
+                                options =
+                                    emptyOption
+                                        :: (case getFieldValue sector of
+                                                0 ->
+                                                    []
+
+                                                sectorId ->
+                                                    model.geoInfo.cells
+                                                        |> filterGeoLocationDictByParent sectorId
+                                                        |> geoLocationDictToOptions
+                                           )
+
+                                disabled =
+                                    isFieldSet village
+                            in
+                            viewSelectInput language
+                                Translate.Cell
+                                options
+                                cell
+                                "ten"
+                                (geoLocationInputClass disabled)
+                                True
 
                         viewVillage =
-                            div [ class "ui grid" ]
-                                [ div [ class "six wide column required" ]
-                                    [ text <| translate language Translate.Village ++ ":" ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.textInput village [] ]
-                                ]
+                            let
+                                options =
+                                    emptyOption
+                                        :: (case getFieldValue cell of
+                                                0 ->
+                                                    []
+
+                                                cellId ->
+                                                    model.geoInfo.villages
+                                                        |> filterGeoLocationDictByParent cellId
+                                                        |> geoLocationDictToOptions
+                                           )
+                            in
+                            viewSelectInput language
+                                Translate.Village
+                                options
+                                village
+                                "ten"
+                                (geoLocationInputClass False)
+                                True
 
                         viewTelephoneNumber =
                             viewTextInput language Translate.TelephoneNumber telephoneNumber False
@@ -444,7 +580,8 @@ view language currentDate user backend cache model =
                         [ text <| translate language Translate.AddressInformation ++ ":" ]
                     , Html.map MsgRegistrationForm <|
                         fieldset [ class "registration-form address-info" ]
-                            [ viewDistrict
+                            [ viewProvince
+                            , viewDistrict
                             , viewSector
                             , viewCell
                             , viewVillage
