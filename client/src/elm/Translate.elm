@@ -297,6 +297,7 @@ type TranslationId
     | PleaseSelectClinic
     | PreviousFloatMeasurement Float
     | Profession
+    | Province
     | ReadyToBeginSession
     | Register
     | RegisterHelper
@@ -1127,18 +1128,28 @@ translationSet trans =
 
         HIVStatus status ->
             case status of
+                HIVExposedInfant ->
+                    { english = "HIV-exposed Infant"
+                    , kinyarwanda = Nothing
+                    }
+
                 Negative ->
                     { english = "Negative"
                     , kinyarwanda = Nothing
                     }
 
-                NA ->
-                    { english = "N/A"
+                NegativeDiscordantCouple ->
+                    { english = "Negative - discordant couple"
                     , kinyarwanda = Nothing
                     }
 
                 Positive ->
                     { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                Unknown ->
+                    { english = "Unknown"
                     , kinyarwanda = Nothing
                     }
 
@@ -1227,8 +1238,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                Maried ->
-                    { english = "Maried"
+                Married ->
+                    { english = "Married"
                     , kinyarwanda = Nothing
                     }
 
@@ -1556,6 +1567,11 @@ translationSet trans =
 
         Profession ->
             { english = "Profession"
+            , kinyarwanda = Nothing
+            }
+
+        Province ->
+            { english = "Province"
             , kinyarwanda = Nothing
             }
 

@@ -1,4 +1,4 @@
-module Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother, toStringEducationLevel)
+module Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother, educationLevelToString, hivStatusToString, stringToHivStatus)
 
 import Backend.Entities exposing (..)
 import Backend.Patient.Model exposing (Gender, Ubudehe)
@@ -47,19 +47,21 @@ type EducationLevel
 
 type MaritalStatus
     = Divorced
-    | Maried
+    | Married
     | Single
     | Widowed
 
 
 type HIVStatus
-    = Negative
-    | NA
+    = HIVExposedInfant
+    | Negative
+    | NegativeDiscordantCouple
     | Positive
+    | Unknown
 
 
-toStringEducationLevel : EducationLevel -> String
-toStringEducationLevel educationLevel =
+educationLevelToString : EducationLevel -> String
+educationLevelToString educationLevel =
     case educationLevel of
         NoSchooling ->
             "0"
@@ -81,3 +83,44 @@ toStringEducationLevel educationLevel =
 
         AdvancedDiploma ->
             "6"
+
+
+hivStatusToString : HIVStatus -> String
+hivStatusToString status =
+    case status of
+        HIVExposedInfant ->
+            "hiv-exposed-infant"
+
+        Negative ->
+            "negative"
+
+        NegativeDiscordantCouple ->
+            "negative-dc"
+
+        Positive ->
+            "positive"
+
+        Unknown ->
+            "unknown"
+
+
+stringToHivStatus : String -> Maybe HIVStatus
+stringToHivStatus string =
+    case string of
+        "hiv-exposed-infant" ->
+            Just HIVExposedInfant
+
+        "negative" ->
+            Just Negative
+
+        "negative-dc" ->
+            Just NegativeDiscordantCouple
+
+        "positive" ->
+            Just Positive
+
+        "unknown" ->
+            Just Unknown
+
+        _ ->
+            Nothing

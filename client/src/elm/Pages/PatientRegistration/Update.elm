@@ -2,7 +2,7 @@ module Pages.PatientRegistration.Update exposing (update)
 
 import App.Model
 import Backend.Child.Model exposing (Child, ModeOfDelivery(..))
-import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother)
+import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother, stringToHivStatus)
 import Backend.Patient.Model exposing (Gender(..), Ubudehe(..))
 import Date
 import EveryDict
@@ -498,7 +498,7 @@ update currentTime msg model =
                                                         Just Divorced
 
                                                     "maried" ->
-                                                        Just Maried
+                                                        Just Married
 
                                                     "single" ->
                                                         Just Single
@@ -513,21 +513,7 @@ update currentTime msg model =
                                 hivStatus =
                                     Form.getFieldAsString "hivStatus" model.registrationForm
                                         |> .value
-                                        |> Maybe.andThen
-                                            (\status ->
-                                                case status of
-                                                    "negative" ->
-                                                        Just Negative
-
-                                                    "na" ->
-                                                        Just NA
-
-                                                    "positive" ->
-                                                        Just Positive
-
-                                                    _ ->
-                                                        Nothing
-                                            )
+                                        |> Maybe.andThen stringToHivStatus
 
                                 householdSize =
                                     Form.getFieldAsString "householdSize" model.registrationForm

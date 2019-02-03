@@ -6,7 +6,7 @@ module Pages.PatientRegistration.View exposing (view)
 import Backend.Child.Model exposing (ModeOfDelivery(..), modeOfDeliveryToValue)
 import Backend.Measurement.Model exposing (PhotoValue)
 import Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..))
-import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), toStringEducationLevel)
+import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), educationLevelToString, hivStatusToString)
 import Backend.Patient.Model exposing (Gender(..), Ubudehe(..))
 import EveryDict
 import Form exposing (Form)
@@ -24,6 +24,7 @@ import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRegistration.Model
     exposing
         ( DialogState(..)
+        , GeoInfo
         , Model
         , Msg(..)
         , ParticipantsData
@@ -34,6 +35,7 @@ import Pages.PatientRegistration.Model
         )
 import Pages.PatientRegistration.Utils exposing (getCommonDetails, getFormFieldValue, getRegistratingParticipant)
 import Participant.Model exposing (ParticipantType(..))
+import Restful.Endpoint exposing (fromEntityId, toEntityId)
 import Time.Date
 import Translate exposing (Language(..), TranslationId, translate)
 import User.Model exposing (User)
@@ -83,7 +85,7 @@ viewBody language currentDate user backend cache model =
                     viewSearchForm language currentDate user backend cache model.participantsData searchString model.submittedSearch model.relationPatient
 
                 ParticipantRegistration step ->
-                    viewRegistrationForm language currentDate user backend cache step model.registrationForm model.photo model.relationPatient previousPhase
+                    viewRegistrationForm language currentDate user backend cache step model.registrationForm model.geoInfo model.photo model.relationPatient previousPhase
 
                 ParticipantView patientType ->
                     viewPatientDetailsForm language currentDate user backend cache patientType model.participantsData previousPhase
@@ -100,11 +102,12 @@ viewRegistrationForm :
     -> ModelCached
     -> RegistrationStep
     -> Form () RegistrationForm
+    -> GeoInfo
     -> Maybe PhotoValue
     -> Maybe PatientType
     -> Maybe RegistrationPhase
     -> Html Msg
-viewRegistrationForm language currentDate user backend cache step registrationForm photo maybeRelationPatient maybePreviousPhase =
+viewRegistrationForm language currentDate user backend cache step registrationForm geoInfo photo maybeRelationPatient maybePreviousPhase =
     let
         -- FORM FIELDS --
         firstName =
@@ -176,6 +179,9 @@ viewRegistrationForm language currentDate user backend cache step registrationFo
 
         caregiverNationalId =
             Form.getFieldAsString "caregiverNationalId" registrationForm
+
+        province =
+            Form.getFieldAsString "province" registrationForm
 
         district =
             Form.getFieldAsString "district" registrationForm
@@ -327,13 +333,13 @@ viewRegistrationForm language currentDate user backend cache step registrationFo
                                                     let
                                                         options =
                                                             emptyOption
-                                                                :: [ ( toStringEducationLevel NoSchooling, translate language <| Translate.LevelOfEducation NoSchooling )
-                                                                   , ( toStringEducationLevel PrimarySchool, translate language <| Translate.LevelOfEducation PrimarySchool )
-                                                                   , ( toStringEducationLevel VocationalTrainingSchool, translate language <| Translate.LevelOfEducation VocationalTrainingSchool )
-                                                                   , ( toStringEducationLevel SecondarySchool, translate language <| Translate.LevelOfEducation SecondarySchool )
-                                                                   , ( toStringEducationLevel DiplomaProgram, translate language <| Translate.LevelOfEducation DiplomaProgram )
-                                                                   , ( toStringEducationLevel HigherEducation, translate language <| Translate.LevelOfEducation HigherEducation )
-                                                                   , ( toStringEducationLevel AdvancedDiploma, translate language <| Translate.LevelOfEducation AdvancedDiploma )
+                                                                :: [ ( educationLevelToString NoSchooling, translate language <| Translate.LevelOfEducation NoSchooling )
+                                                                   , ( educationLevelToString PrimarySchool, translate language <| Translate.LevelOfEducation PrimarySchool )
+                                                                   , ( educationLevelToString VocationalTrainingSchool, translate language <| Translate.LevelOfEducation VocationalTrainingSchool )
+                                                                   , ( educationLevelToString SecondarySchool, translate language <| Translate.LevelOfEducation SecondarySchool )
+                                                                   , ( educationLevelToString DiplomaProgram, translate language <| Translate.LevelOfEducation DiplomaProgram )
+                                                                   , ( educationLevelToString HigherEducation, translate language <| Translate.LevelOfEducation HigherEducation )
+                                                                   , ( educationLevelToString AdvancedDiploma, translate language <| Translate.LevelOfEducation AdvancedDiploma )
                                                                    ]
                                                     in
                                                     viewSelectInput language Translate.LevelOfEducationLabel options levelOfEducation "ten" "select-input" True
@@ -346,7 +352,7 @@ viewRegistrationForm language currentDate user backend cache step registrationFo
                                                         options =
                                                             emptyOption
                                                                 :: [ ( String.toLower <| toString Divorced, translate language <| Translate.MaritalStatus Divorced )
-                                                                   , ( String.toLower <| toString Maried, translate language <| Translate.MaritalStatus Maried )
+                                                                   , ( String.toLower <| toString Married, translate language <| Translate.MaritalStatus Married )
                                                                    , ( String.toLower <| toString Single, translate language <| Translate.MaritalStatus Single )
                                                                    , ( String.toLower <| toString Widowed, translate language <| Translate.MaritalStatus Widowed )
                                                                    ]
@@ -357,9 +363,11 @@ viewRegistrationForm language currentDate user backend cache step registrationFo
                                                     let
                                                         options =
                                                             emptyOption
-                                                                :: [ ( String.toLower <| toString NA, translate language <| Translate.HIVStatus NA )
-                                                                   , ( String.toLower <| toString Negative, translate language <| Translate.HIVStatus Negative )
-                                                                   , ( String.toLower <| toString Positive, translate language <| Translate.HIVStatus Positive )
+                                                                :: [ ( hivStatusToString HIVExposedInfant, translate language <| Translate.HIVStatus HIVExposedInfant )
+                                                                   , ( hivStatusToString Negative, translate language <| Translate.HIVStatus Negative )
+                                                                   , ( hivStatusToString NegativeDiscordantCouple, translate language <| Translate.HIVStatus NegativeDiscordantCouple )
+                                                                   , ( hivStatusToString Positive, translate language <| Translate.HIVStatus Positive )
+                                                                   , ( hivStatusToString Unknown, translate language <| Translate.HIVStatus Unknown )
                                                                    ]
                                                     in
                                                     viewSelectInput language Translate.HIVStatusLabel options hivStatus "ten" "select-input" True
@@ -464,37 +472,143 @@ viewRegistrationForm language currentDate user backend cache step registrationFo
                                             []
                                    )
 
+                        geoLocationDictToOptions dict =
+                            dict
+                                |> EveryDict.toList
+                                |> List.map
+                                    (\( id, geoLocation ) ->
+                                        ( toString <| fromEntityId id, geoLocation.name )
+                                    )
+
+                        filterGeoLocationDictByParent parentId dict =
+                            dict
+                                |> EveryDict.filter
+                                    (\_ geoLocation ->
+                                        (Just <| toEntityId parentId) == geoLocation.parent
+                                    )
+
+                        geoLocationInputClass isDisabled =
+                            "select-input"
+                                ++ (if isDisabled then
+                                        " disabled"
+
+                                    else
+                                        ""
+                                   )
+
+                        viewProvince =
+                            let
+                                options =
+                                    emptyOption
+                                        :: geoLocationDictToOptions geoInfo.provinces
+
+                                disabled =
+                                    isFormFieldSet district
+                            in
+                            viewSelectInput language
+                                Translate.Province
+                                options
+                                province
+                                "ten"
+                                (geoLocationInputClass disabled)
+                                True
+
                         viewDistrict =
-                            div [ class "ui grid" ]
-                                [ div [ class "six wide column required" ]
-                                    [ text <| translate language Translate.District ++ ":" ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.textInput district [] ]
-                                ]
+                            let
+                                options =
+                                    emptyOption
+                                        :: (case getFormFieldValue province of
+                                                0 ->
+                                                    []
+
+                                                provinceId ->
+                                                    geoInfo.districts
+                                                        |> filterGeoLocationDictByParent provinceId
+                                                        |> geoLocationDictToOptions
+                                           )
+
+                                disabled =
+                                    isFormFieldSet sector
+                            in
+                            viewSelectInput language
+                                Translate.District
+                                options
+                                district
+                                "ten"
+                                (geoLocationInputClass disabled)
+                                True
 
                         viewSector =
-                            div [ class "ui grid" ]
-                                [ div [ class "six wide column required" ]
-                                    [ text <| translate language Translate.Sector ++ ":" ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.textInput sector [] ]
-                                ]
+                            let
+                                options =
+                                    emptyOption
+                                        :: (case getFormFieldValue district of
+                                                0 ->
+                                                    []
+
+                                                districtId ->
+                                                    geoInfo.sectors
+                                                        |> filterGeoLocationDictByParent districtId
+                                                        |> geoLocationDictToOptions
+                                           )
+
+                                disabled =
+                                    isFormFieldSet cell
+                            in
+                            viewSelectInput language
+                                Translate.Sector
+                                options
+                                sector
+                                "ten"
+                                (geoLocationInputClass disabled)
+                                True
 
                         viewCell =
-                            div [ class "ui grid" ]
-                                [ div [ class "six wide column required" ]
-                                    [ text <| translate language Translate.Cell ++ ":" ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.textInput cell [] ]
-                                ]
+                            let
+                                options =
+                                    emptyOption
+                                        :: (case getFormFieldValue sector of
+                                                0 ->
+                                                    []
+
+                                                sectorId ->
+                                                    geoInfo.cells
+                                                        |> filterGeoLocationDictByParent sectorId
+                                                        |> geoLocationDictToOptions
+                                           )
+
+                                disabled =
+                                    isFormFieldSet village
+                            in
+                            viewSelectInput language
+                                Translate.Cell
+                                options
+                                cell
+                                "ten"
+                                (geoLocationInputClass disabled)
+                                True
 
                         viewVillage =
-                            div [ class "ui grid" ]
-                                [ div [ class "six wide column required" ]
-                                    [ text <| translate language Translate.Village ++ ":" ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.textInput village [] ]
-                                ]
+                            let
+                                options =
+                                    emptyOption
+                                        :: (case getFormFieldValue cell of
+                                                0 ->
+                                                    []
+
+                                                cellId ->
+                                                    geoInfo.villages
+                                                        |> filterGeoLocationDictByParent cellId
+                                                        |> geoLocationDictToOptions
+                                           )
+                            in
+                            viewSelectInput language
+                                Translate.Village
+                                options
+                                village
+                                "ten"
+                                (geoLocationInputClass False)
+                                True
 
                         viewTelephoneNumber =
                             viewTextInput language Translate.TelephoneNumber telephoneNumber False
@@ -508,7 +622,8 @@ viewRegistrationForm language currentDate user backend cache step registrationFo
                         [ text <| translate language Translate.AddressInformation ++ ":" ]
                     , Html.map MsgRegistrationForm <|
                         fieldset [ class "registration-form address-info" ]
-                            [ viewDistrict
+                            [ viewProvince
+                            , viewDistrict
                             , viewSector
                             , viewCell
                             , viewVillage
