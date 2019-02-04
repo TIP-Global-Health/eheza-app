@@ -39,10 +39,31 @@ exampleUser =
 exampleChildA : Child
 exampleChildA =
     { name = "Michelle Kelly"
+    , firstName = "Michelle"
+    , middleName = Nothing
+    , secondName = "Kelly"
+    , nationalIdNumber = Just "324324232"
     , avatarUrl = Just "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , motherId = Nothing
+    , motherUuid = Nothing
     , birthDate = date 2016 8 28
+    , isDateOfBirthEstimated = False
     , gender = Male
+    , modeOfDelivery = Nothing
+    , ubudehe = Nothing
+    , motherName = Nothing
+    , motherNationalId = Nothing
+    , fatherName = Nothing
+    , fatherNationalId = Nothing
+    , caregiverName = Nothing
+    , caregiverNationalId = Nothing
+    , province = Nothing
+    , district = Nothing
+    , sector = Nothing
+    , cell = Nothing
+    , village = Nothing
+    , telephoneNumber = Nothing
+    , healthCenterName = Nothing
     }
 
 
@@ -51,10 +72,31 @@ exampleChildA =
 exampleChildB : Child
 exampleChildB =
     { name = "Habimana Hakizimana"
+    , firstName = "Habimana"
+    , middleName = Nothing
+    , secondName = "Hakizimana"
+    , nationalIdNumber = Just "232324232"
     , avatarUrl = Just "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , motherId = Nothing
+    , motherUuid = Nothing
     , birthDate = date 2016 11 17
+    , isDateOfBirthEstimated = True
     , gender = Female
+    , modeOfDelivery = Nothing
+    , ubudehe = Nothing
+    , motherName = Nothing
+    , motherNationalId = Nothing
+    , fatherName = Nothing
+    , fatherNationalId = Nothing
+    , caregiverName = Nothing
+    , caregiverNationalId = Nothing
+    , province = Nothing
+    , district = Nothing
+    , sector = Nothing
+    , cell = Nothing
+    , village = Nothing
+    , telephoneNumber = Nothing
+    , healthCenterName = Nothing
     }
 
 
@@ -63,9 +105,28 @@ exampleChildB =
 exampleMother : Mother
 exampleMother =
     { name = "Sebabive Gahiji"
+    , firstName = "Sebabive"
+    , middleName = Nothing
+    , secondName = "Gahiji"
+    , nationalIdNumber = Just "192324232"
     , avatarUrl = Just "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , children = []
+    , childrenUuids = []
     , birthDate = date 2016 8 28
-    , ubudehe = Just Ubudehe1
+    , isDateOfBirthEstimated = False
+    , gender = Female
     , educationLevel = Just NoSchooling
+    , profession = Nothing
+    , maritalStatus = Nothing
+    , hivStatus = Nothing
+    , ubudehe = Just Ubudehe1
+    , householdSize = Nothing
+    , numberOfChildren = Nothing
+    , province = Nothing
+    , district = Nothing
+    , sector = Nothing
+    , cell = Nothing
+    , village = Nothing
+    , telephoneNumber = Nothing
+    , healthCenterName = Nothing
     }
