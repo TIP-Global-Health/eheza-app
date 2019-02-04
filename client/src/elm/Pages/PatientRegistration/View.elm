@@ -982,9 +982,6 @@ viewPatient language patientData maybeActionType =
                 PatientChild _ child ->
                     ( "child", getCommonDetails child, "Unknown" )
 
-        log =
-            Debug.log "maybeActionType" maybeActionType
-
         content =
             div [ class "content" ] <|
                 div [ class "details" ]
@@ -1051,8 +1048,11 @@ viewDialog language dialogState =
                     ConfirmSubmision ->
                         Just <| confirmSubmisionDialog language
 
-                    SuccessfulSubmision maybePatientData ->
-                        Just <| successfulSubmisionDialog language maybePatientData
+                    SuccessfulRegistration maybePatientData ->
+                        Just <| successfulRegistrationDialog language maybePatientData
+
+                    SuccessfulRelation patientData ->
+                        Just <| successfulRelationDialog language patientData
             )
 
 
@@ -1084,19 +1084,19 @@ confirmSubmisionDialog language =
         ]
 
 
-successfulSubmisionDialog : Language -> Maybe PatientData -> Html Msg
-successfulSubmisionDialog language maybePatientData =
+successfulRegistrationDialog : Language -> Maybe PatientData -> Html Msg
+successfulRegistrationDialog language maybePatientData =
     let
-        helper =
+        message =
             case maybePatientData of
                 Just (PatientMother _ _) ->
-                    Translate.RegistartionSuccessfulAddChild
+                    Translate.RegistartionSuccessfulSuggestAddingChild
 
                 Just (PatientChild _ _) ->
-                    Translate.RegistartionSuccessfulAddMother
+                    Translate.RegistartionSuccessfulSuggestAddingMother
 
                 Nothing ->
-                    Translate.RegistartionSuccessfulRelationCreated
+                    Translate.RegistartionSuccessfulPatientAdded
 
         buttons =
             if isJust maybePatientData then
@@ -1120,13 +1120,39 @@ successfulSubmisionDialog language maybePatientData =
                     ]
                     [ text <| translate language Translate.OK ]
     in
+    reportSuccessDialog language Translate.RegistartionSuccessful message buttons
+
+
+successfulRelationDialog : Language -> PatientData -> Html Msg
+successfulRelationDialog language relationPatient =
+    let
+        message =
+            case relationPatient of
+                PatientChild _ _ ->
+                    Translate.RelationSuccessfulChildWithMother
+
+                PatientMother _ _ ->
+                    Translate.RelationSuccessfulMotherWithChild
+
+        button =
+            div
+                [ class "ui primary fluid button no-side-margins"
+                , onClick Reset
+                ]
+                [ text <| translate language Translate.OK ]
+    in
+    reportSuccessDialog language Translate.RelationSuccessful message button
+
+
+reportSuccessDialog : Language -> TranslationId -> TranslationId -> Html Msg -> Html Msg
+reportSuccessDialog language header message buttons =
     div [ class "ui tiny active modal" ]
         [ div
             [ class "header" ]
-            [ text <| translate language Translate.RegistartionSuccessful ]
+            [ text <| translate language header ]
         , div
             [ class "content" ]
-            [ text <| translate language helper ]
+            [ text <| translate language message ]
         , div
             [ class "actions" ]
             [ buttons ]

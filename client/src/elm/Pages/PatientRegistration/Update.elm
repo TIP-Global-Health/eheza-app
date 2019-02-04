@@ -62,7 +62,7 @@ update currentTime msg model =
                                         childAfterRelation =
                                             { child | motherUuid = Just motherUuid }
                                     in
-                                    ( Just <| SuccessfulSubmision Nothing
+                                    ( Just <| SuccessfulRelation <| PatientChild childUuid child
                                     , { mothersToRegister = EveryDict.insert motherUuid motherAfterRelation model.participantsData.mothersToRegister
                                       , childrenToRegister = EveryDict.insert childUuid childAfterRelation model.participantsData.childrenToRegister
                                       }
@@ -83,7 +83,7 @@ update currentTime msg model =
                                         motherAfterRelation =
                                             { mother | childrenUuids = childUuid :: mother.childrenUuids }
                                     in
-                                    ( Just <| SuccessfulSubmision Nothing
+                                    ( Just <| SuccessfulRelation <| PatientMother motherUuid mother
                                     , { mothersToRegister = EveryDict.insert motherUuid motherAfterRelation model.participantsData.mothersToRegister
                                       , childrenToRegister = EveryDict.insert childUuid childAfterRelation model.participantsData.childrenToRegister
                                       }
@@ -484,7 +484,7 @@ update currentTime msg model =
                                                 motherAfterRelation =
                                                     { mother | childrenUuids = newUuid :: mother.childrenUuids }
                                             in
-                                            ( Just <| SuccessfulSubmision Nothing
+                                            ( Just <| SuccessfulRelation <| PatientMother motherUuid mother
                                             , { mothersToRegister = EveryDict.insert motherUuid motherAfterRelation model.participantsData.mothersToRegister
                                               , childrenToRegister = EveryDict.insert newUuid childAfterRelation model.participantsData.childrenToRegister
                                               }
@@ -497,7 +497,7 @@ update currentTime msg model =
                                             ( Nothing, model.participantsData )
 
                                         Nothing ->
-                                            ( Just <| SuccessfulSubmision <| Just <| PatientChild newUuid child
+                                            ( Just <| SuccessfulRegistration <| Just <| PatientChild newUuid child
                                             , { mothersToRegister = model.participantsData.mothersToRegister
                                               , childrenToRegister = EveryDict.insert newUuid child model.participantsData.childrenToRegister
                                               }
@@ -637,14 +637,14 @@ update currentTime msg model =
                                                 childAfterRelation =
                                                     { child | motherUuid = Just newUuid }
                                             in
-                                            ( Just <| SuccessfulSubmision Nothing
+                                            ( Just <| SuccessfulRelation <| PatientChild childUuid child
                                             , { mothersToRegister = EveryDict.insert newUuid motherAfterRelation model.participantsData.mothersToRegister
                                               , childrenToRegister = EveryDict.insert childUuid childAfterRelation model.participantsData.childrenToRegister
                                               }
                                             )
 
                                         Nothing ->
-                                            ( Just <| SuccessfulSubmision <| Just <| PatientMother newUuid mother
+                                            ( Just <| SuccessfulRegistration <| Just <| PatientMother newUuid mother
                                             , { mothersToRegister = EveryDict.insert newUuid mother model.participantsData.mothersToRegister
                                               , childrenToRegister = model.participantsData.childrenToRegister
                                               }
@@ -659,5 +659,5 @@ update currentTime msg model =
                             )
 
                 Nothing ->
-                    -- We should not get here, so we have this to satisfy the compiler,
+                    -- We should not get here, so we have this to satisfy the compiler.
                     ( model, Cmd.none, [] )

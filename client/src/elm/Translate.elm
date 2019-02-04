@@ -305,9 +305,12 @@ type TranslationId
     | RegisterNewPatient
     | RegistratingHealthCenter
     | RegistartionSuccessful
-    | RegistartionSuccessfulAddChild
-    | RegistartionSuccessfulAddMother
-    | RegistartionSuccessfulRelationCreated
+    | RegistartionSuccessfulPatientAdded
+    | RegistartionSuccessfulSuggestAddingChild
+    | RegistartionSuccessfulSuggestAddingMother
+    | RelationSuccessful
+    | RelationSuccessfulChildWithMother
+    | RelationSuccessfulMotherWithChild
     | ReportAge String
     | ReportDOB String
     | ReportRemaining Int
@@ -1610,18 +1613,33 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        RegistartionSuccessfulAddChild ->
+        RegistartionSuccessfulPatientAdded ->
+            { english = "The patient has been added to E-Heza."
+            , kinyarwanda = Nothing
+            }
+
+        RegistartionSuccessfulSuggestAddingChild ->
             { english = "The patient has been added to E-Heza. Would you like to add a child for this patient?"
             , kinyarwanda = Nothing
             }
 
-        RegistartionSuccessfulAddMother ->
+        RegistartionSuccessfulSuggestAddingMother ->
             { english = "The patient has been added to E-Heza. Would you like to add a mother for this patient?"
             , kinyarwanda = Nothing
             }
 
-        RegistartionSuccessfulRelationCreated ->
-            { english = "The patient has been added to E-Heza."
+        RelationSuccessful ->
+            { english = "Registartion Successful"
+            , kinyarwanda = Nothing
+            }
+
+        RelationSuccessfulChildWithMother ->
+            { english = "Child assocoated with mother."
+            , kinyarwanda = Nothing
+            }
+
+        RelationSuccessfulMotherWithChild ->
+            { english = "Mother assocoated with child."
             , kinyarwanda = Nothing
             }
 

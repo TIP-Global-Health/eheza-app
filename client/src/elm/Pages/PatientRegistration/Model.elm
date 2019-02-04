@@ -141,7 +141,8 @@ type alias GeoLocation =
 
 type DialogState
     = ConfirmSubmision
-    | SuccessfulSubmision (Maybe PatientData)
+    | SuccessfulRegistration (Maybe PatientData)
+    | SuccessfulRelation PatientData
 
 
 type alias RegistrationForm =
