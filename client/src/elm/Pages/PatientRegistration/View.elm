@@ -1220,7 +1220,7 @@ viewBackButton language maybePreviousPhase =
     let
         action =
             if isJust maybePreviousPhase then
-                GoBack
+                StepBack
 
             else
                 SetActivePage LoginPage

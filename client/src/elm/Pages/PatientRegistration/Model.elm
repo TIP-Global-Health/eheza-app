@@ -121,7 +121,6 @@ type PatientActionType
 
 type Msg
     = DropZoneComplete DropZoneFile
-    | GoBack
     | MakeRelation PatientData
     | MsgRegistrationForm Form.Msg
     | Reset
@@ -130,6 +129,7 @@ type Msg
     | SetDialogState (Maybe DialogState)
     | SetRegistrationPhase RegistrationPhase
     | SetRelationPatient (Maybe PatientData)
+    | StepBack
     | Submit
 
 

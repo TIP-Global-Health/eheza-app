@@ -42,14 +42,6 @@ update currentTime msg model =
             , []
             )
 
-        GoBack ->
-            case model.previousPhases of
-                head :: rest ->
-                    ( { model | registrationPhase = head, previousPhases = rest }, Cmd.none, [] )
-
-                [] ->
-                    ( model, Cmd.none, [] )
-
         MakeRelation patientData ->
             let
                 ( newDialogState, updatedParticipantsData ) =
@@ -221,14 +213,14 @@ update currentTime msg model =
                 |> sequenceExtra (update currentTime) extraMsgs
 
         Reset ->
-            ( initModel model, Cmd.none, [] )
+            ( model, Cmd.none, [] )
                 |> sequenceExtra (update currentTime) [ SetActivePage Pages.Page.LoginPage ]
 
         SearchForParticipant searchValue ->
             ( { model | submittedSearch = Just searchValue }, Cmd.none, [] )
 
         SetActivePage page ->
-            ( model, Cmd.none, [ App.Model.SetActivePage page ] )
+            ( initModel model, Cmd.none, [ App.Model.SetActivePage page ] )
 
         SetDialogState state ->
             ( { model | dialogState = state }, Cmd.none, [] )
@@ -259,6 +251,14 @@ update currentTime msg model =
         SetRelationPatient patientData ->
             ( { model | relationPatient = patientData, submittedSearch = Nothing, dialogState = Nothing }, Cmd.none, [] )
                 |> sequenceExtra (update currentTime) [ SetRegistrationPhase <| ParticipantSearch Nothing ]
+
+        StepBack ->
+            case model.previousPhases of
+                head :: rest ->
+                    ( { model | registrationPhase = head, previousPhases = rest }, Cmd.none, [] )
+
+                [] ->
+                    ( model, Cmd.none, [] )
 
         Submit ->
             let
