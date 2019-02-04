@@ -50,10 +50,10 @@ update currentTime msg model =
                 [] ->
                     ( model, Cmd.none, [] )
 
-        MakeRelation patientType ->
+        MakeRelation patientData ->
             let
                 ( newDialogState, updatedParticipantsData ) =
-                    case patientType of
+                    case patientData of
                         PatientMother motherUuid mother ->
                             case model.relationPatient of
                                 -- We're make relation with a mother, so we should never
@@ -256,8 +256,8 @@ update currentTime msg model =
             in
             ( { model | registrationPhase = phase, previousPhases = updatedPreviousPhases }, Cmd.none, [] )
 
-        SetRelationPatient patientType ->
-            ( { model | relationPatient = patientType, submittedSearch = Nothing, dialogState = Nothing }, Cmd.none, [] )
+        SetRelationPatient patientData ->
+            ( { model | relationPatient = patientData, submittedSearch = Nothing, dialogState = Nothing }, Cmd.none, [] )
                 |> sequenceExtra (update currentTime) [ SetRegistrationPhase <| ParticipantSearch Nothing ]
 
         Submit ->

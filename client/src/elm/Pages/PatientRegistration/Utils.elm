@@ -4,7 +4,7 @@ import Form
 import Gizra.NominalDate exposing (NominalDate)
 import List
 import Maybe.Extra exposing (unwrap)
-import Pages.PatientRegistration.Model exposing (PatientType(..))
+import Pages.PatientRegistration.Model exposing (PatientData(..))
 import Participant.Model exposing (ParticipantType(..))
 import Random.Pcg exposing (initialSeed, step)
 import Time exposing (Time)
@@ -47,7 +47,7 @@ getFormFieldValue field =
         field.value
 
 
-getRegistratingParticipant : NominalDate -> Int -> Int -> Int -> Maybe PatientType -> Maybe ParticipantType
+getRegistratingParticipant : NominalDate -> Int -> Int -> Int -> Maybe PatientData -> Maybe ParticipantType
 getRegistratingParticipant currentDate birthDay birthMonth birthYear maybeRelationPatient =
     if birthDay > 0 && birthMonth > 0 && birthYear > 0 then
         let

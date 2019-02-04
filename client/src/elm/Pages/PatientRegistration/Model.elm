@@ -6,7 +6,7 @@ module Pages.PatientRegistration.Model exposing
     , Msg(..)
     , ParticipantsData
     , PatientActionType(..)
-    , PatientType(..)
+    , PatientData(..)
     , RegistrationForm
     , RegistrationPhase(..)
     , RegistrationStep(..)
@@ -42,7 +42,7 @@ type alias Model =
     , registrationPhase : RegistrationPhase
     , previousPhases : List RegistrationPhase
     , participantsData : ParticipantsData
-    , relationPatient : Maybe PatientType
+    , relationPatient : Maybe PatientData
     , submittedSearch : Maybe String
     , geoInfo : GeoInfo
     , dialogState : Maybe DialogState
@@ -91,7 +91,7 @@ emptyParticipantsData =
 type RegistrationPhase
     = ParticipantSearch (Maybe String)
     | ParticipantRegistration RegistrationStep
-    | ParticipantView PatientType
+    | ParticipantView PatientData
 
 
 type alias GeoInfo =
@@ -109,7 +109,7 @@ type RegistrationStep
     | Third
 
 
-type PatientType
+type PatientData
     = PatientMother Uuid Mother
     | PatientChild Uuid Child
 
@@ -122,14 +122,14 @@ type PatientActionType
 type Msg
     = DropZoneComplete DropZoneFile
     | GoBack
-    | MakeRelation PatientType
+    | MakeRelation PatientData
     | MsgRegistrationForm Form.Msg
     | Reset
     | SearchForParticipant String
     | SetActivePage Page
     | SetDialogState (Maybe DialogState)
     | SetRegistrationPhase RegistrationPhase
-    | SetRelationPatient (Maybe PatientType)
+    | SetRelationPatient (Maybe PatientData)
     | Submit
 
 
@@ -141,7 +141,7 @@ type alias GeoLocation =
 
 type DialogState
     = ConfirmSubmision
-    | SuccessfulSubmision (Maybe PatientType)
+    | SuccessfulSubmision (Maybe PatientData)
 
 
 type alias RegistrationForm =

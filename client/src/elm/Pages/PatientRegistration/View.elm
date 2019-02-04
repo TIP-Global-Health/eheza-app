@@ -29,7 +29,7 @@ import Pages.PatientRegistration.Model
         , Msg(..)
         , ParticipantsData
         , PatientActionType(..)
-        , PatientType(..)
+        , PatientData(..)
         , RegistrationForm
         , RegistrationPhase(..)
         , RegistrationStep(..)
@@ -88,8 +88,8 @@ viewBody language currentDate user backend cache model =
                 ParticipantRegistration step ->
                     viewRegistrationForm language currentDate user backend cache step model.registrationForm model.geoInfo model.photo model.relationPatient previousPhase
 
-                ParticipantView patientType ->
-                    viewPatientDetailsForm language currentDate user backend cache patientType model.participantsData previousPhase
+                ParticipantView patientData ->
+                    viewPatientDetailsForm language currentDate user backend cache patientData model.participantsData previousPhase
     in
     div [ class "content" ]
         [ body ]
@@ -105,7 +105,7 @@ viewRegistrationForm :
     -> Form () RegistrationForm
     -> GeoInfo
     -> Maybe PhotoValue
-    -> Maybe PatientType
+    -> Maybe PatientData
     -> Maybe RegistrationPhase
     -> Html Msg
 viewRegistrationForm language currentDate user backend cache step registrationForm geoInfo photo maybeRelationPatient maybePreviousPhase =
@@ -747,7 +747,7 @@ viewSearchForm :
     -> ParticipantsData
     -> Maybe String
     -> Maybe String
-    -> Maybe PatientType
+    -> Maybe PatientData
     -> Html Msg
 viewSearchForm language currentDate user backend cache participantsData searchString submittedSearch maybeRelationPatient =
     let
@@ -875,7 +875,7 @@ viewPatientDetailsForm :
     -> User
     -> ModelBackend
     -> ModelCached
-    -> PatientType
+    -> PatientData
     -> ParticipantsData
     -> Maybe RegistrationPhase
     -> Html Msg
@@ -971,11 +971,11 @@ viewPatientDetailsForm language currentDate user backend cache viewedPatient par
         ]
 
 
-viewPatient : Language -> PatientType -> Maybe PatientActionType -> Html Msg
-viewPatient language patientType maybeActionType =
+viewPatient : Language -> PatientData -> Maybe PatientActionType -> Html Msg
+viewPatient language patientData maybeActionType =
     let
         ( typeForThumbnail, details, healthCenter ) =
-            case patientType of
+            case patientData of
                 PatientMother _ mother ->
                     ( "mother", getCommonDetails mother, "Unknown" )
 
@@ -1013,10 +1013,10 @@ viewPatient language patientType maybeActionType =
                                     ( action, actionClass ) =
                                         case actionType of
                                             Forward ->
-                                                ( SetRegistrationPhase <| ParticipantView patientType, "forward" )
+                                                ( SetRegistrationPhase <| ParticipantView patientData, "forward" )
 
                                             Link ->
-                                                ( MakeRelation patientType, "link" )
+                                                ( MakeRelation patientData, "link" )
                                 in
                                 [ div [ class "action" ]
                                     [ div [ class "action-icon-wrapper" ]
@@ -1051,8 +1051,8 @@ viewDialog language dialogState =
                     ConfirmSubmision ->
                         Just <| confirmSubmisionDialog language
 
-                    SuccessfulSubmision maybePatientType ->
-                        Just <| successfulSubmisionDialog language maybePatientType
+                    SuccessfulSubmision maybePatientData ->
+                        Just <| successfulSubmisionDialog language maybePatientData
             )
 
 
@@ -1084,11 +1084,11 @@ confirmSubmisionDialog language =
         ]
 
 
-successfulSubmisionDialog : Language -> Maybe PatientType -> Html Msg
-successfulSubmisionDialog language maybePatientType =
+successfulSubmisionDialog : Language -> Maybe PatientData -> Html Msg
+successfulSubmisionDialog language maybePatientData =
     let
         helper =
-            case maybePatientType of
+            case maybePatientData of
                 Just (PatientMother _ _) ->
                     Translate.RegistartionSuccessfulAddChild
 
@@ -1099,7 +1099,7 @@ successfulSubmisionDialog language maybePatientType =
                     Translate.RegistartionSuccessfulRelationCreated
 
         buttons =
-            if isJust maybePatientType then
+            if isJust maybePatientData then
                 div [ class "ui buttons two" ]
                     [ button
                         [ class "ui fluid button"
@@ -1108,7 +1108,7 @@ successfulSubmisionDialog language maybePatientType =
                         [ text <| translate language Translate.No ]
                     , button
                         [ class "ui primary fluid button"
-                        , onClick <| SetRelationPatient maybePatientType
+                        , onClick <| SetRelationPatient maybePatientData
                         ]
                         [ text <| translate language Translate.Yes ]
                     ]
