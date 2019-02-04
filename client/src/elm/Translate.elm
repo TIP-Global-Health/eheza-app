@@ -1629,17 +1629,17 @@ translationSet trans =
             }
 
         RelationSuccessful ->
-            { english = "Registartion Successful"
+            { english = "Relation Successful"
             , kinyarwanda = Nothing
             }
 
         RelationSuccessfulChildWithMother ->
-            { english = "Child assocoated with mother."
+            { english = "Child succesfully assocoated with mother."
             , kinyarwanda = Nothing
             }
 
         RelationSuccessfulMotherWithChild ->
-            { english = "Mother assocoated with child."
+            { english = "Mother succesfully assocoated with child."
             , kinyarwanda = Nothing
             }
 
