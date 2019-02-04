@@ -1,6 +1,7 @@
 port module App.Update exposing (init, subscriptions, update)
 
 import App.Model exposing (..)
+import App.Utils exposing (getLoggedInModel)
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Session.Model
@@ -153,10 +154,21 @@ update msg model =
             let
                 ( subModel, subCmd ) =
                     Backend.Update.updateIndexedDb subMsg model.indexedDb
+
+                -- Most revisions are handled at the IndexedDB level, but there
+                -- is at least one we need to catch here.
+                extraMsgs =
+                    case subMsg of
+                        Backend.Model.HandleRevisions revisions ->
+                            List.filterMap (handleRevision model) revisions
+
+                        _ ->
+                            []
             in
             ( { model | indexedDb = subModel }
             , Cmd.map MsgIndexedDb subCmd
             )
+                |> sequence update extraMsgs
 
         MsgLoggedIn loggedInMsg ->
             updateLoggedIn
@@ -423,6 +435,26 @@ update msg model =
                     )
                 )
                 model
+
+
+{-| Updates our `nurse` user if the uuid matches the logged-in user.
+-}
+handleRevision : Model -> Backend.Model.Revision -> Maybe Msg
+handleRevision model revision =
+    case revision of
+        Backend.Model.NurseRevision uuid data ->
+            Maybe.andThen
+                (\loggedIn ->
+                    if Tuple.first loggedIn.nurse == uuid then
+                        Just (SetLoggedIn (Success ( uuid, data )))
+
+                    else
+                        Nothing
+                )
+                (getLoggedInModel model)
+
+        _ ->
+            Nothing
 
 
 {-| Convenience function to process a msg which depends on having a configuration.
