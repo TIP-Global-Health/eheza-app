@@ -61,10 +61,13 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'catchment_area' => 'catchment_areas',
       'child' => 'children',
       'clinic' => 'clinics',
+      'counseling_schedule' => 'counseling-schedule',
+      'counseling_topic' => 'counseling-topics',
       'health_center' => 'health_centers',
       'mother' => 'mothers',
-      'session' => 'sessions',
       'nurse' => 'nurses',
+      'participant_form' => 'participants-form',
+      'session' => 'sessions',
     ];
   }
 
@@ -79,10 +82,12 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    */
   public function entitiesForHealthCenters() {
     return [
+      'counseling_session' => 'counseling-sessions',
       'family_planning' => 'family-plannings',
       'height' => 'heights',
       'muac' => 'muacs',
       'nutrition' => 'nutritions',
+      'participant_consent' => 'participants-consent',
       'photo' => 'photos',
       'weight' => 'weights',
     ];

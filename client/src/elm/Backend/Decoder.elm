@@ -2,11 +2,13 @@ module Backend.Decoder exposing (decodeRevision)
 
 import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Clinic.Decoder exposing (decodeClinic)
+import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
 import Backend.Measurement.Decoder exposing (decodeFamilyPlanning, decodeHeight, decodeMuac, decodeNutrition, decodePhoto, decodeWeight)
 import Backend.Model exposing (..)
 import Backend.Mother.Decoder exposing (decodeMother)
 import Backend.Nurse.Decoder exposing (decodeNurse)
+import Backend.ParticipantConsent.Decoder exposing (decodeParticipantForm)
 import Backend.Session.Decoder exposing (decodeSession)
 import Json.Decode exposing (..)
 import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid)
@@ -28,6 +30,16 @@ decodeRevision =
 
                     "clinic" ->
                         decodeWithUuid ClinicRevision decodeClinic
+
+                    "counseling_schedule" ->
+                        -- decodeWithUuid CounselingScheduleRevision decodeCounselingSchedule
+                        succeed NotYetImplemented
+
+                    "counseling_session" ->
+                        succeed NotYetImplemented
+
+                    "counseling_topic" ->
+                        decodeWithUuid CounselingTopicRevision decodeCounselingTopic
 
                     "health_center" ->
                         decodeWithUuid HealthCenterRevision decodeHealthCenter
@@ -52,6 +64,12 @@ decodeRevision =
 
                     "nutrition" ->
                         decodeWithUuid ChildNutritionRevision decodeNutrition
+
+                    "participant_consent" ->
+                        succeed NotYetImplemented
+
+                    "participant_form" ->
+                        decodeWithUuid ParticipantFormRevision decodeParticipantForm
 
                     "photo" ->
                         decodeWithUuid PhotoRevision decodePhoto

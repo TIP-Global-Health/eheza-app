@@ -108,8 +108,7 @@ type alias ParticipantConsent =
 
 
 type alias ParticipantConsentValue =
-    { witness : NurseId
-    , language : Language
+    { language : Language
     , formId : ParticipantFormId
     }
 

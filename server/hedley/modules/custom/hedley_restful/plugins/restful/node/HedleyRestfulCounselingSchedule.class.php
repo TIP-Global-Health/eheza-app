@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulCounselingSchedule.
  */
-class HedleyRestfulCounselingSchedule extends HedleyRestfulEntityBaseNode {
+class HedleyRestfulCounselingSchedule extends HedleyRestfulSyncBase {
 
   /**
    * {@inheritdoc}
@@ -22,12 +22,7 @@ class HedleyRestfulCounselingSchedule extends HedleyRestfulEntityBaseNode {
 
     $public_fields['topics'] = [
       'property' => 'field_topics',
-      'resource' => [
-        'counseling_topic' => [
-          'name' => 'counseling-topics',
-          'full_view' => TRUE,
-        ],
-      ],
+      'sub_property' => 'field_uuid',
     ];
 
     return $public_fields;

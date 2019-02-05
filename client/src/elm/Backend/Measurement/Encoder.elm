@@ -63,8 +63,7 @@ encodeParticipantConsent : ParticipantConsent -> List ( String, Value )
 encodeParticipantConsent =
     encodeMotherMeasurement
         (\consent ->
-            [ ( "witness", encodeEntityUuid consent.witness )
-            , ( "language", encodeLanguage consent.language )
+            [ ( "language", encodeLanguage consent.language )
             , ( "participant_form", encodeEntityUuid consent.formId )
             ]
         )
