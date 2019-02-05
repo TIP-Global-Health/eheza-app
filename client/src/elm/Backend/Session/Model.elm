@@ -6,9 +6,11 @@ which measurements are taken.
 
 import Backend.Child.Model exposing (Child)
 import Backend.Clinic.Model exposing (Clinic)
+import Backend.Counseling.Model exposing (EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Mother.Model exposing (Mother)
+import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDateRange)
@@ -43,14 +45,20 @@ type alias OfflineSession =
     -- All the sessions for the relevant clinic, sorted by date. We need these
     -- for the progress report.
     , allSessions : EveryDictList SessionId Session
+    , allParticipantForms : EveryDictList ParticipantFormId ParticipantForm
+
+    -- Our master list of all the counseling topics, for each timing
+    , everyCounselingSchedule : EveryCounselingSchedule
 
     -- We include the basic information about all the clinics so that we can at
     -- least present a limited UI on clinic pages that includes their name.
     , clinics : EveryDictList ClinicId Clinic
 
-    -- We'll sort by mother's name
+    -- We'll sort by mother's name. The children's sort order doesn't really
+    -- mean anything, but it's easier to work with mothers and children as
+    -- "participants" if we're using the same structure here for both.
     , mothers : EveryDictList MotherId Mother
-    , children : EveryDict ChildId Child
+    , children : EveryDictList ChildId Child
 
     -- These are all the measurements which have been saved to the backend.
     , historicalMeasurements : HistoricalMeasurements

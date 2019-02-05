@@ -38,6 +38,10 @@ class HedleyRestfulMothers extends HedleyRestfulSyncBase {
       ];
     }
 
+    $public_fields['relation'] = [
+      'property' => 'field_relationship',
+    ];
+
     $public_fields['ubudehe'] = [
       'property' => 'field_ubudehe',
     ];

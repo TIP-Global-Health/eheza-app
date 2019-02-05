@@ -1,14 +1,16 @@
-module Backend.Measurement.Decoder exposing (decodeChildEdits, decodeChildMeasurement, decodeChildMeasurementList, decodeChildNutritionSign, decodeEdit, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMeasurementEdits, decodeMotherEdits, decodeMotherMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodePhoto, decodeWeight, decodeWithEntityUuid, toEveryDict)
+module Backend.Measurement.Decoder exposing (decodeChildEdits, decodeChildMeasurement, decodeChildMeasurementList, decodeChildNutritionSign, decodeCounselingSession, decodeEdit, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMeasurementEdits, decodeMotherEdits, decodeMotherMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodeWeight, decodeWithEntityUuid, toEveryDict)
 
+import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict)
 import Gizra.NominalDate
-import Json.Decode exposing (Decoder, andThen, at, bool, decodeValue, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed, value)
+import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid, toEntityUuid)
+import Translate.Utils exposing (decodeLanguage)
 import Utils.Json exposing (decodeEverySet)
 
 
@@ -72,6 +74,7 @@ decodeMotherMeasurementList : Decoder MotherMeasurementList
 decodeMotherMeasurementList =
     decode MotherMeasurementList
         |> optional "family_planning" (list (decodeWithEntityUuid decodeFamilyPlanning)) []
+        |> optional "participant_consent" (list (decodeWithEntityUuid decodeParticipantConsent)) []
 
 
 decodeChildMeasurementList : Decoder ChildMeasurementList
@@ -82,6 +85,7 @@ decodeChildMeasurementList =
         |> optional "nutrition" (list (decodeWithEntityUuid decodeNutrition)) []
         |> optional "photo" (list (decodeWithEntityUuid decodePhoto)) []
         |> optional "weight" (list (decodeWithEntityUuid decodeWeight)) []
+        |> optional "counseling_session" (list (decodeWithEntityUuid decodeCounselingSession)) []
 
 
 {-| The `oneOf` provides some back-compat for locally stored values.
@@ -127,11 +131,32 @@ decodeFamilyPlanning =
         |> decodeMotherMeasurement
 
 
+decodeParticipantConsent : Decoder ParticipantConsent
+decodeParticipantConsent =
+    decodeMotherMeasurement decodeParticipantConsentValue
+
+
+decodeParticipantConsentValue : Decoder ParticipantConsentValue
+decodeParticipantConsentValue =
+    decode ParticipantConsentValue
+        |> required "witness" decodeEntityUuid
+        |> required "language" decodeLanguage
+        |> required "participant_form" decodeEntityUuid
+
+
 decodeNutrition : Decoder ChildNutrition
 decodeNutrition =
     decodeEverySet decodeChildNutritionSign
         |> field "nutrition_signs"
         |> decodeChildMeasurement
+
+
+decodeCounselingSession : Decoder CounselingSession
+decodeCounselingSession =
+    decodeChildMeasurement <|
+        map2 (,)
+            (field "timing" decodeCounselingTiming)
+            (field "topics" (decodeEverySet decodeEntityUuid))
 
 
 decodeChildNutritionSign : Decoder ChildNutritionSign
@@ -225,6 +250,10 @@ decodeMeasurementEdits =
 
 
 {-| Decodes what `encodeChildEdits` produces.
+
+The keys should match the machine name of the entity on the backend, in order
+for the upload mechanism to work as expected.
+
 -}
 decodeChildEdits : Decoder ChildEdits
 decodeChildEdits =
@@ -234,6 +263,7 @@ decodeChildEdits =
         |> required "nutrition" (decodeEdit decodeNutrition)
         |> required "photo" (decodeEdit decodePhoto)
         |> required "weight" (decodeEdit decodeWeight)
+        |> optional "counseling_session" (decodeEdit decodeCounselingSession) Unedited
 
 
 {-| Decodes what `encodeChildEdits` produces.
@@ -242,12 +272,13 @@ decodeMotherEdits : Decoder MotherEdits
 decodeMotherEdits =
     decode MotherEdits
         |> required "family_planning" (decodeEdit decodeFamilyPlanning)
+        |> optional "participant_consent" (list (decodeEdit decodeParticipantConsent)) []
         |> optional "checked_in" bool False
 
 
 {-| The opposite of `encodeEdit`
 -}
-decodeEdit : Decoder value -> Decoder (Edit value)
+decodeEdit : Decoder value -> Decoder (Edit (EntityUuid id) value)
 decodeEdit valueDecoder =
     field "tag" string
         |> andThen
@@ -261,19 +292,27 @@ decodeEdit valueDecoder =
                             |> map Created
 
                     "edited" ->
-                        map2
-                            (\backend edited ->
+                        map3
+                            (\backend edited id ->
                                 Edited
                                     { backend = backend
                                     , edited = edited
+                                    , id = id
                                     }
                             )
                             (field "backend" valueDecoder)
                             (field "edited" valueDecoder)
+                            -- The `maybe` below is transitional ... for back-compat with
+                            -- existing cached sessions.
+                            (field "id" decodeEntityUuid
+                                |> maybe
+                                |> map (Maybe.withDefault (toEntityUuid ""))
+                            )
 
                     "deleted" ->
-                        field "value" valueDecoder
-                            |> map Deleted
+                        map2 Deleted
+                            (field "id" decodeEntityUuid)
+                            (field "value" valueDecoder)
 
                     _ ->
                         fail <|

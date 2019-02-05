@@ -452,8 +452,8 @@ updateBackend backendUrl accessToken msg model =
                     )
 
 
-updateCache : NominalDate -> MsgCached -> ModelCached -> ( ModelCached, Cmd MsgCached, List App.Model.Msg )
-updateCache currentDate msg model =
+updateCache : Maybe NurseId -> NominalDate -> MsgCached -> ModelCached -> ( ModelCached, Cmd MsgCached, List App.Model.Msg )
+updateCache user currentDate msg model =
     case msg of
         CacheEditableSession ->
             withEditableSession ( model, Cmd.none, [] )
@@ -525,7 +525,7 @@ updateCache currentDate msg model =
             , deleteEditableSession ()
             , []
             )
-                |> sequenceExtra (updateCache currentDate)
+                |> sequenceExtra (updateCache user currentDate)
                     [ MsgCacheStorage clearCachedPhotos ]
 
         FetchEditableSessionFromCache ->
@@ -686,7 +686,7 @@ updateCache currentDate msg model =
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -701,7 +701,7 @@ updateCache currentDate msg model =
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -710,13 +710,13 @@ updateCache currentDate msg model =
                         (\sessionId session ->
                             let
                                 newSession =
-                                    makeMotherEdit currentDate motherId outMsg sessionId session
+                                    makeMotherEdit user currentDate motherId outMsg sessionId session
                             in
                             ( { model | editableSession = Success <| Just ( sessionId, newSession ) }
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -740,7 +740,7 @@ updateCache currentDate msg model =
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -771,7 +771,7 @@ updateCache currentDate msg model =
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -780,7 +780,7 @@ updateCache currentDate msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra (updateCache currentDate) [ CacheEditableSession ]
+                |> sequenceExtra (updateCache user currentDate) [ CacheEditableSession ]
 
         -- Like SetEditableSession, but we just substitute the offlineSesttion part.
         -- This works because we never mutate the offlineSession locally.
@@ -796,7 +796,7 @@ updateCache currentDate msg model =
                         , Cmd.none
                         , []
                         )
-                            |> sequenceExtra (updateCache currentDate) [ CacheEditableSession ]
+                            |> sequenceExtra (updateCache user currentDate) [ CacheEditableSession ]
 
                     else
                         ( model, Cmd.none, [] )
@@ -848,9 +848,10 @@ makeChildEdit currentDate childId outMsg sessionId session =
                 edit =
                     case backend of
                         -- TODO: Could do a comparison to possibly return to `Unedited`
-                        Just value ->
+                        Just ( id, value ) ->
                             Edited
                                 { backend = value
+                                , id = id
                                 , edited = { value | value = height }
                                 }
 
@@ -872,9 +873,10 @@ makeChildEdit currentDate childId outMsg sessionId session =
 
                 edit =
                     case backend of
-                        Just value ->
+                        Just ( id, value ) ->
                             Edited
                                 { backend = value
+                                , id = id
                                 , edited = { value | value = weight }
                                 }
 
@@ -896,9 +898,10 @@ makeChildEdit currentDate childId outMsg sessionId session =
 
                 edit =
                     case backend of
-                        Just value ->
+                        Just ( id, value ) ->
                             Edited
                                 { backend = value
+                                , id = id
                                 , edited = { value | value = muac }
                                 }
 
@@ -912,6 +915,31 @@ makeChildEdit currentDate childId outMsg sessionId session =
             in
             mapChildEdits (\edits -> { edits | muac = edit }) childId session
 
+        SaveCounselingSession timing topics ->
+            let
+                backend =
+                    mapMeasurementData .counselingSession .counseling data
+                        |> backendValue
+
+                edit =
+                    case backend of
+                        Just ( id, value ) ->
+                            Edited
+                                { backend = value
+                                , id = id
+                                , edited = { value | value = ( timing, topics ) }
+                                }
+
+                        Nothing ->
+                            Created
+                                { participantId = childId
+                                , sessionId = Just sessionId
+                                , dateMeasured = currentDate
+                                , value = ( timing, topics )
+                                }
+            in
+            mapChildEdits (\edits -> { edits | counseling = edit }) childId session
+
         SaveChildNutritionSigns nutrition ->
             let
                 backend =
@@ -920,9 +948,10 @@ makeChildEdit currentDate childId outMsg sessionId session =
 
                 edit =
                     case backend of
-                        Just value ->
+                        Just ( id, value ) ->
                             Edited
                                 { backend = value
+                                , id = id
                                 , edited = { value | value = nutrition }
                                 }
 
@@ -944,10 +973,11 @@ makeChildEdit currentDate childId outMsg sessionId session =
 
                 edit =
                     case backend of
-                        Just value ->
+                        Just ( id, value ) ->
                             Edited
                                 { backend = value
                                 , edited = { value | value = photo }
+                                , id = id
                                 }
 
                         Nothing ->
@@ -964,8 +994,8 @@ makeChildEdit currentDate childId outMsg sessionId session =
 {-| We reach this when the user hits "Save" upon editing something in the measurement
 form. So, we want to change the appropriate edit ...
 -}
-makeMotherEdit : NominalDate -> MotherId -> OutMsgMother -> SessionId -> EditableSession -> EditableSession
-makeMotherEdit currentDate motherId outMsg sessionId session =
+makeMotherEdit : Maybe NurseId -> NominalDate -> MotherId -> OutMsgMother -> SessionId -> EditableSession -> EditableSession
+makeMotherEdit user currentDate motherId outMsg sessionId session =
     let
         data =
             getMotherMeasurementData motherId session
@@ -979,9 +1009,10 @@ makeMotherEdit currentDate motherId outMsg sessionId session =
 
                 edit =
                     case backend of
-                        Just value ->
+                        Just ( id, value ) ->
                             Edited
                                 { backend = value
+                                , id = id
                                 , edited = { value | value = signs }
                                 }
 
@@ -994,6 +1025,34 @@ makeMotherEdit currentDate motherId outMsg sessionId session =
                                 }
             in
             mapMotherEdits (\edits -> { edits | familyPlanning = edit }) motherId session
+
+        SaveCompletedForm formId language ->
+            -- In this case, so far, we don't allow for updates. So, for the
+            -- moment, the only things we have to do is create things. Also,
+            -- we necessarily will have a current user in this case, though
+            -- we'd need to restructure to convince the compiler of that.
+            case user of
+                Just userId ->
+                    let
+                        edit =
+                            Created
+                                { participantId = motherId
+                                , sessionId = Just sessionId
+                                , dateMeasured = currentDate
+                                , value =
+                                    { witness = userId
+                                    , formId = formId
+                                    , language = language
+                                    }
+                                }
+                    in
+                    mapMotherEdits
+                        (\edits -> { edits | consent = edit :: edits.consent })
+                        motherId
+                        session
+
+                Nothing ->
+                    session
 
 
 {-| Subscribe to the answers to our cache requests.

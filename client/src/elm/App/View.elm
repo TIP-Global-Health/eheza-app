@@ -20,7 +20,8 @@ import Pages.PinCode.View
 import Pages.View exposing (viewFoundSession)
 import RemoteData exposing (RemoteData(..), WebData)
 import ServiceWorker.View
-import Translate exposing (Language(..), translate)
+import Translate exposing (translate)
+import Translate.Model exposing (Language(..))
 import User.Model exposing (User)
 import Utils.Html exposing (spinner, wrapPage)
 import Version

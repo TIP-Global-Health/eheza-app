@@ -1,4 +1,4 @@
-module Config exposing (configs, ***REMOVED***, livePantheon, ***REMOVED***, ***REMOVED***)
+module Config exposing (caregiverPantheon, configs, counselingPantheon, ***REMOVED***, livePantheon, ***REMOVED***, ***REMOVED***, ***REMOVED***)
 
 import Config.Model as Config exposing (Model)
 import Dict exposing (..)
@@ -51,6 +51,28 @@ ehezaGlobal =
     }
 
 
+counselingPantheon : Model
+counselingPantheon =
+    { backendUrl = "https://counseling-ihangane.pantheonsite.io"
+    , name = "counselingPantheon"
+    , pusherKey = PusherAppKey "" UsEast1
+    , debug = False
+    , rollbarToken = Rollbar.token "***REMOVED***"
+    , sandbox = False
+    }
+
+
+***REMOVED*** : Model
+***REMOVED*** =
+    { backendUrl = "https://***REMOVED***"
+    , name = "***REMOVED***"
+    , pusherKey = PusherAppKey "" UsEast1
+    , debug = False
+    , rollbarToken = Rollbar.token "***REMOVED***"
+    , sandbox = False
+    }
+
+
 ***REMOVED*** : Model
 ***REMOVED*** =
     { backendUrl = "https://***REMOVED***"
@@ -65,13 +87,27 @@ ehezaGlobal =
     }
 
 
+caregiverPantheon : Model
+caregiverPantheon =
+    { backendUrl = "https://caregiver-ihangane.pantheonsite.io"
+    , name = "caregiverPantheon"
+    , pusherKey = PusherAppKey "" UsEast1
+    , debug = False
+    , rollbarToken = Rollbar.token "***REMOVED***"
+    , sandbox = False
+    }
+
+
 configs : Dict String Model
 configs =
     Dict.fromList
         [ ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", livePantheon )
+        , ( "***REMOVED***", ***REMOVED*** )
+        , ( "counseling-ihangane.pantheonsite.io", counselingPantheon )
         , ( "***REMOVED***", ehezaGlobal )
         , ( "***REMOVED***", ***REMOVED*** )
+        , ( "caregiver-ihangane.pantheonsite.io", caregiverPantheon )
         ]
         |> Dict.union localConfigs

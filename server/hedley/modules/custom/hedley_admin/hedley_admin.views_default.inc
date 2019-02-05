@@ -107,7 +107,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_1']['table'] = 'node';
   $handler->display->display_options['fields']['title_1']['field'] = 'title';
   $handler->display->display_options['fields']['title_1']['relationship'] = 'field_mother_target_id';
-  $handler->display->display_options['fields']['title_1']['label'] = 'Mother';
+  $handler->display->display_options['fields']['title_1']['label'] = 'Mother / Caregiver';
   /* Field: Content: Clinic */
   $handler->display->display_options['fields']['field_clinic']['id'] = 'field_clinic';
   $handler->display->display_options['fields']['field_clinic']['table'] = 'field_data_field_clinic';
@@ -193,6 +193,14 @@ function hedley_admin_views_default_views() {
 
   /* Display: Child */
   $handler = $view->new_display('page', 'Child', 'page');
+  $handler->display->display_options['defaults']['empty'] = FALSE;
+  /* No results behavior: Global: Text area */
+  $handler->display->display_options['empty']['area']['id'] = 'area';
+  $handler->display->display_options['empty']['area']['table'] = 'views';
+  $handler->display->display_options['empty']['area']['field'] = 'area';
+  $handler->display->display_options['empty']['area']['empty'] = TRUE;
+  $handler->display->display_options['empty']['area']['content'] = 'No records exist for these criteria';
+  $handler->display->display_options['empty']['area']['format'] = 'filtered_html';
   $handler->display->display_options['defaults']['fields'] = FALSE;
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
@@ -206,7 +214,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_1']['table'] = 'node_revision';
   $handler->display->display_options['fields']['title_1']['field'] = 'title';
   $handler->display->display_options['fields']['title_1']['relationship'] = 'field_mother_target_id';
-  $handler->display->display_options['fields']['title_1']['label'] = 'Mother';
+  $handler->display->display_options['fields']['title_1']['label'] = 'Mother / Caregiver';
   $handler->display->display_options['fields']['title_1']['link_to_node'] = TRUE;
   /* Field: MIN(Content: Clinic) */
   $handler->display->display_options['fields']['field_clinic']['id'] = 'field_clinic';
@@ -265,7 +273,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['title_1']['operator'] = 'word';
   $handler->display->display_options['filters']['title_1']['exposed'] = TRUE;
   $handler->display->display_options['filters']['title_1']['expose']['operator_id'] = 'title_1_op';
-  $handler->display->display_options['filters']['title_1']['expose']['label'] = 'Mother name';
+  $handler->display->display_options['filters']['title_1']['expose']['label'] = 'Mother/Caregiver name';
   $handler->display->display_options['filters']['title_1']['expose']['operator'] = 'title_1_op';
   $handler->display->display_options['filters']['title_1']['expose']['identifier'] = 'mother_name';
   $handler->display->display_options['filters']['title_1']['expose']['remember_roles'] = array(
@@ -501,10 +509,18 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['menu']['context'] = 0;
   $handler->display->display_options['menu']['context_only_inline'] = 0;
 
-  /* Display: Mother */
-  $handler = $view->new_display('page', 'Mother', 'page_3');
+  /* Display: Mother / Caregiver */
+  $handler = $view->new_display('page', 'Mother / Caregiver', 'page_3');
   $handler->display->display_options['defaults']['title'] = FALSE;
-  $handler->display->display_options['title'] = 'Mothers';
+  $handler->display->display_options['title'] = 'Mothers / Caregivers';
+  $handler->display->display_options['defaults']['empty'] = FALSE;
+  /* No results behavior: Global: Text area */
+  $handler->display->display_options['empty']['area']['id'] = 'area';
+  $handler->display->display_options['empty']['area']['table'] = 'views';
+  $handler->display->display_options['empty']['area']['field'] = 'area';
+  $handler->display->display_options['empty']['area']['empty'] = TRUE;
+  $handler->display->display_options['empty']['area']['content'] = 'No records exist for these criteria';
+  $handler->display->display_options['empty']['area']['format'] = 'filtered_html';
   $handler->display->display_options['defaults']['relationships'] = FALSE;
   /* Relationship: Child */
   $handler->display->display_options['relationships']['reverse_field_mother_node']['id'] = 'reverse_field_mother_node';
@@ -526,6 +542,10 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title']['label'] = 'Name';
   $handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
   $handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
+  /* Field: Content: Relationship */
+  $handler->display->display_options['fields']['field_relationship']['id'] = 'field_relationship';
+  $handler->display->display_options['fields']['field_relationship']['table'] = 'field_data_field_relationship';
+  $handler->display->display_options['fields']['field_relationship']['field'] = 'field_relationship';
   /* Field: COUNT(Content: Gender) */
   $handler->display->display_options['fields']['field_gender']['id'] = 'field_gender';
   $handler->display->display_options['fields']['field_gender']['table'] = 'field_data_field_gender';
@@ -590,7 +610,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['title']['group'] = 1;
   $handler->display->display_options['filters']['title']['exposed'] = TRUE;
   $handler->display->display_options['filters']['title']['expose']['operator_id'] = 'title_op';
-  $handler->display->display_options['filters']['title']['expose']['label'] = 'Mother name';
+  $handler->display->display_options['filters']['title']['expose']['label'] = 'Mother/Caregiver name';
   $handler->display->display_options['filters']['title']['expose']['operator'] = 'title_op';
   $handler->display->display_options['filters']['title']['expose']['identifier'] = 'mother_name';
   $handler->display->display_options['filters']['title']['expose']['remember_roles'] = array(
@@ -617,7 +637,7 @@ function hedley_admin_views_default_views() {
   );
   $handler->display->display_options['path'] = 'admin/content/mothers';
   $handler->display->display_options['menu']['type'] = 'normal';
-  $handler->display->display_options['menu']['title'] = 'Mothers';
+  $handler->display->display_options['menu']['title'] = 'Mothers / Caregivers';
   $handler->display->display_options['menu']['weight'] = '4';
   $handler->display->display_options['menu']['name'] = 'main-menu';
   $handler->display->display_options['menu']['context'] = 0;
@@ -1046,6 +1066,10 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title']['field'] = 'title';
   $handler->display->display_options['fields']['title']['label'] = 'Name';
   $handler->display->display_options['fields']['title']['link_to_node'] = FALSE;
+  /* Field: Content: Relationship */
+  $handler->display->display_options['fields']['field_relationship']['id'] = 'field_relationship';
+  $handler->display->display_options['fields']['field_relationship']['table'] = 'field_data_field_relationship';
+  $handler->display->display_options['fields']['field_relationship']['field'] = 'field_relationship';
   /* Field: COUNT(Content: Gender) */
   $handler->display->display_options['fields']['field_gender']['id'] = 'field_gender';
   $handler->display->display_options['fields']['field_gender']['table'] = 'field_data_field_gender';
@@ -1313,6 +1337,14 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['defaults']['title'] = FALSE;
   $handler->display->display_options['title'] = 'Historical Child';
   $handler->display->display_options['defaults']['group_by'] = FALSE;
+  $handler->display->display_options['defaults']['empty'] = FALSE;
+  /* No results behavior: Global: Text area */
+  $handler->display->display_options['empty']['area']['id'] = 'area';
+  $handler->display->display_options['empty']['area']['table'] = 'views';
+  $handler->display->display_options['empty']['area']['field'] = 'area';
+  $handler->display->display_options['empty']['area']['empty'] = TRUE;
+  $handler->display->display_options['empty']['area']['content'] = 'No records exist for these criteria';
+  $handler->display->display_options['empty']['area']['format'] = 'filtered_html';
   $handler->display->display_options['defaults']['relationships'] = FALSE;
   /* Relationship: Entity Reference: Referenced Entity */
   $handler->display->display_options['relationships']['field_session_target_id']['id'] = 'field_session_target_id';
@@ -1611,7 +1643,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['title_1']['group'] = 1;
   $handler->display->display_options['filters']['title_1']['exposed'] = TRUE;
   $handler->display->display_options['filters']['title_1']['expose']['operator_id'] = 'title_1_op';
-  $handler->display->display_options['filters']['title_1']['expose']['label'] = 'Mother';
+  $handler->display->display_options['filters']['title_1']['expose']['label'] = 'Mother/Caregiver';
   $handler->display->display_options['filters']['title_1']['expose']['operator'] = 'title_1_op';
   $handler->display->display_options['filters']['title_1']['expose']['identifier'] = 'title_1';
   $handler->display->display_options['filters']['title_1']['expose']['remember_roles'] = array(
@@ -1666,6 +1698,14 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['defaults']['title'] = FALSE;
   $handler->display->display_options['title'] = 'Historical Mother';
   $handler->display->display_options['defaults']['group_by'] = FALSE;
+  $handler->display->display_options['defaults']['empty'] = FALSE;
+  /* No results behavior: Global: Text area */
+  $handler->display->display_options['empty']['area']['id'] = 'area';
+  $handler->display->display_options['empty']['area']['table'] = 'views';
+  $handler->display->display_options['empty']['area']['field'] = 'area';
+  $handler->display->display_options['empty']['area']['empty'] = TRUE;
+  $handler->display->display_options['empty']['area']['content'] = 'No records exist for these criteria';
+  $handler->display->display_options['empty']['area']['format'] = 'filtered_html';
   $handler->display->display_options['defaults']['relationships'] = FALSE;
   /* Relationship: Entity Reference: Referenced Entity */
   $handler->display->display_options['relationships']['field_session_target_id']['id'] = 'field_session_target_id';
@@ -1850,7 +1890,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['title_1']['group'] = 1;
   $handler->display->display_options['filters']['title_1']['exposed'] = TRUE;
   $handler->display->display_options['filters']['title_1']['expose']['operator_id'] = 'title_1_op';
-  $handler->display->display_options['filters']['title_1']['expose']['label'] = 'Mother';
+  $handler->display->display_options['filters']['title_1']['expose']['label'] = 'Mother/Caregiver';
   $handler->display->display_options['filters']['title_1']['expose']['operator'] = 'title_1_op';
   $handler->display->display_options['filters']['title_1']['expose']['identifier'] = 'title_1';
   $handler->display->display_options['filters']['title_1']['expose']['remember_roles'] = array(

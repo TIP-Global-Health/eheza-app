@@ -2,10 +2,12 @@ module Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSess
 
 import Backend.Child.Encoder exposing (encodeChild)
 import Backend.Clinic.Encoder exposing (encodeClinic)
+import Backend.Counseling.Encoder exposing (encodeEveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeChildMeasurementList, encodeMotherMeasurementList)
 import Backend.Model exposing (TrainingSessionAction(..), TrainingSessionRequest)
 import Backend.Mother.Encoder exposing (encodeMother)
+import Backend.ParticipantConsent.Encoder exposing (encodeParticipantForm)
 import Backend.Session.Model exposing (..)
 import EveryDict
 import EveryDictList
@@ -57,6 +59,12 @@ encodeOfflineSession offline =
             |> List.map (\( id, session ) -> object (( "id", encodeEntityUuid id ) :: encodeSession session))
             |> list
       )
+    , ( "participant_forms"
+      , EveryDictList.toList offline.allParticipantForms
+            |> List.map (\( id, form ) -> object (( "id", encodeEntityUuid id ) :: encodeParticipantForm form))
+            |> list
+      )
+    , ( "counseling_schedule", encodeEveryCounselingSchedule offline.everyCounselingSchedule )
     , ( "clinics"
       , EveryDictList.toList offline.clinics
             |> List.map (\( id, clinic ) -> object (( "id", encodeEntityUuid id ) :: encodeClinic clinic))
@@ -70,7 +78,7 @@ encodeOfflineSession offline =
                     |> list
               )
             , ( "children"
-              , EveryDict.toList offline.children
+              , EveryDictList.toList offline.children
                     |> List.map (\( id, child ) -> object (( "id", encodeEntityUuid id ) :: encodeChild child))
                     |> list
               )

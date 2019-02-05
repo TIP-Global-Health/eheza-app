@@ -21,9 +21,27 @@ decodeMother =
             )
         -- TODO: Remove the children!
         |> hardcoded []
-        |> required "date_birth" decodeYYYYMMDD
+        |> optional "date_birth" (map Just decodeYYYYMMDD) Nothing
+        |> optional "relation" decodeChildrenRelation MotherRelation
         |> optional "ubudehe" (nullable decodeUbudehe) Nothing
         |> optional "education_level" (nullable decodeEducationLevel) Nothing
+
+
+decodeChildrenRelation : Decoder ChildrenRelationType
+decodeChildrenRelation =
+    string
+        |> andThen
+            (\relation ->
+                case relation of
+                    "mother" ->
+                        succeed MotherRelation
+
+                    "caregiver" ->
+                        succeed CaregiverRelation
+
+                    _ ->
+                        fail <| relation ++ " is not a recognized ChildrenRelationType"
+            )
 
 
 decodeUbudehe : Decoder Ubudehe

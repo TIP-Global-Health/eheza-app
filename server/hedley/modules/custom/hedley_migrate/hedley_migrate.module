@@ -17,6 +17,12 @@ function hedley_migrate_migrate_api() {
       'missing' => [
         'title' => t('Missing Data'),
       ],
+      'counseling' => [
+        'title' => t('Counseling'),
+      ],
+      'forms' => [
+        'title' => t('Forms'),
+      ],
     ],
     'migrations' => [
       'HedleyMigrateUsers' => [
@@ -48,6 +54,22 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateMissingMuacs' => [
         'class_name' => 'HedleyMigrateMissingMuacs',
         'group_name' => 'missing',
+      ],
+      'HedleyMigrateCounselingSchedules' => [
+        'class_name' => 'HedleyMigrateCounselingSchedules',
+        'group_name' => 'counseling',
+      ],
+      'HedleyMigrateCounselingSessions' => [
+        'class_name' => 'HedleyMigrateCounselingSessions',
+        'group_name' => 'counseling',
+      ],
+      'HedleyMigrateCounselingTopics' => [
+        'class_name' => 'HedleyMigrateCounselingTopics',
+        'group_name' => 'counseling',
+      ],
+      'HedleyMigrateParticipantForms' => [
+        'class_name' => 'HedleyMigrateParticipantForms',
+        'group_name' => 'forms',
       ],
     ],
   ];
@@ -246,4 +268,13 @@ function _hedley_migrate_preprocess_muac($node) {
 
   // Adjust children's height to realistic figures.
   $wrapper->field_muac->set(rand(10, 40));
+}
+
+/**
+ * Implements hook_query_TAG_alter().
+ *
+ * Add a random order to the entity field query.
+ */
+function hedley_migrate_query_random_alter($query) {
+  $query->orderRandom();
 }

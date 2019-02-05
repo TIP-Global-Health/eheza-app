@@ -17,7 +17,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Rollbar
 import ServiceWorker.Model
 import Time exposing (Time)
-import Translate exposing (Language(..))
+import Translate.Model exposing (Language(..))
 import Uuid exposing (Uuid)
 import ZScore.Model
 

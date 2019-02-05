@@ -28,13 +28,14 @@ import Pages.PinCode.Model
 import Pages.PinCode.Update
 import Pages.Update
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, select, toCmd)
+import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, select, toCmd, toEntityId)
 import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
 import Task
 import Time exposing (minute)
-import Translate exposing (Language(..), languageFromCode, languageToCode)
+import Translate.Model exposing (Language(..))
+import Translate.Utils exposing (languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
 import Version
 import ZScore.Model
@@ -138,12 +139,16 @@ update msg model =
     let
         currentDate =
             fromLocalDateTime <| Date.fromTime model.currentTime
+
+        nurseId =
+            getLoggedInModel model
+                |> Maybe.map (.nurse >> Tuple.first)
     in
     case msg of
         MsgCache subMsg ->
             let
                 ( subModel, subCmd, extraMsgs ) =
-                    Backend.Update.updateCache currentDate subMsg model.cache
+                    Backend.Update.updateCache nurseId currentDate subMsg model.cache
             in
             ( { model | cache = subModel }
             , Cmd.map MsgCache subCmd

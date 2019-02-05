@@ -1,10 +1,11 @@
 module Pages.ProgressReport.View exposing (view)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..))
+import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (Height, HeightInCm(..), MuacInCm(..), MuacIndication(..), Weight, WeightInKg(..))
 import Backend.Measurement.Utils exposing (currentValue, currentValueWithId, mapMeasurementData, muacIndication)
+import Backend.Mother.Model exposing (ChildrenRelationType(..))
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother)
 import EveryDict
@@ -18,7 +19,7 @@ import Maybe.Extra
 import Pages.Model exposing (MsgSession(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
-import Translate exposing (Language(..), translate)
+import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), Length(..), ZScore)
@@ -77,6 +78,24 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                 , text <| renderDate language dateOfLastAssessment
                 ]
 
+        maybeMother =
+            child.motherId
+                |> Maybe.andThen (\motherId -> getMother motherId session.offlineSession)
+
+        relationText =
+            maybeMother
+                |> Maybe.map .relation
+                -- In case if mother is Nothing, we will show `Child of`.
+                |> Maybe.withDefault MotherRelation
+                |> (\relation ->
+                        case relation of
+                            MotherRelation ->
+                                Translate.ChildOf
+
+                            CaregiverRelation ->
+                                Translate.TakenCareOfBy
+                   )
+
         childInfo =
             div
                 [ class "ui report unstackable items" ]
@@ -103,13 +122,12 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                             , text " "
                             , strong [] [ text <| renderDate language child.birthDate ]
                             , br [] []
-                            , text <| translate language Translate.ChildOf
+                            , text <| translate language relationText
                             , text " "
                             , strong []
-                                [ child.motherId
-                                    |> Maybe.andThen (\motherId -> getMother motherId session.offlineSession)
+                                [ maybeMother
                                     |> Maybe.map .name
-                                    |> Maybe.withDefault "Unknown"
+                                    |> Maybe.withDefault (translate language Translate.Unknown)
                                     |> text
                                 ]
                             ]

@@ -1,6 +1,7 @@
 module Pages.Activity.Update exposing (updateChild, updateMother)
 
 import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (MeasurementData, MotherEdits, MotherMeasurements)
 import Measurement.Model
 import Measurement.Update
 import Pages.Activity.Model exposing (Model, Msg(..))
@@ -59,8 +60,9 @@ updateMother :
     Msg MotherId Measurement.Model.MsgMother
     -> Model MotherId
     -> Maybe Measurement.Model.ModelMother
+    -> MeasurementData MotherMeasurements MotherEdits
     -> ( Model MotherId, Cmd (Msg MotherId Measurement.Model.MsgMother), Maybe Measurement.Model.ModelMother, Maybe Measurement.Model.OutMsgMother, Maybe Page )
-updateMother msg model motherForm =
+updateMother msg model motherForm measurements =
     case msg of
         GoBackToActivitiesPage sessionId ->
             ( model, Cmd.none, Nothing, Nothing, Just <| UserPage <| SessionPage sessionId ActivitiesPage )
@@ -71,7 +73,7 @@ updateMother msg model motherForm =
                     (\form ->
                         let
                             ( subModel, subCmd, outMsg ) =
-                                Measurement.Update.updateMother subMsg form
+                                Measurement.Update.updateMother measurements subMsg form
                         in
                         ( model
                         , Cmd.map MsgMeasurement subCmd

@@ -1,6 +1,6 @@
 module Pages.Participants.View exposing (view)
 
-import Activity.Utils exposing (getTotalsNumberPerActivity, isCheckedIn, motherOrAnyChildHasAnyPendingActivity)
+import Activity.Utils exposing (getActivityCountForMother, getCheckedIn, summarizeByParticipant)
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import EveryDictList
@@ -24,11 +24,18 @@ view : Language -> ( SessionId, EditableSession ) -> Model -> Html Msg
 view language ( sessionId, editableSession ) model =
     let
         mothersInAttendance =
-            editableSession.offlineSession.mothers
-                |> EveryDictList.filter (\motherId _ -> isCheckedIn motherId editableSession)
+            getCheckedIn editableSession |> .mothers
+
+        summary =
+            summarizeByParticipant editableSession
 
         ( mothersWithPendingActivity, mothersWithoutPendingActivity ) =
-            EveryDictList.partition (\motherId _ -> motherOrAnyChildHasAnyPendingActivity motherId editableSession) mothersInAttendance
+            EveryDictList.partition
+                (\motherId mother ->
+                    getActivityCountForMother motherId mother summary
+                        |> (\count -> count.pending > 0)
+                )
+                mothersInAttendance
 
         tabs =
             let

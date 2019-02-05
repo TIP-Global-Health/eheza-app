@@ -3,12 +3,14 @@ module Backend.Session.Decoder exposing (decodeChildren, decodeMothers, decodeOf
 import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Child.Model exposing (Child)
 import Backend.Clinic.Decoder exposing (decodeClinic)
+import Backend.Counseling.Decoder exposing (decodeEveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Decoder exposing (decodeHistoricalMeasurements)
 import Backend.Measurement.Model exposing (ChildMeasurementList, ChildMeasurements, Measurement, MotherMeasurementList, MotherMeasurements, emptyMeasurements)
 import Backend.Model exposing (TrainingSessionAction(..), TrainingSessionRequest)
 import Backend.Mother.Decoder exposing (decodeMother)
 import Backend.Mother.Model exposing (Mother)
+import Backend.ParticipantConsent.Decoder exposing (decodeParticipantForm)
 import Backend.Session.Model exposing (..)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
@@ -79,6 +81,11 @@ decodeOfflineSession =
                     |> optional "all_sessions"
                         (EveryDictList.decodeArray2 (field "id" decodeEntityUuid) decodeSession)
                         EveryDictList.empty
+                    |> optional "participant_forms"
+                        (EveryDictList.decodeArray2 (field "id" decodeEntityUuid) decodeParticipantForm)
+                        EveryDictList.empty
+                    -- Also optional for transitional reasons.
+                    |> optional "counseling_schedule" decodeEveryCounselingSchedule EveryDict.empty
                     -- We get **all** the basic clinic information, as a convenience for
                     -- presenting the UI while offline
                     |> required "clinics" (EveryDictList.decodeArray2 (field "id" decodeEntityUuid) decodeClinic)
@@ -131,12 +138,21 @@ splitMotherMeasurements sessionId =
             let
                 familyPlanning =
                     getCurrentAndPrevious sessionId list.familyPlannings
+
+                consent =
+                    getCurrentAndPrevious sessionId list.consents
+                        |> .current
+                        |> EveryDict.fromList
             in
             { current =
-                { familyPlanning = familyPlanning.current
+                { familyPlanning = List.head familyPlanning.current
+                , consent = consent
                 }
             , previous =
+                -- We don't "compare" consents, so previous doesn't mean
+                -- anything for it.
                 { familyPlanning = familyPlanning.previous
+                , consent = EveryDict.empty
                 }
             }
         )
@@ -161,13 +177,18 @@ splitChildMeasurements sessionId =
 
                 photo =
                     getCurrentAndPrevious sessionId list.photos
+
+                counselingSession =
+                    getCurrentAndPrevious sessionId list.counselingSessions
             in
             { current =
-                { height = height.current
-                , weight = weight.current
-                , muac = muac.current
-                , nutrition = nutrition.current
-                , photo = photo.current
+                -- We can only have one per session ... we enforce that here.
+                { height = List.head height.current
+                , weight = List.head weight.current
+                , muac = List.head muac.current
+                , nutrition = List.head nutrition.current
+                , photo = List.head photo.current
+                , counselingSession = List.head counselingSession.current
                 }
             , previous =
                 { height = height.previous
@@ -175,14 +196,15 @@ splitChildMeasurements sessionId =
                 , muac = muac.previous
                 , nutrition = nutrition.previous
                 , photo = photo.previous
+                , counselingSession = counselingSession.previous
                 }
             }
         )
 
 
-{-| Picks out a current and previous value from a list of measurements.
+{-| Picks out current and previous values from a list of measurements.
 -}
-getCurrentAndPrevious : SessionId -> List ( id, Measurement a b ) -> { current : Maybe ( id, Measurement a b ), previous : Maybe ( id, Measurement a b ) }
+getCurrentAndPrevious : SessionId -> List ( id, Measurement a b ) -> { current : List ( id, Measurement a b ), previous : Maybe ( id, Measurement a b ) }
 getCurrentAndPrevious sessionId =
     let
         -- This is designed to iterate through each list only once, to get both
@@ -190,7 +212,7 @@ getCurrentAndPrevious sessionId =
         go measurement acc =
             if .sessionId (Tuple.second measurement) == Just sessionId then
                 -- If it's got our session ID, then it's current
-                { acc | current = Just measurement }
+                { acc | current = measurement :: acc.current }
 
             else
                 case acc.previous of
@@ -206,7 +228,7 @@ getCurrentAndPrevious sessionId =
                             acc
     in
     List.foldl go
-        { current = Nothing
+        { current = []
         , previous = Nothing
         }
 
@@ -214,10 +236,10 @@ getCurrentAndPrevious sessionId =
 decodeMothers : Decoder (EveryDictList MotherId Mother)
 decodeMothers =
     EveryDictList.decodeArray2 (field "id" decodeEntityUuid) decodeMother
+        |> map (EveryDictList.sortBy .name)
 
 
-decodeChildren : Decoder (EveryDict ChildId Child)
+decodeChildren : Decoder (EveryDictList ChildId Child)
 decodeChildren =
-    map2 (,) (field "id" decodeEntityUuid) decodeChild
-        |> list
-        |> map EveryDict.fromList
+    EveryDictList.decodeArray2 (field "id" decodeEntityUuid) decodeChild
+        |> map (EveryDictList.sortBy .name)

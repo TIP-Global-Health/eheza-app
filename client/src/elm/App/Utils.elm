@@ -1,6 +1,7 @@
 module App.Utils exposing (getLoggedInModel)
 
 import App.Model exposing (..)
+import Backend.Entities exposing (..)
 import RemoteData
 
 

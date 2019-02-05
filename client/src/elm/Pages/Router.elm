@@ -1,7 +1,7 @@
 module Pages.Router exposing (delta2url, parseUrl)
 
-import Activity.Model exposing (ActivityType)
-import Activity.Utils exposing (decodeActivityTypeFromString, defaultActivityType, encodeActivityTypeAsString)
+import Activity.Model exposing (Activity)
+import Activity.Utils exposing (decodeActivityFromString, defaultActivity, encodeActivityAsString)
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (EntityUuid, fromEntityUuid, toEntityUuid)
 import RouteUrl exposing (HistoryEntry(..), UrlChange)
@@ -53,8 +53,8 @@ delta2url previous current =
                                 ActivitiesPage ->
                                     "/activities"
 
-                                ActivityPage activityType ->
-                                    "/activity/" ++ encodeActivityTypeAsString activityType
+                                ActivityPage activity ->
+                                    "/activity/" ++ encodeActivityAsString activity
 
                                 AttendancePage ->
                                     ""
@@ -104,7 +104,7 @@ parseSessionPage : Parser (SessionPage -> c) c
 parseSessionPage =
     oneOf
         [ map ActivitiesPage (s "activities")
-        , map ActivityPage (s "activity" </> parseActivityType)
+        , map ActivityPage (s "activity" </> parseActivity)
         , map ChildPage (s "child" </> parseUuid)
         , map ProgressReportPage (s "progress" </> parseUuid)
         , map MotherPage (s "mother" </> parseUuid)
@@ -118,13 +118,13 @@ parseUuid =
     map toEntityUuid string
 
 
-parseActivityType : Parser (ActivityType -> c) c
-parseActivityType =
-    custom "ActivityType" <|
+parseActivity : Parser (Activity -> c) c
+parseActivity =
+    custom "Activity" <|
         \part ->
-            case decodeActivityTypeFromString part of
-                Just activityType ->
-                    Ok activityType
+            case decodeActivityFromString part of
+                Just activity ->
+                    Ok activity
 
                 Nothing ->
-                    Err <| part ++ " is not an ActivityType"
+                    Err <| part ++ " is not an Activity"

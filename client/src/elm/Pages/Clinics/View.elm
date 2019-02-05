@@ -26,7 +26,7 @@ import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date exposing (delta)
-import Translate exposing (Language(..), TranslationId, translate)
+import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner, viewModal)
 import Utils.WebData exposing (viewError, viewWebData)
 

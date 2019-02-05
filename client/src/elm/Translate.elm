@@ -1,7 +1,31 @@
-module Translate exposing (ChartPhrase(..), Language(..), LoginPhrase(..), TranslationId(..), TranslationSet, ValidationError(..), allLanguages, languageFromCode, languageFromString, languageToCode, selectLanguage, translate, translateActivePage, translateChartPhrase, translateFormError, translateFormField, translateHttpError, translateLoginPhrase, translateMonth, translateValidationError, translationSet)
+module Translate exposing
+    ( Adherence(..)
+    , ChartPhrase(..)
+    , Language
+    , LoginPhrase(..)
+    , TranslationId(..)
+    , ValidationError(..)
+    , translate
+    , translateActivePage
+    , translateAdherence
+    , translateChartPhrase
+    , translateCounselingTimingHeading
+    , translateFormError
+    , translateFormField
+    , translateHttpError
+    , translateLoginPhrase
+    , translateMonth
+    , translateValidationError
+    , translationSet
+    )
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
+{-| This module has just the translations ... for types and
+general utilities, see `Translate.Model` and `Translate.Utils`.
+-}
+
+import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import Backend.Child.Model exposing (Gender(..))
+import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
 import Backend.Mother.Model exposing (EducationLevel(..))
@@ -11,80 +35,30 @@ import Http
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
+import Translate.Model exposing (TranslationSet)
+import Translate.Utils exposing (..)
 
 
-type Language
-    = English
-    | Kinyarwanda
+{-| We re-export this one for convenience, so you don't have to import
+`Translate.Model` in simple cases. That is, you can do this, which will be
+enough for most "view" modules:
 
+    import Translate exposing (translate, Language)
 
-allLanguages : List Language
-allLanguages =
-    [ English
-    , Kinyarwanda
-    ]
+Note that importing `Language` from here gives you only the type, not the
+constructors. For more complex cases, where you need `English` and
+`Kinyarwanda` as well, you have to do this instead:
 
+    import Translate.Model exposing (Language(..))
 
-type alias TranslationSet =
-    { english : String
-    , kinyarwanda : Maybe String
-    }
+-}
+type alias Language =
+    Translate.Model.Language
 
 
 translate : Language -> TranslationId -> String
 translate lang trans =
     selectLanguage lang (translationSet trans)
-
-
-selectLanguage : Language -> TranslationSet -> String
-selectLanguage lang set =
-    case lang of
-        English ->
-            set.english
-
-        Kinyarwanda ->
-            case set.kinyarwanda of
-                Just trans ->
-                    trans
-
-                Nothing ->
-                    set.english
-
-
-languageFromString : String -> Result String Language
-languageFromString str =
-    case str of
-        "English" ->
-            Ok English
-
-        "Kinyarwanda" ->
-            Ok Kinyarwanda
-
-        _ ->
-            Err "Not a language"
-
-
-languageFromCode : String -> Result String Language
-languageFromCode str =
-    case str of
-        "en" ->
-            Ok English
-
-        "rw" ->
-            Ok Kinyarwanda
-
-        _ ->
-            Err "Not a language"
-
-
-languageToCode : Language -> String
-languageToCode lang =
-    case lang of
-        English ->
-            "en"
-
-        Kinyarwanda ->
-            "rw"
 
 
 type LoginPhrase
@@ -129,17 +103,25 @@ type ValidationError
     = UnknownClinic
 
 
+type Adherence
+    = PrescribedAVRs
+    | CorrectDosage
+    | TimeOfDay
+    | Adhering
+
+
 type TranslationId
     = AccessDenied
     | Activities
     | ActivitiesCompleted Int
-    | ActivitiesHelp ActivityType
-    | ActivitiesLabel ActivityType
-    | ActivitiesTitle ActivityType
+    | ActivitiesHelp Activity
+    | ActivitiesLabel Activity
+    | ActivitiesTitle Activity
     | ActivitiesToComplete Int
-    | ActivityProgressReport ActivityType
+    | ActivityProgressReport Activity
     | ActivePage Page
     | Admin
+    | Adherence Adherence
     | AgeWord
     | Age Int Int
     | AgeDays Int
@@ -175,6 +157,10 @@ type TranslationId
     | ConfirmDeleteTrainingSessions
     | Connected
     | Continue
+    | CounselingTimingHeading CounselingTiming
+    | CounselingTopic CounselingTopic
+    | CounselorReviewed
+    | CounselorSignature
     | CreateSession
     | CreateTrainingSessions
     | DeleteTrainingSessions
@@ -247,6 +233,8 @@ type TranslationId
     | Page404
     | PageNotFoundMsg
     | Participants
+    | ParticipantReviewed
+    | ParticipantSignature
     | ParticipantSummary
     | PersistentStorage Bool
     | PlaceholderEnterHeight
@@ -256,13 +244,14 @@ type TranslationId
     | PlaceholderTextJoined
     | PleaseSelectClinic
     | PreviousFloatMeasurement Float
+    | ProgressReport
     | ReadyToBeginSession
     | ReportAge String
     | ReportDOB String
     | ReportRemaining Int
     | ReloadParticipant
     | RecentAndUpcomingGroupSessions
-    | ReportCompleted { pending : Int, total : Int }
+    | ReportCompleted { pending : Int, completed : Int }
     | ResolveMonth Month
     | Retry
     | Save
@@ -301,6 +290,7 @@ type TranslationId
     | SubmitPairingCode
     | Success
     | SyncGeneral
+    | TakenCareOfBy
     | ThisActionCannotBeUndone
     | ThisClinicHasNoMothers
     | TitleHealthAssessment
@@ -311,6 +301,7 @@ type TranslationId
     | UbudeheLabel
     | UnableToDownload
     | UnableToUpload
+    | Unknown
     | Update
     | UpdateError
     | UploadHealthAssessment
@@ -330,7 +321,7 @@ type TranslationId
     | ZScoreWeightForHeight
 
 
-translationSet : TranslationId -> TranslationSet
+translationSet : TranslationId -> TranslationSet String
 translationSet trans =
     case trans of
         AccessDenied ->
@@ -365,6 +356,16 @@ translationSet trans =
                     , kinyarwanda = Just "Buri mubyeyi agomba kubazwa uburyo bwo kuboneza urubyaro akoresha buri kwezi. Niba umubyeyi akeneye kuboneza urubyaro mwohereze ku kigo nderabuzima k'ubishinzwe"
                     }
 
+                MotherActivity ParticipantConsent ->
+                    { english = "Please review the following forms with the participant."
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Counseling ->
+                    { english = "Please refer to this list during counseling sessions and ensure that each task has been completed."
+                    , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
+                    }
+
                 ChildActivity Height ->
                     { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight."
                     , kinyarwanda = Just "Saba Umubyeyi guhagarara inyuma y’umwana we agaramye, afata umutwe ku gice cy’amatwi. Sunikira akabaho ku buryo gakora mu bworo by’ibirenge byombi."
@@ -385,11 +386,6 @@ translationSet trans =
                     , kinyarwanda = Just "Fata ifoto ya buri mwana kuri buri bikorwa by'ipimwa Ifoto igomba kwerekana ibice by'umubiri wose by'umwana"
                     }
 
-                ChildActivity ProgressReport ->
-                    { english = "Progress report"
-                    , kinyarwanda = Nothing
-                    }
-
                 ChildActivity Weight ->
                     { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on."
                     , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
@@ -400,6 +396,16 @@ translationSet trans =
                 MotherActivity FamilyPlanning ->
                     { english = "Which, if any, of the following methods do you use?"
                     , kinyarwanda = Just "Ni ubuhe buryo, niba hari ubuhari, mu buryo bukurikira bwo kuboneza urubyaro ukoresha? Muri ubu buryo bukurikira bwo kuboneza urubyaro, ni ubuhe buryo mukoresha?"
+                    }
+
+                MotherActivity ParticipantConsent ->
+                    { english = "Forms:"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Counseling ->
+                    { english = "Please refer to this list during counseling sessions and ensure that each task has been completed."
+                    , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
                     }
 
                 ChildActivity Height ->
@@ -422,11 +428,6 @@ translationSet trans =
                     , kinyarwanda = Just "Ifoto"
                     }
 
-                ChildActivity ProgressReport ->
-                    { english = "Progress Report"
-                    , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
-                    }
-
                 ChildActivity Weight ->
                     { english = "Weight:"
                     , kinyarwanda = Just "Ibiro:"
@@ -437,6 +438,16 @@ translationSet trans =
                 MotherActivity FamilyPlanning ->
                     { english = "Family Planning"
                     , kinyarwanda = Just "Kuboneza Urubyaro? nticyaza muri raporo yimikurire yumwana"
+                    }
+
+                MotherActivity ParticipantConsent ->
+                    { english = "Forms"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Counseling ->
+                    { english = "Counseling"
+                    , kinyarwanda = Just "Ubujyanama"
                     }
 
                 ChildActivity Height ->
@@ -459,11 +470,6 @@ translationSet trans =
                     , kinyarwanda = Just "Ifoto"
                     }
 
-                ChildActivity ProgressReport ->
-                    { english = "Progress Report"
-                    , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
-                    }
-
                 ChildActivity Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
@@ -474,6 +480,16 @@ translationSet trans =
                 MotherActivity FamilyPlanning ->
                     { english = "Family Planning"
                     , kinyarwanda = Just "Kuboneza Urubyaro? nticyaza muri raporo yimikurire yumwana"
+                    }
+
+                MotherActivity ParticipantConsent ->
+                    { english = "Forms"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Counseling ->
+                    { english = "Counseling"
+                    , kinyarwanda = Nothing
                     }
 
                 ChildActivity Height ->
@@ -496,11 +512,6 @@ translationSet trans =
                     , kinyarwanda = Just "Ifoto"
                     }
 
-                ChildActivity ProgressReport ->
-                    { english = "Progress Report"
-                    , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
-                    }
-
                 ChildActivity Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
@@ -513,6 +524,9 @@ translationSet trans =
 
         ActivePage page ->
             translateActivePage page
+
+        Adherence adherence ->
+            translateAdherence adherence
 
         Age months days ->
             { english = toString months ++ " months " ++ toString days ++ " days"
@@ -702,7 +716,7 @@ translationSet trans =
             }
 
         ClickTheCheckMark ->
-            { english = "Click the check mark if the mother is in attendance. The check mark will appear green when a mother has been signed in."
+            { english = "Click the check mark if the mother / caregiver is in attendance. The check mark will appear green when a mother / caregiver has been signed in."
             , kinyarwanda = Just "Kanda (kuri) ku kazu niba umubyeyi ahari. Ku kazu harahita hahindura ibara habe icyaytsi niba wemeje ko umubyeyi ahari"
             }
 
@@ -744,6 +758,24 @@ translationSet trans =
         Continue ->
             { english = "Continue"
             , kinyarwanda = Just "Gukomeza"
+            }
+
+        CounselingTimingHeading timing ->
+            translateCounselingTimingHeading timing
+
+        CounselingTopic topic ->
+            { english = topic.english
+            , kinyarwanda = topic.kinyarwanda
+            }
+
+        CounselorReviewed ->
+            { english = "I have reviewed the above with the participant."
+            , kinyarwanda = Nothing
+            }
+
+        CounselorSignature ->
+            { english = "Entry Counselor Signature"
+            , kinyarwanda = Nothing
             }
 
         CreateSession ->
@@ -1073,7 +1105,7 @@ translationSet trans =
             }
 
         MotherName name ->
-            { english = "Mother: " ++ name
+            { english = "Mother/Caregiver: " ++ name
             , kinyarwanda = Just <| "Umubyeyi: " ++ name
             }
 
@@ -1209,6 +1241,16 @@ translationSet trans =
             , kinyarwanda = Just "Ubwitabire"
             }
 
+        ParticipantReviewed ->
+            { english = "I have reviewed and understand the above."
+            , kinyarwanda = Nothing
+            }
+
+        ParticipantSignature ->
+            { english = "Participant Signature"
+            , kinyarwanda = Nothing
+            }
+
         ParticipantSummary ->
             { english = "Participant Summary"
             , kinyarwanda = Just "Umwirondoro w’urera umwana"
@@ -1260,6 +1302,11 @@ translationSet trans =
             , kinyarwanda = Just <| "Ibipimo by'ubushize: " ++ toString value
             }
 
+        ProgressReport ->
+            { english = "Progress Report"
+            , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
+            }
+
         ReadyToBeginSession ->
             { english = "You are now ready to begin your session."
             , kinyarwanda = Just "Ubu ushobora gutangira ibikorwa byawe."
@@ -1290,9 +1337,9 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        ReportCompleted { pending, total } ->
-            { english = toString (total - pending) ++ " / " ++ toString total ++ " Completed"
-            , kinyarwanda = Just <| toString (total - pending) ++ " / " ++ toString total ++ " Raporo irarangiye"
+        ReportCompleted { pending, completed } ->
+            { english = toString completed ++ " / " ++ toString (pending + completed) ++ " Completed"
+            , kinyarwanda = Just <| toString completed ++ " / " ++ toString (pending + completed) ++ " Raporo irarangiye"
             }
 
         ResolveMonth month ->
@@ -1479,6 +1526,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        TakenCareOfBy ->
+            { english = "Taken care of by"
+            , kinyarwanda = Nothing
+            }
+
         ThisActionCannotBeUndone ->
             { english = "This action cannot be undone."
             , kinyarwanda = Nothing
@@ -1527,6 +1579,11 @@ translationSet trans =
         UnableToUpload ->
             { english = "Unable to Upload"
             , kinyarwanda = Just "Kwohereza ntibikunda"
+            }
+
+        Unknown ->
+            { english = "Unknown"
+            , kinyarwanda = Nothing
             }
 
         Update ->
@@ -1616,7 +1673,7 @@ translationSet trans =
             }
 
 
-translateActivePage : Page -> TranslationSet
+translateActivePage : Page -> TranslationSet String
 translateActivePage page =
     case page of
         DevicePage ->
@@ -1694,7 +1751,60 @@ translateActivePage page =
                             }
 
 
-translateChartPhrase : ChartPhrase -> TranslationSet
+translateAdherence : Adherence -> TranslationSet String
+translateAdherence adherence =
+    case adherence of
+        PrescribedAVRs ->
+            { english = "Ask the mother to name or describe her prescribed AVRs. Can she correctly describe her medication?"
+            , kinyarwanda = Just "Saba umubyeyi kuvuga izina ry’imiti igabanya ubukana bamuhaye. Ese abashije kuyivuga neza?"
+            }
+
+        CorrectDosage ->
+            { english = "Can she tell you the correct dosage?"
+            , kinyarwanda = Just "Yaba abasha kukubwira neza uburyo ayifata?"
+            }
+
+        TimeOfDay ->
+            { english = "Can she tell you the correct time of day to make her ARVs?"
+            , kinyarwanda = Just "Yaba abasha kukubwira amasaha ayifatiraho buri munsi?"
+            }
+
+        Adhering ->
+            { english = "Based on your conversations with her, do you think she is adhering to her ARV regimen?"
+            , kinyarwanda = Just "Ugendeye ku kiganiro mwagiranye, utekereza ko ari gufata imiti ye neza?"
+            }
+
+
+translateCounselingTimingHeading : CounselingTiming -> TranslationSet String
+translateCounselingTimingHeading timing =
+    case timing of
+        Entry ->
+            { english = "Entry Counseling Checklist:"
+            , kinyarwanda = Just "Ibigomba kugirwaho inama ku ntangiriro:"
+            }
+
+        MidPoint ->
+            { english = "Mid Program Review Checklist:"
+            , kinyarwanda = Just "Ibigomba kugirwaho inama hagati mu gusubiramo gahunda:"
+            }
+
+        Exit ->
+            { english = "Exit Counseling Checklist:"
+            , kinyarwanda = Just "Ibigomba kugirwaho inama kumuntu usohotse muri gahunda:"
+            }
+
+        BeforeMidpoint ->
+            { english = "Reminder"
+            , kinyarwanda = Just "Kwibutsa"
+            }
+
+        BeforeExit ->
+            { english = "Reminder"
+            , kinyarwanda = Just "Kwibutsa"
+            }
+
+
+translateChartPhrase : ChartPhrase -> TranslationSet String
 translateChartPhrase phrase =
     case phrase of
         AgeCompletedMonthsYears ->
@@ -1773,7 +1883,7 @@ translateChartPhrase phrase =
             }
 
 
-translateLoginPhrase : LoginPhrase -> TranslationSet
+translateLoginPhrase : LoginPhrase -> TranslationSet String
 translateLoginPhrase phrase =
     case phrase of
         CheckingCachedCredentials ->
@@ -1867,7 +1977,7 @@ translateLoginPhrase phrase =
             }
 
 
-translateMonth : Month -> TranslationSet
+translateMonth : Month -> TranslationSet String
 translateMonth month =
     case month of
         Jan ->
@@ -1931,7 +2041,7 @@ translateMonth month =
             }
 
 
-translateHttpError : Http.Error -> TranslationSet
+translateHttpError : Http.Error -> TranslationSet String
 translateHttpError error =
     case error of
         Http.NetworkError ->
@@ -1960,7 +2070,7 @@ translateHttpError error =
             }
 
 
-translateValidationError : ValidationError -> TranslationSet
+translateValidationError : ValidationError -> TranslationSet String
 translateValidationError id =
     case id of
         UnknownClinic ->
@@ -1969,7 +2079,7 @@ translateValidationError id =
             }
 
 
-translateFormError : ErrorValue ValidationError -> TranslationSet
+translateFormError : ErrorValue ValidationError -> TranslationSet String
 translateFormError error =
     case error of
         Empty ->
@@ -2054,7 +2164,7 @@ translateFormError error =
 {-| This one is hampered by the fact that the field names in etaque/elm-form
 are untyped strings, but we do our best.
 -}
-translateFormField : String -> TranslationSet
+translateFormField : String -> TranslationSet String
 translateFormField field =
     case field of
         "clinic_id" ->

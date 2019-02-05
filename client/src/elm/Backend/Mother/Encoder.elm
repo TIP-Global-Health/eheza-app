@@ -1,4 +1,4 @@
-module Backend.Mother.Encoder exposing (encodeEducationLevel, encodeMother, encodeUbudehe)
+module Backend.Mother.Encoder exposing (encodeChildrenRelation, encodeEducationLevel, encodeMother, encodeUbudehe)
 
 import Backend.Mother.Model exposing (..)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
@@ -12,10 +12,21 @@ encodeMother mother =
     [ ( "label", string mother.name )
     , ( "avatar", maybe string mother.avatarUrl )
     , ( "children", list (List.map encodeEntityUuid mother.children) )
-    , ( "date_birth", encodeYYYYMMDD mother.birthDate )
+    , ( "date_birth", maybe encodeYYYYMMDD mother.birthDate )
+    , ( "relation", encodeChildrenRelation mother.relation )
     , ( "ubudehe", maybe encodeUbudehe mother.ubudehe )
     , ( "education_level", maybe encodeEducationLevel mother.educationLevel )
     ]
+
+
+encodeChildrenRelation : ChildrenRelationType -> Value
+encodeChildrenRelation relation =
+    case relation of
+        MotherRelation ->
+            string "mother"
+
+        CaregiverRelation ->
+            string "caregiver"
 
 
 encodeUbudehe : Ubudehe -> Value
