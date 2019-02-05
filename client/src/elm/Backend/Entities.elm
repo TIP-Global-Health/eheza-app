@@ -1,4 +1,4 @@
-module Backend.Entities exposing (CatchmentAreaUuid, CatchmentAreaUuidType(..), ChildId, ChildIdType(..), ChildNutritionId, ChildNutritionIdType(..), ChildNutritionUuid, ChildNutritionUuidType(..), ChildUuid, ChildUuidType(..), ClinicId, ClinicIdType(..), ClinicUuid, ClinicUuidType(..), FamilyPlanningId, FamilyPlanningIdType(..), FamilyPlanningUuid, FamilyPlanningUuidType(..), HealthCenterUuid, HealthCenterUuidType(..), HeightId, HeightIdType(..), HeightUuid, HeightUuidType(..), MotherId, MotherIdType(..), MotherUuid, MotherUuidType(..), MuacId, MuacIdType(..), MuacUuid, MuacUuidType(..), NurseUuid, NurseUuidType(..), PhotoId, PhotoIdType(..), PhotoUuid, PhotoUuidType(..), SessionId, SessionIdType(..), SessionUuid, SessionUuidType(..), WeightId, WeightIdType(..), WeightUuid, WeightUuidType(..))
+module Backend.Entities exposing (CatchmentAreaUuid, CatchmentAreaUuidType(..), ChildId, ChildIdType(..), ChildNutritionId, ChildNutritionIdType(..), ChildNutritionUuid, ChildNutritionUuidType(..), ChildUuid, ChildUuidType(..), ClinicId, ClinicIdType(..), ClinicUuid, ClinicUuidType(..), CounselingScheduleId, CounselingScheduleIdType(..), CounselingSessionId, CounselingSessionIdType(..), CounselingTopicId, CounselingTopicIdType(..), FamilyPlanningId, FamilyPlanningIdType(..), FamilyPlanningUuid, FamilyPlanningUuidType(..), HealthCenterUuid, HealthCenterUuidType(..), HeightId, HeightIdType(..), HeightUuid, HeightUuidType(..), MotherId, MotherIdType(..), MotherUuid, MotherUuidType(..), MuacId, MuacIdType(..), MuacUuid, MuacUuidType(..), NurseUuid, NurseUuidType(..), ParticipantConsentId, ParticipantConsentIdType(..), ParticipantFormId, ParticipantFormIdType(..), PhotoId, PhotoIdType(..), PhotoUuid, PhotoUuidType(..), SessionId, SessionIdType(..), SessionUuid, SessionUuidType(..), UserId, UserIdType(..), WeightId, WeightIdType(..), WeightUuid, WeightUuidType(..))
 
 {-|
 
@@ -7,15 +7,15 @@ module Backend.Entities exposing (CatchmentAreaUuid, CatchmentAreaUuidType(..), 
 
 It's nice to have type-safe IDs for backend entities, but it tends
 to lead to circular imports if you put the ID types in the "usual"
-place alongisde the data-type itself.
+place alongside the data-type itself.
 
-One typical case where the cirular references arise is where a "child"
+One typical case where the circular references arise is where a "child"
 entity has a reference to its "parent". So, for instance:
 
   - the various measurements have a `sessionId` to refer to the session the
     measurement was taken in.
 
-  - but the `OfflineSession` also has a `DictList` of all its measurmeents
+  - but the `OfflineSession` also has a `DictList` of all its measurements
 
 Now, you could imagine avoiding this in one way or another. For instance, you
 could imagine not storing the `sessionId` in the measurement, but instead
@@ -191,6 +191,14 @@ type WeightUuidType
     = WeightUuidType
 
 
+type alias UserId =
+    EntityId UserIdType
+
+
+type UserIdType
+    = UserIdType
+
+
 type alias ChildId =
     EntityId ChildIdType
 
@@ -213,6 +221,30 @@ type alias ClinicId =
 
 type ClinicIdType
     = ClinicIdType
+
+
+type alias CounselingScheduleId =
+    EntityId CounselingScheduleIdType
+
+
+type CounselingScheduleIdType
+    = CounselingScheduleIdType
+
+
+type alias CounselingSessionId =
+    EntityId CounselingSessionIdType
+
+
+type CounselingSessionIdType
+    = CounselingSessionIdType
+
+
+type alias CounselingTopicId =
+    EntityId CounselingTopicIdType
+
+
+type CounselingTopicIdType
+    = CounselingTopicIdType
 
 
 type alias FamilyPlanningId =
@@ -245,6 +277,22 @@ type alias MuacId =
 
 type MuacIdType
     = MuacIdType
+
+
+type alias ParticipantConsentId =
+    EntityId ParticipantConsentIdType
+
+
+type ParticipantConsentIdType
+    = ParticipantConsentIdType
+
+
+type alias ParticipantFormId =
+    EntityId ParticipantFormIdType
+
+
+type ParticipantFormIdType
+    = ParticipantFormIdType
 
 
 type alias PhotoId =

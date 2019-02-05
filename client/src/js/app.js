@@ -98,7 +98,7 @@ elmApp.ports.cacheCredentials.subscribe(function(params) {
 });
 
 elmApp.ports.cacheEditableSession.subscribe(function(json) {
-    // We cache the session and the edits separattely, so that we can treat
+    // We cache the session and the edits separately, so that we can treat
     // the session itself as basically immutable, and just keep saving the
     // edits.
     var session = json[0];
@@ -138,7 +138,7 @@ elmApp.ports.deleteEditableSession.subscribe(function () {
 });
 
 elmApp.ports.setLanguage.subscribe(function(language) {
-    // Set the choosen language in the switcher to the local storage.
+    // Set the chosen language in the switcher to the local storage.
     localStorage.setItem('language', language);
 });
 
@@ -331,7 +331,7 @@ elmApp.ports.cacheStorageRequest.subscribe(function (request) {
           });
 
           // We'll cache just the ones we don't have already.  This should be
-          // fine, since Drupal generates new URLs if the picture chagnes.
+          // fine, since Drupal generates new URLs if the picture changes.
           var uncached = request.value.filter(function (url) {
             return existing.indexOf(url) < 0;
           });

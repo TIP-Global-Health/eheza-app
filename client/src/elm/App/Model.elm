@@ -16,7 +16,7 @@ import Restful.Login exposing (UserAndData)
 import Rollbar
 import ServiceWorker.Model
 import Time exposing (Time)
-import Translate exposing (Language(..))
+import Translate.Model exposing (Language(..))
 import User.Model exposing (User)
 import Uuid exposing (Uuid)
 import ZScore.Model

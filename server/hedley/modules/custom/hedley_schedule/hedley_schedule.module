@@ -8,6 +8,18 @@
 include_once 'hedley_schedule.features.inc';
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Hide title from the "counseling" node form because we set it programmatically
+ * after in the presave.
+ *
+ * @see hedley_schedule_node_presave()
+ */
+function hedley_schedule_form_counseling_session_node_form_alter(&$form, &$form_state) {
+  $form['title']['#access'] = FALSE;
+}
+
+/**
  * Implements hook_node_presave().
  *
  * @throws \Exception
@@ -15,31 +27,39 @@ include_once 'hedley_schedule.features.inc';
  *   clinic and start date.
  */
 function hedley_schedule_node_presave($node) {
-  if ($node->type != 'session') {
+  if ($node->type == 'session') {
     // Handles only "session" nodes saves.
-    return;
-  }
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $clinic_node = $wrapper->field_clinic->value();
+    $scheduled_dates = $wrapper->field_scheduled_date->value();
 
-  $wrapper = entity_metadata_wrapper('node', $node);
-  $clinic_node = $wrapper->field_clinic->value();
-  $scheduled_dates = $wrapper->field_scheduled_date->value();
+    if (empty($clinic_node) || empty($scheduled_dates)) {
+      // No clinic or dates are available.
+      return;
+    }
 
-  if (empty($clinic_node) || empty($scheduled_dates)) {
-    // No clinic or dates are available.
-    return;
-  }
+    if (!hedley_schedule_clinic_has_sessions($clinic_node->nid, $scheduled_dates['value'])) {
+      // No sessions found.
+      return;
+    }
 
-  if (!hedley_schedule_clinic_has_sessions($clinic_node->nid, $scheduled_dates['value'])) {
-    // No sessions found.
-    return;
-  }
-
-  if ($sessions_nids = hedley_schedule_clinic_get_sessions_by_date($clinic_node->nid, $scheduled_dates['value'])) {
-    foreach ($sessions_nids as $session_nid) {
-      if ($session_nid != $node->nid) {
-        throw new Exception('This session cannot be saved, there is already a session with the same starting date and same clinic.');
+    if ($sessions_nids = hedley_schedule_clinic_get_sessions_by_date($clinic_node->nid, $scheduled_dates['value'])) {
+      foreach ($sessions_nids as $session_nid) {
+        if ($session_nid != $node->nid) {
+          throw new Exception('This session cannot be saved, there is already a session with the same starting date and same clinic.');
+        }
       }
     }
+  }
+
+  if ($node->type == 'counseling_session') {
+    // Handles only "counseling_session" nodes saves.
+    _hedley_schedule_set_entity_title_by_field($node, 'field_child', 'entity_reference');
+  }
+
+  if ($node->type == 'counseling_schedule') {
+    // Handles only "counseling_schedule" nodes saves.
+    _hedley_schedule_set_entity_title_by_field($node, 'field_timing', 'list');
   }
 
   // When unpublishing a "session" node, check if it's a training session and
@@ -131,4 +151,84 @@ function hedley_schedule_clinic_get_sessions_by_date($clinic_nid, $scheduled_sta
     ->execute();
 
   return !empty($result['node']) ? array_keys($result['node']) : NULL;
+}
+
+/**
+ * Get session entities scheduled for today.
+ *
+ * @param int $range
+ *   Optional; Range of nodes to get.
+ *
+ * @return array|null
+ *   Node IDs if they exist or nothing if no nodes exist.
+ */
+function hedley_schedule_get_today_sessions($range = 50) {
+  $today = date('Y-m-d');
+
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'session')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_scheduled_date', 'value', $today)
+    ->range(0, $range)
+    ->execute();
+
+  return !empty($result['node']) ? array_keys($result['node']) : NULL;
+}
+
+/**
+ * Set the title of the node according to a field in the node.
+ *
+ * @param object $node
+ *   The node object.
+ * @param string $field_name
+ *   The name of the field to add to the title.
+ * @param string $field_type
+ *   The type of the field to add to the title.
+ *   Can be one of the following:
+ *   1. entity_reference
+ *   2. term_reference
+ *   3. text
+ *   4. list.
+ */
+function _hedley_schedule_set_entity_title_by_field($node, $field_name, $field_type) {
+  if (isset($node->title) && $node->title) {
+    // No need to set title if it exists.
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  switch ($field_type) {
+    case 'entity_reference':
+    case 'term_reference':
+      $value = $wrapper->{$field_name}->label();
+      break;
+
+    case 'text':
+    case 'list':
+      $value = $wrapper->{$field_name}->value();
+      break;
+
+    default:
+      $value = $wrapper->{$field_name}->value();
+      break;
+  }
+
+  if (!$value) {
+    // Don't set the title if the timing is empty, something is wrong, set a
+    // message.
+    drupal_set_message(format_string('The @entity_type node cannot be without a @field_name filled.', [
+      '@entity_type' => $node->type,
+      '@field_name' => $field_name,
+    ]), 'error');
+    return;
+  }
+
+  $readable_entity_type = ucwords(str_replace('_', ' ', $node->type));
+
+  $title = "$readable_entity_type for $value";
+
+  $wrapper->title->set($title);
 }

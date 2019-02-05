@@ -1,6 +1,6 @@
 module Pages.View exposing (viewClosedSession, viewFoundSession, viewUnauthorizedSession)
 
-import Activity.Model exposing (ActivityType(..))
+import Activity.Model exposing (Activity(..))
 import App.Model exposing (Model)
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
@@ -60,13 +60,13 @@ viewFoundSession user page ( sessionId, session ) model =
                         EveryDict.get activity model.sessionPages.childActivityPages
                             |> Maybe.withDefault Pages.Activity.Model.emptyModel
                             |> Pages.Activity.View.view childParticipant language currentDate zscores activity session
-                            |> Html.map (MsgChildActivity activity)
+                            |> (\( html, maybeChildId ) -> Html.map (MsgChildActivity activity maybeChildId) html)
 
                     MotherActivity activity ->
                         EveryDict.get activity model.sessionPages.motherActivityPages
                             |> Maybe.withDefault Pages.Activity.Model.emptyModel
                             |> Pages.Activity.View.view motherParticipant language currentDate zscores activity session
-                            |> Html.map (MsgMotherActivity activity)
+                            |> (\( html, maybeMotherId ) -> Html.map (MsgMotherActivity activity maybeMotherId) html)
 
             AttendancePage ->
                 Pages.Attendance.View.view language session

@@ -1,5 +1,7 @@
 FROM gizra/drupal-lamp
 
+COPY "$TRAVIS_BUILD_DIR/ci-scripts/docker_files/php-memory-limit.ini" "/usr/local/etc/php/conf.d/php-memory-limit.ini"
+
 ADD $TRAVIS_BUILD_DIR /var/www/html/Server
 WORKDIR /var/www/html/Server
 

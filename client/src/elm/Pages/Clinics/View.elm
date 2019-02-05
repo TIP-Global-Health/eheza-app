@@ -22,7 +22,7 @@ import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date exposing (delta)
-import Translate exposing (Language(..), TranslationId, translate)
+import Translate exposing (Language, translate)
 import User.Model exposing (User)
 import User.Utils exposing (assignedToClinic)
 import Utils.Html exposing (spinner, viewModal)
@@ -297,7 +297,6 @@ viewDownloadProgress language request photos validSession =
                         ]
 
             Failure err ->
-                -- TODO: We could do something with the err ...
                 Just <|
                     div
                         [ class "ui tiny inverted active modal" ]
@@ -307,6 +306,7 @@ viewDownloadProgress language request photos validSession =
                         , div
                             [ class "content" ]
                             [ p [] [ text <| translate language Translate.MakeSureYouAreConnected ]
+                            , viewError language err
                             ]
                         , div
                             [ class "actions" ]

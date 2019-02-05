@@ -1,11 +1,13 @@
 module Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getMotherForm)
 
+import Activity.Utils exposing (expectCounselingActivity, expectParticipantConsent)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValue, mapMeasurementData)
+import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData)
 import EveryDict
+import EveryDictList
 import EverySet
 import Measurement.Model exposing (..)
 
@@ -55,6 +57,11 @@ fromChildMeasurementData data =
             |> currentValue
             |> Maybe.map .value
             |> Maybe.withDefault EverySet.empty
+    , counseling =
+        data
+            |> mapMeasurementData .counselingSession .counseling
+            |> currentValue
+            |> Maybe.map .value
     , photo =
         data
             |> mapMeasurementData .photo .photo
@@ -73,12 +80,27 @@ fromChildMeasurementData data =
 -}
 fromMotherMeasurementData : MeasurementData MotherMeasurements MotherEdits -> ModelMother
 fromMotherMeasurementData data =
+    let
+        -- We show the UI as completed for all current consents
+        progress =
+            data
+                |> mapMeasurementData .consent .consent
+                |> currentValues
+                |> List.map (Tuple.second >> .value >> .formId)
+                |> List.map (\formId -> ( formId, completedParticipantFormProgress ))
+                |> EveryDict.fromList
+    in
     { familyPlanningSigns =
         data
             |> mapMeasurementData .familyPlanning .familyPlanning
             |> currentValue
             |> Maybe.map .value
             |> Maybe.withDefault EverySet.empty
+    , participantConsent =
+        { expected = EveryDictList.empty
+        , view = Nothing
+        , progress = progress
+        }
     }
 
 
@@ -93,6 +115,15 @@ getMotherForm motherId session =
         Nothing ->
             getMotherMeasurementData motherId session
                 |> fromMotherMeasurementData
+                |> (\form ->
+                        { form
+                            | participantConsent =
+                                { expected = expectParticipantConsent session motherId
+                                , view = Nothing
+                                , progress = form.participantConsent.progress
+                                }
+                        }
+                   )
 
 
 getChildForm : ChildId -> EditableSession -> ModelChild
@@ -106,3 +137,22 @@ getChildForm childId session =
         Nothing ->
             getChildMeasurementData childId session
                 |> fromChildMeasurementData
+                |> (\form ->
+                        -- We need some special logic for the counseling
+                        -- session, to fill in the correct kind of session.
+                        -- This seems to be the best place to do that, though
+                        -- that may need some more thinking at some point.
+                        case form.counseling of
+                            Just _ ->
+                                form
+
+                            Nothing ->
+                                { form
+                                    | counseling =
+                                        expectCounselingActivity session childId
+                                            |> Maybe.map
+                                                (\timing ->
+                                                    ( timing, EverySet.empty )
+                                                )
+                                }
+                   )

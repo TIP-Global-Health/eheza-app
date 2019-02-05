@@ -7,7 +7,7 @@ at a session.
 
 -}
 
-import Activity.Utils exposing (isCheckedIn)
+import Activity.Utils exposing (motherIsCheckedIn)
 import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (EditableSession, MsgEditableSession(..))
@@ -81,7 +81,7 @@ viewMother : EditableSession -> MotherId -> Mother -> Html MsgSession
 viewMother session motherId mother =
     let
         checkIn =
-            if isCheckedIn motherId session then
+            if motherIsCheckedIn motherId session then
                 a
                     [ class "link-checked-in"
                     , onClick <| MsgEditableSession <| SetCheckedIn motherId False

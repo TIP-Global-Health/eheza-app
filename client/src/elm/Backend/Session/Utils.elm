@@ -1,4 +1,4 @@
-module Backend.Session.Utils exposing (activeClinicName, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildren, getMother, getMotherMeasurementData, getMyMother, getPhotoUrls, isAuthorized, isClosed, makeEditableSession, mapAllChildEdits, mapChildEdits, mapMotherEdits, setPhotoFileId)
+module Backend.Session.Utils exposing (activeClinicName, emptyMotherMeasurementData, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMyMother, getPhotoUrls, isAuthorized, isClosed, makeEditableSession, mapAllChildEdits, mapChildEdits, mapMotherEdits, setPhotoFileId)
 
 import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (..)
@@ -33,7 +33,7 @@ getChildren motherId session =
                 mother.children
                     |> List.filterMap
                         (\childId ->
-                            EveryDict.get childId session.children
+                            EveryDictList.get childId session.children
                                 |> Maybe.map (\child -> ( childId, child ))
                         )
             )
@@ -42,7 +42,7 @@ getChildren motherId session =
 
 getChild : ChildId -> OfflineSession -> Maybe Child
 getChild childId session =
-    EveryDict.get childId session.children
+    EveryDictList.get childId session.children
 
 
 getMother : MotherId -> OfflineSession -> Maybe Mother
@@ -65,6 +65,12 @@ getChildHistoricalMeasurements : ChildId -> OfflineSession -> ChildMeasurementLi
 getChildHistoricalMeasurements childId session =
     EveryDict.get childId session.historicalMeasurements.children
         |> Maybe.withDefault emptyChildMeasurementList
+
+
+getMotherHistoricalMeasurements : MotherId -> OfflineSession -> MotherMeasurementList
+getMotherHistoricalMeasurements motherId session =
+    EveryDict.get motherId session.historicalMeasurements.mothers
+        |> Maybe.withDefault emptyMotherMeasurementList
 
 
 {-| Gets the data in the form that `Measurement.View` (and others) will want.
@@ -97,6 +103,15 @@ getMotherMeasurementData motherId session =
     , edits =
         EveryDict.get motherId session.edits.mothers
             |> Maybe.withDefault emptyMotherEdits
+    , update = session.update
+    }
+
+
+emptyMotherMeasurementData : EditableSession -> MeasurementData MotherMeasurements MotherEdits
+emptyMotherMeasurementData session =
+    { current = emptyMotherMeasurements
+    , previous = emptyMotherMeasurements
+    , edits = emptyMotherEdits
     , update = session.update
     }
 
@@ -184,7 +199,7 @@ getPhotoUrls session =
 
         fromChildren =
             session.children
-                |> EveryDict.values
+                |> EveryDictList.values
                 |> List.filterMap .avatarUrl
 
         fromMeasurements =
@@ -232,6 +247,7 @@ setPhotoFileId photo id =
                                         | photo =
                                             Edited
                                                 { backend = change.backend
+                                                , id = change.id
                                                 , edited = { edited | value = { value | fid = Just id } }
                                                 }
                                     }
@@ -240,7 +256,7 @@ setPhotoFileId photo id =
                     else
                         edit
 
-                Deleted _ ->
+                Deleted _ _ ->
                     edit
         )
 

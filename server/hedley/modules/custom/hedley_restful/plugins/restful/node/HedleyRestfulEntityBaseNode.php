@@ -67,4 +67,31 @@ abstract class HedleyRestfulEntityBaseNode extends \RestfulEntityBaseNode {
     );
   }
 
+  /**
+   * Process callback, Render the counseling schedule.
+   *
+   * @return mixed
+   *   The counseling schedule entities from the endpoint.
+   */
+  protected function renderCounselingSchedule() {
+    $handler = restful_get_restful_handler('counseling-schedule');
+    $handler->setAccount($this->getAccount());
+
+    return $handler->get();
+  }
+
+  /**
+   * Process callback, Render the participant forms.
+   *
+   * @return mixed
+   *   The participant form entities from the endpoint.
+   */
+  protected function renderParticipantForms() {
+    $handler = restful_get_restful_handler('participants-form');
+    $account = $this->getAccount();
+    $handler->setAccount($account);
+
+    return $handler->get();
+  }
+
 }

@@ -89,6 +89,14 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       ],
     ];
 
+    $public_fields['counseling_schedule'] = [
+      'callback' => [$this, 'renderCounselingSchedule'],
+    ];
+
+    $public_fields['participant_forms'] = [
+      'callback' => [$this, 'renderParticipantForms'],
+    ];
+
     return $public_fields;
   }
 
@@ -196,6 +204,7 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
       'nutrition' => 'nutritions',
       'photo' => 'photos',
       'weight' => 'weights',
+      'counseling_session' => 'counseling-sessions',
     ];
   }
 
@@ -210,7 +219,19 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     // There will eventually be more of these.
     return [
       'family_planning' => 'family-plannings',
+      'participant_consent' => 'participants-consent',
     ];
+  }
+
+  /**
+   * Associate all measurement bundles and their handlers.
+   *
+   * @return array
+   *   Array where they key is the bundle name and the value is the name of the
+   *    handler.
+   */
+  public function getAllMeasurementBundles() {
+    return $this->getChildMeasurementBundles() + $this->getMotherMeasurementBundles();
   }
 
   /**
@@ -413,42 +434,12 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
     // Load the session.
     $session = entity_metadata_wrapper('node', $sessionId);
 
-    // Now, let's get all the existing measurements for this session.
-    $bundles = [
-      'height' => 'heights',
-      'family_planning' => 'family-plannings',
-      'muac' => 'muacs',
-      'nutrition' => 'nutritions',
-      'photo' => 'photos',
-      'weight' => 'weights',
-    ];
+    // Get some metadata for our bundles.
+    $bundles = $this->getAllMeasurementBundles();
 
-    $query = new EntityFieldQuery();
-    $result = $query
-      ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', array_keys($bundles))
-      ->fieldCondition('field_session', 'target_id', $sessionId)
-      ->propertyCondition('status', NODE_PUBLISHED)
-      ->range(0, 10000)
-      ->execute();
-
-    $activity_ids = empty($result['node']) ? [] : array_keys($result['node']);
-
-    $existing = [];
-    node_load_multiple($activity_ids);
-
-    foreach ($activity_ids as $id) {
-      $wrapper = entity_metadata_wrapper('node', $id);
-      if ($wrapper->__isset('field_child')) {
-        $participant_id = $wrapper->field_child->getIdentifier();
-      }
-      else {
-        $participant_id = $wrapper->field_mother->getIdentifier();
-      }
-
-      $existing[$participant_id][$wrapper->getBundle()] = $id;
-    }
-
+    // We'd like this entire operation to succeed or fail as a whole, so that
+    // we don't have deal with partially-successful updates. So, we create a
+    // transaction.
     $transaction = db_transaction();
 
     try {
@@ -460,31 +451,48 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
         }
       }
 
-      foreach ($request['children'] as $childId => $edits) {
+      foreach ($request['children'] as $edits) {
         foreach ($edits as $activity => $edit) {
           if ($bundles[$activity]) {
             $handler = restful_get_restful_handler($bundles[$activity]);
             $handler->setAccount($account);
-            $previous = $existing[$childId][$activity];
 
-            $this->handleEdit($handler, $edit, $previous);
+            $this->handleEdit($handler, $edit);
+          }
+          else {
+            throw new RestfulBadRequestException("Entity $activity is unknown.");
           }
         }
       }
 
-      foreach ($request['mothers'] as $motherId => $edits) {
+      foreach ($request['mothers'] as $edits) {
         foreach ($edits as $activity => $edit) {
           if ($bundles[$activity]) {
             $handler = restful_get_restful_handler($bundles[$activity]);
             $handler->setAccount($account);
-            $previous = $existing[$motherId][$activity];
 
-            $this->handleEdit($handler, $edit, $previous);
+            if (empty($edit['tag'])) {
+              // For participant_consent, we can have multiple edits.
+              foreach ($edit as $multiple) {
+                $this->handleEdit($handler, $multiple);
+              }
+            }
+            else {
+              // For the others, it is just a single edit.
+              $this->handleEdit($handler, $edit);
+            }
+          }
+          else {
+            // We can ignore the `checked_in` activity since we don't track it
+            // on the backend. If sent another unrecognized activity, throw an
+            // error.
+            if ($activity != 'checked_in') {
+              throw new RestfulBadRequestException("Entity $activity is unknown.");
+            }
           }
         }
       }
     }
-
     catch (Exception $e) {
       $transaction->rollback();
       throw $e;
@@ -503,49 +511,28 @@ class HedleyRestfulOfflineSessions extends HedleyRestfulEntityBaseNode {
    *   The Restful handler.
    * @param object $edit
    *   An describing the edit.
-   * @param int $id
-   *   The ID of the existing value for the session, if found.
    */
-  public static function handleEdit($handler, $edit, $id) {
-    // TODO: There is some obvious repeitition below.
+  public static function handleEdit($handler, $edit) {
     switch ($edit['tag']) {
       case 'created':
-        // TODO: These should probably be a customization in the appropriate
-        // handlers.
         $edit['value']['date_measured'] = strtotime($edit['value']['date_measured']);
+
         if ($edit['value']['photo']) {
           $edit['value']['photo'] = $edit['value']['photo']['id'];
         }
 
-        if ($id) {
-          // This is actually an update ... perhaps we ought to signal that
-          // somehow?
-          $handler->patch($id, $edit['value']);
-        }
-        else {
-          $handler->post('', $edit['value']);
-        }
+        $handler->post('', $edit['value']);
         break;
 
       case 'edited':
-        // TODO: These should probably be a customization in the appropriate
-        // handlers.
         $edit['edited']['date_measured'] = strtotime($edit['edited']['date_measured']);
+
         if ($edit['edited']['photo']) {
           $edit['edited']['photo'] = $edit['edited']['photo']['id'];
         }
 
-        if ($id) {
-          $handler->patch($id, $edit['edited']);
-        }
-        else {
-          // This is actually an update ... perhaps the value was deleted
-          // behind our back?
-          $handler->post('', $edit['edited']);
-        }
-        break;
+        $handler->patch($edit['id'], $edit['edited']);
 
-      // TODO: Delete not implemented yet.
     }
   }
 
