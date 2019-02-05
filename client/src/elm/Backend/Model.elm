@@ -19,11 +19,13 @@ in the UI.
 
 import Backend.Child.Model exposing (Child)
 import Backend.Clinic.Model exposing (Clinic)
+import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
-import Backend.Measurement.Model exposing (ChildNutrition, FamilyPlanning, Height, MeasurementEdits, Muac, Photo, Weight)
+import Backend.Measurement.Model exposing (ChildNutrition, FamilyPlanning, Height, MeasurementEdits, Muac, ParticipantConsent, Photo, Weight)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Nurse.Model exposing (Nurse)
+import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Session.Model exposing (EditableSession, MsgEditableSession, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
 import CacheStorage.Model
@@ -167,6 +169,9 @@ type Revision
     | ChildNutritionRevision ChildNutritionUuid ChildNutrition
     | PhotoRevision PhotoUuid Photo
     | WeightRevision WeightUuid Weight
+    | ParticipantFormRevision ParticipantFormUuid ParticipantForm
+    | CounselingScheduleRevision CounselingScheduleUuid CounselingSchedule
+    | CounselingTopicRevision CounselingTopicUuid CounselingTopic
       -- This last one is temporary, as we gradually convert from IDs to UUIDs
     | NotYetImplemented
 

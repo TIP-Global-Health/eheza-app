@@ -8,17 +8,7 @@
 /**
  * Class HedleyRestfulParticipantsForm.
  */
-class HedleyRestfulParticipantsForm extends HedleyRestfulEntityBaseNode {
-
-  /**
-   * Return the type of the activity.
-   *
-   * @return string
-   *   The type name.
-   */
-  protected static function getType() {
-    return 'participant_form';
-  }
+class HedleyRestfulParticipantsForm extends HedleyRestfulSyncBase {
 
   /**
    * {@inheritdoc}

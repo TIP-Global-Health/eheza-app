@@ -146,6 +146,50 @@ function hedley_forms_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-participant_consent-field_nurse'.
+  $field_instances['node-participant_consent-field_nurse'] = array(
+    'bundle' => 'participant_consent',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 8,
+    ),
+  );
+
   // Exported field_instance: 'node-participant_consent-field_participant_form'.
   $field_instances['node-participant_consent-field_participant_form'] = array(
     'bundle' => 'participant_consent',
@@ -234,8 +278,8 @@ function hedley_forms_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-participant_consent-field_witness'.
-  $field_instances['node-participant_consent-field_witness'] = array(
+  // Exported field_instance: 'node-participant_consent-field_uuid'.
+  $field_instances['node-participant_consent-field_uuid'] = array(
     'bundle' => 'participant_consent',
     'default_value' => NULL,
     'deleted' => 0,
@@ -243,13 +287,10 @@ function hedley_forms_field_default_field_instances() {
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'entityreference',
-        'settings' => array(
-          'bypass_access' => FALSE,
-          'link' => FALSE,
-        ),
-        'type' => 'entityreference_label',
-        'weight' => 3,
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 6,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -259,22 +300,21 @@ function hedley_forms_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_witness',
-    'label' => 'Witness',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
     'required' => 0,
     'settings' => array(
+      'text_processing' => 0,
       'user_register_form' => FALSE,
     ),
     'widget' => array(
       'active' => 1,
-      'module' => 'entityreference',
+      'module' => 'text',
       'settings' => array(
-        'match_operator' => 'CONTAINS',
-        'path' => '',
         'size' => 60,
       ),
-      'type' => 'entityreference_autocomplete',
-      'weight' => 2,
+      'type' => 'text_textfield',
+      'weight' => 6,
     ),
   );
 
@@ -404,6 +444,46 @@ function hedley_forms_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-participant_form-field_uuid'.
+  $field_instances['node-participant_form-field_uuid'] = array(
+    'bundle' => 'participant_form',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 5,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 5,
+    ),
+  );
+
   // Translatables
   // Included for use with string extractors like potx.
   t('Body');
@@ -412,9 +492,10 @@ function hedley_forms_field_default_field_instances() {
   t('Kinyarwanda Title');
   t('Language');
   t('Mother');
+  t('Nurse');
   t('Participant Form');
   t('Session');
-  t('Witness');
+  t('UUID');
 
   return $field_instances;
 }

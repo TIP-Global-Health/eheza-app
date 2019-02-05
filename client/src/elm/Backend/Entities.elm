@@ -1,4 +1,4 @@
-module Backend.Entities exposing (CatchmentAreaUuid, CatchmentAreaUuidType(..), ChildId, ChildIdType(..), ChildNutritionId, ChildNutritionIdType(..), ChildNutritionUuid, ChildNutritionUuidType(..), ChildUuid, ChildUuidType(..), ClinicId, ClinicIdType(..), ClinicUuid, ClinicUuidType(..), CounselingScheduleId, CounselingScheduleIdType(..), CounselingSessionId, CounselingSessionIdType(..), CounselingTopicId, CounselingTopicIdType(..), FamilyPlanningId, FamilyPlanningIdType(..), FamilyPlanningUuid, FamilyPlanningUuidType(..), HealthCenterUuid, HealthCenterUuidType(..), HeightId, HeightIdType(..), HeightUuid, HeightUuidType(..), MotherId, MotherIdType(..), MotherUuid, MotherUuidType(..), MuacId, MuacIdType(..), MuacUuid, MuacUuidType(..), NurseUuid, NurseUuidType(..), ParticipantConsentId, ParticipantConsentIdType(..), ParticipantFormId, ParticipantFormIdType(..), PhotoId, PhotoIdType(..), PhotoUuid, PhotoUuidType(..), SessionId, SessionIdType(..), SessionUuid, SessionUuidType(..), UserId, UserIdType(..), WeightId, WeightIdType(..), WeightUuid, WeightUuidType(..))
+module Backend.Entities exposing (CatchmentAreaUuid, CatchmentAreaUuidType(..), ChildId, ChildIdType(..), ChildNutritionId, ChildNutritionIdType(..), ChildNutritionUuid, ChildNutritionUuidType(..), ChildUuid, ChildUuidType(..), ClinicId, ClinicIdType(..), ClinicUuid, ClinicUuidType(..), CounselingScheduleId, CounselingScheduleIdType(..), CounselingScheduleUuid, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionIdType(..), CounselingSessionUuid, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicIdType(..), CounselingTopicUuid, CounselingTopicUuidType(..), FamilyPlanningId, FamilyPlanningIdType(..), FamilyPlanningUuid, FamilyPlanningUuidType(..), HealthCenterUuid, HealthCenterUuidType(..), HeightId, HeightIdType(..), HeightUuid, HeightUuidType(..), MotherId, MotherIdType(..), MotherUuid, MotherUuidType(..), MuacId, MuacIdType(..), MuacUuid, MuacUuidType(..), NurseUuid, NurseUuidType(..), ParticipantConsentId, ParticipantConsentIdType(..), ParticipantConsentUuid, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormIdType(..), ParticipantFormUuid, ParticipantFormUuidType(..), PhotoId, PhotoIdType(..), PhotoUuid, PhotoUuidType(..), SessionId, SessionIdType(..), SessionUuid, SessionUuidType(..), UserId, UserIdType(..), WeightId, WeightIdType(..), WeightUuid, WeightUuidType(..))
 
 {-|
 
@@ -119,6 +119,30 @@ type ClinicUuidType
     = ClinicUuidType
 
 
+type alias CounselingScheduleUuid =
+    EntityUuid CounselingScheduleUuidType
+
+
+type CounselingScheduleUuidType
+    = CounselingScheduleUuidType
+
+
+type alias CounselingSessionUuid =
+    EntityUuid CounselingSessionUuidType
+
+
+type CounselingSessionUuidType
+    = CounselingSessionUuidType
+
+
+type alias CounselingTopicUuid =
+    EntityUuid CounselingTopicUuidType
+
+
+type CounselingTopicUuidType
+    = CounselingTopicUuidType
+
+
 type alias FamilyPlanningUuid =
     EntityUuid FamilyPlanningUuidType
 
@@ -165,6 +189,22 @@ type NurseUuidType
 
 type alias NurseUuid =
     EntityUuid NurseUuidType
+
+
+type alias ParticipantConsentUuid =
+    EntityUuid ParticipantConsentUuidType
+
+
+type ParticipantConsentUuidType
+    = ParticipantConsentUuidType
+
+
+type alias ParticipantFormUuid =
+    EntityUuid ParticipantFormUuidType
+
+
+type ParticipantFormUuidType
+    = ParticipantFormUuidType
 
 
 type alias PhotoUuid =

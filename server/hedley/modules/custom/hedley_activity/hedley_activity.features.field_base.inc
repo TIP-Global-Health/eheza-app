@@ -146,7 +146,7 @@ function hedley_activity_field_default_field_bases() {
           'type' => 'none',
         ),
         'target_bundles' => array(
-          'user' => 'user',
+          'nurse' => 'nurse',
         ),
       ),
       'target_type' => 'node',

@@ -1103,8 +1103,7 @@ makeMotherEdit user currentDate motherId outMsg sessionId session =
                                 , sessionId = Just sessionId
                                 , dateMeasured = currentDate
                                 , value =
-                                    { witness = userId
-                                    , formId = formId
+                                    { formId = formId
                                     , language = language
                                     }
                                 }
