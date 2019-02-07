@@ -1,5 +1,6 @@
-port module App.Update exposing (init, subscriptions, update)
+port module App.Update exposing (init, subscriptions, updateAndThenFetch)
 
+import App.Fetch
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInModel)
 import Backend.Endpoints exposing (nurseEndpoint)
@@ -131,6 +132,12 @@ init flags =
                     )
     in
     ( { updatedModel | language = activeLanguage }, cmd )
+
+
+updateAndThenFetch : Msg -> Model -> ( Model, Cmd Msg )
+updateAndThenFetch msg model =
+    update msg model
+        |> App.Fetch.andThenFetch update
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

@@ -57,6 +57,13 @@ type alias Model =
     , language : Language
     , serviceWorker : ServiceWorker.Model.Model
     , zscores : ZScore.Model.Model
+
+    -- What data did we want last time we checked? We track this so we can
+    -- forget data we don't want any longer. As an optimization, we should
+    -- probably track the last time we wanted each thing, so we can delay
+    -- forgetting for a period of time. (But, in this app, the latency to
+    -- IndexedDB is so low that it isn't likely to matter).
+    , dataWanted : List Msg
     }
 
 
@@ -162,22 +169,23 @@ type MsgLoggedIn
 
 
 type alias Flags =
-    { pinCode : String
-    , hostname : String
-    , activeLanguage : String
+    { activeLanguage : String
     , activeServiceWorker : Bool
+    , hostname : String
+    , pinCode : String
     }
 
 
 emptyModel : Flags -> Model
 emptyModel flags =
     { activePage = PinCodePage
-    , indexedDb = Backend.Model.emptyModelIndexedDb
     , configuration = NotAsked
-    , persistentStorage = Nothing
-    , storageQuota = Nothing
     , currentTime = 0
+    , dataWanted = []
+    , indexedDb = Backend.Model.emptyModelIndexedDb
     , language = English
+    , persistentStorage = Nothing
     , serviceWorker = ServiceWorker.Model.emptyModel flags.activeServiceWorker
+    , storageQuota = Nothing
     , zscores = ZScore.Model.emptyModel
     }
