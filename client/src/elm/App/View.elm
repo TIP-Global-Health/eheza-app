@@ -148,10 +148,8 @@ viewUserPage page model configured =
                 -- Pages.Admin.View.view configured.config model.language currentDate login.credentials.user login.data.backend login.data.adminPage
                 --     |> Html.map (MsgLoggedIn << MsgPageAdmin)
                 MyAccountPage ->
-                    emptyNode
+                    Pages.MyAccount.View.view model.language loggedInModel.nurse
 
-                -- TODO: Re-implement
-                -- Pages.MyAccount.View.view model.language login.credentials.user
                 ClinicsPage clinicId ->
                     Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) clinicId model.indexedDb
 
