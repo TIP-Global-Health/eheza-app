@@ -19,8 +19,6 @@ decodeMother =
                 , succeed Nothing
                 ]
             )
-        -- TODO: Remove the children!
-        |> hardcoded []
         |> optional "date_birth" (map Just decodeYYYYMMDD) Nothing
         |> optional "relation" decodeChildrenRelation MotherRelation
         |> optional "ubudehe" (nullable decodeUbudehe) Nothing

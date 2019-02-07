@@ -6,12 +6,12 @@ import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Session.Model
 import Backend.Update
-import Backend.Utils exposing (withEditableSession)
 import Config
 import Date
 import Device.Decoder
 import Device.Encoder
 import Dict
+import EveryDict
 import EverySet
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Http exposing (Error(..))
@@ -22,11 +22,11 @@ import Maybe.Extra
 import Pages.Admin.Update
 import Pages.Device.Model
 import Pages.Device.Update
-import Pages.Model
 import Pages.Page exposing (Page(..), UserPage(AdminPage, ClinicsPage))
 import Pages.PinCode.Model
 import Pages.PinCode.Update
-import Pages.Update
+import Pages.Session.Model
+import Pages.Session.Update
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, select, toCmd, toEntityId)
 import Rollbar
@@ -98,7 +98,6 @@ init flags =
                                   -}
                                   Task.perform Tick Time.now
                                 , fetchCachedDevice
-                                , Backend.Update.fetchEditableSession ()
                                 ]
 
                         configuredModel =
@@ -145,16 +144,6 @@ update msg model =
                 |> Maybe.map (.nurse >> Tuple.first)
     in
     case msg of
-        MsgCache subMsg ->
-            let
-                ( subModel, subCmd, extraMsgs ) =
-                    Backend.Update.updateCache nurseId currentDate subMsg model.cache
-            in
-            ( { model | cache = subModel }
-            , Cmd.map MsgCache subCmd
-            )
-                |> sequence update extraMsgs
-
         MsgIndexedDb subMsg ->
             let
                 ( subModel, subCmd ) =
@@ -181,13 +170,13 @@ update msg model =
                     case loggedInMsg of
                         MsgBackend subMsg ->
                             let
-                                ( backend, cmd, cacheMsgs ) =
+                                ( backend, cmd ) =
                                     -- TODO: delete this
                                     Backend.Update.updateBackend "" "" subMsg data.backend
                             in
                             ( { data | backend = backend }
                             , Cmd.map (MsgLoggedIn << MsgBackend) cmd
-                            , List.map MsgCache cacheMsgs
+                            , []
                             )
 
                         MsgPageAdmin subMsg ->
@@ -198,6 +187,19 @@ update msg model =
                             ( { data | adminPage = newModel }
                             , Cmd.map (MsgLoggedIn << MsgPageAdmin) cmd
                             , appMsgs
+                            )
+
+                        MsgPageSession sessionId subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.sessionPages
+                                        |> EveryDict.get sessionId
+                                        |> Maybe.withDefault Pages.Session.Model.emptyModel
+                                        |> Pages.Session.Update.update sessionId subMsg
+                            in
+                            ( { data | sessionPages = EveryDict.insert sessionId subModel data.sessionPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageSession sessionId) subCmd
+                            , extraMsgs
                             )
                 )
                 model
@@ -296,22 +298,6 @@ update msg model =
             , Cmd.map MsgServiceWorker subCmd
             )
                 |> sequence update extraMsgs
-
-        MsgSession subMsg ->
-            -- TODO: Should ideally reflect the fact that an EditableSession is
-            -- required in the types.
-            withEditableSession ( model, Cmd.none )
-                (\_ session ->
-                    let
-                        ( subModel, subCmd, extraMsgs ) =
-                            Pages.Update.updateSession session subMsg model.sessionPages
-                    in
-                    ( { model | sessionPages = subModel }
-                    , Cmd.map MsgSession subCmd
-                    )
-                        |> sequence update extraMsgs
-                )
-                model.cache
 
         MsgZScore subMsg ->
             let
@@ -513,7 +499,6 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Time.every minute Tick
-        , Sub.map MsgCache Backend.Update.subscriptions
         , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
         , persistentStorage SetPersistentStorage
         , storageQuota SetStorageQuota

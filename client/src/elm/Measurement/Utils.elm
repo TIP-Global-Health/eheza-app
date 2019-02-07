@@ -10,6 +10,7 @@ import EveryDict
 import EveryDictList
 import EverySet
 import Measurement.Model exposing (..)
+import Pages.Session.Model
 
 
 getInputConstraintsHeight : FloatInputConstraints
@@ -104,11 +105,11 @@ fromMotherMeasurementData data =
     }
 
 
-getMotherForm : MotherId -> EditableSession -> ModelMother
-getMotherForm motherId session =
+getMotherForm : MotherId -> Pages.Session.Model.Model -> EditableSession -> ModelMother
+getMotherForm motherId pages session =
     -- Could use `Maybe.withDefault` here instead, but then
     -- `fromMotherMeasurementData` would get calculated every time
-    case EveryDict.get motherId session.motherForms of
+    case EveryDict.get motherId pages.motherForms of
         Just motherForm ->
             motherForm
 
@@ -126,11 +127,11 @@ getMotherForm motherId session =
                    )
 
 
-getChildForm : ChildId -> EditableSession -> ModelChild
-getChildForm childId session =
+getChildForm : ChildId -> Pages.Session.Model.Model -> EditableSession -> ModelChild
+getChildForm childId pages session =
     -- Could use `Maybe.withDefault` here instead, but then
     -- `fromChildMeasurementData` would get calculated every time
-    case EveryDict.get childId session.childForms of
+    case EveryDict.get childId pages.childForms of
         Just childForm ->
             childForm
 

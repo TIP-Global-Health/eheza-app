@@ -11,7 +11,6 @@ encodeMother : Mother -> List ( String, Value )
 encodeMother mother =
     [ ( "label", string mother.name )
     , ( "avatar", maybe string mother.avatarUrl )
-    , ( "children", list (List.map encodeEntityUuid mother.children) )
     , ( "date_birth", maybe encodeYYYYMMDD mother.birthDate )
     , ( "relation", encodeChildrenRelation mother.relation )
     , ( "ubudehe", maybe encodeUbudehe mother.ubudehe )

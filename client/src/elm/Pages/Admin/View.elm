@@ -96,10 +96,16 @@ contentForAdmin config language currentDate backend model =
 
 viewLoadedClinics : Config.Model -> Language -> NominalDate -> ModelBackend -> Model -> EveryDictList ClinicId Clinic -> List (Html Msg)
 viewLoadedClinics config language currentDate backend model clinics =
-    viewWebData language
-        (viewLoadedSessions config language backend model clinics)
-        identity
-        backend.futureSessions
+    []
+
+
+
+{- TODO: reimplement
+   viewWebData language
+       (viewLoadedSessions config language backend model clinics)
+       identity
+       backend.futureSessions
+-}
 
 
 viewLoadedSessions : Config.Model -> Language -> ModelBackend -> Model -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)

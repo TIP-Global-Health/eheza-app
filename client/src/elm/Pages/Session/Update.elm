@@ -1,6 +1,7 @@
-module Pages.Update exposing (updateSession)
+module Pages.Session.Update exposing (update)
 
-import App.Model exposing (Msg(MsgSession))
+import App.Model
+import Backend.Entities exposing (..)
 import Backend.Model
 import Backend.Session.Model exposing (EditableSession, MsgEditableSession(..))
 import Backend.Session.Utils exposing (emptyMotherMeasurementData, getMotherMeasurementData)
@@ -10,17 +11,23 @@ import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Pages.Activities.Update
 import Pages.Activity.Model
 import Pages.Activity.Update
-import Pages.Model exposing (..)
 import Pages.Participant.Model
 import Pages.Participant.Update
 import Pages.Participants.Update
+import Pages.Session.Model exposing (..)
+
+
+update : SessionId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update sessionId msg model =
+    --TODO
+    ( model, Cmd.none, [] )
 
 
 {-| We need the editableSession in order to pass on some needed data. But we
 don't modify it directly ... instead, we return messages to do so.
 -}
-updateSession : EditableSession -> MsgSession -> SessionPages -> ( SessionPages, Cmd MsgSession, List App.Model.Msg )
-updateSession session msg model =
+updateFoundSession : SessionId -> EditableSession -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+updateFoundSession sessionId session msg model =
     case msg of
         MsgActivities subMsg ->
             let
@@ -29,9 +36,10 @@ updateSession session msg model =
             in
             ( { model | activitiesPage = subModel }
             , Cmd.map MsgActivities subCmd
-            , List.map MsgSession extraMsgs
+            , List.map (App.Model.MsgLoggedIn << App.Model.MsgPageSession sessionId) extraMsgs
             )
 
+        -- TODO: Figure out whether maybeChildId really needs to be a Maybe.
         MsgChildActivity activityType maybeChildId subMsg ->
             let
                 activityPage =
@@ -39,7 +47,7 @@ updateSession session msg model =
                         |> Maybe.withDefault Pages.Activity.Model.emptyModel
 
                 childForm =
-                    Maybe.map (\childId -> getChildForm childId session) maybeChildId
+                    Maybe.map (\childId -> getChildForm childId model session) maybeChildId
 
                 ( subModel, subCmd, subForm, outMsg, page ) =
                     Pages.Activity.Update.updateChild subMsg activityPage childForm
@@ -48,13 +56,16 @@ updateSession session msg model =
                     maybeChildId
                         |> Maybe.map
                             (\childId ->
-                                [ Maybe.map (Backend.Session.Model.SetChildForm childId) subForm
-                                , Maybe.map (MeasurementOutMsgChild childId) outMsg
+                                [ Maybe.map (MeasurementOutMsgChild childId) outMsg
                                 ]
                                     |> List.filterMap identity
-                                    |> List.map (App.Model.MsgCache << Backend.Model.MsgEditableSession)
+                                    |> List.map (App.Model.MsgIndexedDb << Backend.Model.MsgEditableSession sessionId)
                             )
                         |> Maybe.withDefault []
+
+                childForms =
+                    Maybe.map2 (\childId form -> EveryDict.insert childId form model.childForms) maybeChildId subForm
+                        |> Maybe.withDefault model.childForms
 
                 redirectMsgs =
                     Maybe.map App.Model.SetActivePage page
@@ -62,15 +73,18 @@ updateSession session msg model =
             in
             -- So, to summarize
             --
-            -- - we own the subModel and subCmd, so we handle them normally
-            -- - the EditableSession owns the subForm, so we send a message to update that
+            -- - we own the subModel, subCmd, and subForm, so we handle them normally
             -- - we turn the redirect page into a message, if provided
             -- - we send a message to implement the OutMsg, if provided
-            ( { model | childActivityPages = EveryDict.insert activityType subModel model.childActivityPages }
+            ( { model
+                | childActivityPages = EveryDict.insert activityType subModel model.childActivityPages
+                , childForms = childForms
+              }
             , Cmd.map (MsgChildActivity activityType maybeChildId) subCmd
             , redirectMsgs ++ sessionMsgs
             )
 
+        -- TODO: Figure out whether `maybeMotherId` must be a Maybe.
         MsgMotherActivity activityType maybeMotherId subMsg ->
             let
                 activityPage =
@@ -78,7 +92,7 @@ updateSession session msg model =
                         |> Maybe.withDefault Pages.Activity.Model.emptyModel
 
                 motherForm =
-                    Maybe.map (\motherId -> getMotherForm motherId session) maybeMotherId
+                    Maybe.map (\motherId -> getMotherForm motherId model session) maybeMotherId
 
                 measurements =
                     maybeMotherId
@@ -92,13 +106,16 @@ updateSession session msg model =
                     maybeMotherId
                         |> Maybe.map
                             (\motherId ->
-                                [ Maybe.map (Backend.Session.Model.SetMotherForm motherId) subForm
-                                , Maybe.map (MeasurementOutMsgMother motherId) outMsg
+                                [ Maybe.map (MeasurementOutMsgMother motherId) outMsg
                                 ]
                                     |> List.filterMap identity
-                                    |> List.map (App.Model.MsgCache << Backend.Model.MsgEditableSession)
+                                    |> List.map (App.Model.MsgIndexedDb << Backend.Model.MsgEditableSession sessionId)
                             )
                         |> Maybe.withDefault []
+
+                motherForms =
+                    Maybe.map2 (\motherId form -> EveryDict.insert motherId form model.motherForms) maybeMotherId subForm
+                        |> Maybe.withDefault model.motherForms
 
                 redirectMsgs =
                     Maybe.map App.Model.SetActivePage page
@@ -110,7 +127,10 @@ updateSession session msg model =
             -- - the EditableSession owns the subForm, so we send a message to update that
             -- - we turn the redirect page into a message, if provided
             -- - we send a message to implement the OutMsg, if provided
-            ( { model | motherActivityPages = EveryDict.insert activityType subModel model.motherActivityPages }
+            ( { model
+                | motherActivityPages = EveryDict.insert activityType subModel model.motherActivityPages
+                , motherForms = motherForms
+              }
             , Cmd.map (MsgMotherActivity activityType maybeMotherId) subCmd
             , redirectMsgs ++ sessionMsgs
             )
@@ -118,7 +138,7 @@ updateSession session msg model =
         MsgChild childId subMsg ->
             let
                 childForm =
-                    getChildForm childId session
+                    getChildForm childId model session
 
                 childPage =
                     EveryDict.get childId model.childPages
@@ -128,10 +148,8 @@ updateSession session msg model =
                     Pages.Participant.Update.updateChild subMsg childPage childForm
 
                 sessionMsgs =
-                    List.map (App.Model.MsgCache << Backend.Model.MsgEditableSession)
-                        (Backend.Session.Model.SetChildForm childId subForm
-                            :: Maybe.Extra.toList (Maybe.map (MeasurementOutMsgChild childId) outMsg)
-                        )
+                    List.map (App.Model.MsgIndexedDb << Backend.Model.MsgEditableSession sessionId)
+                        (Maybe.Extra.toList (Maybe.map (MeasurementOutMsgChild childId) outMsg))
 
                 redirectMsgs =
                     Maybe.map App.Model.SetActivePage page
@@ -139,11 +157,13 @@ updateSession session msg model =
             in
             -- So, to summarize
             --
-            -- - we own the subModel and subCmd, so we handle them normally
-            -- - the EditableSession owns the subForm, so we send a message to update that
+            -- - we own the subModel, subCmd, and subForm so we handle them normally
             -- - we turn the redirect page into a message, if provided
             -- - we send a message to implement the OutMsg, if provided
-            ( { model | childPages = EveryDict.insert childId subModel model.childPages }
+            ( { model
+                | childPages = EveryDict.insert childId subModel model.childPages
+                , childForms = EveryDict.insert childId subForm model.childForms
+              }
             , Cmd.map (MsgChild childId) subCmd
             , redirectMsgs ++ sessionMsgs
             )
@@ -152,15 +172,15 @@ updateSession session msg model =
             -- Just route it over to the backend ...
             ( model
             , Cmd.none
-            , [ App.Model.MsgCache <|
-                    Backend.Model.MsgEditableSession subMsg
+            , [ App.Model.MsgIndexedDb <|
+                    Backend.Model.MsgEditableSession sessionId subMsg
               ]
             )
 
         MsgMother motherId subMsg ->
             let
                 motherForm =
-                    getMotherForm motherId session
+                    getMotherForm motherId model session
 
                 motherPage =
                     EveryDict.get motherId model.motherPages
@@ -173,10 +193,8 @@ updateSession session msg model =
                     Pages.Participant.Update.updateMother subMsg motherPage motherForm measurements
 
                 sessionMsgs =
-                    List.map (App.Model.MsgCache << Backend.Model.MsgEditableSession)
-                        (Backend.Session.Model.SetMotherForm motherId subForm
-                            :: Maybe.Extra.toList (Maybe.map (MeasurementOutMsgMother motherId) outMsg)
-                        )
+                    List.map (App.Model.MsgIndexedDb << Backend.Model.MsgEditableSession sessionId)
+                        (Maybe.Extra.toList (Maybe.map (MeasurementOutMsgMother motherId) outMsg))
 
                 redirectMsgs =
                     Maybe.map App.Model.SetActivePage page
@@ -184,11 +202,13 @@ updateSession session msg model =
             in
             -- So, to summarize
             --
-            -- - we own the subModel and subCmd, so we handle them normally
-            -- - the EditableSession owns the subForm, so we send a message to update that
+            -- - we own the subModel, subCmd, and subForm, so we handle them normally
             -- - we turn the redirect page into a message, if provided
             -- - we send a message to implement the OutMsg, if provided
-            ( { model | motherPages = EveryDict.insert motherId subModel model.motherPages }
+            ( { model
+                | motherPages = EveryDict.insert motherId subModel model.motherPages
+                , motherForms = EveryDict.insert motherId subForm model.motherForms
+              }
             , Cmd.map (MsgMother motherId) subCmd
             , redirectMsgs ++ sessionMsgs
             )
@@ -200,7 +220,7 @@ updateSession session msg model =
             in
             ( { model | participantsPage = subModel }
             , Cmd.map MsgParticipants subCmd
-            , List.map MsgSession extraMsgs
+            , List.map (App.Model.MsgLoggedIn << App.Model.MsgPageSession sessionId) extraMsgs
             )
 
         SetActivePage page ->

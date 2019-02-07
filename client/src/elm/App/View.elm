@@ -2,7 +2,7 @@ module App.View exposing (view)
 
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInModel)
-import Backend.Model exposing (CachedSessionError(..))
+import Backend.Model exposing (ModelIndexedDb)
 import Config.View
 import Date
 import Gizra.Html exposing (emptyNode)
@@ -17,7 +17,7 @@ import Pages.MyAccount.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.PinCode.View
-import Pages.View exposing (viewFoundSession)
+import Pages.Session.View exposing (view)
 import RemoteData exposing (RemoteData(..), WebData)
 import ServiceWorker.View
 import Translate exposing (translate)
@@ -174,56 +174,4 @@ viewLoading =
         [ div
             [ class "ui segment center aligned" ]
             [ spinner ]
-        ]
-
-
-viewSessionPage : User -> SessionPage -> Model -> Html Msg
-viewSessionPage user page model =
-    case model.cache.editableSession of
-        NotAsked ->
-            wrapPage [ spinner ]
-
-        Loading ->
-            wrapPage [ spinner ]
-
-        Failure err ->
-            viewCachedSessionError model.language err
-
-        Success fetched ->
-            case fetched of
-                Just session ->
-                    viewFoundSession user page session model
-                        |> Html.map MsgSession
-
-                Nothing ->
-                    -- We have to handle this out here, because `MsgSession` messages don't
-                    -- get processed at all if there is no `EditableSession`. So, the redirect
-                    -- doesn't actually work if we do it in `viewFoundSession`.
-                    wrapPage
-                        [ div
-                            [ class "ui error" ]
-                            [ p [] [ text <| translate model.language Translate.NoCachedSession ]
-                            , button
-                                [ class "ui fluid primary button"
-                                , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
-                                ]
-                                [ text <| translate model.language Translate.SelectYourClinic ]
-                            ]
-                        ]
-
-
-viewCachedSessionError : Language -> CachedSessionError -> Html any
-viewCachedSessionError language err =
-    div [ class "wrap wrap-alt-2" ]
-        [ div
-            [ class "ui basic head segment" ]
-            [ h1
-                [ class "ui header" ]
-                [ text <| translate language Translate.ErrorFetchingCachedSessionTitle ]
-            ]
-        , div
-            [ class "ui basic segment" ]
-            [ p []
-                [ text <| translate language Translate.ErrorFetchingCachedSessionMessage ]
-            ]
         ]

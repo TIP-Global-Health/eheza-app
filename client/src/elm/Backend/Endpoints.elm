@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (SessionParams, clinicEndpoint, encodeSessionParams, healthCenterEndpoint, nurseEndpoint, offlineSessionEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, trainingSessionsEndpoint)
+module Backend.Endpoints exposing (SessionParams, clinicEndpoint, encodeSessionParams, healthCenterEndpoint, nurseEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, trainingSessionsEndpoint)
 
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
@@ -9,7 +9,7 @@ import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Model exposing (TrainingSessionRequest)
 import Backend.Nurse.Decoder exposing (decodeNurse)
 import Backend.Nurse.Model exposing (Nurse)
-import Backend.Session.Decoder exposing (decodeOfflineSession, decodeSession, decodeTrainingSessionRequest)
+import Backend.Session.Decoder exposing (decodeSession, decodeTrainingSessionRequest)
 import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession, encodeTrainingSessionRequest)
 import Backend.Session.Model exposing (EditableSession, MsgEditableSession(..), OfflineSession, Session)
 import Backend.SyncData.Decoder exposing (decodeSyncData)
@@ -101,9 +101,3 @@ trainingSessionsEndpoint =
     -- immediately.
     endpoint "api/training_session_actions" (succeed ()) decodeTrainingSessionRequest drupalBackend
         |> withValueEncoder encodeTrainingSessionRequest
-
-
-offlineSessionEndpoint : ReadWriteEndPoint Error SessionId OfflineSession OfflineSession ()
-offlineSessionEndpoint =
-    swEndpoint "nodes/offline_session" decodeOfflineSession
-        |> withValueEncoder (object << encodeOfflineSession)

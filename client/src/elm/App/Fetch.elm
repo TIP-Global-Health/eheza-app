@@ -7,7 +7,8 @@ import Gizra.NominalDate exposing (fromLocalDateTime)
 import Pages.Admin.Fetch
 import Pages.Clinics.Fetch
 import Pages.Device.Fetch
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.ProgressReport.Fetch
 
 
 {-| See the comment in Pages.OpenSessions.Fetch for an explanatio of this.
@@ -49,6 +50,10 @@ fetch model =
                             |> List.map (MsgLoggedIn << MsgPageAdmin)
                     )
                 |> Maybe.withDefault []
+
+        UserPage (SessionPage sessionId (ProgressReportPage childId)) ->
+            Pages.ProgressReport.Fetch.fetch childId model.indexedDb
+                |> List.map MsgIndexedDb
 
         _ ->
             []

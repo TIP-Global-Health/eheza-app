@@ -1,7 +1,15 @@
 module Backend.Session.Model exposing (EditableSession, MsgEditableSession(..), OfflineSession, Session)
 
-{-| A "session" refers to an editing session ... that is, an occasion on
-which measurements are taken.
+{-| A "session" refers to a group session with mothers and babies ... that is,
+an occasion on which measurements are taken in a group setting.
+
+The `Session` contains basic data for a session.
+
+The `OfflineSession` and `EditableSession` are constructed (on the fly) from
+more basic information we track in `Backend.Model`. Eventually, we could
+consider getting rid of the middle-man, but it's convenient for the moment
+because there was so much code written in terms of an `EditableSession`.
+
 -}
 
 import Backend.Child.Model exposing (Child)
@@ -18,12 +26,12 @@ import Measurement.Model
 import RemoteData exposing (WebData)
 
 
-{-| This is the basic `Session` data that we get when we're
-online, from /api/sessions.
+{-| This is the basic `Session` data ... essentially, for scheduling purposes.
 
-Note that `closed` here tracks what the backend thinks ... there is a separate
-structure in `EditableSession.edits` that tracks whether we've closed a session
-locally.
+The `training` field identifies a "training" session that is handled differently
+if we're in the sandbox environment. It is intended to be a kind of session that
+can be quickly created and destroyed. (As opposed to historical sessions which
+are meant to stay throughout a training workshop).
 
 -}
 type alias Session =
@@ -34,25 +42,19 @@ type alias Session =
     }
 
 
-{-| This adds the additional information we get when we take a Session offline
-for data-entry. It includes everything we need for data-entry. We get it from
-`/api/offline_sessions` (and massage that a bit for convenience).
+{-| Originally, this represented the additional information we obtained when
+downloading a session for "offline" use. Now, we populate this on the fly
+from `Backend.Model`. Eventually, we could consider cutting out the middle-man,
+but there is a lot of code which is written in terms of `OfflineSession` and
+`EditableSession`.
 -}
 type alias OfflineSession =
     -- The particular session we're working on
     { session : Session
 
-    -- All the sessions for the relevant clinic, sorted by date. We need these
-    -- for the progress report.
-    , allSessions : EveryDictList SessionId Session
+    -- Some configuration data.
     , allParticipantForms : EveryDictList ParticipantFormId ParticipantForm
-
-    -- Our master list of all the counseling topics, for each timing
     , everyCounselingSchedule : EveryCounselingSchedule
-
-    -- We include the basic information about all the clinics so that we can at
-    -- least present a limited UI on clinic pages that includes their name.
-    , clinics : EveryDictList ClinicId Clinic
 
     -- We'll sort by mother's name. The children's sort order doesn't really
     -- mean anything, but it's easier to work with mothers and children as
@@ -60,11 +62,12 @@ type alias OfflineSession =
     , mothers : EveryDictList MotherId Mother
     , children : EveryDictList ChildId Child
 
-    -- These are all the measurements which have been saved to the backend.
+    -- These are all the measurements which have been saved. (Not necessarily
+    -- synced to the backend yet).
     , historicalMeasurements : HistoricalMeasurements
 
-    -- These are the measurements we're currently working on, that is,
-    -- the ones for this very session, that have been saved to the backend.
+    -- These are the measurements we're currently working on, that is, the ones
+    -- for this very session, that have been saved (at least locally).
     , currentMeasurements : Measurements
 
     -- These represent the most recent measurement of each kind in
@@ -75,16 +78,9 @@ type alias OfflineSession =
     }
 
 
-{-| This combines an OfflineSession with a set of cached edits we're
-currently working with for that Session, which haven't yet been saved to
-the backend (but have been saved locally).
-
-So, the `offlineSession` represents what's on the backend, while `edits`
-represents what's cached in local storage, and not yet on the backend.
-
-The `update` tracks whether we have a save in progress for the
-cacehd edits. It's inside the type, because we can't save them unless
-we have them ...
+{-| This combines an OfflineSession with some structures that track
+the set of forms we use to record measurements, and the requests
+to save those measurements (locally).
 
 `edits` includes things like attendance and whether we've closed the
 session since downloading it.
@@ -96,17 +92,13 @@ sources of truth for what's going on in the editor. Plus, logically the
 motherForms and childForms belong in the `EditableSession` since they are tied
 to an editable session. And, we fundamentally want one for each child and
 mother (to represent the edits for each child and mother) ... that way we
-guarantee that they don't "leak" to the wrong child or mother. So, it seems
-that they belong in this type, but that may not be perfect. (This is the kind
-of thing that `RestfulData` might eventually handle more elegantly).
+guarantee that they don't "leak" to the wrong child or mother.
 
 -}
 type alias EditableSession =
     { offlineSession : OfflineSession
     , edits : MeasurementEdits
     , update : WebData ()
-    , childForms : EveryDict ChildId Measurement.Model.ModelChild
-    , motherForms : EveryDict MotherId Measurement.Model.ModelMother
     }
 
 
@@ -121,6 +113,4 @@ type MsgEditableSession
     | MeasurementOutMsgMother MotherId Measurement.Model.OutMsgMother
     | RefetchSession
     | SetCheckedIn MotherId Bool
-    | SetMotherForm MotherId Measurement.Model.ModelMother
-    | SetChildForm ChildId Measurement.Model.ModelChild
     | SetPhotoFileId Photo Int

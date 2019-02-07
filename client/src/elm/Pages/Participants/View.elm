@@ -32,7 +32,7 @@ view language ( sessionId, editableSession ) model =
         ( mothersWithPendingActivity, mothersWithoutPendingActivity ) =
             EveryDictList.partition
                 (\motherId mother ->
-                    getActivityCountForMother motherId mother summary
+                    getActivityCountForMother editableSession motherId mother summary
                         |> (\count -> count.pending > 0)
                 )
                 mothersInAttendance

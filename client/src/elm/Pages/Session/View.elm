@@ -1,8 +1,9 @@
-module Pages.View exposing (viewClosedSession, viewFoundSession, viewUnauthorizedSession)
+module Pages.Session.View exposing (view)
 
 import Activity.Model exposing (Activity(..))
-import App.Model exposing (Model)
+import App.Model
 import Backend.Entities exposing (..)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (activeClinicName, isAuthorized, isClosed)
 import Date
@@ -16,91 +17,92 @@ import Pages.Activities.View
 import Pages.Activity.Model
 import Pages.Activity.View
 import Pages.Attendance.View
-import Pages.Model exposing (..)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model
 import Pages.Participant.View
 import Pages.Participants.View
 import Pages.ProgressReport.View
+import Pages.Session.Model exposing (..)
 import Participant.Utils exposing (childParticipant, motherParticipant)
+import RemoteData
 import Translate exposing (Language, translate)
 import User.Model exposing (User)
 
 
-{-| This is a view function specialized for session pages, which require an editable session.
--}
-viewFoundSession : User -> SessionPage -> ( SessionId, EditableSession ) -> Model -> Html MsgSession
-viewFoundSession user page ( sessionId, session ) model =
+view : User -> SessionPage -> ( SessionId, EditableSession ) -> Model -> App.Model.Model -> ModelIndexedDb -> Html Msg
+view user page ( sessionId, session ) model app db =
     let
         language =
-            model.language
+            app.language
 
         currentDate =
-            fromLocalDateTime <| Date.fromTime model.currentTime
+            fromLocalDateTime <| Date.fromTime app.currentTime
 
         zscores =
-            model.zscores
+            app.zscores
     in
     if isClosed currentDate session then
-        viewClosedSession language sessionId session
+        viewClosedSession language sessionId session db
 
     else if not (isAuthorized user session) then
-        viewUnauthorizedSession language session
+        viewUnauthorizedSession language session db
 
     else
         case page of
             ActivitiesPage ->
-                model.sessionPages.activitiesPage
+                model.activitiesPage
                     |> Pages.Activities.View.view language ( sessionId, session )
                     |> Html.map MsgActivities
 
             ActivityPage activityType ->
                 case activityType of
                     ChildActivity activity ->
-                        EveryDict.get activity model.sessionPages.childActivityPages
+                        EveryDict.get activity model.childActivityPages
                             |> Maybe.withDefault Pages.Activity.Model.emptyModel
-                            |> Pages.Activity.View.view childParticipant language currentDate zscores activity ( sessionId, session )
+                            |> Pages.Activity.View.view childParticipant language currentDate zscores activity ( sessionId, session ) model
                             |> (\( html, maybeChildId ) -> Html.map (MsgChildActivity activity maybeChildId) html)
 
                     MotherActivity activity ->
-                        EveryDict.get activity model.sessionPages.motherActivityPages
+                        EveryDict.get activity model.motherActivityPages
                             |> Maybe.withDefault Pages.Activity.Model.emptyModel
-                            |> Pages.Activity.View.view motherParticipant language currentDate zscores activity ( sessionId, session )
+                            |> Pages.Activity.View.view motherParticipant language currentDate zscores activity ( sessionId, session ) model
                             |> (\( html, maybeMotherId ) -> Html.map (MsgMotherActivity activity maybeMotherId) html)
 
             AttendancePage ->
                 Pages.Attendance.View.view language ( sessionId, session )
 
             ParticipantsPage ->
-                model.sessionPages.participantsPage
+                model.participantsPage
                     |> Pages.Participants.View.view language ( sessionId, session )
                     |> Html.map MsgParticipants
 
             ProgressReportPage childId ->
-                Pages.ProgressReport.View.view language zscores childId ( sessionId, session )
+                Pages.ProgressReport.View.view language zscores childId ( sessionId, session ) db
 
             ChildPage childId ->
-                EveryDict.get childId model.sessionPages.childPages
+                EveryDict.get childId model.childPages
                     |> Maybe.withDefault Pages.Participant.Model.emptyModel
-                    |> Pages.Participant.View.viewChild language currentDate zscores childId ( sessionId, session )
+                    |> Pages.Participant.View.viewChild language currentDate zscores childId ( sessionId, session ) model
                     |> Html.map (MsgChild childId)
 
             MotherPage motherId ->
-                EveryDict.get motherId model.sessionPages.motherPages
+                EveryDict.get motherId model.motherPages
                     |> Maybe.withDefault Pages.Participant.Model.emptyModel
-                    |> Pages.Participant.View.viewMother language motherId ( sessionId, session )
+                    |> Pages.Participant.View.viewMother language motherId ( sessionId, session ) model
                     |> Html.map (MsgMother motherId)
 
 
-viewClosedSession : Language -> SessionId -> EditableSession -> Html MsgSession
-viewClosedSession language sessionId session =
+viewClosedSession : Language -> SessionId -> EditableSession -> ModelIndexedDb -> Html Msg
+viewClosedSession language sessionId session db =
     div
         [ class "wrap wrap-alt-2" ]
         [ div
             [ class "ui basic head segment" ]
             [ h1
                 [ class "ui header" ]
-                [ activeClinicName session
+                [ db.clinics
+                    |> RemoteData.map (\clinics -> activeClinicName clinics session)
+                    |> RemoteData.withDefault Nothing
                     |> Maybe.map text
                     |> showMaybe
                 ]
@@ -120,15 +122,17 @@ viewClosedSession language sessionId session =
         ]
 
 
-viewUnauthorizedSession : Language -> EditableSession -> Html MsgSession
-viewUnauthorizedSession language session =
+viewUnauthorizedSession : Language -> EditableSession -> ModelIndexedDb -> Html Msg
+viewUnauthorizedSession language session db =
     div
         [ class "wrap wrap-alt-2" ]
         [ div
             [ class "ui basic head segment" ]
             [ h1
                 [ class "ui header" ]
-                [ activeClinicName session
+                [ db.clinics
+                    |> RemoteData.map (\clinics -> activeClinicName clinics session)
+                    |> RemoteData.withDefault Nothing
                     |> Maybe.map text
                     |> showMaybe
                 ]

@@ -15,13 +15,13 @@ import EveryDictList
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Pages.Model exposing (MsgSession(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.Session.Model exposing (Msg(..))
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 
 
-view : Language -> ( SessionId, EditableSession ) -> Html MsgSession
+view : Language -> ( SessionId, EditableSession ) -> Html Msg
 view language ( sessionId, session ) =
     let
         mothers =
@@ -77,7 +77,7 @@ view language ( sessionId, session ) =
         ]
 
 
-viewMother : EditableSession -> MotherId -> Mother -> Html MsgSession
+viewMother : EditableSession -> MotherId -> Mother -> Html Msg
 viewMother session motherId mother =
     let
         checkIn =

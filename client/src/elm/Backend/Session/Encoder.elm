@@ -52,24 +52,6 @@ encodeOfflineSession offline =
     [ ( "scheduled_date", encodeDrupalRange encodeYYYYMMDD offline.session.scheduledDate )
     , ( "clinic", encodeEntityUuid offline.session.clinicId )
     , ( "closed", bool offline.session.closed )
-
-    -- TODO: Generalize the "withId" encoding in a function somewhere
-    , ( "all_sessions"
-      , EveryDictList.toList offline.allSessions
-            |> List.map (\( id, session ) -> object (( "id", encodeEntityUuid id ) :: encodeSession session))
-            |> list
-      )
-    , ( "participant_forms"
-      , EveryDictList.toList offline.allParticipantForms
-            |> List.map (\( id, form ) -> object (( "id", encodeEntityUuid id ) :: encodeParticipantForm form))
-            |> list
-      )
-    , ( "counseling_schedule", encodeEveryCounselingSchedule offline.everyCounselingSchedule )
-    , ( "clinics"
-      , EveryDictList.toList offline.clinics
-            |> List.map (\( id, clinic ) -> object (( "id", encodeEntityUuid id ) :: encodeClinic clinic))
-            |> list
-      )
     , ( "participants"
       , object
             [ ( "mothers"
@@ -81,16 +63,6 @@ encodeOfflineSession offline =
               , EveryDictList.toList offline.children
                     |> List.map (\( id, child ) -> object (( "id", encodeEntityUuid id ) :: encodeChild child))
                     |> list
-              )
-            , ( "mother_activity"
-              , EveryDict.toList offline.historicalMeasurements.mothers
-                    |> List.map (Tuple.mapFirst (fromEntityUuid >> toString) >> Tuple.mapSecond encodeMotherMeasurementList)
-                    |> object
-              )
-            , ( "child_activity"
-              , EveryDict.toList offline.historicalMeasurements.children
-                    |> List.map (Tuple.mapFirst (fromEntityUuid >> toString) >> Tuple.mapSecond encodeChildMeasurementList)
-                    |> object
               )
             ]
       )

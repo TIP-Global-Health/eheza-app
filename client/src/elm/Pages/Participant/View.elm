@@ -18,6 +18,7 @@ import Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasureme
 import Measurement.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
+import Pages.Session.Model
 import Participant.Model exposing (Participant)
 import Participant.Utils exposing (childParticipant, motherParticipant)
 import Translate as Trans exposing (Language, translate)
@@ -33,14 +34,14 @@ thumbnailDimensions =
     }
 
 
-viewChild : Language -> NominalDate -> ZScore.Model.Model -> ChildId -> ( SessionId, EditableSession ) -> Model ChildActivity -> Html (Msg ChildActivity Measurement.Model.MsgChild)
-viewChild language currentDate zscores childId ( sessionId, session ) model =
+viewChild : Language -> NominalDate -> ZScore.Model.Model -> ChildId -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model ChildActivity -> Html (Msg ChildActivity Measurement.Model.MsgChild)
+viewChild language currentDate zscores childId ( sessionId, session ) pages model =
     -- It's nice to just pass in the childId. If the session is consistent, we
     -- should always be able to get the child.  But it would be hard to
     -- convince the compiler of that, so we put in a pro-forma error message.
     case getChild childId session.offlineSession of
         Just child ->
-            viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, session ) model
+            viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, session ) pages model
 
         Nothing ->
             -- TODO: Make this error a little nicer, and translatable ... it
@@ -55,8 +56,8 @@ viewChild language currentDate zscores childId ( sessionId, session ) model =
 
 {-| This one needs the `currentDate` in order to calculate ages from dates of birth.
 -}
-viewFoundChild : Language -> NominalDate -> ZScore.Model.Model -> ( ChildId, Child ) -> ( SessionId, EditableSession ) -> Model ChildActivity -> Html (Msg ChildActivity Measurement.Model.MsgChild)
-viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, session ) model =
+viewFoundChild : Language -> NominalDate -> ZScore.Model.Model -> ( ChildId, Child ) -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model ChildActivity -> Html (Msg ChildActivity Measurement.Model.MsgChild)
+viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, session ) pages model =
     let
         maybeMother =
             child.motherId
@@ -152,7 +153,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                                 getChildMeasurementData childId session
 
                             form =
-                                getChildForm childId session
+                                getChildForm childId pages session
                         in
                         [ Measurement.View.viewChild language currentDate child activity measurements zscores session form
                             |> Html.map MsgMeasurement
@@ -190,14 +191,14 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
             ]
 
 
-viewMother : Language -> MotherId -> ( SessionId, EditableSession ) -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
-viewMother language motherId ( sessionId, session ) model =
+viewMother : Language -> MotherId -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
+viewMother language motherId ( sessionId, session ) pages model =
     -- It's nice to just pass in the motherId. If the session is consistent, we
     -- should always be able to get the mother.  But it would be hard to
     -- convince the compiler of that, so we put in a pro-forma error message.
     case getMother motherId session.offlineSession of
         Just mother ->
-            viewFoundMother language ( motherId, mother ) ( sessionId, session ) model
+            viewFoundMother language ( motherId, mother ) ( sessionId, session ) pages model
 
         Nothing ->
             -- TODO: Make this error a little nicer, and translatable ... it
@@ -210,8 +211,8 @@ viewMother language motherId ( sessionId, session ) model =
                 ]
 
 
-viewFoundMother : Language -> ( MotherId, Mother ) -> ( SessionId, EditableSession ) -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
-viewFoundMother language ( motherId, mother ) ( sessionId, session ) model =
+viewFoundMother : Language -> ( MotherId, Mother ) -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
+viewFoundMother language ( motherId, mother ) ( sessionId, session ) pages model =
     let
         break =
             br [] []
@@ -266,7 +267,7 @@ viewFoundMother language ( motherId, mother ) ( sessionId, session ) model =
                             getMotherMeasurementData motherId session
 
                         form =
-                            getMotherForm motherId session
+                            getMotherForm motherId pages session
                     in
                     [ Measurement.View.viewMother language activity measurements form
                         |> Html.map MsgMeasurement

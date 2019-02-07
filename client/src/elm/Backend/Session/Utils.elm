@@ -1,12 +1,13 @@
-module Backend.Session.Utils exposing (activeClinicName, emptyMotherMeasurementData, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMyMother, getPhotoUrls, isAuthorized, isClosed, makeEditableSession, mapAllChildEdits, mapChildEdits, mapMotherEdits, setPhotoFileId)
+module Backend.Session.Utils exposing (activeClinicName, emptyMotherMeasurementData, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMyMother, isAuthorized, isClosed, makeEditableSession, mapAllChildEdits, mapChildEdits, mapMotherEdits, setPhotoFileId)
 
 import Backend.Child.Model exposing (Child)
+import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import EveryDict
-import EveryDictList
+import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..))
 import Time.Date
@@ -14,30 +15,12 @@ import User.Model exposing (User)
 
 
 {-| Given a mother's id, get all her children from the offline session.
-
-  - If we can't find the mother in the OfflineSession, we just return an
-    empty list. So, it's the caller's job to know whether we really have
-    that mother or not.
-
-  - If the mother's data indicates that she has a child, but the child's
-    data isn't in the OfflineSession, we don't include the child in the
-    results. So, it's someone else's job to make sure that the OfflineSession
-    is internally consistent. (The backend sends it that way).
-
 -}
 getChildren : MotherId -> OfflineSession -> List ( ChildId, Child )
 getChildren motherId session =
-    getMother motherId session
-        |> Maybe.map
-            (\mother ->
-                mother.children
-                    |> List.filterMap
-                        (\childId ->
-                            EveryDictList.get childId session.children
-                                |> Maybe.map (\child -> ( childId, child ))
-                        )
-            )
-        |> Maybe.withDefault []
+    session.children
+        |> EveryDictList.filter (\_ child -> child.motherId == Just motherId)
+        |> EveryDictList.toList
 
 
 getChild : ChildId -> OfflineSession -> Maybe Child
@@ -124,8 +107,6 @@ makeEditableSession offlineSession =
     { offlineSession = offlineSession
     , edits = emptyMeasurementEdits
     , update = NotAsked
-    , childForms = EveryDict.empty
-    , motherForms = EveryDict.empty
     }
 
 
@@ -187,32 +168,36 @@ mapMotherEdits func motherId session =
            )
 
 
-{-| Return a list of all the photo URLs we ought to cache to work with this offline.
+
+{- Return a list of all the photo URLs we ought to cache to work with this offline. -}
+{-
+   TODO: Handle this when syncing.
+
+   getPhotoUrls : OfflineSession -> List String
+   getPhotoUrls session =
+       let
+           fromMothers =
+               session.mothers
+                   |> EveryDictList.values
+                   |> List.filterMap .avatarUrl
+
+           fromChildren =
+               session.children
+                   |> EveryDict.values
+                   |> List.filterMap .avatarUrl
+
+           fromMeasurements =
+               session.historicalMeasurements.children
+                   |> EveryDict.values
+                   |> List.map
+                       (\measurements ->
+                           measurements.photos
+                               |> List.map (Tuple.second >> .value >> .url)
+                       )
+                   |> List.concat
+       in
+       fromMothers ++ fromChildren ++ fromMeasurements
 -}
-getPhotoUrls : OfflineSession -> List String
-getPhotoUrls session =
-    let
-        fromMothers =
-            session.mothers
-                |> EveryDictList.values
-                |> List.filterMap .avatarUrl
-
-        fromChildren =
-            session.children
-                |> EveryDictList.values
-                |> List.filterMap .avatarUrl
-
-        fromMeasurements =
-            session.historicalMeasurements.children
-                |> EveryDict.values
-                |> List.map
-                    (\measurements ->
-                        measurements.photos
-                            |> List.map (Tuple.second >> .value >> .url)
-                    )
-                |> List.concat
-    in
-    fromMothers ++ fromChildren ++ fromMeasurements
 
 
 {-| Given a file ID for the provided photo, record that in the edits in our
@@ -284,7 +269,7 @@ isAuthorized user session =
     List.member session.offlineSession.session.clinicId user.clinics
 
 
-activeClinicName : EditableSession -> Maybe String
-activeClinicName session =
-    EveryDictList.get session.offlineSession.session.clinicId session.offlineSession.clinics
+activeClinicName : EveryDictList ClinicId Clinic -> EditableSession -> Maybe String
+activeClinicName clinics session =
+    EveryDictList.get session.offlineSession.session.clinicId clinics
         |> Maybe.map .name

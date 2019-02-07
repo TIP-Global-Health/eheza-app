@@ -38,7 +38,7 @@ import Backend.Measurement.Utils exposing (applyEdit, currentValue, currentValue
 import Backend.Mother.Model exposing (ChildrenRelationType(..), Mother)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Session.Model exposing (..)
-import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMyMother, mapMotherEdits)
+import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMyMother, mapMotherEdits)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import EverySet
@@ -580,8 +580,8 @@ It includes ativities for children of the mother, since we navigate from mother
 to child.
 
 -}
-getActivityCountForMother : MotherId -> Mother -> SummaryByParticipant -> CompletedAndPending Int
-getActivityCountForMother id mother summary =
+getActivityCountForMother : EditableSession -> MotherId -> Mother -> SummaryByParticipant -> CompletedAndPending Int
+getActivityCountForMother session id mother summary =
     let
         motherCount =
             EveryDictList.get id summary.mothers
@@ -597,7 +597,7 @@ getActivityCountForMother id mother summary =
                     }
     in
     List.foldl
-        (\childId accum ->
+        (\( childId, _ ) accum ->
             EveryDictList.get childId summary.children
                 |> Maybe.map
                     (\activities ->
@@ -608,7 +608,7 @@ getActivityCountForMother id mother summary =
                 |> Maybe.withDefault accum
         )
         motherCount
-        mother.children
+        (getChildren id session.offlineSession)
 
 
 hasCompletedChildActivity : ChildActivity -> MeasurementData ChildMeasurements ChildEdits -> Bool
@@ -697,13 +697,8 @@ motherOrAnyChildHasAnyCompletedActivity motherId session =
             motherHasAnyCompletedActivity motherId session
 
         anyChildHasOne =
-            getMother motherId session.offlineSession
-                |> Maybe.map
-                    (\mother ->
-                        mother.children
-                            |> List.any (\childId -> childHasAnyCompletedActivity childId session)
-                    )
-                |> Maybe.withDefault False
+            getChildren motherId session.offlineSession
+                |> List.any (\( childId, _ ) -> childHasAnyCompletedActivity childId session)
     in
     motherHasOne || anyChildHasOne
 

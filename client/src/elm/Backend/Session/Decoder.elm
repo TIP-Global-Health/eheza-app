@@ -1,4 +1,4 @@
-module Backend.Session.Decoder exposing (decodeChildren, decodeMothers, decodeOfflineSession, decodeSession, decodeTrainingSessionAction, decodeTrainingSessionRequest, getCurrentAndPrevious, splitChildMeasurements, splitHistoricalMeasurements, splitMotherMeasurements)
+module Backend.Session.Decoder exposing (decodeChildren, decodeMothers, decodeSession, decodeTrainingSessionAction, decodeTrainingSessionRequest, getCurrentAndPrevious, splitChildMeasurements, splitMotherMeasurements)
 
 import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Child.Model exposing (Child)
@@ -61,74 +61,6 @@ decodeSession =
             )
         |> optional "closed" bool False
         |> optional "training" bool False
-
-
-{-| Decodes the JSON sent by `/api/offline_sessions`
--}
-decodeOfflineSession : Decoder OfflineSession
-decodeOfflineSession =
-    -- We need the ID in order to know which measurements belong to the current session.
-    field "id" decodeEntityUuid
-        |> andThen
-            (\id ->
-                decode OfflineSession
-                    -- For the "basic" session data, we can reuse the decoder
-                    |> custom decodeSession
-                    -- This is optional for transitional reasons. We can successfully decode
-                    -- the previous structure from local storage ... then, once we actually
-                    -- re-fetch the data from the backend, we'll get the updated structure.
-                    -- So, we could make this required at some point in the future.
-                    |> optional "all_sessions"
-                        (EveryDictList.decodeArray2 (field "id" decodeEntityUuid) decodeSession)
-                        EveryDictList.empty
-                    |> optional "participant_forms"
-                        (EveryDictList.decodeArray2 (field "id" decodeEntityUuid) decodeParticipantForm)
-                        EveryDictList.empty
-                    -- Also optional for transitional reasons.
-                    |> optional "counseling_schedule" decodeEveryCounselingSchedule EveryDict.empty
-                    -- We get **all** the basic clinic information, as a convenience for
-                    -- presenting the UI while offline
-                    |> required "clinics" (EveryDictList.decodeArray2 (field "id" decodeEntityUuid) decodeClinic)
-                    |> requiredAt [ "participants", "mothers" ] decodeMothers
-                    |> requiredAt [ "participants", "children" ] decodeChildren
-                    |> custom decodeHistoricalMeasurements
-                    -- We start with empty stuff for the `previousMeasurements`
-                    -- and `currentMeasurements` ... then we map to fill them in.
-                    |> hardcoded emptyMeasurements
-                    |> hardcoded emptyMeasurements
-                    |> map (splitHistoricalMeasurements id)
-            )
-
-
-{-| Takes the historical measurements and populates `previousMeasurements`
-and `currentMeasurements` as appropriate.
--}
-splitHistoricalMeasurements : SessionId -> OfflineSession -> OfflineSession
-splitHistoricalMeasurements sessionId session =
-    -- There should be a more elegant way to do this, but this will do for now.
-    -- Actually, I suppose I should change the data model so that all the
-    -- per-mother and per-child info is in one dictionary ... but not now.
-    let
-        mothers =
-            splitMotherMeasurements sessionId session.historicalMeasurements.mothers
-
-        children =
-            splitChildMeasurements sessionId session.historicalMeasurements.children
-
-        currentMeasurements =
-            { mothers = EveryDict.map (always .current) mothers
-            , children = EveryDict.map (always .current) children
-            }
-
-        previousMeasurements =
-            { mothers = EveryDict.map (always .previous) mothers
-            , children = EveryDict.map (always .previous) children
-            }
-    in
-    { session
-        | currentMeasurements = currentMeasurements
-        , previousMeasurements = previousMeasurements
-    }
 
 
 splitMotherMeasurements : SessionId -> EveryDict MotherId MotherMeasurementList -> EveryDict MotherId { current : MotherMeasurements, previous : MotherMeasurements }
