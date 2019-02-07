@@ -87,50 +87,12 @@ elmApp.ports.cachePinCode.subscribe(function(pinCode) {
     localStorage.setItem('pinCode', pinCode);
 });
 
-elmApp.ports.cacheEditableSession.subscribe(function(json) {
-    // We cache the session and the edits separately, so that we can treat
-    // the session itself as basically immutable, and just keep saving the
-    // edits.
-    var session = json[0];
-    var edits = json[1];
-
-    // For the moment, we'll cache it in the simplest way possible ... we'll
-    // see how much more we need to do. We can probably store the JSON as a
-    // lump, since we treat it as immutable and don't update it frequently.
-    // But we may need to manage quota, or use a different mechanism in order
-    // to get more quota.
-    localStorage.setItem('session', session);
-    localStorage.setItem('edits', edits);
-
-    // TODO: We should catch exceptions ... and report back a real result!
-    elmApp.ports.cacheEditableSessionResult.send({});
-});
-
-elmApp.ports.fetchEditableSession.subscribe(function () {
-    var session = localStorage.getItem('session') || "";
-    var edits = localStorage.getItem('edits') || "";
-
-    // TODO: Consider exceptions?
-    elmApp.ports.handleEditableSession.send([session, edits]);
-});
-
-elmApp.ports.cacheEdits.subscribe(function (json) {
-    localStorage.setItem('edits', json);
-
-    // TODO: Consider exceptions ...
-    elmApp.ports.cacheEditsResult.send ({});
-});
-
-elmApp.ports.deleteEditableSession.subscribe(function () {
-    // Delete the session and edits in local storage
-    localStorage.setItem('session', "");
-    localStorage.setItem('edits', "");
-});
 
 elmApp.ports.setLanguage.subscribe(function(language) {
     // Set the chosen language in the switcher to the local storage.
     localStorage.setItem('language', language);
 });
+
 
 // Dropzone.
 
@@ -311,6 +273,7 @@ function updatePhotos () {
   });
 }
 
+/* TODO: Handle in sync process.
 elmApp.ports.cacheStorageRequest.subscribe(function (request) {
   switch (request.tag) {
     case 'CachePhotos':
@@ -344,3 +307,4 @@ elmApp.ports.cacheStorageRequest.subscribe(function (request) {
       break;
   }
 });
+*/
