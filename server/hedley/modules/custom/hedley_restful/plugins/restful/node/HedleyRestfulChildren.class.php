@@ -33,14 +33,6 @@ class HedleyRestfulChildren extends HedleyRestfulPatientBase {
       ];
     }
 
-    $public_fields['avatar'] = [
-      'property' => 'field_avatar',
-      'process_callbacks' => [
-        [$this, 'imageProcess'],
-      ],
-      'image_styles' => ['large', 'patient-photo'],
-    ];
-
     $public_fields['mother'] = [
       'property' => 'field_mother',
       'resource' => [
@@ -52,6 +44,16 @@ class HedleyRestfulChildren extends HedleyRestfulPatientBase {
     ];
 
     return $public_fields;
+  }
+
+  /**
+   * Return the type of the entity.
+   *
+   * @return string
+   *   The type name.
+   */
+  protected static function getType() {
+    return 'session';
   }
 
 }

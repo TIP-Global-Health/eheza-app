@@ -43,4 +43,9 @@ class HedleyRestfulMothers extends HedleyRestfulPatientBase {
     return $public_fields;
   }
 
+  // Todo: implement, if this info is required.
+  public function getChildren() {
+    return [];
+  }
+
 }

@@ -16,10 +16,6 @@ class HedleyRestfulPatientBase extends HedleyRestfulSyncBase {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $public_fields['type'] = [
-      'callback' => 'static::getType',
-    ];
-
     $public_fields['avatar'] = [
       'property' => 'field_avatar',
       'process_callbacks' => [
