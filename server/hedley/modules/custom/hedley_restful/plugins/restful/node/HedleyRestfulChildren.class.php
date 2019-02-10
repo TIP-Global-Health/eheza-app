@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulChildren.
  */
-class HedleyRestfulChildren extends HedleyRestfulSyncBase {
+class HedleyRestfulChildren extends HedleyRestfulPatientBase {
 
   /**
    * {@inheritdoc}
@@ -16,11 +16,17 @@ class HedleyRestfulChildren extends HedleyRestfulSyncBase {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $field_names = [
-      'field_gender',
+    $standard_fields_names = [
+      'field_mode_of_delivery',
+      'field_mother_name',
+      'field_mother_national_id',
+      'field_father_name',
+      'field_father_national_id',
+      'field_caregiver_name_',
+      'field_caregiver_national_id',
     ];
 
-    foreach ($field_names as $field_name) {
+    foreach ($standards_field_names as $field_name) {
       $public_name = str_replace('field_', '', $field_name);
       $public_fields[$public_name] = [
         'property' => $field_name,
@@ -44,20 +50,6 @@ class HedleyRestfulChildren extends HedleyRestfulSyncBase {
         ],
       ],
     ];
-
-    foreach (array_keys(field_info_instances($this->getEntityType(), $this->getBundle())) as $field_name) {
-      if (strpos($field_name, 'field_date') !== 0) {
-        // Not a date field.
-        continue;
-      }
-      $public_name = str_replace('field_', '', $field_name);
-      $public_fields[$public_name] = [
-        'property' => $field_name,
-        'process_callbacks' => [
-          [$this, 'convertTimestampToIso8601'],
-        ],
-      ];
-    }
 
     return $public_fields;
   }
