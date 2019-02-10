@@ -103,8 +103,8 @@ function hedley_patient_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-child-field_caregiver_name_'.
-  $field_instances['node-child-field_caregiver_name_'] = array(
+  // Exported field_instance: 'node-child-field_caregiver_name'.
+  $field_instances['node-child-field_caregiver_name'] = array(
     'bundle' => 'child',
     'default_value' => NULL,
     'deleted' => 0,
@@ -125,7 +125,7 @@ function hedley_patient_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_caregiver_name_',
+    'field_name' => 'field_caregiver_name',
     'label' => 'Caregiver\'s Name	',
     'required' => 0,
     'settings' => array(

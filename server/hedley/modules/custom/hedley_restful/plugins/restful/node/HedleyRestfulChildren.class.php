@@ -22,7 +22,7 @@ class HedleyRestfulChildren extends HedleyRestfulPatientBase {
       'field_mother_national_id',
       'field_father_name',
       'field_father_national_id',
-      'field_caregiver_name_',
+      'field_caregiver_name',
       'field_caregiver_national_id',
     ];
 

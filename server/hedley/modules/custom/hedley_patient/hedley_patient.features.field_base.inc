@@ -35,13 +35,13 @@ function hedley_patient_field_default_field_bases() {
     'type' => 'list_boolean',
   );
 
-  // Exported field_base: 'field_caregiver_name_'.
-  $field_bases['field_caregiver_name_'] = array(
+  // Exported field_base: 'field_caregiver_name'.
+  $field_bases['field_caregiver_name'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_caregiver_name_',
+    'field_name' => 'field_caregiver_name',
     'indexes' => array(
       'format' => array(
         0 => 'format',
