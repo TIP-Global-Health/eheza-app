@@ -217,6 +217,7 @@ function hedley_standard_install() {
 
   $permissions = [];
   $nurse_permitted_types = [
+    'attendance',
     'family_planning',
     'height',
     'muac',
@@ -443,4 +444,12 @@ function hedley_update_7016() {
 function hedley_update_7017() {
   $modules = ['hedley_device'];
   module_enable($modules);
+}
+
+/**
+ * Adds attendance permission for nurses.
+ */
+function hedley_update_7018() {
+  $content_types = ['attendance'];
+  hedley_add_nurse_permissions_for_content_type($content_types);
 }

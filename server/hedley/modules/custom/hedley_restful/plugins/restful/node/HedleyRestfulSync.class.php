@@ -82,6 +82,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    */
   public function entitiesForHealthCenters() {
     return [
+      'attendance' => 'attendances',
       'counseling_session' => 'counseling-sessions',
       'family_planning' => 'family-plannings',
       'height' => 'heights',
