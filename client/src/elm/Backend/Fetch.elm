@@ -25,8 +25,8 @@ shouldFetch model msg =
         FetchClinics ->
             isNotAsked model.clinics
 
-        FetchCounselingSchedule ->
-            isNotAsked model.counselingSchedule
+        FetchEveryCounselingSchedule ->
+            isNotAsked model.everyCounselingSchedule
 
         FetchExpectedParticipants sessionId ->
             EveryDict.get sessionId model.expectedParticipants
@@ -48,6 +48,11 @@ shouldFetch model msg =
 
         FetchParticipantForms ->
             isNotAsked model.participantForms
+
+        FetchSession sessionId ->
+            EveryDict.get sessionId model.sessions
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
 
         FetchSessionsByClinic clinicId ->
             EveryDict.get clinicId model.sessionsByClinic
@@ -73,8 +78,8 @@ forget msg model =
         FetchClinics ->
             { model | clinics = NotAsked }
 
-        FetchCounselingSchedule ->
-            { model | counselingSchedule = NotAsked }
+        FetchEveryCounselingSchedule ->
+            { model | everyCounselingSchedule = NotAsked }
 
         FetchExpectedParticipants sessionId ->
             { model | expectedParticipants = EveryDict.remove sessionId model.expectedParticipants }
@@ -90,6 +95,9 @@ forget msg model =
 
         FetchParticipantForms ->
             { model | participantForms = NotAsked }
+
+        FetchSession sessionId ->
+            { model | sessions = EveryDict.remove sessionId model.sessions }
 
         FetchSessionsByClinic clinicId ->
             { model | sessionsByClinic = EveryDict.remove clinicId model.sessionsByClinic }

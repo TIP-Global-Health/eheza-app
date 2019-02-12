@@ -1,4 +1,4 @@
-module Backend.Model exposing (ModelBackend, ModelIndexedDb, MsgBackend(..), MsgIndexedDb(..), Revision(..), TrainingSessionAction(..), TrainingSessionRequest, emptyModelBackend, emptyModelIndexedDb)
+module Backend.Model exposing (ModelBackend, ModelIndexedDb, MsgBackend(..), MsgIndexedDb(..), Participants, Revision(..), TrainingSessionAction(..), TrainingSessionRequest, emptyModelBackend, emptyModelIndexedDb)
 
 {-| The `Backend` hierarchy is for code that represents entities from the
 backend. It is reponsible for fetching them, saving them, etc.
@@ -70,6 +70,12 @@ type MsgBackend
     | ResetSessionRequests
 
 
+type alias Participants =
+    { children : EveryDictList ChildId Child
+    , mothers : EveryDictList MotherId Mother
+    }
+
+
 {-| This tracks data we fetch from IndexedDB via the service worker. Gradually, we'll
 move things here from ModelBackend and ModelCached.
 -}
@@ -79,13 +85,13 @@ type alias ModelIndexedDb =
     -- actually need all the clinics at once, but there should be a reasonable
     -- number.
     { clinics : WebData (EveryDictList ClinicId Clinic)
-    , counselingSchedule : WebData EveryCounselingSchedule
+    , everyCounselingSchedule : WebData EveryCounselingSchedule
     , healthCenters : WebData (EveryDictList HealthCenterId HealthCenter)
     , participantForms : WebData (EveryDictList ParticipantFormId ParticipantForm)
     , syncData : WebData (EveryDictList HealthCenterId SyncData)
 
-    -- For basic session data, we organize it in two ways in memory. One is by
-    -- clinic, which we use when you navigate to a clinic page. The other
+    -- For basic session data, we organize it in several ways in memory. One is
+    -- by clinic, which we use when you navigate to a clinic page. The other
     -- tracks the sessions we expect a child to have attended. This is
     -- necessary for the progress report, because we organize that by session
     -- date, rather than measurement date, and we want to show blanks for
@@ -94,10 +100,11 @@ type alias ModelIndexedDb =
     -- deriving it from data we already have in memory.
     , expectedSessions : EveryDict ChildId (WebData (EveryDictList SessionId Session))
     , sessionsByClinic : EveryDict ClinicId (WebData (EveryDictList SessionId Session))
+    , sessions : EveryDict SessionId (WebData Session)
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
-    , expectedParticipants : EveryDict SessionId (WebData { children : EveryDictList ChildId Child, mothers : EveryDictList MotherId Mother })
+    , expectedParticipants : EveryDict SessionId (WebData Participants)
 
     -- Measurement data for children and mothers. From this, we can construct
     -- the things we need for an `EditableSession` or for use on the progress
@@ -111,12 +118,13 @@ emptyModelIndexedDb : ModelIndexedDb
 emptyModelIndexedDb =
     { childMeasurements = EveryDict.empty
     , clinics = NotAsked
-    , counselingSchedule = NotAsked
+    , everyCounselingSchedule = NotAsked
     , expectedParticipants = EveryDict.empty
     , expectedSessions = EveryDict.empty
     , healthCenters = NotAsked
     , motherMeasurements = EveryDict.empty
     , participantForms = NotAsked
+    , sessions = EveryDict.empty
     , sessionsByClinic = EveryDict.empty
     , syncData = NotAsked
     }
@@ -126,22 +134,25 @@ type MsgIndexedDb
     = -- Messages which fetch various kinds of data
       FetchChildMeasurements ChildId
     | FetchClinics
-    | FetchCounselingSchedule
+    | FetchEveryCounselingSchedule
     | FetchExpectedParticipants SessionId
     | FetchExpectedSessions ChildId
     | FetchHealthCenters
     | FetchMotherMeasurements MotherId
     | FetchParticipantForms
+    | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
     | FetchSyncData
       -- Messages which handle responses to data
     | HandleFetchedChildMeasurements ChildId (WebData ChildMeasurementList)
-    | HandleFetchedCounselingSchedule (WebData EveryCounselingSchedule)
+    | HandleFetchedEveryCounselingSchedule (WebData EveryCounselingSchedule)
     | HandleFetchedMotherMeasurements MotherId (WebData MotherMeasurementList)
     | HandleFetchedClinics (WebData (EveryDictList ClinicId Clinic))
+    | HandleFetchedExpectedParticipants SessionId (WebData Participants)
     | HandleFetchedExpectedSessions ChildId (WebData (EveryDictList SessionId Session))
     | HandleFetchedHealthCenters (WebData (EveryDictList HealthCenterId HealthCenter))
     | HandleFetchedParticipantForms (WebData (EveryDictList ParticipantFormId ParticipantForm))
+    | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (EveryDictList SessionId Session))
     | HandleFetchedSyncData (WebData (EveryDictList HealthCenterId SyncData))
       -- Process some revisions we've received from the backend. In some cases,

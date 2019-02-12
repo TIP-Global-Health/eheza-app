@@ -70,7 +70,9 @@ viewClinicList language user db =
                 , span [] []
                 ]
             ]
-        , div [ class "ui basic segment" ] content
+        , div
+            [ class "ui basic segment" ]
+            [ content ]
         ]
 
 
@@ -82,7 +84,7 @@ we could show something about the sync status here ... might want to know how
 up-to-date things are.
 
 -}
-viewLoadedClinicList : Language -> Nurse -> ( EveryDictList ClinicId Clinic, EveryDictList HealthCenterId SyncData ) -> List (Html Msg)
+viewLoadedClinicList : Language -> Nurse -> ( EveryDictList ClinicId Clinic, EveryDictList HealthCenterId SyncData ) -> Html Msg
 viewLoadedClinicList language user ( clinics, sync ) =
     let
         title =
@@ -98,7 +100,10 @@ viewLoadedClinicList language user ( clinics, sync ) =
                 |> EveryDictList.toList
                 |> List.map (viewClinicButton user)
     in
-    title :: clinicView
+    div []
+        [ title
+        , div [] clinicView
+        ]
 
 
 viewClinicButton : Nurse -> ( ClinicId, Clinic ) -> Html Msg
@@ -131,28 +136,24 @@ viewClinic language currentDate nurse clinicId db =
                 |> EveryDict.get clinicId
                 |> Maybe.withDefault NotAsked
     in
-    div []
-        (viewWebData language
-            (viewLoadedClinic language currentDate nurse clinicId)
-            identity
-            (RemoteData.append clinic sessions)
-        )
+    viewWebData language
+        (viewLoadedClinic language currentDate nurse clinicId)
+        identity
+        (RemoteData.append clinic sessions)
 
 
-viewLoadedClinic : Language -> NominalDate -> Nurse -> ClinicId -> ( Maybe Clinic, EveryDictList SessionId Session ) -> List (Html Msg)
+viewLoadedClinic : Language -> NominalDate -> Nurse -> ClinicId -> ( Maybe Clinic, EveryDictList SessionId Session ) -> Html Msg
 viewLoadedClinic language currentDate nurse clinicId ( clinic, sessions ) =
     case clinic of
         Just clinic ->
-            [ div
+            div
                 [ class "wrap wrap-alt-2" ]
                 (viewFoundClinic language currentDate nurse clinicId clinic sessions)
-            ]
 
         Nothing ->
-            [ Pages.PageNotFound.View.viewPage language
+            Pages.PageNotFound.View.viewPage language
                 (SetActivePage <| UserPage <| ClinicsPage Nothing)
                 (UserPage <| ClinicsPage <| Just clinicId)
-            ]
 
 
 {-| We show recent and upcoming sessions, with a link to dive into the session

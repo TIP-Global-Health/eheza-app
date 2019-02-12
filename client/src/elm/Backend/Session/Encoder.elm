@@ -2,7 +2,6 @@ module Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSess
 
 import Backend.Child.Encoder exposing (encodeChild)
 import Backend.Clinic.Encoder exposing (encodeClinic)
-import Backend.Counseling.Encoder exposing (encodeEveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeChildMeasurementList, encodeMotherMeasurementList)
 import Backend.Model exposing (TrainingSessionAction(..), TrainingSessionRequest)

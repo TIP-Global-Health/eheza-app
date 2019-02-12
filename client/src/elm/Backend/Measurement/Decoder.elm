@@ -37,6 +37,56 @@ decodeMeasurement participantDecoder valueDecoder =
         |> custom valueDecoder
 
 
+{-| Decodes a measurement that has an ID ... that is, a saved measurement.
+
+Tye `type` field controls which decoder we apply.
+
+-}
+decodeSavedMeasurement : Decoder SavedMeasurement
+decodeSavedMeasurement =
+    field "type" string
+        |> andThen
+            (\s ->
+                case s of
+                    "family_planning" ->
+                        decodeWithEntityUuid decodeFamilyPlanning
+                            |> map (uncurry SavedFamilyPlanning)
+
+                    "participant_consent" ->
+                        decodeWithEntityUuid decodeParticipantConsent
+                            |> map (uncurry SavedParticipantConsent)
+
+                    "height" ->
+                        decodeWithEntityUuid decodeHeight
+                            |> map (uncurry SavedHeight)
+
+                    "muac" ->
+                        decodeWithEntityUuid decodeMuac
+                            |> map (uncurry SavedMuac)
+
+                    "nutrition" ->
+                        decodeWithEntityUuid decodeNutrition
+                            |> map (uncurry SavedChildNutrition)
+
+                    "photo" ->
+                        decodeWithEntityUuid decodePhoto
+                            |> map (uncurry SavedPhoto)
+
+                    "weight" ->
+                        decodeWithEntityUuid decodeWeight
+                            |> map (uncurry SavedWeight)
+
+                    "counseling_session" ->
+                        decodeWithEntityUuid decodeCounselingSession
+                            |> map (uncurry SavedCounselingSession)
+
+                    _ ->
+                        fail <|
+                            s
+                                ++ " is not a recognized measurement type"
+            )
+
+
 {-| Decodes `HistoricalMeasurements` as sent by `/api/offline_sessions/`
 -}
 decodeHistoricalMeasurements : Decoder HistoricalMeasurements

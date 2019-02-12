@@ -41,11 +41,11 @@ type CounselingTiming
     | Exit
 
 
-{-| A single counseling schedule entity, as sent from the backend.
+{-| A single counseling schedule entity.
 -}
 type alias CounselingSchedule =
     { timing : CounselingTiming
-    , topics : EveryDictList CounselingTopicId CounselingTopic
+    , topics : List CounselingTopicId
     }
 
 

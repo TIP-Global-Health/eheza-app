@@ -1,14 +1,28 @@
-module Backend.Endpoints exposing (SessionParams, clinicEndpoint, encodeSessionParams, healthCenterEndpoint, nurseEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, trainingSessionsEndpoint)
+module Backend.Endpoints exposing (ChildParams, MotherParams, NurseParams, SessionParams(..), childEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingTopicEndpoint, encodeChildParams, encodeMotherParams, encodeNurseParams, encodeSessionParams, healthCenterEndpoint, motherEndpoint, motherMeasurementListEndpoint, nurseEndpoint, participantFormEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, trainingSessionsEndpoint)
 
+import Backend.Child.Decoder exposing (decodeChild)
+import Backend.Child.Encoder exposing (encodeChild)
+import Backend.Child.Model exposing (Child)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
 import Backend.Clinic.Model exposing (Clinic)
+import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
+import Backend.Counseling.Encoder exposing (encodeCounselingSchedule, encodeCounselingTopic)
+import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Decoder exposing (decodeHealthCenter)
 import Backend.HealthCenter.Model exposing (HealthCenter)
+import Backend.Measurement.Decoder exposing (decodeChildMeasurementList, decodeMotherMeasurementList)
+import Backend.Measurement.Model exposing (ChildMeasurementList, MotherMeasurementList)
 import Backend.Model exposing (TrainingSessionRequest)
+import Backend.Mother.Decoder exposing (decodeMother)
+import Backend.Mother.Encoder exposing (encodeMother)
+import Backend.Mother.Model exposing (Mother)
 import Backend.Nurse.Decoder exposing (decodeNurse)
 import Backend.Nurse.Model exposing (Nurse)
+import Backend.ParticipantConsent.Decoder exposing (decodeParticipantForm)
+import Backend.ParticipantConsent.Encoder exposing (encodeParticipantForm)
+import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Session.Decoder exposing (decodeSession, decodeTrainingSessionRequest)
 import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession, encodeTrainingSessionRequest)
 import Backend.Session.Model exposing (EditableSession, MsgEditableSession(..), OfflineSession, Session)
@@ -35,6 +49,44 @@ swEndpoint path decodeValue =
         |> withKeyEncoder fromEntityUuid
 
 
+childEndpoint : ReadWriteEndPoint Error ChildId Child Child ChildParams
+childEndpoint =
+    swEndpoint "nodes/child" decodeChild
+        |> withValueEncoder (object << encodeChild)
+        |> withParamsEncoder encodeChildParams
+
+
+type alias ChildParams =
+    { session : Maybe SessionId
+    }
+
+
+encodeChildParams : ChildParams -> List ( String, String )
+encodeChildParams params =
+    params.session
+        |> Maybe.map (\id -> ( "session", fromEntityUuid id ))
+        |> Maybe.Extra.toList
+
+
+motherEndpoint : ReadWriteEndPoint Error MotherId Mother Mother MotherParams
+motherEndpoint =
+    swEndpoint "nodes/mother" decodeMother
+        |> withValueEncoder (object << encodeMother)
+        |> withParamsEncoder encodeMotherParams
+
+
+type alias MotherParams =
+    { session : Maybe SessionId
+    }
+
+
+encodeMotherParams : MotherParams -> List ( String, String )
+encodeMotherParams params =
+    params.session
+        |> Maybe.map (\id -> ( "session", fromEntityUuid id ))
+        |> Maybe.Extra.toList
+
+
 healthCenterEndpoint : ReadOnlyEndPoint Error HealthCenterId HealthCenter ()
 healthCenterEndpoint =
     swEndpoint "nodes/health_center" decodeHealthCenter
@@ -50,6 +102,24 @@ clinicEndpoint : ReadWriteEndPoint Error ClinicId Clinic Clinic ()
 clinicEndpoint =
     swEndpoint "nodes/clinic" decodeClinic
         |> withValueEncoder (object << encodeClinic)
+
+
+counselingScheduleEndpoint : ReadWriteEndPoint Error CounselingScheduleId CounselingSchedule CounselingSchedule ()
+counselingScheduleEndpoint =
+    swEndpoint "nodes/counseling_schedule" decodeCounselingSchedule
+        |> withValueEncoder encodeCounselingSchedule
+
+
+counselingTopicEndpoint : ReadWriteEndPoint Error CounselingTopicId CounselingTopic CounselingTopic ()
+counselingTopicEndpoint =
+    swEndpoint "nodes/counseling_topic" decodeCounselingTopic
+        |> withValueEncoder (object << encodeCounselingTopic)
+
+
+participantFormEndpoint : ReadWriteEndPoint Error ParticipantFormId ParticipantForm ParticipantForm ()
+participantFormEndpoint =
+    swEndpoint "nodes/participant_form" decodeParticipantForm
+        |> withValueEncoder (object << encodeParticipantForm)
 
 
 nurseEndpoint : ReadOnlyEndPoint Error NurseId Nurse NurseParams
@@ -70,18 +140,35 @@ encodeNurseParams params =
         |> Maybe.Extra.toList
 
 
+motherMeasurementListEndpoint : ReadOnlyEndPoint Error MotherId MotherMeasurementList ()
+motherMeasurementListEndpoint =
+    swEndpoint "nodes/mother-measurements" decodeMotherMeasurementList
+
+
+childMeasurementListEndpoint : ReadOnlyEndPoint Error ChildId ChildMeasurementList ()
+childMeasurementListEndpoint =
+    swEndpoint "nodes/child-measurements" decodeChildMeasurementList
+
+
 {-| Type-safe params ... how nice!
 -}
-type alias SessionParams =
-    { clinic : Maybe ClinicId
-    }
+type SessionParams
+    = AllSessions
+    | ForClinic ClinicId
+    | ForChild ChildId
 
 
 encodeSessionParams : SessionParams -> List ( String, String )
 encodeSessionParams params =
-    params.clinic
-        |> Maybe.map (\clinic -> ( "clinic", fromEntityUuid clinic ))
-        |> Maybe.Extra.toList
+    case params of
+        AllSessions ->
+            []
+
+        ForClinic clinic ->
+            [ ( "clinic", fromEntityUuid clinic ) ]
+
+        ForChild child ->
+            [ ( "child", fromEntityUuid child ) ]
 
 
 sessionEndpoint : ReadWriteEndPoint Error SessionId Session Session SessionParams

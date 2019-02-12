@@ -1,11 +1,12 @@
-module Backend.Session.Utils exposing (activeClinicName, emptyMotherMeasurementData, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMyMother, isAuthorized, isClosed, makeEditableSession, mapAllChildEdits, mapChildEdits, mapMotherEdits, setPhotoFileId)
+module Backend.Session.Utils exposing (emptyMotherMeasurementData, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMyMother, isAuthorized, isClosed, makeEditableSession, mapAllChildEdits, mapChildEdits, mapMotherEdits, setPhotoFileId)
 
 import Backend.Child.Model exposing (Child)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Mother.Model exposing (Mother)
-import Backend.Session.Model exposing (EditableSession, OfflineSession)
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.Session.Model exposing (..)
 import EveryDict
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
@@ -248,28 +249,19 @@ setPhotoFileId photo id =
 
 {-| Tracks the various ways in which the session ought to be considered closed:
 
-  - Was closed on backend.
-  - Has been closed on device.
+  - Was explicitly closed.
   - Has passed its closed date.
 
 -}
-isClosed : NominalDate -> EditableSession -> Bool
+isClosed : NominalDate -> Session -> Bool
 isClosed currentDate session =
     let
         pastEnd =
-            Time.Date.compare currentDate session.offlineSession.session.scheduledDate.end == GT
+            Time.Date.compare currentDate session.scheduledDate.end == GT
     in
-    session.offlineSession.session.closed
-        || session.edits.explicitlyClosed
-        || pastEnd
+    session.closed || pastEnd
 
 
-isAuthorized : User -> EditableSession -> Bool
-isAuthorized user session =
-    List.member session.offlineSession.session.clinicId user.clinics
-
-
-activeClinicName : EveryDictList ClinicId Clinic -> EditableSession -> Maybe String
-activeClinicName clinics session =
-    EveryDictList.get session.offlineSession.session.clinicId clinics
-        |> Maybe.map .name
+isAuthorized : Nurse -> Session -> Bool
+isAuthorized nurse session =
+    List.member session.clinicId nurse.clinics

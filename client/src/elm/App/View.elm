@@ -5,6 +5,7 @@ import App.Utils exposing (getLoggedInModel)
 import Backend.Model exposing (ModelIndexedDb)
 import Config.View
 import Date
+import EveryDict
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
@@ -17,6 +18,7 @@ import Pages.MyAccount.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.PinCode.View
+import Pages.Session.Model
 import Pages.Session.View exposing (view)
 import RemoteData exposing (RemoteData(..), WebData)
 import ServiceWorker.View
@@ -154,8 +156,21 @@ viewUserPage page model configured =
                     Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) clinicId model.indexedDb
 
                 SessionPage sessionId subPage ->
-                    -- TODO: Re-implement
-                    emptyNode
+                    let
+                        sessionPages =
+                            EveryDict.get sessionId loggedInModel.sessionPages
+                                |> Maybe.withDefault Pages.Session.Model.emptyModel
+                    in
+                    Pages.Session.View.view
+                        model.language
+                        currentDate
+                        model.zscores
+                        (Tuple.second loggedInModel.nurse)
+                        sessionId
+                        subPage
+                        sessionPages
+                        model.indexedDb
+                        |> Html.map (MsgLoggedIn << MsgPageSession sessionId)
 
         Nothing ->
             Pages.PinCode.View.view model.language model.activePage (RemoteData.map .nurse configured.loggedIn) configured.pinCodePage

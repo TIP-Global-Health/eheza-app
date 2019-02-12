@@ -89,23 +89,21 @@ whenNotAsked msg data =
 if the webdata is loading, or show the error if it failed.
 
 -}
-viewWebData : Language -> (a -> List (Html msg)) -> (List (Html msg) -> List (Html msg)) -> WebData a -> List (Html msg)
+viewWebData : Language -> (a -> Html msg) -> (Html msg -> Html msg) -> WebData a -> Html msg
 viewWebData language view wrapError data =
     case data of
         NotAsked ->
-            wrapError
-                [ spinner ]
+            wrapError spinner
 
         Loading ->
-            wrapError
-                [ spinner ]
+            wrapError spinner
 
         Failure err ->
             wrapError
-                [ div
+                (div
                     [ class "ui message error" ]
                     [ viewError language err ]
-                ]
+                )
 
         Success a ->
             view a

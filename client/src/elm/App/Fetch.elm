@@ -9,12 +9,11 @@ import Pages.Admin.Fetch
 import Pages.Clinics.Fetch
 import Pages.Device.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.ProgressReport.Fetch
+import Pages.Session.Fetch
 import Update.Extra exposing (sequence)
 
 
-{-| See the comment in Pages.OpenSessions.Fetch for an explanatio of this.
-Basically, we're following down the `view` hierarchy to determine, given
+{-| Basically, we're following down the `view` hierarchy to determine, given
 what the `view` methods are going to want, what messages we ought to send
 in order to get the data they will need.
 
@@ -55,17 +54,16 @@ fetch model =
                    )
                |> Maybe.withDefault []
         -}
-        UserPage (SessionPage sessionId (ProgressReportPage childId)) ->
-            Pages.ProgressReport.Fetch.fetch childId
+        UserPage (SessionPage sessionId sessionPage) ->
+            Pages.Session.Fetch.fetch sessionId sessionPage model.indexedDb
                 |> List.map MsgIndexedDb
 
         _ ->
             []
 
 
-{-| Given a `Msg`, do we need to fetch the data it would fetch?
-We only answer `True` if the data is `NotAsked`. So, we don't automatically
-re-fetch errors.
+{-| Given a `Msg`, do we need to fetch the data it would fetch? We only answer
+`True` if the data is `NotAsked`. So, we don't automatically re-fetch errors.
 
 Note that the data need not literally be a `RemoteData`, but that will be
 common. The answer does need to flip to `False` when a request is in progress,

@@ -43,12 +43,10 @@ view language zscores childId ( sessionId, session ) db =
                     EveryDict.get childId db.expectedSessions
                         |> Maybe.withDefault NotAsked
             in
-            div []
-                (viewWebData language
-                    (viewFoundChild language zscores ( childId, child ) ( sessionId, session ))
-                    identity
-                    (RemoteData.append expectedSessions childMeasurements)
-                )
+            viewWebData language
+                (viewFoundChild language zscores ( childId, child ) ( sessionId, session ))
+                identity
+                (RemoteData.append expectedSessions childMeasurements)
 
         Nothing ->
             let
@@ -66,7 +64,7 @@ view language zscores childId ( sessionId, session ) db =
 {-| This function is more complex than one would like ... when reviewing the
 data model in future, it might be nice to take this function into account.
 -}
-viewFoundChild : Language -> ZScore.Model.Model -> ( ChildId, Child ) -> ( SessionId, EditableSession ) -> ( EveryDictList SessionId Session, ChildMeasurementList ) -> List (Html Pages.Session.Model.Msg)
+viewFoundChild : Language -> ZScore.Model.Model -> ( ChildId, Child ) -> ( SessionId, EditableSession ) -> ( EveryDictList SessionId Session, ChildMeasurementList ) -> Html Pages.Session.Model.Msg
 viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expectedSessions, historical ) =
     let
         backIcon =
@@ -481,7 +479,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                 , weightForHeight language zscores weightForHeightData
                 ]
     in
-    [ div [ class "page-report" ]
+    div [ class "page-report" ]
         [ div
             [ class "wrap-report" ]
             [ backIcon
@@ -494,7 +492,6 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
             , charts
             ]
         ]
-    ]
 
 
 type Indication

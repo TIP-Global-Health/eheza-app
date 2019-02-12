@@ -2,6 +2,7 @@ module Backend.Update exposing (updateBackend, updateIndexedDb)
 
 import Activity.Utils exposing (setCheckedIn)
 import App.Model
+import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Decoder exposing (decodeMeasurementEdits)
@@ -27,8 +28,9 @@ import Json.Encode exposing (Value, object)
 import Json.Encode.Extra
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityUuid, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityUuid, endpoint, fromEntityUuid, toCmd, toEntityUuid, withKeyEncoder, withParamsEncoder, withValueEncoder, withoutDecoder)
+import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityUuid, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityUuid, endpoint, fromEntityUuid, toCmd, toEntityUuid, toTask, withKeyEncoder, withParamsEncoder, withValueEncoder, withoutDecoder)
 import Rollbar
+import Task
 import Utils.WebData exposing (resetError, resetSuccess)
 
 
@@ -41,8 +43,8 @@ updateIndexedDb msg model =
     case msg of
         FetchChildMeasurements childId ->
             ( { model | childMeasurements = EveryDict.insert childId Loading model.childMeasurements }
-            , Cmd.none
-              -- TODO: Issue command
+            , sw.get childMeasurementListEndpoint childId
+                |> toCmd (RemoteData.fromResult >> HandleFetchedChildMeasurements childId)
             )
 
         HandleFetchedChildMeasurements childId data ->
@@ -61,27 +63,58 @@ updateIndexedDb msg model =
             , Cmd.none
             )
 
-        FetchCounselingSchedule ->
-            ( { model | counselingSchedule = Loading }
-            , Cmd.none
-              -- TODO
+        FetchEveryCounselingSchedule ->
+            let
+                topicTask =
+                    sw.select counselingTopicEndpoint ()
+                        |> toTask
+                        |> Task.map (.items >> EveryDict.fromList)
+                        |> RemoteData.fromTask
+
+                scheduleTask =
+                    sw.select counselingScheduleEndpoint ()
+                        |> toTask
+                        |> Task.map (.items >> List.map Tuple.second)
+                        |> RemoteData.fromTask
+            in
+            ( { model | everyCounselingSchedule = Loading }
+            , Task.map2 (RemoteData.map2 combineCounselingSchedules) topicTask scheduleTask
+                |> Task.perform HandleFetchedEveryCounselingSchedule
             )
 
-        HandleFetchedCounselingSchedule data ->
-            ( { model | counselingSchedule = data }
+        HandleFetchedEveryCounselingSchedule data ->
+            ( { model | everyCounselingSchedule = data }
             , Cmd.none
             )
 
         FetchExpectedParticipants sessionId ->
+            let
+                childTask =
+                    sw.select childEndpoint { session = Just sessionId }
+                        |> toTask
+                        |> Task.map (.items >> EveryDictList.fromList)
+                        |> RemoteData.fromTask
+
+                motherTask =
+                    sw.select motherEndpoint { session = Just sessionId }
+                        |> toTask
+                        |> Task.map (.items >> EveryDictList.fromList)
+                        |> RemoteData.fromTask
+            in
             ( { model | expectedParticipants = EveryDict.insert sessionId Loading model.expectedParticipants }
+            , Task.map2 (RemoteData.map2 Participants) childTask motherTask
+                |> Task.perform (HandleFetchedExpectedParticipants sessionId)
+            )
+
+        HandleFetchedExpectedParticipants sessionId data ->
+            ( { model | expectedParticipants = EveryDict.insert sessionId data model.expectedParticipants }
             , Cmd.none
-              -- TODO
             )
 
         FetchExpectedSessions childId ->
             ( { model | expectedSessions = EveryDict.insert childId Loading model.expectedSessions }
-            , Cmd.none
-              -- TODO: Issue command
+            , sw.select sessionEndpoint (ForChild childId)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedExpectedSessions childId)
             )
 
         HandleFetchedExpectedSessions childId data ->
@@ -102,8 +135,8 @@ updateIndexedDb msg model =
 
         FetchMotherMeasurements motherId ->
             ( { model | motherMeasurements = EveryDict.insert motherId Loading model.motherMeasurements }
-            , Cmd.none
-              -- TODO: Issue command
+            , sw.get motherMeasurementListEndpoint motherId
+                |> toCmd (RemoteData.fromResult >> HandleFetchedMotherMeasurements motherId)
             )
 
         HandleFetchedMotherMeasurements motherId data ->
@@ -113,8 +146,8 @@ updateIndexedDb msg model =
 
         FetchParticipantForms ->
             ( { model | participantForms = Loading }
-            , Cmd.none
-              -- TODO
+            , sw.select participantFormEndpoint ()
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedParticipantForms)
             )
 
         HandleFetchedParticipantForms data ->
@@ -122,9 +155,20 @@ updateIndexedDb msg model =
             , Cmd.none
             )
 
+        FetchSession sessionId ->
+            ( { model | sessions = EveryDict.insert sessionId Loading model.sessions }
+            , sw.get sessionEndpoint sessionId
+                |> toCmd (RemoteData.fromResult >> HandleFetchedSession sessionId)
+            )
+
+        HandleFetchedSession sessionId data ->
+            ( { model | sessions = EveryDict.insert sessionId data model.sessions }
+            , Cmd.none
+            )
+
         FetchSessionsByClinic clinicId ->
             ( { model | sessionsByClinic = EveryDict.insert clinicId Loading model.sessionsByClinic }
-            , sw.select sessionEndpoint { clinic = Just clinicId }
+            , sw.select sessionEndpoint (ForClinic clinicId)
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedSessionsByClinic clinicId)
             )
 

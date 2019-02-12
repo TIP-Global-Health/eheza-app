@@ -1,4 +1,4 @@
-module Backend.Measurement.Model exposing (ChildEdits, ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), CounselingSession, Edit(..), FamilyPlanning, FamilyPlanningSign(..), Height, HeightInCm(..), HistoricalMeasurements, Measurement, MeasurementData, MeasurementEdits, Measurements, MotherEdits, MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), MuacIndication(..), ParticipantConsent, ParticipantConsentValue, Photo, PhotoValue, Weight, WeightInKg(..), emptyChildEdits, emptyChildMeasurementList, emptyChildMeasurements, emptyHistoricalMeasurements, emptyMeasurementEdits, emptyMeasurements, emptyMotherEdits, emptyMotherMeasurementList, emptyMotherMeasurements)
+module Backend.Measurement.Model exposing (ChildEdits, ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), CounselingSession, Edit(..), FamilyPlanning, FamilyPlanningSign(..), Height, HeightInCm(..), HistoricalMeasurements, Measurement, MeasurementData, MeasurementEdits, Measurements, MotherEdits, MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), MuacIndication(..), ParticipantConsent, ParticipantConsentValue, Photo, PhotoValue, SavedMeasurement(..), Weight, WeightInKg(..), emptyChildEdits, emptyChildMeasurementList, emptyChildMeasurements, emptyHistoricalMeasurements, emptyMeasurementEdits, emptyMeasurements, emptyMotherEdits, emptyMotherMeasurementList, emptyMotherMeasurements)
 
 {-| This module represents various measurements to be stored on the backend,
 and cached in local storage.
@@ -132,37 +132,27 @@ type alias CounselingSession =
 
 
 
+-- UNIFIED MEASUREMENT TYPE
+
+
+{-| A type which handles any kind of measurement along with its ID.
+(Thus, it is a "saved" measurement that has been assigned an ID.)
+-}
+type SavedMeasurement
+    = SavedFamilyPlanning FamilyPlanningId FamilyPlanning
+    | SavedParticipantConsent ParticipantConsentId ParticipantConsent
+    | SavedHeight HeightId Height
+    | SavedMuac MuacId Muac
+    | SavedChildNutrition ChildNutritionId ChildNutrition
+    | SavedPhoto PhotoId Photo
+    | SavedWeight WeightId Weight
+    | SavedCounselingSession CounselingSessionId CounselingSession
+
+
+
 -- LISTS OF MEASUREMENTS
 
 
-{-| You'd be tempted to want a `List (Measurement a b)` in order to have a list
-of measurements, but that won't work the way you might imagine, because the `a`
-and the `b` would have to be the same for every element in the list. In other
-words, you can't have heterogenous lists.
-
-One way to deal with this would be to "tag" each element with a type
-constructor that takes one specific type or another ... that is, something
-like:
-
-    type TaggedMeasurement
-        = PhotoTag Photo
-        | MuacTag Muac
-        | HeightTag Height
-        | WeightTag Weight
-        | ChildNutritionTag ChildNutrition
-        | FamklyPlanningTag FamilyPlanning
-
-So, then you could have a `List TaggedMeasurment` ... in effect, the tags
-function to "unify" the various types (and let us discriminate amongst them
-at run-time).
-
-We may eventually want something like that here, but for now we can do
-something simpler. First, we'll generally know whether we're interested in a
-set of child measurements or mother measurements, so we can specialize those
-two types. Second, we can use a record for each, to have multiple lists, each
-of a specialized type (rather than a single list with a tagged type).
-
--}
 type alias MotherMeasurementList =
     { familyPlannings : List ( FamilyPlanningId, FamilyPlanning )
     , consents : List ( ParticipantConsentId, ParticipantConsent )

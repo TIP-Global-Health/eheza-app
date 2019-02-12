@@ -3,7 +3,6 @@ module Backend.Session.Decoder exposing (decodeChildren, decodeMothers, decodeSe
 import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Child.Model exposing (Child)
 import Backend.Clinic.Decoder exposing (decodeClinic)
-import Backend.Counseling.Decoder exposing (decodeEveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Decoder exposing (decodeHistoricalMeasurements)
 import Backend.Measurement.Model exposing (ChildMeasurementList, ChildMeasurements, Measurement, MotherMeasurementList, MotherMeasurements, emptyMeasurements)
