@@ -114,17 +114,17 @@ class HedleyMigrateMothers201902 extends HedleyMigrateBase {
     // Education.
     if ($row->education) {
       if ($row->education === 'Primary') {
-        $row->education = 1;
+        $row->education = HEDLEY_PATIENT_EDUCATION_PRIMARY;
       }
       elseif ($row->education === 'NTABWOYIZE') {
         // Means "no education".
-        $row->education = 0;
+        $row->education = HEDLEY_PATIENT_EDUCATION_NONE;
       }
       elseif (preg_match('/^P[1-8]$/', $row->education)) {
-        $row->education = 1;
+        $row->education = HEDLEY_PATIENT_EDUCATION_PRIMARY;
       }
       elseif (preg_match('/^S[1-6]$/', $row->education)) {
-        $row->education = 3;
+        $row->education = HEDLEY_PATIENT_EDUCATION_SECONDARY;
       }
       else {
         throw new Exception("{$row->education} is not a recognized education level.");
