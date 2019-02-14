@@ -119,7 +119,7 @@ class HedleyMigrateChildren201902 extends HedleyMigrateBase {
       }
 
       if ($row->gender != 'female' && $row->gender != 'male') {
-        $this->queueMessage("{$row->gender} is not a recognized gender");
+        throw new Exception("{$row->gender} is not a recognized gender");
       }
     }
 
@@ -155,8 +155,7 @@ class HedleyMigrateChildren201902 extends HedleyMigrateBase {
       return DateTime::createFromFormat('!d/m/Y', $trimmed)->getTimestamp();
     }
 
-    $this->queueMessage("$date was not a recognized date format.");
-    return "";
+    throw new Exception("$date was not a recognized date format.");
   }
 
 }

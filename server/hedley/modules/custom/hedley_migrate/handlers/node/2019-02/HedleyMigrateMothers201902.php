@@ -127,7 +127,7 @@ class HedleyMigrateMothers201902 extends HedleyMigrateBase {
         $row->education = 3;
       }
       else {
-        $this->queueMessage("{$row->education} is not a recognized education level.");
+        throw new Exception("{$row->education} is not a recognized education level.");
       }
     }
   }
@@ -161,8 +161,7 @@ class HedleyMigrateMothers201902 extends HedleyMigrateBase {
       return DateTime::createFromFormat('!d/m/Y', $trimmed)->getTimestamp();
     }
 
-    $this->queueMessage("$date was not a recognized date format.");
-    return "";
+    throw new Exception("$date was not a recognized date format.");
   }
 
 }
