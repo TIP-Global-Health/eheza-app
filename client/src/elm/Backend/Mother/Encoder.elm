@@ -12,7 +12,7 @@ encodeMother mother =
     [ ( "label", string mother.name )
     , ( "avatar", maybe string mother.avatarUrl )
     , ( "children", list (List.map encodeEntityId mother.children) )
-    , ( "date_birth", encodeYYYYMMDD mother.birthDate )
+    , ( "date_birth", maybe encodeYYYYMMDD mother.birthDate )
     , ( "ubudehe", maybe encodeUbudehe mother.ubudehe )
     , ( "education_level", maybe encodeEducationLevel mother.educationLevel )
     ]
