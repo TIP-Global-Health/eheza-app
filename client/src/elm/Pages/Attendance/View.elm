@@ -10,20 +10,23 @@ at a session.
 import Activity.Utils exposing (isCheckedIn)
 import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
-import Backend.Session.Model exposing (EditableSession, MsgEditableSession(..))
+import Backend.Session.Model exposing (EditableSession)
 import EveryDictList
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
-import Pages.Model exposing (MsgSession(..))
+import Html.Events exposing (onClick, onInput)
+import Pages.Attendance.Model exposing (..)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 
 
-view : Language -> EditableSession -> Html MsgSession
-view language session =
+view : Language -> EditableSession -> Model -> Html Msg
+view language session model =
     let
+        filter =
+            String.trim model.filter
+
         mothers =
             if EveryDictList.isEmpty session.offlineSession.mothers then
                 [ div
@@ -44,7 +47,11 @@ view language session =
                 [ text <| translate language Translate.Attendance ]
             , a
                 [ class "link-back"
-                , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just session.offlineSession.session.clinicId
+                , Just session.offlineSession.session.clinicId
+                    |> ClinicsPage
+                    |> UserPage
+                    |> SetActivePage
+                    |> onClick
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []
@@ -70,6 +77,24 @@ view language session =
                         [ class "ui header" ]
                         [ text <| translate language Translate.CheckIn ]
                     , p [] [ text <| translate language Translate.ClickTheCheckMark ]
+                    , div
+                        [ class "ui action input small" ]
+                        [ input
+                            [ placeholder <| translate language Translate.FilterByName
+                            , type_ "text"
+                            , onInput SetFilter
+                            , value model.filter
+                            ]
+                            []
+                        , button
+                            [ classList
+                                [ ( "ui button", True )
+                                , ( "disabled", String.isEmpty filter )
+                                ]
+                            , onClick <| SetFilter ""
+                            ]
+                            [ text <| translate language Translate.ShowAll ]
+                        ]
                     , div [ class "ui middle aligned divided list" ] mothers
                     ]
                 ]
@@ -77,21 +102,21 @@ view language session =
         ]
 
 
-viewMother : EditableSession -> MotherId -> Mother -> Html MsgSession
+viewMother : EditableSession -> MotherId -> Mother -> Html Msg
 viewMother session motherId mother =
     let
         checkIn =
             if isCheckedIn motherId session then
                 a
                     [ class "link-checked-in"
-                    , onClick <| MsgEditableSession <| SetCheckedIn motherId False
+                    , onClick <| SetCheckedIn motherId False
                     ]
                     [ span [ class "icon-checked-in" ] [] ]
 
             else
                 a
                     [ class "link-check-in"
-                    , onClick <| MsgEditableSession <| SetCheckedIn motherId True
+                    , onClick <| SetCheckedIn motherId True
                     ]
                     [ span [ class "icon-check-in" ] [] ]
     in

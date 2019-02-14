@@ -10,6 +10,7 @@ import Pages.Activities.Update
 import Pages.Activity.Model
 import Pages.Activity.Update
 import Pages.Activity.Utils exposing (selectParticipantForTab)
+import Pages.Attendance.Update
 import Pages.Model exposing (..)
 import Pages.Participant.Model
 import Pages.Participant.Update
@@ -30,6 +31,16 @@ updateSession session msg model =
             in
             ( { model | activitiesPage = subModel }
             , Cmd.map MsgActivities subCmd
+            , List.map MsgSession extraMsgs
+            )
+
+        MsgAttendance subMsg ->
+            let
+                ( subModel, subCmd, extraMsgs ) =
+                    Pages.Attendance.Update.update subMsg model.attendancePage
+            in
+            ( { model | attendancePage = subModel }
+            , Cmd.map MsgAttendance subCmd
             , List.map MsgSession extraMsgs
             )
 

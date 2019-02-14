@@ -52,6 +52,7 @@ import EveryDict exposing (EveryDict)
 import Measurement.Model
 import Pages.Activities.Model
 import Pages.Activity.Model
+import Pages.Attendance.Model
 import Pages.Page exposing (Page)
 import Pages.Participant.Model
 import Pages.Participants.Model
@@ -71,6 +72,9 @@ simplify things. Also, this should probably then move to its own folder (i.e.
 type alias SessionPages =
     -- Shows a list of activities ... user can select one.
     { activitiesPage : Pages.Activities.Model.Model
+
+    -- Shows a list of mothers ... user can indicate attendance.
+    , attendancePage : Pages.Attendance.Model.Model
 
     -- Shows a page for a single activity. We keep separate UI state for
     -- each activity.
@@ -94,6 +98,7 @@ type alias SessionPages =
 emptySessionPages : SessionPages
 emptySessionPages =
     { activitiesPage = Pages.Activities.Model.emptyModel
+    , attendancePage = Pages.Attendance.Model.emptyModel
     , childActivityPages = EveryDict.empty
     , motherActivityPages = EveryDict.empty
     , childPages = EveryDict.empty
@@ -106,6 +111,7 @@ emptySessionPages =
 -}
 type MsgSession
     = MsgActivities Pages.Activities.Model.Msg
+    | MsgAttendance Pages.Attendance.Model.Msg
     | MsgChildActivity ChildActivityType (Pages.Activity.Model.Msg ChildId Measurement.Model.MsgChild)
     | MsgMotherActivity MotherActivityType (Pages.Activity.Model.Msg MotherId Measurement.Model.MsgMother)
     | MsgChild ChildId (Pages.Participant.Model.Msg ChildActivityType Measurement.Model.MsgChild)

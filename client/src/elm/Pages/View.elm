@@ -69,7 +69,8 @@ viewFoundSession user page ( sessionId, session ) model =
                             |> Html.map (MsgMotherActivity activity)
 
             AttendancePage ->
-                Pages.Attendance.View.view language session
+                Pages.Attendance.View.view language session model.sessionPages.attendancePage
+                    |> Html.map MsgAttendance
 
             ParticipantsPage ->
                 model.sessionPages.participantsPage
