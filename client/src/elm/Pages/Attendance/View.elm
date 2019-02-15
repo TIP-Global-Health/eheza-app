@@ -26,7 +26,33 @@ view : Language -> EditableSession -> Model -> Html Msg
 view language session model =
     let
         filter =
-            String.trim model.filter
+            model.filter
+                |> String.toLower
+                |> String.trim
+
+        matches =
+            if String.isEmpty filter then
+                \_ _ ->
+                    True
+
+            else
+                \motherId mother ->
+                    let
+                        motherContainsFilter =
+                            mother.name
+                                |> String.toLower
+                                |> String.contains filter
+
+                        childrenContainsFilter _ =
+                            getChildren motherId session.offlineSession
+                                |> List.any
+                                    (\( _, child ) ->
+                                        child.name
+                                            |> String.toLower
+                                            |> String.contains filter
+                                    )
+                    in
+                    motherContainsFilter || childrenContainsFilter ()
 
         mothers =
             if EveryDictList.isEmpty session.offlineSession.mothers then
@@ -36,9 +62,20 @@ view language session model =
                 ]
 
             else
-                session.offlineSession.mothers
-                    |> EveryDictList.map (viewMother session)
-                    |> EveryDictList.values
+                let
+                    matching =
+                        EveryDictList.filter matches session.offlineSession.mothers
+                in
+                if EveryDictList.isEmpty matching then
+                    [ div
+                        [ class "ui message warning" ]
+                        [ text <| translate language Translate.NoMatchesFound ]
+                    ]
+
+                else
+                    matching
+                        |> EveryDictList.map (viewMother session)
+                        |> EveryDictList.values
     in
     div [ class "wrap wrap-alt-2" ]
         [ div

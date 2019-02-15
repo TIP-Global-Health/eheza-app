@@ -225,6 +225,7 @@ type TranslationId
     | NoActivitiesCompletedForThisParticipant
     | NoActivitiesPending
     | NoActivitiesPendingForThisParticipant
+    | NoMatchesFound
     | NoParticipantsPending
     | NoParticipantsPendingForThisActivity
     | NoParticipantsCompleted
@@ -1079,6 +1080,11 @@ translationSet trans =
         NoActivitiesPendingForThisParticipant ->
             { english = "All activities are completed for this participant."
             , kinyarwanda = Just "Ibikorwa byose byarangiye kubitabiriye."
+            }
+
+        NoMatchesFound ->
+            { english = "No matches found"
+            , kinyarwanda = Nothing
             }
 
         NoParticipantsCompleted ->
