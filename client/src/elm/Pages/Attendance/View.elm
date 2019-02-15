@@ -11,6 +11,7 @@ import Activity.Utils exposing (isCheckedIn)
 import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (EditableSession)
+import Backend.Session.Utils exposing (getChildren)
 import EveryDictList
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -119,12 +120,19 @@ viewMother session motherId mother =
                     , onClick <| SetCheckedIn motherId True
                     ]
                     [ span [ class "icon-check-in" ] [] ]
+
+        children =
+            getChildren motherId session.offlineSession
+                |> List.map (\( _, child ) -> text child.name)
+                |> List.intersperse (text ", ")
     in
     div
         [ class "item" ]
-        [ checkIn
-        , thumbnailImage "mother" mother.avatarUrl mother.name 110 110
+        [ thumbnailImage "mother ui avatar image" mother.avatarUrl mother.name 110 110
         , div
             [ class "content" ]
-            [ text mother.name ]
+            [ div [ class "header" ] [ text mother.name ]
+            , div [ class "description" ] children
+            ]
+        , checkIn
         ]
