@@ -17,8 +17,23 @@ function hedley_migrate_migrate_api() {
       'missing' => [
         'title' => t('Missing Data'),
       ],
+      'batch_2019_02' => [
+        'title' => t('Batch data added 2019/02'),
+      ],
     ],
     'migrations' => [
+      'HedleyMigrateClinics_2019_02' => [
+        'class_name' => 'HedleyMigrateClinics201902',
+        'group_name' => 'batch_2019_02',
+      ],
+      'HedleyMigrateMothers_2019_02' => [
+        'class_name' => 'HedleyMigrateMothers201902',
+        'group_name' => 'batch_2019_02',
+      ],
+      'HedleyMigrateChildren_2019_02' => [
+        'class_name' => 'HedleyMigrateChildren201902',
+        'group_name' => 'batch_2019_02',
+      ],
       'HedleyMigrateUsers' => [
         'class_name' => 'HedleyMigrateUsers',
       ],
