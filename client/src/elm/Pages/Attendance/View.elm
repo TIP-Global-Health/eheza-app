@@ -10,20 +10,53 @@ at a session.
 import Activity.Utils exposing (motherIsCheckedIn)
 import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
-import Backend.Session.Model exposing (EditableSession, MsgEditableSession(..))
+import Backend.Session.Model exposing (EditableSession)
+import Backend.Session.Utils exposing (getChildren)
 import EveryDictList
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
-import Pages.Model exposing (MsgSession(..))
+import Html.Events exposing (onClick, onInput)
+import Pages.Attendance.Model exposing (..)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 
 
-view : Language -> EditableSession -> Html MsgSession
-view language session =
+view : Language -> EditableSession -> Model -> Html Msg
+view language session model =
     let
+        filter =
+            model.filter
+                |> String.toLower
+                |> String.trim
+
+        matches =
+            if String.isEmpty filter then
+                \_ _ ->
+                    -- No input entered, so show all values.
+                    True
+
+            else
+                \motherId mother ->
+                    let
+                        motherContainsFilter =
+                            mother.name
+                                |> String.toLower
+                                |> String.contains filter
+
+                        -- A function, rather than value, to preserve the
+                        -- short-circuiting benefits of the `||` below.
+                        childrenContainsFilter _ =
+                            getChildren motherId session.offlineSession
+                                |> List.any
+                                    (\( _, child ) ->
+                                        child.name
+                                            |> String.toLower
+                                            |> String.contains filter
+                                    )
+                    in
+                    motherContainsFilter || childrenContainsFilter ()
+
         mothers =
             if EveryDictList.isEmpty session.offlineSession.mothers then
                 [ div
@@ -32,9 +65,20 @@ view language session =
                 ]
 
             else
-                session.offlineSession.mothers
-                    |> EveryDictList.map (viewMother session)
-                    |> EveryDictList.values
+                let
+                    matching =
+                        EveryDictList.filter matches session.offlineSession.mothers
+                in
+                if EveryDictList.isEmpty matching then
+                    [ div
+                        [ class "ui message warning" ]
+                        [ text <| translate language Translate.NoMatchesFound ]
+                    ]
+
+                else
+                    matching
+                        |> EveryDictList.map (viewMother session)
+                        |> EveryDictList.values
     in
     div [ class "wrap wrap-alt-2" ]
         [ div
@@ -44,7 +88,11 @@ view language session =
                 [ text <| translate language Translate.Attendance ]
             , a
                 [ class "link-back"
-                , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just session.offlineSession.session.clinicId
+                , Just session.offlineSession.session.clinicId
+                    |> ClinicsPage
+                    |> UserPage
+                    |> SetActivePage
+                    |> onClick
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []
@@ -70,6 +118,24 @@ view language session =
                         [ class "ui header" ]
                         [ text <| translate language Translate.CheckIn ]
                     , p [] [ text <| translate language Translate.ClickTheCheckMark ]
+                    , div
+                        [ class "ui action input small" ]
+                        [ input
+                            [ placeholder <| translate language Translate.FilterByName
+                            , type_ "text"
+                            , onInput SetFilter
+                            , value model.filter
+                            ]
+                            []
+                        , button
+                            [ classList
+                                [ ( "ui button", True )
+                                , ( "disabled", String.isEmpty filter )
+                                ]
+                            , onClick <| SetFilter ""
+                            ]
+                            [ text <| translate language Translate.ShowAll ]
+                        ]
                     , div [ class "ui middle aligned divided list" ] mothers
                     ]
                 ]
@@ -77,29 +143,36 @@ view language session =
         ]
 
 
-viewMother : EditableSession -> MotherId -> Mother -> Html MsgSession
+viewMother : EditableSession -> MotherId -> Mother -> Html Msg
 viewMother session motherId mother =
     let
         checkIn =
             if motherIsCheckedIn motherId session then
                 a
                     [ class "link-checked-in"
-                    , onClick <| MsgEditableSession <| SetCheckedIn motherId False
+                    , onClick <| SetCheckedIn motherId False
                     ]
                     [ span [ class "icon-checked-in" ] [] ]
 
             else
                 a
                     [ class "link-check-in"
-                    , onClick <| MsgEditableSession <| SetCheckedIn motherId True
+                    , onClick <| SetCheckedIn motherId True
                     ]
                     [ span [ class "icon-check-in" ] [] ]
+
+        children =
+            getChildren motherId session.offlineSession
+                |> List.map (\( _, child ) -> text child.name)
+                |> List.intersperse (text ", ")
     in
     div
         [ class "item" ]
-        [ checkIn
-        , thumbnailImage "mother" mother.avatarUrl mother.name 110 110
+        [ thumbnailImage "mother ui avatar image" mother.avatarUrl mother.name 110 110
         , div
             [ class "content" ]
-            [ text mother.name ]
+            [ div [ class "header" ] [ text mother.name ]
+            , div [ class "description" ] children
+            ]
+        , checkIn
         ]

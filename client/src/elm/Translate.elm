@@ -185,6 +185,7 @@ type TranslationId
     | ErrorFetchingCachedSessionMessage
     | FamilyPlanningSignLabel FamilyPlanningSign
     | Fetch
+    | FilterByName
     | FormError (ErrorValue ValidationError)
     | FormField String
     | FutureSessions
@@ -214,6 +215,7 @@ type TranslationId
     | NoActivitiesCompletedForThisParticipant
     | NoActivitiesPending
     | NoActivitiesPendingForThisParticipant
+    | NoMatchesFound
     | NoParticipantsPending
     | NoParticipantsPendingForThisActivity
     | NoParticipantsCompleted
@@ -277,6 +279,7 @@ type TranslationId
     | SessionInProgress
     | SessionUnauthorized
     | SessionUnauthorized2
+    | ShowAll
     | StartEndDate
     | StartDate
     | EndDate
@@ -956,6 +959,11 @@ translationSet trans =
             , kinyarwanda = Just "Gushakisha"
             }
 
+        FilterByName ->
+            { english = "Filter by name"
+            , kinyarwanda = Nothing
+            }
+
         FormError errorValue ->
             translateFormError errorValue
 
@@ -1150,6 +1158,11 @@ translationSet trans =
         NoActivitiesPendingForThisParticipant ->
             { english = "All activities are completed for this participant."
             , kinyarwanda = Just "Ibikorwa byose byarangiye kubitabiriye."
+            }
+
+        NoMatchesFound ->
+            { english = "No matches found"
+            , kinyarwanda = Nothing
             }
 
         NoParticipantsCompleted ->
@@ -1474,6 +1487,11 @@ translationSet trans =
             { english =
                 """A health assessment is in progress on this device, but you are not authorized to view it.
         Please contact the Ihangane project for further instructions."""
+            , kinyarwanda = Nothing
+            }
+
+        ShowAll ->
+            { english = "Show All"
             , kinyarwanda = Nothing
             }
 
