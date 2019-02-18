@@ -13,6 +13,7 @@ import Backend.Model exposing (..)
 import Backend.Session.Decoder exposing (decodeSession, decodeTrainingSessionRequest)
 import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession, encodeTrainingSessionRequest)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
+import Backend.Session.Update
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData, makeEditableSession, mapChildEdits, mapMotherEdits, setPhotoFileId)
 import Config.Model exposing (BackendUrl)
 import Dict exposing (Dict)
@@ -211,7 +212,17 @@ updateIndexedDb msg model =
             ( model, Cmd.none )
 
         MsgSession sessionId subMsg ->
-            ( model, Cmd.none )
+            let
+                requests =
+                    EveryDict.get sessionId model.sessionRequests
+                        |> Maybe.withDefault Backend.Session.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.Session.Update.update sessionId subMsg requests
+            in
+            ( { model | sessionRequests = EveryDict.insert sessionId subModel model.sessionRequests }
+            , Cmd.map (MsgSession sessionId) subCmd
+            )
 
 
 handleRevision : Revision -> ModelIndexedDb -> ModelIndexedDb

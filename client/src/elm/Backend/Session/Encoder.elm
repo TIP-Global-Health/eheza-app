@@ -1,4 +1,4 @@
-module Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession, encodeTrainingSessionAction, encodeTrainingSessionRequest)
+module Backend.Session.Encoder exposing (encodeClosed, encodeOfflineSession, encodeOfflineSessionWithId, encodeSession, encodeTrainingSessionAction, encodeTrainingSessionRequest)
 
 import Backend.Child.Encoder exposing (encodeChild)
 import Backend.Clinic.Encoder exposing (encodeClinic)
@@ -40,9 +40,14 @@ encodeSession : Session -> List ( String, Value )
 encodeSession session =
     [ ( "scheduled_date", encodeDrupalRange encodeYYYYMMDD session.scheduledDate )
     , ( "clinic", encodeEntityUuid session.clinicId )
-    , ( "closed", bool session.closed )
+    , encodeClosed session.closed
     , ( "training", bool session.training )
     ]
+
+
+encodeClosed : Bool -> ( String, Value )
+encodeClosed closed =
+    ( "closed", bool closed )
 
 
 encodeOfflineSession : OfflineSession -> List ( String, Value )

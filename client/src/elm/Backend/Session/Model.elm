@@ -1,4 +1,4 @@
-module Backend.Session.Model exposing (EditableSession, Msg(..), OfflineSession, Session)
+module Backend.Session.Model exposing (EditableSession, Model, Msg(..), OfflineSession, Session, emptyModel)
 
 {-| A "session" refers to a group session with mothers and babies ... that is,
 an occasion on which measurements are taken in a group setting.
@@ -23,7 +23,7 @@ import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDateRange)
 import Measurement.Model
-import RemoteData exposing (WebData)
+import RemoteData exposing (RemoteData(..), WebData)
 
 
 {-| This is the basic `Session` data ... essentially, for scheduling purposes.
@@ -102,10 +102,25 @@ type alias EditableSession =
     }
 
 
+{-| This is a subdivision of ModelIndexedDb that tracks requests in-progress
+to peform the updates indicated by the `Msg` type below.
+-}
+type alias Model =
+    { closeSessionRequest : WebData ()
+    }
+
+
+emptyModel : Model
+emptyModel =
+    { closeSessionRequest = NotAsked
+    }
+
+
 {-| This models some messages the UI can send to change an EditableSession.
 -}
 type Msg
     = CloseSession
+    | HandleClosedSession (WebData ())
     | MeasurementOutMsgChild ChildId Measurement.Model.OutMsgChild
     | MeasurementOutMsgMother MotherId Measurement.Model.OutMsgMother
     | SetCheckedIn MotherId Bool

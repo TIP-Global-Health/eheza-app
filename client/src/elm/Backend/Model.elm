@@ -102,6 +102,9 @@ type alias ModelIndexedDb =
     , sessionsByClinic : EveryDict ClinicId (WebData (EveryDictList SessionId Session))
     , sessions : EveryDict SessionId (WebData Session)
 
+    -- Tracks requests in progress to update sessions
+    , sessionRequests : EveryDict SessionId Backend.Session.Model.Model
+
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
     , expectedParticipants : EveryDict SessionId (WebData Participants)
@@ -126,6 +129,7 @@ emptyModelIndexedDb =
     , participantForms = NotAsked
     , sessions = EveryDict.empty
     , sessionsByClinic = EveryDict.empty
+    , sessionRequests = EveryDict.empty
     , syncData = NotAsked
     }
 
