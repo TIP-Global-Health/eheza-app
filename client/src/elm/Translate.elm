@@ -279,6 +279,7 @@ type TranslationId
     | SessionClosed
     | SessionClosed2 SessionId
     | SessionInProgress
+    | SessionLoading SessionId
     | SessionUnauthorized
     | SessionUnauthorized2
     | StartEndDate
@@ -1471,6 +1472,11 @@ translationSet trans =
                     ++ toString (fromEntityUuid sessionId)
                     ++ ", but it was not uploaded to the server and the session is closed. "
                     ++ "Please contact the Ihangane project for further instructions."
+            , kinyarwanda = Nothing
+            }
+
+        SessionLoading sessionId ->
+            { english = "Loading session " ++ fromEntityUuid sessionId
             , kinyarwanda = Nothing
             }
 

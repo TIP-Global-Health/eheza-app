@@ -170,8 +170,6 @@ makeEditableSession test =
     { offlineSession = makeOfflineSession test
     , edits = makeEdits test
     , update = NotAsked
-    , childForms = EveryDict.empty -- not relevant
-    , motherForms = EveryDict.empty -- not relevant
     }
 
 
@@ -207,10 +205,8 @@ makeCounselingSession when timing =
 makeOfflineSession : TestCase -> OfflineSession
 makeOfflineSession test =
     { session = session sessionDate
-    , allSessions = EveryDictList.empty -- not relevant
     , allParticipantForms = EveryDictList.empty -- not relevant
     , everyCounselingSchedule = EveryDict.empty -- not relevant
-    , clinics = EveryDictList.empty -- not relevant
     , mothers = EveryDictList.empty -- not relevant
     , children = makeChildren test
     , historicalMeasurements = makeHistoricalMeasurements test

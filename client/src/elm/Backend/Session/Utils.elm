@@ -4,13 +4,15 @@ import Backend.Child.Model exposing (Child)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Session.Model exposing (..)
 import EveryDict
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
-import RemoteData exposing (RemoteData(..))
+import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date
 import User.Model exposing (User)
 
@@ -100,15 +102,117 @@ emptyMotherMeasurementData session =
     }
 
 
-{-| Given an OfflineSession for which we don't have edits, fill in default
-values as a starting point for an EditableSession.
+{-| Construct an EditableSession from our data, if we have all the needed data.
+
+This is a convenience, because so many functions work in terms of an
+EditableSession. In future, we might refactor that, or it might prove to
+continue to be convenient. (It's probably not efficient to calculate all of
+this on the fly every time, but it's much easier for now to work within
+existing types).
+
 -}
-makeEditableSession : OfflineSession -> EditableSession
-makeEditableSession offlineSession =
-    { offlineSession = offlineSession
-    , edits = emptyMeasurementEdits
-    , update = NotAsked
-    }
+makeEditableSession : SessionId -> ModelIndexedDb -> WebData EditableSession
+makeEditableSession sessionId db =
+    let
+        sessionData =
+            EveryDict.get sessionId db.sessions
+                |> Maybe.withDefault NotAsked
+
+        allParticipantFormsData =
+            db.participantForms
+
+        everyCounselingScheduleData =
+            db.everyCounselingSchedule
+
+        participantData =
+            EveryDict.get sessionId db.expectedParticipants
+                |> Maybe.withDefault NotAsked
+
+        mothersData =
+            RemoteData.map .mothers participantData
+
+        childrenData =
+            RemoteData.map .children participantData
+
+        childMeasurementListData =
+            RemoteData.andThen
+                (\children ->
+                    EveryDictList.keys children
+                        |> List.map
+                            (\childId ->
+                                EveryDict.get childId db.childMeasurements
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.map (\data -> ( childId, data ))
+                            )
+                        |> RemoteData.fromList
+                        |> RemoteData.map EveryDict.fromList
+                )
+                childrenData
+
+        motherMeasurementListData =
+            RemoteData.andThen
+                (\mothers ->
+                    EveryDictList.keys mothers
+                        |> List.map
+                            (\motherId ->
+                                EveryDict.get motherId db.motherMeasurements
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.map (\data -> ( motherId, data ))
+                            )
+                        |> RemoteData.fromList
+                        |> RemoteData.map EveryDict.fromList
+                )
+                mothersData
+
+        childMeasurementsSplitData =
+            RemoteData.map (splitChildMeasurements sessionId) childMeasurementListData
+
+        motherMeasurementsSplitData =
+            RemoteData.map (splitMotherMeasurements sessionId) motherMeasurementListData
+
+        historicalMeasurementData =
+            RemoteData.map2 HistoricalMeasurements motherMeasurementListData childMeasurementListData
+
+        currentAndPrevious =
+            RemoteData.map2
+                (\childData motherData ->
+                    { current =
+                        { mothers = EveryDict.map (always .current) motherData
+                        , children = EveryDict.map (always .current) childData
+                        }
+                    , previous =
+                        { mothers = EveryDict.map (always .previous) motherData
+                        , children = EveryDict.map (always .previous) childData
+                        }
+                    }
+                )
+                childMeasurementsSplitData
+                motherMeasurementsSplitData
+
+        currentMeasurementData =
+            RemoteData.map .current currentAndPrevious
+
+        previousMeasurementData =
+            RemoteData.map .previous currentAndPrevious
+
+        offlineSession =
+            RemoteData.map OfflineSession sessionData
+                |> RemoteData.andMap allParticipantFormsData
+                |> RemoteData.andMap everyCounselingScheduleData
+                |> RemoteData.andMap mothersData
+                |> RemoteData.andMap childrenData
+                |> RemoteData.andMap historicalMeasurementData
+                |> RemoteData.andMap currentMeasurementData
+                |> RemoteData.andMap previousMeasurementData
+    in
+    RemoteData.map
+        (\offline ->
+            { offlineSession = offline
+            , edits = emptyMeasurementEdits
+            , update = NotAsked
+            }
+        )
+        offlineSession
 
 
 {-| Given a function that changes ChildEdits, apply that to the motherId.

@@ -6,7 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Session.Model exposing (EditableSession, Session)
-import Backend.Session.Utils exposing (isAuthorized, isClosed)
+import Backend.Session.Utils exposing (isAuthorized, isClosed, makeEditableSession)
 import Date
 import EveryDict
 import EveryDictList
@@ -15,6 +15,7 @@ import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Http exposing (Error)
 import Pages.Activities.View
 import Pages.Activity.Model
 import Pages.Activity.View
@@ -26,16 +27,45 @@ import Pages.Participants.View
 import Pages.ProgressReport.View
 import Pages.Session.Model exposing (..)
 import Participant.Utils exposing (childParticipant, motherParticipant)
-import RemoteData
+import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 import User.Model exposing (User)
-import Utils.WebData exposing (viewWebData)
+import Utils.WebData exposing (viewError, viewWebData)
 import ZScore.Model
 
 
 view : Language -> NominalDate -> ZScore.Model.Model -> Nurse -> SessionId -> SessionPage -> Model -> ModelIndexedDb -> Html Msg
 view language currentDate zscores nurse sessionId page model db =
-    Debug.crash "todo"
+    let
+        sessionData =
+            EveryDict.get sessionId db.sessions
+                |> Maybe.withDefault NotAsked
+    in
+    viewWebData language
+        (\session -> viewFoundSession language currentDate zscores nurse ( sessionId, session ) page model db)
+        (wrapError language sessionId)
+        sessionData
+
+
+wrapError : Language -> SessionId -> Html Msg -> Html Msg
+wrapError language sessionId errorHtml =
+    div
+        [ class "wrap wrap-alt-2" ]
+        [ div
+            [ class "ui basic head segment" ]
+            [ h1
+                [ class "ui header" ]
+                [ text <| translate language <| Translate.SessionLoading sessionId ]
+            , a
+                [ class "link-back"
+                , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Nothing
+                ]
+                [ span [ class "icon-back" ] []
+                , span [] []
+                ]
+            ]
+        , errorHtml
+        ]
 
 
 viewFoundSession : Language -> NominalDate -> ZScore.Model.Model -> Nurse -> ( SessionId, Session ) -> SessionPage -> Model -> ModelIndexedDb -> Html Msg
@@ -47,14 +77,10 @@ viewFoundSession language currentDate zscores nurse ( sessionId, session ) page 
         viewUnauthorizedSession language sessionId session db
 
     else
-        let
-            editableSession =
-                Debug.crash "todo"
-        in
         viewWebData language
             (viewEditableSession language currentDate zscores nurse sessionId page model db)
-            identity
-            editableSession
+            (wrapError language sessionId)
+            (makeEditableSession sessionId db)
 
 
 viewEditableSession : Language -> NominalDate -> ZScore.Model.Model -> Nurse -> SessionId -> SessionPage -> Model -> ModelIndexedDb -> EditableSession -> Html Msg

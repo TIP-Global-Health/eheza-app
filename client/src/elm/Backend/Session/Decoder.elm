@@ -1,4 +1,4 @@
-module Backend.Session.Decoder exposing (decodeChildren, decodeMothers, decodeSession, decodeTrainingSessionAction, decodeTrainingSessionRequest, getCurrentAndPrevious, splitChildMeasurements, splitMotherMeasurements)
+module Backend.Session.Decoder exposing (decodeChildren, decodeMothers, decodeSession, decodeTrainingSessionAction, decodeTrainingSessionRequest)
 
 import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Child.Model exposing (Child)
@@ -60,108 +60,6 @@ decodeSession =
             )
         |> optional "closed" bool False
         |> optional "training" bool False
-
-
-splitMotherMeasurements : SessionId -> EveryDict MotherId MotherMeasurementList -> EveryDict MotherId { current : MotherMeasurements, previous : MotherMeasurements }
-splitMotherMeasurements sessionId =
-    EveryDict.map
-        (\_ list ->
-            let
-                familyPlanning =
-                    getCurrentAndPrevious sessionId list.familyPlannings
-
-                consent =
-                    getCurrentAndPrevious sessionId list.consents
-                        |> .current
-                        |> EveryDict.fromList
-            in
-            { current =
-                { familyPlanning = List.head familyPlanning.current
-                , consent = consent
-                }
-            , previous =
-                -- We don't "compare" consents, so previous doesn't mean
-                -- anything for it.
-                { familyPlanning = familyPlanning.previous
-                , consent = EveryDict.empty
-                }
-            }
-        )
-
-
-splitChildMeasurements : SessionId -> EveryDict ChildId ChildMeasurementList -> EveryDict ChildId { current : ChildMeasurements, previous : ChildMeasurements }
-splitChildMeasurements sessionId =
-    EveryDict.map
-        (\_ list ->
-            let
-                height =
-                    getCurrentAndPrevious sessionId list.heights
-
-                weight =
-                    getCurrentAndPrevious sessionId list.weights
-
-                muac =
-                    getCurrentAndPrevious sessionId list.muacs
-
-                nutrition =
-                    getCurrentAndPrevious sessionId list.nutritions
-
-                photo =
-                    getCurrentAndPrevious sessionId list.photos
-
-                counselingSession =
-                    getCurrentAndPrevious sessionId list.counselingSessions
-            in
-            { current =
-                -- We can only have one per session ... we enforce that here.
-                { height = List.head height.current
-                , weight = List.head weight.current
-                , muac = List.head muac.current
-                , nutrition = List.head nutrition.current
-                , photo = List.head photo.current
-                , counselingSession = List.head counselingSession.current
-                }
-            , previous =
-                { height = height.previous
-                , weight = weight.previous
-                , muac = muac.previous
-                , nutrition = nutrition.previous
-                , photo = photo.previous
-                , counselingSession = counselingSession.previous
-                }
-            }
-        )
-
-
-{-| Picks out current and previous values from a list of measurements.
--}
-getCurrentAndPrevious : SessionId -> List ( id, Measurement a b ) -> { current : List ( id, Measurement a b ), previous : Maybe ( id, Measurement a b ) }
-getCurrentAndPrevious sessionId =
-    let
-        -- This is designed to iterate through each list only once, to get both
-        -- the current and previous value
-        go measurement acc =
-            if .sessionId (Tuple.second measurement) == Just sessionId then
-                -- If it's got our session ID, then it's current
-                { acc | current = measurement :: acc.current }
-
-            else
-                case acc.previous of
-                    -- Otherwise, it might be previous
-                    Nothing ->
-                        { acc | previous = Just measurement }
-
-                    Just ( _, previousValue ) ->
-                        if Time.Date.compare (.dateMeasured (Tuple.second measurement)) previousValue.dateMeasured == GT then
-                            { acc | previous = Just measurement }
-
-                        else
-                            acc
-    in
-    List.foldl go
-        { current = []
-        , previous = Nothing
-        }
 
 
 decodeMothers : Decoder (EveryDictList MotherId Mother)
