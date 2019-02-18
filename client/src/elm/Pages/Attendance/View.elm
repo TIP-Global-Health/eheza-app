@@ -33,6 +33,7 @@ view language session model =
         matches =
             if String.isEmpty filter then
                 \_ _ ->
+                    -- No input entered, so show all values.
                     True
 
             else
@@ -43,6 +44,8 @@ view language session model =
                                 |> String.toLower
                                 |> String.contains filter
 
+                        -- A function, rather than value, to preserve the
+                        -- short-circuiting benefits of the `||` below.
                         childrenContainsFilter _ =
                             getChildren motherId session.offlineSession
                                 |> List.any
