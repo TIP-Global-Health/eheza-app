@@ -111,6 +111,4 @@ type MsgEditableSession
     = CloseSession
     | MeasurementOutMsgChild ChildId Measurement.Model.OutMsgChild
     | MeasurementOutMsgMother MotherId Measurement.Model.OutMsgMother
-    | RefetchSession
     | SetCheckedIn MotherId Bool
-    | SetPhotoFileId Photo Int
