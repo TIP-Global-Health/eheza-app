@@ -11,6 +11,7 @@ import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Pages.Activities.Update
 import Pages.Activity.Model
 import Pages.Activity.Update
+import Pages.Attendance.Update
 import Pages.Participant.Model
 import Pages.Participant.Update
 import Pages.Participants.Update
@@ -36,6 +37,16 @@ updateFoundSession sessionId session msg model =
             in
             ( { model | activitiesPage = subModel }
             , Cmd.map MsgActivities subCmd
+            , List.map (App.Model.MsgLoggedIn << App.Model.MsgPageSession sessionId) extraMsgs
+            )
+
+        MsgAttendance subMsg ->
+            let
+                ( subModel, subCmd, extraMsgs ) =
+                    Pages.Attendance.Update.update subMsg model.attendancePage
+            in
+            ( { model | attendancePage = subModel }
+            , Cmd.map MsgAttendance subCmd
             , List.map (App.Model.MsgLoggedIn << App.Model.MsgPageSession sessionId) extraMsgs
             )
 

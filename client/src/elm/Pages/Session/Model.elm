@@ -7,6 +7,7 @@ import EveryDict exposing (EveryDict)
 import Measurement.Model
 import Pages.Activities.Model
 import Pages.Activity.Model
+import Pages.Attendance.Model
 import Pages.Page exposing (Page)
 import Pages.Participant.Model
 import Pages.Participants.Model
@@ -19,6 +20,9 @@ order to view or update them.
 type alias Model =
     -- Shows a list of activities ... user can select one.
     { activitiesPage : Pages.Activities.Model.Model
+
+    -- Shows a list of mothers ... user can indicate attendance.
+    , attendancePage : Pages.Attendance.Model.Model
 
     -- Shows a page for a single activity. We keep separate UI state for
     -- each activity.
@@ -47,6 +51,7 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { activitiesPage = Pages.Activities.Model.emptyModel
+    , attendancePage = Pages.Attendance.Model.emptyModel
     , childActivityPages = EveryDict.empty
     , motherActivityPages = EveryDict.empty
     , childPages = EveryDict.empty
@@ -61,6 +66,7 @@ emptyModel =
 -}
 type Msg
     = MsgActivities Pages.Activities.Model.Msg
+    | MsgAttendance Pages.Attendance.Model.Msg
     | MsgChildActivity ChildActivity (Maybe ChildId) (Pages.Activity.Model.Msg ChildId Measurement.Model.MsgChild)
     | MsgMotherActivity MotherActivity (Maybe MotherId) (Pages.Activity.Model.Msg MotherId Measurement.Model.MsgMother)
     | MsgChild ChildId (Pages.Participant.Model.Msg ChildActivity Measurement.Model.MsgChild)

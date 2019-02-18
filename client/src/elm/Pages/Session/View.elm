@@ -106,7 +106,8 @@ viewEditableSession language currentDate zscores nurse sessionId page model db s
                         |> (\( html, maybeMotherId ) -> Html.map (MsgMotherActivity activity maybeMotherId) html)
 
         AttendancePage ->
-            Pages.Attendance.View.view language ( sessionId, session )
+            Pages.Attendance.View.view language ( sessionId, session ) model.attendancePage
+                |> Html.map MsgAttendance
 
         ParticipantsPage ->
             model.participantsPage

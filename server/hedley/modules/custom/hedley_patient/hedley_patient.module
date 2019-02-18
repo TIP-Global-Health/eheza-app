@@ -7,6 +7,14 @@
 
 include_once 'hedley_patient.features.inc';
 
+define('HEDLEY_PATIENT_EDUCATION_NONE', 0);
+define('HEDLEY_PATIENT_EDUCATION_PRIMARY', 1);
+define('HEDLEY_PATIENT_EDUCATION_VOCATIONAL', 2);
+define('HEDLEY_PATIENT_EDUCATION_SECONDARY', 3);
+define('HEDLEY_PATIENT_EDUCATION_DIPLOMA', 4);
+define('HEDLEY_PATIENT_EDUCATION_UNIVERSITY', 5);
+define('HEDLEY_PATIENT_EDUCATION_ADVANCED', 6);
+
 /**
  * Implements hook_query_TAG_alter().
  *
