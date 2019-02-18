@@ -88,7 +88,11 @@ type alias ModelIndexedDb =
     , everyCounselingSchedule : WebData EveryCounselingSchedule
     , healthCenters : WebData (EveryDictList HealthCenterId HealthCenter)
     , participantForms : WebData (EveryDictList ParticipantFormId ParticipantForm)
+
+    -- Data and requests relating to sync data
     , syncData : WebData (EveryDictList HealthCenterId SyncData)
+    , saveSyncDataRequests : EveryDict HealthCenterId (WebData ())
+    , deleteSyncDataRequests : EveryDict HealthCenterId (WebData ())
 
     -- For basic session data, we organize it in several ways in memory. One is
     -- by clinic, which we use when you navigate to a clinic page. The other
@@ -121,15 +125,17 @@ emptyModelIndexedDb : ModelIndexedDb
 emptyModelIndexedDb =
     { childMeasurements = EveryDict.empty
     , clinics = NotAsked
+    , deleteSyncDataRequests = EveryDict.empty
     , everyCounselingSchedule = NotAsked
     , expectedParticipants = EveryDict.empty
     , expectedSessions = EveryDict.empty
     , healthCenters = NotAsked
     , motherMeasurements = EveryDict.empty
     , participantForms = NotAsked
+    , saveSyncDataRequests = EveryDict.empty
+    , sessionRequests = EveryDict.empty
     , sessions = EveryDict.empty
     , sessionsByClinic = EveryDict.empty
-    , sessionRequests = EveryDict.empty
     , syncData = NotAsked
     }
 
@@ -166,10 +172,10 @@ type MsgIndexedDb
       -- Updating SyncData
     | SaveSyncData HealthCenterId SyncData
     | DeleteSyncData HealthCenterId
+    | HandleSavedSyncData HealthCenterId (WebData ())
+    | HandleDeletedSyncData HealthCenterId (WebData ())
       -- Handling edits to session data
     | MsgSession SessionId Backend.Session.Model.Msg
-      -- Temporary!
-    | IgnoreResponse
 
 
 {-| Wrapper for all the revisions we can receive.

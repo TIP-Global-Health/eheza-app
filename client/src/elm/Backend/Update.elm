@@ -195,21 +195,27 @@ updateIndexedDb msg model =
             )
 
         SaveSyncData uuid data ->
-            ( model
+            ( { model | saveSyncDataRequests = EveryDict.insert uuid Loading model.saveSyncDataRequests }
             , sw.put syncDataEndpoint uuid data
                 |> withoutDecoder
-                |> toCmd (always IgnoreResponse)
+                |> toCmd (RemoteData.fromResult >> HandleSavedSyncData uuid)
+            )
+
+        HandleSavedSyncData uuid data ->
+            ( { model | saveSyncDataRequests = EveryDict.insert uuid data model.saveSyncDataRequests }
+            , Cmd.none
             )
 
         DeleteSyncData uuid ->
-            ( model
+            ( { model | deleteSyncDataRequests = EveryDict.insert uuid Loading model.deleteSyncDataRequests }
             , sw.delete syncDataEndpoint uuid
-                |> toCmd (always IgnoreResponse)
+                |> toCmd (RemoteData.fromResult >> HandleDeletedSyncData uuid)
             )
 
-        IgnoreResponse ->
-            -- TODO: Remove
-            ( model, Cmd.none )
+        HandleDeletedSyncData uuid data ->
+            ( { model | deleteSyncDataRequests = EveryDict.insert uuid data model.deleteSyncDataRequests }
+            , Cmd.none
+            )
 
         MsgSession sessionId subMsg ->
             let
