@@ -20,4 +20,7 @@ files[] = handlers/node/HedleyMigrateCounselingTopics.php
 files[] = handlers/node/HedleyMigrateMissingHeights.php
 files[] = handlers/node/HedleyMigrateMissingWeights.php
 files[] = handlers/node/HedleyMigrateMissingMuacs.php
+files[] = handlers/node/2019-02/HedleyMigrateClinics201902.php
+files[] = handlers/node/2019-02/HedleyMigrateMothers201902.php
+files[] = handlers/node/2019-02/HedleyMigrateChildren201902.php
 files[] = handlers/node/HedleyMigrateParticipantForms.php

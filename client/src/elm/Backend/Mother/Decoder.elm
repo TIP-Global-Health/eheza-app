@@ -22,7 +22,7 @@ decodeMother =
                 ]
             )
         |> required "children" (oneOf [ list decodeEntityId, decodeNullAsEmptyArray ])
-        |> optional "date_birth" (map Just decodeYYYYMMDD) Nothing
+        |> optional "date_birth" (nullable decodeYYYYMMDD) Nothing
         |> optional "relation" decodeChildrenRelation MotherRelation
         |> optional "ubudehe" (nullable decodeUbudehe) Nothing
         |> optional "education_level" (nullable decodeEducationLevel) Nothing
