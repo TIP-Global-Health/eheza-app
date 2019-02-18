@@ -2,7 +2,7 @@ module Pages.Session.Model exposing (Model, Msg(..), emptyModel)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity)
 import Backend.Entities exposing (..)
-import Backend.Session.Model exposing (MsgEditableSession(..))
+import Backend.Session.Model
 import EveryDict exposing (EveryDict)
 import Measurement.Model
 import Pages.Activities.Model
@@ -72,5 +72,5 @@ type Msg
     | MsgChild ChildId (Pages.Participant.Model.Msg ChildActivity Measurement.Model.MsgChild)
     | MsgMother MotherId (Pages.Participant.Model.Msg MotherActivity Measurement.Model.MsgMother)
     | MsgParticipants Pages.Participants.Model.Msg
-    | MsgEditableSession MsgEditableSession
+    | MsgSession Backend.Session.Model.Msg
     | SetActivePage Page

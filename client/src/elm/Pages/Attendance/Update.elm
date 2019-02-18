@@ -17,7 +17,7 @@ update msg model =
         SetCheckedIn motherId checkedIn ->
             ( model
             , Cmd.none
-            , [ Pages.Session.Model.MsgEditableSession <|
+            , [ Pages.Session.Model.MsgSession <|
                     Backend.Session.Model.SetCheckedIn motherId checkedIn
               ]
             )

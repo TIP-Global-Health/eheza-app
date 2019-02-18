@@ -12,7 +12,7 @@ import Backend.Measurement.Utils exposing (backendValue, getPhotosToUpload, mapM
 import Backend.Model exposing (..)
 import Backend.Session.Decoder exposing (decodeSession, decodeTrainingSessionRequest)
 import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession, encodeTrainingSessionRequest)
-import Backend.Session.Model exposing (EditableSession, MsgEditableSession(..), OfflineSession, Session)
+import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData, makeEditableSession, mapChildEdits, mapMotherEdits, setPhotoFileId)
 import Config.Model exposing (BackendUrl)
 import Dict exposing (Dict)
@@ -210,8 +210,7 @@ updateIndexedDb msg model =
             -- TODO: Remove
             ( model, Cmd.none )
 
-        MsgEditableSession sessionId subMsg ->
-            -- TODO
+        MsgSession sessionId subMsg ->
             ( model, Cmd.none )
 
 

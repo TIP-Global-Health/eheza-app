@@ -26,7 +26,7 @@ import Backend.Measurement.Model exposing (ChildMeasurementList, ChildNutrition,
 import Backend.Mother.Model exposing (Mother)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
-import Backend.Session.Model exposing (EditableSession, MsgEditableSession, OfflineSession, Session)
+import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
@@ -163,7 +163,7 @@ type MsgIndexedDb
     | SaveSyncData HealthCenterId SyncData
     | DeleteSyncData HealthCenterId
       -- Handling edits to session data
-    | MsgEditableSession SessionId MsgEditableSession
+    | MsgSession SessionId Backend.Session.Model.Msg
       -- Temporary!
     | IgnoreResponse
 

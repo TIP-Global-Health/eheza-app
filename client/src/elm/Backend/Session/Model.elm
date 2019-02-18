@@ -1,4 +1,4 @@
-module Backend.Session.Model exposing (EditableSession, MsgEditableSession(..), OfflineSession, Session)
+module Backend.Session.Model exposing (EditableSession, Msg(..), OfflineSession, Session)
 
 {-| A "session" refers to a group session with mothers and babies ... that is,
 an occasion on which measurements are taken in a group setting.
@@ -103,11 +103,8 @@ type alias EditableSession =
 
 
 {-| This models some messages the UI can send to change an EditableSession.
-
-They are actually handled in `Backend.Update`.
-
 -}
-type MsgEditableSession
+type Msg
     = CloseSession
     | MeasurementOutMsgChild ChildId Measurement.Model.OutMsgChild
     | MeasurementOutMsgMother MotherId Measurement.Model.OutMsgMother

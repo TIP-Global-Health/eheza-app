@@ -3,7 +3,7 @@ module Pages.Session.Update exposing (update)
 import App.Model
 import Backend.Entities exposing (..)
 import Backend.Model
-import Backend.Session.Model exposing (EditableSession, MsgEditableSession(..))
+import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (emptyMotherMeasurementData, getMotherMeasurementData)
 import EveryDict
 import Maybe.Extra
@@ -67,10 +67,10 @@ updateFoundSession sessionId session msg model =
                     maybeChildId
                         |> Maybe.map
                             (\childId ->
-                                [ Maybe.map (MeasurementOutMsgChild childId) outMsg
+                                [ Maybe.map (Backend.Session.Model.MeasurementOutMsgChild childId) outMsg
                                 ]
                                     |> List.filterMap identity
-                                    |> List.map (App.Model.MsgIndexedDb << Backend.Model.MsgEditableSession sessionId)
+                                    |> List.map (App.Model.MsgIndexedDb << Backend.Model.MsgSession sessionId)
                             )
                         |> Maybe.withDefault []
 
@@ -117,10 +117,10 @@ updateFoundSession sessionId session msg model =
                     maybeMotherId
                         |> Maybe.map
                             (\motherId ->
-                                [ Maybe.map (MeasurementOutMsgMother motherId) outMsg
+                                [ Maybe.map (Backend.Session.Model.MeasurementOutMsgMother motherId) outMsg
                                 ]
                                     |> List.filterMap identity
-                                    |> List.map (App.Model.MsgIndexedDb << Backend.Model.MsgEditableSession sessionId)
+                                    |> List.map (App.Model.MsgIndexedDb << Backend.Model.MsgSession sessionId)
                             )
                         |> Maybe.withDefault []
 
@@ -159,8 +159,8 @@ updateFoundSession sessionId session msg model =
                     Pages.Participant.Update.updateChild subMsg childPage childForm
 
                 sessionMsgs =
-                    List.map (App.Model.MsgIndexedDb << Backend.Model.MsgEditableSession sessionId)
-                        (Maybe.Extra.toList (Maybe.map (MeasurementOutMsgChild childId) outMsg))
+                    List.map (App.Model.MsgIndexedDb << Backend.Model.MsgSession sessionId)
+                        (Maybe.Extra.toList (Maybe.map (Backend.Session.Model.MeasurementOutMsgChild childId) outMsg))
 
                 redirectMsgs =
                     Maybe.map App.Model.SetActivePage page
@@ -179,12 +179,12 @@ updateFoundSession sessionId session msg model =
             , redirectMsgs ++ sessionMsgs
             )
 
-        MsgEditableSession subMsg ->
+        MsgSession subMsg ->
             -- Just route it over to the backend ...
             ( model
             , Cmd.none
             , [ App.Model.MsgIndexedDb <|
-                    Backend.Model.MsgEditableSession sessionId subMsg
+                    Backend.Model.MsgSession sessionId subMsg
               ]
             )
 
@@ -204,8 +204,8 @@ updateFoundSession sessionId session msg model =
                     Pages.Participant.Update.updateMother subMsg motherPage motherForm measurements
 
                 sessionMsgs =
-                    List.map (App.Model.MsgIndexedDb << Backend.Model.MsgEditableSession sessionId)
-                        (Maybe.Extra.toList (Maybe.map (MeasurementOutMsgMother motherId) outMsg))
+                    List.map (App.Model.MsgIndexedDb << Backend.Model.MsgSession sessionId)
+                        (Maybe.Extra.toList (Maybe.map (Backend.Session.Model.MeasurementOutMsgMother motherId) outMsg))
 
                 redirectMsgs =
                     Maybe.map App.Model.SetActivePage page
