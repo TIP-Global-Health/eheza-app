@@ -4,7 +4,7 @@ import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
-import Backend.Measurement.Decoder exposing (decodeAttendance, decodeFamilyPlanning, decodeHeight, decodeMuac, decodeNutrition, decodePhoto, decodeWeight)
+import Backend.Measurement.Decoder exposing (decodeAttendance, decodeCounselingSession, decodeFamilyPlanning, decodeHeight, decodeMuac, decodeNutrition, decodeParticipantConsent, decodePhoto, decodeWeight)
 import Backend.Model exposing (..)
 import Backend.Mother.Decoder exposing (decodeMother)
 import Backend.Nurse.Decoder exposing (decodeNurse)
@@ -35,11 +35,10 @@ decodeRevision =
                         decodeWithUuid ClinicRevision decodeClinic
 
                     "counseling_schedule" ->
-                        -- decodeWithUuid CounselingScheduleRevision decodeCounselingSchedule
-                        succeed NotYetImplemented
+                        decodeWithUuid CounselingScheduleRevision decodeCounselingSchedule
 
                     "counseling_session" ->
-                        succeed NotYetImplemented
+                        decodeWithUuid CounselingSessionRevision decodeCounselingSession
 
                     "counseling_topic" ->
                         decodeWithUuid CounselingTopicRevision decodeCounselingTopic
@@ -69,7 +68,7 @@ decodeRevision =
                         decodeWithUuid ChildNutritionRevision decodeNutrition
 
                     "participant_consent" ->
-                        succeed NotYetImplemented
+                        decodeWithUuid ParticipantConsentRevision decodeParticipantConsent
 
                     "participant_form" ->
                         decodeWithUuid ParticipantFormRevision decodeParticipantForm

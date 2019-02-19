@@ -200,8 +200,6 @@ type Revision
     | PhotoRevision PhotoId Photo
     | SessionRevision SessionId Session
     | WeightRevision WeightId Weight
-      -- TODO: This last one is temporary, as we gradually convert from IDs to UUIDs
-    | NotYetImplemented
 
 
 {-| This represents a request sent to `/api/training_sessions`, which is an
