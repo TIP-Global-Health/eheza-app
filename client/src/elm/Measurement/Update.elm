@@ -1,4 +1,4 @@
-port module Measurement.Update exposing (updateChild, updateMother)
+module Measurement.Update exposing (updateChild, updateMother)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MeasurementData, MotherMeasurements, PhotoValue)
@@ -190,7 +190,7 @@ updateMother measurements msg model =
                 -- the possible error message.
                 updated =
                     case outMsg of
-                        SaveCompletedForm formId _ ->
+                        SaveCompletedForm _ formId _ ->
                             case model.participantConsent.view of
                                 Just currentFormId ->
                                     if formId == currentFormId then
@@ -209,7 +209,7 @@ updateMother measurements msg model =
                                     -- form, then no change needed.
                                     model
 
-                        SaveFamilyPlanningSigns _ ->
+                        SaveFamilyPlanningSigns _ _ ->
                             model
             in
             ( updated
