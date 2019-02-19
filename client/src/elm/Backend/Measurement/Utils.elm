@@ -103,6 +103,9 @@ splitMotherMeasurements sessionId =
     EveryDict.map
         (\_ list ->
             let
+                attendance =
+                    getCurrentAndPrevious sessionId list.attendances
+
                 familyPlanning =
                     getCurrentAndPrevious sessionId list.familyPlannings
 
@@ -112,13 +115,15 @@ splitMotherMeasurements sessionId =
                         |> EveryDict.fromList
             in
             { current =
-                { familyPlanning = List.head familyPlanning.current
+                { attendance = List.head attendance.current
+                , familyPlanning = List.head familyPlanning.current
                 , consent = consent
                 }
             , previous =
                 -- We don't "compare" consents, so previous doesn't mean
                 -- anything for it.
-                { familyPlanning = familyPlanning.previous
+                { attendance = attendance.previous
+                , familyPlanning = familyPlanning.previous
                 , consent = EveryDict.empty
                 }
             }

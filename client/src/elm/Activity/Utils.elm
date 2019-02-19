@@ -711,21 +711,15 @@ check-in (and activities) without worrying about synchronizing the two.
 -}
 motherIsCheckedIn : MotherId -> EditableSession -> Bool
 motherIsCheckedIn motherId session =
-    Debug.crash "todo"
+    let
+        explicitlyCheckedIn =
+            getMotherMeasurementData motherId session
+                |> (.current >> .attendance >> Maybe.map (Tuple.second >> .value) >> (==) (Just True))
 
-
-
-{-
-   let
-       explicitlyCheckedIn =
-           getMotherMeasurementData motherId session
-               |> (.edits >> .explicitlyCheckedIn)
-
-       hasCompletedActivity =
-           motherOrAnyChildHasAnyCompletedActivity motherId session
-   in
-   explicitlyCheckedIn || hasCompletedActivity
--}
+        hasCompletedActivity =
+            motherOrAnyChildHasAnyCompletedActivity motherId session
+    in
+    explicitlyCheckedIn || hasCompletedActivity
 
 
 childIsCheckedIn : ChildId -> EditableSession -> Bool
@@ -741,41 +735,30 @@ any completed activity?
 -}
 getCheckedIn : EditableSession -> { mothers : EveryDictList MotherId Mother, children : EveryDictList ChildId Child }
 getCheckedIn session =
-    Debug.crash "todo"
+    let
+        -- A mother is checked in if explicitly checked in or has any completed
+        -- activites.
+        mothers =
+            EveryDictList.filter
+                (\motherId _ ->
+                    motherIsCheckedIn motherId session
+                        || motherOrAnyChildHasAnyCompletedActivity motherId session
+                )
+                session.offlineSession.mothers
 
-
-
-{-
-   let
-       -- Which mothers have been explicitly checked in?
-       explicitlyCheckedInMothers =
-           EveryDict.filter (\_ edits -> edits.explicitlyCheckedIn)
-               session.edits.mothers
-
-       -- A mother is checked in if explicitly checked in or has any completed
-       -- activites.
-       mothers =
-           EveryDictList.filter
-               (\motherId _ ->
-                   EveryDict.member motherId explicitlyCheckedInMothers
-                       || motherOrAnyChildHasAnyCompletedActivity motherId session
-               )
-               session.offlineSession.mothers
-
-       -- A child is checked in if the mother is checked in.
-       children =
-           EveryDictList.filter
-               (\_ child ->
-                   child.motherId
-                       |> Maybe.map (\motherId -> EveryDictList.member motherId mothers)
-                       |> Maybe.withDefault False
-               )
-               session.offlineSession.children
-   in
-   { mothers = mothers
-   , children = children
-   }
--}
+        -- A child is checked in if the mother is checked in.
+        children =
+            EveryDictList.filter
+                (\_ child ->
+                    child.motherId
+                        |> Maybe.map (\motherId -> EveryDictList.member motherId mothers)
+                        |> Maybe.withDefault False
+                )
+                session.offlineSession.children
+    in
+    { mothers = mothers
+    , children = children
+    }
 
 
 {-| Does the mother herself have any completed activity?

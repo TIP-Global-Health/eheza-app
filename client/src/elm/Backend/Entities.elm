@@ -1,4 +1,4 @@
-module Backend.Entities exposing (CatchmentAreaId, CatchmentAreaUuidType(..), ChildId, ChildNutritionId, ChildNutritionUuidType(..), ChildUuidType(..), ClinicId, ClinicUuidType(..), CounselingScheduleId, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicUuidType(..), FamilyPlanningId, FamilyPlanningUuidType(..), HealthCenterId, HealthCenterUuidType(..), HeightId, HeightUuidType(..), MotherId, MotherUuidType(..), MuacId, MuacUuidType(..), NurseId, NurseUuidType(..), ParticipantConsentId, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormUuidType(..), PhotoId, PhotoUuidType(..), SessionId, SessionUuidType(..), WeightId, WeightUuidType(..))
+module Backend.Entities exposing (AttendanceId, AttendanceUuidType(..), CatchmentAreaId, CatchmentAreaUuidType(..), ChildId, ChildNutritionId, ChildNutritionUuidType(..), ChildUuidType(..), ClinicId, ClinicUuidType(..), CounselingScheduleId, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicUuidType(..), FamilyPlanningId, FamilyPlanningUuidType(..), HealthCenterId, HealthCenterUuidType(..), HeightId, HeightUuidType(..), MotherId, MotherUuidType(..), MuacId, MuacUuidType(..), NurseId, NurseUuidType(..), ParticipantConsentId, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormUuidType(..), PhotoId, PhotoUuidType(..), SessionId, SessionUuidType(..), WeightId, WeightUuidType(..))
 
 {-|
 
@@ -141,6 +141,14 @@ type alias CounselingTopicId =
 
 type CounselingTopicUuidType
     = CounselingTopicUuidType
+
+
+type alias AttendanceId =
+    EntityUuid AttendanceUuidType
+
+
+type AttendanceUuidType
+    = AttendanceUuidType
 
 
 type alias FamilyPlanningId =

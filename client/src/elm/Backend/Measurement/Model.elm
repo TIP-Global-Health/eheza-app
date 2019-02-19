@@ -1,4 +1,4 @@
-module Backend.Measurement.Model exposing (ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), CounselingSession, FamilyPlanning, FamilyPlanningSign(..), Height, HeightInCm(..), HistoricalMeasurements, Measurement, MeasurementData, Measurements, MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), MuacIndication(..), ParticipantConsent, ParticipantConsentValue, Photo, PhotoValue, SavedMeasurement(..), Weight, WeightInKg(..), emptyChildMeasurementList, emptyChildMeasurements, emptyHistoricalMeasurements, emptyMeasurements, emptyMotherMeasurementList, emptyMotherMeasurements)
+module Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), CounselingSession, FamilyPlanning, FamilyPlanningSign(..), Height, HeightInCm(..), HistoricalMeasurements, Measurement, MeasurementData, Measurements, MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), MuacIndication(..), ParticipantConsent, ParticipantConsentValue, Photo, PhotoValue, SavedMeasurement(..), Weight, WeightInKg(..), emptyChildMeasurementList, emptyChildMeasurements, emptyHistoricalMeasurements, emptyMeasurements, emptyMotherMeasurementList, emptyMotherMeasurements)
 
 {-| This module represents various measurements to be stored on the backend,
 and cached in local storage.
@@ -113,6 +113,10 @@ type alias ParticipantConsentValue =
     }
 
 
+type alias Attendance =
+    Measurement MotherId Bool
+
+
 type ChildNutritionSign
     = AbdominalDistension
     | Apathy
@@ -139,7 +143,8 @@ type alias CounselingSession =
 (Thus, it is a "saved" measurement that has been assigned an ID.)
 -}
 type SavedMeasurement
-    = SavedFamilyPlanning FamilyPlanningId FamilyPlanning
+    = SavedAttendance AttendanceId Attendance
+    | SavedFamilyPlanning FamilyPlanningId FamilyPlanning
     | SavedParticipantConsent ParticipantConsentId ParticipantConsent
     | SavedHeight HeightId Height
     | SavedMuac MuacId Muac
@@ -154,14 +159,16 @@ type SavedMeasurement
 
 
 type alias MotherMeasurementList =
-    { familyPlannings : List ( FamilyPlanningId, FamilyPlanning )
+    { attendances : List ( AttendanceId, Attendance )
+    , familyPlannings : List ( FamilyPlanningId, FamilyPlanning )
     , consents : List ( ParticipantConsentId, ParticipantConsent )
     }
 
 
 emptyMotherMeasurementList : MotherMeasurementList
 emptyMotherMeasurementList =
-    { familyPlannings = []
+    { attendances = []
+    , familyPlannings = []
     , consents = []
     }
 
@@ -250,14 +257,16 @@ So, it is a `List` (possibly empty) rather than a `Maybe`.
 
 -}
 type alias MotherMeasurements =
-    { familyPlanning : Maybe ( FamilyPlanningId, FamilyPlanning )
+    { attendance : Maybe ( AttendanceId, Attendance )
+    , familyPlanning : Maybe ( FamilyPlanningId, FamilyPlanning )
     , consent : EveryDict ParticipantConsentId ParticipantConsent
     }
 
 
 emptyMotherMeasurements : MotherMeasurements
 emptyMotherMeasurements =
-    { familyPlanning = Nothing
+    { attendance = Nothing
+    , familyPlanning = Nothing
     , consent = EveryDict.empty
     }
 

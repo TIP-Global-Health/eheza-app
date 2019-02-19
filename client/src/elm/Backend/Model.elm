@@ -22,7 +22,7 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
-import Backend.Measurement.Model exposing (ChildMeasurementList, ChildNutrition, CounselingSession, FamilyPlanning, Height, MotherMeasurementList, Muac, ParticipantConsent, Photo, Weight)
+import Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildNutrition, CounselingSession, FamilyPlanning, Height, MotherMeasurementList, Muac, ParticipantConsent, Photo, Weight)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
@@ -181,7 +181,8 @@ type MsgIndexedDb
 {-| Wrapper for all the revisions we can receive.
 -}
 type Revision
-    = CatchmentAreaRevision CatchmentAreaId CatchmentArea
+    = AttendanceRevision AttendanceId Attendance
+    | CatchmentAreaRevision CatchmentAreaId CatchmentArea
     | ChildNutritionRevision ChildNutritionId ChildNutrition
     | ChildRevision ChildId Child
     | ClinicRevision ClinicId Clinic
@@ -199,7 +200,7 @@ type Revision
     | PhotoRevision PhotoId Photo
     | SessionRevision SessionId Session
     | WeightRevision WeightId Weight
-      -- This last one is temporary, as we gradually convert from IDs to UUIDs
+      -- TODO: This last one is temporary, as we gradually convert from IDs to UUIDs
     | NotYetImplemented
 
 

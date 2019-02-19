@@ -4,7 +4,7 @@ import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
-import Backend.Measurement.Decoder exposing (decodeFamilyPlanning, decodeHeight, decodeMuac, decodeNutrition, decodePhoto, decodeWeight)
+import Backend.Measurement.Decoder exposing (decodeAttendance, decodeFamilyPlanning, decodeHeight, decodeMuac, decodeNutrition, decodePhoto, decodeWeight)
 import Backend.Model exposing (..)
 import Backend.Mother.Decoder exposing (decodeMother)
 import Backend.Nurse.Decoder exposing (decodeNurse)
@@ -22,6 +22,9 @@ decodeRevision =
                 -- Some of these aren't implemented yet, because they need
                 -- to be converted from ID to UUUID references first.
                 case s of
+                    "attendance" ->
+                        decodeWithUuid AttendanceRevision decodeAttendance
+
                     "catchment_area" ->
                         decodeWithUuid CatchmentAreaRevision decodeCatchmentArea
 

@@ -1,4 +1,4 @@
-module Backend.Measurement.Decoder exposing (decodeChildMeasurement, decodeChildMeasurementList, decodeChildNutritionSign, decodeCounselingSession, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMotherMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodeSavedMeasurement, decodeWeight, decodeWithEntityUuid, toEveryDict)
+module Backend.Measurement.Decoder exposing (decodeAttendance, decodeChildMeasurement, decodeChildMeasurementList, decodeChildNutritionSign, decodeCounselingSession, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMotherMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodeSavedMeasurement, decodeWeight, decodeWithEntityUuid, toEveryDict)
 
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
@@ -48,6 +48,10 @@ decodeSavedMeasurement =
         |> andThen
             (\s ->
                 case s of
+                    "attendance" ->
+                        decodeWithEntityUuid decodeAttendance
+                            |> map (uncurry SavedAttendance)
+
                     "family_planning" ->
                         decodeWithEntityUuid decodeFamilyPlanning
                             |> map (uncurry SavedFamilyPlanning)
@@ -123,6 +127,7 @@ decodeWithEntityUuid decoder =
 decodeMotherMeasurementList : Decoder MotherMeasurementList
 decodeMotherMeasurementList =
     decode MotherMeasurementList
+        |> optional "attendance" (list (decodeWithEntityUuid decodeAttendance)) []
         |> optional "family_planning" (list (decodeWithEntityUuid decodeFamilyPlanning)) []
         |> optional "participant_consent" (list (decodeWithEntityUuid decodeParticipantConsent)) []
 
@@ -178,6 +183,12 @@ decodeFamilyPlanning : Decoder FamilyPlanning
 decodeFamilyPlanning =
     decodeEverySet decodeFamilyPlanningSign
         |> field "family_planning_signs"
+        |> decodeMotherMeasurement
+
+
+decodeAttendance : Decoder Attendance
+decodeAttendance =
+    field "attended" bool
         |> decodeMotherMeasurement
 
 

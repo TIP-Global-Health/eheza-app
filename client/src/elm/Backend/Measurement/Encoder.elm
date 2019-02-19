@@ -1,4 +1,4 @@
-module Backend.Measurement.Encoder exposing (encodeChildMeasurement, encodeChildMeasurementList, encodeCounselingSession, encodeEntity, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeHeight, encodeMeasurement, encodeMotherMeasurement, encodeMotherMeasurementList, encodeMuac, encodeNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeParticipantConsent, encodePhoto, encodeWeight)
+module Backend.Measurement.Encoder exposing (encodeAttendance, encodeChildMeasurement, encodeChildMeasurementList, encodeCounselingSession, encodeEntity, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeHeight, encodeMeasurement, encodeMotherMeasurement, encodeMotherMeasurementList, encodeMuac, encodeNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeParticipantConsent, encodePhoto, encodeWeight)
 
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Measurement.Model exposing (..)
@@ -82,6 +82,14 @@ encodeCounselingSession =
               , encodeCounselingTiming timing
               )
             ]
+        )
+
+
+encodeAttendance : Attendance -> List ( String, Value )
+encodeAttendance =
+    encodeMotherMeasurement
+        (\attended ->
+            [ ( "attended", bool attended ) ]
         )
 
 
@@ -218,7 +226,12 @@ encodeChildMeasurementList measurements =
 encodeMotherMeasurementList : MotherMeasurementList -> Value
 encodeMotherMeasurementList measurements =
     object
-        [ ( "family_planning"
+        [ ( "attendance"
+          , measurements.attendances
+                |> List.map (encodeEntity encodeAttendance)
+                |> list
+          )
+        , ( "family_planning"
           , measurements.familyPlannings
                 |> List.map (encodeEntity encodeFamilyPlanning)
                 |> list
