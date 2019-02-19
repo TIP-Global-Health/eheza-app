@@ -13,8 +13,11 @@ abstract class HedleyMigrateBase extends Migration {
   protected $entityType = NULL;
   protected $bundle = NULL;
   protected $csvColumns = [];
+  protected $columns = [];
+  protected $fields = [];
   protected $simpleMappings = [];
   protected $simpleMultipleMappings = [];
+  protected $csvPrefix = '';
 
   /**
    * HedleyMigrateBase constructor.
@@ -33,13 +36,12 @@ abstract class HedleyMigrateBase extends Migration {
 
     $this->description = t('Import @bundle.', ['@bundle' => $this->bundle]);
 
-    $source_file = $this->getMigrateDirectory() . '/csv/' . $this->bundle . '.csv';
+    $source_file = $this->getMigrateDirectory() . '/csv/' . $this->csvPrefix . $this->bundle . '.csv';
 
-    $columns = [];
     foreach ($this->csvColumns as $column_name) {
-      $columns[] = [$column_name, $column_name];
+      $this->columns[] = [$column_name, $column_name];
     }
-    $this->source = new MigrateSourceCSV($source_file, $columns, ['header_rows' => 1]);
+    $this->source = new MigrateSourceCSV($source_file, $this->columns, ['header_rows' => 1], $this->fields);
 
     $destination_class = $destination_classes[$this->entityType];
     $this->destination = new $destination_class($this->bundle);
