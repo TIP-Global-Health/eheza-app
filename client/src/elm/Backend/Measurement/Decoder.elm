@@ -1,4 +1,4 @@
-module Backend.Measurement.Decoder exposing (decodeChildEdits, decodeChildMeasurement, decodeChildMeasurementList, decodeChildNutritionSign, decodeCounselingSession, decodeEdit, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMeasurementEdits, decodeMotherEdits, decodeMotherMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodeWeight, decodeWithEntityUuid, toEveryDict)
+module Backend.Measurement.Decoder exposing (decodeChildMeasurement, decodeChildMeasurementList, decodeChildNutritionSign, decodeCounselingSession, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMotherMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodeSavedMeasurement, decodeWeight, decodeWithEntityUuid, toEveryDict)
 
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
@@ -285,87 +285,4 @@ decodeFamilyPlanningSign =
                         fail <|
                             sign
                                 ++ " is not a recognized FamilyPlanningSign"
-            )
-
-
-{-| Decodes what `encodeMeasurementEdits` produces.
--}
-decodeMeasurementEdits : Decoder MeasurementEdits
-decodeMeasurementEdits =
-    decode MeasurementEdits
-        |> optional "closed" bool False
-        |> required "mothers" (map (toEveryDict toEntityUuid) (dict decodeMotherEdits))
-        |> required "children" (map (toEveryDict toEntityUuid) (dict decodeChildEdits))
-
-
-{-| Decodes what `encodeChildEdits` produces.
-
-The keys should match the machine name of the entity on the backend, in order
-for the upload mechanism to work as expected.
-
--}
-decodeChildEdits : Decoder ChildEdits
-decodeChildEdits =
-    decode ChildEdits
-        |> required "height" (decodeEdit decodeHeight)
-        |> required "muac" (decodeEdit decodeMuac)
-        |> required "nutrition" (decodeEdit decodeNutrition)
-        |> required "photo" (decodeEdit decodePhoto)
-        |> required "weight" (decodeEdit decodeWeight)
-        |> optional "counseling_session" (decodeEdit decodeCounselingSession) Unedited
-
-
-{-| Decodes what `encodeChildEdits` produces.
--}
-decodeMotherEdits : Decoder MotherEdits
-decodeMotherEdits =
-    decode MotherEdits
-        |> required "family_planning" (decodeEdit decodeFamilyPlanning)
-        |> optional "participant_consent" (list (decodeEdit decodeParticipantConsent)) []
-        |> optional "checked_in" bool False
-
-
-{-| The opposite of `encodeEdit`
--}
-decodeEdit : Decoder value -> Decoder (Edit (EntityUuid id) value)
-decodeEdit valueDecoder =
-    field "tag" string
-        |> andThen
-            (\tag ->
-                case tag of
-                    "unedited" ->
-                        succeed Unedited
-
-                    "created" ->
-                        field "value" valueDecoder
-                            |> map Created
-
-                    "edited" ->
-                        map3
-                            (\backend edited id ->
-                                Edited
-                                    { backend = backend
-                                    , edited = edited
-                                    , id = id
-                                    }
-                            )
-                            (field "backend" valueDecoder)
-                            (field "edited" valueDecoder)
-                            -- The `maybe` below is transitional ... for back-compat with
-                            -- existing cached sessions.
-                            (field "id" decodeEntityUuid
-                                |> maybe
-                                |> map (Maybe.withDefault (toEntityUuid ""))
-                            )
-
-                    "deleted" ->
-                        map2 Deleted
-                            (field "id" decodeEntityUuid)
-                            (field "value" valueDecoder)
-
-                    _ ->
-                        fail <|
-                            "tag '"
-                                ++ tag
-                                ++ "' is not a valid tag for an Edit"
             )

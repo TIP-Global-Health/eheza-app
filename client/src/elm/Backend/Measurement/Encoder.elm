@@ -1,4 +1,4 @@
-module Backend.Measurement.Encoder exposing (encodeChildEdits, encodeChildMeasurement, encodeChildMeasurementList, encodeCounselingSession, encodeEdit, encodeEntity, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeHeight, encodeMeasurement, encodeMeasurementEdits, encodeMotherEdits, encodeMotherMeasurement, encodeMotherMeasurementList, encodeMuac, encodeNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeParticipantConsent, encodePhoto, encodeWeight)
+module Backend.Measurement.Encoder exposing (encodeChildMeasurement, encodeChildMeasurementList, encodeCounselingSession, encodeEntity, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeHeight, encodeMeasurement, encodeMotherMeasurement, encodeMotherMeasurementList, encodeMuac, encodeNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeParticipantConsent, encodePhoto, encodeWeight)
 
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Measurement.Model exposing (..)
@@ -177,87 +177,6 @@ encodeFamilyPlanningSignAsString sign =
 
         Pill ->
             "pill"
-
-
-encodeMeasurementEdits : MeasurementEdits -> Value
-encodeMeasurementEdits edits =
-    object
-        [ ( "mothers"
-          , edits.mothers
-                |> EveryDict.toList
-                |> List.map
-                    (Tuple.mapFirst (fromEntityUuid >> toString)
-                        >> Tuple.mapSecond encodeMotherEdits
-                    )
-                |> object
-          )
-        , ( "children"
-          , edits.children
-                |> EveryDict.toList
-                |> List.map
-                    (Tuple.mapFirst (fromEntityUuid >> toString)
-                        >> Tuple.mapSecond encodeChildEdits
-                    )
-                |> object
-          )
-        , ( "closed", bool edits.explicitlyClosed )
-        ]
-
-
-encodeMotherEdits : MotherEdits -> Value
-encodeMotherEdits edits =
-    object
-        [ ( "family_planning", encodeEdit (object << encodeFamilyPlanning) edits.familyPlanning )
-        , ( "participant_consent"
-          , edits.consent
-                |> List.map (encodeEdit (object << encodeParticipantConsent))
-                |> list
-          )
-        , ( "checked_in", bool edits.explicitlyCheckedIn )
-        ]
-
-
-{-| The keys should match the machine name of the entity on the backend, in
-order for the upload mechanism to work as expected.
--}
-encodeChildEdits : ChildEdits -> Value
-encodeChildEdits edits =
-    object
-        [ ( "height", encodeEdit (object << encodeHeight) edits.height )
-        , ( "muac", encodeEdit (object << encodeMuac) edits.muac )
-        , ( "nutrition", encodeEdit (object << encodeNutrition) edits.nutrition )
-        , ( "counseling_session", encodeEdit (object << encodeCounselingSession) edits.counseling )
-        , ( "photo", encodeEdit (object << encodePhoto) edits.photo )
-        , ( "weight", encodeEdit (object << encodeWeight) edits.weight )
-        ]
-
-
-encodeEdit : (value -> Value) -> Edit (EntityUuid id) value -> Value
-encodeEdit encodeValue edit =
-    case edit of
-        Unedited ->
-            object [ ( "tag", string "unedited" ) ]
-
-        Created value ->
-            object
-                [ ( "tag", string "created" )
-                , ( "value", encodeValue value )
-                ]
-
-        Edited { id, backend, edited } ->
-            object
-                [ ( "tag", string "edited" )
-                , ( "backend", encodeValue backend )
-                , ( "edited", encodeValue edited )
-                , ( "id", encodeEntityUuid id )
-                ]
-
-        Deleted id value ->
-            object
-                [ ( "tag", string "deleted" )
-                , ( "value", encodeValue value )
-                , ( "id", encodeEntityUuid id )
-                ]
 
 
 encodeChildMeasurementList : ChildMeasurementList -> Value

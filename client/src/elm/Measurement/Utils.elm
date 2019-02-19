@@ -36,41 +36,41 @@ getInputConstraintsWeight =
 
 {-| Initialize (or reset) a form with the given data.
 -}
-fromChildMeasurementData : MeasurementData ChildMeasurements ChildEdits -> ModelChild
+fromChildMeasurementData : MeasurementData ChildMeasurements -> ModelChild
 fromChildMeasurementData data =
     -- TODO: Clearly there is some kind of pattern below, but we won't try to abstract that
     -- just yet. Ultimately, this is the kind of thing which `RestfulData` would organize.
     { height =
         data
-            |> mapMeasurementData .height .height
+            |> mapMeasurementData .height
             |> currentValue
             |> Maybe.map (.value >> (\(HeightInCm cm) -> toString cm))
             |> Maybe.withDefault ""
     , muac =
         data
-            |> mapMeasurementData .muac .muac
+            |> mapMeasurementData .muac
             |> currentValue
             |> Maybe.map (.value >> (\(MuacInCm cm) -> toString cm))
             |> Maybe.withDefault ""
     , nutritionSigns =
         data
-            |> mapMeasurementData .nutrition .nutrition
+            |> mapMeasurementData .nutrition
             |> currentValue
             |> Maybe.map .value
             |> Maybe.withDefault EverySet.empty
     , counseling =
         data
-            |> mapMeasurementData .counselingSession .counseling
+            |> mapMeasurementData .counselingSession
             |> currentValue
             |> Maybe.map .value
     , photo =
         data
-            |> mapMeasurementData .photo .photo
+            |> mapMeasurementData .photo
             |> currentValue
             |> Maybe.map .value
     , weight =
         data
-            |> mapMeasurementData .weight .weight
+            |> mapMeasurementData .weight
             |> currentValue
             |> Maybe.map (.value >> (\(WeightInKg kg) -> toString kg))
             |> Maybe.withDefault ""
@@ -79,13 +79,13 @@ fromChildMeasurementData data =
 
 {-| Initialize (or reset) a form with the given data.
 -}
-fromMotherMeasurementData : MeasurementData MotherMeasurements MotherEdits -> ModelMother
+fromMotherMeasurementData : MeasurementData MotherMeasurements -> ModelMother
 fromMotherMeasurementData data =
     let
         -- We show the UI as completed for all current consents
         progress =
             data
-                |> mapMeasurementData .consent .consent
+                |> mapMeasurementData .consent
                 |> currentValues
                 |> List.map (Tuple.second >> .value >> .formId)
                 |> List.map (\formId -> ( formId, completedParticipantFormProgress ))
@@ -93,7 +93,7 @@ fromMotherMeasurementData data =
     in
     { familyPlanningSigns =
         data
-            |> mapMeasurementData .familyPlanning .familyPlanning
+            |> mapMeasurementData .familyPlanning
             |> currentValue
             |> Maybe.map .value
             |> Maybe.withDefault EverySet.empty

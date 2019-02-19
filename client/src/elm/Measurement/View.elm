@@ -9,7 +9,7 @@ import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (applyEdit, currentValues, mapMeasurementData, muacIndication)
+import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData, muacIndication)
 import Backend.Session.Model exposing (EditableSession)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
@@ -39,26 +39,26 @@ import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeight
 {-| We need the current date in order to immediately construct a ZScore for the
 child when we enter something.
 -}
-viewChild : Language -> NominalDate -> Child -> ChildActivity -> MeasurementData ChildMeasurements ChildEdits -> ZScore.Model.Model -> EditableSession -> ModelChild -> Html MsgChild
+viewChild : Language -> NominalDate -> Child -> ChildActivity -> MeasurementData ChildMeasurements -> ZScore.Model.Model -> EditableSession -> ModelChild -> Html MsgChild
 viewChild language currentDate child activity measurements zscores session model =
     case activity of
         ChildPicture ->
-            viewPhoto language (mapMeasurementData (Maybe.map Tuple.second << .photo) .photo measurements) model.photo
+            viewPhoto language (mapMeasurementData (Maybe.map Tuple.second << .photo) measurements) model.photo
 
         Height ->
-            viewHeight language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .height) .height measurements) zscores model
+            viewHeight language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .height) measurements) zscores model
 
         Muac ->
-            viewMuac language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .muac) .muac measurements) zscores model
+            viewMuac language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .muac) measurements) zscores model
 
         NutritionSigns ->
-            viewNutritionSigns language (mapMeasurementData (Maybe.map Tuple.second << .nutrition) .nutrition measurements) model.nutritionSigns
+            viewNutritionSigns language (mapMeasurementData (Maybe.map Tuple.second << .nutrition) measurements) model.nutritionSigns
 
         Counseling ->
-            viewCounselingSession language (mapMeasurementData (Maybe.map Tuple.second << .counselingSession) .counseling measurements) session model.counseling
+            viewCounselingSession language (mapMeasurementData (Maybe.map Tuple.second << .counselingSession) measurements) session model.counseling
 
         Weight ->
-            viewWeight language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .weight) .weight measurements) zscores model
+            viewWeight language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .weight) measurements) zscores model
 
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
@@ -148,22 +148,22 @@ zScoreForHeightOrLength model (Days days) (Centimetres cm) gender weight =
         zScoreWeightForHeight model (ZScore.Model.Height cm) gender (Kilograms weight)
 
 
-viewHeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Height) (Edit HeightId Height) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewHeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Height) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewHeight =
     viewFloatForm heightFormConfig
 
 
-viewWeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Weight) (Edit WeightId Weight) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewWeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Weight) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewWeight =
     viewFloatForm weightFormConfig
 
 
-viewMuac : Language -> NominalDate -> Child -> MeasurementData (Maybe Muac) (Edit MuacId Muac) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewMuac : Language -> NominalDate -> Child -> MeasurementData (Maybe Muac) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewMuac =
     viewFloatForm muacFormConfig
 
 
-viewFloatForm : FloatFormConfig value -> Language -> NominalDate -> Child -> MeasurementData (Maybe value) (Edit id value) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewFloatForm : FloatFormConfig value -> Language -> NominalDate -> Child -> MeasurementData (Maybe value) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewFloatForm config language currentDate child measurements zscores model =
     let
         -- What is the string input value from the form?
@@ -197,7 +197,6 @@ viewFloatForm config language currentDate child measurements zscores model =
         -- measurement we haven't saved yet, this will be Nothing.
         savedMeasurement =
             measurements.current
-                |> applyEdit measurements.edits
 
         -- What measurement should we be comparing to? That is, what's the most
         -- recent measurement of this kind that we're **not** editing?
@@ -418,7 +417,7 @@ viewFloatDiff config language previousValue currentValue =
         viewMessage False
 
 
-viewPhoto : Language -> MeasurementData (Maybe Photo) (Edit PhotoId Photo) -> Maybe PhotoValue -> Html MsgChild
+viewPhoto : Language -> MeasurementData (Maybe Photo) -> Maybe PhotoValue -> Html MsgChild
 viewPhoto language measurement photo =
     let
         activity =
@@ -478,7 +477,7 @@ Button will also take care of preventing double submission,
 and showing success and error indications.
 
 -}
-saveButton : Language -> Maybe msg -> MeasurementData (Maybe a) (Edit id a) -> Maybe String -> List (Html msg)
+saveButton : Language -> Maybe msg -> MeasurementData (Maybe a) -> Maybe String -> List (Html msg)
 saveButton language msg measurement maybeDivClass =
     let
         isLoading =
@@ -488,7 +487,7 @@ saveButton language msg measurement maybeDivClass =
             RemoteData.isFailure measurement.update
 
         ( updateText, errorText ) =
-            if isJust <| applyEdit measurement.edits measurement.current then
+            if isJust measurement.current then
                 ( Trans.Update, Trans.UpdateError )
 
             else
@@ -521,7 +520,7 @@ saveButton language msg measurement maybeDivClass =
     ]
 
 
-viewNutritionSigns : Language -> MeasurementData (Maybe ChildNutrition) (Edit ChildNutritionId ChildNutrition) -> EverySet ChildNutritionSign -> Html MsgChild
+viewNutritionSigns : Language -> MeasurementData (Maybe ChildNutrition) -> EverySet ChildNutritionSign -> Html MsgChild
 viewNutritionSigns language measurement signs =
     let
         activity =
@@ -608,7 +607,7 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
         ]
 
 
-viewCounselingSession : Language -> MeasurementData (Maybe CounselingSession) (Edit CounselingSessionId CounselingSession) -> EditableSession -> Maybe ( CounselingTiming, EverySet CounselingTopicId ) -> Html MsgChild
+viewCounselingSession : Language -> MeasurementData (Maybe CounselingSession) -> EditableSession -> Maybe ( CounselingTiming, EverySet CounselingTopicId ) -> Html MsgChild
 viewCounselingSession language measurement session value =
     case value of
         Nothing ->
@@ -625,8 +624,7 @@ viewCounselingSession language measurement session value =
                         expected
 
                 completed =
-                    isJust <|
-                        applyEdit measurement.edits measurement.current
+                    isJust measurement.current
 
                 -- For counseling sessions, we don't allow saves unless all the
                 -- topics are checked. Also, we don't allow an update if the
@@ -705,22 +703,21 @@ viewCounselingTopics language completed expectedTopics selectedTopics =
 type alias MotherMeasurementData =
     { previous : MotherMeasurements
     , current : MotherMeasurements
-    , edits : MotherEdits
     , status : WebData ()
     }
 
 
-viewMother : Language -> MotherActivity -> MeasurementData MotherMeasurements MotherEdits -> ModelMother -> Html MsgMother
+viewMother : Language -> MotherActivity -> MeasurementData MotherMeasurements -> ModelMother -> Html MsgMother
 viewMother language activity measurements model =
     case activity of
         FamilyPlanning ->
-            viewFamilyPlanning language (mapMeasurementData (Maybe.map Tuple.second << .familyPlanning) .familyPlanning measurements) model.familyPlanningSigns
+            viewFamilyPlanning language (mapMeasurementData (Maybe.map Tuple.second << .familyPlanning) measurements) model.familyPlanningSigns
 
         ParticipantConsent ->
-            viewParticipantConsent language (mapMeasurementData .consent .consent measurements) model.participantConsent
+            viewParticipantConsent language (mapMeasurementData .consent measurements) model.participantConsent
 
 
-viewParticipantConsent : Language -> MeasurementData (EveryDict ParticipantConsentId ParticipantConsent) (List (Edit ParticipantConsentId ParticipantConsent)) -> ParticipantFormUI -> Html MsgMother
+viewParticipantConsent : Language -> MeasurementData (EveryDict ParticipantConsentId ParticipantConsent) -> ParticipantFormUI -> Html MsgMother
 viewParticipantConsent language measurement ui =
     let
         activity =
@@ -951,7 +948,7 @@ viewParticipantConsent language measurement ui =
             viewForm formId ui.expected
 
 
-viewFamilyPlanning : Language -> MeasurementData (Maybe FamilyPlanning) (Edit FamilyPlanningId FamilyPlanning) -> EverySet FamilyPlanningSign -> Html MsgMother
+viewFamilyPlanning : Language -> MeasurementData (Maybe FamilyPlanning) -> EverySet FamilyPlanningSign -> Html MsgMother
 viewFamilyPlanning language measurement signs =
     let
         activity =

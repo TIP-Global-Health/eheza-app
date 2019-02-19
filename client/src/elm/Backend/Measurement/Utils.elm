@@ -1,27 +1,9 @@
-module Backend.Measurement.Utils exposing (applyEdit, applyEdits, backendValue, currentValue, currentValueWithId, currentValues, getChildEdits, getCurrentAndPrevious, getMotherEdits, getPhotoEdits, getPhotosToUpload, mapMeasurementData, muacIndication, splitChildMeasurements, splitMotherMeasurements)
+module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, getCurrentAndPrevious, mapMeasurementData, muacIndication, splitChildMeasurements, splitMotherMeasurements)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EveryDict exposing (EveryDict)
 import Time.Date
-
-
-{-| Picks out a particular mother's `MotherEdits`. If not found, makes
-an empty one.
--}
-getMotherEdits : MotherId -> MeasurementEdits -> MotherEdits
-getMotherEdits motherId measurements =
-    EveryDict.get motherId measurements.mothers
-        |> Maybe.withDefault emptyMotherEdits
-
-
-{-| Picks out a particular child's `ChildEdits`. If not found, makes
-an empty one.
--}
-getChildEdits : ChildId -> MeasurementEdits -> ChildEdits
-getChildEdits childId measurements =
-    EveryDict.get childId measurements.children
-        |> Maybe.withDefault emptyChildEdits
 
 
 {-| Given a MUAC in cm, classify according to the measurement tool shown
@@ -39,69 +21,18 @@ muacIndication (MuacInCm value) =
         MuacGreen
 
 
-{-| Apply an edit to an underlying value.
--}
-applyEdit : Edit id value -> Maybe value -> Maybe value
-applyEdit edit value =
-    case edit of
-        Unedited ->
-            value
-
-        Created new ->
-            Just new
-
-        Edited { edited } ->
-            Just edited
-
-        Deleted _ _ ->
-            Nothing
-
-
-{-| Like `applyEdit`, but for cases where we have multiple entities and edits
-in the same session. (E.g. for participantConsent, but not weight).
--}
-applyEdits : List (Edit id value) -> EveryDict id value -> List ( Maybe id, value )
-applyEdits edits base =
-    let
-        go edit ( existing, new ) =
-            case edit of
-                Unedited ->
-                    ( existing, new )
-
-                Created created ->
-                    ( existing, created :: new )
-
-                Edited edited ->
-                    ( EveryDict.insert edited.id edited.edited existing
-                    , new
-                    )
-
-                Deleted id _ ->
-                    ( EveryDict.remove id existing
-                    , new
-                    )
-
-        ( remaining, created ) =
-            List.foldl go ( base, [] ) edits
-    in
-    List.concat
-        [ List.map (Tuple.mapFirst Just) (EveryDict.toList remaining)
-        , List.map (\n -> ( Nothing, n )) created
-        ]
-
-
 {-| Given the data, do we have a current value? May be the value
 stored in the backend, or an edited value.
 -}
-currentValue : MeasurementData (Maybe ( id, value )) (Edit id value) -> Maybe value
+currentValue : MeasurementData (Maybe ( id, value )) -> Maybe value
 currentValue data =
-    applyEdit data.edits (Maybe.map Tuple.second data.current)
+    Maybe.map Tuple.second data.current
 
 
 {-| Like `currentValue`, but also supplies the ID if we have one
 (i.e. if we're editing a value saved on the backend).
 -}
-currentValueWithId : MeasurementData (Maybe ( id, value )) (Edit id value) -> Maybe ( Maybe id, value )
+currentValueWithId : MeasurementData (Maybe ( id, value )) -> Maybe ( Maybe id, value )
 currentValueWithId data =
     currentValue data
         |> Maybe.map (\value -> ( Maybe.map Tuple.first data.current, value ))
@@ -109,65 +40,62 @@ currentValueWithId data =
 
 {-| Like `currentValue`, but for cases where we have a list of values.
 -}
-currentValues : MeasurementData (EveryDict id value) (List (Edit id value)) -> List ( Maybe id, value )
+currentValues : MeasurementData (EveryDict id value) -> List ( Maybe id, value )
 currentValues data =
-    applyEdits data.edits data.current
-
-
-{-| Like `currentValue`, but just considers the backend.
--}
-backendValue : MeasurementData (Maybe ( id, value )) (Edit id value) -> Maybe ( id, value )
-backendValue data =
     data.current
+        |> EveryDict.map (\k v -> ( Just k, v ))
+        |> EveryDict.values
 
 
-mapMeasurementData : (d1 -> d2) -> (e1 -> e2) -> MeasurementData d1 e1 -> MeasurementData d2 e2
-mapMeasurementData dataFunc editFunc measurements =
+mapMeasurementData : (a -> b) -> MeasurementData a -> MeasurementData b
+mapMeasurementData dataFunc measurements =
     { previous = dataFunc measurements.previous
     , current = dataFunc measurements.current
-    , edits = editFunc measurements.edits
     , update = measurements.update
     }
 
 
-{-| Get a list of all the photo edits (some will be `Unedited`).
+
+-- TODO: Reimplement, possibly in service worker.
+{- Get a list of all the photo edits (some will be `Unedited`). -}
+{-
+   getPhotoEdits : MeasurementEdits -> List (Edit PhotoId Photo)
+   getPhotoEdits edits =
+       edits.children
+           |> EveryDict.values
+           |> List.map .photo
 -}
-getPhotoEdits : MeasurementEdits -> List (Edit PhotoId Photo)
-getPhotoEdits edits =
-    edits.children
-        |> EveryDict.values
-        |> List.map .photo
-
-
-{-| Given the photo edits, get all the photos for which we don't know the
-file ID ... that is, those which we haven't uploaded to the backend yet.
+{- Given the photo edits, get all the photos for which we don't know the
+   file ID ... that is, those which we haven't uploaded to the backend yet.
 -}
-getPhotosToUpload : MeasurementEdits -> List Photo
-getPhotosToUpload =
-    getPhotoEdits
-        >> List.filterMap
-            (\edit ->
-                case edit of
-                    Unedited ->
-                        Nothing
+{-
+   getPhotosToUpload : MeasurementEdits -> List Photo
+   getPhotosToUpload =
+       getPhotoEdits
+           >> List.filterMap
+               (\edit ->
+                   case edit of
+                       Unedited ->
+                           Nothing
 
-                    Created photo ->
-                        if photo.value.fid == Nothing then
-                            Just photo
+                       Created photo ->
+                           if photo.value.fid == Nothing then
+                               Just photo
 
-                        else
-                            Nothing
+                           else
+                               Nothing
 
-                    Edited { edited } ->
-                        if edited.value.fid == Nothing then
-                            Just edited
+                       Edited { edited } ->
+                           if edited.value.fid == Nothing then
+                               Just edited
 
-                        else
-                            Nothing
+                           else
+                               Nothing
 
-                    Deleted _ _ ->
-                        Nothing
-            )
+                       Deleted _ _ ->
+                           Nothing
+               )
+-}
 
 
 splitMotherMeasurements : SessionId -> EveryDict MotherId MotherMeasurementList -> EveryDict MotherId { current : MotherMeasurements, previous : MotherMeasurements }

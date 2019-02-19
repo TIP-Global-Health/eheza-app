@@ -186,7 +186,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                 |> text
                             ]
                         , current
-                            |> mapMeasurementData .nutrition .nutrition
+                            |> mapMeasurementData .nutrition
                             |> currentValue
                             |> Maybe.map .value
                             |> Maybe.withDefault EverySet.empty
@@ -391,11 +391,11 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
 
         -- This includes any edits that have been saved locally, but not as-you=type
         -- in the UI before you hit "Save" or "Update".
-        getValues func1 func2 func3 =
+        getValues func1 func3 =
             let
                 currentValue =
                     current
-                        |> mapMeasurementData func1 func2
+                        |> mapMeasurementData func1
                         |> currentValueWithId
 
                 historicalValues =
@@ -419,19 +419,19 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                         |> List.append [ currentValue ]
 
         heightValues =
-            getValues .height .height .heights
+            getValues .height .heights
 
         weightValues =
-            getValues .weight .weight .weights
+            getValues .weight .weights
 
         muacValues =
-            getValues .muac .muac .muacs
+            getValues .muac .muacs
 
         photoValues =
-            getValues .photo .photo .photos
+            getValues .photo .photos
 
         nutritionValues =
-            getValues .nutrition .nutrition .nutritions
+            getValues .nutrition .nutritions
 
         indexBySession values =
             values

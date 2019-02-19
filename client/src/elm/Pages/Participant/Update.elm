@@ -1,7 +1,7 @@
 module Pages.Participant.Update exposing (updateChild, updateMother)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
-import Backend.Measurement.Model exposing (MeasurementData, MotherEdits, MotherMeasurements)
+import Backend.Measurement.Model exposing (MeasurementData, MotherMeasurements)
 import Measurement.Model
 import Measurement.Update
 import Pages.Page exposing (Page)
@@ -76,7 +76,7 @@ updateMother :
     Msg MotherActivity Measurement.Model.MsgMother
     -> Model MotherActivity
     -> Measurement.Model.ModelMother
-    -> MeasurementData MotherMeasurements MotherEdits
+    -> MeasurementData MotherMeasurements
     -> ( Model MotherActivity, Cmd (Msg MotherActivity Measurement.Model.MsgMother), Measurement.Model.ModelMother, Maybe Measurement.Model.OutMsgMother, Maybe Page )
 updateMother msg model motherForm measurements =
     case msg of

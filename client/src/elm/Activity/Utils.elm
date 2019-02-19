@@ -10,7 +10,6 @@ module Activity.Utils exposing
     , getCheckedIn
     , getParticipantCountForActivity
     , motherIsCheckedIn
-    , setCheckedIn
     , summarizeByActivity
     , summarizeByParticipant
     , summarizeChildActivity
@@ -34,11 +33,11 @@ import Backend.Child.Model exposing (Child)
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (applyEdit, currentValue, currentValues, mapMeasurementData)
+import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
 import Backend.Mother.Model exposing (ChildrenRelationType(..), Mother)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Session.Model exposing (..)
-import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMyMother, mapMotherEdits)
+import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMyMother)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import EverySet
@@ -217,7 +216,7 @@ expectCounselingActivity session childId =
         -- that one, and not switch to something else.
         cachedTiming =
             getChildMeasurementData childId session
-                |> mapMeasurementData .counselingSession .counseling
+                |> mapMeasurementData .counselingSession
                 |> currentValue
                 |> Maybe.map (.value >> Tuple.first)
 
@@ -611,26 +610,26 @@ getActivityCountForMother session id mother summary =
         (getChildren id session.offlineSession)
 
 
-hasCompletedChildActivity : ChildActivity -> MeasurementData ChildMeasurements ChildEdits -> Bool
+hasCompletedChildActivity : ChildActivity -> MeasurementData ChildMeasurements -> Bool
 hasCompletedChildActivity activityType measurements =
     case activityType of
         ChildPicture ->
-            isCompleted measurements.edits.photo (Maybe.map Tuple.second measurements.current.photo)
+            isCompleted (Maybe.map Tuple.second measurements.current.photo)
 
         Counseling ->
-            isCompleted measurements.edits.counseling (Maybe.map Tuple.second measurements.current.counselingSession)
+            isCompleted (Maybe.map Tuple.second measurements.current.counselingSession)
 
         Height ->
-            isCompleted measurements.edits.height (Maybe.map Tuple.second measurements.current.height)
+            isCompleted (Maybe.map Tuple.second measurements.current.height)
 
         Weight ->
-            isCompleted measurements.edits.weight (Maybe.map Tuple.second measurements.current.weight)
+            isCompleted (Maybe.map Tuple.second measurements.current.weight)
 
         Muac ->
-            isCompleted measurements.edits.muac (Maybe.map Tuple.second measurements.current.muac)
+            isCompleted (Maybe.map Tuple.second measurements.current.muac)
 
         NutritionSigns ->
-            isCompleted measurements.edits.nutrition (Maybe.map Tuple.second measurements.current.nutrition)
+            isCompleted (Maybe.map Tuple.second measurements.current.nutrition)
 
 
 childHasCompletedActivity : ChildId -> ChildActivity -> EditableSession -> Bool
@@ -639,18 +638,18 @@ childHasCompletedActivity childId activityType session =
         |> hasCompletedChildActivity activityType
 
 
-hasCompletedMotherActivity : EditableSession -> MotherId -> MotherActivity -> MeasurementData MotherMeasurements MotherEdits -> Bool
+hasCompletedMotherActivity : EditableSession -> MotherId -> MotherActivity -> MeasurementData MotherMeasurements -> Bool
 hasCompletedMotherActivity session motherId activityType measurements =
     case activityType of
         FamilyPlanning ->
-            isCompleted measurements.edits.familyPlanning (Maybe.map Tuple.second measurements.current.familyPlanning)
+            isCompleted (Maybe.map Tuple.second measurements.current.familyPlanning)
 
         ParticipantConsent ->
             -- We only consider this activity completed if all expected
             -- consents have been saved.
             let
                 current =
-                    mapMeasurementData .consent .consent measurements
+                    mapMeasurementData .consent measurements
                         |> currentValues
                         |> List.map (Tuple.second >> .value >> .formId)
                         |> EverySet.fromList
@@ -668,18 +667,18 @@ motherHasCompletedActivity motherId activityType session =
 {-| Should some measurement be considered completed? Note that this means that it has
 been entered locally, not that it has been saved to the backend.
 -}
-isCompleted : Edit id value -> Maybe value -> Bool
-isCompleted edit =
-    applyEdit edit >> isJust
+isCompleted : Maybe value -> Bool
+isCompleted =
+    isJust
 
 
-hasAnyCompletedMotherActivity : EditableSession -> MotherId -> MeasurementData MotherMeasurements MotherEdits -> Bool
+hasAnyCompletedMotherActivity : EditableSession -> MotherId -> MeasurementData MotherMeasurements -> Bool
 hasAnyCompletedMotherActivity session motherId measurements =
     getAllMotherActivities
         |> List.any (\activity -> hasCompletedMotherActivity session motherId activity measurements)
 
 
-hasAnyCompletedChildActivity : MeasurementData ChildMeasurements ChildEdits -> Bool
+hasAnyCompletedChildActivity : MeasurementData ChildMeasurements -> Bool
 hasAnyCompletedChildActivity measurements =
     getAllChildActivities
         |> List.any (flip hasCompletedChildActivity measurements)
@@ -712,20 +711,21 @@ check-in (and activities) without worrying about synchronizing the two.
 -}
 motherIsCheckedIn : MotherId -> EditableSession -> Bool
 motherIsCheckedIn motherId session =
-    let
-        explicitlyCheckedIn =
-            getMotherMeasurementData motherId session
-                |> (.edits >> .explicitlyCheckedIn)
-
-        hasCompletedActivity =
-            motherOrAnyChildHasAnyCompletedActivity motherId session
-    in
-    explicitlyCheckedIn || hasCompletedActivity
+    Debug.crash "todo"
 
 
-setCheckedIn : Bool -> MotherId -> EditableSession -> EditableSession
-setCheckedIn checkedIn =
-    mapMotherEdits (\edits -> { edits | explicitlyCheckedIn = checkedIn })
+
+{-
+   let
+       explicitlyCheckedIn =
+           getMotherMeasurementData motherId session
+               |> (.edits >> .explicitlyCheckedIn)
+
+       hasCompletedActivity =
+           motherOrAnyChildHasAnyCompletedActivity motherId session
+   in
+   explicitlyCheckedIn || hasCompletedActivity
+-}
 
 
 childIsCheckedIn : ChildId -> EditableSession -> Bool
@@ -741,35 +741,41 @@ any completed activity?
 -}
 getCheckedIn : EditableSession -> { mothers : EveryDictList MotherId Mother, children : EveryDictList ChildId Child }
 getCheckedIn session =
-    let
-        -- Which mothers have been explicitly checked in?
-        explicitlyCheckedInMothers =
-            EveryDict.filter (\_ edits -> edits.explicitlyCheckedIn)
-                session.edits.mothers
+    Debug.crash "todo"
 
-        -- A mother is checked in if explicitly checked in or has any completed
-        -- activites.
-        mothers =
-            EveryDictList.filter
-                (\motherId _ ->
-                    EveryDict.member motherId explicitlyCheckedInMothers
-                        || motherOrAnyChildHasAnyCompletedActivity motherId session
-                )
-                session.offlineSession.mothers
 
-        -- A child is checked in if the mother is checked in.
-        children =
-            EveryDictList.filter
-                (\_ child ->
-                    child.motherId
-                        |> Maybe.map (\motherId -> EveryDictList.member motherId mothers)
-                        |> Maybe.withDefault False
-                )
-                session.offlineSession.children
-    in
-    { mothers = mothers
-    , children = children
-    }
+
+{-
+   let
+       -- Which mothers have been explicitly checked in?
+       explicitlyCheckedInMothers =
+           EveryDict.filter (\_ edits -> edits.explicitlyCheckedIn)
+               session.edits.mothers
+
+       -- A mother is checked in if explicitly checked in or has any completed
+       -- activites.
+       mothers =
+           EveryDictList.filter
+               (\motherId _ ->
+                   EveryDict.member motherId explicitlyCheckedInMothers
+                       || motherOrAnyChildHasAnyCompletedActivity motherId session
+               )
+               session.offlineSession.mothers
+
+       -- A child is checked in if the mother is checked in.
+       children =
+           EveryDictList.filter
+               (\_ child ->
+                   child.motherId
+                       |> Maybe.map (\motherId -> EveryDictList.member motherId mothers)
+                       |> Maybe.withDefault False
+               )
+               session.offlineSession.children
+   in
+   { mothers = mothers
+   , children = children
+   }
+-}
 
 
 {-| Does the mother herself have any completed activity?

@@ -97,7 +97,6 @@ guarantee that they don't "leak" to the wrong child or mother.
 -}
 type alias EditableSession =
     { offlineSession : OfflineSession
-    , edits : MeasurementEdits
     , update : WebData ()
     }
 
