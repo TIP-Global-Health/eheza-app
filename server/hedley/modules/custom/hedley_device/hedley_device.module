@@ -56,8 +56,13 @@ function hedley_device_node_presave($node) {
   }
 
   if (empty($node->nid)) {
-    // New device, so we generate a pairing code.
-    $wrapper->field_pairing_code->set(hedley_device_get_unique_pairing_code());
+    // New device, so we generate a pairing code if not set manually.
+    if (empty($wrapper->field_pairing_code->value())) {
+      $wrapper->field_pairing_code->set(hedley_device_get_unique_pairing_code());
+    }
+    elseif (!hedley_device_check_unique_pairing_code($wrapper->field_pairing_code->value())) {
+      throw new Exception('The provided pairing code was not unique.');
+    }
 
     // And we make a robot user to authenticate for syncing.
     $role = user_role_load_by_name('sync');
