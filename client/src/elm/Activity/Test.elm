@@ -38,74 +38,58 @@ the structures that `expectCounselingActivities` works with.
 -}
 testCases : List TestCase
 testCases =
-    [ { title = "Already editing, which overrides"
+    [ { title = "Not completed entry"
       , daysOld = 65
       , completed = []
-      , editing = Just MidPoint
-      , expected = Just MidPoint
-      }
-    , { title = "Not already editing, not completed entry"
-      , daysOld = 65
-      , completed = []
-      , editing = Nothing
       , expected = Just Entry
       }
     , { title = "Completed entry"
       , daysOld = 280
       , completed = [ ( 32, Entry ) ]
-      , editing = Nothing
       , expected = Nothing
       }
     , { title = "Reminder for midpoint"
       , daysOld = 300
       , completed = [ ( 30, Entry ) ]
-      , editing = Nothing
       , expected = Just BeforeMidpoint
       }
     , -- The case where we've given a reminder, so we follow-up
       { title = "Early midpoint"
       , daysOld = 300
       , completed = [ ( 30, Entry ), ( 270, BeforeMidpoint ) ]
-      , editing = Nothing
       , expected = Just MidPoint
       }
     , -- The case with no reminder
       { title = "No reminder midpoint"
       , daysOld = 330
       , completed = [ ( 30, Entry ) ]
-      , editing = Nothing
       , expected = Just MidPoint
       }
     , { title = "Post midpoint"
       , daysOld = 650
       , completed = [ ( 30, Entry ), ( 300, BeforeMidpoint ), ( 330, MidPoint ) ]
-      , editing = Nothing
       , expected = Nothing
       }
     , { title = "Reminder for exit"
       , daysOld = 660
       , completed = [ ( 30, Entry ), ( 300, BeforeMidpoint ), ( 330, MidPoint ) ]
-      , editing = Nothing
       , expected = Just BeforeExit
       }
     , -- The case where we've given a reminder, so we follow-up
       { title = "Early exit"
       , daysOld = 660
       , completed = [ ( 30, Entry ), ( 300, BeforeMidpoint ), ( 330, MidPoint ), ( 630, BeforeExit ) ]
-      , editing = Nothing
       , expected = Just Exit
       }
     , -- The case with no reminder
       { title = "No reminder exit"
       , daysOld = 690
       , completed = [ ( 30, Entry ), ( 300, BeforeMidpoint ), ( 330, MidPoint ) ]
-      , editing = Nothing
       , expected = Just Exit
       }
     , { title = "Post exit"
       , daysOld = 720
       , completed = [ ( 30, Entry ), ( 300, BeforeMidpoint ), ( 330, MidPoint ), ( 630, BeforeExit ), ( 660, Exit ) ]
-      , editing = Nothing
       , expected = Nothing
       }
 
@@ -115,25 +99,21 @@ testCases =
     , { title = "Late entry"
       , daysOld = 400
       , completed = []
-      , editing = Nothing
       , expected = Just Entry
       }
     , { title = "Gap until midpoint reminder"
       , daysOld = 430
       , completed = [ ( 400, Entry ) ]
-      , editing = Nothing
       , expected = Nothing
       }
     , { title = "Eventually present midpoint reminder"
       , daysOld = 480
       , completed = [ ( 400, Entry ) ]
-      , editing = Nothing
       , expected = Just BeforeMidpoint
       }
     , { title = "Eventually present midpoint"
       , daysOld = 520
       , completed = [ ( 400, Entry ) ]
-      , editing = Nothing
       , expected = Just MidPoint
       }
     ]
@@ -152,7 +132,6 @@ type alias TestCase =
     { title : String
     , daysOld : Int
     , completed : List ( Int, CounselingTiming )
-    , editing : Maybe CounselingTiming
     , expected : Maybe CounselingTiming
     }
 
@@ -168,28 +147,7 @@ runTestCase testCase =
 makeEditableSession : TestCase -> EditableSession
 makeEditableSession test =
     { offlineSession = makeOfflineSession test
-    , edits = makeEdits test
     , update = NotAsked
-    }
-
-
-makeEdits : TestCase -> MeasurementEdits
-makeEdits test =
-    let
-        counseling =
-            case test.editing of
-                Nothing ->
-                    Unedited
-
-                Just timing ->
-                    Created (makeCounselingSession sessionDate timing)
-
-        childEdits =
-            { emptyChildEdits | counseling = counseling }
-    in
-    { explicitlyClosed = False
-    , mothers = EveryDict.empty
-    , children = EveryDict.fromList [ ( childId, childEdits ) ]
     }
 
 

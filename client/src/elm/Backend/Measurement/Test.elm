@@ -1,6 +1,5 @@
 module Backend.Measurement.Test exposing (all)
 
-import Backend.Measurement.Decoder exposing (decodeMeasurementEdits)
 import Backend.Measurement.Model exposing (MuacInCm(..), MuacIndication(..))
 import Backend.Measurement.Utils exposing (muacIndication)
 import Expect
