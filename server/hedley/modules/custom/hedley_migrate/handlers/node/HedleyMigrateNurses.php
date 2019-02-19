@@ -18,10 +18,12 @@ class HedleyMigrateNurses extends HedleyMigrateBase {
     'title',
     'field_role',
     'field_clinics',
+    'field_pin_code',
   ];
 
   protected $simpleMultipleMappings = [
     'field_role',
+    'field_pin_code',
   ];
 
   /**
