@@ -192,7 +192,7 @@ viewFoundClinic language currentDate nurse clinicId clinic sessions =
             if assignedToClinic clinicId nurse then
                 [ h1 [] [ text <| translate language Translate.RecentAndUpcomingGroupSessions ]
                 , table
-                    [ class "ui table" ]
+                    [ class "ui table session-list" ]
                     [ thead []
                         [ tr []
                             [ th [] [ text <| translate language Translate.StartDate ]
@@ -229,10 +229,23 @@ viewFoundClinic language currentDate nurse clinicId clinic sessions =
 viewSession : Language -> NominalDate -> SessionId -> Session -> Html Msg
 viewSession language currentDate sessionId session =
     let
-        showLink =
+        enableLink =
             ((delta session.scheduledDate.start currentDate).days <= 0)
                 && ((delta session.scheduledDate.end currentDate).days >= 0)
                 && not session.closed
+
+        link =
+            button
+                [ classList
+                    [ ( "ui button small", True )
+                    , ( "disabled", not enableLink )
+                    ]
+                , SessionPage sessionId AttendancePage
+                    |> UserPage
+                    |> SetActivePage
+                    |> onClick
+                ]
+                [ text <| translate language Translate.Attendance ]
 
         closed =
             if session.closed then
@@ -245,4 +258,5 @@ viewSession language currentDate sessionId session =
         [ td [] [ text <| formatYYYYMMDD session.scheduledDate.start ]
         , td [] [ text <| formatYYYYMMDD session.scheduledDate.end ]
         , td [] closed
+        , td [] [ link ]
         ]
