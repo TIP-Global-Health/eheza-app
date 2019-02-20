@@ -194,6 +194,7 @@ type TranslationId
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
+    | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MinutesAgo Int
     | MonthAbbrev
     | MonthsOld
@@ -826,8 +827,13 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        MemoryQuota quota ->
+            { english = "Memory used " ++ toString (quota.usedJSHeapSize // (1024 * 1024)) ++ " MB of available " ++ toString (quota.jsHeapSizeLimit // (1024 * 1024)) ++ " MB"
+            , kinyarwanda = Nothing
+            }
+
         StorageQuota quota ->
-            { english = "Used " ++ toString (quota.usage // (1024 * 1024)) ++ " MB of available " ++ toString (quota.quota // (1024 * 1024)) ++ " MB"
+            { english = "Storage used " ++ toString (quota.usage // (1024 * 1024)) ++ " MB of available " ++ toString (quota.quota // (1024 * 1024)) ++ " MB"
             , kinyarwanda = Nothing
             }
 

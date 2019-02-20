@@ -55,6 +55,8 @@ function reportQuota () {
     navigator.storage.estimate().then(function (quota) {
         elmApp.ports.storageQuota.send(quota);
     });
+
+    elmApp.ports.memoryQuota.send(performance.memory);
 }
 
 // Do it right away.

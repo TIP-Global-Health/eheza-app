@@ -373,6 +373,11 @@ update msg model =
             , Cmd.none
             )
 
+        SetMemoryQuota quota ->
+            ( { model | memoryQuota = Just quota }
+            , Cmd.none
+            )
+
         SetStorageQuota quota ->
             ( { model | storageQuota = Just quota }
             , Cmd.none
@@ -509,6 +514,7 @@ subscriptions model =
         , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
         , persistentStorage SetPersistentStorage
         , storageQuota SetStorageQuota
+        , memoryQuota SetMemoryQuota
         ]
 
 
@@ -537,6 +543,11 @@ port setLanguage : String -> Cmd msg
 storage.
 -}
 port persistentStorage : (Bool -> msg) -> Sub msg
+
+
+{-| Let the Javascript tell us about memory quotas.
+-}
+port memoryQuota : (MemoryQuota -> msg) -> Sub msg
 
 
 {-| Let the Javascript tell us about our storage quota.

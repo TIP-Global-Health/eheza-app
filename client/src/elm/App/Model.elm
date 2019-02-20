@@ -1,4 +1,4 @@
-module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..), MsgLoggedIn(..), StorageQuota, Version, emptyLoggedInModel, emptyModel)
+module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, MemoryQuota, Model, Msg(..), MsgLoggedIn(..), StorageQuota, Version, emptyLoggedInModel, emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Model
@@ -52,6 +52,7 @@ type alias Model =
 
     -- How close are we to our storage quota?
     , storageQuota : Maybe StorageQuota
+    , memoryQuota : Maybe MemoryQuota
     , configuration : RemoteData String ConfiguredModel
     , currentTime : Time
     , language : Language
@@ -70,6 +71,13 @@ type alias Model =
 type alias StorageQuota =
     { quota : Int
     , usage : Int
+    }
+
+
+type alias MemoryQuota =
+    { totalJSHeapSize : Int
+    , usedJSHeapSize : Int
+    , jsHeapSizeLimit : Int
     }
 
 
@@ -157,6 +165,7 @@ type Msg
     | SetLanguage Language
     | SetPersistentStorage Bool
     | SetStorageQuota StorageQuota
+    | SetMemoryQuota MemoryQuota
     | Tick Time
 
 
@@ -184,6 +193,7 @@ emptyModel flags =
     , dataWanted = []
     , indexedDb = Backend.Model.emptyModelIndexedDb
     , language = English
+    , memoryQuota = Nothing
     , persistentStorage = Nothing
     , serviceWorker = ServiceWorker.Model.emptyModel flags.activeServiceWorker
     , storageQuota = Nothing

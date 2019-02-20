@@ -82,12 +82,17 @@ viewStorageStatus language app =
             div []
                 [ text <| translate language <| Translate.PersistentStorage persistent ]
 
-        viewQuota quota =
+        viewMemoryQuota quota =
+            div []
+                [ text <| translate language <| Translate.MemoryQuota quota ]
+
+        viewStorageQuota quota =
             div []
                 [ text <| translate language <| Translate.StorageQuota quota ]
     in
-    [ Maybe.map viewQuota app.storageQuota
+    [ Maybe.map viewStorageQuota app.storageQuota
     , Maybe.map viewPersistent app.persistentStorage
+    , Maybe.map viewMemoryQuota app.memoryQuota
     ]
         |> List.filterMap identity
         |> div []
