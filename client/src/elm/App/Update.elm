@@ -202,7 +202,7 @@ update msg model =
                                     data.sessionPages
                                         |> EveryDict.get sessionId
                                         |> Maybe.withDefault Pages.Session.Model.emptyModel
-                                        |> Pages.Session.Update.update sessionId subMsg
+                                        |> Pages.Session.Update.update sessionId model.indexedDb subMsg
                             in
                             ( { data | sessionPages = EveryDict.insert sessionId subModel data.sessionPages }
                             , Cmd.map (MsgLoggedIn << MsgPageSession sessionId) subCmd

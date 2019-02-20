@@ -2,9 +2,9 @@ module Pages.Session.Update exposing (update)
 
 import App.Model
 import Backend.Entities exposing (..)
-import Backend.Model
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (EditableSession)
-import Backend.Session.Utils exposing (emptyMotherMeasurementData, getMotherMeasurementData)
+import Backend.Session.Utils exposing (emptyMotherMeasurementData, getMotherMeasurementData, makeEditableSession)
 import EveryDict
 import Maybe.Extra
 import Measurement.Utils exposing (getChildForm, getMotherForm)
@@ -16,12 +16,24 @@ import Pages.Participant.Model
 import Pages.Participant.Update
 import Pages.Participants.Update
 import Pages.Session.Model exposing (..)
+import RemoteData exposing (RemoteData(..))
 
 
-update : SessionId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update sessionId msg model =
-    --TODO
-    ( model, Cmd.none, [] )
+update : SessionId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update sessionId db msg model =
+    let
+        -- TODO: Ideally, we shouldn't rely on an `EditableSession` here, because
+        -- we'll throw away messages if we can't make one. This can probably be
+        -- avoided, but would require more restructuring.
+        sessionData =
+            makeEditableSession sessionId db
+    in
+    case sessionData of
+        Success session ->
+            updateFoundSession sessionId session msg model
+
+        _ ->
+            ( model, Cmd.none, [] )
 
 
 {-| We need the editableSession in order to pass on some needed data. But we
