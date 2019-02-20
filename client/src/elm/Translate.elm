@@ -1481,10 +1481,13 @@ translationSet trans =
 
         SessionClosed2 sessionId ->
             { english =
-                "You have stored data on the device for session "
-                    ++ toString (fromEntityUuid sessionId)
-                    ++ ", but it was not uploaded to the server and the session is closed. "
-                    ++ "Please contact the Ihangane project for further instructions."
+                String.join " "
+                    [ "Session"
+                    , fromEntityUuid sessionId
+                    , """is closed. If you need to make further modifications
+                    to it, please contact an administrator to have it
+                    re-opened."""
+                    ]
             , kinyarwanda = Nothing
             }
 
