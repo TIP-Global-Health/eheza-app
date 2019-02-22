@@ -122,4 +122,3 @@ type Msg
     | HandleClosedSession (WebData ())
     | MeasurementOutMsgChild ChildId Measurement.Model.OutMsgChild
     | MeasurementOutMsgMother MotherId Measurement.Model.OutMsgMother
-    | SetCheckedIn MotherId Bool

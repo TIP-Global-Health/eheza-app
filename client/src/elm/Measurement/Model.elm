@@ -158,7 +158,8 @@ type OutMsgChild
 
 
 type OutMsgMother
-    = SaveFamilyPlanningSigns (Maybe FamilyPlanningId) (EverySet FamilyPlanningSign)
+    = SaveAttendance (Maybe AttendanceId) Bool
+    | SaveFamilyPlanningSigns (Maybe FamilyPlanningId) (EverySet FamilyPlanningSign)
     | SaveCompletedForm (Maybe ParticipantConsentId) ParticipantFormId Language
 
 

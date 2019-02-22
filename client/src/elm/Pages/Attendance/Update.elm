@@ -1,6 +1,7 @@
 module Pages.Attendance.Update exposing (update)
 
 import Backend.Session.Model
+import Measurement.Model
 import Pages.Attendance.Model exposing (..)
 import Pages.Session.Model
 
@@ -14,11 +15,12 @@ update msg model =
             , [ Pages.Session.Model.SetActivePage page ]
             )
 
-        SetCheckedIn motherId checkedIn ->
+        SetCheckedIn attendanceId motherId checkedIn ->
             ( model
             , Cmd.none
-            , [ Pages.Session.Model.MsgSession <|
-                    Backend.Session.Model.SetCheckedIn motherId checkedIn
+            , [ Measurement.Model.SaveAttendance attendanceId checkedIn
+                    |> Backend.Session.Model.MeasurementOutMsgMother motherId
+                    |> Pages.Session.Model.MsgSession
               ]
             )
 

@@ -209,7 +209,7 @@ updateMother measurements msg model =
                                     -- form, then no change needed.
                                     model
 
-                        SaveFamilyPlanningSigns _ _ ->
+                        _ ->
                             model
             in
             ( updated

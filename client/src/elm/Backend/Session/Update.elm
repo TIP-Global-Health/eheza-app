@@ -36,9 +36,6 @@ update sessionId msg model =
         MeasurementOutMsgMother motherId subMsg ->
             ( model, Cmd.none )
 
-        SetCheckedIn motherId checkedIn ->
-            ( model, Cmd.none )
-
 
 
 {- We reach this when the user hits "Save" upon editing something in the measurement
