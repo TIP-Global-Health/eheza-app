@@ -190,7 +190,13 @@ navigator.serviceWorker.addEventListener('controllerchange', function () {
 elmApp.ports.serviceWorkerOut.subscribe(function (message) {
   switch (message.tag) {
     case 'Register':
-      navigator.serviceWorker.register('service-worker.js').then(function(reg) {
+      // Disable the browser's cache for both service-worker.js and any
+      // imported scripts.
+      var options = {
+        updateViaCache: 'none'
+      };
+
+      navigator.serviceWorker.register('service-worker.js', options).then(function(reg) {
         elmApp.ports.serviceWorkerIn.send({
           tag: 'RegistrationSucceeded'
         });
