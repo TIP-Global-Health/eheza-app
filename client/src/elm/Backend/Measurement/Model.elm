@@ -7,6 +7,7 @@ and cached in local storage.
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import EveryDict exposing (EveryDict)
+import EveryDictList exposing (EveryDictList)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -159,17 +160,17 @@ type SavedMeasurement
 
 
 type alias MotherMeasurementList =
-    { attendances : List ( AttendanceId, Attendance )
-    , familyPlannings : List ( FamilyPlanningId, FamilyPlanning )
-    , consents : List ( ParticipantConsentId, ParticipantConsent )
+    { attendances : EveryDictList AttendanceId Attendance
+    , familyPlannings : EveryDictList FamilyPlanningId FamilyPlanning
+    , consents : EveryDictList ParticipantConsentId ParticipantConsent
     }
 
 
 emptyMotherMeasurementList : MotherMeasurementList
 emptyMotherMeasurementList =
-    { attendances = []
-    , familyPlannings = []
-    , consents = []
+    { attendances = EveryDictList.empty
+    , familyPlannings = EveryDictList.empty
+    , consents = EveryDictList.empty
     }
 
 
@@ -182,23 +183,23 @@ simple with a `List` and see how that goes.
 
 -}
 type alias ChildMeasurementList =
-    { heights : List ( HeightId, Height )
-    , muacs : List ( MuacId, Muac )
-    , nutritions : List ( ChildNutritionId, ChildNutrition )
-    , photos : List ( PhotoId, Photo )
-    , weights : List ( WeightId, Weight )
-    , counselingSessions : List ( CounselingSessionId, CounselingSession )
+    { heights : EveryDictList HeightId Height
+    , muacs : EveryDictList MuacId Muac
+    , nutritions : EveryDictList ChildNutritionId ChildNutrition
+    , photos : EveryDictList PhotoId Photo
+    , weights : EveryDictList WeightId Weight
+    , counselingSessions : EveryDictList CounselingSessionId CounselingSession
     }
 
 
 emptyChildMeasurementList : ChildMeasurementList
 emptyChildMeasurementList =
-    { heights = []
-    , muacs = []
-    , nutritions = []
-    , photos = []
-    , weights = []
-    , counselingSessions = []
+    { heights = EveryDictList.empty
+    , muacs = EveryDictList.empty
+    , nutritions = EveryDictList.empty
+    , photos = EveryDictList.empty
+    , weights = EveryDictList.empty
+    , counselingSessions = EveryDictList.empty
     }
 
 
@@ -259,7 +260,7 @@ So, it is a `List` (possibly empty) rather than a `Maybe`.
 type alias MotherMeasurements =
     { attendance : Maybe ( AttendanceId, Attendance )
     , familyPlanning : Maybe ( FamilyPlanningId, FamilyPlanning )
-    , consent : EveryDict ParticipantConsentId ParticipantConsent
+    , consent : EveryDictList ParticipantConsentId ParticipantConsent
     }
 
 
@@ -267,7 +268,7 @@ emptyMotherMeasurements : MotherMeasurements
 emptyMotherMeasurements =
     { attendance = Nothing
     , familyPlanning = Nothing
-    , consent = EveryDict.empty
+    , consent = EveryDictList.empty
     }
 
 

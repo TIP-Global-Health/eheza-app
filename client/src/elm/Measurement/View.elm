@@ -727,7 +727,7 @@ viewMother language activity measurements model =
             viewParticipantConsent language (mapMeasurementData .consent measurements) model.participantConsent
 
 
-viewParticipantConsent : Language -> MeasurementData (EveryDict ParticipantConsentId ParticipantConsent) -> ParticipantFormUI -> Html MsgMother
+viewParticipantConsent : Language -> MeasurementData (EveryDictList ParticipantConsentId ParticipantConsent) -> ParticipantFormUI -> Html MsgMother
 viewParticipantConsent language measurement ui =
     let
         activity =

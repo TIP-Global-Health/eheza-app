@@ -5,7 +5,7 @@ import App.Model
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model
+import Backend.Measurement.Model exposing (emptyMotherMeasurementList)
 import Backend.Measurement.Utils exposing (mapMeasurementData)
 import Backend.Model exposing (..)
 import Backend.Session.Decoder exposing (decodeSession, decodeTrainingSessionRequest)
@@ -33,8 +33,8 @@ import Task
 import Utils.WebData exposing (resetError, resetSuccess)
 
 
-updateIndexedDb : MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb )
-updateIndexedDb msg model =
+updateIndexedDb : NominalDate -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb )
+updateIndexedDb currentDate msg model =
     let
         sw =
             applyBackendUrl "/sw"
@@ -222,7 +222,7 @@ updateIndexedDb msg model =
                         |> Maybe.withDefault Backend.Session.Model.emptyModel
 
                 ( subModel, subCmd ) =
-                    Backend.Session.Update.update sessionId subMsg requests
+                    Backend.Session.Update.update sessionId currentDate subMsg requests
             in
             ( { model | sessionRequests = EveryDict.insert sessionId subModel model.sessionRequests }
             , Cmd.map (MsgSession sessionId) subCmd
@@ -232,6 +232,15 @@ updateIndexedDb msg model =
 handleRevision : Revision -> ModelIndexedDb -> ModelIndexedDb
 handleRevision revision model =
     case revision of
+        AttendanceRevision uuid data ->
+            let
+                motherMeasurements =
+                    EveryDict.get data.participantId model.motherMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.map (\measurements -> { measurements | attendances = EveryDictList.insert uuid data measurements.attendances })
+            in
+            { model | motherMeasurements = EveryDict.insert data.participantId motherMeasurements model.motherMeasurements }
+
         HealthCenterRevision uuid data ->
             let
                 -- We don't do anything with revisions until we've fetched

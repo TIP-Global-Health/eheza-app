@@ -1,8 +1,9 @@
-module Backend.Measurement.Encoder exposing (encodeAttendance, encodeChildMeasurement, encodeChildMeasurementList, encodeCounselingSession, encodeEntity, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeHeight, encodeMeasurement, encodeMotherMeasurement, encodeMotherMeasurementList, encodeMuac, encodeNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeParticipantConsent, encodePhoto, encodeWeight)
+module Backend.Measurement.Encoder exposing (encodeAttendance, encodeAttendanceValue, encodeChildMeasurement, encodeChildMeasurementList, encodeCounselingSession, encodeEntity, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeHeight, encodeMeasurement, encodeMotherMeasurement, encodeMotherMeasurementList, encodeMuac, encodeNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeParticipantConsent, encodePhoto, encodeWeight)
 
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Measurement.Model exposing (..)
 import EveryDict
+import EveryDictList
 import EverySet
 import Gizra.NominalDate
 import Json.Encode as Encoder exposing (Value, bool, float, int, list, object, string)
@@ -85,12 +86,14 @@ encodeCounselingSession =
         )
 
 
+encodeAttendanceValue : Bool -> List ( String, Value )
+encodeAttendanceValue attended =
+    [ ( "attended", bool attended ) ]
+
+
 encodeAttendance : Attendance -> List ( String, Value )
 encodeAttendance =
-    encodeMotherMeasurement
-        (\attended ->
-            [ ( "attended", bool attended ) ]
-        )
+    encodeMotherMeasurement encodeAttendanceValue
 
 
 encodeFamilyPlanning : FamilyPlanning -> List ( String, Value )
@@ -192,31 +195,37 @@ encodeChildMeasurementList measurements =
     object
         [ ( "height"
           , measurements.heights
+                |> EveryDictList.toList
                 |> List.map (encodeEntity encodeHeight)
                 |> list
           )
         , ( "muac"
           , measurements.muacs
+                |> EveryDictList.toList
                 |> List.map (encodeEntity encodeMuac)
                 |> list
           )
         , ( "nutrition"
           , measurements.nutritions
+                |> EveryDictList.toList
                 |> List.map (encodeEntity encodeNutrition)
                 |> list
           )
         , ( "counseling_session"
           , measurements.counselingSessions
+                |> EveryDictList.toList
                 |> List.map (encodeEntity encodeCounselingSession)
                 |> list
           )
         , ( "photo"
           , measurements.photos
+                |> EveryDictList.toList
                 |> List.map (encodeEntity encodePhoto)
                 |> list
           )
         , ( "weight"
           , measurements.weights
+                |> EveryDictList.toList
                 |> List.map (encodeEntity encodeWeight)
                 |> list
           )
@@ -228,16 +237,19 @@ encodeMotherMeasurementList measurements =
     object
         [ ( "attendance"
           , measurements.attendances
+                |> EveryDictList.toList
                 |> List.map (encodeEntity encodeAttendance)
                 |> list
           )
         , ( "family_planning"
           , measurements.familyPlannings
+                |> EveryDictList.toList
                 |> List.map (encodeEntity encodeFamilyPlanning)
                 |> list
           )
         , ( "participant_consent"
           , measurements.consents
+                |> EveryDictList.toList
                 |> List.map (encodeEntity encodeParticipantConsent)
                 |> list
           )

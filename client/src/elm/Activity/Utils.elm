@@ -227,14 +227,15 @@ expectCounselingActivity session childId =
 
         -- Have we ever completed a counseling session of the specified type?
         completed timing =
-            List.any
-                (\( _, counseling ) -> Tuple.first counseling.value == timing)
+            EveryDictList.any
+                (\_ counseling -> Tuple.first counseling.value == timing)
                 historical
 
         -- How long ago did we complete a session of the specified type?
         completedDaysAgo timing =
             historical
-                |> List.Extra.find (\( _, counseling ) -> Tuple.first counseling.value == timing)
+                |> EveryDictList.filter (\_ counseling -> Tuple.first counseling.value == timing)
+                |> EveryDictList.head
                 |> Maybe.map (\( _, counseling ) -> diffDays counseling.dateMeasured session.offlineSession.session.scheduledDate.start)
 
         -- How old will the child be as of the scheduled date of the session?
@@ -419,7 +420,8 @@ expectParticipantConsent session motherId =
         previouslyConsented =
             getMotherHistoricalMeasurements motherId session.offlineSession
                 |> .consents
-                |> List.map (Tuple.second >> .value >> .formId)
+                |> EveryDictList.map (\_ consent -> consent.value.formId)
+                |> EveryDictList.values
                 |> EverySet.fromList
     in
     session.offlineSession.allParticipantForms

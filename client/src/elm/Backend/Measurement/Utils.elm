@@ -3,6 +3,7 @@ module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, cur
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EveryDict exposing (EveryDict)
+import EveryDictList exposing (EveryDictList)
 import Time.Date
 
 
@@ -40,11 +41,11 @@ currentValueWithId data =
 
 {-| Like `currentValue`, but for cases where we have a list of values.
 -}
-currentValues : MeasurementData (EveryDict id value) -> List ( Maybe id, value )
+currentValues : MeasurementData (EveryDictList id value) -> List ( Maybe id, value )
 currentValues data =
     data.current
-        |> EveryDict.map (\k v -> ( Just k, v ))
-        |> EveryDict.values
+        |> EveryDictList.map (\k v -> ( Just k, v ))
+        |> EveryDictList.values
 
 
 mapMeasurementData : (a -> b) -> MeasurementData a -> MeasurementData b
@@ -112,11 +113,10 @@ splitMotherMeasurements sessionId =
                 consent =
                     getCurrentAndPrevious sessionId list.consents
                         |> .current
-                        |> EveryDict.fromList
             in
             { current =
-                { attendance = List.head attendance.current
-                , familyPlanning = List.head familyPlanning.current
+                { attendance = EveryDictList.head attendance.current
+                , familyPlanning = EveryDictList.head familyPlanning.current
                 , consent = consent
                 }
             , previous =
@@ -124,7 +124,7 @@ splitMotherMeasurements sessionId =
                 -- anything for it.
                 { attendance = attendance.previous
                 , familyPlanning = familyPlanning.previous
-                , consent = EveryDict.empty
+                , consent = EveryDictList.empty
                 }
             }
         )
@@ -155,12 +155,12 @@ splitChildMeasurements sessionId =
             in
             { current =
                 -- We can only have one per session ... we enforce that here.
-                { height = List.head height.current
-                , weight = List.head weight.current
-                , muac = List.head muac.current
-                , nutrition = List.head nutrition.current
-                , photo = List.head photo.current
-                , counselingSession = List.head counselingSession.current
+                { height = EveryDictList.head height.current
+                , weight = EveryDictList.head weight.current
+                , muac = EveryDictList.head muac.current
+                , nutrition = EveryDictList.head nutrition.current
+                , photo = EveryDictList.head photo.current
+                , counselingSession = EveryDictList.head counselingSession.current
                 }
             , previous =
                 { height = height.previous
@@ -176,30 +176,30 @@ splitChildMeasurements sessionId =
 
 {-| Picks out current and previous values from a list of measurements.
 -}
-getCurrentAndPrevious : SessionId -> List ( id, Measurement a b ) -> { current : List ( id, Measurement a b ), previous : Maybe ( id, Measurement a b ) }
+getCurrentAndPrevious : SessionId -> EveryDictList id (Measurement a b) -> { current : EveryDictList id (Measurement a b), previous : Maybe ( id, Measurement a b ) }
 getCurrentAndPrevious sessionId =
     let
         -- This is designed to iterate through each list only once, to get both
         -- the current and previous value
-        go measurement acc =
-            if .sessionId (Tuple.second measurement) == Just sessionId then
+        go id value acc =
+            if value.sessionId == Just sessionId then
                 -- If it's got our session ID, then it's current
-                { acc | current = measurement :: acc.current }
+                { acc | current = EveryDictList.cons id value acc.current }
 
             else
                 case acc.previous of
                     -- Otherwise, it might be previous
                     Nothing ->
-                        { acc | previous = Just measurement }
+                        { acc | previous = Just ( id, value ) }
 
                     Just ( _, previousValue ) ->
-                        if Time.Date.compare (.dateMeasured (Tuple.second measurement)) previousValue.dateMeasured == GT then
-                            { acc | previous = Just measurement }
+                        if Time.Date.compare value.dateMeasured previousValue.dateMeasured == GT then
+                            { acc | previous = Just ( id, value ) }
 
                         else
                             acc
     in
-    List.foldl go
-        { current = []
+    EveryDictList.foldl go
+        { current = EveryDictList.empty
         , previous = Nothing
         }

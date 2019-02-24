@@ -1,17 +1,21 @@
 module Backend.Session.Update exposing (update)
 
-import Backend.Endpoints exposing (sessionEndpoint)
+import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
+import Backend.Measurement.Encoder exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb)
 import Backend.Session.Encoder exposing (..)
 import Backend.Session.Model exposing (..)
+import EveryDict
+import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (object)
+import Measurement.Model exposing (OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (applyBackendUrl, toCmd, withoutDecoder)
 
 
-update : SessionId -> Msg -> Model -> ( Model, Cmd Msg )
-update sessionId msg model =
+update : SessionId -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
+update sessionId currentDate msg model =
     let
         sw =
             applyBackendUrl "/sw"
@@ -33,8 +37,46 @@ update sessionId msg model =
         MeasurementOutMsgChild childId subMsg ->
             ( model, Cmd.none )
 
+        -- We're handling responses in order to pick up error conditions.
+        -- However, we'll let the general "handleRevision" mechanism handle
+        -- integrating the data into our model ... we need that anyway, so
+        -- there's no point having two separate code paths to do it.
         MeasurementOutMsgMother motherId subMsg ->
-            ( model, Cmd.none )
+            case subMsg of
+                SaveAttendance maybeId attended ->
+                    let
+                        cmd =
+                            case maybeId of
+                                Nothing ->
+                                    { participantId = motherId
+                                    , dateMeasured = currentDate
+                                    , sessionId = Just sessionId
+                                    , value = attended
+                                    }
+                                        |> sw.post attendanceEndpoint
+                                        |> withoutDecoder
+                                        |> toCmd (RemoteData.fromResult >> HandleSaveAttendance motherId)
+
+                                Just id ->
+                                    object (encodeAttendanceValue attended)
+                                        |> sw.patchAny attendanceEndpoint id
+                                        |> withoutDecoder
+                                        |> toCmd (RemoteData.fromResult >> HandleSaveAttendance motherId)
+                    in
+                    ( { model | saveAttendanceRequest = EveryDict.insert motherId Loading model.saveAttendanceRequest }
+                    , cmd
+                    )
+
+                SaveFamilyPlanningSigns maybeId signs ->
+                    Debug.crash "todo"
+
+                SaveCompletedForm maybeId formId language ->
+                    Debug.crash "todo"
+
+        HandleSaveAttendance motherId data ->
+            ( { model | saveAttendanceRequest = EveryDict.insert motherId data model.saveAttendanceRequest }
+            , Cmd.none
+            )
 
 
 

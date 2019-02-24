@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
+import EveryDictList
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
@@ -127,20 +128,20 @@ decodeWithEntityUuid decoder =
 decodeMotherMeasurementList : Decoder MotherMeasurementList
 decodeMotherMeasurementList =
     decode MotherMeasurementList
-        |> optional "attendance" (list (decodeWithEntityUuid decodeAttendance)) []
-        |> optional "family_planning" (list (decodeWithEntityUuid decodeFamilyPlanning)) []
-        |> optional "participant_consent" (list (decodeWithEntityUuid decodeParticipantConsent)) []
+        |> optional "attendance" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeAttendance)) EveryDictList.empty
+        |> optional "family_planning" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeFamilyPlanning)) EveryDictList.empty
+        |> optional "participant_consent" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeParticipantConsent)) EveryDictList.empty
 
 
 decodeChildMeasurementList : Decoder ChildMeasurementList
 decodeChildMeasurementList =
     decode ChildMeasurementList
-        |> optional "height" (list (decodeWithEntityUuid decodeHeight)) []
-        |> optional "muac" (list (decodeWithEntityUuid decodeMuac)) []
-        |> optional "nutrition" (list (decodeWithEntityUuid decodeNutrition)) []
-        |> optional "photo" (list (decodeWithEntityUuid decodePhoto)) []
-        |> optional "weight" (list (decodeWithEntityUuid decodeWeight)) []
-        |> optional "counseling_session" (list (decodeWithEntityUuid decodeCounselingSession)) []
+        |> optional "height" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeHeight)) EveryDictList.empty
+        |> optional "muac" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeMuac)) EveryDictList.empty
+        |> optional "nutrition" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeNutrition)) EveryDictList.empty
+        |> optional "photo" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodePhoto)) EveryDictList.empty
+        |> optional "weight" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeWeight)) EveryDictList.empty
+        |> optional "counseling_session" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeCounselingSession)) EveryDictList.empty
 
 
 {-| The `oneOf` provides some back-compat for locally stored values.

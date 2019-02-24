@@ -106,19 +106,20 @@ to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
     { closeSessionRequest : WebData ()
+    , saveAttendanceRequest : EveryDict MotherId (WebData ())
     }
 
 
 emptyModel : Model
 emptyModel =
     { closeSessionRequest = NotAsked
+    , saveAttendanceRequest = EveryDict.empty
     }
 
 
-{-| This models some messages the UI can send to change an EditableSession.
--}
 type Msg
     = CloseSession
     | HandleClosedSession (WebData ())
     | MeasurementOutMsgChild ChildId Measurement.Model.OutMsgChild
     | MeasurementOutMsgMother MotherId Measurement.Model.OutMsgMother
+    | HandleSaveAttendance MotherId (WebData ())

@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (ChildParams, MotherParams, NurseParams, SessionParams(..), childEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingTopicEndpoint, encodeChildParams, encodeMotherParams, encodeNurseParams, encodeSessionParams, healthCenterEndpoint, motherEndpoint, motherMeasurementListEndpoint, nurseEndpoint, participantFormEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, trainingSessionsEndpoint)
+module Backend.Endpoints exposing (ChildParams, MotherParams, NurseParams, SessionParams(..), attendanceEndpoint, childEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingTopicEndpoint, encodeChildParams, encodeMotherParams, encodeNurseParams, encodeSessionParams, healthCenterEndpoint, motherEndpoint, motherMeasurementListEndpoint, nurseEndpoint, participantFormEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, trainingSessionsEndpoint)
 
 import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Child.Encoder exposing (encodeChild)
@@ -12,8 +12,9 @@ import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Decoder exposing (decodeHealthCenter)
 import Backend.HealthCenter.Model exposing (HealthCenter)
-import Backend.Measurement.Decoder exposing (decodeChildMeasurementList, decodeMotherMeasurementList)
-import Backend.Measurement.Model exposing (ChildMeasurementList, MotherMeasurementList)
+import Backend.Measurement.Decoder exposing (..)
+import Backend.Measurement.Encoder exposing (..)
+import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (TrainingSessionRequest)
 import Backend.Mother.Decoder exposing (decodeMother)
 import Backend.Mother.Encoder exposing (encodeMother)
@@ -102,6 +103,12 @@ clinicEndpoint : ReadWriteEndPoint Error ClinicId Clinic Clinic ()
 clinicEndpoint =
     swEndpoint "nodes/clinic" decodeClinic
         |> withValueEncoder (object << encodeClinic)
+
+
+attendanceEndpoint : ReadWriteEndPoint Error AttendanceId Attendance Attendance ()
+attendanceEndpoint =
+    swEndpoint "nodes/attendance" decodeAttendance
+        |> withValueEncoder (object << encodeAttendance)
 
 
 counselingScheduleEndpoint : ReadWriteEndPoint Error CounselingScheduleId CounselingSchedule CounselingSchedule ()

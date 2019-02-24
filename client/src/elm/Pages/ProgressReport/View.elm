@@ -391,47 +391,23 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
 
         -- This includes any edits that have been saved locally, but not as-you=type
         -- in the UI before you hit "Save" or "Update".
-        getValues func1 func3 =
-            let
-                currentValue =
-                    current
-                        |> mapMeasurementData func1
-                        |> currentValueWithId
-
-                historicalValues =
-                    func3 historical
-            in
-            case currentValue of
-                Nothing ->
-                    -- No current value, so just use historical
-                    List.map Tuple.second historicalValues
-
-                Just ( Nothing, currentValue ) ->
-                    -- We have a new current value, so use it
-                    currentValue :: List.map Tuple.second historicalValues
-
-                Just ( Just currentId, currentValue ) ->
-                    -- We've edited an old value, so use the edited version
-                    -- and leave out the old one.
-                    historicalValues
-                        |> List.filter (\( id, _ ) -> id /= currentId)
-                        |> List.map Tuple.second
-                        |> List.append [ currentValue ]
+        getValues func =
+            EveryDictList.values (func historical)
 
         heightValues =
-            getValues .height .heights
+            getValues .heights
 
         weightValues =
-            getValues .weight .weights
+            getValues .weights
 
         muacValues =
-            getValues .muac .muacs
+            getValues .muacs
 
         photoValues =
-            getValues .photo .photos
+            getValues .photos
 
         nutritionValues =
-            getValues .nutrition .nutritions
+            getValues .nutritions
 
         indexBySession values =
             values
