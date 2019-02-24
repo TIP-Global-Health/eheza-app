@@ -329,6 +329,7 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function(callback)
     skipWaiting: false,
     importScripts: [
         'bower_components/dexie/dist/dexie.min.js',
+        'uuid.js',
         'sw.js',
         'config.js',
         'lifecycle.js',
@@ -354,6 +355,7 @@ gulp.task('pwa:prod', function (callback) {
     skipWaiting: false,
     importScripts: [
         'bower_components/dexie/dist/dexie.min.js',
+        'uuid.js',
         'sw.js',
         'config.js',
         'lifecycle.js',

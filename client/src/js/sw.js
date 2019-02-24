@@ -13,7 +13,11 @@ var configUrlRegex = /\/sw\/config/;
 var credentialsUrlRegex = /\/sw\/config\/device$/;
 var credentialsUrl = '/sw/config/device';
 
-var nodesUuid = "78cf21d1-b3f4-496a-b312-d8ae73041f09";
+var deviceUuidUrl = '/sw/config/device-uuid';
+
+// A UUID which represents the "shard" which is our general data that
+// all devices get. (That is, unsharded data).
+var nodesUuid = '78cf21d1-b3f4-496a-b312-d8ae73041f09';
 
 var dbSync = new Dexie('sync');
 
@@ -53,7 +57,7 @@ dbSync.version(1).stores({
     // health center which is the reason we're downloading this node to this
     // device. We need a compound key with shard and vid, because IndexedDb
     // is a bit weird about using indexes -- you can only use one at a time.
-    shards: '&uuid,type,vid,status,[shard+vid]'
+    shards: '&uuid,type,vid,status,child,mother,[shard+vid]'
 });
 
 // For when any sync metadata changes, send it all to the app

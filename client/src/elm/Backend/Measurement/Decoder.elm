@@ -121,7 +121,7 @@ toEveryDict func =
 decodeWithEntityUuid : Decoder a -> Decoder ( EntityUuid b, a )
 decodeWithEntityUuid decoder =
     map2 (,)
-        (field "id" decodeEntityUuid)
+        (field "uuid" decodeEntityUuid)
         decoder
 
 

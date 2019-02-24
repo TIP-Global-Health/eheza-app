@@ -52,8 +52,67 @@
                     return event.respondWith(putNode(event.request, type, uuid));
                 }
             }
+
+            if (event.request.method === 'POST') {
+                return event.respondWith(postNode(event.request, type));
+            }
+
+            if (event.request.method === 'PATCH') {
+                if (uuid) {
+                    return event.respondWith(patchNode(event.request, type, uuid));
+                }
+            }
+
+            // If we get here, respond with a 404
+            var response = new Response('', {
+                status: 404,
+                statusText: 'Not Found'
+            });
+
+            return event.respondWith(response);
+
         }
     });
+
+    var tableForType = {
+        attendance: 'shards',
+        catchment_area: 'nodes',
+        child: 'nodes',
+        clinic: 'nodes',
+        counseling_schedule: 'nodes',
+        counseling_session: 'shards',
+        counseling_topic: 'nodes',
+        family_planning: 'shards',
+        health_center: 'nodes',
+        height: 'shards',
+        mother: 'nodes',
+        muac: 'shards',
+        nurse: 'nodes',
+        nutrition: 'shards',
+        participant_consent: 'shards',
+        participant_form: 'nodes',
+        photo: 'shards',
+        session: 'nodes',
+        syncmetadata: 'syncMetadata',
+        weight: 'shards'
+    };
+
+    var UNPUBLISHED = 0;
+
+    function getTableForType (type) {
+        var table = tableForType[type];
+
+        if (table) {
+            return Promise.resolve(dbSync[table]);
+        } else {
+            var response = new Response('', {
+                status: 404,
+                statusText: 'Type ' + type + ' not found'
+            });
+
+            return Promise.reject(response);
+        }
+    }
 
     function deleteNode (url, type, uuid) {
         return dbSync.open().catch(databaseError).then(function () {
@@ -69,13 +128,15 @@
                 });
             } else {
                 // Otherwise, we set the status to unpublished
-                return dbSync.nodes.update(uuid, {status: 0}).catch(databaseError).then(function (updated) {
-                    var response = new Response(null, {
-                        status: 204,
-                        statusText: 'Deleted'
-                    });
+                return getTableForType(type).then(function (table) {
+                    return table.update(uuid, {status: UNPUBLISHED}).catch(databaseError).then(function (updated) {
+                        var response = new Response(null, {
+                            status: 204,
+                            statusText: 'Deleted'
+                        });
 
-                    return Promise.resolve(response);
+                        return Promise.resolve(response);
+                    });
                 });
             }
         }).catch(sendErrorResponses);
@@ -83,36 +144,100 @@
 
     function putNode (request, type, uuid) {
         return dbSync.open().catch(databaseError).then(function () {
-            var table = dbSync.nodes;
+            return getTableForType(type).then(function (table) {
+                return request.json().catch(jsonError).then(function (json) {
+                    json.uuid = uuid;
+                    json.type = type;
 
-            // For the syncmetadata type, we use the syncMetadata table instead
-            if (type === 'syncmetadata') {
-                table = dbSync.syncMetadata;
-            }
+                    return table.put(json).catch(databaseError).then(function () {
+                        var response = new Response(JSON.stringify(json), {
+                            status: 200,
+                            statusText: 'OK',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
 
-            return request.json().catch(jsonError).then(function (json) {
-                json.uuid = uuid;
-                json.type = type;
+                        if (type === 'syncmetadata') {
+                            // If our syncmetadata changes, kick off a sync
+                            self.registration.sync.register('sync');
 
-                return table.put(json).catch(databaseError).then(function () {
-                    var response = new Response(JSON.stringify(json), {
-                        status: 200,
-                        statusText: 'OK',
-                        headers: {
-                            'Content-Type': 'application/json'
+                            return sendSyncData().then(function () {
+                                return Promise.resolve(response);
+                            });
+                        } else {
+                            return sendRevisedNode(table, uuid).then(function () {
+                                return Promise.resolve(response);
+                            });
                         }
                     });
+                });
+            });
+        }).catch(sendErrorResponses);
+    }
 
-                    if (type === 'syncmetadata') {
-                        // If our syncmetadata changes, kick off a sync
-                        self.registration.sync.register('sync');
-
-                        return sendSyncData().then(function () {
-                            return Promise.resolve(response);
+    function patchNode (request, type, uuid) {
+        return dbSync.open().catch(databaseError).then(function () {
+            return getTableForType(type).then(function (table) {
+                return request.json().catch(jsonError).then(function (json) {
+                    return table.update(uuid, json).catch(databaseError).then(function () {
+                        var response = new Response(JSON.stringify(json), {
+                            status: 200,
+                            statusText: 'OK',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
                         });
-                    } else {
-                        return Promise.resolve(response);
-                    }
+
+                        if (type === 'syncmetadata') {
+                            // If our syncmetadata changes, kick off a sync
+                            self.registration.sync.register('sync');
+
+                            return sendSyncData().then(function () {
+                                return Promise.resolve(response);
+                            });
+                        } else {
+                            return sendRevisedNode(table, uuid).then(function () {
+                                return Promise.resolve(response);
+                            });
+                        }
+                    });
+                });
+            });
+        }).catch(sendErrorResponses);
+    }
+
+    function postNode (request, type) {
+        return dbSync.open().catch(databaseError).then(function () {
+            return getTableForType(type).then(function (table) {
+                return request.json().catch(jsonError).then(function (json) {
+                    return makeUuid().then(function (uuid) {
+                        json.uuid = uuid;
+                        json.type = type;
+
+                        return table.put(json).catch(databaseError).then(function () {
+                            var response = new Response(JSON.stringify(json), {
+                                status: 200,
+                                statusText: 'OK',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+
+                            if (type === 'syncmetadata') {
+                                // If our syncmetadata changes, kick off a sync
+                                self.registration.sync.register('sync');
+
+                                return sendSyncData().then(function () {
+                                    return Promise.resolve(response);
+                                });
+                            } else {
+                                return sendRevisedNode(table, uuid).then(function () {
+                                    return Promise.resolve(response);
+                                });
+                            }
+                        });
+                    });
                 });
             });
         }).catch(sendErrorResponses);
@@ -120,39 +245,81 @@
 
     function view (url, type, uuid) {
         return dbSync.open().catch(databaseError).then(function () {
-            var table = dbSync.nodes;
+            if (type === 'child-measurements') {
+                return viewMeasurements('child', uuid);
+            } else if (type === 'mother-measurements') {
+                return viewMeasurements('mother', uuid);
+            } else {
+                return getTableForType(type).then(function (table) {
+                    return table.get(uuid).catch(databaseError).then(function (node) {
+                        // We could also check that the type is the expected type.
+                        if (node) {
+                            var body = JSON.stringify({
+                                data: [node]
+                            });
 
-            // For the syncmetadata type, we use the syncMetadata table instead
-            if (type === 'syncmetadata') {
-                table = dbSync.syncMetadata;
-            }
+                            var response = new Response(body, {
+                                status: 200,
+                                statusText: 'OK',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
 
-            return table.get(uuid).catch(databaseError).then(function (node) {
-                // We could also check that the type is the expected type.
-                if (node) {
-                    var body = JSON.stringify({
-                        data: [node]
-                    });
+                            return Promise.resolve(response);
+                        } else {
+                            response = new Response('', {
+                                status: 404,
+                                statusText: 'Not found'
+                            });
 
-                    var response = new Response(body, {
-                        status: 200,
-                        statusText: 'OK',
-                        headers: {
-                            'Content-Type': 'application/json'
+                            return Promise.reject(response);
                         }
                     });
+                });
+            }
+        }).catch(sendErrorResponses);
+    }
 
-                    return Promise.resolve(response);
+    // This is a kind of special-case for now, at least. We're wanting to get
+    // back all of a particular child's or mother's measurements. The key is
+    // either 'childId' or `motherId`, and the uuid is the uuid of the child or
+    // mother.  We also want the measurements in a record indexed by the type.
+    //
+    // Ultimately, it would be better to make this more generic here and do the
+    // processing on the client side, but this mirrors the pre-existing
+    // division of labour between client and server, so it's easier for now.
+    function viewMeasurements (key, uuid) {
+        var criteria = {};
+        criteria[key] = uuid;
+
+        var query = dbSync.shards.where(criteria);
+
+        return query.toArray().catch(databaseError).then(function (nodes) {
+            var indexed = {};
+
+            nodes.forEach(function (node) {
+                if (indexed[node.type]) {
+                    indexed[node.type].push(node);
                 } else {
-                    response = new Response('', {
-                        status: 404,
-                        statusText: 'Not found'
-                    });
-
-                    return Promise.reject(response);
+                    indexed[node.type] = [node];
                 }
             });
-        }).catch(sendErrorResponses);
+
+            var body = JSON.stringify({
+                data: [indexed]
+            });
+
+            var response = new Response(body, {
+                status: 200,
+                statusText: 'OK',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return Promise.resolve(response);
+        });
     }
 
     // Fields which we index along with type, so we can search for them.
@@ -181,40 +348,42 @@
                 }
             });
 
-            var query = dbSync.nodes.where(criteria);
-            var countQuery = query.clone();
-
-            // If type is syncmetadata, we use a different table
-            if (type === 'syncmetadata') {
-                query = dbSync.syncMetadata;
-                countQuery = query;
-            }
-
-            return countQuery.count().catch(databaseError).then(function (count) {
-                if (offset > 0) {
-                    query.offset(offset);
+            return getTableForType(type).then(function (table) {
+                // For syncmetadata, we don't actually use the criteria
+                if (type === 'syncmetadata') {
+                    var query = dbSync.syncMetadata;
+                    var countQuery = query;
+                } else {
+                    query = table.where(criteria);
+                    countQuery = query.clone();
                 }
 
-                if (range > 0) {
-                    query.limit(range);
-                }
+                return countQuery.count().catch(databaseError).then(function (count) {
+                    if (offset > 0) {
+                        query.offset(offset);
+                    }
 
-                return query.toArray().catch(databaseError).then(function (nodes) {
-                    var body = JSON.stringify({
-                        offset: offset,
-                        count: count,
-                        data: nodes
+                    if (range > 0) {
+                        query.limit(range);
+                    }
+
+                    return query.toArray().catch(databaseError).then(function (nodes) {
+                        var body = JSON.stringify({
+                            offset: offset,
+                            count: count,
+                            data: nodes
+                        });
+
+                        var response = new Response(body, {
+                            status: 200,
+                            statusText: 'OK',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        return Promise.resolve(response);
                     });
-
-                    var response = new Response(body, {
-                        status: 200,
-                        statusText: 'OK',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    return Promise.resolve(response);
                 });
             });
         }).catch(sendErrorResponses);
@@ -231,7 +400,17 @@
         }
     }
 
-    function databaseError(err) {
+    function sendRevisedNode (table, uuid) {
+        return table.get(uuid).catch(databaseError).then(function (item) {
+            if (item) {
+                return sendRevisions([item]);
+            } else {
+                return Promise.reject("UUID unexpectedly not found.");
+            }
+        });
+    }
+
+    function databaseError (err) {
         var response = new Response(JSON.stringify(err), {
             status: 500,
             statusText: 'Database Error'
@@ -247,6 +426,43 @@
         });
 
         return Promise.reject(response);
+    }
+
+    // For things created on the backend, we use a v5 UUID which is a
+    // combination of a v4 device UUID and a high-res timestamp. So, we'll do
+    // the same thing here.  That is, we'll generate a v4 device UUID, and
+    // we'll use it with a high-res timestamp to create a v5 UUID. That ought
+    // to provide a sufficient guarantee of no UUID collisions.
+    function makeUuid () {
+        var timestamp = String(performance.timeOrigin + performance.now());
+
+        return caches.open(configCache).then(function (cache) {
+            return cache.match(deviceUuidUrl).then(function (response) {
+                if (response) {
+                    return response.text();
+                } else {
+                    var uuid = kelektivUuid.v4();
+
+                    var cachedResponse = new Response(uuid, {
+                        status: 200,
+                        statusTest: 'OK',
+                        headers: {
+                            'Content-Type': 'application/text'
+                        }
+                    });
+
+                    var cachedRequest = new Request (deviceUuidUrl, {
+                        method: 'GET'
+                    });
+
+                    return cache.put(cachedRequest, cachedResponse).then(function () {
+                        return Promise.resolve(uuid);
+                    });
+                }
+            });
+        }).then(function (deviceUuid) {
+            return Promise.resolve(kelektivUuid.v5(timestamp, deviceUuid));
+        });
     }
 
 })();
