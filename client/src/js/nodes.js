@@ -97,7 +97,10 @@
         weight: 'shards'
     };
 
-    var UNPUBLISHED = 0;
+    var Status = {
+        published: 1,
+        unpublished: 0
+    };
 
     function getTableForType (type) {
         var table = tableForType[type];
@@ -129,7 +132,7 @@
             } else {
                 // Otherwise, we set the status to unpublished
                 return getTableForType(type).then(function (table) {
-                    return table.update(uuid, {status: UNPUBLISHED}).catch(databaseError).then(function (updated) {
+                    return table.update(uuid, {status: Status.unpublished}).catch(databaseError).then(function (updated) {
                         var response = new Response(null, {
                             status: 204,
                             statusText: 'Deleted'
@@ -146,10 +149,11 @@
         return dbSync.open().catch(databaseError).then(function () {
             return getTableForType(type).then(function (table) {
                 return request.json().catch(jsonError).then(function (json) {
-                    json.uuid = uuid;
-                    json.type = type;
-
-                    return table.put(json).catch(databaseError).then(function () {
+                    // Logically, this could be a `put` rather than `update`.
+                    // However, there is some information in the database that
+                    // the Elm side doesn't use yet. So, entirely replacing the
+                    // item isn't wise.
+                    return table.update(uuid, json).catch(databaseError).then(function () {
                         var response = new Response(JSON.stringify(json), {
                             status: 200,
                             statusText: 'OK',
@@ -214,6 +218,7 @@
                     return makeUuid().then(function (uuid) {
                         json.uuid = uuid;
                         json.type = type;
+                        json.status = Status.published;
 
                         return table.put(json).catch(databaseError).then(function () {
                             var response = new Response(JSON.stringify(json), {
