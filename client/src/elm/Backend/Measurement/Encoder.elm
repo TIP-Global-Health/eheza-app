@@ -4,7 +4,6 @@ import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import EveryDict
 import EveryDictList
 import EverySet exposing (EverySet)
 import Gizra.NominalDate

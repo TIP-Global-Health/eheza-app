@@ -4,7 +4,6 @@ import Backend.Mother.Model exposing (..)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
-import Restful.Endpoint exposing (encodeEntityUuid)
 
 
 encodeMother : Mother -> List ( String, Value )

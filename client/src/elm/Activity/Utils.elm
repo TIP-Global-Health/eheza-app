@@ -42,7 +42,6 @@ import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import EverySet
 import Gizra.NominalDate exposing (diffDays)
-import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 
 

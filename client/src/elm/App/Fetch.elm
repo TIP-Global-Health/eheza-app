@@ -1,7 +1,6 @@
 module App.Fetch exposing (andThenFetch)
 
 import App.Model exposing (..)
-import App.Utils exposing (getLoggedInModel)
 import Backend.Fetch
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)

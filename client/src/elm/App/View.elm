@@ -2,7 +2,6 @@ module App.View exposing (view)
 
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInModel)
-import Backend.Model exposing (ModelIndexedDb)
 import Config.View
 import Date
 import EveryDict
@@ -24,7 +23,6 @@ import RemoteData exposing (RemoteData(..), WebData)
 import ServiceWorker.View
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
-import User.Model exposing (User)
 import Utils.Html exposing (spinner, wrapPage)
 import Version
 

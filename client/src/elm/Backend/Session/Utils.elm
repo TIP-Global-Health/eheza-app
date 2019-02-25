@@ -1,7 +1,6 @@
 module Backend.Session.Utils exposing (emptyMotherMeasurementData, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMyMother, isAuthorized, isClosed, makeEditableSession)
 
 import Backend.Child.Model exposing (Child)
-import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
@@ -14,7 +13,6 @@ import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date
-import User.Model exposing (User)
 
 
 {-| Given a mother's id, get all her children from the offline session.

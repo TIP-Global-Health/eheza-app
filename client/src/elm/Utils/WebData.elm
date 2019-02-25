@@ -2,7 +2,6 @@ module Utils.WebData exposing (resetError, resetSuccess, sendWithHandler, viewEr
 
 import Html exposing (..)
 import Html.Attributes exposing (class)
-import Html.Events exposing (onClick)
 import Http exposing (Error, expectJson)
 import HttpBuilder exposing (..)
 import Json.Decode exposing (Decoder, field, list)

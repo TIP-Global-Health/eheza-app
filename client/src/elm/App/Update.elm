@@ -5,7 +5,6 @@ import App.Model exposing (..)
 import App.Utils exposing (getLoggedInModel)
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
-import Backend.Session.Model
 import Backend.Update
 import Config
 import Date
@@ -13,13 +12,11 @@ import Device.Decoder
 import Device.Encoder
 import Dict
 import EveryDict
-import EverySet
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Http exposing (Error(..))
 import HttpBuilder
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
-import Maybe.Extra
 import Pages.Admin.Update
 import Pages.Device.Model
 import Pages.Device.Update

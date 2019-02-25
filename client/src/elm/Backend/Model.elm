@@ -30,9 +30,6 @@ import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
-import Gizra.NominalDate exposing (NominalDate)
-import Http exposing (Error)
-import Json.Encode exposing (Value)
 import RemoteData exposing (RemoteData(..), WebData)
 
 

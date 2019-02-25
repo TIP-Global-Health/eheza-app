@@ -1,8 +1,6 @@
 module Backend.Counseling.Encoder exposing (encodeCounselingSchedule, encodeCounselingTiming, encodeCounselingTopic)
 
 import Backend.Counseling.Model exposing (..)
-import EveryDict
-import EveryDictList
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)

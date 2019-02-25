@@ -12,22 +12,18 @@ import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (assignedToClinic)
 import Backend.Session.Model exposing (Session)
-import Backend.Session.Utils
 import Backend.SyncData.Model exposing (SyncData)
 import EveryDict
 import EveryDictList exposing (EveryDictList)
-import Gizra.Html exposing (showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date exposing (delta)
 import Translate exposing (Language, translate)
-import Utils.Html exposing (spinner, viewModal)
 import Utils.WebData exposing (viewError, viewWebData)
 
 

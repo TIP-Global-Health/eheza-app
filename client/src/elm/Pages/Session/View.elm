@@ -1,13 +1,11 @@
 module Pages.Session.View exposing (view)
 
 import Activity.Model exposing (Activity(..))
-import App.Model
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Session.Model exposing (EditableSession, Session)
 import Backend.Session.Utils exposing (isAuthorized, isClosed, makeEditableSession)
-import Date
 import EveryDict
 import EveryDictList
 import Gizra.Html exposing (showMaybe)
@@ -15,7 +13,6 @@ import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Http exposing (Error)
 import Pages.Activities.View
 import Pages.Activity.Model
 import Pages.Activity.View
@@ -29,7 +26,6 @@ import Pages.Session.Model exposing (..)
 import Participant.Utils exposing (childParticipant, motherParticipant)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
-import User.Model exposing (User)
 import Utils.WebData exposing (viewError, viewWebData)
 import ZScore.Model
 

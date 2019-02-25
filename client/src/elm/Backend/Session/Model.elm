@@ -13,7 +13,6 @@ because there was so much code written in terms of an `EditableSession`.
 -}
 
 import Backend.Child.Model exposing (Child)
-import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)

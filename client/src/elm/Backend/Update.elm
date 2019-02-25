@@ -1,35 +1,18 @@
 module Backend.Update exposing (updateBackend, updateIndexedDb)
 
-import Activity.Utils
-import App.Model
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (emptyMotherMeasurementList)
-import Backend.Measurement.Utils exposing (mapMeasurementData)
 import Backend.Model exposing (..)
-import Backend.Session.Decoder exposing (decodeSession, decodeTrainingSessionRequest)
-import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession, encodeTrainingSessionRequest)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.Session.Update
-import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData, makeEditableSession)
 import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements)
 import Config.Model exposing (BackendUrl)
-import Dict exposing (Dict)
 import EveryDict
 import EveryDictList
-import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate)
-import Gizra.Update exposing (sequenceExtra)
-import Http exposing (Error)
-import HttpBuilder
-import Json.Decode exposing (Decoder, field, succeed)
-import Json.Encode exposing (Value, object)
-import Json.Encode.Extra
-import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityUuid, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityUuid, endpoint, fromEntityUuid, toCmd, toEntityUuid, toTask, withKeyEncoder, withParamsEncoder, withValueEncoder, withoutDecoder)
-import Rollbar
 import Task
 import Utils.WebData exposing (resetError, resetSuccess)
 

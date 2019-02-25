@@ -1,14 +1,10 @@
 module Backend.Session.Encoder exposing (encodeClosed, encodeOfflineSession, encodeOfflineSessionWithId, encodeSession, encodeTrainingSessionAction, encodeTrainingSessionRequest)
 
 import Backend.Child.Encoder exposing (encodeChild)
-import Backend.Clinic.Encoder exposing (encodeClinic)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Encoder exposing (encodeChildMeasurementList, encodeMotherMeasurementList)
 import Backend.Model exposing (TrainingSessionAction(..), TrainingSessionRequest)
 import Backend.Mother.Encoder exposing (encodeMother)
-import Backend.ParticipantConsent.Encoder exposing (encodeParticipantForm)
 import Backend.Session.Model exposing (..)
-import EveryDict
 import EveryDictList
 import Gizra.NominalDate exposing (encodeDrupalRange, encodeYYYYMMDD)
 import Json.Encode exposing (..)

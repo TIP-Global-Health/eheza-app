@@ -3,7 +3,6 @@ module Backend.Session.Update exposing (update)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (..)
-import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb)
 import Backend.Session.Encoder exposing (..)
 import Backend.Session.Model exposing (..)
 import EveryDict
