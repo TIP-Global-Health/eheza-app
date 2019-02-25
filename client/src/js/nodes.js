@@ -220,27 +220,41 @@
                         json.type = type;
                         json.status = Status.published;
 
-                        return table.put(json).catch(databaseError).then(function () {
-                            var response = new Response(JSON.stringify(json), {
-                                status: 200,
-                                statusText: 'OK',
-                                headers: {
-                                    'Content-Type': 'application/json'
+                        // Not entirely clear whose job it should be to figure
+                        // out the shard, but we'll do it here for now.
+                        var addShard = Promise.resolve(json);
+
+                        if (table === dbSync.shards) {
+                            addShard = determineShard(json).then(function (shard) {
+                                json.shard = shard;
+
+                                return Promise.resolve(json);
+                            });
+                        }
+
+                        return addShard.then(function (json) {
+                            return table.put(json).catch(databaseError).then(function () {
+                                var response = new Response(JSON.stringify(json), {
+                                    status: 200,
+                                    statusText: 'OK',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    }
+                                });
+
+                                if (type === 'syncmetadata') {
+                                    // If our syncmetadata changes, kick off a sync
+                                    self.registration.sync.register('sync');
+
+                                    return sendSyncData().then(function () {
+                                        return Promise.resolve(response);
+                                    });
+                                } else {
+                                    return sendRevisedNode(table, uuid).then(function () {
+                                        return Promise.resolve(response);
+                                    });
                                 }
                             });
-
-                            if (type === 'syncmetadata') {
-                                // If our syncmetadata changes, kick off a sync
-                                self.registration.sync.register('sync');
-
-                                return sendSyncData().then(function () {
-                                    return Promise.resolve(response);
-                                });
-                            } else {
-                                return sendRevisedNode(table, uuid).then(function () {
-                                    return Promise.resolve(response);
-                                });
-                            }
                         });
                     });
                 });
@@ -392,6 +406,46 @@
                 });
             });
         }).catch(sendErrorResponses);
+    }
+
+    // It's not entirely clear whose job it ought to be to figure out what
+    // shard a node should be assigned to. For now, it seems simplest to do it
+    // here, but we can revisit that. We'll also need to consider how to deal
+    // with nodes that change shard at some point -- it may be that they end up
+    // needing to be in more than one shard.
+    function determineShard (node) {
+        if (node.mother) {
+            // For mother measurements, we look up the mother and get her health clinic,
+            // and then health center.
+            return dbSync.nodes.get(node.mother).then(function (mother) {
+                if (mother) {
+                    return dbSync.nodes.get(mother.clinic).then(function (clinic) {
+                        if (clinic) {
+                            if (clinic.health_center) {
+                                return Promise.resolve(clinic.health_center);
+                            } else {
+                                return Promise.reject('Clinic had no health_center: ' + clinic.uuid);
+                            }
+                        } else {
+                            return Promise.reject('Could not find clinic: ' + mother.clinic);
+                        }
+                    });
+                } else {
+                    return Promise.reject('Could not find mother: ' + node.mother);
+                }
+            });
+        } else if (node.child) {
+            // For children, look up the mother and recurse.
+            return dbSync.nodes.get(node.child).then(function (child) {
+                if (child) {
+                    return determineShard(child);
+                } else {
+                    return Promise.reject('Could not find child: ' + node.child);
+                }
+            });
+        } else {
+            return Promise.reject('Node had no mother or child field: ' + node.uuid);
+        }
     }
 
     // This is meant for the end of a promise chain. If we've rejected with a
