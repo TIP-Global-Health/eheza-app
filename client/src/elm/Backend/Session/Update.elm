@@ -72,13 +72,77 @@ update nurseId sessionId currentDate msg model =
                     )
 
                 SaveFamilyPlanningSigns maybeId signs ->
-                    Debug.crash "todo"
+                    let
+                        cmd =
+                            case maybeId of
+                                Nothing ->
+                                    { participantId = motherId
+                                    , dateMeasured = currentDate
+                                    , sessionId = Just sessionId
+                                    , nurse = nurseId
+                                    , value = signs
+                                    }
+                                        |> sw.post familyPlanningEndpoint
+                                        |> withoutDecoder
+                                        |> toCmd (RemoteData.fromResult >> HandleSaveFamilyPlanning motherId)
+
+                                Just id ->
+                                    encodeFamilyPlanningValue signs
+                                        |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                        |> object
+                                        |> sw.patchAny familyPlanningEndpoint id
+                                        |> withoutDecoder
+                                        |> toCmd (RemoteData.fromResult >> HandleSaveFamilyPlanning motherId)
+                    in
+                    ( { model | saveFamilyPlanningRequest = EveryDict.insert motherId Loading model.saveFamilyPlanningRequest }
+                    , cmd
+                    )
 
                 SaveCompletedForm maybeId formId language ->
-                    Debug.crash "todo"
+                    let
+                        cmd =
+                            case maybeId of
+                                Nothing ->
+                                    { participantId = motherId
+                                    , dateMeasured = currentDate
+                                    , sessionId = Just sessionId
+                                    , nurse = nurseId
+                                    , value =
+                                        { language = language
+                                        , formId = formId
+                                        }
+                                    }
+                                        |> sw.post participantConsentEndpoint
+                                        |> withoutDecoder
+                                        |> toCmd (RemoteData.fromResult >> HandleSaveParticipantConsent motherId)
+
+                                Just id ->
+                                    { formId = formId
+                                    , language = language
+                                    }
+                                        |> encodeParticipantConsentValue
+                                        |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                        |> object
+                                        |> sw.patchAny participantConsentEndpoint id
+                                        |> withoutDecoder
+                                        |> toCmd (RemoteData.fromResult >> HandleSaveParticipantConsent motherId)
+                    in
+                    ( { model | saveParticipantConsentRequest = EveryDict.insert motherId Loading model.saveParticipantConsentRequest }
+                    , cmd
+                    )
 
         HandleSaveAttendance motherId data ->
             ( { model | saveAttendanceRequest = EveryDict.insert motherId data model.saveAttendanceRequest }
+            , Cmd.none
+            )
+
+        HandleSaveParticipantConsent motherId data ->
+            ( { model | saveParticipantConsentRequest = EveryDict.insert motherId data model.saveParticipantConsentRequest }
+            , Cmd.none
+            )
+
+        HandleSaveFamilyPlanning motherId data ->
+            ( { model | saveFamilyPlanningRequest = EveryDict.insert motherId data model.saveFamilyPlanningRequest }
             , Cmd.none
             )
 

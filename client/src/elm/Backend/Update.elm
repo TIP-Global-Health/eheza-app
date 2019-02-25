@@ -13,6 +13,7 @@ import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSess
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData, makeEditableSession)
+import Backend.Utils exposing (mapMotherMeasurements)
 import Config.Model exposing (BackendUrl)
 import Dict exposing (Dict)
 import EveryDict
@@ -233,13 +234,22 @@ handleRevision : Revision -> ModelIndexedDb -> ModelIndexedDb
 handleRevision revision model =
     case revision of
         AttendanceRevision uuid data ->
-            let
-                motherMeasurements =
-                    EveryDict.get data.participantId model.motherMeasurements
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.map (\measurements -> { measurements | attendances = EveryDictList.insert uuid data measurements.attendances })
-            in
-            { model | motherMeasurements = EveryDict.insert data.participantId motherMeasurements model.motherMeasurements }
+            mapMotherMeasurements
+                data.participantId
+                (\measurements -> { measurements | attendances = EveryDictList.insert uuid data measurements.attendances })
+                model
+
+        ParticipantConsentRevision uuid data ->
+            mapMotherMeasurements
+                data.participantId
+                (\measurements -> { measurements | consents = EveryDictList.insert uuid data measurements.consents })
+                model
+
+        FamilyPlanningRevision uuid data ->
+            mapMotherMeasurements
+                data.participantId
+                (\measurements -> { measurements | familyPlannings = EveryDictList.insert uuid data measurements.familyPlannings })
+                model
 
         HealthCenterRevision uuid data ->
             let

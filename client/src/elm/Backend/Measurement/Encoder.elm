@@ -1,10 +1,10 @@
-module Backend.Measurement.Encoder exposing (encodeAttendance, encodeAttendanceValue, encodeChildMeasurement, encodeChildMeasurementList, encodeCounselingSession, encodeEntity, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeHeight, encodeMeasurement, encodeMotherMeasurement, encodeMotherMeasurementList, encodeMuac, encodeNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeParticipantConsent, encodePhoto, encodeWeight)
+module Backend.Measurement.Encoder exposing (encodeAttendance, encodeAttendanceValue, encodeChildMeasurement, encodeChildMeasurementList, encodeCounselingSession, encodeEntity, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeHeight, encodeMeasurement, encodeMotherMeasurement, encodeMotherMeasurementList, encodeMuac, encodeNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodeWeight)
 
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Measurement.Model exposing (..)
 import EveryDict
 import EveryDictList
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.NominalDate
 import Json.Encode as Encoder exposing (Value, bool, float, int, list, object, string)
 import Json.Encode.Extra exposing (maybe)
@@ -60,14 +60,16 @@ encodeNutrition =
         )
 
 
+encodeParticipantConsentValue : ParticipantConsentValue -> List ( String, Value )
+encodeParticipantConsentValue consent =
+    [ ( "language", encodeLanguage consent.language )
+    , ( "participant_form", encodeEntityUuid consent.formId )
+    ]
+
+
 encodeParticipantConsent : ParticipantConsent -> List ( String, Value )
 encodeParticipantConsent =
-    encodeMotherMeasurement
-        (\consent ->
-            [ ( "language", encodeLanguage consent.language )
-            , ( "participant_form", encodeEntityUuid consent.formId )
-            ]
-        )
+    encodeMotherMeasurement encodeParticipantConsentValue
 
 
 encodeCounselingSession : CounselingSession -> List ( String, Value )
@@ -96,17 +98,19 @@ encodeAttendance =
     encodeMotherMeasurement encodeAttendanceValue
 
 
+encodeFamilyPlanningValue : EverySet FamilyPlanningSign -> List ( String, Value )
+encodeFamilyPlanningValue familyPlannings =
+    [ ( "family_planning_signs"
+      , EverySet.toList familyPlannings
+            |> List.map encodeFamilyPlanningSign
+            |> list
+      )
+    ]
+
+
 encodeFamilyPlanning : FamilyPlanning -> List ( String, Value )
 encodeFamilyPlanning =
-    encodeMotherMeasurement
-        (\familyPlannings ->
-            [ ( "family_planning_signs"
-              , EverySet.toList familyPlannings
-                    |> List.map encodeFamilyPlanningSign
-                    |> list
-              )
-            ]
-        )
+    encodeMotherMeasurement encodeFamilyPlanningValue
 
 
 encodeChildMeasurement : (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )

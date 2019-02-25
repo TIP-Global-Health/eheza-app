@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (ChildParams, MotherParams, NurseParams, SessionParams(..), attendanceEndpoint, childEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingTopicEndpoint, encodeChildParams, encodeMotherParams, encodeNurseParams, encodeSessionParams, healthCenterEndpoint, motherEndpoint, motherMeasurementListEndpoint, nurseEndpoint, participantFormEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, trainingSessionsEndpoint)
+module Backend.Endpoints exposing (ChildParams, MotherParams, NurseParams, SessionParams(..), attendanceEndpoint, childEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingTopicEndpoint, encodeChildParams, encodeMotherParams, encodeNurseParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, motherEndpoint, motherMeasurementListEndpoint, nurseEndpoint, participantConsentEndpoint, participantFormEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, trainingSessionsEndpoint)
 
 import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Child.Encoder exposing (encodeChild)
@@ -109,6 +109,18 @@ attendanceEndpoint : ReadWriteEndPoint Error AttendanceId Attendance Attendance 
 attendanceEndpoint =
     swEndpoint "nodes/attendance" decodeAttendance
         |> withValueEncoder (object << encodeAttendance)
+
+
+familyPlanningEndpoint : ReadWriteEndPoint Error FamilyPlanningId FamilyPlanning FamilyPlanning ()
+familyPlanningEndpoint =
+    swEndpoint "nodes/family_planning" decodeFamilyPlanning
+        |> withValueEncoder (object << encodeFamilyPlanning)
+
+
+participantConsentEndpoint : ReadWriteEndPoint Error ParticipantConsentId ParticipantConsent ParticipantConsent ()
+participantConsentEndpoint =
+    swEndpoint "nodes/participant_consent" decodeParticipantConsent
+        |> withValueEncoder (object << encodeParticipantConsent)
 
 
 counselingScheduleEndpoint : ReadWriteEndPoint Error CounselingScheduleId CounselingSchedule CounselingSchedule ()

@@ -107,6 +107,8 @@ to peform the updates indicated by the `Msg` type below.
 type alias Model =
     { closeSessionRequest : WebData ()
     , saveAttendanceRequest : EveryDict MotherId (WebData ())
+    , saveFamilyPlanningRequest : EveryDict MotherId (WebData ())
+    , saveParticipantConsentRequest : EveryDict MotherId (WebData ())
     }
 
 
@@ -114,6 +116,8 @@ emptyModel : Model
 emptyModel =
     { closeSessionRequest = NotAsked
     , saveAttendanceRequest = EveryDict.empty
+    , saveFamilyPlanningRequest = EveryDict.empty
+    , saveParticipantConsentRequest = EveryDict.empty
     }
 
 
@@ -123,3 +127,5 @@ type Msg
     | MeasurementOutMsgChild ChildId Measurement.Model.OutMsgChild
     | MeasurementOutMsgMother MotherId Measurement.Model.OutMsgMother
     | HandleSaveAttendance MotherId (WebData ())
+    | HandleSaveFamilyPlanning MotherId (WebData ())
+    | HandleSaveParticipantConsent MotherId (WebData ())
