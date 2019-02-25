@@ -243,7 +243,12 @@ handleRevision revision model =
             model
 
         ChildRevision uuid data ->
-            model
+            -- For now, we just invalidate ... if someone needs it, they will
+            -- ask again.
+            { model
+                | expectedParticipants = EveryDict.empty
+                , expectedSessions = EveryDict.remove uuid model.expectedSessions
+            }
 
         ChildNutritionRevision uuid data ->
             mapChildMeasurements
@@ -259,7 +264,8 @@ handleRevision revision model =
             { model | clinics = clinics }
 
         CounselingScheduleRevision uuid data ->
-            model
+            -- Just invalidate our value ... if someone wants it, we'll refetch it.
+            { model | everyCounselingSchedule = NotAsked }
 
         CounselingSessionRevision uuid data ->
             mapChildMeasurements
@@ -268,7 +274,7 @@ handleRevision revision model =
                 model
 
         CounselingTopicRevision uuid data ->
-            model
+            { model | everyCounselingSchedule = NotAsked }
 
         FamilyPlanningRevision uuid data ->
             mapMotherMeasurements
@@ -278,8 +284,6 @@ handleRevision revision model =
 
         HealthCenterRevision uuid data ->
             let
-                -- We don't do anything with revisions until we've fetched
-                -- some original data.
                 healthCenters =
                     RemoteData.map (EveryDictList.insert uuid data) model.healthCenters
             in
@@ -292,7 +296,12 @@ handleRevision revision model =
                 model
 
         MotherRevision uuid data ->
-            model
+            -- We'll need to refetch the expected participants, at least for now ... eventually
+            -- we might be able to do something smaller.
+            { model
+                | expectedParticipants = EveryDict.empty
+                , expectedSessions = EveryDict.empty
+            }
 
         MuacRevision uuid data ->
             mapChildMeasurements
@@ -301,6 +310,7 @@ handleRevision revision model =
                 model
 
         NurseRevision uuid data ->
+            -- Nothing to do in ModelIndexedDb yet. App.Update does do something with this one.
             model
 
         ParticipantConsentRevision uuid data ->
@@ -310,7 +320,7 @@ handleRevision revision model =
                 model
 
         ParticipantFormRevision uuid data ->
-            model
+            { model | participantForms = RemoteData.map (EveryDictList.insert uuid data) model.participantForms }
 
         PhotoRevision uuid data ->
             mapChildMeasurements
@@ -319,15 +329,21 @@ handleRevision revision model =
                 model
 
         SessionRevision uuid data ->
-            -- First, remove the session from all clinics (it might previously have been
-            -- in any). Then, add it in the right place.
             let
+                -- First, remove the session from all clinics (it might
+                -- previously have been in any). Then, add it in the right
+                -- place.
                 sessionsByClinic =
                     model.sessionsByClinic
                         |> EveryDict.map (always (RemoteData.map (EveryDictList.remove uuid)))
                         |> EveryDict.update data.clinicId (Maybe.map (RemoteData.map (EveryDictList.insert uuid data)))
             in
-            { model | sessionsByClinic = sessionsByClinic }
+            { model
+                | sessionsByClinic = sessionsByClinic
+                , expectedParticipants = EveryDict.remove uuid model.expectedParticipants
+                , expectedSessions = EveryDict.empty
+                , sessions = EveryDict.insert uuid (Success data) model.sessions
+            }
 
         WeightRevision uuid data ->
             mapChildMeasurements
