@@ -376,31 +376,97 @@
                     countQuery = query.clone();
                 }
 
-                return countQuery.count().catch(databaseError).then(function (count) {
-                    if (offset > 0) {
-                        query.offset(offset);
-                    }
+                var modifyQuery = Promise.resolve();
 
-                    if (range > 0) {
-                        query.limit(range);
-                    }
+                if (type === 'mother') {
+                    var sessionId = params.get('session');
 
-                    return query.toArray().catch(databaseError).then(function (nodes) {
-                        var body = JSON.stringify({
-                            offset: offset,
-                            count: count,
-                            data: nodes
-                        });
+                    if (sessionId) {
+                        // We want just the mothers who are expected at the session
+                        // with the given ID. Mothers have a `clinic` field, and
+                        // sessions have a `clinic` field. So, we'll get the
+                        // session, and then get mothers who have the same clinic
+                        // field.
+                        modifyQuery = dbSync.nodes.get(sessionId).then(function (session) {
+                            if (session) {
+                                criteria = {
+                                    type: 'mother',
+                                    clinic: session.clinic
+                                };
 
-                        var response = new Response(body, {
-                            status: 200,
-                            statusText: 'OK',
-                            headers: {
-                                'Content-Type': 'application/json'
+                                query = table.where(criteria);
+                                countQuery = query.clone();
+
+                                return Promise.resolve();
+                            } else {
+                                return Promise.reject('Session not found: ' + sessionId);
                             }
                         });
+                    }
+                } else if (type === 'child') {
+                    var sessionId = params.get('session');
 
-                        return Promise.resolve(response);
+                    if (sessionId) {
+                        // We want just the children expected at the session.
+                        // We have to get them via the mothers, because the
+                        // mothers have the clinic field. Oh, to have a query
+                        // planner!
+                        modifyQuery = dbSync.nodes.get(sessionId).then(function (session) {
+                            if (session) {
+                                var motherQuery = dbSync.nodes.where({
+                                    type: 'mother',
+                                    clinic: session.clinic
+                                });
+
+                                return motherQuery.primaryKeys().then(function (motherIds) {
+                                    // Construct a compound criteria for each mother
+                                    criteria = motherIds.map(function (motherId) {
+                                        return ['child', motherId];
+                                    });
+
+                                    // For some reason, query.clone() doesn't
+                                    // work properly to construct the query
+                                    // here. Possibly the `anyOf` ends up
+                                    // mutating something later?
+                                    query = dbSync.nodes.where('[type+mother]').anyOf(criteria);
+                                    countQuery = dbSync.nodes.where('[type+mother]').anyOf(criteria);
+
+                                    return Promise.resolve();
+                                });
+                            } else {
+                                return Promise.reject('Session not found: ' + sessionId);
+                            }
+                        });
+                    }
+                }
+
+                return modifyQuery.then(function () {
+                    return countQuery.count().catch(databaseError).then(function (count) {
+                        if (offset > 0) {
+                            query.offset(offset);
+                        }
+
+                        if (range > 0) {
+                            query.limit(range);
+                        }
+
+                        return query.toArray().catch(databaseError).then(function (nodes) {
+                            var body = JSON.stringify({
+                                offset: offset,
+                                count: count,
+                                data: nodes
+                            });
+
+                            var response = new Response(body, {
+                                status: 200,
+                                statusText: 'OK',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+
+                            return Promise.resolve(response);
+                        });
                     });
                 });
             });
