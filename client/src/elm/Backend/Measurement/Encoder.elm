@@ -125,6 +125,7 @@ encodeMeasurement participantField encoder measurement =
         [ [ ( participantField, encodeEntityUuid measurement.participantId )
           , ( "session", maybe encodeEntityUuid measurement.sessionId )
           , ( "date_measured", Gizra.NominalDate.encodeYYYYMMDD measurement.dateMeasured )
+          , ( "nurse", maybe encodeEntityUuid measurement.nurse )
           ]
         , encoder measurement.value
         ]

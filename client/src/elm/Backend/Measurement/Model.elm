@@ -26,9 +26,10 @@ have in common, plus two things whose type varies:
 
 -}
 type alias Measurement participantId value =
-    { participantId : participantId
+    { dateMeasured : NominalDate
+    , nurse : Maybe NurseId
+    , participantId : participantId
     , sessionId : Maybe SessionId
-    , dateMeasured : NominalDate
     , value : value
     }
 

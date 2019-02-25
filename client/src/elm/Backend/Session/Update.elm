@@ -9,13 +9,14 @@ import Backend.Session.Model exposing (..)
 import EveryDict
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (object)
+import Json.Encode.Extra
 import Measurement.Model exposing (OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (applyBackendUrl, toCmd, withoutDecoder)
+import Restful.Endpoint exposing (applyBackendUrl, encodeEntityUuid, toCmd, withoutDecoder)
 
 
-update : SessionId -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
-update sessionId currentDate msg model =
+update : Maybe NurseId -> SessionId -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
+update nurseId sessionId currentDate msg model =
     let
         sw =
             applyBackendUrl "/sw"
@@ -51,6 +52,7 @@ update sessionId currentDate msg model =
                                     { participantId = motherId
                                     , dateMeasured = currentDate
                                     , sessionId = Just sessionId
+                                    , nurse = nurseId
                                     , value = attended
                                     }
                                         |> sw.post attendanceEndpoint
@@ -58,7 +60,9 @@ update sessionId currentDate msg model =
                                         |> toCmd (RemoteData.fromResult >> HandleSaveAttendance motherId)
 
                                 Just id ->
-                                    object (encodeAttendanceValue attended)
+                                    encodeAttendanceValue attended
+                                        |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                        |> object
                                         |> sw.patchAny attendanceEndpoint id
                                         |> withoutDecoder
                                         |> toCmd (RemoteData.fromResult >> HandleSaveAttendance motherId)

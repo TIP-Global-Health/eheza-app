@@ -32,9 +32,10 @@ decodeMotherMeasurement =
 decodeMeasurement : Decoder participantId -> Decoder value -> Decoder (Measurement participantId value)
 decodeMeasurement participantDecoder valueDecoder =
     decode Measurement
+        |> required "date_measured" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "nurse" (nullable decodeEntityUuid)
         |> custom participantDecoder
         |> required "session" (nullable decodeEntityUuid)
-        |> required "date_measured" Gizra.NominalDate.decodeYYYYMMDD
         |> custom valueDecoder
 
 

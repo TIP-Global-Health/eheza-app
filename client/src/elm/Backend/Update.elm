@@ -33,8 +33,8 @@ import Task
 import Utils.WebData exposing (resetError, resetSuccess)
 
 
-updateIndexedDb : NominalDate -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb )
-updateIndexedDb currentDate msg model =
+updateIndexedDb : NominalDate -> Maybe NurseId -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb )
+updateIndexedDb currentDate nurseId msg model =
     let
         sw =
             applyBackendUrl "/sw"
@@ -222,7 +222,7 @@ updateIndexedDb currentDate msg model =
                         |> Maybe.withDefault Backend.Session.Model.emptyModel
 
                 ( subModel, subCmd ) =
-                    Backend.Session.Update.update sessionId currentDate subMsg requests
+                    Backend.Session.Update.update nurseId sessionId currentDate subMsg requests
             in
             ( { model | sessionRequests = EveryDict.insert sessionId subModel model.sessionRequests }
             , Cmd.map (MsgSession sessionId) subCmd
