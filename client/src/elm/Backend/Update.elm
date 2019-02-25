@@ -239,11 +239,12 @@ handleRevision revision model =
                 (\measurements -> { measurements | attendances = EveryDictList.insert uuid data measurements.attendances })
                 model
 
-        ParticipantConsentRevision uuid data ->
-            mapMotherMeasurements
-                data.participantId
-                (\measurements -> { measurements | consents = EveryDictList.insert uuid data measurements.consents })
-                model
+        ClinicRevision uuid data ->
+            let
+                clinics =
+                    RemoteData.map (EveryDictList.insert uuid data) model.clinics
+            in
+            { model | clinics = clinics }
 
         FamilyPlanningRevision uuid data ->
             mapMotherMeasurements
@@ -260,12 +261,11 @@ handleRevision revision model =
             in
             { model | healthCenters = healthCenters }
 
-        ClinicRevision uuid data ->
-            let
-                clinics =
-                    RemoteData.map (EveryDictList.insert uuid data) model.clinics
-            in
-            { model | clinics = clinics }
+        ParticipantConsentRevision uuid data ->
+            mapMotherMeasurements
+                data.participantId
+                (\measurements -> { measurements | consents = EveryDictList.insert uuid data measurements.consents })
+                model
 
         SessionRevision uuid data ->
             -- First, remove the session from all clinics (it might previously have been
