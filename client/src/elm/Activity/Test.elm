@@ -157,6 +157,7 @@ makeCounselingSession when timing =
     , sessionId = Nothing -- not needed
     , dateMeasured = when
     , value = ( timing, EverySet.empty )
+    , nurse = Nothing
     }
 
 
@@ -185,6 +186,7 @@ makeChildMeasurementList test =
     let
         counselingSessions =
             List.map makeCounselingSessionWithId test.completed
+                |> EveryDictList.fromList
 
         makeCounselingSessionWithId ( daysOld, timing ) =
             ( toEntityUuid "1"
