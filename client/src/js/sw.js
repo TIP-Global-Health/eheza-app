@@ -43,6 +43,9 @@ dbSync.version(1).stores({
     // that it should be unique.
     nodes: '&uuid,type,vid,status,[type+pin_code],[type+clinic],[type+mother]',
 
+    // We'll write local changes here and eventually upload them.
+    nodeChanges: '++localId',
+
     // Metadata that tracks information about the sync process. The uuid is the
     // UUID of the shard we are syncing. So, for things we sync by health
     // center, it's the UUID of the health center. For things in the nodes
@@ -57,7 +60,10 @@ dbSync.version(1).stores({
     // health center which is the reason we're downloading this node to this
     // device. We need a compound key with shard and vid, because IndexedDb
     // is a bit weird about using indexes -- you can only use one at a time.
-    shards: '&uuid,type,vid,status,child,mother,[shard+vid]'
+    shards: '&uuid,type,vid,status,child,mother,[shard+vid]',
+
+    // Write local changes here and eventually upload.
+    shardChanges: '++localId,[shard+localId]'
 });
 
 // For when any sync metadata changes, send it all to the app
