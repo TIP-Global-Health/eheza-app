@@ -1,6 +1,8 @@
-module Backend.Measurement.Encoder exposing (encodeAttendance, encodeAttendanceValue, encodeChildMeasurement, encodeChildMeasurementList, encodeCounselingSession, encodeEntity, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeHeight, encodeMeasurement, encodeMotherMeasurement, encodeMotherMeasurementList, encodeMuac, encodeNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodeWeight)
+module Backend.Measurement.Encoder exposing (encodeAttendance, encodeAttendanceValue, encodeChildMeasurement, encodeChildMeasurementList, encodeCounselingSession, encodeCounselingSessionValue, encodeEntity, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeHeight, encodeHeightValue, encodeMeasurement, encodeMotherMeasurement, encodeMotherMeasurementList, encodeMuac, encodeMuacValue, encodeNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoValue, encodeWeight, encodeWeightValue)
 
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
+import Backend.Counseling.Model exposing (CounselingTiming)
+import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EveryDict
 import EveryDictList
@@ -14,50 +16,69 @@ import Translate.Utils exposing (encodeLanguage)
 
 encodeHeight : Height -> List ( String, Value )
 encodeHeight =
-    encodeChildMeasurement (\(HeightInCm height) -> [ ( "height", float height ) ])
+    encodeChildMeasurement encodeHeightValue
+
+
+encodeHeightValue : HeightInCm -> List ( String, Value )
+encodeHeightValue (HeightInCm height) =
+    [ ( "height", float height ) ]
 
 
 encodeMuac : Muac -> List ( String, Value )
 encodeMuac =
-    encodeChildMeasurement (\(MuacInCm muac) -> [ ( "muac", float muac ) ])
+    encodeChildMeasurement encodeMuacValue
+
+
+encodeMuacValue : MuacInCm -> List ( String, Value )
+encodeMuacValue (MuacInCm muac) =
+    [ ( "muac", float muac ) ]
 
 
 encodeWeight : Weight -> List ( String, Value )
 encodeWeight =
-    encodeChildMeasurement (\(WeightInKg weight) -> [ ( "weight", float weight ) ])
+    encodeChildMeasurement encodeWeightValue
+
+
+encodeWeightValue : WeightInKg -> List ( String, Value )
+encodeWeightValue (WeightInKg weight) =
+    [ ( "weight", float weight ) ]
 
 
 encodePhoto : Photo -> List ( String, Value )
 encodePhoto =
-    encodeChildMeasurement
-        (\photo ->
-            [ ( "photo"
+    encodeChildMeasurement encodePhotoValue
+
+
+encodePhotoValue : PhotoValue -> List ( String, Value )
+encodePhotoValue photo =
+    [ ( "photo"
+      , object
+            [ ( "styles"
               , object
-                    [ ( "styles"
-                      , object
-                            [ ( "patient-photo"
-                              , string photo.url
-                              )
-                            ]
+                    [ ( "patient-photo"
+                      , string photo.url
                       )
-                    , ( "id", maybe int photo.fid )
                     ]
               )
+            , ( "id", maybe int photo.fid )
             ]
-        )
+      )
+    ]
 
 
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
-    encodeChildMeasurement
-        (\nutritions ->
-            [ ( "nutrition_signs"
-              , EverySet.toList nutritions
-                    |> List.map encodeNutritionSign
-                    |> list
-              )
-            ]
-        )
+    encodeChildMeasurement encodeNutritionValue
+
+
+encodeNutritionValue : EverySet ChildNutritionSign -> List ( String, Value )
+encodeNutritionValue nutritions =
+    [ ( "nutrition_signs"
+      , EverySet.toList nutritions
+            |> List.map encodeNutritionSign
+            |> list
+      )
+    ]
 
 
 encodeParticipantConsentValue : ParticipantConsentValue -> List ( String, Value )
@@ -74,18 +95,20 @@ encodeParticipantConsent =
 
 encodeCounselingSession : CounselingSession -> List ( String, Value )
 encodeCounselingSession =
-    encodeChildMeasurement
-        (\( timing, topics ) ->
-            [ ( "topics"
-              , EverySet.toList topics
-                    |> List.map encodeEntityUuid
-                    |> list
-              )
-            , ( "timing"
-              , encodeCounselingTiming timing
-              )
-            ]
-        )
+    encodeChildMeasurement encodeCounselingSessionValue
+
+
+encodeCounselingSessionValue : ( CounselingTiming, EverySet CounselingTopicId ) -> List ( String, Value )
+encodeCounselingSessionValue ( timing, topics ) =
+    [ ( "topics"
+      , EverySet.toList topics
+            |> List.map encodeEntityUuid
+            |> list
+      )
+    , ( "timing"
+      , encodeCounselingTiming timing
+      )
+    ]
 
 
 encodeAttendanceValue : Bool -> List ( String, Value )

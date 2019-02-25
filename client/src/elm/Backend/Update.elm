@@ -13,7 +13,7 @@ import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSess
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData, makeEditableSession)
-import Backend.Utils exposing (mapMotherMeasurements)
+import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements)
 import Config.Model exposing (BackendUrl)
 import Dict exposing (Dict)
 import EveryDict
@@ -239,12 +239,36 @@ handleRevision revision model =
                 (\measurements -> { measurements | attendances = EveryDictList.insert uuid data measurements.attendances })
                 model
 
+        CatchmentAreaRevision uuid data ->
+            model
+
+        ChildRevision uuid data ->
+            model
+
+        ChildNutritionRevision uuid data ->
+            mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | nutritions = EveryDictList.insert uuid data measurements.nutritions })
+                model
+
         ClinicRevision uuid data ->
             let
                 clinics =
                     RemoteData.map (EveryDictList.insert uuid data) model.clinics
             in
             { model | clinics = clinics }
+
+        CounselingScheduleRevision uuid data ->
+            model
+
+        CounselingSessionRevision uuid data ->
+            mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | counselingSessions = EveryDictList.insert uuid data measurements.counselingSessions })
+                model
+
+        CounselingTopicRevision uuid data ->
+            model
 
         FamilyPlanningRevision uuid data ->
             mapMotherMeasurements
@@ -261,10 +285,37 @@ handleRevision revision model =
             in
             { model | healthCenters = healthCenters }
 
+        HeightRevision uuid data ->
+            mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | heights = EveryDictList.insert uuid data measurements.heights })
+                model
+
+        MotherRevision uuid data ->
+            model
+
+        MuacRevision uuid data ->
+            mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | muacs = EveryDictList.insert uuid data measurements.muacs })
+                model
+
+        NurseRevision uuid data ->
+            model
+
         ParticipantConsentRevision uuid data ->
             mapMotherMeasurements
                 data.participantId
                 (\measurements -> { measurements | consents = EveryDictList.insert uuid data measurements.consents })
+                model
+
+        ParticipantFormRevision uuid data ->
+            model
+
+        PhotoRevision uuid data ->
+            mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | photos = EveryDictList.insert uuid data measurements.photos })
                 model
 
         SessionRevision uuid data ->
@@ -278,8 +329,11 @@ handleRevision revision model =
             in
             { model | sessionsByClinic = sessionsByClinic }
 
-        _ ->
-            model
+        WeightRevision uuid data ->
+            mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | weights = EveryDictList.insert uuid data measurements.weights })
+                model
 
 
 updateBackend : BackendUrl -> String -> MsgBackend -> ModelBackend -> ( ModelBackend, Cmd MsgBackend )

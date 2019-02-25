@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (ChildParams, MotherParams, NurseParams, SessionParams(..), attendanceEndpoint, childEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingTopicEndpoint, encodeChildParams, encodeMotherParams, encodeNurseParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, motherEndpoint, motherMeasurementListEndpoint, nurseEndpoint, participantConsentEndpoint, participantFormEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, trainingSessionsEndpoint)
+module Backend.Endpoints exposing (ChildParams, MotherParams, NurseParams, SessionParams(..), attendanceEndpoint, childEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeChildParams, encodeMotherParams, encodeNurseParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, motherEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, photoEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, trainingSessionsEndpoint, weightEndpoint)
 
 import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Child.Encoder exposing (encodeChild)
@@ -109,6 +109,42 @@ attendanceEndpoint : ReadWriteEndPoint Error AttendanceId Attendance Attendance 
 attendanceEndpoint =
     swEndpoint "nodes/attendance" decodeAttendance
         |> withValueEncoder (object << encodeAttendance)
+
+
+heightEndpoint : ReadWriteEndPoint Error HeightId Height Height ()
+heightEndpoint =
+    swEndpoint "nodes/height" decodeHeight
+        |> withValueEncoder (object << encodeHeight)
+
+
+weightEndpoint : ReadWriteEndPoint Error WeightId Weight Weight ()
+weightEndpoint =
+    swEndpoint "nodes/weight" decodeWeight
+        |> withValueEncoder (object << encodeWeight)
+
+
+muacEndpoint : ReadWriteEndPoint Error MuacId Muac Muac ()
+muacEndpoint =
+    swEndpoint "nodes/muac" decodeMuac
+        |> withValueEncoder (object << encodeMuac)
+
+
+counselingSessionEndpoint : ReadWriteEndPoint Error CounselingSessionId CounselingSession CounselingSession ()
+counselingSessionEndpoint =
+    swEndpoint "nodes/counseling_session" decodeCounselingSession
+        |> withValueEncoder (object << encodeCounselingSession)
+
+
+nutritionEndpoint : ReadWriteEndPoint Error ChildNutritionId ChildNutrition ChildNutrition ()
+nutritionEndpoint =
+    swEndpoint "nodes/nutrition" decodeNutrition
+        |> withValueEncoder (object << encodeNutrition)
+
+
+photoEndpoint : ReadWriteEndPoint Error PhotoId Photo Photo ()
+photoEndpoint =
+    swEndpoint "nodes/photo" decodePhoto
+        |> withValueEncoder (object << encodePhoto)
 
 
 familyPlanningEndpoint : ReadWriteEndPoint Error FamilyPlanningId FamilyPlanning FamilyPlanning ()

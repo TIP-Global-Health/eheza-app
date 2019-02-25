@@ -107,8 +107,14 @@ to peform the updates indicated by the `Msg` type below.
 type alias Model =
     { closeSessionRequest : WebData ()
     , saveAttendanceRequest : EveryDict MotherId (WebData ())
+    , saveCounselingSessionRequest : EveryDict ChildId (WebData ())
     , saveFamilyPlanningRequest : EveryDict MotherId (WebData ())
+    , saveHeightRequest : EveryDict ChildId (WebData ())
+    , saveMuacRequest : EveryDict ChildId (WebData ())
+    , saveNutritionRequest : EveryDict ChildId (WebData ())
     , saveParticipantConsentRequest : EveryDict MotherId (WebData ())
+    , savePhotoRequest : EveryDict ChildId (WebData ())
+    , saveWeightRequest : EveryDict ChildId (WebData ())
     }
 
 
@@ -116,8 +122,14 @@ emptyModel : Model
 emptyModel =
     { closeSessionRequest = NotAsked
     , saveAttendanceRequest = EveryDict.empty
+    , saveCounselingSessionRequest = EveryDict.empty
     , saveFamilyPlanningRequest = EveryDict.empty
+    , saveHeightRequest = EveryDict.empty
+    , saveMuacRequest = EveryDict.empty
+    , saveNutritionRequest = EveryDict.empty
     , saveParticipantConsentRequest = EveryDict.empty
+    , savePhotoRequest = EveryDict.empty
+    , saveWeightRequest = EveryDict.empty
     }
 
 
@@ -127,5 +139,11 @@ type Msg
     | MeasurementOutMsgChild ChildId Measurement.Model.OutMsgChild
     | MeasurementOutMsgMother MotherId Measurement.Model.OutMsgMother
     | HandleSaveAttendance MotherId (WebData ())
+    | HandleSaveCounselingSession ChildId (WebData ())
     | HandleSaveFamilyPlanning MotherId (WebData ())
+    | HandleSaveHeight ChildId (WebData ())
+    | HandleSaveMuac ChildId (WebData ())
+    | HandleSaveNutrition ChildId (WebData ())
     | HandleSaveParticipantConsent MotherId (WebData ())
+    | HandleSavePhoto ChildId (WebData ())
+    | HandleSaveWeight ChildId (WebData ())

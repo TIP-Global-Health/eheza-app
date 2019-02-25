@@ -1,10 +1,21 @@
-module Backend.Utils exposing (mapMotherMeasurements)
+module Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements)
 
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (MotherMeasurementList)
+import Backend.Measurement.Model exposing (ChildMeasurementList, MotherMeasurementList)
 import Backend.Model exposing (..)
 import EveryDict
 import RemoteData exposing (RemoteData(..))
+
+
+mapChildMeasurements : ChildId -> (ChildMeasurementList -> ChildMeasurementList) -> ModelIndexedDb -> ModelIndexedDb
+mapChildMeasurements childId func model =
+    let
+        childMeasurements =
+            EveryDict.get childId model.childMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map func
+    in
+    { model | childMeasurements = EveryDict.insert childId childMeasurements model.childMeasurements }
 
 
 mapMotherMeasurements : MotherId -> (MotherMeasurementList -> MotherMeasurementList) -> ModelIndexedDb -> ModelIndexedDb
