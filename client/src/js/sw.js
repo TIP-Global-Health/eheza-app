@@ -63,7 +63,7 @@ dbSync.version(1).stores({
     shards: '&uuid,type,vid,status,child,mother,[shard+vid]',
 
     // Write local changes here and eventually upload.
-    shardChanges: '++localId,[shard+localId]'
+    shardChanges: '++localId,shard'
 });
 
 // For when any sync metadata changes, send it all to the app

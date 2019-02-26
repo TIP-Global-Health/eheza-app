@@ -204,7 +204,8 @@
                                 type: type,
                                 uuid: uuid,
                                 method: 'PATCH',
-                                data: json
+                                data: json,
+                                timestamp: Date.now()
                             };
 
                             var changeTable = dbSync.nodeChanges;
@@ -279,7 +280,8 @@
                                         type: type,
                                         uuid: uuid,
                                         method: 'POST',
-                                        data: json
+                                        data: json,
+                                        timestamp: Date.now()
                                     };
 
                                     var changeTable = dbSync.nodeChanges;
