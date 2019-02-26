@@ -192,7 +192,7 @@
     // The parameter is our shard metadata.
     function downloadSingleShard (shard, credentials) {
         return getLastVid(shard.uuid).then(function (baseRevision) {
-            var url = getSyncUrl(shard, credentials) + '&base_revision=' + baseRevision; 
+            var url = getSyncUrl(shard, credentials) + '&base_revision=' + baseRevision;
 
             return recordAttempt(shard.uuid, {
                 tag: Loading,
