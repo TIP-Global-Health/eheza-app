@@ -233,8 +233,12 @@
     }
 
     function recordAttempt (shardUuid, attempt) {
+        // Dexie seems to add a `_promise` field that we need to remove.
+        var withoutPromise = Object.assign({}, attempt);
+        delete withoutPromise._promise;
+
         return dbSync.syncMetadata.update(shardUuid, {
-            attempt: attempt
+            attempt: withoutPromise
         }).catch(formatDatabaseError).then(sendSyncData);
     }
 
