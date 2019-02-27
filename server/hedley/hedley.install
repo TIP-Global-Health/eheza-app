@@ -40,6 +40,8 @@ function hedley_install() {
   hedley_update_7014();
   hedley_update_7015();
   hedley_update_7016();
+
+  hedley_initial_sync_permissions();
 }
 
 /**
@@ -258,6 +260,53 @@ function hedley_add_nurse_permissions_for_content_type(array $content_types) {
 }
 
 /**
+ * Setup initial sync permissions.
+ */
+function hedley_initial_sync_permissions() {
+  $synced = [
+    'attendance',
+    'catchment_area',
+    'child',
+    'clinic',
+    'counseling_schedule',
+    'counseling_session',
+    'counseling_topic',
+    'family_planning',
+    'health_center',
+    'height',
+    'mother',
+    'muac',
+    'nurse',
+    'nutrition',
+    'participant_consent',
+    'participant_form',
+    'photo',
+    'session',
+    'weight',
+  ];
+
+  hedley_add_sync_permissions_for_content_type($synced);
+}
+
+/**
+ * Adds the permissions for the specified content types.
+ *
+ * @param array $content_types
+ *   A list of content type machine names.
+ */
+function hedley_add_sync_permissions_for_content_type(array $content_types) {
+  $permissions = [];
+  foreach ($content_types as $type) {
+    $permissions[] = "create {$type} content";
+    $permissions[] = "edit any {$type} content";
+    $permissions[] = "edit own {$type} content";
+  }
+
+  $sync_role = user_role_load_by_name('sync');
+  user_role_grant_permissions($sync_role->rid, $permissions);
+}
+
+/**
  * Adds family_planning permission for nurses.
  */
 function hedley_update_7001() {
@@ -452,4 +501,11 @@ function hedley_update_7017() {
 function hedley_update_7018() {
   $content_types = ['attendance'];
   hedley_add_nurse_permissions_for_content_type($content_types);
+}
+
+/**
+ * Grant sync role permission for content types.
+ */
+function hedley_update_7019() {
+  hedley_initial_sync_permissions();
 }
