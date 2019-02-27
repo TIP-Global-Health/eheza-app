@@ -5,6 +5,8 @@
  * Contains \HedleyRestfulSync.
  */
 
+use Ramsey\Uuid\Uuid;
+
 /**
  * Class HedleyRestfulSync.
  */
@@ -17,9 +19,11 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     return [
       '' => [
         \RestfulInterface::GET => 'getForAllDevices',
+        \RestfulInterface::POST => 'handleChanges',
       ],
       '^.*$' => [
         \RestfulInterface::GET => 'getForHealthCenter',
+        \RestfulInterface::POST => 'handleChanges',
       ],
     ];
   }
@@ -92,6 +96,22 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'photo' => 'photos',
       'weight' => 'weights',
     ];
+  }
+
+  /**
+   * All entities, with the machine names of their handlers.
+   *
+   * Basically, entitiesForAllDevices + entitiesForHealthCenters.
+   *
+   * @return array
+   *   Array where the keys are entity machine names and the values are the
+   *   machine names for the restful handler to use when syncing.
+   */
+  public function allEntities() {
+    return array_merge(
+      $this->entitiesForAllDevices(),
+      $this->entitiesForHealthCenters()
+    );
   }
 
   /**
@@ -367,6 +387,88 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'revision_count' => $count,
       'batch' => $output,
     ];
+  }
+
+  /**
+   * Handle changes sent from a client.
+   *
+   * @return array
+   *   We don't seem to need to return anything (yet). We'll just
+   *   throw an exception if we can't complete the sync, for one
+   *   reason or another.
+   *
+   * @throws \RestfulBadRequestException
+   */
+  public function handleChanges() {
+    $request = $this->getRequest();
+    $handlersForTypes = $this->allEntities();
+    $account = $this->getAccount();
+
+    // We'd like this entire operation to succeed or fail as a whole, so that
+    // we don't have deal with partially-successful updates. So, we create a
+    // transaction.
+    $transaction = db_transaction();
+
+    try {
+      foreach ($request['changes'] as $item) {
+        $handler_name = $handlersForTypes[$item['type']];
+        if (empty($handler_name)) {
+          throw new RestfulBadRequestException("{$item['type']} is an unknown type.");
+        }
+
+        $sub_handler = restful_get_restful_handler($handler_name);
+        $sub_handler->setAccount($account);
+
+        $data = [];
+        foreach (array_keys($item['data']) as $key) {
+          $value = $item['data'][$key];
+
+          // We check if it's a valid UUID. Perhaps we ought to instead
+          // check that the field is defined as an entity reference?
+          if ($key != 'uuid' && is_string($value) && Uuid::isValid($value)) {
+            $data[$key] = hedley_restful_uuid_to_nid($value);
+          }
+          elseif ($key == 'date_measured' && !empty($value)) {
+            // Restful seems to want date values as timestamps -- should
+            // investigate if there are other possibilities.
+            $data[$key] = strtotime($value);
+          }
+          else {
+            $data[$key] = $value;
+          }
+        }
+
+        // Some properties cannot be set. For `type`, that's fine. For
+        // `status`, we'll need to figure out how to unpublish things through
+        // this route.
+        $ignored = [
+          'type',
+          'status',
+          'shard',
+        ];
+
+        foreach ($ignored as $i) {
+          unset($data[$i]);
+        }
+
+        switch ($item['method']) {
+          case 'PATCH':
+            $nid = hedley_restful_uuid_to_nid($item['uuid']);
+            $sub_handler->patch($nid, $data);
+            break;
+
+          case 'POST':
+            $sub_handler->post('', $data);
+            break;
+        }
+      }
+    }
+    catch (Exception $e) {
+      $transaction->rollback();
+      throw $e;
+    }
+
+    return [];
   }
 
 }

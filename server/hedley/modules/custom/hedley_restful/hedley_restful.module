@@ -85,6 +85,31 @@ function hedley_restful_output_for_bundles($bundleHandlers, array $nids, $accoun
 }
 
 /**
+ * Convert a UUID to a nodeId.
+ *
+ * @param string $uuid
+ *   The UUID.
+ *
+ * @return int
+ *   The Node ID.
+ *
+ * @throws \RestfulBadRequestException
+ */
+function hedley_restful_uuid_to_nid($uuid) {
+  $result = db_select('field_data_field_uuid', 'uuid')
+    ->fields('uuid', ['entity_id'])
+    ->condition('uuid.field_uuid_value', $uuid)
+    ->execute()
+    ->fetchField();
+
+  if (empty($result)) {
+    throw new RestfulBadRequestException("Could not find UUID: $uuid");
+  }
+
+  return $result;
+}
+
+/**
  * Run a query in batches.
  *
  * Given a base query, performs the query in batches and calls a callback

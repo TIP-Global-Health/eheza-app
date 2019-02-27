@@ -314,7 +314,9 @@
                     }).catch(formatDatabaseError).then(sendSyncData).then(function () {
                         return fetch(url, {
                             method: 'POST',
-                            body: JSON.stringify(changes)
+                            body: JSON.stringify({
+                                changes: changes
+                            })
                         }).catch(function (err) {
                             return Promise.reject({
                                 tag: NetworkError,
