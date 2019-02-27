@@ -10,13 +10,21 @@
  */
 function hedley_device_install() {
   hedley_device_create_sync_role();
+  hedley_device_initial_sync_permissions();
 }
 
 /**
- * Implements hook_update_N().
+ * Create sync role.
  */
 function hedley_device_update_7001() {
   hedley_device_create_sync_role();
+}
+
+/**
+ * Grant sync role permission for content types.
+ */
+function hedley_device_update_7002() {
+  hedley_device_initial_sync_permissions();
 }
 
 /**
@@ -28,5 +36,52 @@ function hedley_device_create_sync_role() {
   user_role_save($sync_role);
 
   $permissions = ['view revisions'];
+  user_role_grant_permissions($sync_role->rid, $permissions);
+}
+
+/**
+ * Setup initial sync permissions.
+ */
+function hedley_device_initial_sync_permissions() {
+  $synced = [
+    'attendance',
+    'catchment_area',
+    'child',
+    'clinic',
+    'counseling_schedule',
+    'counseling_session',
+    'counseling_topic',
+    'family_planning',
+    'health_center',
+    'height',
+    'mother',
+    'muac',
+    'nurse',
+    'nutrition',
+    'participant_consent',
+    'participant_form',
+    'photo',
+    'session',
+    'weight',
+  ];
+
+  hedley_device_add_sync_permissions_for_content_type($synced);
+}
+
+/**
+ * Adds the permissions for the specified content types.
+ *
+ * @param array $content_types
+ *   A list of content type machine names.
+ */
+function hedley_device_add_sync_permissions_for_content_type(array $content_types) {
+  $permissions = [];
+  foreach ($content_types as $type) {
+    $permissions[] = "create {$type} content";
+    $permissions[] = "edit any {$type} content";
+    $permissions[] = "edit own {$type} content";
+  }
+
+  $sync_role = user_role_load_by_name('sync');
   user_role_grant_permissions($sync_role->rid, $permissions);
 }
