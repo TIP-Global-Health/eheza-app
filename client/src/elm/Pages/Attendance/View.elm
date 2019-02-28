@@ -18,6 +18,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Pages.Attendance.Model exposing (..)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.Utils exposing (viewNameFilter)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 
@@ -118,24 +119,7 @@ view language session model =
                         [ class "ui header" ]
                         [ text <| translate language Translate.CheckIn ]
                     , p [] [ text <| translate language Translate.ClickTheCheckMark ]
-                    , div
-                        [ class "ui action input small" ]
-                        [ input
-                            [ placeholder <| translate language Translate.FilterByName
-                            , type_ "text"
-                            , onInput SetFilter
-                            , value model.filter
-                            ]
-                            []
-                        , button
-                            [ classList
-                                [ ( "ui button", True )
-                                , ( "disabled", String.isEmpty filter )
-                                ]
-                            , onClick <| SetFilter ""
-                            ]
-                            [ text <| translate language Translate.ShowAll ]
-                        ]
+                    , viewNameFilter language model.filter SetFilter
                     , div [ class "ui middle aligned divided list" ] mothers
                     ]
                 ]
