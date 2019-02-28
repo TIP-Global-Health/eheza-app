@@ -25,7 +25,7 @@ decodeRole =
                     "nurse" ->
                         succeed RoleNurse
 
-                    "administrator" ->
+                    "admin" ->
                         succeed RoleAdministrator
 
                     _ ->
