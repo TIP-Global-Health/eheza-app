@@ -24,7 +24,7 @@ update session msg model =
             )
 
         SetRedirectPage page ->
-            ( model
+            ( { model | filter = "" }
             , Cmd.none
             , [ SetActivePage page ]
             )
