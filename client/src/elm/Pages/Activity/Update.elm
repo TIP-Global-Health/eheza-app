@@ -19,7 +19,12 @@ updateChild :
 updateChild msg model childForm =
     case msg of
         GoBackToActivitiesPage ->
-            ( model, Cmd.none, childForm, Nothing, Just <| SessionPage ActivitiesPage )
+            ( { model | filter = "" }
+            , Cmd.none
+            , childForm
+            , Nothing
+            , Just <| SessionPage ActivitiesPage
+            )
 
         MsgMeasurement subMsg ->
             childForm
