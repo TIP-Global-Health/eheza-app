@@ -58,7 +58,7 @@ view language session model =
                         |> EveryDictList.map (viewMother session)
                         |> EveryDictList.values
     in
-    div [ class "wrap wrap-alt-2" ]
+    div [ class "wrap wrap-alt-2 page-attendance" ]
         [ div
             [ class "ui basic head segment" ]
             [ h1
