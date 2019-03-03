@@ -51,10 +51,7 @@ view language session model =
                         EveryDictList.filter matches session.offlineSession.mothers
                 in
                 if EveryDictList.isEmpty matching then
-                    [ div
-                        [ class "ui message warning" ]
-                        [ text <| translate language Translate.NoMatchesFound ]
-                    ]
+                    [ span [] [ text <| translate language Translate.NoMatchesFound ] ]
 
                 else
                     matching
