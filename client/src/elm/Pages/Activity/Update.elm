@@ -38,6 +38,14 @@ updateChild msg model childForm =
                     )
                 |> Maybe.withDefault ( model, Cmd.none, Nothing, Nothing, Nothing )
 
+        SetFilter filter ->
+            ( { model | filter = filter }
+            , Cmd.none
+            , Nothing
+            , Nothing
+            , Nothing
+            )
+
         SetSelectedParticipant val ->
             ( { model | selectedParticipant = val }
             , Cmd.none
@@ -81,6 +89,14 @@ updateMother msg model motherForm =
                         )
                     )
                 |> Maybe.withDefault ( model, Cmd.none, Nothing, Nothing, Nothing )
+
+        SetFilter filter ->
+            ( { model | filter = filter }
+            , Cmd.none
+            , Nothing
+            , Nothing
+            , Nothing
+            )
 
         SetSelectedParticipant val ->
             ( { model | selectedParticipant = val }

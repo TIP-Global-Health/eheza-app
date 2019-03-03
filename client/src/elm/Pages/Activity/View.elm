@@ -11,6 +11,7 @@ import Html.Events exposing (onClick)
 import List as List
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Activity.Utils exposing (selectParticipantForTab)
+import Pages.Utils exposing (viewNameFilter)
 import Participant.Model exposing (Participant)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage)
@@ -30,8 +31,24 @@ view config language currentDate zscores selectedActivity fullSession model =
         checkedIn =
             onlyCheckedIn fullSession
 
+        filter =
+            model.filter
+                |> String.toLower
+                |> String.trim
+
+        filteringCondition =
+            if String.isEmpty filter then
+                \_ -> True
+
+            else
+                \name ->
+                    name
+                        |> String.toLower
+                        |> String.contains filter
+
         ( pendingParticipants, completedParticipants ) =
             config.getParticipants checkedIn
+                |> EveryDict.filter (\_ participant -> participant |> config.getName |> filteringCondition)
                 |> EveryDict.partition (\id _ -> config.hasPendingActivity id selectedActivity checkedIn)
 
         activityDescription =
@@ -69,12 +86,20 @@ view config language currentDate zscores selectedActivity fullSession model =
         participants =
             let
                 ( selectedParticipants, emptySectionMessage ) =
+                    let
+                        filterDependentEmptySectionMessage filter message =
+                            if String.isEmpty filter then
+                                translate language message
+
+                            else
+                                translate language Translate.NoMatchesFound
+                    in
                     case model.selectedTab of
                         Pending ->
-                            ( pendingParticipants, translate language Translate.NoParticipantsPendingForThisActivity )
+                            ( pendingParticipants, filterDependentEmptySectionMessage filter Translate.NoParticipantsPendingForThisActivity )
 
                         Completed ->
-                            ( completedParticipants, translate language Translate.NoParticipantsCompletedForThisActivity )
+                            ( completedParticipants, filterDependentEmptySectionMessage filter Translate.NoParticipantsCompletedForThisActivity )
 
                 viewParticipantCard ( participantId, participant ) =
                     let
@@ -115,7 +140,8 @@ view config language currentDate zscores selectedActivity fullSession model =
             in
             div
                 [ class "ui participant segment" ]
-                [ div [ class "ui four participant cards" ]
+                [ viewNameFilter language model.filter SetFilter
+                , div [ class "ui four participant cards" ]
                     participantsCards
                 ]
 
@@ -147,7 +173,7 @@ view config language currentDate zscores selectedActivity fullSession model =
                 ]
     in
     divKeyed
-        [ class "wrap" ]
+        [ class "wrap page-activity" ]
         [ header |> keyed "header"
         , activityDescription |> keyed "activity-description"
         , tabs |> keyed "tabs"
