@@ -8,7 +8,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participants.Model exposing (Model, Msg(..), Tab(..))
-import Pages.Utils exposing (viewNameFilter)
+import Pages.Utils exposing (filterDependentNoResultsMessage, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
 
@@ -24,23 +24,12 @@ view : Language -> EditableSession -> Model -> Html Msg
 view language editableSession model =
     let
         filter =
-            model.filter
-                |> String.toLower
-                |> String.trim
-
-        filterCondition =
-            if String.isEmpty filter then
-                \mother -> True
-
-            else
-                \mother ->
-                    mother.name
-                        |> String.toLower
-                        |> String.contains filter
+            normalizeFilter model.filter
 
         mothersInAttendance =
             editableSession.offlineSession.mothers
-                |> EveryDictList.filter (\motherId mother -> isCheckedIn motherId editableSession && filterCondition mother)
+                |> EveryDictList.filter (\motherId mother -> isCheckedIn motherId editableSession)
+                |> EveryDictList.filter (matchMotherAndHerChildren filter editableSession.offlineSession)
 
         ( mothersWithPendingActivity, mothersWithoutPendingActivity ) =
             EveryDictList.partition (\motherId _ -> motherOrAnyChildHasAnyPendingActivity motherId editableSession) mothersInAttendance
@@ -65,20 +54,12 @@ view language editableSession model =
         mothers =
             let
                 ( selectedMothers, emptySectionMessage ) =
-                    let
-                        filterDependentEmptySectionMessage filter message =
-                            if String.isEmpty filter then
-                                translate language message
-
-                            else
-                                translate language Trans.NoMatchesFound
-                    in
                     case model.selectedTab of
                         Pending ->
-                            ( mothersWithPendingActivity, filterDependentEmptySectionMessage filter Trans.NoParticipantsPending )
+                            ( mothersWithPendingActivity, filterDependentNoResultsMessage language filter Trans.NoParticipantsPending )
 
                         Completed ->
-                            ( mothersWithoutPendingActivity, filterDependentEmptySectionMessage filter Trans.NoParticipantsCompleted )
+                            ( mothersWithoutPendingActivity, filterDependentNoResultsMessage language filter Trans.NoParticipantsCompleted )
 
                 viewMotherCard ( motherId, mother ) =
                     div

@@ -11,7 +11,7 @@ import Html.Events exposing (onClick)
 import List as List
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Activity.Utils exposing (selectParticipantForTab)
-import Pages.Utils exposing (viewNameFilter)
+import Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, normalizeFilter, viewNameFilter)
 import Participant.Model exposing (Participant)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage)
@@ -32,23 +32,11 @@ view config language currentDate zscores selectedActivity fullSession model =
             onlyCheckedIn fullSession
 
         filter =
-            model.filter
-                |> String.toLower
-                |> String.trim
-
-        filteringCondition =
-            if String.isEmpty filter then
-                \_ -> True
-
-            else
-                \name ->
-                    name
-                        |> String.toLower
-                        |> String.contains filter
+            normalizeFilter model.filter
 
         ( pendingParticipants, completedParticipants ) =
             config.getParticipants checkedIn
-                |> EveryDict.filter (\_ participant -> participant |> config.getName |> filteringCondition)
+                |> EveryDict.filter (\_ participant -> participant |> config.getName |> matchFilter filter)
                 |> EveryDict.partition (\id _ -> config.hasPendingActivity id selectedActivity checkedIn)
 
         activityDescription =
@@ -86,20 +74,12 @@ view config language currentDate zscores selectedActivity fullSession model =
         participants =
             let
                 ( selectedParticipants, emptySectionMessage ) =
-                    let
-                        filterDependentEmptySectionMessage filter message =
-                            if String.isEmpty filter then
-                                translate language message
-
-                            else
-                                translate language Translate.NoMatchesFound
-                    in
                     case model.selectedTab of
                         Pending ->
-                            ( pendingParticipants, filterDependentEmptySectionMessage filter Translate.NoParticipantsPendingForThisActivity )
+                            ( pendingParticipants, filterDependentNoResultsMessage language filter Translate.NoParticipantsPendingForThisActivity )
 
                         Completed ->
-                            ( completedParticipants, filterDependentEmptySectionMessage filter Translate.NoParticipantsCompletedForThisActivity )
+                            ( completedParticipants, filterDependentNoResultsMessage language filter Translate.NoParticipantsCompletedForThisActivity )
 
                 viewParticipantCard ( participantId, participant ) =
                     let

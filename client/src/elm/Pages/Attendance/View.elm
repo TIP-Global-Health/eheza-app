@@ -18,7 +18,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Pages.Attendance.Model exposing (..)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (viewNameFilter)
+import Pages.Utils exposing (matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 
@@ -27,9 +27,7 @@ view : Language -> EditableSession -> Model -> Html Msg
 view language session model =
     let
         filter =
-            model.filter
-                |> String.toLower
-                |> String.trim
+            normalizeFilter model.filter
 
         matches =
             if String.isEmpty filter then
@@ -38,25 +36,7 @@ view language session model =
                     True
 
             else
-                \motherId mother ->
-                    let
-                        motherContainsFilter =
-                            mother.name
-                                |> String.toLower
-                                |> String.contains filter
-
-                        -- A function, rather than value, to preserve the
-                        -- short-circuiting benefits of the `||` below.
-                        childrenContainsFilter _ =
-                            getChildren motherId session.offlineSession
-                                |> List.any
-                                    (\( _, child ) ->
-                                        child.name
-                                            |> String.toLower
-                                            |> String.contains filter
-                                    )
-                    in
-                    motherContainsFilter || childrenContainsFilter ()
+                matchMotherAndHerChildren filter session.offlineSession
 
         mothers =
             if EveryDictList.isEmpty session.offlineSession.mothers then
