@@ -1261,3 +1261,32 @@ input::placeholder {
     margin-bottom: 30px;
   }
 }
+
+.page-participants {
+  .ui.action.input {
+    padding: 3.5rem 3.5rem 1rem;
+  }
+
+  .ui.four.cards .card {
+    .mother {
+      color: black;
+    }
+
+    .child {
+      padding-left: 0.5rem;
+    }
+  }
+}
+
+.page-activity {
+  .ui.action.input {
+    padding: 0.5rem 1rem 3rem;
+  }
+}
+
+.page-attendance {
+  .ui.middle.aligned.divided.list .item .content .description {
+    font-size: 1.3rem;
+    padding-left: 1rem;
+  }
+}

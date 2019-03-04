@@ -2,12 +2,14 @@ module Pages.Participants.View exposing (view)
 
 import Activity.Utils exposing (getTotalsNumberPerActivity, isCheckedIn, motherOrAnyChildHasAnyPendingActivity)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
+import Backend.Session.Utils exposing (getChildren)
 import EveryDictList
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participants.Model exposing (Model, Msg(..), Tab(..))
+import Pages.Utils exposing (filterDependentNoResultsMessage, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
 
@@ -20,14 +22,18 @@ thumbnailDimensions =
 
 
 view : Language -> EditableSession -> Model -> Html Msg
-view language editableSession model =
+view language session model =
     let
+        filter =
+            normalizeFilter model.filter
+
         mothersInAttendance =
-            editableSession.offlineSession.mothers
-                |> EveryDictList.filter (\motherId _ -> isCheckedIn motherId editableSession)
+            session.offlineSession.mothers
+                |> EveryDictList.filter (\motherId mother -> isCheckedIn motherId session)
+                |> EveryDictList.filter (matchMotherAndHerChildren filter session.offlineSession)
 
         ( mothersWithPendingActivity, mothersWithoutPendingActivity ) =
-            EveryDictList.partition (\motherId _ -> motherOrAnyChildHasAnyPendingActivity motherId editableSession) mothersInAttendance
+            EveryDictList.partition (\motherId _ -> motherOrAnyChildHasAnyPendingActivity motherId session) mothersInAttendance
 
         tabs =
             let
@@ -51,10 +57,10 @@ view language editableSession model =
                 ( selectedMothers, emptySectionMessage ) =
                     case model.selectedTab of
                         Pending ->
-                            ( mothersWithPendingActivity, translate language Trans.NoParticipantsPending )
+                            ( mothersWithPendingActivity, filterDependentNoResultsMessage language filter Trans.NoParticipantsPending )
 
                         Completed ->
-                            ( mothersWithoutPendingActivity, translate language Trans.NoParticipantsCompleted )
+                            ( mothersWithoutPendingActivity, filterDependentNoResultsMessage language filter Trans.NoParticipantsCompleted )
 
                 viewMotherCard ( motherId, mother ) =
                     div
@@ -69,7 +75,11 @@ view language editableSession model =
                             [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
                         , div
                             [ class "content" ]
-                            [ p [] [ text mother.name ] ]
+                          <|
+                            p [ class "mother" ] [ text mother.name ]
+                                :: (getChildren motherId session.offlineSession
+                                        |> List.map (\( _, child ) -> p [ class "child" ] [ text child.name ])
+                                   )
                         ]
 
                 mothersCards =
@@ -83,7 +93,8 @@ view language editableSession model =
                             |> List.map viewMotherCard
             in
             div [ class "full content" ]
-                [ div [ class "wrap-cards" ]
+                [ viewNameFilter language model.filter SetFilter
+                , div [ class "wrap-cards" ]
                     [ div [ class "ui four cards" ]
                         mothersCards
                     ]
@@ -139,7 +150,7 @@ view language editableSession model =
                     [ text <| translate language Trans.Participants ]
                 , a
                     [ class "link-back"
-                    , onClick <| SetRedirectPage <| UserPage <| ClinicsPage <| Just editableSession.offlineSession.session.clinicId
+                    , onClick <| SetRedirectPage <| UserPage <| ClinicsPage <| Just session.offlineSession.session.clinicId
                     ]
                     [ span [ class "icon-back" ] []
                     , span [] []

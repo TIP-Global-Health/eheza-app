@@ -34,12 +34,14 @@ We can only change the `selectedParticipant` and `selectedTab`.
 type alias Model id =
     { selectedParticipant : Maybe id
     , selectedTab : Tab
+    , filter : String
     }
 
 
 type Msg id measurement
     = GoBackToActivitiesPage
     | MsgMeasurement measurement
+    | SetFilter String
     | SetSelectedParticipant (Maybe id)
     | SetSelectedTab Tab
 
@@ -64,4 +66,5 @@ emptyModel : Model any
 emptyModel =
     { selectedParticipant = Nothing
     , selectedTab = Pending
+    , filter = ""
     }

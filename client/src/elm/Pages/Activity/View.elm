@@ -11,6 +11,7 @@ import Html.Events exposing (onClick)
 import List as List
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Activity.Utils exposing (selectParticipantForTab)
+import Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, normalizeFilter, viewNameFilter)
 import Participant.Model exposing (Participant)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage)
@@ -30,8 +31,12 @@ view config language currentDate zscores selectedActivity fullSession model =
         checkedIn =
             onlyCheckedIn fullSession
 
+        filter =
+            normalizeFilter model.filter
+
         ( pendingParticipants, completedParticipants ) =
             config.getParticipants checkedIn
+                |> EveryDict.filter (\_ participant -> participant |> config.getName |> matchFilter filter)
                 |> EveryDict.partition (\id _ -> config.hasPendingActivity id selectedActivity checkedIn)
 
         activityDescription =
@@ -71,10 +76,10 @@ view config language currentDate zscores selectedActivity fullSession model =
                 ( selectedParticipants, emptySectionMessage ) =
                     case model.selectedTab of
                         Pending ->
-                            ( pendingParticipants, translate language Translate.NoParticipantsPendingForThisActivity )
+                            ( pendingParticipants, filterDependentNoResultsMessage language filter Translate.NoParticipantsPendingForThisActivity )
 
                         Completed ->
-                            ( completedParticipants, translate language Translate.NoParticipantsCompletedForThisActivity )
+                            ( completedParticipants, filterDependentNoResultsMessage language filter Translate.NoParticipantsCompletedForThisActivity )
 
                 viewParticipantCard ( participantId, participant ) =
                     let
@@ -115,7 +120,8 @@ view config language currentDate zscores selectedActivity fullSession model =
             in
             div
                 [ class "ui participant segment" ]
-                [ div [ class "ui four participant cards" ]
+                [ viewNameFilter language model.filter SetFilter
+                , div [ class "ui four participant cards" ]
                     participantsCards
                 ]
 
@@ -147,7 +153,7 @@ view config language currentDate zscores selectedActivity fullSession model =
                 ]
     in
     divKeyed
-        [ class "wrap" ]
+        [ class "wrap page-activity" ]
         [ header |> keyed "header"
         , activityDescription |> keyed "activity-description"
         , tabs |> keyed "tabs"
