@@ -1,6 +1,7 @@
 port module App.Update exposing (init, loginConfig, subscriptions, update)
 
 import App.Model exposing (..)
+import App.Utils exposing (..)
 import Backend.Model
 import Backend.Session.Model
 import Backend.Update
@@ -28,14 +29,15 @@ import Pages.PatientRegistration.Model
 import Pages.PatientRegistration.Update
 import Pages.Update
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity)
+import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, toEntityId)
 import Restful.Login exposing (AuthenticatedUser, Credentials, LoginEvent(..), UserAndData(..), checkCachedCredentials)
 import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
 import Task
 import Time exposing (minute)
-import Translate exposing (Language(..), languageFromCode, languageToCode)
+import Translate.Model exposing (Language(..))
+import Translate.Utils exposing (languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
 import User.Decoder exposing (decodeUser)
 import User.Encoder exposing (encodeUser)
@@ -85,7 +87,7 @@ init flags =
 
                         fetchCachedDevice =
                             HttpBuilder.get "/sw/config/device"
-                                |> HttpBuilder.withExpectJson Device.Decoder.decode
+                                |> HttpBuilder.withExpectJson (Device.Decoder.decode config.backendUrl)
                                 |> HttpBuilder.toTask
                                 |> RemoteData.fromTask
                                 |> Task.map
@@ -160,12 +162,21 @@ update msg model =
         MsgCache subMsg ->
             let
                 ( subModel, subCmd, extraMsgs ) =
-                    Backend.Update.updateCache currentDate subMsg model.cache
+                    Backend.Update.updateCache (getUserId model) currentDate subMsg model.cache
             in
             ( { model | cache = subModel }
             , Cmd.map MsgCache subCmd
             )
                 |> sequence update extraMsgs
+
+        MsgIndexedDb subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    Backend.Update.updateIndexedDb subMsg model.indexedDb
+            in
+            ( { model | indexedDb = subModel }
+            , Cmd.map MsgIndexedDb subCmd
+            )
 
         MsgLoggedIn loggedInMsg ->
             updateLoggedIn
@@ -280,9 +291,8 @@ update msg model =
                 (\configured ->
                     let
                         postCode =
-                            HttpBuilder.post (configured.config.backendUrl </> "api/devices")
-                                |> HttpBuilder.withJsonBody (Json.Encode.object [ ( "pairing_code", Json.Encode.string code ) ])
-                                |> HttpBuilder.withExpectJson (decodeSingleDrupalEntity Device.Decoder.decode)
+                            HttpBuilder.get (configured.config.backendUrl </> "api/pairing-code" </> code)
+                                |> HttpBuilder.withExpectJson (Json.Decode.field "data" (Device.Decoder.decode configured.config.backendUrl))
                                 |> HttpBuilder.toTask
 
                         cacheDevice device =
@@ -450,8 +460,13 @@ update msg model =
             , setLanguage <| languageToCode language
             )
 
-        SetOffline offline ->
-            ( { model | offline = offline }
+        SetPersistentStorage data ->
+            ( { model | persistentStorage = Just data }
+            , Cmd.none
+            )
+
+        SetStorageQuota quota ->
+            ( { model | storageQuota = Just quota }
             , Cmd.none
             )
 
@@ -474,6 +489,10 @@ update msg model =
             , Cmd.none
             )
                 |> sequence update extraMsgs
+
+        TrySyncing ->
+            -- Normally handled automatically, but sometimes nice to trigger manually
+            ( model, trySyncing () )
 
 
 {-| Convenience function to process a msg which depends on having a configuration.
@@ -531,9 +550,10 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Time.every minute Tick
-        , offline SetOffline
         , Sub.map MsgCache Backend.Update.subscriptions
         , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
+        , persistentStorage SetPersistentStorage
+        , storageQuota SetStorageQuota
         ]
 
 
@@ -542,16 +562,27 @@ subscriptions model =
 port cacheCredentials : ( String, String ) -> Cmd msg
 
 
+{-| Manually kick off a sync event. Normally, handled automatically.
+-}
+port trySyncing : () -> Cmd msg
+
+
 {-| Send Pusher key and cluster to JS.
 -}
 port pusherKey : ( String, String, List String ) -> Cmd msg
 
 
-{-| Get a signal if internet connection is lost or regained.
--}
-port offline : (Bool -> msg) -> Sub msg
-
-
 {-| Set the user's current language.
 -}
 port setLanguage : String -> Cmd msg
+
+
+{-| Let the Javascript tell us if we've successfully requested persistent
+storage.
+-}
+port persistentStorage : (Bool -> msg) -> Sub msg
+
+
+{-| Let the Javascript tell us about our storage quota.
+-}
+port storageQuota : (StorageQuota -> msg) -> Sub msg

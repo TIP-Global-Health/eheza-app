@@ -1,4 +1,4 @@
-port module Backend.Update exposing (fetchEditableSession, subscriptions, updateBackend, updateCache)
+port module Backend.Update exposing (fetchEditableSession, subscriptions, updateBackend, updateCache, updateIndexedDb)
 
 {-| This could perhaps be distributed one level down, to
 `Backend.Session.Update`, `Backend.Clinic.Update` etc. Or, perhaps it is nicer
@@ -11,6 +11,8 @@ import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
+import Backend.HealthCenter.Decoder exposing (decodeHealthCenter)
+import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Measurement.Decoder exposing (decodeMeasurementEdits)
 import Backend.Measurement.Encoder exposing (encodeMeasurementEdits)
 import Backend.Measurement.Model exposing (Edit(..))
@@ -20,6 +22,9 @@ import Backend.Session.Decoder exposing (decodeOfflineSession, decodeSession, de
 import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession, encodeTrainingSessionRequest)
 import Backend.Session.Model exposing (EditableSession, MsgEditableSession(..), OfflineSession, Session)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData, getPhotoUrls, makeEditableSession, mapChildEdits, mapMotherEdits, setPhotoFileId)
+import Backend.SyncData.Decoder exposing (decodeSyncData)
+import Backend.SyncData.Encoder exposing (encodeSyncData)
+import Backend.SyncData.Model exposing (SyncData)
 import Backend.Utils exposing (withEditableSession)
 import CacheStorage.Model exposing (cachePhotos, clearCachedPhotos)
 import CacheStorage.Update
@@ -32,15 +37,38 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Http exposing (Error)
 import HttpBuilder
-import Json.Decode exposing (field, succeed)
+import Json.Decode exposing (Decoder, field, succeed)
 import Json.Encode exposing (Value, object)
 import Json.Encode.Extra
 import Maybe.Extra exposing (toList)
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityId, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityId, endpoint, fromEntityId, toCmd, toEntityId, withParamsEncoder, withValueEncoder, withoutDecoder)
+import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityId, decodeEntityUuid, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityId, endpoint, fromEntityId, fromEntityUuid, toCmd, toEntityId, toEntityUuid, withKeyEncoder, withParamsEncoder, withValueEncoder, withoutDecoder)
 import Rollbar
 import Utils.WebData exposing (resetError, resetSuccess)
+
+
+{-| Construct an endpoint that talks to our local service worker in terms of UUIDs.
+-}
+swEndpoint : String -> Decoder value -> ReadOnlyEndPoint Error (EntityUuid a) value p
+swEndpoint path decodeValue =
+    let
+        decodeKey =
+            Json.Decode.map toEntityUuid (field "uuid" Json.Decode.string)
+    in
+    endpoint path decodeKey decodeValue drupalBackend
+        |> withKeyEncoder fromEntityUuid
+
+
+healthCenterEndpoint : ReadOnlyEndPoint Error HealthCenterUuid HealthCenter ()
+healthCenterEndpoint =
+    swEndpoint "nodes/health_center" decodeHealthCenter
+
+
+syncDataEndpoint : ReadWriteEndPoint Error HealthCenterUuid SyncData SyncData ()
+syncDataEndpoint =
+    swEndpoint "nodes/syncmetadata" decodeSyncData
+        |> withValueEncoder encodeSyncData
 
 
 clinicEndpoint : ReadWriteEndPoint Error ClinicId Clinic Clinic ()
@@ -86,6 +114,77 @@ offlineSessionEndpoint : ReadWriteEndPoint Error SessionId OfflineSession Offlin
 offlineSessionEndpoint =
     drupalEndpoint "api/offline_sessions" decodeOfflineSession
         |> withValueEncoder (object << encodeOfflineSession)
+
+
+updateIndexedDb : MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb )
+updateIndexedDb msg model =
+    let
+        sw =
+            applyBackendUrl "/sw"
+    in
+    case msg of
+        FetchHealthCenters ->
+            ( { model | healthCenters = Loading }
+            , sw.select healthCenterEndpoint ()
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedHealthCenters)
+            )
+
+        HandleFetchedHealthCenters data ->
+            ( { model | healthCenters = data }
+            , Cmd.none
+            )
+
+        FetchSyncData ->
+            ( { model | syncData = Loading }
+            , sw.select syncDataEndpoint ()
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedSyncData)
+            )
+
+        HandleFetchedSyncData data ->
+            ( { model | syncData = data }
+            , Cmd.none
+            )
+
+        HandleRevisions revisions ->
+            ( List.foldl handleRevision model revisions
+            , Cmd.none
+            )
+
+        SaveSyncData uuid data ->
+            ( model
+            , sw.put syncDataEndpoint uuid data
+                |> withoutDecoder
+                |> toCmd (always IgnoreResponse)
+            )
+
+        DeleteSyncData uuid ->
+            ( model
+            , sw.delete syncDataEndpoint uuid
+                |> toCmd (always IgnoreResponse)
+            )
+
+        IgnoreResponse ->
+            ( model, Cmd.none )
+
+
+handleRevision : Revision -> ModelIndexedDb -> ModelIndexedDb
+handleRevision revision model =
+    case revision of
+        HealthCenterRevision uuid data ->
+            let
+                -- We don't do anything with revisions until we've fetched
+                -- some original data.
+                healthCenters =
+                    RemoteData.map
+                        (EveryDictList.insert uuid data)
+                        model.healthCenters
+            in
+            { model | healthCenters = healthCenters }
+
+        -- We only handle one for the moment ... as we move things into
+        -- ModelIndexedDB, we'll do more work here.
+        _ ->
+            model
 
 
 updateBackend : BackendUrl -> String -> MsgBackend -> ModelBackend -> ( ModelBackend, Cmd MsgBackend, List MsgCached )
@@ -416,8 +515,8 @@ updateBackend backendUrl accessToken msg model =
                     )
 
 
-updateCache : NominalDate -> MsgCached -> ModelCached -> ( ModelCached, Cmd MsgCached, List App.Model.Msg )
-updateCache currentDate msg model =
+updateCache : Maybe UserId -> NominalDate -> MsgCached -> ModelCached -> ( ModelCached, Cmd MsgCached, List App.Model.Msg )
+updateCache user currentDate msg model =
     case msg of
         CacheEditableSession ->
             withEditableSession ( model, Cmd.none, [] )
@@ -489,7 +588,7 @@ updateCache currentDate msg model =
             , deleteEditableSession ()
             , []
             )
-                |> sequenceExtra (updateCache currentDate)
+                |> sequenceExtra (updateCache user currentDate)
                     [ MsgCacheStorage clearCachedPhotos ]
 
         FetchEditableSessionFromCache ->
@@ -650,7 +749,7 @@ updateCache currentDate msg model =
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -665,7 +764,7 @@ updateCache currentDate msg model =
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -674,13 +773,13 @@ updateCache currentDate msg model =
                         (\sessionId session ->
                             let
                                 newSession =
-                                    makeMotherEdit currentDate motherId outMsg sessionId session
+                                    makeMotherEdit user currentDate motherId outMsg sessionId session
                             in
                             ( { model | editableSession = Success <| Just ( sessionId, newSession ) }
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -704,7 +803,7 @@ updateCache currentDate msg model =
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -735,7 +834,7 @@ updateCache currentDate msg model =
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -744,7 +843,7 @@ updateCache currentDate msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra (updateCache currentDate) [ CacheEditableSession ]
+                |> sequenceExtra (updateCache user currentDate) [ CacheEditableSession ]
 
         -- Like SetEditableSession, but we just substitute the offlineSesttion part.
         -- This works because we never mutate the offlineSession locally.
@@ -760,7 +859,7 @@ updateCache currentDate msg model =
                         , Cmd.none
                         , []
                         )
-                            |> sequenceExtra (updateCache currentDate) [ CacheEditableSession ]
+                            |> sequenceExtra (updateCache user currentDate) [ CacheEditableSession ]
 
                     else
                         ( model, Cmd.none, [] )
@@ -812,9 +911,10 @@ makeChildEdit currentDate childId outMsg sessionId session =
                 edit =
                     case backend of
                         -- TODO: Could do a comparison to possibly return to `Unedited`
-                        Just value ->
+                        Just ( id, value ) ->
                             Edited
                                 { backend = value
+                                , id = id
                                 , edited = { value | value = height }
                                 }
 
@@ -836,9 +936,10 @@ makeChildEdit currentDate childId outMsg sessionId session =
 
                 edit =
                     case backend of
-                        Just value ->
+                        Just ( id, value ) ->
                             Edited
                                 { backend = value
+                                , id = id
                                 , edited = { value | value = weight }
                                 }
 
@@ -860,9 +961,10 @@ makeChildEdit currentDate childId outMsg sessionId session =
 
                 edit =
                     case backend of
-                        Just value ->
+                        Just ( id, value ) ->
                             Edited
                                 { backend = value
+                                , id = id
                                 , edited = { value | value = muac }
                                 }
 
@@ -876,6 +978,31 @@ makeChildEdit currentDate childId outMsg sessionId session =
             in
             mapChildEdits (\edits -> { edits | muac = edit }) childId session
 
+        SaveCounselingSession timing topics ->
+            let
+                backend =
+                    mapMeasurementData .counselingSession .counseling data
+                        |> backendValue
+
+                edit =
+                    case backend of
+                        Just ( id, value ) ->
+                            Edited
+                                { backend = value
+                                , id = id
+                                , edited = { value | value = ( timing, topics ) }
+                                }
+
+                        Nothing ->
+                            Created
+                                { participantId = childId
+                                , sessionId = Just sessionId
+                                , dateMeasured = currentDate
+                                , value = ( timing, topics )
+                                }
+            in
+            mapChildEdits (\edits -> { edits | counseling = edit }) childId session
+
         SaveChildNutritionSigns nutrition ->
             let
                 backend =
@@ -884,9 +1011,10 @@ makeChildEdit currentDate childId outMsg sessionId session =
 
                 edit =
                     case backend of
-                        Just value ->
+                        Just ( id, value ) ->
                             Edited
                                 { backend = value
+                                , id = id
                                 , edited = { value | value = nutrition }
                                 }
 
@@ -908,10 +1036,11 @@ makeChildEdit currentDate childId outMsg sessionId session =
 
                 edit =
                     case backend of
-                        Just value ->
+                        Just ( id, value ) ->
                             Edited
                                 { backend = value
                                 , edited = { value | value = photo }
+                                , id = id
                                 }
 
                         Nothing ->
@@ -928,8 +1057,8 @@ makeChildEdit currentDate childId outMsg sessionId session =
 {-| We reach this when the user hits "Save" upon editing something in the measurement
 form. So, we want to change the appropriate edit ...
 -}
-makeMotherEdit : NominalDate -> MotherId -> OutMsgMother -> SessionId -> EditableSession -> EditableSession
-makeMotherEdit currentDate motherId outMsg sessionId session =
+makeMotherEdit : Maybe UserId -> NominalDate -> MotherId -> OutMsgMother -> SessionId -> EditableSession -> EditableSession
+makeMotherEdit user currentDate motherId outMsg sessionId session =
     let
         data =
             getMotherMeasurementData motherId session
@@ -943,9 +1072,10 @@ makeMotherEdit currentDate motherId outMsg sessionId session =
 
                 edit =
                     case backend of
-                        Just value ->
+                        Just ( id, value ) ->
                             Edited
                                 { backend = value
+                                , id = id
                                 , edited = { value | value = signs }
                                 }
 
@@ -958,6 +1088,33 @@ makeMotherEdit currentDate motherId outMsg sessionId session =
                                 }
             in
             mapMotherEdits (\edits -> { edits | familyPlanning = edit }) motherId session
+
+        SaveCompletedForm formId language ->
+            -- In this case, so far, we don't allow for updates. So, for the
+            -- moment, the only things we have to do is create things. Also,
+            -- we necessarily will have a current user in this case, though
+            -- we'd need to restructure to convince the compiler of that.
+            case user of
+                Just userId ->
+                    let
+                        edit =
+                            Created
+                                { participantId = motherId
+                                , sessionId = Just sessionId
+                                , dateMeasured = currentDate
+                                , value =
+                                    { formId = formId
+                                    , language = language
+                                    }
+                                }
+                    in
+                    mapMotherEdits
+                        (\edits -> { edits | consent = edit :: edits.consent })
+                        motherId
+                        session
+
+                Nothing ->
+                    session
 
 
 {-| Subscribe to the answers to our cache requests.

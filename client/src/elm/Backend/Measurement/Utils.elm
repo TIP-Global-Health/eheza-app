@@ -1,8 +1,8 @@
-module Backend.Measurement.Utils exposing (applyEdit, backendValue, currentValue, currentValueWithId, getChildEdits, getMotherEdits, getPhotoEdits, getPhotosToUpload, mapMeasurementData, muacIndication)
+module Backend.Measurement.Utils exposing (applyEdit, applyEdits, backendValue, currentValue, currentValueWithId, currentValues, getChildEdits, getMotherEdits, getPhotoEdits, getPhotosToUpload, mapMeasurementData, muacIndication)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import EveryDict
+import EveryDict exposing (EveryDict)
 
 
 {-| Picks out a particular mother's `MotherEdits`. If not found, makes
@@ -40,7 +40,7 @@ muacIndication (MuacInCm value) =
 
 {-| Apply an edit to an underlying value.
 -}
-applyEdit : Edit value -> Maybe value -> Maybe value
+applyEdit : Edit id value -> Maybe value -> Maybe value
 applyEdit edit value =
     case edit of
         Unedited ->
@@ -52,14 +52,47 @@ applyEdit edit value =
         Edited { edited } ->
             Just edited
 
-        Deleted _ ->
+        Deleted _ _ ->
             Nothing
+
+
+{-| Like `applyEdit`, but for cases where we have multiple entities and edits
+in the same session. (E.g. for participantConsent, but not weight).
+-}
+applyEdits : List (Edit id value) -> EveryDict id value -> List ( Maybe id, value )
+applyEdits edits base =
+    let
+        go edit ( existing, new ) =
+            case edit of
+                Unedited ->
+                    ( existing, new )
+
+                Created created ->
+                    ( existing, created :: new )
+
+                Edited edited ->
+                    ( EveryDict.insert edited.id edited.edited existing
+                    , new
+                    )
+
+                Deleted id _ ->
+                    ( EveryDict.remove id existing
+                    , new
+                    )
+
+        ( remaining, created ) =
+            List.foldl go ( base, [] ) edits
+    in
+    List.concat
+        [ List.map (Tuple.mapFirst Just) (EveryDict.toList remaining)
+        , List.map (\n -> ( Nothing, n )) created
+        ]
 
 
 {-| Given the data, do we have a current value? May be the value
 stored in the backend, or an edited value.
 -}
-currentValue : MeasurementData (Maybe ( id, value )) (Edit value) -> Maybe value
+currentValue : MeasurementData (Maybe ( id, value )) (Edit id value) -> Maybe value
 currentValue data =
     applyEdit data.edits (Maybe.map Tuple.second data.current)
 
@@ -67,17 +100,24 @@ currentValue data =
 {-| Like `currentValue`, but also supplies the ID if we have one
 (i.e. if we're editing a value saved on the backend).
 -}
-currentValueWithId : MeasurementData (Maybe ( id, value )) (Edit value) -> Maybe ( Maybe id, value )
+currentValueWithId : MeasurementData (Maybe ( id, value )) (Edit id value) -> Maybe ( Maybe id, value )
 currentValueWithId data =
     currentValue data
         |> Maybe.map (\value -> ( Maybe.map Tuple.first data.current, value ))
 
 
+{-| Like `currentValue`, but for cases where we have a list of values.
+-}
+currentValues : MeasurementData (EveryDict id value) (List (Edit id value)) -> List ( Maybe id, value )
+currentValues data =
+    applyEdits data.edits data.current
+
+
 {-| Like `currentValue`, but just considers the backend.
 -}
-backendValue : MeasurementData (Maybe ( id, value )) (Edit value) -> Maybe value
+backendValue : MeasurementData (Maybe ( id, value )) (Edit id value) -> Maybe ( id, value )
 backendValue data =
-    Maybe.map Tuple.second data.current
+    data.current
 
 
 mapMeasurementData : (d1 -> d2) -> (e1 -> e2) -> MeasurementData d1 e1 -> MeasurementData d2 e2
@@ -91,7 +131,7 @@ mapMeasurementData dataFunc editFunc measurements =
 
 {-| Get a list of all the photo edits (some will be `Unedited`).
 -}
-getPhotoEdits : MeasurementEdits -> List (Edit Photo)
+getPhotoEdits : MeasurementEdits -> List (Edit PhotoId Photo)
 getPhotoEdits edits =
     edits.children
         |> EveryDict.values
@@ -124,6 +164,6 @@ getPhotosToUpload =
                         else
                             Nothing
 
-                    Deleted _ ->
+                    Deleted _ _ ->
                         Nothing
             )

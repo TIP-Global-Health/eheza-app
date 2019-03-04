@@ -1,4 +1,4 @@
-module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..), MsgLoggedIn(..), Version, emptyLoggedInModel, emptyModel)
+module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..), MsgLoggedIn(..), StorageQuota, Version, emptyLoggedInModel, emptyModel)
 
 import Backend.Model
 import Config.Model
@@ -17,7 +17,7 @@ import Restful.Login exposing (UserAndData)
 import Rollbar
 import ServiceWorker.Model
 import Time exposing (Time)
-import Translate exposing (Language(..))
+import Translate.Model exposing (Language(..))
 import User.Model exposing (User)
 import Uuid exposing (Uuid)
 import ZScore.Model
@@ -47,6 +47,19 @@ type alias Model =
     -- least for the moment.
     , cache : Backend.Model.ModelCached
 
+    -- If we end up doing some client-side access control, this would probably
+    -- move behind that structure.
+    , indexedDb : Backend.Model.ModelIndexedDb
+
+    -- Have we successfully asked the browser to make our storage persistent?
+    -- (This means the browser won't automatically delete our storage when
+    -- it thinks space is low). It is a Maybe because in our initial state we
+    -- don't know if it is true or false.
+    , persistentStorage : Maybe Bool
+
+    -- How close are we to our storage quota?
+    , storageQuota : Maybe StorageQuota
+
     -- TODO: This doesn't really belong here ... we shouldn't have this unless
     -- we have a session ... but I've done enough restructuring for now!
     , sessionPages : Pages.Model.SessionPages
@@ -54,8 +67,13 @@ type alias Model =
     , currentTime : Time
     , language : Language
     , serviceWorker : ServiceWorker.Model.Model
-    , offline : Bool
     , zscores : ZScore.Model.Model
+    }
+
+
+type alias StorageQuota =
+    { quota : Int
+    , usage : Int
     }
 
 
@@ -156,6 +174,7 @@ In any event, that will need some thought at some point.
 -}
 type Msg
     = MsgCache Backend.Model.MsgCached
+    | MsgIndexedDb Backend.Model.MsgIndexedDb
     | MsgPageDevice Pages.Device.Model.Msg
     | MsgLoggedIn MsgLoggedIn
     | MsgLogin (Restful.Login.Msg User)
@@ -170,8 +189,10 @@ type Msg
     | HandleRollbar (Result Http.Error Uuid)
     | SetActivePage Page
     | SetLanguage Language
-    | SetOffline Bool
+    | SetPersistentStorage Bool
+    | SetStorageQuota StorageQuota
     | Tick Time
+    | TrySyncing
 
 
 {-| Messages we can only handle if we're logged in.
@@ -196,14 +217,16 @@ emptyModel flags =
     -- sensible anyway.
     { activePage = LoginPage
     , cache = Backend.Model.emptyModelCached
+    , indexedDb = Backend.Model.emptyModelIndexedDb
     , configuration = NotAsked
+    , persistentStorage = Nothing
+    , storageQuota = Nothing
 
     -- We start at 1970, which might be nice to avoid, but probably more
     -- trouble than it's worth ... this will almost immediately get updated
     -- with the real date.
     , currentTime = 0
     , language = English
-    , offline = False
     , sessionPages = Pages.Model.emptySessionPages
     , serviceWorker = ServiceWorker.Model.emptyModel flags.activeServiceWorker
     , zscores = ZScore.Model.emptyModel

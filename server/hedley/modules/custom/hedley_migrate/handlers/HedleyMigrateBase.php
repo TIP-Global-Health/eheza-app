@@ -10,6 +10,84 @@
  */
 abstract class HedleyMigrateBase extends Migration {
 
+  protected $entityType = NULL;
+  protected $bundle = NULL;
+  protected $csvColumns = [];
+  protected $columns = [];
+  protected $fields = [];
+  protected $simpleMappings = [];
+  protected $simpleMultipleMappings = [];
+  protected $csvPrefix = '';
+
+  /**
+   * HedleyMigrateBase constructor.
+   */
+  public function __construct($arguments) {
+    parent::__construct($arguments);
+    $destination_classes = [
+      'node' => 'MigrateDestinationNode',
+      'taxonomy_term' => 'MigrateDestinationTerm',
+    ];
+
+    // Add default settings, only for nodes, terms and multifields.
+    if (empty($destination_classes[$this->entityType])) {
+      return;
+    }
+
+    $this->description = t('Import @bundle.', ['@bundle' => $this->bundle]);
+
+    $source_file = $this->getMigrateDirectory() . '/csv/' . $this->csvPrefix . $this->bundle . '.csv';
+
+    foreach ($this->csvColumns as $column_name) {
+      $this->columns[] = [$column_name, $column_name];
+    }
+    $this->source = new MigrateSourceCSV($source_file, $this->columns, ['header_rows' => 1], $this->fields);
+
+    $destination_class = $destination_classes[$this->entityType];
+    $this->destination = new $destination_class($this->bundle);
+
+    $key = [
+      'id' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+    ];
+
+    $this->map = new MigrateSQLMap($this->machineName, $key, $this->destination->getKeySchema($this->entityType));
+
+    // Add simple mappings.
+    if ($this->simpleMappings) {
+      $this->addSimpleMappings(drupal_map_assoc($this->simpleMappings));
+    }
+    foreach ($this->simpleMultipleMappings as $field) {
+      $this
+        ->addFieldMapping($field, $field)
+        ->separator('|');
+    }
+
+    if ($this->entityType == 'node') {
+      // Set the first user as the author.
+      $this
+        ->addFieldMapping('uid', 'author')
+        ->defaultValue(1);
+      // Map the title field to the default title.
+      if (in_array('title', $this->csvColumns)) {
+        $this->addFieldMapping('title', 'title');
+      }
+      elseif (in_array('title_field', $this->csvColumns)) {
+        $this->addFieldMapping('title', 'title_field');
+      }
+    }
+    elseif ($this->entityType == 'taxonomy_term') {
+      // Map the translated name field to the default term name.
+      if (in_array('name', $this->csvColumns)) {
+        $this->addFieldMapping('name', 'name');
+      }
+    }
+
+  }
+
   /**
    * Returns the migrate directory.
    *

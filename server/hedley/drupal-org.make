@@ -79,6 +79,10 @@ projects[module_filter][version] = 2.1
 projects[og][subdir] = "contrib"
 projects[og][version] = 2.x
 
+projects[prepopulate][subdir] = "contrib"
+projects[prepopulate][version] = 2.1
+projects[prepopulate][patch][] = "https://www.drupal.org/files/issues/prepopulate-2679839-55.patch"
+
 projects[restful][subdir] = "contrib"
 projects[restful][version] = "1.8"
 
@@ -92,7 +96,7 @@ projects[strongarm][subdir] = "contrib"
 projects[strongarm][version] = "2.0"
 
 projects[title][subdir] = "contrib"
-projects[title][version] = "1.0-alpha7"
+projects[title][version] = "1.0-alpha9"
 
 projects[token][subdir] = "contrib"
 projects[token][version] = "1.7"
@@ -125,4 +129,4 @@ projects[migrate][subdir] = "development"
 projects[migrate][version] = "2.11"
 
 projects[migrate_extras][subdir] = "development"
-projects[migrate_extras][version] = 2.5
+projects[migrate_extras][version] = "2.5"

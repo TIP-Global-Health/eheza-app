@@ -1,6 +1,6 @@
 module Pages.Router exposing (delta2url, parseUrl)
 
-import Activity.Utils exposing (decodeActivityTypeFromString, defaultActivityType, encodeActivityTypeAsString)
+import Activity.Utils exposing (decodeActivityFromString, defaultActivity, encodeActivityAsString)
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (fromEntityId, toEntityId)
 import RouteUrl exposing (HistoryEntry(..), UrlChange)
@@ -34,7 +34,7 @@ delta2url previous current =
                     Just <| UrlChange NewEntry "#activities"
 
                 ActivityPage activityType ->
-                    Just <| UrlChange NewEntry ("#activity/" ++ encodeActivityTypeAsString activityType)
+                    Just <| UrlChange NewEntry ("#activity/" ++ encodeActivityAsString activityType)
 
                 AttendancePage ->
                     Just <| UrlChange NewEntry "#attendance"
@@ -86,7 +86,7 @@ parseUrl =
         -- TODO: Should probably fail with an unrecongized activity type,
         -- rather than use the default
         , map
-            (SessionPage << ActivityPage << Maybe.withDefault defaultActivityType << decodeActivityTypeFromString)
+            (SessionPage << ActivityPage << Maybe.withDefault defaultActivity << decodeActivityFromString)
             (s "activity" </> string)
         , map (SessionPage AttendancePage) (s "attendance")
         , map (SessionPage << ChildPage << toEntityId) (s "child" </> int)

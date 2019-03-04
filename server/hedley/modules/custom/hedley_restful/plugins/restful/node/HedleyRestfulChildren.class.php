@@ -35,12 +35,7 @@ class HedleyRestfulChildren extends HedleyRestfulPatientBase {
 
     $public_fields['mother'] = [
       'property' => 'field_mother',
-      'resource' => [
-        'mother' => [
-          'name' => 'mothers',
-          'full_view' => FALSE,
-        ],
-      ],
+      'sub_property' => 'field_uuid',
     ];
 
     return $public_fields;

@@ -18,14 +18,7 @@ abstract class HedleyRestfulChildActivityBase extends HedleyRestfulActivityBase 
 
     $public_fields['child'] = [
       'property' => 'field_child',
-      'resource' => [
-        // Bundle name.
-        'child' => [
-          // Resource name.
-          'name' => 'children',
-          'full_view' => FALSE,
-        ],
-      ],
+      'sub_property' => 'field_uuid',
     ];
 
     return $public_fields;

@@ -20,7 +20,8 @@ import Pages.View exposing (viewFoundSession)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Login as RL
 import ServiceWorker.View
-import Translate exposing (Language(..), translate)
+import Translate exposing (translate)
+import Translate.Model exposing (Language(..))
 import User.Model exposing (User)
 import Utils.Html exposing (spinner, wrapPage)
 import Version
@@ -107,7 +108,7 @@ viewConfiguredModel model configured =
     else
         case model.activePage of
             DevicePage ->
-                Pages.Device.View.view model.language configured.device configured.devicePage
+                Pages.Device.View.view model.language configured.device model configured.devicePage
                     |> Html.map MsgPageDevice
 
             LoginPage ->
@@ -174,7 +175,7 @@ viewEditableSession model configured =
                     -- until they are able to relogin.
                     case model.activePage of
                         DevicePage ->
-                            Pages.Device.View.view model.language configured.device configured.devicePage
+                            Pages.Device.View.view model.language configured.device model configured.devicePage
                                 |> Html.map MsgPageDevice
 
                         LoginPage ->

@@ -25,7 +25,7 @@ import Pages.PatientRegistration.Utils exposing (getFormFieldValue)
 import Participant.Model exposing (ParticipantType(..))
 import Restful.Endpoint exposing (fromEntityId, toEntityId)
 import Time.Date
-import Translate exposing (Language(..), TranslationId, translate)
+import Translate exposing (Language, TranslationId, translate)
 import User.Model exposing (User)
 import Utils.Form exposing (isFormFieldSet, isFormFieldValid)
 import Utils.Html exposing (script, viewModal)

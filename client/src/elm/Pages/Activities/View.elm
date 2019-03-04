@@ -1,6 +1,6 @@
 module Pages.Activities.View exposing (view)
 
-import Activity.Utils exposing (getActivityIcon, getActivityList)
+import Activity.Utils exposing (getActivityIcon, getAllActivities, getParticipantCountForActivity, summarizeByActivity)
 import Backend.Session.Model exposing (EditableSession)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -15,14 +15,12 @@ import Utils.Html exposing (tabItem, viewModal)
 view : Language -> EditableSession -> Model -> Html Msg
 view language session model =
     let
-        allActivityList =
-            getActivityList session
+        summary =
+            summarizeByActivity session
 
-        pendingActivities =
-            List.filter (\activity -> activity.totals.pending > 0) allActivityList
-
-        noPendingActivities =
-            List.filter (\activity -> activity.totals.pending == 0) allActivityList
+        ( pendingActivities, noPendingActivities ) =
+            getAllActivities
+                |> List.partition (\activity -> (getParticipantCountForActivity summary activity).pending > 0)
 
         pendingTabTitle =
             translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities
@@ -36,22 +34,31 @@ view language session model =
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
                 ]
 
-        viewCard language item =
+        viewCard activity =
             div
                 [ class "card" ]
                 [ div
                     [ class "image"
-                    , onClick <| SetRedirectPage <| SessionPage <| ActivityPage item.activityType
+                    , onClick <| SetRedirectPage <| SessionPage <| ActivityPage activity
                     ]
-                    [ span [ class <| "icon-task icon-task-" ++ getActivityIcon item.activityType ] [] ]
+                    [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
                 , div
                     [ class "content" ]
-                    [ p [] [ text <| String.toUpper <| translate language (Trans.ActivitiesTitle item.activityType) ]
+                    [ p []
+                        [ Trans.ActivitiesTitle activity
+                            |> translate language
+                            |> String.toUpper
+                            |> text
+                        ]
                     , div
                         [ class "ui tiny progress" ]
                         [ div
                             [ class "label" ]
-                            [ text <| translate language <| Trans.ReportCompleted item.totals ]
+                            [ getParticipantCountForActivity summary activity
+                                |> Trans.ReportCompleted
+                                |> translate language
+                                |> text
+                            ]
                         ]
                     ]
                 ]
@@ -134,7 +141,7 @@ view language session model =
                             [ span [] [ text emptySectionMessage ] ]
 
                         else
-                            List.map (viewCard language) selectedActivities
+                            List.map viewCard selectedActivities
                     ]
                 ]
             , div

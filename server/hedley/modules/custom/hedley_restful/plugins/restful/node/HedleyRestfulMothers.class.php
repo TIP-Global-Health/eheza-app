@@ -33,19 +33,15 @@ class HedleyRestfulMothers extends HedleyRestfulPatientBase {
       ];
     }
 
-    $public_fields['children'] = [
-      'property' => 'nid',
-      'process_callbacks' => [
-        [$this, 'getChildren'],
-      ],
+    $public_fields['relation'] = [
+      'property' => 'field_relationship',
+    ];
+
+    $public_fields['ubudehe'] = [
+      'property' => 'field_ubudehe',
     ];
 
     return $public_fields;
-  }
-
-  // Todo: implement, if this info is required.
-  public function getChildren() {
-    return [];
   }
 
 }

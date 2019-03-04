@@ -7,7 +7,7 @@ import Json.Encode exposing (..)
 encode : Device -> Value
 encode device =
     object
-        [ ( "id", int device.id )
-        , ( "label", string device.name )
-        , ( "access_token", string device.accessToken )
+        [ ( "access_token", string device.accessToken )
+        , ( "refresh_token", string device.refreshToken )
+        , ( "backend_url", string device.backendUrl )
         ]

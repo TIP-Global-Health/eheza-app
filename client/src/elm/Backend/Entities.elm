@@ -1,4 +1,4 @@
-module Backend.Entities exposing (ChildId, ChildIdType(..), ChildNutritionId, ChildNutritionIdType(..), ClinicId, ClinicIdType(..), FamilyPlanningId, FamilyPlanningIdType(..), GeoLocationId, GeoLocationIdType(..), HeightId, HeightIdType(..), MotherId, MotherIdType(..), MuacId, MuacIdType(..), PhotoId, PhotoIdType(..), SessionId, SessionIdType(..), WeightId, WeightIdType(..))
+module Backend.Entities exposing (CatchmentAreaUuid, CatchmentAreaUuidType(..), ChildId, ChildIdType(..), ChildNutritionId, ChildNutritionIdType(..), ChildNutritionUuid, ChildNutritionUuidType(..), ChildUuid, ChildUuidType(..), ClinicId, ClinicIdType(..), ClinicUuid, ClinicUuidType(..), CounselingScheduleId, CounselingScheduleIdType(..), CounselingScheduleUuid, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionIdType(..), CounselingSessionUuid, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicIdType(..), CounselingTopicUuid, CounselingTopicUuidType(..), FamilyPlanningId, FamilyPlanningIdType(..), FamilyPlanningUuid, FamilyPlanningUuidType(..), GeoLocationId, GeoLocationIdType(..), HealthCenterUuid, HealthCenterUuidType(..), HeightId, HeightIdType(..), HeightUuid, HeightUuidType(..), MotherId, MotherIdType(..), MotherUuid, MotherUuidType(..), MuacId, MuacIdType(..), MuacUuid, MuacUuidType(..), NurseUuid, NurseUuidType(..), ParticipantConsentId, ParticipantConsentIdType(..), ParticipantConsentUuid, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormIdType(..), ParticipantFormUuid, ParticipantFormUuidType(..), PhotoId, PhotoIdType(..), PhotoUuid, PhotoUuidType(..), SessionId, SessionIdType(..), SessionUuid, SessionUuidType(..), UserId, UserIdType(..), WeightId, WeightIdType(..), WeightUuid, WeightUuidType(..))
 
 {-|
 
@@ -7,15 +7,15 @@ module Backend.Entities exposing (ChildId, ChildIdType(..), ChildNutritionId, Ch
 
 It's nice to have type-safe IDs for backend entities, but it tends
 to lead to circular imports if you put the ID types in the "usual"
-place alongisde the data-type itself.
+place alongside the data-type itself.
 
-One typical case where the cirular references arise is where a "child"
+One typical case where the circular references arise is where a "child"
 entity has a reference to its "parent". So, for instance:
 
   - the various measurements have a `sessionId` to refer to the session the
     measurement was taken in.
 
-  - but the `OfflineSession` also has a `DictList` of all its measurmeents
+  - but the `OfflineSession` also has a `DictList` of all its measurements
 
 Now, you could imagine avoiding this in one way or another. For instance, you
 could imagine not storing the `sessionId` in the measurement, but instead
@@ -49,7 +49,7 @@ we need it.
 
 -}
 
-import Restful.Endpoint exposing (EntityId(..))
+import Restful.Endpoint exposing (EntityId(..), EntityUuid(..))
 
 
 
@@ -65,36 +65,6 @@ import Restful.Endpoint exposing (EntityId(..))
     most of the time, rather than the more verbose
 
         EntityId ChildId
-
-    In fact, here's a simple code-generation process which you can adapt
-    to your preferred code-editor. Here's the list of base types:
-
-        Child
-        ChildNutrition
-        Clinic
-        FamilyPlanning
-        Height
-        Mother
-        Muac
-        Photo
-        Session
-        Weight
-
-    Now, to create a new one, use the following process:
-
-    1. Add it to the list above.
-    2. Delete everything below this comment.
-    3. Copy the list above below this comment.
-    4. Use search-and-replace to generate the code.
-
-    For vim, here's the pattern I use:
-
-    s/ *\(.*\)/type alias \1Id = EntityId \1IdType\rtype \1IdType=\1IdType/
-
-    Then, just save it and let elm-format make it pretty.
-
-    Eventually, you could imagine just having a file with a list
-    of our entity types, and a little script to generate the code below.
 
     There are some possibly-attractive variations on this.
 
@@ -115,6 +85,158 @@ import Restful.Endpoint exposing (EntityId(..))
      how it can be made to work.
 
 -}
+
+
+type alias CatchmentAreaUuid =
+    EntityUuid CatchmentAreaUuidType
+
+
+type CatchmentAreaUuidType
+    = CatchmentAreaUuidType
+
+
+type alias ChildUuid =
+    EntityUuid ChildUuidType
+
+
+type ChildUuidType
+    = ChildUuidType
+
+
+type alias ChildNutritionUuid =
+    EntityUuid ChildNutritionUuidType
+
+
+type ChildNutritionUuidType
+    = ChildNutritionUuidType
+
+
+type alias ClinicUuid =
+    EntityUuid ClinicUuidType
+
+
+type ClinicUuidType
+    = ClinicUuidType
+
+
+type alias CounselingScheduleUuid =
+    EntityUuid CounselingScheduleUuidType
+
+
+type CounselingScheduleUuidType
+    = CounselingScheduleUuidType
+
+
+type alias CounselingSessionUuid =
+    EntityUuid CounselingSessionUuidType
+
+
+type CounselingSessionUuidType
+    = CounselingSessionUuidType
+
+
+type alias CounselingTopicUuid =
+    EntityUuid CounselingTopicUuidType
+
+
+type CounselingTopicUuidType
+    = CounselingTopicUuidType
+
+
+type alias FamilyPlanningUuid =
+    EntityUuid FamilyPlanningUuidType
+
+
+type FamilyPlanningUuidType
+    = FamilyPlanningUuidType
+
+
+type alias HealthCenterUuid =
+    EntityUuid HealthCenterUuidType
+
+
+type HealthCenterUuidType
+    = HealthCenterUuidType
+
+
+type alias HeightUuid =
+    EntityUuid HeightUuidType
+
+
+type HeightUuidType
+    = HeightUuidType
+
+
+type alias MotherUuid =
+    EntityUuid MotherUuidType
+
+
+type MotherUuidType
+    = MotherUuidType
+
+
+type alias MuacUuid =
+    EntityUuid MuacUuidType
+
+
+type MuacUuidType
+    = MuacUuidType
+
+
+type NurseUuidType
+    = NurseUuidType
+
+
+type alias NurseUuid =
+    EntityUuid NurseUuidType
+
+
+type alias ParticipantConsentUuid =
+    EntityUuid ParticipantConsentUuidType
+
+
+type ParticipantConsentUuidType
+    = ParticipantConsentUuidType
+
+
+type alias ParticipantFormUuid =
+    EntityUuid ParticipantFormUuidType
+
+
+type ParticipantFormUuidType
+    = ParticipantFormUuidType
+
+
+type alias PhotoUuid =
+    EntityUuid PhotoUuidType
+
+
+type PhotoUuidType
+    = PhotoUuidType
+
+
+type alias SessionUuid =
+    EntityUuid SessionUuidType
+
+
+type SessionUuidType
+    = SessionUuidType
+
+
+type alias WeightUuid =
+    EntityUuid WeightUuidType
+
+
+type WeightUuidType
+    = WeightUuidType
+
+
+type alias UserId =
+    EntityId UserIdType
+
+
+type UserIdType
+    = UserIdType
 
 
 type alias ChildId =
@@ -139,6 +261,30 @@ type alias ClinicId =
 
 type ClinicIdType
     = ClinicIdType
+
+
+type alias CounselingScheduleId =
+    EntityId CounselingScheduleIdType
+
+
+type CounselingScheduleIdType
+    = CounselingScheduleIdType
+
+
+type alias CounselingSessionId =
+    EntityId CounselingSessionIdType
+
+
+type CounselingSessionIdType
+    = CounselingSessionIdType
+
+
+type alias CounselingTopicId =
+    EntityId CounselingTopicIdType
+
+
+type CounselingTopicIdType
+    = CounselingTopicIdType
 
 
 type alias FamilyPlanningId =
@@ -179,6 +325,22 @@ type alias MuacId =
 
 type MuacIdType
     = MuacIdType
+
+
+type alias ParticipantConsentId =
+    EntityId ParticipantConsentIdType
+
+
+type ParticipantConsentIdType
+    = ParticipantConsentIdType
+
+
+type alias ParticipantFormId =
+    EntityId ParticipantFormIdType
+
+
+type ParticipantFormIdType
+    = ParticipantFormIdType
 
 
 type alias PhotoId =
