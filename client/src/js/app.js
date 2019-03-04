@@ -43,6 +43,51 @@ var elmApp = Elm.Main.fullscreen({
     activeLanguage : localStorage.getItem('language') || ''
 });
 
+// Request persistent storage, and report whether it was granted.
+navigator.storage.persist().then(function (granted) {
+    elmApp.ports.persistentStorage.send(granted);
+});
+
+
+// Milliseconds for the specified minutes
+function minutesToMillis(minutes) {
+    return minutes * 60 * 1000;
+}
+
+
+// Report our quota status.
+function reportQuota () {
+    navigator.storage.estimate().then(function (quota) {
+        elmApp.ports.storageQuota.send(quota);
+    });
+}
+
+// Do it right away.
+reportQuota();
+
+// And, then every minute.
+setInterval(reportQuota, minutesToMillis(1));
+
+
+// Kick off a sync. If we're offline, the browser's sync mechanism will wait
+// until we're online.
+function trySyncing() {
+    navigator.serviceWorker.ready.then(function (reg) {
+        reg.sync.register('sync');
+    });
+}
+
+// Do it on launch.
+trySyncing();
+
+// And try a sync every 5 minutes. In future, we may react to Pusher messages
+// instead of polling.
+setInterval(trySyncing, minutesToMillis(5));
+
+// And allow a manual attempt.
+elmApp.ports.trySyncing.subscribe(trySyncing);
+
+
 elmApp.ports.cacheCredentials.subscribe(function(params) {
     // The `backendUrl` isn't actually used, for the moment ... we just save
     // the credentials without trying to distinguish amongst backends.
@@ -53,7 +98,7 @@ elmApp.ports.cacheCredentials.subscribe(function(params) {
 });
 
 elmApp.ports.cacheEditableSession.subscribe(function(json) {
-    // We cache the session and the edits separattely, so that we can treat
+    // We cache the session and the edits separately, so that we can treat
     // the session itself as basically immutable, and just keep saving the
     // edits.
     var session = json[0];
@@ -93,16 +138,8 @@ elmApp.ports.deleteEditableSession.subscribe(function () {
 });
 
 elmApp.ports.setLanguage.subscribe(function(language) {
-    // Set the choosen language in the switcher to the local storage.
+    // Set the chosen language in the switcher to the local storage.
     localStorage.setItem('language', language);
-});
-
-Offline.on('down', function() {
-    elmApp.ports.offline.send(true);
-});
-
-Offline.on('up', function() {
-    elmApp.ports.offline.send(false);
 });
 
 // Dropzone.
@@ -170,6 +207,11 @@ function makeCustomEvent (eventName, detail) {
         return event;
     }
 }
+
+// Pass along messages from the service worker
+navigator.serviceWorker.addEventListener('message', function (event) {
+    elmApp.ports.serviceWorkerIn.send(event.data);
+});
 
 navigator.serviceWorker.addEventListener('controllerchange', function () {
     // If we detect a controller change, that means we're being managed
@@ -289,7 +331,7 @@ elmApp.ports.cacheStorageRequest.subscribe(function (request) {
           });
 
           // We'll cache just the ones we don't have already.  This should be
-          // fine, since Drupal generates new URLs if the picture chagnes.
+          // fine, since Drupal generates new URLs if the picture changes.
           var uncached = request.value.filter(function (url) {
             return existing.indexOf(url) < 0;
           });

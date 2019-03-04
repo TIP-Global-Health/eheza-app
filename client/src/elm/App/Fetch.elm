@@ -6,6 +6,7 @@ import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Pages.Admin.Fetch
 import Pages.Clinics.Fetch
+import Pages.Device.Fetch
 import Pages.Page exposing (Page(..), UserPage(..))
 
 
@@ -32,6 +33,10 @@ fetch model =
             fromLocalDateTime (Date.fromTime model.currentTime)
     in
     case model.activePage of
+        DevicePage ->
+            Pages.Device.Fetch.fetch model.indexedDb
+                |> List.map MsgIndexedDb
+
         UserPage (ClinicsPage clinicId) ->
             getLoggedInModel model
                 |> Maybe.map
@@ -51,5 +56,4 @@ fetch model =
                 |> Maybe.withDefault []
 
         _ ->
-            -- For now, we've only implemented this pattern for ClinicsPage.
             []

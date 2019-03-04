@@ -45,13 +45,14 @@ in their own folder. But leaving it here for the moment is convenient.
 
 -}
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType)
+import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity)
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (MsgEditableSession(..))
 import EveryDict exposing (EveryDict)
 import Measurement.Model
 import Pages.Activities.Model
 import Pages.Activity.Model
+import Pages.Attendance.Model
 import Pages.Page exposing (Page)
 import Pages.Participant.Model
 import Pages.Participants.Model
@@ -72,10 +73,13 @@ type alias SessionPages =
     -- Shows a list of activities ... user can select one.
     { activitiesPage : Pages.Activities.Model.Model
 
+    -- Shows a list of mothers ... user can indicate attendance.
+    , attendancePage : Pages.Attendance.Model.Model
+
     -- Shows a page for a single activity. We keep separate UI state for
     -- each activity.
-    , childActivityPages : EveryDict ChildActivityType (Pages.Activity.Model.Model ChildId)
-    , motherActivityPages : EveryDict MotherActivityType (Pages.Activity.Model.Model MotherId)
+    , childActivityPages : EveryDict ChildActivity (Pages.Activity.Model.Model ChildId)
+    , motherActivityPages : EveryDict MotherActivity (Pages.Activity.Model.Model MotherId)
 
     -- Shows a list of participants ... user can select one.
     , participantsPage : Pages.Participants.Model.Model
@@ -86,14 +90,15 @@ type alias SessionPages =
     -- ... we could just keep a single state here if we wanted the selectedTab
     -- and selectedActivity to stay the same when you switch from one
     -- participant to another.
-    , childPages : EveryDict ChildId (Pages.Participant.Model.Model ChildActivityType)
-    , motherPages : EveryDict MotherId (Pages.Participant.Model.Model MotherActivityType)
+    , childPages : EveryDict ChildId (Pages.Participant.Model.Model ChildActivity)
+    , motherPages : EveryDict MotherId (Pages.Participant.Model.Model MotherActivity)
     }
 
 
 emptySessionPages : SessionPages
 emptySessionPages =
     { activitiesPage = Pages.Activities.Model.emptyModel
+    , attendancePage = Pages.Attendance.Model.emptyModel
     , childActivityPages = EveryDict.empty
     , motherActivityPages = EveryDict.empty
     , childPages = EveryDict.empty
@@ -106,10 +111,11 @@ emptySessionPages =
 -}
 type MsgSession
     = MsgActivities Pages.Activities.Model.Msg
-    | MsgChildActivity ChildActivityType (Pages.Activity.Model.Msg ChildId Measurement.Model.MsgChild)
-    | MsgMotherActivity MotherActivityType (Pages.Activity.Model.Msg MotherId Measurement.Model.MsgMother)
-    | MsgChild ChildId (Pages.Participant.Model.Msg ChildActivityType Measurement.Model.MsgChild)
-    | MsgMother MotherId (Pages.Participant.Model.Msg MotherActivityType Measurement.Model.MsgMother)
+    | MsgAttendance Pages.Attendance.Model.Msg
+    | MsgChildActivity ChildActivity (Maybe ChildId) (Pages.Activity.Model.Msg ChildId Measurement.Model.MsgChild)
+    | MsgMotherActivity MotherActivity (Maybe MotherId) (Pages.Activity.Model.Msg MotherId Measurement.Model.MsgMother)
+    | MsgChild ChildId (Pages.Participant.Model.Msg ChildActivity Measurement.Model.MsgChild)
+    | MsgMother MotherId (Pages.Participant.Model.Msg MotherActivity Measurement.Model.MsgMother)
     | MsgParticipants Pages.Participants.Model.Msg
     | MsgEditableSession MsgEditableSession
     | SetActivePage Page

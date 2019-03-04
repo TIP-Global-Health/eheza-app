@@ -249,6 +249,8 @@ function import_demo_content {
     drush en -y hedley_migrate
     drush en -y migrate migrate_ui migrate_extras
     drush mi --group=default --user=1
+    drush mi --group=counseling --user=1
+    drush mi --group=forms --user=1
   else
     echo -e  "${BGYELLOW}                                                                 ${RESTORE}"
     echo -e "${BGLYELLOW}  Migrate and or Migrate Extras module(s) are not available!     ${RESTORE}"
@@ -274,6 +276,7 @@ function import_demo_content {
 # the 'taxonomy_vocabulary' table.
 ##
 function generate_demo_content {
+  # @todo: Replace this with CSV generated data.
   echo -e "${LBLUE}> Starting the process of generating demo content using the devel_generate module.${RESTORE}"
   cd "$ROOT"/www
 
@@ -308,11 +311,15 @@ function generate_demo_content {
   for TYPE in "${TYPES[@]}"
   do
     echo -e "${LBLUE}Generating nodes of type: $TYPE ${RESTORE}"
-    drush generate-content 20 0 --types="$TYPE"
+    drush generate-content 20 0 --types="$TYPE" --skip-fields=field_uuid
   done
 
   # Add some sessions for today
   drush create-sessions-today
+
+  # After all of this is done, we need to update the "Counseling Sessions" because it's dependent on the randomly
+  # generated content above. (Temporary until all of the randomly generated content is replaced with csv migration).
+  drush mi HedleyMigrateCounselingSessions --update
 
   cd "$ROOT"
   echo

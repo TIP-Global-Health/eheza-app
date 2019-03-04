@@ -1,8 +1,9 @@
 module Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildA, exampleChildB, exampleMother, exampleUser)
 
 import Backend.Child.Model exposing (Child, Gender(..))
-import Backend.Mother.Model exposing (EducationLevel(..), Mother, Ubudehe(..))
+import Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), Mother, Ubudehe(..))
 import EverySet
+import Restful.Endpoint exposing (toEntityId)
 import Time.Date exposing (date)
 import User.Model exposing (User)
 
@@ -25,7 +26,7 @@ exampleBackendUrl =
 -}
 exampleUser : User
 exampleUser =
-    { id = 35
+    { id = toEntityId 35
     , name = "aya"
     , avatarUrl = "http://example.com/avatar.jpg"
     , clinics = []
@@ -64,7 +65,8 @@ exampleMother =
     { name = "Sebabive Gahiji"
     , avatarUrl = Just "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , children = []
-    , birthDate = date 2016 8 28
+    , birthDate = Just <| date 2016 8 28
+    , relation = MotherRelation
     , ubudehe = Just Ubudehe1
     , educationLevel = Just NoSchooling
     }

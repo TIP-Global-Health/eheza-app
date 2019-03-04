@@ -18,12 +18,7 @@ class HedleyRestfulHealthCenters extends HedleyRestfulSyncBase {
 
     $public_fields['catchment_area'] = [
       'property' => 'field_catchment_area',
-      'resource' => [
-        'catchment_area' => [
-          'name' => 'catchment_areas',
-          'full_view' => FALSE,
-        ],
-      ],
+      'sub_property' => 'field_uuid',
     ];
 
     return $public_fields;

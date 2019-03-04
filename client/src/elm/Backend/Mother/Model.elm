@@ -1,14 +1,20 @@
-module Backend.Mother.Model exposing (EducationLevel(..), Mother, Ubudehe(..))
+module Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), Mother, Ubudehe(..))
 
 import Backend.Entities exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
+
+
+type ChildrenRelationType
+    = MotherRelation
+    | CaregiverRelation
 
 
 type alias Mother =
     { name : String
     , avatarUrl : Maybe String
     , children : List ChildId
-    , birthDate : NominalDate
+    , birthDate : Maybe NominalDate
+    , relation : ChildrenRelationType
     , ubudehe : Maybe Ubudehe
     , educationLevel : Maybe EducationLevel
     }

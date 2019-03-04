@@ -167,6 +167,46 @@ function hedley_user_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-nurse-field_uuid'.
+  $field_instances['node-nurse-field_uuid'] = array(
+    'bundle' => 'nurse',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 5,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 4,
+    ),
+  );
+
   // Exported field_instance: 'user-user-field_avatar'.
   $field_instances['user-user-field_avatar'] = array(
     'bundle' => 'user',
@@ -322,6 +362,7 @@ function hedley_user_field_default_field_instances() {
   t('Phone');
   t('Profile photo');
   t('Role');
+  t('UUID');
   t('Which clinics is this user allowed to participate in?');
   t('Which clinics is this user authorized to work with?');
 

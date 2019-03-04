@@ -26,6 +26,7 @@ class HedleyMigrateUsers extends HedleyMigrateBase {
       ['pass', t('User password')],
       ['email', t('User email')],
       ['role', t('User role')],
+      ['clinics', t('Clinics')],
     );
 
     $source_file = $this->getMigrateDirectory() . '/csv/user.csv';
@@ -33,6 +34,9 @@ class HedleyMigrateUsers extends HedleyMigrateBase {
     $this->source = new MigrateSourceCSV($source_file, $columns, $options);
 
     $this->destination = new MigrateDestinationUser();
+    $this->dependencies = [
+      'HedleyMigrateClinics',
+    ];
 
     $this->addFieldMapping('name', 'name');
     $this->addFieldMapping('mail', 'email');
@@ -42,6 +46,11 @@ class HedleyMigrateUsers extends HedleyMigrateBase {
       ->defaultValue(1);
 
     $this->addFieldMapping('role_names', 'role');
+
+    $this
+      ->addFieldMapping('field_clinics', 'clinics')
+      ->separator('|')
+      ->sourceMigration('HedleyMigrateClinics');
 
     $this->map = new MigrateSQLMap($this->machineName,
       array(

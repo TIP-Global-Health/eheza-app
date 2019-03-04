@@ -1,8 +1,9 @@
-module App.Utils exposing (getLoggedInModel, hasAccessToken, hasValidAccessToken)
+module App.Utils exposing (getLoggedInModel, getUserId, hasAccessToken, hasValidAccessToken)
 
 import App.Model exposing (..)
+import Backend.Entities exposing (..)
 import RemoteData
-import Restful.Login exposing (maybeAuthenticatedData)
+import Restful.Login exposing (getUser, maybeAuthenticatedData)
 
 
 {-| Returns the logged in model if we're logged in.
@@ -12,6 +13,14 @@ getLoggedInModel model =
     model.configuration
         |> RemoteData.toMaybe
         |> Maybe.andThen (.login >> maybeAuthenticatedData)
+
+
+getUserId : Model -> Maybe UserId
+getUserId model =
+    model.configuration
+        |> RemoteData.toMaybe
+        |> Maybe.andThen (.login >> getUser)
+        |> Maybe.map .id
 
 
 {-| Do we think we have a valid access token?

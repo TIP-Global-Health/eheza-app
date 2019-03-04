@@ -4,6 +4,7 @@ module TestRunner exposing (allTests)
 tree, so that the `elm-test` command will find them.
 -}
 
+import Activity.Test
 import App.Test
 import Backend.Measurement.Test
 import Backend.Session.Test
@@ -21,7 +22,8 @@ import ZScore.Test
 allTests : Test
 allTests =
     describe "All tests"
-        [ App.Test.all
+        [ Activity.Test.all
+        , App.Test.all
         , Backend.Measurement.Test.all
         , Backend.Session.Test.all
         , Measurement.Test.all
