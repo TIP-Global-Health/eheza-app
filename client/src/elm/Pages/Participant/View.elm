@@ -1,7 +1,7 @@
 module Pages.Participant.View exposing (viewChild, viewMother)
 
-import Activity.Model exposing (ActivityListItem, ActivityType(..), ChildActivityType, MotherActivityType(..))
-import Activity.Utils exposing (childHasCompletedActivity, childHasPendingActivity, getActivityIcon, getActivityList, getAllChildActivities, getAllMotherActivities, motherHasCompletedActivity, motherHasPendingActivity)
+import Activity.Model exposing (Activity(..), ChildActivity, CompletedAndPending, MotherActivity(..))
+import Activity.Utils exposing (getActivityIcon, getCheckedIn, summarizeChildParticipant, summarizeMotherParticipant)
 import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
@@ -34,7 +34,7 @@ thumbnailDimensions =
     }
 
 
-viewChild : Language -> NominalDate -> ZScore.Model.Model -> ChildId -> EditableSession -> Model ChildActivityType -> Html (Msg ChildActivityType Measurement.Model.MsgChild)
+viewChild : Language -> NominalDate -> ZScore.Model.Model -> ChildId -> EditableSession -> Model ChildActivity -> Html (Msg ChildActivity Measurement.Model.MsgChild)
 viewChild language currentDate zscores childId session model =
     -- It's nice to just pass in the childId. If the session is consistent, we
     -- should always be able to get the child.  But it would be hard to
@@ -56,7 +56,7 @@ viewChild language currentDate zscores childId session model =
 
 {-| This one needs the `currentDate` in order to calculate ages from dates of birth.
 -}
-viewFoundChild : Language -> NominalDate -> ZScore.Model.Model -> ( ChildId, Child ) -> EditableSession -> Model ChildActivityType -> Html (Msg ChildActivityType Measurement.Model.MsgChild)
+viewFoundChild : Language -> NominalDate -> ZScore.Model.Model -> ( ChildId, Child ) -> EditableSession -> Model ChildActivity -> Html (Msg ChildActivity Measurement.Model.MsgChild)
 viewFoundChild language currentDate zscores ( childId, child ) session model =
     let
         maybeMother =
@@ -92,8 +92,8 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
         config =
             childParticipant
 
-        ( pendingActivities, completedActivities ) =
-            List.partition (\activity -> childHasPendingActivity childId activity session) getAllChildActivities
+        activities =
+            summarizeChildParticipant childId session
 
         selectedActivity =
             case model.selectedTab of
@@ -106,25 +106,25 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
                     model.selectedActivity
                         |> Maybe.andThen
                             (\activity ->
-                                if childHasCompletedActivity childId activity session then
+                                if List.member activity activities.completed then
                                     Just activity
 
                                 else
                                     Nothing
                             )
-                        |> Maybe.Extra.orElse (List.head completedActivities)
+                        |> Maybe.Extra.orElse (List.head activities.completed)
 
                 Pending ->
                     model.selectedActivity
                         |> Maybe.andThen
                             (\activity ->
-                                if childHasPendingActivity childId activity session then
+                                if List.member activity activities.pending then
                                     Just activity
 
                                 else
                                     Nothing
                             )
-                        |> Maybe.Extra.orElse (List.head pendingActivities)
+                        |> Maybe.Extra.orElse (List.head activities.pending)
 
         content =
             if model.selectedTab == ProgressReport then
@@ -154,7 +154,7 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
                             form =
                                 getChildForm childId session
                         in
-                        [ Measurement.View.viewChild language currentDate child activity measurements zscores form
+                        [ Measurement.View.viewChild language currentDate child activity measurements zscores session form
                             |> Html.map MsgMeasurement
                             |> keyed "content"
                         ]
@@ -185,12 +185,12 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
                     ]
                     |> keyed "child-info"
               ]
-            , viewActivityCards childParticipant language childId model.selectedTab selectedActivity session
+            , viewActivityCards childParticipant language activities model.selectedTab selectedActivity
             , content
             ]
 
 
-viewMother : Language -> MotherId -> EditableSession -> Model MotherActivityType -> Html (Msg MotherActivityType Measurement.Model.MsgMother)
+viewMother : Language -> MotherId -> EditableSession -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
 viewMother language motherId session model =
     -- It's nice to just pass in the motherId. If the session is consistent, we
     -- should always be able to get the mother.  But it would be hard to
@@ -210,7 +210,7 @@ viewMother language motherId session model =
                 ]
 
 
-viewFoundMother : Language -> ( MotherId, Mother ) -> EditableSession -> Model MotherActivityType -> Html (Msg MotherActivityType Measurement.Model.MsgMother)
+viewFoundMother : Language -> ( MotherId, Mother ) -> EditableSession -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
 viewFoundMother language ( motherId, mother ) session model =
     let
         break =
@@ -224,8 +224,8 @@ viewFoundMother language ( motherId, mother ) session model =
                     )
                 |> List.intersperse break
 
-        ( pendingActivities, completedActivities ) =
-            List.partition (\activity -> motherHasPendingActivity motherId activity session) getAllMotherActivities
+        activities =
+            summarizeMotherParticipant motherId session
 
         selectedActivity =
             case model.selectedTab of
@@ -238,25 +238,25 @@ viewFoundMother language ( motherId, mother ) session model =
                     model.selectedActivity
                         |> Maybe.andThen
                             (\activity ->
-                                if motherHasCompletedActivity motherId activity session then
+                                if List.member activity activities.completed then
                                     Just activity
 
                                 else
                                     Nothing
                             )
-                        |> Maybe.Extra.orElse (List.head completedActivities)
+                        |> Maybe.Extra.orElse (List.head activities.completed)
 
                 Pending ->
                     model.selectedActivity
                         |> Maybe.andThen
                             (\activity ->
-                                if motherHasPendingActivity motherId activity session then
+                                if List.member activity activities.pending then
                                     Just activity
 
                                 else
                                     Nothing
                             )
-                        |> Maybe.Extra.orElse (List.head pendingActivities)
+                        |> Maybe.Extra.orElse (List.head activities.pending)
 
         content =
             case selectedActivity of
@@ -316,30 +316,27 @@ viewFoundMother language ( motherId, mother ) session model =
                     ]
                     |> keyed "mother"
               ]
-            , viewActivityCards motherParticipant language motherId model.selectedTab selectedActivity session
+            , viewActivityCards motherParticipant language activities model.selectedTab selectedActivity
             , content
             ]
 
 
-viewActivityCards : Participant id value activity msg -> Language -> id -> Tab -> Maybe activity -> EditableSession -> List ( String, Html (Msg activity any) )
-viewActivityCards config language participantId selectedTab selectedActivity session =
+viewActivityCards : Participant id value activity msg -> Language -> CompletedAndPending (List activity) -> Tab -> Maybe activity -> List ( String, Html (Msg activity any) )
+viewActivityCards config language activities selectedTab selectedActivity =
     let
-        ( pendingActivities, completedActivities ) =
-            List.partition (\activity -> config.hasPendingActivity participantId activity session) config.activities
-
         pendingActivitiesView =
-            if List.isEmpty pendingActivities then
+            if List.isEmpty activities.pending then
                 [ span [] [ text <| translate language Trans.NoActivitiesPendingForThisParticipant ] ]
 
             else
-                List.map (viewActivityListItem config language selectedActivity) pendingActivities
+                List.map (viewActivityListItem config language selectedActivity) activities.pending
 
         completedActivitiesView =
-            if List.isEmpty completedActivities then
+            if List.isEmpty activities.completed then
                 [ span [] [ text <| translate language Trans.NoActivitiesCompletedForThisParticipant ] ]
 
             else
-                List.map (viewActivityListItem config language selectedActivity) completedActivities
+                List.map (viewActivityListItem config language selectedActivity) activities.completed
 
         activeView =
             if selectedTab == ProgressReport then
@@ -356,13 +353,13 @@ viewActivityCards config language participantId selectedTab selectedActivity ses
                     ]
 
         pendingTabTitle =
-            translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities
+            translate language <| Trans.ActivitiesToComplete <| List.length activities.pending
 
         completedTabTitle =
-            translate language <| Trans.ActivitiesCompleted <| List.length completedActivities
+            translate language <| Trans.ActivitiesCompleted <| List.length activities.completed
 
         progressTabTitle =
-            translate language <| Trans.ActivitiesTitle <| ChildActivity Activity.Model.ProgressReport
+            translate language <| Trans.ProgressReport
 
         extraTabs =
             if config.showProgressReportTab then
@@ -393,8 +390,8 @@ viewActivityListItem config language selectedActivity activityItem =
                 , ( "active", selectedActivity == Just activityItem )
                 ]
             ]
-            [ span [ class ("icon-section icon-" ++ getActivityIcon (config.tagActivityType activityItem)) ] []
-            , text <| translate language <| Trans.ActivitiesTitle <| config.tagActivityType activityItem
+            [ span [ class ("icon-section icon-" ++ getActivityIcon (config.tagActivity activityItem)) ] []
+            , text <| translate language <| Trans.ActivitiesTitle <| config.tagActivity activityItem
             ]
         ]
 

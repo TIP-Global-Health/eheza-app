@@ -1,0 +1,6 @@
+id,field_timing,field_topics
+counseling_schedule1,entry,topic1|topic2|topic3|topic4|topic5|topic6|topic7|topic8
+counseling_schedule2,midpoint,topic9|topic10|topic11|topic12
+counseling_schedule3,exit,topic13|topic14|topic15|topic16
+counseling_schedule4,before-midpoint,topic17
+counseling_schedule5,before-exit,topic17

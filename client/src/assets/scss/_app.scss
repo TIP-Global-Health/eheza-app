@@ -15,6 +15,10 @@ a {
   cursor: pointer;
 }
 
+.consent-form-list {
+  color: $color-text;
+}
+
 .admin-page {
   table {
     font-size: 1.2rem !important;
@@ -168,5 +172,48 @@ a {
       background-color: $color-primary;
       background-size: 75% 75%;
     }
+  }
+}
+
+.page-form {
+  background: #333;
+  padding: 30px;
+  width: 100%;
+  height: 100%;
+}
+
+.wrap-form {
+  max-width: 1215px;
+  height: 100%;
+  margin: 0 auto 30px auto;
+  background: #fff;
+  border-top: 9px solid #06b9ff;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+
+  .form-title {
+    flex: initial;
+    margin-bottom: 12px;
+  }
+
+  .form-body {
+    flex: auto;
+    line-height: 1.618;
+    overflow-y: scroll;
+  }
+
+  .actions {
+    margin-top: 24px;
+    flex: initial;
+  }
+
+  .icon-back {
+    width: 34px;
+    height: 27px;
+    display: block;
+    background: url(#{$img-path}icon-back-dark.svg);
+    background-size: 34px 27px;
+    float: left;
   }
 }

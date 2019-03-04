@@ -32,15 +32,16 @@ decodeMother =
             )
         |> optional "children" (oneOf [ list decodeEntityId, decodeNullAsEmptyArray ]) []
         |> hardcoded []
-        |> required "date_birth" decodeYYYYMMDD
+        |> optional "date_birth" (nullable decodeYYYYMMDD) Nothing
         -- Is birth date estimated
         |> hardcoded False
+        |> optional "relation" decodeChildrenRelation MotherRelation
         |> optional "gender" decodeGender Female
+        |> optional "ubudehe" (nullable decodeUbudehe) Nothing
         |> optional "education_level" (nullable decodeEducationLevel) Nothing
         |> hardcoded Nothing
         |> hardcoded Nothing
         |> hardcoded Nothing
-        |> optional "ubudehe" (nullable decodeUbudehe) Nothing
         |> hardcoded Nothing
         |> hardcoded Nothing
         |> hardcoded Nothing
@@ -50,6 +51,23 @@ decodeMother =
         |> hardcoded Nothing
         |> hardcoded Nothing
         |> hardcoded Nothing
+
+
+decodeChildrenRelation : Decoder ChildrenRelationType
+decodeChildrenRelation =
+    string
+        |> andThen
+            (\relation ->
+                case relation of
+                    "mother" ->
+                        succeed MotherRelation
+
+                    "caregiver" ->
+                        succeed CaregiverRelation
+
+                    _ ->
+                        fail <| relation ++ " is not a recognized ChildrenRelationType"
+            )
 
 
 decodeEducationLevel : Decoder EducationLevel

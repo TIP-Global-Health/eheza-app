@@ -1,9 +1,14 @@
-module Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother, educationLevelToString, hivStatusToString, stringToHivStatus)
+module Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother, educationLevelToString, hivStatusToString, stringToHivStatus)
 
 import Backend.Entities exposing (..)
 import Backend.Patient.Model exposing (Gender, Ubudehe)
 import Gizra.NominalDate exposing (NominalDate)
 import Uuid exposing (Uuid)
+
+
+type ChildrenRelationType
+    = MotherRelation
+    | CaregiverRelation
 
 
 type alias Mother =
@@ -15,14 +20,15 @@ type alias Mother =
     , avatarUrl : Maybe String
     , children : List ChildId
     , childrenUuids : List Uuid
-    , birthDate : NominalDate
+    , birthDate : Maybe NominalDate
     , isDateOfBirthEstimated : Bool
+    , relation : ChildrenRelationType
     , gender : Gender
+    , ubudehe : Maybe Ubudehe
     , educationLevel : Maybe EducationLevel
     , profession : Maybe String
     , maritalStatus : Maybe MaritalStatus
     , hivStatus : Maybe HIVStatus
-    , ubudehe : Maybe Ubudehe
     , householdSize : Maybe Int
     , numberOfChildren : Maybe Int
     , province : Maybe String

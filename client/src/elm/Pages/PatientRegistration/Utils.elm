@@ -21,15 +21,22 @@ generateUuid currentTime =
     uuid
 
 
-getCommonDetails :
-    { r | name : String, avatarUrl : Maybe String, birthDate : NominalDate, village : Maybe String }
-    -> { name : String, avatarUrl : Maybe String, birthDate : NominalDate, village : Maybe String }
-getCommonDetails record =
-    { name = record.name
-    , avatarUrl = record.avatarUrl
-    , birthDate = record.birthDate
-    , village = record.village
-    }
+getCommonDetails : PatientData -> { name : String, avatarUrl : Maybe String, birthDate : Maybe NominalDate, village : Maybe String }
+getCommonDetails patient =
+    case patient of
+        PatientMother _ mother ->
+            { name = mother.name
+            , avatarUrl = mother.avatarUrl
+            , birthDate = mother.birthDate
+            , village = mother.village
+            }
+
+        PatientChild _ child ->
+            { name = child.name
+            , avatarUrl = child.avatarUrl
+            , birthDate = Just child.birthDate
+            , village = child.village
+            }
 
 
 getFormFieldValue : Form.FieldState e String -> Int

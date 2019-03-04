@@ -2,7 +2,7 @@ module Pages.PatientRegistration.Update exposing (update)
 
 import App.Model
 import Backend.Child.Model exposing (Child, ModeOfDelivery(..))
-import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother, stringToHivStatus)
+import Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother, stringToHivStatus)
 import Backend.Patient.Model exposing (Gender(..), Ubudehe(..))
 import Date
 import EveryDict
@@ -12,13 +12,7 @@ import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page
 import Pages.PatientRegistration.Model exposing (..)
-import Pages.PatientRegistration.Utils
-    exposing
-        ( generateUuid
-        , getFormFieldValue
-        , getRegistratingParticipant
-        , sequenceExtra
-        )
+import Pages.PatientRegistration.Utils exposing (generateUuid, getFormFieldValue, getRegistratingParticipant, sequenceExtra)
 import Participant.Model exposing (ParticipantType(..))
 import Time exposing (Time)
 import Time.Date
@@ -600,14 +594,15 @@ update currentTime msg model =
                                         avatarUrl
                                         children
                                         childrenUuids
-                                        birthDate
+                                        (Just birthDate)
                                         isDateOfBirthEstimated
+                                        MotherRelation
                                         gender
+                                        familyUbudehe
                                         levelOfEducation
                                         profession
                                         maritalStatus
                                         hivStatus
-                                        familyUbudehe
                                         householdSize
                                         numberOfChildren
                                         province

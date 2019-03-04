@@ -20,7 +20,7 @@ module Pages.PatientRegistration.Model exposing
 import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (GeoLocationId, GeoLocationIdType(..))
 import Backend.Measurement.Model exposing (PhotoValue)
-import Backend.Mother.Model exposing (Mother)
+import Backend.Mother.Model exposing (ChildrenRelationType(..), Mother)
 import Backend.Patient.Model exposing (Gender(..))
 import EveryDict exposing (EveryDict)
 import Form exposing (Form)
@@ -420,8 +420,9 @@ mother1 =
         Nothing
         []
         [ child1Uuid, child2Uuid ]
-        (date 2001 1 1)
+        (Just (date 2001 1 1))
         False
+        MotherRelation
         Female
         Nothing
         Nothing
@@ -451,8 +452,9 @@ mother2 =
         Nothing
         []
         [ child3Uuid ]
-        (date 2002 2 2)
+        (Just (date 2002 2 2))
         True
+        MotherRelation
         Female
         Nothing
         Nothing
@@ -482,8 +484,9 @@ mother3 =
         Nothing
         []
         []
-        (date 2003 3 3)
+        (Just (date 2003 3 3))
         True
+        MotherRelation
         Female
         Nothing
         Nothing
@@ -513,8 +516,9 @@ mother4 =
         Nothing
         []
         []
-        (date 2004 4 4)
+        (Just (date 2004 4 4))
         False
+        MotherRelation
         Male
         Nothing
         Nothing

@@ -9,7 +9,7 @@ that otherwise tend to arise.
 
 -}
 
-import Activity.Model exposing (ActivityType(..))
+import Activity.Model exposing (Activity(..))
 import Backend.Entities exposing (..)
 
 
@@ -98,7 +98,7 @@ so we can specify this as a parameter to som functions which produce that markup
 -}
 type SessionPage
     = ActivitiesPage -- page that shows list of activities
-    | ActivityPage ActivityType -- page that focuses on a single activity
+    | ActivityPage Activity -- page that focuses on a single activity
     | AttendancePage -- page where mothers can be marked present / absent
     | ParticipantsPage -- page that shows a list of participants
     | ChildPage ChildId -- page that focuses on a particular child

@@ -17,8 +17,29 @@ function hedley_migrate_migrate_api() {
       'missing' => [
         'title' => t('Missing Data'),
       ],
+      'batch_2019_02' => [
+        'title' => t('Batch data added 2019/02'),
+      ],
+      'counseling' => [
+        'title' => t('Counseling'),
+      ],
+      'forms' => [
+        'title' => t('Forms'),
+      ],
     ],
     'migrations' => [
+      'HedleyMigrateClinics_2019_02' => [
+        'class_name' => 'HedleyMigrateClinics201902',
+        'group_name' => 'batch_2019_02',
+      ],
+      'HedleyMigrateMothers_2019_02' => [
+        'class_name' => 'HedleyMigrateMothers201902',
+        'group_name' => 'batch_2019_02',
+      ],
+      'HedleyMigrateChildren_2019_02' => [
+        'class_name' => 'HedleyMigrateChildren201902',
+        'group_name' => 'batch_2019_02',
+      ],
       'HedleyMigrateUsers' => [
         'class_name' => 'HedleyMigrateUsers',
       ],
@@ -48,6 +69,22 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateMissingMuacs' => [
         'class_name' => 'HedleyMigrateMissingMuacs',
         'group_name' => 'missing',
+      ],
+      'HedleyMigrateCounselingSchedules' => [
+        'class_name' => 'HedleyMigrateCounselingSchedules',
+        'group_name' => 'counseling',
+      ],
+      'HedleyMigrateCounselingSessions' => [
+        'class_name' => 'HedleyMigrateCounselingSessions',
+        'group_name' => 'counseling',
+      ],
+      'HedleyMigrateCounselingTopics' => [
+        'class_name' => 'HedleyMigrateCounselingTopics',
+        'group_name' => 'counseling',
+      ],
+      'HedleyMigrateParticipantForms' => [
+        'class_name' => 'HedleyMigrateParticipantForms',
+        'group_name' => 'forms',
       ],
     ],
   ];
@@ -350,6 +387,11 @@ function _hedley_migrate_preprocess_xss($entity_type, $bundle, $entity) {
       continue;
     }
 
+    if ($field_name === 'field_uuid') {
+      // This is an auto-populated field.
+      continue;
+    }
+
     $wrapper->{$field_name}->set("<script>alert('XSS-{$entity_type}-{$bundle}-{$field_name}')</script>");
   }
 }
@@ -512,4 +554,13 @@ function _hedley_migrate_preprocess_muac($node) {
 
   // Adjust children's height to realistic figures.
   $wrapper->field_muac->set(rand(10, 40));
+}
+
+/**
+ * Implements hook_query_TAG_alter().
+ *
+ * Add a random order to the entity field query.
+ */
+function hedley_migrate_query_random_alter($query) {
+  $query->orderRandom();
 }

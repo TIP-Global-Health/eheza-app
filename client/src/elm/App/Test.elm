@@ -15,7 +15,7 @@ import Rollbar
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
 import Test.Html.Selector as Selector exposing (class, tag, text)
-import Translate exposing (Language(..))
+import Translate.Model exposing (Language(..))
 
 
 viewConfigErrorTest : Test

@@ -20,9 +20,20 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
       'property' => 'type',
     ];
 
+    $public_fields['status'] = [
+      'property' => 'status',
+    ];
+
     $public_fields['vid'] = [
       'property' => 'vid',
     ];
+
+    $public_fields['uuid'] = [
+      'property' => 'field_uuid',
+    ];
+
+    // We don't use `self`, so we'll omit it for now.
+    unset($public_fields['self']);
 
     return $public_fields;
   }

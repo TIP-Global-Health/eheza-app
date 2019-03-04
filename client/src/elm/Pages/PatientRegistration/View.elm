@@ -21,24 +21,12 @@ import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.PatientRegistration.Model
-    exposing
-        ( DialogState(..)
-        , GeoInfo
-        , Model
-        , Msg(..)
-        , ParticipantsData
-        , PatientActionType(..)
-        , PatientData(..)
-        , RegistrationForm
-        , RegistrationPhase(..)
-        , RegistrationStep(..)
-        )
+import Pages.PatientRegistration.Model exposing (..)
 import Pages.PatientRegistration.Utils exposing (getCommonDetails, getFormFieldValue, getRegistratingParticipant)
 import Participant.Model exposing (ParticipantType(..))
 import Restful.Endpoint exposing (fromEntityId, toEntityId)
 import Time.Date
-import Translate exposing (Language(..), TranslationId, translate)
+import Translate exposing (Language, TranslationId, translate)
 import User.Model exposing (User)
 import Utils.Form exposing (isFormFieldSet, isFormFieldValid)
 import Utils.Html exposing (script, thumbnailImage, viewModal)
@@ -977,10 +965,10 @@ viewPatient language patientData maybeActionType =
         ( typeForThumbnail, details, healthCenter ) =
             case patientData of
                 PatientMother _ mother ->
-                    ( "mother", getCommonDetails mother, "Unknown" )
+                    ( "mother", getCommonDetails patientData, "Unknown" )
 
                 PatientChild _ child ->
-                    ( "child", getCommonDetails child, "Unknown" )
+                    ( "child", getCommonDetails patientData, "Unknown" )
 
         content =
             div [ class "content" ] <|
@@ -991,8 +979,9 @@ viewPatient language patientData maybeActionType =
                     , p []
                         [ label [] [ text <| translate language Translate.DOB ++ ": " ]
                         , span []
-                            [ renderDate language details.birthDate
-                                |> text
+                            [ details.birthDate
+                                |> Maybe.map (renderDate language >> text)
+                                |> showMaybe
                             ]
                         ]
                     , p []

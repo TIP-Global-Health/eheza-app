@@ -31,9 +31,15 @@ function hedley_install() {
 
   // Perform several of the updates that aren't handled in
   // `hedley_standard_install`, and are needed on a fresh install
+  hedley_update_7002();
   hedley_update_7003();
   hedley_update_7004();
   hedley_update_7005();
+  hedley_update_7012();
+  hedley_update_7013();
+  hedley_update_7014();
+  hedley_update_7015();
+  hedley_update_7016();
 }
 
 /**
@@ -144,6 +150,16 @@ function hedley_standard_install() {
       'module' => 'menu',
       'delta' => 'menu-ihangane-admin-menu',
       'theme' => $default_theme,
+      'status' => 0,
+      'weight' => 0,
+      'region' => 'sidebar_first',
+      'pages' => '',
+      'cache' => -1,
+    ],
+    [
+      'module' => 'hedley_admin',
+      'delta' => 'ihangane_sidebar_menu',
+      'theme' => $default_theme,
       'status' => 1,
       'weight' => 0,
       'region' => 'sidebar_first',
@@ -241,8 +257,6 @@ function hedley_add_nurse_permissions_for_content_type(array $content_types) {
 }
 
 /**
- * Implements hook_update_7001().
- *
  * Adds family_planning permission for nurses.
  */
 function hedley_update_7001() {
@@ -251,8 +265,6 @@ function hedley_update_7001() {
 }
 
 /**
- * Implements hook_update_7002().
- *
  * Installs the new ihangane_admin module.
  */
 function hedley_update_7002() {
@@ -270,8 +282,6 @@ function hedley_update_7002() {
 }
 
 /**
- * Implements hook_update_7003().
- *
  * Installs the Views Data Export module.
  */
 function hedley_update_7003() {
@@ -280,8 +290,6 @@ function hedley_update_7003() {
 }
 
 /**
- * Implements hook_update_7004().
- *
  * Revokes the admin user access permission for the administrator role.
  */
 function hedley_update_7004() {
@@ -290,8 +298,6 @@ function hedley_update_7004() {
 }
 
 /**
- * Implements hook_update_N().
- *
  * Installs the Date Views module for measurement filters and VBO export for
  * CSV download.
  */
@@ -301,8 +307,6 @@ function hedley_update_7005() {
 }
 
 /**
- * Implements hook_update_N().
- *
  * Enable new zscore module.
  */
 function hedley_update_7006() {
@@ -311,8 +315,6 @@ function hedley_update_7006() {
 }
 
 /**
- * Implements hook_update_7007().
- *
  * Fix nutrition_sign abdominal-disortion to be abdominal-distention.
  */
 function hedley_update_7007() {
@@ -323,8 +325,6 @@ function hedley_update_7007() {
 }
 
 /**
- * Implements hook_update_7008().
- *
  * Fix nutrition_sign abdominal-distention to be abdominal-distension.
  *
  * The previous fix had its own typo, so we'll fix it again.
@@ -337,8 +337,6 @@ function hedley_update_7008() {
 }
 
 /**
- * Implements hook_update_N().
- *
  * Fix nutrition_sign in revisions table.
  *
  * We had previously just fixed the data table.
@@ -351,10 +349,7 @@ function hedley_update_7009() {
 }
 
 /**
- * Implements hook_update_N().
- *
  * Remove the unused "hedley_examination" and "hedley_group" modules.
- *
  */
 function hedley_update_7010() {
   node_type_delete('examination');
@@ -384,11 +379,68 @@ function hedley_update_7011() {
   field_delete_field('field_z_score_length');
 }
 
+/**
+ * Enable new prepopulate module.
+ */
+function hedley_update_7012() {
+  $modules = ['prepopulate'];
+  module_enable($modules);
+}
+
+/**
+ * Replaces old menu block with the new one.
+ */
+function hedley_update_7013() {
+  $query = db_update('block');
+  $query->fields([
+    'status' => 0,
+    'region' => 'sidebar_first',
+  ]);
+  $query->condition('delta', 'menu-ihangane-admin-menu');
+  $query->condition('theme', 'bartik');
+  $query->execute();
+
+  $query = db_update('block');
+  $query->fields([
+    'status' => 1,
+    'region' => 'sidebar_first',
+  ]);
+  $query->condition('delta', 'ihangane_sidebar_menu');
+  $query->condition('theme', 'bartik');
+  $query->execute();
+}
+
+/**
+ * Enable title module.
+ */
+function hedley_update_7014() {
+  $modules = ['title'];
+  module_enable($modules);
+}
+
+/**
+ * Adds counseling_session permission for nurses.
+ */
+function hedley_update_7015() {
+  $content_types = ['counseling_session'];
+  hedley_add_nurse_permissions_for_content_type($content_types);
+}
+
+/**
+ * Enable the hedley_forms module.
+ */
+function hedley_update_7016() {
+  $modules = ['hedley_forms'];
+  module_enable($modules);
+
+  $content_types = ['participant_consent'];
+  hedley_add_nurse_permissions_for_content_type($content_types);
+}
 
 /**
  * Enable hedley_device module.
  */
-function hedley_update_7012() {
+function hedley_update_7017() {
   $modules = ['hedley_device'];
   module_enable($modules);
 }

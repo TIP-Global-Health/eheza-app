@@ -103,8 +103,8 @@ function hedley_patient_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-child-field_caregiver_name_'.
-  $field_instances['node-child-field_caregiver_name_'] = array(
+  // Exported field_instance: 'node-child-field_caregiver_name'.
+  $field_instances['node-child-field_caregiver_name'] = array(
     'bundle' => 'child',
     'default_value' => NULL,
     'deleted' => 0,
@@ -125,7 +125,7 @@ function hedley_patient_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_caregiver_name_',
+    'field_name' => 'field_caregiver_name',
     'label' => 'Caregiver\'s Name	',
     'required' => 0,
     'settings' => array(
@@ -586,7 +586,7 @@ function hedley_patient_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_mother',
-    'label' => 'Mother',
+    'label' => 'Mother / Caregiver',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -921,6 +921,46 @@ function hedley_patient_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-child-field_uuid'.
+  $field_instances['node-child-field_uuid'] = array(
+    'bundle' => 'child',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 11,
+    ),
+  );
+
   // Exported field_instance: 'node-child-field_village'.
   $field_instances['node-child-field_village'] = array(
     'bundle' => 'child',
@@ -1099,7 +1139,7 @@ function hedley_patient_field_default_field_instances() {
     'bundle' => 'mother',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => 'Assign each mother to a clinic so that she will be included when data-entry sessions are scheduled for the clinic.',
+    'description' => 'Assign each mother/caregiver to a clinic so that she will be included when data-entry sessions are scheduled for the clinic.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -1164,7 +1204,7 @@ function hedley_patient_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_birth',
     'label' => 'Date birth',
-    'required' => 1,
+    'required' => 0,
     'settings' => array(
       'default_value' => 'blank',
       'default_value2' => 'same',
@@ -1230,7 +1270,7 @@ function hedley_patient_field_default_field_instances() {
       'weight' => 19,
     ),
   );
-
+ 
   // Exported field_instance: 'node-mother-field_education_level'.
   $field_instances['node-mother-field_education_level'] = array(
     'bundle' => 'mother',
@@ -1719,6 +1759,43 @@ function hedley_patient_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-mother-field_relationship'.
+  $field_instances['node-mother-field_relationship'] = array(
+    'bundle' => 'mother',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_relationship',
+    'label' => 'Relationship',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 10,
+    ),
+  );
+
   // Exported field_instance: 'node-mother-field_second_name'.
   $field_instances['node-mother-field_second_name'] = array(
     'bundle' => 'mother',
@@ -1836,6 +1913,46 @@ function hedley_patient_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-mother-field_uuid'.
+  $field_instances['node-mother-field_uuid'] = array(
+    'bundle' => 'mother',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 11,
+    ),
+  );
+
   // Exported field_instance: 'node-mother-field_village'.
   $field_instances['node-mother-field_village'] = array(
     'bundle' => 'mother',
@@ -1878,7 +1995,7 @@ function hedley_patient_field_default_field_instances() {
 
   // Translatables
   // Included for use with string extractors like potx.
-  t('Assign each mother to a clinic so that she will be included when data-entry sessions are scheduled for the clinic.');
+  t('Assign each mother/caregiver to a clinic so that she will be included when data-entry sessions are scheduled for the clinic.');
   t('Birth date estimated');
   t('Caregiver\'s Name	');
   t('Caregiver\'s National ID');
@@ -1897,7 +2014,7 @@ function hedley_patient_field_default_field_instances() {
   t('Marital status');
   t('Middle name');
   t('Mode of delivery');
-  t('Mother');
+  t('Mother / Caregiver');
   t('Mother\'s Name');
   t('Mother\'s National ID');
   t('National ID number');
@@ -1906,8 +2023,10 @@ function hedley_patient_field_default_field_instances() {
   t('Profession');
   t('Profile photo');
   t('Province');
+  t('Relationship');
   t('Second name');
   t('Sector');
+  t('UUID');
   t('Ubudehe');
   t('Village');
   t('What is the highest level of education you have completed?');
