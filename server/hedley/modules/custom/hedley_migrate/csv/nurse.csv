@@ -1,2 +1,2 @@
-id,title,field_role,field_clinics
-maya,Maya,nurse,2|3
+id,title,field_role,field_clinics,field_pin_code
+maya,Maya,nurse,2|3,1234

@@ -7,7 +7,7 @@ import Html.Attributes as Attr
 import Pages.Participant.Model exposing (Tab(..), emptyModel)
 import Pages.Participant.View exposing (viewChild, viewMother)
 import RemoteData exposing (RemoteData(NotAsked))
-import Restful.Endpoint exposing (toEntityId)
+import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
 import Test.Html.Selector as Selector exposing (class, classes, id, tag, text)
@@ -29,7 +29,7 @@ viewChildProgressReportTest =
                    English
                    (Date.fromTime 1504185446000)
                    NotAsked
-                   ( toEntityId 5, exampleChildB )
+                   ( toEntityUuid 5, exampleChildB )
                    { emptyModel | selectedTab = selectedTab }
                )
    in
@@ -63,7 +63,7 @@ viewMotherProgressReportTest =
            div []
                (viewMother
                    English
-                   (toEntityId 5)
+                   (toEntityUuid 5)
                    exampleMother
                    []
                    { emptyModel | selectedTab = selectedTab }

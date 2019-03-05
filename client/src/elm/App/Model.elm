@@ -1,23 +1,24 @@
-module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..), MsgLoggedIn(..), StorageQuota, Version, emptyLoggedInModel, emptyModel)
+module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, MemoryQuota, Model, Msg(..), MsgLoggedIn(..), StorageQuota, Version, emptyLoggedInModel, emptyModel)
 
+import Backend.Entities exposing (..)
 import Backend.Model
+import Backend.Nurse.Model exposing (Nurse)
 import Config.Model
 import Device.Model exposing (Device)
 import Dict exposing (Dict)
+import EveryDict exposing (EveryDict)
 import Http
 import Json.Encode exposing (Value)
 import Pages.Admin.Model
 import Pages.Device.Model
-import Pages.Login.Model
-import Pages.Model
-import Pages.Page exposing (Page(LoginPage))
+import Pages.Page exposing (Page(..))
+import Pages.PinCode.Model
+import Pages.Session.Model
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Login exposing (UserAndData)
 import Rollbar
 import ServiceWorker.Model
 import Time exposing (Time)
 import Translate.Model exposing (Language(..))
-import User.Model exposing (User)
 import Uuid exposing (Uuid)
 import ZScore.Model
 
@@ -35,19 +36,12 @@ yet.
 `language` is here because we always need some kind of language, if just a
 default.
 
-TODO: Should review this layering at some point to see whether it was too much
-/ too little.
-
 -}
 type alias Model =
     { activePage : Page
 
-    -- We don't need a configuration or to be logged in to access the cache, at
-    -- least for the moment.
-    , cache : Backend.Model.ModelCached
-
-    -- If we end up doing some client-side access control, this would probably
-    -- move behind that structure.
+    -- Access to things stored in IndexedDB. Eventually, most of this probably
+    -- ought to be in LoggedInModel instead, but it's not urgent.
     , indexedDb : Backend.Model.ModelIndexedDb
 
     -- Have we successfully asked the browser to make our storage persistent?
@@ -58,21 +52,32 @@ type alias Model =
 
     -- How close are we to our storage quota?
     , storageQuota : Maybe StorageQuota
-
-    -- TODO: This doesn't really belong here ... we shouldn't have this unless
-    -- we have a session ... but I've done enough restructuring for now!
-    , sessionPages : Pages.Model.SessionPages
+    , memoryQuota : Maybe MemoryQuota
     , configuration : RemoteData String ConfiguredModel
     , currentTime : Time
     , language : Language
     , serviceWorker : ServiceWorker.Model.Model
     , zscores : ZScore.Model.Model
+
+    -- What data did we want last time we checked? We track this so we can
+    -- forget data we don't want any longer. As an optimization, we should
+    -- probably track the last time we wanted each thing, so we can delay
+    -- forgetting for a period of time. (But, in this app, the latency to
+    -- IndexedDB is so low that it isn't likely to matter).
+    , dataWanted : List Msg
     }
 
 
 type alias StorageQuota =
     { quota : Int
     , usage : Int
+    }
+
+
+type alias MemoryQuota =
+    { totalJSHeapSize : Int
+    , usedJSHeapSize : Int
+    , jsHeapSizeLimit : Int
     }
 
 
@@ -88,27 +93,20 @@ type alias Version =
     }
 
 
-{-| Yay, we're configured!
-
-  - We'll definitely have a config
-  - We have a login UI
-  - We have the data showing whether we're logged in or not, and, if we're
-    logged in, some data that we only keep for people who are logged in.
-
-We could put additional fields here if there is some state that
-is common to people who are logged in or logged out.
-
-Note that our `Backend` and `Pages` aren't in here, becuase they are only
-for people who are logged in. But, `Pages.Login.Model` is here, of course,
-since we need a UI for logging in.
-
+{-| Things which depend on having a configuration.
 -}
 type alias ConfiguredModel =
     { config : Config.Model.Model
-    , loginPage : Pages.Login.Model.Model
-    , login : UserAndData () User LoggedInModel
+
+    -- `device` tracks the attempt to pair our device with the
+    -- backend. `devicePage` handles the UI for that.
     , device : WebData Device
     , devicePage : Pages.Device.Model.Model
+
+    -- The RemoteData tracks attempts to log in with a PIN code. The
+    -- LoggedInModel tracks data which we only have if we are logged in.
+    , loggedIn : WebData LoggedInModel
+    , pinCodePage : Pages.PinCode.Model.Model
     }
 
 
@@ -124,72 +122,51 @@ it at the appropriate moment.
 type alias LoggedInModel =
     { backend : Backend.Model.ModelBackend
     , adminPage : Pages.Admin.Model.Model
+
+    -- The nurse who has logged in.
+    , nurse : ( NurseId, Nurse )
+
+    -- A set of pages for every "open" editable session.
+    , sessionPages : EveryDict SessionId Pages.Session.Model.Model
     }
 
 
-emptyLoggedInModel : LoggedInModel
-emptyLoggedInModel =
+emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
+emptyLoggedInModel nurse =
     { backend = Backend.Model.emptyModelBackend
     , adminPage = Pages.Admin.Model.emptyModel
+    , nurse = nurse
+    , sessionPages = EveryDict.empty
     }
 
 
-{-| We'll subdivide the `Msg` type to roughly correspond to our `Model`
-subdivisions. In principle, that allows us to specify in function signatures
-what kind of msg can be generated from certain states. We'll see how helpful
-that is.
-
-The three `Login` related messages handle:
-
-  - Messages for the Login UI (MsgPageLogin)
-  - Messages for the login process (MsgLogin)
-  - Messages we can only handle once we've logged in (MsgLoggedIn)
-
-In this app, there isn't much you can do unless you're logged in, so most of
-the action is in `MsgLoggedIn`.
-
-TODO: We remember our login information even if we're offline, by caching it
-locally, so you can continue to work offline and be considered logged-in by the
-app. However, we'll need to be careful about logout while you're offline, since
-there won't be any way to log back in until you're online again.
-
-  - Perhaps we'll have to prohibit logout while offline? Or, while an offline
-    session is in progress (since you could then go offline **after** logging
-    out)?
-
-  - Or, we could implement a special "partial logout" which forgets the access
-    token but still lets you work offline? Then, you could at least continue to
-    interact with the offline data, but you'd have to log in again to upload it.
-
-  - Or, we could somehow allow you do login and logout while offline ...
-    presumably that would mean generating a salt, obtaining a password hashed
-    with that salt, storing it (and the salt) locally, and then authenticating
-    against the salted password while offline. (The purpose of the salt would be
-    to avoid storing the actual password locally).
-
-In any event, that will need some thought at some point.
-
--}
 type Msg
-    = MsgCache Backend.Model.MsgCached
-    | MsgIndexedDb Backend.Model.MsgIndexedDb
-    | MsgPageDevice Pages.Device.Model.Msg
-    | MsgLoggedIn MsgLoggedIn
-    | MsgLogin (Restful.Login.Msg User)
-    | MsgPageLogin Pages.Login.Model.Msg
-    | MsgSession Pages.Model.MsgSession
+    = -- Manage data we get from IndexedDb, and communication with the service
+      -- worker
+      MsgIndexedDb Backend.Model.MsgIndexedDb
     | MsgServiceWorker ServiceWorker.Model.Msg
-    | MsgZScore ZScore.Model.Msg
+    | TrySyncing
+      -- Messages that require login, or manage the login process
+    | MsgLoggedIn MsgLoggedIn
+    | MsgPagePinCode Pages.PinCode.Model.Msg
+    | TryPinCode String
+    | SetLoggedIn (WebData ( NurseId, Nurse ))
+      -- Manage device pairing
+    | MsgPageDevice Pages.Device.Model.Msg
     | TryPairingCode String
     | HandlePairedDevice (WebData Device)
+      -- Manage ZScore data
+    | MsgZScore ZScore.Model.Msg
+      -- Communiating with Rollbar
     | SendRollbar Rollbar.Level String (Dict String Value)
     | HandleRollbar (Result Http.Error Uuid)
+      -- Manage our own model
     | SetActivePage Page
     | SetLanguage Language
     | SetPersistentStorage Bool
     | SetStorageQuota StorageQuota
+    | SetMemoryQuota MemoryQuota
     | Tick Time
-    | TrySyncing
 
 
 {-| Messages we can only handle if we're logged in.
@@ -197,34 +174,28 @@ type Msg
 type MsgLoggedIn
     = MsgBackend Backend.Model.MsgBackend
     | MsgPageAdmin Pages.Admin.Model.Msg
+    | MsgPageSession SessionId Pages.Session.Model.Msg
 
 
 type alias Flags =
-    { credentials : String
-    , hostname : String
-    , activeLanguage : String
+    { activeLanguage : String
     , activeServiceWorker : Bool
+    , hostname : String
+    , pinCode : String
     }
 
 
 emptyModel : Flags -> Model
 emptyModel flags =
-    -- I suppose the login page is as logical as any.
-    -- if we auto-login, we'll transition to something
-    -- sensible anyway.
-    { activePage = LoginPage
-    , cache = Backend.Model.emptyModelCached
-    , indexedDb = Backend.Model.emptyModelIndexedDb
+    { activePage = PinCodePage
     , configuration = NotAsked
-    , persistentStorage = Nothing
-    , storageQuota = Nothing
-
-    -- We start at 1970, which might be nice to avoid, but probably more
-    -- trouble than it's worth ... this will almost immediately get updated
-    -- with the real date.
     , currentTime = 0
+    , dataWanted = []
+    , indexedDb = Backend.Model.emptyModelIndexedDb
     , language = English
-    , sessionPages = Pages.Model.emptySessionPages
+    , memoryQuota = Nothing
+    , persistentStorage = Nothing
     , serviceWorker = ServiceWorker.Model.emptyModel flags.activeServiceWorker
+    , storageQuota = Nothing
     , zscores = ZScore.Model.emptyModel
     }

@@ -10,6 +10,7 @@ import EveryDict
 import EveryDictList
 import EverySet
 import Measurement.Model exposing (..)
+import Pages.Session.Model
 
 
 getInputConstraintsHeight : FloatInputConstraints
@@ -35,41 +36,41 @@ getInputConstraintsWeight =
 
 {-| Initialize (or reset) a form with the given data.
 -}
-fromChildMeasurementData : MeasurementData ChildMeasurements ChildEdits -> ModelChild
+fromChildMeasurementData : MeasurementData ChildMeasurements -> ModelChild
 fromChildMeasurementData data =
     -- TODO: Clearly there is some kind of pattern below, but we won't try to abstract that
     -- just yet. Ultimately, this is the kind of thing which `RestfulData` would organize.
     { height =
         data
-            |> mapMeasurementData .height .height
+            |> mapMeasurementData .height
             |> currentValue
             |> Maybe.map (.value >> (\(HeightInCm cm) -> toString cm))
             |> Maybe.withDefault ""
     , muac =
         data
-            |> mapMeasurementData .muac .muac
+            |> mapMeasurementData .muac
             |> currentValue
             |> Maybe.map (.value >> (\(MuacInCm cm) -> toString cm))
             |> Maybe.withDefault ""
     , nutritionSigns =
         data
-            |> mapMeasurementData .nutrition .nutrition
+            |> mapMeasurementData .nutrition
             |> currentValue
             |> Maybe.map .value
             |> Maybe.withDefault EverySet.empty
     , counseling =
         data
-            |> mapMeasurementData .counselingSession .counseling
+            |> mapMeasurementData .counselingSession
             |> currentValue
             |> Maybe.map .value
     , photo =
         data
-            |> mapMeasurementData .photo .photo
+            |> mapMeasurementData .photo
             |> currentValue
             |> Maybe.map .value
     , weight =
         data
-            |> mapMeasurementData .weight .weight
+            |> mapMeasurementData .weight
             |> currentValue
             |> Maybe.map (.value >> (\(WeightInKg kg) -> toString kg))
             |> Maybe.withDefault ""
@@ -78,13 +79,13 @@ fromChildMeasurementData data =
 
 {-| Initialize (or reset) a form with the given data.
 -}
-fromMotherMeasurementData : MeasurementData MotherMeasurements MotherEdits -> ModelMother
+fromMotherMeasurementData : MeasurementData MotherMeasurements -> ModelMother
 fromMotherMeasurementData data =
     let
         -- We show the UI as completed for all current consents
         progress =
             data
-                |> mapMeasurementData .consent .consent
+                |> mapMeasurementData .consent
                 |> currentValues
                 |> List.map (Tuple.second >> .value >> .formId)
                 |> List.map (\formId -> ( formId, completedParticipantFormProgress ))
@@ -92,7 +93,7 @@ fromMotherMeasurementData data =
     in
     { familyPlanningSigns =
         data
-            |> mapMeasurementData .familyPlanning .familyPlanning
+            |> mapMeasurementData .familyPlanning
             |> currentValue
             |> Maybe.map .value
             |> Maybe.withDefault EverySet.empty
@@ -104,11 +105,11 @@ fromMotherMeasurementData data =
     }
 
 
-getMotherForm : MotherId -> EditableSession -> ModelMother
-getMotherForm motherId session =
+getMotherForm : MotherId -> Pages.Session.Model.Model -> EditableSession -> ModelMother
+getMotherForm motherId pages session =
     -- Could use `Maybe.withDefault` here instead, but then
     -- `fromMotherMeasurementData` would get calculated every time
-    case EveryDict.get motherId session.motherForms of
+    case EveryDict.get motherId pages.motherForms of
         Just motherForm ->
             motherForm
 
@@ -126,11 +127,11 @@ getMotherForm motherId session =
                    )
 
 
-getChildForm : ChildId -> EditableSession -> ModelChild
-getChildForm childId session =
+getChildForm : ChildId -> Pages.Session.Model.Model -> EditableSession -> ModelChild
+getChildForm childId pages session =
     -- Could use `Maybe.withDefault` here instead, but then
     -- `fromChildMeasurementData` would get calculated every time
-    case EveryDict.get childId session.childForms of
+    case EveryDict.get childId pages.childForms of
         Just childForm ->
             childForm
 

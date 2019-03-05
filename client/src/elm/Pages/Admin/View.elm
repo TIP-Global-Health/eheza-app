@@ -20,14 +20,14 @@ import Maybe.Extra exposing (isJust)
 import Pages.Admin.Model exposing (..)
 import Pages.Page exposing (..)
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (fromEntityId)
+import Restful.Endpoint exposing (fromEntityUuid)
 import Set
 import Time.Date
 import Translate exposing (Language, ValidationError, translate)
 import User.Model exposing (..)
 import Utils.Confirmation as Confirmation
 import Utils.Html exposing (spinner)
-import Utils.WebData exposing (viewError, viewOrFetch)
+import Utils.WebData exposing (viewError, viewWebData)
 
 
 view : Config.Model -> Language -> NominalDate -> User -> ModelBackend -> Model -> Html Msg
@@ -42,13 +42,13 @@ view config language currentDate user backend model =
 
         goBackMsg =
             -- If we're showing a create session form, then the back link
-            -- hides the form. Otherwise, it goes back to the LoginPage.
+            -- hides the form. Otherwise, it goes back to the PinCodePage.
             case model.createSession of
                 Just _ ->
                     ShowCreateSessionForm False
 
                 Nothing ->
-                    SetActivePage LoginPage
+                    SetActivePage PinCodePage
     in
     div [ class "wrap wrap-alt-2 admin-page" ]
         [ div
@@ -81,21 +81,31 @@ contentForOthers language =
 
 contentForAdmin : Config.Model -> Language -> NominalDate -> ModelBackend -> Model -> Html Msg
 contentForAdmin config language currentDate backend model =
-    div [] <|
-        viewOrFetch language
-            (MsgBackend Backend.Model.FetchClinics)
-            (viewLoadedClinics config language currentDate backend model)
-            identity
-            backend.clinics
+    div [] []
+
+
+
+{- TODO: reimplement
+   div [] <|
+       viewWebData language
+           (viewLoadedClinics config language currentDate backend model)
+           identity
+           backend.clinics
+-}
 
 
 viewLoadedClinics : Config.Model -> Language -> NominalDate -> ModelBackend -> Model -> EveryDictList ClinicId Clinic -> List (Html Msg)
 viewLoadedClinics config language currentDate backend model clinics =
-    viewOrFetch language
-        (MsgBackend <| Backend.Model.FetchFutureSessions currentDate)
-        (viewLoadedSessions config language backend model clinics)
-        identity
-        backend.futureSessions
+    []
+
+
+
+{- TODO: reimplement
+   viewWebData language
+       (viewLoadedSessions config language backend model clinics)
+       identity
+       backend.futureSessions
+-}
 
 
 viewLoadedSessions : Config.Model -> Language -> ModelBackend -> Model -> EveryDictList ClinicId Clinic -> ( NominalDate, EveryDictList SessionId Session ) -> List (Html Msg)
@@ -121,7 +131,7 @@ viewCreateSessionForm config language backend model form clinics sessions =
             clinicIdState form
 
         clinicOption ( clinicId, clinic ) =
-            ( toString (fromEntityId clinicId), clinic.name )
+            ( toString (fromEntityUuid clinicId), clinic.name )
 
         clinicOptions =
             ( "", translate language Translate.SelectClinic )

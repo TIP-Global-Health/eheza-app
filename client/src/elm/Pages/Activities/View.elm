@@ -1,6 +1,7 @@
 module Pages.Activities.View exposing (view)
 
 import Activity.Utils exposing (getActivityIcon, getAllActivities, getParticipantCountForActivity, summarizeByActivity)
+import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -12,8 +13,8 @@ import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
 
 
-view : Language -> EditableSession -> Model -> Html Msg
-view language session model =
+view : Language -> ( SessionId, EditableSession ) -> Model -> Html Msg
+view language ( sessionId, session ) model =
     let
         summary =
             summarizeByActivity session
@@ -39,7 +40,7 @@ view language session model =
                 [ class "card" ]
                 [ div
                     [ class "image"
-                    , onClick <| SetRedirectPage <| SessionPage <| ActivityPage activity
+                    , onClick <| SetRedirectPage <| UserPage <| SessionPage sessionId <| ActivityPage activity
                     ]
                     [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
                 , div
@@ -120,10 +121,10 @@ view language session model =
                 ]
             , ul [ class "links-head" ]
                 [ li
-                    [ onClick <| SetRedirectPage <| SessionPage AttendancePage ]
+                    [ onClick <| SetRedirectPage <| UserPage <| SessionPage sessionId AttendancePage ]
                     [ a [] [ span [ class "icon-completed" ] [] ] ]
                 , li
-                    [ onClick <| SetRedirectPage <| SessionPage ParticipantsPage ]
+                    [ onClick <| SetRedirectPage <| UserPage <| SessionPage sessionId ParticipantsPage ]
                     [ a [] [ span [ class "icon-mother" ] [] ] ]
                 , li
                     [ class "active" ]

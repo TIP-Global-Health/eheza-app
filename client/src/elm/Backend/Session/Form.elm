@@ -13,7 +13,7 @@ import Form exposing (..)
 import Form.Init exposing (..)
 import Form.Validate exposing (..)
 import Gizra.NominalDate exposing (NominalDateRange)
-import Restful.Endpoint exposing (toEntityId)
+import Restful.Endpoint exposing (toEntityUuid)
 import Translate exposing (ValidationError(..))
 import Utils.NominalDate exposing (setNominalDateRange, validateNominalDateRange)
 
@@ -100,8 +100,8 @@ validateSession knownClinic =
 
 validateClinicId : (ClinicId -> Bool) -> Validation ValidationError ClinicId
 validateClinicId knownClinic =
-    int
-        |> map toEntityId
+    string
+        |> map toEntityUuid
         |> andThen
             (\id ->
                 if knownClinic id then

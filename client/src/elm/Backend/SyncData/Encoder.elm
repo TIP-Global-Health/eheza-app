@@ -3,23 +3,33 @@ module Backend.SyncData.Encoder exposing (encodeSyncData)
 import Backend.SyncData.Model exposing (..)
 import Date exposing (Date, toTime)
 import Json.Encode exposing (..)
+import Json.Encode.Extra exposing (maybe)
 
 
 encodeSyncData : SyncData -> Value
 encodeSyncData data =
-    data.status
-        |> Maybe.map encodeSyncStatusFields
-        |> Maybe.withDefault []
-        |> (::) ( "status", encodeSyncAttempt data.attempt )
-        |> object
+    object
+        [ ( "download", maybe encodeDownloadStatus data.downloadStatus )
+        , ( "upload", maybe encodeUploadStatus data.uploadStatus )
+        , ( "attempt", encodeSyncAttempt data.attempt )
+        ]
 
 
-encodeSyncStatusFields : SyncStatus -> List ( String, Value )
-encodeSyncStatusFields data =
-    [ ( "last_contact", float (toTime data.lastContact) )
-    , ( "last_timestamp", int data.lastTimestamp )
-    , ( "remaining", int data.remaining )
-    ]
+encodeDownloadStatus : DownloadStatus -> Value
+encodeDownloadStatus data =
+    object
+        [ ( "last_contact", float (toTime data.lastSuccessfulContact) )
+        , ( "last_timestamp", int data.lastTimestamp )
+        , ( "remaining", int data.remaining )
+        ]
+
+
+encodeUploadStatus : UploadStatus -> Value
+encodeUploadStatus data =
+    object
+        [ ( "first_timestamp", maybe int data.firstTimestamp )
+        , ( "remaining", int data.remaining )
+        ]
 
 
 encodeSyncAttempt : SyncAttempt -> Value
@@ -30,10 +40,15 @@ encodeSyncAttempt data =
                 [ ( "tag", string "NotAsked" )
                 ]
 
-            Loading date revision ->
+            Downloading date revision ->
                 [ ( "tag", string "Loading" )
                 , ( "timestamp", float (toTime date) )
                 , ( "revision", int revision )
+                ]
+
+            Uploading date ->
+                [ ( "tag", string "Uploading" )
+                , ( "timestamp", float (toTime date) )
                 ]
 
             Success ->

@@ -1,7 +1,7 @@
-port module Measurement.Update exposing (updateChild, updateMother)
+module Measurement.Update exposing (updateChild, updateMother)
 
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MeasurementData, MotherEdits, MotherMeasurements, PhotoValue)
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MeasurementData, MotherMeasurements, PhotoValue)
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
 import Config.Model exposing (BackendUrl)
 import EveryDict
@@ -106,7 +106,7 @@ updateChild msg model =
             )
 
 
-updateMother : MeasurementData MotherMeasurements MotherEdits -> MsgMother -> ModelMother -> ( ModelMother, Cmd MsgMother, Maybe OutMsgMother )
+updateMother : MeasurementData MotherMeasurements -> MsgMother -> ModelMother -> ( ModelMother, Cmd MsgMother, Maybe OutMsgMother )
 updateMother measurements msg model =
     case msg of
         SelectFamilyPlanningSign selected sign ->
@@ -190,7 +190,7 @@ updateMother measurements msg model =
                 -- the possible error message.
                 updated =
                     case outMsg of
-                        SaveCompletedForm formId _ ->
+                        SaveCompletedForm _ formId _ ->
                             case model.participantConsent.view of
                                 Just currentFormId ->
                                     if formId == currentFormId then
@@ -209,7 +209,7 @@ updateMother measurements msg model =
                                     -- form, then no change needed.
                                     model
 
-                        SaveFamilyPlanningSigns _ ->
+                        _ ->
                             model
             in
             ( updated
@@ -218,7 +218,7 @@ updateMother measurements msg model =
             )
 
 
-selectNextForm : MeasurementData MotherMeasurements MotherEdits -> ParticipantFormId -> ModelMother -> ModelMother
+selectNextForm : MeasurementData MotherMeasurements -> ParticipantFormId -> ModelMother -> ModelMother
 selectNextForm measurements formId model =
     let
         completedFormIds =
@@ -227,7 +227,7 @@ selectNextForm measurements formId model =
             -- save to the cache, we will need to adjust that (to take into
             -- account whether the save succeeded or not).
             measurements
-                |> mapMeasurementData .consent .consent
+                |> mapMeasurementData .consent
                 |> currentValues
                 |> List.map (Tuple.second >> .value >> .formId)
                 |> EverySet.fromList
@@ -273,8 +273,8 @@ postPhoto backendUrl accessToken childId model =
                command =
                    HttpBuilder.post (backendUrl ++ "/api/photos")
                        |> withQueryParams [ ( "access_token", accessToken ) ]
-                       -- TODO: Fix up types to avoid `toEntityId`
-                       |> withJsonBody (encodePhoto (toEntityId childId) fileId)
+                       -- TODO: Fix up types to avoid `toEntityUuid`
+                       |> withJsonBody (encodePhoto (toEntityUuid childId) fileId)
                        |> sendWithHandler decodePhotoFromResponse HandlePhotoSave
            in
                ( { model | status = Loading }

@@ -1,24 +1,26 @@
-module Backend.SyncData.Model exposing (SyncAttempt(..), SyncData, SyncError(..), SyncStatus, emptySyncData)
+module Backend.SyncData.Model exposing (DownloadStatus, SyncAttempt(..), SyncData, SyncError(..), UploadStatus, emptySyncData)
 
 import Date exposing (Date)
 
 
 type alias SyncData =
-    { status : Maybe SyncStatus
+    { downloadStatus : Maybe DownloadStatus
+    , uploadStatus : Maybe UploadStatus
     , attempt : SyncAttempt
     }
 
 
 emptySyncData : SyncData
 emptySyncData =
-    { status = Nothing
+    { downloadStatus = Nothing
+    , uploadStatus = Nothing
     , attempt = NotAsked
     }
 
 
-type alias SyncStatus =
+type alias DownloadStatus =
     -- The last time we successfully contacted the backend
-    { lastContact : Date
+    { lastSuccessfulContact : Date
 
     -- The timestamp of the last revision on the backend
     , lastTimestamp : Int
@@ -28,9 +30,20 @@ type alias SyncStatus =
     }
 
 
+type alias UploadStatus =
+    -- Timestamp of the first revision we haven't uploaded
+    -- (if there is such a revision).
+    { firstTimestamp : Maybe Int
+
+    -- How many revisions remain to be uploaded?
+    , remaining : Int
+    }
+
+
 type SyncAttempt
     = NotAsked
-    | Loading Date Int -- in progress, from base revision
+    | Downloading Date Int -- in progress, from base revision
+    | Uploading Date
     | Failure Date SyncError
     | Success
 
