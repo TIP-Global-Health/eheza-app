@@ -102,7 +102,6 @@ init flags =
 
                         configuredModel =
                             { config = config
-                            , patientRegistrationPage = Pages.PatientRegistration.Model.emptyModel
                             , device = Loading
                             , devicePage = Pages.Device.Model.emptyModel
                             , loggedIn = NotAsked
@@ -193,6 +192,16 @@ update msg model =
                             in
                             ( { data | adminPage = newModel }
                             , Cmd.map (MsgLoggedIn << MsgPageAdmin) cmd
+                            , appMsgs
+                            )
+
+                        MsgPagePatientRegistration subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.PatientRegistration.Update.update currentDate subMsg data.patientRegistrationPage
+                            in
+                            ( { data | patientRegistrationPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPagePatientRegistration) subCmd
                             , appMsgs
                             )
 
@@ -292,20 +301,6 @@ update msg model =
                     ( { configured | pinCodePage = subModel }
                     , Cmd.batch (Cmd.map MsgPagePinCode subCmd :: extraCmds)
                     , extraMsgs
-                    )
-                )
-                model
-
-        MsgPagePatientRegistration subMsg ->
-            updateConfigured
-                (\configured ->
-                    let
-                        ( subModel, subCmd, appMsgs ) =
-                            Pages.PatientRegistration.Update.update currentDate subMsg configured.patientRegistrationPage
-                    in
-                    ( { configured | patientRegistrationPage = subModel }
-                    , Cmd.map MsgPagePatientRegistration subCmd
-                    , appMsgs
                     )
                 )
                 model

@@ -74,7 +74,6 @@ testConfigModel =
             }
     in
     { config = testConfig
-    , patientRegistrationPage = Pages.PatientRegistration.Model.emptyModel
     , device = NotAsked
     , devicePage = Pages.Device.Model.emptyModel
     , loggedIn = NotAsked
