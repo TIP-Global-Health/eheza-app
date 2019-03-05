@@ -139,6 +139,7 @@ viewWhenLoggedIn language nurse =
         registerPatientButton =
             button
                 [ class "ui fluid primary button"
+                , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.PatientRegistartionPage
                 ]
                 [ text <| translate language Translate.RegisterAPatient ]
 
