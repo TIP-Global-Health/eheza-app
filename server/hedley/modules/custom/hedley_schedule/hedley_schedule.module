@@ -27,8 +27,8 @@ function hedley_schedule_form_counseling_session_node_form_alter(&$form, &$form_
  */
 function hedley_schedule_node_presave($node) {
   if ($node->type == 'session') {
-    // TODO: Now that we're syncing, we can't reject duplicate sessions outright.
-    // We'll have to flag them as conflicts to be resolved.
+    // TODO: Now that we're syncing, we can't reject duplicate sessions
+    // outright.  We'll have to flag them as conflicts to be resolved.
     // hedley_schedule_check_duplicate_session($node);
     hedley_schedule_check_unpublish_session($node);
   }
