@@ -5,7 +5,7 @@ module Pages.PatientRegistration.View exposing (view)
 
 import Backend.Child.Model exposing (Gender(..), ModeOfDelivery(..), modeOfDeliveryToValue)
 import Backend.Measurement.Model exposing (PhotoValue)
-import Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..))
+import Backend.Model exposing (ModelBackend, MsgBackend(..))
 import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Ubudehe(..), hivStatusToValue)
 import EveryDict
 import Form
@@ -31,8 +31,8 @@ import Utils.Form exposing (isFormFieldSet, isFormFieldValid)
 import Utils.Html exposing (script, viewModal)
 
 
-view : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
-view language currentDate user backend cache model =
+view : Language -> NominalDate -> Model -> Html Msg
+view language currentDate model =
     let
         -- FORM FIELDS --
         firstName =
@@ -628,7 +628,7 @@ view language currentDate user backend cache model =
                 action =
                     case model.registrationStep of
                         First ->
-                            SetActivePage LoginPage
+                            SetActivePage PinCodePage
 
                         Second ->
                             SetRegistrationStep First
@@ -718,7 +718,7 @@ view language currentDate user backend cache model =
                 [ text <| translate language Translate.RegisterNewPatient ]
             , a
                 [ class "link-back"
-                , onClick <| SetActivePage LoginPage
+                , onClick <| SetActivePage PinCodePage
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []

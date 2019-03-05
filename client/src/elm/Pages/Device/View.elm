@@ -12,11 +12,12 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Device.Model exposing (..)
+import Pages.Page exposing (Page(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner)
-import Utils.WebData exposing (viewError, viewOrFetch)
+import Utils.WebData exposing (viewError)
 
 
 {-| We organize our SyncData by health center. However, there is also a bunch
@@ -24,7 +25,7 @@ of nodes that we get no matter which health center we're interesting in. So,
 this is the "magic" UUID that represents "all the health centers" (or, "no
 health center", depending on how you look at it).
 -}
-nodesUuid : HealthCenterUuid
+nodesUuid : HealthCenterId
 nodesUuid =
     toEntityUuid "78cf21d1-b3f4-496a-b312-d8ae73041f09"
 
@@ -40,6 +41,13 @@ view language device app model =
             [ h1
                 [ class "ui header" ]
                 [ text <| translate language Translate.DeviceStatus ]
+            , a
+                [ class "link-back"
+                , onClick <| SetActivePage PinCodePage
+                ]
+                [ span [ class "icon-back" ] []
+                , span [] []
+                ]
             ]
         , div
             [ class "ui segment" ]
@@ -74,12 +82,17 @@ viewStorageStatus language app =
             div []
                 [ text <| translate language <| Translate.PersistentStorage persistent ]
 
-        viewQuota quota =
+        viewMemoryQuota quota =
+            div []
+                [ text <| translate language <| Translate.MemoryQuota quota ]
+
+        viewStorageQuota quota =
             div []
                 [ text <| translate language <| Translate.StorageQuota quota ]
     in
-    [ Maybe.map viewQuota app.storageQuota
+    [ Maybe.map viewStorageQuota app.storageQuota
     , Maybe.map viewPersistent app.persistentStorage
+    , Maybe.map viewMemoryQuota app.memoryQuota
     ]
         |> List.filterMap identity
         |> div []
@@ -128,7 +141,7 @@ viewHealthCenters language db =
         |> RemoteData.withDefault spinner
 
 
-viewHealthCenter : Language -> ModelIndexedDb -> HealthCenterUuid -> HealthCenter -> Html Msg
+viewHealthCenter : Language -> ModelIndexedDb -> HealthCenterId -> HealthCenter -> Html Msg
 viewHealthCenter language db uuid model =
     let
         sync =

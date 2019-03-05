@@ -18,6 +18,14 @@ function hedley_activity_ctools_plugin_api($module = NULL, $api = NULL) {
  */
 function hedley_activity_node_info() {
   $items = array(
+    'attendance' => array(
+      'name' => t('Attendance'),
+      'base' => 'node_content',
+      'description' => t('Records whether a mother/caregiver has attended for a session.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'family_planning' => array(
       'name' => t('Family Planning'),
       'base' => 'node_content',

@@ -1,3 +1,3 @@
-id,title
-tablet1,Tablet 1
-tablet2,Tablet 2
+id,title,field_pairing_code
+tablet1,Tablet 1,12345678
+tablet2,Tablet 2,87654321

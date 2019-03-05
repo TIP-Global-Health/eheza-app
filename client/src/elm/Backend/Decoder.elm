@@ -4,7 +4,7 @@ import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
-import Backend.Measurement.Decoder exposing (decodeFamilyPlanning, decodeHeight, decodeMuac, decodeNutrition, decodePhoto, decodeWeight)
+import Backend.Measurement.Decoder exposing (decodeAttendance, decodeCounselingSession, decodeFamilyPlanning, decodeHeight, decodeMuac, decodeNutrition, decodeParticipantConsent, decodePhoto, decodeWeight)
 import Backend.Model exposing (..)
 import Backend.Mother.Decoder exposing (decodeMother)
 import Backend.Nurse.Decoder exposing (decodeNurse)
@@ -22,22 +22,23 @@ decodeRevision =
                 -- Some of these aren't implemented yet, because they need
                 -- to be converted from ID to UUUID references first.
                 case s of
+                    "attendance" ->
+                        decodeWithUuid AttendanceRevision decodeAttendance
+
                     "catchment_area" ->
                         decodeWithUuid CatchmentAreaRevision decodeCatchmentArea
 
                     "child" ->
-                        -- decodeWithUuid ChildRevision decodeChild
-                        succeed NotYetImplemented
+                        decodeWithUuid ChildRevision decodeChild
 
                     "clinic" ->
                         decodeWithUuid ClinicRevision decodeClinic
 
                     "counseling_schedule" ->
-                        -- decodeWithUuid CounselingScheduleRevision decodeCounselingSchedule
-                        succeed NotYetImplemented
+                        decodeWithUuid CounselingScheduleRevision decodeCounselingSchedule
 
                     "counseling_session" ->
-                        succeed NotYetImplemented
+                        decodeWithUuid CounselingSessionRevision decodeCounselingSession
 
                     "counseling_topic" ->
                         decodeWithUuid CounselingTopicRevision decodeCounselingTopic
@@ -46,45 +47,37 @@ decodeRevision =
                         decodeWithUuid HealthCenterRevision decodeHealthCenter
 
                     "mother" ->
-                        -- decodeWithUuid MotherRevision decodeMother
-                        succeed NotYetImplemented
+                        decodeWithUuid MotherRevision decodeMother
 
                     "session" ->
-                        -- decodeWithUuid SessionRevision decodeSession
-                        succeed NotYetImplemented
+                        decodeWithUuid SessionRevision decodeSession
 
                     "nurse" ->
                         decodeWithUuid NurseRevision decodeNurse
 
                     "family_planning" ->
-                        -- decodeWithUuid FamilyPlanningRevision decodeFamilyPlanning
-                        succeed NotYetImplemented
+                        decodeWithUuid FamilyPlanningRevision decodeFamilyPlanning
 
                     "height" ->
-                        --decodeWithUuid HeightRevision decodeHeight
-                        succeed NotYetImplemented
+                        decodeWithUuid HeightRevision decodeHeight
 
                     "muac" ->
-                        -- decodeWithUuid MuacRevision decodeMuac
-                        succeed NotYetImplemented
+                        decodeWithUuid MuacRevision decodeMuac
 
                     "nutrition" ->
-                        -- decodeWithUuid ChildNutritionRevision decodeNutrition
-                        succeed NotYetImplemented
+                        decodeWithUuid ChildNutritionRevision decodeNutrition
 
                     "participant_consent" ->
-                        succeed NotYetImplemented
+                        decodeWithUuid ParticipantConsentRevision decodeParticipantConsent
 
                     "participant_form" ->
                         decodeWithUuid ParticipantFormRevision decodeParticipantForm
 
                     "photo" ->
-                        -- decodeWithUuid PhotoRevision decodePhoto
-                        succeed NotYetImplemented
+                        decodeWithUuid PhotoRevision decodePhoto
 
                     "weight" ->
-                        -- decodeWithUuid WeightRevision decodeWeight
-                        succeed NotYetImplemented
+                        decodeWithUuid WeightRevision decodeWeight
 
                     _ ->
                         fail <|

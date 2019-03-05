@@ -53,7 +53,7 @@ emptyModel active =
 
 
 type Msg
-    = BackToLoginPage
+    = BackToPinCodePage
     | HandleIncomingMsg Value
     | SendOutgoingMsg OutgoingMsg
 
@@ -62,7 +62,7 @@ type IncomingMsg
     = RegistrationSucceeded
     | RegistrationFailed String
     | SetNewWorker NewWorker
-    | SetSyncData (EveryDictList HealthCenterUuid SyncData)
+    | SetSyncData (EveryDictList HealthCenterId SyncData)
     | NewRevisions (List Revision)
 
 
