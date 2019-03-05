@@ -3,7 +3,8 @@ module Pages.PatientRegistration.View exposing (view)
 {-| The purpose of this page is
 -}
 
-import Backend.Child.Model exposing (Gender(..), ModeOfDelivery(..), modeOfDeliveryToValue)
+import Backend.Child.Encoder exposing (encodeModeOfDelivery)
+import Backend.Child.Model exposing (Gender(..), ModeOfDelivery(..), allModesOfDelivery)
 import Backend.Measurement.Model exposing (PhotoValue)
 import Backend.Model exposing (ModelBackend, MsgBackend(..))
 import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Ubudehe(..), hivStatusToValue)
@@ -348,12 +349,14 @@ view language currentDate model =
                                                 viewModeOfDelivery =
                                                     let
                                                         options =
-                                                            emptyOption
-                                                                :: [ ( modeOfDeliveryToValue SpontaneousVaginalDeliveryWithEpisiotomy, translate language <| Translate.ModeOfDelivery SpontaneousVaginalDeliveryWithEpisiotomy )
-                                                                   , ( modeOfDeliveryToValue SpontaneousVaginalDeliveryWithoutEpisiotomy, translate language <| Translate.ModeOfDelivery SpontaneousVaginalDeliveryWithoutEpisiotomy )
-                                                                   , ( modeOfDeliveryToValue VaginalDeliveryWithVacuumExtraction, translate language <| Translate.ModeOfDelivery VaginalDeliveryWithVacuumExtraction )
-                                                                   , ( modeOfDeliveryToValue CesareanDelivery, translate language <| Translate.ModeOfDelivery CesareanDelivery )
-                                                                   ]
+                                                            allModesOfDelivery
+                                                                |> List.map
+                                                                    (\mode ->
+                                                                        ( encodeModeOfDelivery mode
+                                                                        , translate language (Translate.ModeOfDelivery mode)
+                                                                        )
+                                                                    )
+                                                                |> (::) emptyOption
                                                     in
                                                     viewSelectInput language Translate.ModeOfDeliveryLabel options modeOfDelivery "ten" "select-input" True
                                             in

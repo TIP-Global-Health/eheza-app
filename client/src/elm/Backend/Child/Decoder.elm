@@ -39,3 +39,26 @@ decodeGender =
                 else
                     fail (gender ++ " is not a recognized 'type' for Gender.")
             )
+
+
+decodeModeOfDelivery : Decoder ModeOfDelivery
+decodeModeOfDelivery =
+    string
+        |> andThen
+            (\mode ->
+                case mode of
+                    "svd-episiotomy" ->
+                        succeed <| VaginalDelivery (Spontaneous True)
+
+                    "svd-no-episiotomy" ->
+                        succeed <| VaginalDelivery (Spontaneous False)
+
+                    "vd-vacuum" ->
+                        succeed <| VaginalDelivery WithVacuumExtraction
+
+                    "cesarean-delivery" ->
+                        succeed <| CesareanDelivery
+
+                    _ ->
+                        fail (mode ++ " is not a recognized ModeOfDelivery")
+            )

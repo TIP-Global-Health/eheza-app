@@ -1,4 +1,4 @@
-module Backend.Child.Encoder exposing (encodeChild, encodeGender)
+module Backend.Child.Encoder exposing (encodeChild, encodeGender, encodeModeOfDelivery)
 
 import Backend.Child.Model exposing (..)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
@@ -25,3 +25,21 @@ encodeChild child =
     , ( "date_birth", encodeYYYYMMDD child.birthDate )
     , ( "gender", encodeGender child.gender )
     ]
+
+
+encodeModeOfDelivery : ModeOfDelivery -> String
+encodeModeOfDelivery mode =
+    case mode of
+        VaginalDelivery vaginal ->
+            case vaginal of
+                Spontaneous True ->
+                    "svd-episiotomy"
+
+                Spontaneous False ->
+                    "svd-no-episiotomy"
+
+                WithVacuumExtraction ->
+                    "vd-vacuum"
+
+        CesareanDelivery ->
+            "cesarean-delivery"
