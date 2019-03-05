@@ -1,4 +1,4 @@
-module Backend.Mother.Decoder exposing (decodeMother)
+module Backend.Mother.Decoder exposing (decodeHivStatus, decodeMother)
 
 import Backend.Mother.Model exposing (..)
 import Backend.Patient.Decoder exposing (decodeGender, decodeUbudehe)
@@ -97,4 +97,53 @@ decodeEducationLevel =
                         fail <|
                             toString educationLevel
                                 ++ " is not a recognized EducationLevel"
+            )
+
+
+decodeHivStatus : Decoder HIVStatus
+decodeHivStatus =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "hiv-exposed-infant" ->
+                        succeed HIVExposedInfant
+
+                    "negative" ->
+                        succeed Negative
+
+                    "negative-dc" ->
+                        succeed NegativeDiscordantCouple
+
+                    "positive" ->
+                        succeed Positive
+
+                    "unknown" ->
+                        succeed Unknown
+
+                    _ ->
+                        fail (s ++ " is not a recognized HIVStatus")
+            )
+
+
+decodeMaritalStatus : Decoder MaritalStatus
+decodeMaritalStatus =
+    string
+        |> andThen
+            (\status ->
+                case status of
+                    "divorced" ->
+                        succeed Divorced
+
+                    "married" ->
+                        succeed Married
+
+                    "single" ->
+                        succeed Single
+
+                    "widowed" ->
+                        succeed Widowed
+
+                    _ ->
+                        fail (status ++ " is not a recognized MaritalStatus")
             )

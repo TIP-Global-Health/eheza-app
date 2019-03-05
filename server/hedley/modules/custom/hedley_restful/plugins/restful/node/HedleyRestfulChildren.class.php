@@ -41,14 +41,4 @@ class HedleyRestfulChildren extends HedleyRestfulPatientBase {
     return $public_fields;
   }
 
-  /**
-   * Return the type of the entity.
-   *
-   * @return string
-   *   The type name.
-   */
-  protected static function getType() {
-    return 'session';
-  }
-
 }

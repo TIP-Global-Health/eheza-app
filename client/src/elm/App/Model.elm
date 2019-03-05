@@ -98,7 +98,6 @@ type alias Version =
 -}
 type alias ConfiguredModel =
     { config : Config.Model.Model
-    , patientRegistrationPage : Pages.PatientRegistration.Model.Model
 
     -- `device` tracks the attempt to pair our device with the
     -- backend. `devicePage` handles the UI for that.
@@ -124,6 +123,7 @@ it at the appropriate moment.
 type alias LoggedInModel =
     { backend : Backend.Model.ModelBackend
     , adminPage : Pages.Admin.Model.Model
+    , patientRegistrationPage : Pages.PatientRegistration.Model.Model
 
     -- The nurse who has logged in.
     , nurse : ( NurseId, Nurse )
@@ -137,6 +137,7 @@ emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel nurse =
     { backend = Backend.Model.emptyModelBackend
     , adminPage = Pages.Admin.Model.emptyModel
+    , patientRegistrationPage = Pages.PatientRegistration.Model.emptyModel
     , nurse = nurse
     , sessionPages = EveryDict.empty
     }
@@ -146,7 +147,6 @@ type Msg
     = -- Manage data we get from IndexedDb, and communication with the service
       -- worker
       MsgIndexedDb Backend.Model.MsgIndexedDb
-    | MsgPagePatientRegistration Pages.PatientRegistration.Model.Msg
     | MsgServiceWorker ServiceWorker.Model.Msg
     | TrySyncing
       -- Messages that require login, or manage the login process
@@ -177,6 +177,7 @@ type Msg
 type MsgLoggedIn
     = MsgBackend Backend.Model.MsgBackend
     | MsgPageAdmin Pages.Admin.Model.Msg
+    | MsgPagePatientRegistration Pages.PatientRegistration.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
 
 

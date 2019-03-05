@@ -37,10 +37,6 @@ class HedleyRestfulMothers extends HedleyRestfulPatientBase {
       'property' => 'field_relationship',
     ];
 
-    $public_fields['ubudehe'] = [
-      'property' => 'field_ubudehe',
-    ];
-
     $public_fields['clinic'] = [
       'property' => 'field_clinic',
       'sub_property' => 'field_uuid',

@@ -1,14 +1,17 @@
 module Pages.PatientRegistration.Update exposing (update)
 
 import App.Model
+import Backend.Child.Decoder exposing (decodeModeOfDelivery)
 import Backend.Child.Model exposing (Child, ModeOfDelivery(..))
-import Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother, stringToHivStatus)
+import Backend.Mother.Decoder exposing (decodeHivStatus)
+import Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother)
 import Backend.Patient.Model exposing (Gender(..), Ubudehe(..))
 import Date
 import EveryDict
 import Form
 import Form.Field exposing (FieldValue(..))
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
+import Json.Decode exposing (decodeString)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page
 import Pages.PatientRegistration.Model exposing (..)
@@ -18,8 +21,8 @@ import Time exposing (Time)
 import Time.Date
 
 
-update : Time -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentTime msg model =
+update : NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate msg model =
     case msg of
         DropZoneComplete result ->
             -- The `fid` being Nothing signifies that we haven't uploaded this to
@@ -98,9 +101,6 @@ update currentTime msg model =
 
         MsgRegistrationForm subMsg ->
             let
-                currentDate =
-                    fromLocalDateTime <| Date.fromTime currentTime
-
                 extraMsgs =
                     case subMsg of
                         Form.Input "isMale" Form.Checkbox (Bool True) ->
@@ -198,11 +198,11 @@ update currentTime msg model =
                             []
             in
             ( { model | registrationForm = Form.update validateRegistrationForm subMsg model.registrationForm }, Cmd.none, [] )
-                |> sequenceExtra (update currentTime) extraMsgs
+                |> sequenceExtra (update currentDate) extraMsgs
 
         Reset ->
             ( model, Cmd.none, [] )
-                |> sequenceExtra (update currentTime) [ SetActivePage Pages.Page.PinCodePage ]
+                |> sequenceExtra (update currentDate) [ SetActivePage Pages.Page.PinCodePage ]
 
         SearchForParticipant searchValue ->
             ( { model | submittedSearch = Just searchValue }, Cmd.none, [] )
@@ -238,7 +238,7 @@ update currentTime msg model =
 
         SetRelationPatient patientData ->
             ( { model | relationPatient = patientData, submittedSearch = Nothing, dialogState = Nothing }, Cmd.none, [] )
-                |> sequenceExtra (update currentTime) [ SetRegistrationPhase <| ParticipantSearch Nothing ]
+                |> sequenceExtra (update currentDate) [ SetRegistrationPhase <| ParticipantSearch Nothing ]
 
         StepBack ->
             case model.previousPhases of
@@ -250,9 +250,6 @@ update currentTime msg model =
 
         Submit ->
             let
-                currentDate =
-                    fromLocalDateTime <| Date.fromTime currentTime
-
                 dayOfBirth =
                     Form.getFieldAsString "dayOfBirth" model.registrationForm
                         |> getFormFieldValue
@@ -387,21 +384,12 @@ update currentTime msg model =
                                         |> .value
                                         |> Maybe.andThen
                                             (\mode ->
-                                                case mode of
-                                                    "svd-episiotomy" ->
-                                                        Just SpontaneousVaginalDeliveryWithEpisiotomy
-
-                                                    "svd-no-episiotomy" ->
-                                                        Just SpontaneousVaginalDeliveryWithoutEpisiotomy
-
-                                                    "vd-vacuum" ->
-                                                        Just VaginalDeliveryWithVacuumExtraction
-
-                                                    "cesarean-delivery" ->
-                                                        Just CesareanDelivery
-
-                                                    _ ->
+                                                case decodeString decodeModeOfDelivery mode of
+                                                    Err _ ->
                                                         Nothing
+
+                                                    Ok result ->
+                                                        Just result
                                             )
 
                                 motherName =
@@ -560,7 +548,15 @@ update currentTime msg model =
                                 hivStatus =
                                     Form.getFieldAsString "hivStatus" model.registrationForm
                                         |> .value
-                                        |> Maybe.andThen stringToHivStatus
+                                        |> Maybe.andThen
+                                            (\value ->
+                                                case decodeString decodeHivStatus value of
+                                                    Err _ ->
+                                                        Nothing
+
+                                                    Ok result ->
+                                                        Just result
+                                            )
 
                                 householdSize =
                                     Form.getFieldAsString "householdSize" model.registrationForm

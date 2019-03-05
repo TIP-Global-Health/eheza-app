@@ -1,4 +1,4 @@
-module Backend.Child.Model exposing (Child, ModeOfDelivery(..), modeOfDeliveryToValue)
+module Backend.Child.Model exposing (Child, ModeOfDelivery(..), VaginalDelivery(..), allModesOfDelivery)
 
 import Backend.Entities exposing (..)
 import Backend.Patient.Model exposing (Gender, Ubudehe)
@@ -38,23 +38,21 @@ type alias Child =
 
 
 type ModeOfDelivery
-    = SpontaneousVaginalDeliveryWithEpisiotomy
-    | SpontaneousVaginalDeliveryWithoutEpisiotomy
-    | VaginalDeliveryWithVacuumExtraction
+    = VaginalDelivery VaginalDelivery
     | CesareanDelivery
 
 
-modeOfDeliveryToValue : ModeOfDelivery -> String
-modeOfDeliveryToValue mode =
-    case mode of
-        SpontaneousVaginalDeliveryWithEpisiotomy ->
-            "svd-episiotomy"
+{-| The bool indicates whether an episiotomy was performed
+-}
+type VaginalDelivery
+    = Spontaneous Bool
+    | WithVacuumExtraction
 
-        SpontaneousVaginalDeliveryWithoutEpisiotomy ->
-            "svd-no-episiotomy"
 
-        VaginalDeliveryWithVacuumExtraction ->
-            "vd-vacuum"
-
-        CesareanDelivery ->
-            "cesarean-delivery"
+allModesOfDelivery : List ModeOfDelivery
+allModesOfDelivery =
+    [ VaginalDelivery (Spontaneous True)
+    , VaginalDelivery (Spontaneous False)
+    , VaginalDelivery WithVacuumExtraction
+    , CesareanDelivery
+    ]

@@ -14,17 +14,17 @@ encodeGender gender =
             string "female"
 
 
-encodeUbudehe : Ubudehe -> Value
+encodeUbudehe : Ubudehe -> Int
 encodeUbudehe ubudehe =
     case ubudehe of
         Ubudehe1 ->
-            int 1
+            1
 
         Ubudehe2 ->
-            int 2
+            2
 
         Ubudehe3 ->
-            int 3
+            3
 
         Ubudehe4 ->
-            int 4
+            4

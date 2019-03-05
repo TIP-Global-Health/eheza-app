@@ -1,4 +1,4 @@
-module Backend.Child.Decoder exposing (decodeChild)
+module Backend.Child.Decoder exposing (decodeChild, decodeModeOfDelivery)
 
 import Backend.Child.Model exposing (..)
 import Backend.Patient.Decoder exposing (decodeGender)
@@ -52,5 +52,24 @@ decodeChild =
         |> hardcoded Nothing
 
 
+decodeModeOfDelivery : Decoder ModeOfDelivery
+decodeModeOfDelivery =
+    string
+        |> andThen
+            (\mode ->
+                case mode of
+                    "svd-episiotomy" ->
+                        succeed <| VaginalDelivery (Spontaneous True)
 
--- |> hardcoded Nothing
+                    "svd-no-episiotomy" ->
+                        succeed <| VaginalDelivery (Spontaneous False)
+
+                    "vd-vacuum" ->
+                        succeed <| VaginalDelivery WithVacuumExtraction
+
+                    "cesarean-delivery" ->
+                        succeed <| CesareanDelivery
+
+                    _ ->
+                        fail (mode ++ " is not a recognized ModeOfDelivery")
+            )

@@ -3,11 +3,14 @@ module Pages.PatientRegistration.View exposing (view)
 {-| The purpose of this page is
 -}
 
-import Backend.Child.Model exposing (ModeOfDelivery(..), modeOfDeliveryToValue)
+import Backend.Child.Encoder exposing (encodeModeOfDelivery)
+import Backend.Child.Model exposing (ModeOfDelivery(..), allModesOfDelivery)
 import Backend.Measurement.Model exposing (PhotoValue)
 import Backend.Model exposing (ModelBackend, MsgBackend(..))
-import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), educationLevelToString, hivStatusToString)
-import Backend.Patient.Model exposing (Gender(..), Ubudehe(..))
+import Backend.Mother.Encoder exposing (encodeEducationLevel, encodeHivStatus, encodeMaritalStatus)
+import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), allEducationLevels, allHivStatuses, allMaritalStatuses)
+import Backend.Patient.Encoder exposing (encodeUbudehe)
+import Backend.Patient.Model exposing (Gender(..), Ubudehe(..), allUbudehes)
 import EveryDict
 import Form exposing (Form)
 import Form.Error
@@ -318,15 +321,14 @@ viewRegistrationForm language currentDate step registrationForm geoInfo photo ma
                                                 viewLevelOfEducation =
                                                     let
                                                         options =
-                                                            emptyOption
-                                                                :: [ ( educationLevelToString NoSchooling, translate language <| Translate.LevelOfEducation NoSchooling )
-                                                                   , ( educationLevelToString PrimarySchool, translate language <| Translate.LevelOfEducation PrimarySchool )
-                                                                   , ( educationLevelToString VocationalTrainingSchool, translate language <| Translate.LevelOfEducation VocationalTrainingSchool )
-                                                                   , ( educationLevelToString SecondarySchool, translate language <| Translate.LevelOfEducation SecondarySchool )
-                                                                   , ( educationLevelToString DiplomaProgram, translate language <| Translate.LevelOfEducation DiplomaProgram )
-                                                                   , ( educationLevelToString HigherEducation, translate language <| Translate.LevelOfEducation HigherEducation )
-                                                                   , ( educationLevelToString AdvancedDiploma, translate language <| Translate.LevelOfEducation AdvancedDiploma )
-                                                                   ]
+                                                            allEducationLevels
+                                                                |> List.map
+                                                                    (\level ->
+                                                                        ( toString (encodeEducationLevel level)
+                                                                        , translate language (Translate.LevelOfEducation level)
+                                                                        )
+                                                                    )
+                                                                |> (::) emptyOption
                                                     in
                                                     viewSelectInput language Translate.LevelOfEducationLabel options levelOfEducation "ten" "select-input" True
 
@@ -336,25 +338,28 @@ viewRegistrationForm language currentDate step registrationForm geoInfo photo ma
                                                 viewMaritalStatus =
                                                     let
                                                         options =
-                                                            emptyOption
-                                                                :: [ ( String.toLower <| toString Divorced, translate language <| Translate.MaritalStatus Divorced )
-                                                                   , ( String.toLower <| toString Married, translate language <| Translate.MaritalStatus Married )
-                                                                   , ( String.toLower <| toString Single, translate language <| Translate.MaritalStatus Single )
-                                                                   , ( String.toLower <| toString Widowed, translate language <| Translate.MaritalStatus Widowed )
-                                                                   ]
+                                                            allMaritalStatuses
+                                                                |> List.map
+                                                                    (\status ->
+                                                                        ( encodeMaritalStatus status
+                                                                        , translate language <| Translate.MaritalStatus status
+                                                                        )
+                                                                    )
+                                                                |> (::) emptyOption
                                                     in
                                                     viewSelectInput language Translate.MaritalStatusLabel options maritalStatus "ten" "select-input" True
 
                                                 viewHIVStatus =
                                                     let
                                                         options =
-                                                            emptyOption
-                                                                :: [ ( hivStatusToString HIVExposedInfant, translate language <| Translate.HIVStatus HIVExposedInfant )
-                                                                   , ( hivStatusToString Negative, translate language <| Translate.HIVStatus Negative )
-                                                                   , ( hivStatusToString NegativeDiscordantCouple, translate language <| Translate.HIVStatus NegativeDiscordantCouple )
-                                                                   , ( hivStatusToString Positive, translate language <| Translate.HIVStatus Positive )
-                                                                   , ( hivStatusToString Unknown, translate language <| Translate.HIVStatus Unknown )
-                                                                   ]
+                                                            allHivStatuses
+                                                                |> List.map
+                                                                    (\status ->
+                                                                        ( encodeHivStatus status
+                                                                        , translate language (Translate.HIVStatus status)
+                                                                        )
+                                                                    )
+                                                                |> (::) emptyOption
                                                     in
                                                     viewSelectInput language Translate.HIVStatusLabel options hivStatus "ten" "select-input" True
                                             in
@@ -374,12 +379,14 @@ viewRegistrationForm language currentDate step registrationForm geoInfo photo ma
                                                 viewModeOfDelivery =
                                                     let
                                                         options =
-                                                            emptyOption
-                                                                :: [ ( modeOfDeliveryToValue SpontaneousVaginalDeliveryWithEpisiotomy, translate language <| Translate.ModeOfDelivery SpontaneousVaginalDeliveryWithEpisiotomy )
-                                                                   , ( modeOfDeliveryToValue SpontaneousVaginalDeliveryWithoutEpisiotomy, translate language <| Translate.ModeOfDelivery SpontaneousVaginalDeliveryWithoutEpisiotomy )
-                                                                   , ( modeOfDeliveryToValue VaginalDeliveryWithVacuumExtraction, translate language <| Translate.ModeOfDelivery VaginalDeliveryWithVacuumExtraction )
-                                                                   , ( modeOfDeliveryToValue CesareanDelivery, translate language <| Translate.ModeOfDelivery CesareanDelivery )
-                                                                   ]
+                                                            allModesOfDelivery
+                                                                |> List.map
+                                                                    (\mode ->
+                                                                        ( encodeModeOfDelivery mode
+                                                                        , translate language (Translate.ModeOfDelivery mode)
+                                                                        )
+                                                                    )
+                                                                |> (::) emptyOption
                                                     in
                                                     viewSelectInput language Translate.ModeOfDeliveryLabel options modeOfDelivery "ten" "select-input" True
                                             in
@@ -406,13 +413,14 @@ viewRegistrationForm language currentDate step registrationForm geoInfo photo ma
                         viewFamilyUbudehe =
                             let
                                 options =
-                                    -- TODO: verify which values are required and translate.
-                                    emptyOption
-                                        :: [ ( toString Ubudehe1, toString Ubudehe1 )
-                                           , ( toString Ubudehe2, toString Ubudehe2 )
-                                           , ( toString Ubudehe3, toString Ubudehe3 )
-                                           , ( toString Ubudehe4, toString Ubudehe4 )
-                                           ]
+                                    allUbudehes
+                                        |> List.map
+                                            (\ubudehe ->
+                                                ( toString ubudehe
+                                                , toString (encodeUbudehe ubudehe)
+                                                )
+                                            )
+                                        |> (::) emptyOption
                             in
                             viewSelectInput language Translate.FamilyUbudehe options familyUbudehe "ten" "select-input" True
 

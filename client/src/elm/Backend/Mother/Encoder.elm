@@ -1,4 +1,4 @@
-module Backend.Mother.Encoder exposing (encodeChildrenRelation, encodeEducationLevel, encodeMother)
+module Backend.Mother.Encoder exposing (encodeChildrenRelation, encodeEducationLevel, encodeHivStatus, encodeMaritalStatus, encodeMother)
 
 import Backend.Mother.Model exposing (..)
 import Backend.Patient.Encoder exposing (encodeUbudehe)
@@ -13,8 +13,8 @@ encodeMother mother =
     , ( "avatar", maybe string mother.avatarUrl )
     , ( "date_birth", maybe encodeYYYYMMDD mother.birthDate )
     , ( "relation", encodeChildrenRelation mother.relation )
-    , ( "ubudehe", maybe encodeUbudehe mother.ubudehe )
-    , ( "education_level", maybe encodeEducationLevel mother.educationLevel )
+    , ( "ubudehe", maybe (encodeUbudehe >> int) mother.ubudehe )
+    , ( "education_level", maybe (encodeEducationLevel >> int) mother.educationLevel )
     ]
 
 
@@ -28,26 +28,61 @@ encodeChildrenRelation relation =
             string "caregiver"
 
 
-encodeEducationLevel : EducationLevel -> Value
+encodeEducationLevel : EducationLevel -> Int
 encodeEducationLevel educationLevel =
     case educationLevel of
         NoSchooling ->
-            int 0
+            0
 
         PrimarySchool ->
-            int 1
+            1
 
         VocationalTrainingSchool ->
-            int 2
+            2
 
         SecondarySchool ->
-            int 3
+            3
 
         DiplomaProgram ->
-            int 4
+            4
 
         HigherEducation ->
-            int 5
+            5
 
         AdvancedDiploma ->
-            int 6
+            6
+
+
+encodeHivStatus : HIVStatus -> String
+encodeHivStatus status =
+    case status of
+        HIVExposedInfant ->
+            "hiv-exposed-infant"
+
+        Negative ->
+            "negative"
+
+        NegativeDiscordantCouple ->
+            "negative-dc"
+
+        Positive ->
+            "positive"
+
+        Unknown ->
+            "unknown"
+
+
+encodeMaritalStatus : MaritalStatus -> String
+encodeMaritalStatus status =
+    case status of
+        Divorced ->
+            "divorced"
+
+        Married ->
+            "married"
+
+        Single ->
+            "single"
+
+        Widowed ->
+            "widowed"

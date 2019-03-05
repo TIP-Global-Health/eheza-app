@@ -24,7 +24,7 @@ general utilities, see `Translate.Model` and `Translate.Utils`.
 -}
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
-import Backend.Child.Model exposing (ModeOfDelivery(..))
+import Backend.Child.Model exposing (ModeOfDelivery(..), VaginalDelivery(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
@@ -1272,17 +1272,17 @@ translationSet trans =
 
         ModeOfDelivery mode ->
             case mode of
-                SpontaneousVaginalDeliveryWithEpisiotomy ->
+                VaginalDelivery (Spontaneous True) ->
                     { english = "Spontaneous vaginal delivery with episiotomy"
                     , kinyarwanda = Nothing
                     }
 
-                SpontaneousVaginalDeliveryWithoutEpisiotomy ->
+                VaginalDelivery (Spontaneous False) ->
                     { english = "Spontaneous vaginal delivery without episiotomy"
                     , kinyarwanda = Nothing
                     }
 
-                VaginalDeliveryWithVacuumExtraction ->
+                VaginalDelivery WithVacuumExtraction ->
                     { english = "Vaginal delivery with vacuum extraction"
                     , kinyarwanda = Nothing
                     }
@@ -2052,8 +2052,8 @@ translateActivePage page =
                     , kinyarwanda = Just "Compte"
                     }
 
-                PatientRegistartionPage ->
-                    { english = "Patient Registartion"
+                PatientRegistrationPage ->
+                    { english = "Patient Registration"
                     , kinyarwanda = Nothing
                     }
 
