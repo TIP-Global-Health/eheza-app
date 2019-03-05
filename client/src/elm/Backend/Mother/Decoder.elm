@@ -97,3 +97,29 @@ decodeEducationLevel =
                             toString educationLevel
                                 ++ " is not a recognized EducationLevel"
             )
+
+
+decodeHivStatus : Decoder HIVStatus
+decodeHivStatus =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "hiv-exposed-infant" ->
+                        succeed HIVExposedInfant
+
+                    "negative" ->
+                        succeed Negative
+
+                    "negative-dc" ->
+                        succeed NegativeDiscordantCouple
+
+                    "positive" ->
+                        succeed Positive
+
+                    "unknown" ->
+                        succeed Unknown
+
+                    _ ->
+                        fail (s ++ " is not a recognized HIVStatus")
+            )
