@@ -6,7 +6,6 @@ import List
 import Maybe.Extra exposing (unwrap)
 import Pages.PatientRegistration.Model exposing (PatientData(..))
 import Participant.Model exposing (ParticipantType(..))
-import Random.Pcg exposing (initialSeed, step)
 import Time exposing (Time)
 import Time.Date
 
