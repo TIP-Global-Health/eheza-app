@@ -1,4 +1,4 @@
-module Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother, Ubudehe(..), hivStatusToValue)
+module Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother, Ubudehe(..), allEducationLevels, allHivStatuses, allMaritalStatuses, allUbudehes)
 
 import Gizra.NominalDate exposing (NominalDate)
 
@@ -25,6 +25,15 @@ type Ubudehe
     | Ubudehe4
 
 
+allUbudehes : List Ubudehe
+allUbudehes =
+    [ Ubudehe1
+    , Ubudehe2
+    , Ubudehe3
+    , Ubudehe4
+    ]
+
+
 type EducationLevel
     = NoSchooling
     | PrimarySchool
@@ -35,11 +44,32 @@ type EducationLevel
     | AdvancedDiploma
 
 
+allEducationLevels : List EducationLevel
+allEducationLevels =
+    [ NoSchooling
+    , PrimarySchool
+    , VocationalTrainingSchool
+    , SecondarySchool
+    , DiplomaProgram
+    , HigherEducation
+    , AdvancedDiploma
+    ]
+
+
 type MaritalStatus
     = Divorced
     | Married
     | Single
     | Widowed
+
+
+allMaritalStatuses : List MaritalStatus
+allMaritalStatuses =
+    [ Divorced
+    , Married
+    , Single
+    , Widowed
+    ]
 
 
 type HIVStatus
@@ -50,20 +80,11 @@ type HIVStatus
     | Unknown
 
 
-hivStatusToValue : HIVStatus -> String
-hivStatusToValue status =
-    case status of
-        HIVExposedInfant ->
-            "hiv-exposed-infant"
-
-        Negative ->
-            "negative"
-
-        NegativeDiscordantCouple ->
-            "negative-dc"
-
-        Positive ->
-            "positive"
-
-        Unknown ->
-            "unknown"
+allHivStatuses : List HIVStatus
+allHivStatuses =
+    [ HIVExposedInfant
+    , Negative
+    , NegativeDiscordantCouple
+    , Positive
+    , Unknown
+    ]

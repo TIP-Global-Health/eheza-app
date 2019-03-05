@@ -12,7 +12,7 @@ encodeMother mother =
     , ( "avatar", maybe string mother.avatarUrl )
     , ( "date_birth", maybe encodeYYYYMMDD mother.birthDate )
     , ( "relation", encodeChildrenRelation mother.relation )
-    , ( "ubudehe", maybe encodeUbudehe mother.ubudehe )
+    , ( "ubudehe", maybe (encodeUbudehe >> int) mother.ubudehe )
     , ( "education_level", maybe encodeEducationLevel mother.educationLevel )
     ]
 
@@ -27,20 +27,20 @@ encodeChildrenRelation relation =
             string "caregiver"
 
 
-encodeUbudehe : Ubudehe -> Value
+encodeUbudehe : Ubudehe -> Int
 encodeUbudehe ubudehe =
     case ubudehe of
         Ubudehe1 ->
-            int 1
+            1
 
         Ubudehe2 ->
-            int 2
+            2
 
         Ubudehe3 ->
-            int 3
+            3
 
         Ubudehe4 ->
-            int 4
+            4
 
 
 encodeEducationLevel : EducationLevel -> Value
