@@ -1,4 +1,4 @@
-module Backend.Mother.Encoder exposing (encodeChildrenRelation, encodeEducationLevel, encodeHivStatus, encodeMother, encodeUbudehe)
+module Backend.Mother.Encoder exposing (encodeChildrenRelation, encodeEducationLevel, encodeHivStatus, encodeMaritalStatus, encodeMother, encodeUbudehe)
 
 import Backend.Mother.Model exposing (..)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
@@ -85,3 +85,19 @@ encodeHivStatus status =
 
         Unknown ->
             "unknown"
+
+
+encodeMaritalStatus : MaritalStatus -> String
+encodeMaritalStatus status =
+    case status of
+        Divorced ->
+            "divorced"
+
+        Married ->
+            "married"
+
+        Single ->
+            "single"
+
+        Widowed ->
+            "widowed"

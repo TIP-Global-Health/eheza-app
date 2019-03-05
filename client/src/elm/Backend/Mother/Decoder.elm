@@ -123,3 +123,26 @@ decodeHivStatus =
                     _ ->
                         fail (s ++ " is not a recognized HIVStatus")
             )
+
+
+decodeMaritalStatus : Decoder MaritalStatus
+decodeMaritalStatus =
+    string
+        |> andThen
+            (\status ->
+                case status of
+                    "divorced" ->
+                        succeed Divorced
+
+                    "married" ->
+                        succeed Married
+
+                    "single" ->
+                        succeed Single
+
+                    "widowed" ->
+                        succeed Widowed
+
+                    _ ->
+                        fail (status ++ " is not a recognized MaritalStatus")
+            )
