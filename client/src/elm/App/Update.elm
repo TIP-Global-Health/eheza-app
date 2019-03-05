@@ -33,7 +33,7 @@ import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
 import Task
-import Time exposing (second)
+import Time exposing (minute)
 import Translate.Model exposing (Language(..))
 import Translate.Utils exposing (languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
@@ -519,7 +519,7 @@ updateLoggedIn func model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Time.every second Tick
+        [ Time.every minute Tick
         , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
         , persistentStorage SetPersistentStorage
         , storageQuota SetStorageQuota
