@@ -3,7 +3,6 @@ module Backend.Child.Model exposing (Child, ModeOfDelivery(..), modeOfDeliveryTo
 import Backend.Entities exposing (..)
 import Backend.Patient.Model exposing (Gender, Ubudehe)
 import Gizra.NominalDate exposing (NominalDate)
-import Uuid exposing (Uuid)
 
 
 {-| We keep just the basic information in the `Child` record itself.
@@ -17,7 +16,6 @@ type alias Child =
     , nationalIdNumber : Maybe String
     , avatarUrl : Maybe String
     , motherId : Maybe MotherId
-    , motherUuid : Maybe Uuid
     , birthDate : NominalDate
     , isDateOfBirthEstimated : Bool
     , gender : Gender

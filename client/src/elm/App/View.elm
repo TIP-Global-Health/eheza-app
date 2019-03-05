@@ -1,9 +1,11 @@
 module App.View exposing (view)
 
 import App.Model exposing (..)
-import Backend.Model exposing (CachedSessionError(..))
+import App.Utils exposing (getLoggedInModel)
 import Config.View
 import Date
+import EveryDict
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
@@ -11,18 +13,17 @@ import Html.Events exposing (onClick)
 import Pages.Admin.View
 import Pages.Clinics.View
 import Pages.Device.View
-import Pages.Login.View
 import Pages.MyAccount.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.PatientRegistration.View
-import Pages.View exposing (viewFoundSession)
+import Pages.PinCode.View
+import Pages.Session.Model
+import Pages.Session.View exposing (view)
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Login as RL
 import ServiceWorker.View
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
-import User.Model exposing (User)
 import Utils.Html exposing (spinner, wrapPage)
 import Version
 
@@ -105,14 +106,21 @@ viewConfiguredModel model configured =
         ServiceWorker.View.view model.currentTime model.language model.serviceWorker
             |> Html.map MsgServiceWorker
 
+    else if not (RemoteData.isSuccess configured.device) then
+        -- If our device is not paired, then the only thing we allow is the pairing
+        -- of the device
+        Pages.Device.View.view model.language configured.device model configured.devicePage
+            |> Html.map MsgPageDevice
+
     else
         case model.activePage of
             DevicePage ->
                 Pages.Device.View.view model.language configured.device model configured.devicePage
                     |> Html.map MsgPageDevice
 
-            LoginPage ->
-                viewEditableSession model configured
+            PinCodePage ->
+                Pages.PinCode.View.view model.language model.activePage (RemoteData.map .nurse configured.loggedIn) configured.pinCodePage
+                    |> Html.map MsgPagePinCode
 
             PageNotFound url ->
                 Pages.PageNotFound.View.view model.language url
@@ -121,103 +129,55 @@ viewConfiguredModel model configured =
                 ServiceWorker.View.view model.currentTime model.language model.serviceWorker
                     |> Html.map MsgServiceWorker
 
-            SessionPage subPage ->
-                viewEditableSession model configured
-
             UserPage userPage ->
-                viewEditableSession model configured
+                viewUserPage userPage model configured
 
 
-viewEditableSession : Model -> ConfiguredModel -> Html Msg
-viewEditableSession model configured =
+viewUserPage : UserPage -> Model -> ConfiguredModel -> Html Msg
+viewUserPage page model configured =
     let
         currentDate =
             fromLocalDateTime <| Date.fromTime model.currentTime
     in
-    -- What we are able to do here depends on whether we've logged in or not.
-    -- So, in effect, this is where we're doing what you would think of as
-    -- "access control". And, we also want to wait until we know whether
-    -- we have an editable session or not.
-    case model.cache.editableSession of
-        Success session ->
-            case configured.login of
-                RL.Anonymous { progress } ->
-                    case progress of
-                        Just (RL.Checking _) ->
-                            -- If we're checking cached credentials, show the login page ...
-                            -- that's the logical place for some UI related to this.
-                            Pages.Login.View.view model.language model.activePage configured.login configured.loginPage (Maybe.map Tuple.second session)
-                                |> Html.map MsgPageLogin
+    case getLoggedInModel model of
+        Just loggedInModel ->
+            case page of
+                AdminPage ->
+                    emptyNode
 
-                        _ ->
-                            case model.activePage of
-                                PageNotFound url ->
-                                    Pages.PageNotFound.View.view model.language url
+                -- TODO: Re-implement
+                -- Pages.Admin.View.view configured.config model.language currentDate login.credentials.user login.data.backend login.data.adminPage
+                --     |> Html.map (MsgLoggedIn << MsgPageAdmin)
+                MyAccountPage ->
+                    Pages.MyAccount.View.view model.language loggedInModel.nurse
 
-                                ServiceWorkerPage ->
-                                    ServiceWorker.View.view model.currentTime model.language model.serviceWorker
-                                        |> Html.map MsgServiceWorker
+                ClinicsPage clinicId ->
+                    Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) clinicId model.indexedDb
 
-                                _ ->
-                                    Pages.Login.View.view model.language model.activePage configured.login configured.loginPage (Maybe.map Tuple.second session)
-                                        |> Html.map MsgPageLogin
+                PatientRegistartionPage ->
+                    Pages.PatientRegistration.View.view model.language currentDate configured.patientRegistrationPage
+                        |> Html.map MsgPagePatientRegistration
 
-                RL.Authenticated login ->
-                    -- If we're logged in, then we consult the `activePage` to
-                    -- determine what the user wants to see. Note that this will
-                    -- magically do a "redirect" to the user's desired page once the
-                    -- login process finishes, since we don't change the activePage to
-                    -- the login page ... we just show it when login is required.
-                    --
-                    -- Note that we're not yet consulting `login.relogin` to see
-                    -- whether relogin is required. That would need to be not entirely
-                    -- automatic, since we want to let the user keep working locally
-                    -- until they are able to relogin.
-                    case model.activePage of
-                        DevicePage ->
-                            Pages.Device.View.view model.language configured.device model configured.devicePage
-                                |> Html.map MsgPageDevice
+                SessionPage sessionId subPage ->
+                    let
+                        sessionPages =
+                            EveryDict.get sessionId loggedInModel.sessionPages
+                                |> Maybe.withDefault Pages.Session.Model.emptyModel
+                    in
+                    Pages.Session.View.view
+                        model.language
+                        currentDate
+                        model.zscores
+                        (Tuple.second loggedInModel.nurse)
+                        sessionId
+                        subPage
+                        sessionPages
+                        model.indexedDb
+                        |> Html.map (MsgLoggedIn << MsgPageSession sessionId)
 
-                        LoginPage ->
-                            -- The user is already logged in, but wants to see the
-                            -- login page. This is basically sensible ... we could put
-                            -- a `Logout` button there, or we could do the `relogin`
-                            -- process if that's needed. Or just report the login
-                            -- status.
-                            Pages.Login.View.view model.language model.activePage configured.login configured.loginPage (Maybe.map Tuple.second session)
-                                |> Html.map MsgPageLogin
-
-                        UserPage userPage ->
-                            case userPage of
-                                AdminPage ->
-                                    Pages.Admin.View.view configured.config model.language currentDate login.credentials.user login.data.backend login.data.adminPage
-                                        |> Html.map (MsgLoggedIn << MsgPageAdmin)
-
-                                MyAccountPage ->
-                                    Pages.MyAccount.View.view model.language login.credentials.user
-
-                                ClinicsPage clinicId ->
-                                    Pages.Clinics.View.view model.language currentDate login.credentials.user clinicId login.data.backend model.cache
-
-                                PatientRegistartionPage ->
-                                    Pages.PatientRegistration.View.view model.language currentDate login.credentials.user login.data.backend model.cache configured.patientRegistrationPage
-                                        |> Html.map MsgPagePatientRegistration
-
-                        ServiceWorkerPage ->
-                            ServiceWorker.View.view model.currentTime model.language model.serviceWorker
-                                |> Html.map MsgServiceWorker
-
-                        PageNotFound url ->
-                            Pages.PageNotFound.View.view model.language url
-
-                        SessionPage subPage ->
-                            viewSessionPage login.credentials.user subPage model
-
-        Failure err ->
-            viewCachedSessionError model.language err
-
-        _ ->
-            viewLoading
+        Nothing ->
+            Pages.PinCode.View.view model.language model.activePage (RemoteData.map .nurse configured.loggedIn) configured.pinCodePage
+                |> Html.map MsgPagePinCode
 
 
 {-| Just show a generic loading indicator, for cases that will resolve soon,
@@ -230,56 +190,4 @@ viewLoading =
         [ div
             [ class "ui segment center aligned" ]
             [ spinner ]
-        ]
-
-
-viewSessionPage : User -> SessionPage -> Model -> Html Msg
-viewSessionPage user page model =
-    case model.cache.editableSession of
-        NotAsked ->
-            wrapPage [ spinner ]
-
-        Loading ->
-            wrapPage [ spinner ]
-
-        Failure err ->
-            viewCachedSessionError model.language err
-
-        Success fetched ->
-            case fetched of
-                Just session ->
-                    viewFoundSession user page session model
-                        |> Html.map MsgSession
-
-                Nothing ->
-                    -- We have to handle this out here, because `MsgSession` messages don't
-                    -- get processed at all if there is no `EditableSession`. So, the redirect
-                    -- doesn't actually work if we do it in `viewFoundSession`.
-                    wrapPage
-                        [ div
-                            [ class "ui error" ]
-                            [ p [] [ text <| translate model.language Translate.NoCachedSession ]
-                            , button
-                                [ class "ui fluid primary button"
-                                , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
-                                ]
-                                [ text <| translate model.language Translate.SelectYourClinic ]
-                            ]
-                        ]
-
-
-viewCachedSessionError : Language -> CachedSessionError -> Html any
-viewCachedSessionError language err =
-    div [ class "wrap wrap-alt-2" ]
-        [ div
-            [ class "ui basic head segment" ]
-            [ h1
-                [ class "ui header" ]
-                [ text <| translate language Translate.ErrorFetchingCachedSessionTitle ]
-            ]
-        , div
-            [ class "ui basic segment" ]
-            [ p []
-                [ text <| translate language Translate.ErrorFetchingCachedSessionMessage ]
-            ]
         ]

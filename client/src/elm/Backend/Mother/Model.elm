@@ -1,9 +1,7 @@
 module Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother, educationLevelToString, hivStatusToString, stringToHivStatus)
 
-import Backend.Entities exposing (..)
 import Backend.Patient.Model exposing (Gender, Ubudehe)
 import Gizra.NominalDate exposing (NominalDate)
-import Uuid exposing (Uuid)
 
 
 type ChildrenRelationType
@@ -18,8 +16,6 @@ type alias Mother =
     , secondName : String
     , nationalIdNumber : Maybe String
     , avatarUrl : Maybe String
-    , children : List ChildId
-    , childrenUuids : List Uuid
     , birthDate : Maybe NominalDate
     , isDateOfBirthEstimated : Bool
     , relation : ChildrenRelationType

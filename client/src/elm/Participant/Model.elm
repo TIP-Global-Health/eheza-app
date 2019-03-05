@@ -17,6 +17,7 @@ import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html)
 import Pages.Activity.Model
+import Pages.Session.Model
 import Time.Date
 import Translate exposing (Language)
 import ZScore.Model
@@ -41,7 +42,7 @@ type alias Participant id value activity msg =
     , tagActivity : activity -> Activity
     , toChildId : id -> Maybe ChildId
     , toMotherId : id -> Maybe MotherId
-    , viewMeasurements : Language -> NominalDate -> ZScore.Model.Model -> id -> activity -> EditableSession -> Html (Pages.Activity.Model.Msg id msg)
+    , viewMeasurements : Language -> NominalDate -> ZScore.Model.Model -> id -> activity -> Pages.Session.Model.Model -> EditableSession -> Html (Pages.Activity.Model.Msg id msg)
     }
 
 

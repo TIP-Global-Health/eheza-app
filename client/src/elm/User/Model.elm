@@ -4,6 +4,10 @@ import Backend.Entities exposing (..)
 import EverySet exposing (EverySet)
 
 
+type alias UserId =
+    Int
+
+
 type alias User =
     { id : UserId
     , name : String

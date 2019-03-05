@@ -1,4 +1,4 @@
-module Backend.Entities exposing (CatchmentAreaUuid, CatchmentAreaUuidType(..), ChildId, ChildIdType(..), ChildNutritionId, ChildNutritionIdType(..), ChildNutritionUuid, ChildNutritionUuidType(..), ChildUuid, ChildUuidType(..), ClinicId, ClinicIdType(..), ClinicUuid, ClinicUuidType(..), CounselingScheduleId, CounselingScheduleIdType(..), CounselingScheduleUuid, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionIdType(..), CounselingSessionUuid, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicIdType(..), CounselingTopicUuid, CounselingTopicUuidType(..), FamilyPlanningId, FamilyPlanningIdType(..), FamilyPlanningUuid, FamilyPlanningUuidType(..), GeoLocationId, GeoLocationIdType(..), HealthCenterUuid, HealthCenterUuidType(..), HeightId, HeightIdType(..), HeightUuid, HeightUuidType(..), MotherId, MotherIdType(..), MotherUuid, MotherUuidType(..), MuacId, MuacIdType(..), MuacUuid, MuacUuidType(..), NurseUuid, NurseUuidType(..), ParticipantConsentId, ParticipantConsentIdType(..), ParticipantConsentUuid, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormIdType(..), ParticipantFormUuid, ParticipantFormUuidType(..), PhotoId, PhotoIdType(..), PhotoUuid, PhotoUuidType(..), SessionId, SessionIdType(..), SessionUuid, SessionUuidType(..), UserId, UserIdType(..), WeightId, WeightIdType(..), WeightUuid, WeightUuidType(..))
+module Backend.Entities exposing (AttendanceId, AttendanceUuidType(..), CatchmentAreaId, CatchmentAreaUuidType(..), ChildId, ChildNutritionId, ChildNutritionUuidType(..), ChildUuidType(..), ClinicId, ClinicUuidType(..), CounselingScheduleId, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicUuidType(..), FamilyPlanningId, FamilyPlanningUuidType(..), GeoLocationId, GeoLocationIdType(..), HealthCenterId, HealthCenterUuidType(..), HeightId, HeightUuidType(..), MotherId, MotherUuidType(..), MuacId, MuacUuidType(..), NurseId, NurseUuidType(..), ParticipantConsentId, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormUuidType(..), PhotoId, PhotoUuidType(..), SessionId, SessionUuidType(..), WeightId, WeightUuidType(..))
 
 {-|
 
@@ -64,7 +64,7 @@ import Restful.Endpoint exposing (EntityId(..), EntityUuid(..))
 
     most of the time, rather than the more verbose
 
-        EntityId ChildId
+        EntityUuid ChildId
 
     There are some possibly-attractive variations on this.
 
@@ -87,7 +87,7 @@ import Restful.Endpoint exposing (EntityId(..), EntityUuid(..))
 -}
 
 
-type alias CatchmentAreaUuid =
+type alias CatchmentAreaId =
     EntityUuid CatchmentAreaUuidType
 
 
@@ -95,7 +95,7 @@ type CatchmentAreaUuidType
     = CatchmentAreaUuidType
 
 
-type alias ChildUuid =
+type alias ChildId =
     EntityUuid ChildUuidType
 
 
@@ -103,7 +103,7 @@ type ChildUuidType
     = ChildUuidType
 
 
-type alias ChildNutritionUuid =
+type alias ChildNutritionId =
     EntityUuid ChildNutritionUuidType
 
 
@@ -111,7 +111,7 @@ type ChildNutritionUuidType
     = ChildNutritionUuidType
 
 
-type alias ClinicUuid =
+type alias ClinicId =
     EntityUuid ClinicUuidType
 
 
@@ -119,7 +119,7 @@ type ClinicUuidType
     = ClinicUuidType
 
 
-type alias CounselingScheduleUuid =
+type alias CounselingScheduleId =
     EntityUuid CounselingScheduleUuidType
 
 
@@ -127,7 +127,7 @@ type CounselingScheduleUuidType
     = CounselingScheduleUuidType
 
 
-type alias CounselingSessionUuid =
+type alias CounselingSessionId =
     EntityUuid CounselingSessionUuidType
 
 
@@ -135,7 +135,7 @@ type CounselingSessionUuidType
     = CounselingSessionUuidType
 
 
-type alias CounselingTopicUuid =
+type alias CounselingTopicId =
     EntityUuid CounselingTopicUuidType
 
 
@@ -143,156 +143,20 @@ type CounselingTopicUuidType
     = CounselingTopicUuidType
 
 
-type alias FamilyPlanningUuid =
+type alias AttendanceId =
+    EntityUuid AttendanceUuidType
+
+
+type AttendanceUuidType
+    = AttendanceUuidType
+
+
+type alias FamilyPlanningId =
     EntityUuid FamilyPlanningUuidType
 
 
 type FamilyPlanningUuidType
     = FamilyPlanningUuidType
-
-
-type alias HealthCenterUuid =
-    EntityUuid HealthCenterUuidType
-
-
-type HealthCenterUuidType
-    = HealthCenterUuidType
-
-
-type alias HeightUuid =
-    EntityUuid HeightUuidType
-
-
-type HeightUuidType
-    = HeightUuidType
-
-
-type alias MotherUuid =
-    EntityUuid MotherUuidType
-
-
-type MotherUuidType
-    = MotherUuidType
-
-
-type alias MuacUuid =
-    EntityUuid MuacUuidType
-
-
-type MuacUuidType
-    = MuacUuidType
-
-
-type NurseUuidType
-    = NurseUuidType
-
-
-type alias NurseUuid =
-    EntityUuid NurseUuidType
-
-
-type alias ParticipantConsentUuid =
-    EntityUuid ParticipantConsentUuidType
-
-
-type ParticipantConsentUuidType
-    = ParticipantConsentUuidType
-
-
-type alias ParticipantFormUuid =
-    EntityUuid ParticipantFormUuidType
-
-
-type ParticipantFormUuidType
-    = ParticipantFormUuidType
-
-
-type alias PhotoUuid =
-    EntityUuid PhotoUuidType
-
-
-type PhotoUuidType
-    = PhotoUuidType
-
-
-type alias SessionUuid =
-    EntityUuid SessionUuidType
-
-
-type SessionUuidType
-    = SessionUuidType
-
-
-type alias WeightUuid =
-    EntityUuid WeightUuidType
-
-
-type WeightUuidType
-    = WeightUuidType
-
-
-type alias UserId =
-    EntityId UserIdType
-
-
-type UserIdType
-    = UserIdType
-
-
-type alias ChildId =
-    EntityId ChildIdType
-
-
-type ChildIdType
-    = ChildIdType
-
-
-type alias ChildNutritionId =
-    EntityId ChildNutritionIdType
-
-
-type ChildNutritionIdType
-    = ChildNutritionIdType
-
-
-type alias ClinicId =
-    EntityId ClinicIdType
-
-
-type ClinicIdType
-    = ClinicIdType
-
-
-type alias CounselingScheduleId =
-    EntityId CounselingScheduleIdType
-
-
-type CounselingScheduleIdType
-    = CounselingScheduleIdType
-
-
-type alias CounselingSessionId =
-    EntityId CounselingSessionIdType
-
-
-type CounselingSessionIdType
-    = CounselingSessionIdType
-
-
-type alias CounselingTopicId =
-    EntityId CounselingTopicIdType
-
-
-type CounselingTopicIdType
-    = CounselingTopicIdType
-
-
-type alias FamilyPlanningId =
-    EntityId FamilyPlanningIdType
-
-
-type FamilyPlanningIdType
-    = FamilyPlanningIdType
 
 
 type alias GeoLocationId =
@@ -303,65 +167,81 @@ type GeoLocationIdType
     = GeoLocationIdType
 
 
+type alias HealthCenterId =
+    EntityUuid HealthCenterUuidType
+
+
+type HealthCenterUuidType
+    = HealthCenterUuidType
+
+
 type alias HeightId =
-    EntityId HeightIdType
+    EntityUuid HeightUuidType
 
 
-type HeightIdType
-    = HeightIdType
+type HeightUuidType
+    = HeightUuidType
 
 
 type alias MotherId =
-    EntityId MotherIdType
+    EntityUuid MotherUuidType
 
 
-type MotherIdType
-    = MotherIdType
+type MotherUuidType
+    = MotherUuidType
 
 
 type alias MuacId =
-    EntityId MuacIdType
+    EntityUuid MuacUuidType
 
 
-type MuacIdType
-    = MuacIdType
+type MuacUuidType
+    = MuacUuidType
+
+
+type alias NurseId =
+    EntityUuid NurseUuidType
+
+
+type NurseUuidType
+    = NurseUuidType
 
 
 type alias ParticipantConsentId =
-    EntityId ParticipantConsentIdType
+    EntityUuid ParticipantConsentUuidType
 
 
-type ParticipantConsentIdType
-    = ParticipantConsentIdType
+type ParticipantConsentUuidType
+    = ParticipantConsentUuidType
 
 
 type alias ParticipantFormId =
-    EntityId ParticipantFormIdType
+    EntityUuid ParticipantFormUuidType
 
 
-type ParticipantFormIdType
-    = ParticipantFormIdType
+type ParticipantFormUuidType
+    = ParticipantFormUuidType
 
 
 type alias PhotoId =
-    EntityId PhotoIdType
+    EntityUuid PhotoUuidType
 
 
-type PhotoIdType
-    = PhotoIdType
+type PhotoUuidType
+    = PhotoUuidType
 
 
 type alias SessionId =
-    EntityId SessionIdType
+    EntityUuid SessionUuidType
 
 
-type SessionIdType
-    = SessionIdType
+type SessionUuidType
+    = SessionUuidType
 
 
 type alias WeightId =
-    EntityId WeightIdType
+    EntityUuid WeightUuidType
 
 
-type WeightIdType
-    = WeightIdType
+type WeightUuidType
+    = WeightUuidType

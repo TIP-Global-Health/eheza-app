@@ -18,7 +18,7 @@ module Pages.PatientRegistration.Model exposing
 -- import Pages.PatientRegistration.Utils exposing (generateUuid)
 
 import Backend.Child.Model exposing (Child)
-import Backend.Entities exposing (GeoLocationId, GeoLocationIdType(..))
+import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (PhotoValue)
 import Backend.Mother.Model exposing (ChildrenRelationType(..), Mother)
 import Backend.Patient.Model exposing (Gender(..))
@@ -30,10 +30,9 @@ import Measurement.Model exposing (DropZoneFile)
 import Pages.Page exposing (Page)
 import Random.Pcg exposing (initialSeed, step)
 import Regex exposing (Regex)
-import Restful.Endpoint exposing (EntityId(..), toEntityId)
+import Restful.Endpoint exposing (EntityId(..), toEntityId, toEntityUuid)
 import Time exposing (Time)
 import Time.Date exposing (date)
-import Uuid exposing (Uuid, uuidGenerator)
 
 
 type alias Model =
@@ -50,8 +49,8 @@ type alias Model =
 
 
 type alias ParticipantsData =
-    { mothersToRegister : EveryDict Uuid Mother
-    , childrenToRegister : EveryDict Uuid Child
+    { mothersToRegister : EveryDict MotherId Mother
+    , childrenToRegister : EveryDict ChildId Child
     }
 
 
@@ -110,8 +109,8 @@ type RegistrationStep
 
 
 type PatientData
-    = PatientMother Uuid Mother
-    | PatientChild Uuid Child
+    = PatientMother MotherId Mother
+    | PatientChild ChildId Child
 
 
 type PatientActionType
@@ -233,53 +232,44 @@ alphanumericPattern =
 -- Temporary copy of function from Utils to solve cyclic dependency.
 
 
-generateUuid : Time -> Uuid
-generateUuid currentTime =
-    let
-        ( uuid, _ ) =
-            step uuidGenerator (initialSeed <| round currentTime)
-    in
-    uuid
-
-
-child1Uuid : Uuid
+child1Uuid : ChildId
 child1Uuid =
-    generateUuid 21
+    toEntityUuid "child-21"
 
 
-child2Uuid : Uuid
+child2Uuid : ChildId
 child2Uuid =
-    generateUuid 22
+    toEntityUuid "child-22"
 
 
-child3Uuid : Uuid
+child3Uuid : ChildId
 child3Uuid =
-    generateUuid 23
+    toEntityUuid "child-23"
 
 
-child4Uuid : Uuid
+child4Uuid : ChildId
 child4Uuid =
-    generateUuid 24
+    toEntityUuid "child-24"
 
 
-mother1Uuid : Uuid
+mother1Uuid : MotherId
 mother1Uuid =
-    generateUuid 11
+    toEntityUuid "mother-11"
 
 
-mother2Uuid : Uuid
+mother2Uuid : MotherId
 mother2Uuid =
-    generateUuid 12
+    toEntityUuid "mother-12"
 
 
-mother3Uuid : Uuid
+mother3Uuid : MotherId
 mother3Uuid =
-    generateUuid 13
+    toEntityUuid "mother-13"
 
 
-mother4Uuid : Uuid
+mother4Uuid : MotherId
 mother4Uuid =
-    generateUuid 14
+    toEntityUuid "mother-14"
 
 
 child1 : Child
@@ -288,7 +278,6 @@ child1 =
         "child1"
         Nothing
         "child1"
-        Nothing
         Nothing
         Nothing
         (Just mother1Uuid)
@@ -322,7 +311,6 @@ child2 =
         "child2"
         Nothing
         Nothing
-        Nothing
         (Just mother1Uuid)
         (date 2014 2 2)
         True
@@ -352,7 +340,6 @@ child3 =
         "child3"
         Nothing
         "child3"
-        Nothing
         Nothing
         Nothing
         (Just mother2Uuid)
@@ -387,7 +374,6 @@ child4 =
         Nothing
         Nothing
         Nothing
-        Nothing
         (date 2011 4 4)
         False
         Female
@@ -418,8 +404,6 @@ mother1 =
         "mother1"
         Nothing
         Nothing
-        []
-        [ child1Uuid, child2Uuid ]
         (Just (date 2001 1 1))
         False
         MotherRelation
@@ -450,8 +434,6 @@ mother2 =
         "mother2"
         Nothing
         Nothing
-        []
-        [ child3Uuid ]
         (Just (date 2002 2 2))
         True
         MotherRelation
@@ -482,8 +464,6 @@ mother3 =
         "mother3"
         Nothing
         Nothing
-        []
-        []
         (Just (date 2003 3 3))
         True
         MotherRelation
@@ -514,8 +494,6 @@ mother4 =
         "mother4"
         Nothing
         Nothing
-        []
-        []
         (Just (date 2004 4 4))
         False
         MotherRelation

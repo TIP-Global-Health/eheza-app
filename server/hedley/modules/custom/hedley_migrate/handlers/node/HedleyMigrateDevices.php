@@ -16,6 +16,11 @@ class HedleyMigrateDevices extends HedleyMigrateBase {
   protected $csvColumns = [
     'id',
     'title',
+    'field_pairing_code',
+  ];
+
+  protected $simpleMappings = [
+    'field_pairing_code',
   ];
 
 }

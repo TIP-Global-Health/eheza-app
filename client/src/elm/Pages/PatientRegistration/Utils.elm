@@ -1,4 +1,4 @@
-module Pages.PatientRegistration.Utils exposing (generateUuid, getCommonDetails, getFormFieldValue, getRegistratingParticipant, sequenceExtra)
+module Pages.PatientRegistration.Utils exposing (getCommonDetails, getFormFieldValue, getRegistratingParticipant, sequenceExtra)
 
 import Form
 import Gizra.NominalDate exposing (NominalDate)
@@ -9,16 +9,6 @@ import Participant.Model exposing (ParticipantType(..))
 import Random.Pcg exposing (initialSeed, step)
 import Time exposing (Time)
 import Time.Date
-import Uuid exposing (Uuid, uuidGenerator)
-
-
-generateUuid : Time -> Uuid
-generateUuid currentTime =
-    let
-        ( uuid, _ ) =
-            step uuidGenerator (initialSeed <| round currentTime)
-    in
-    uuid
 
 
 getCommonDetails : PatientData -> { name : String, avatarUrl : Maybe String, birthDate : Maybe NominalDate, village : Maybe String }

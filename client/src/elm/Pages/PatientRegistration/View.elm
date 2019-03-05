@@ -5,7 +5,7 @@ module Pages.PatientRegistration.View exposing (view)
 
 import Backend.Child.Model exposing (ModeOfDelivery(..), modeOfDeliveryToValue)
 import Backend.Measurement.Model exposing (PhotoValue)
-import Backend.Model exposing (ModelBackend, ModelCached, MsgBackend(..))
+import Backend.Model exposing (ModelBackend, MsgBackend(..))
 import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), educationLevelToString, hivStatusToString)
 import Backend.Patient.Model exposing (Gender(..), Ubudehe(..))
 import EveryDict
@@ -33,20 +33,20 @@ import Utils.Html exposing (script, thumbnailImage, viewModal)
 import Utils.NominalDate exposing (renderDate)
 
 
-view : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
-view language currentDate user backend cache model =
+view : Language -> NominalDate -> Model -> Html Msg
+view language currentDate model =
     div [ class "wrap wrap-alt-2" ]
-        [ viewHeader language currentDate user backend cache model
+        [ viewHeader language currentDate model
         , div
             [ class "ui full segment blue" ]
-            [ viewBody language currentDate user backend cache model
+            [ viewBody language currentDate model
             ]
         , viewModal <| viewDialog language model.dialogState
         ]
 
 
-viewHeader : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
-viewHeader language currentDate user backend cache model =
+viewHeader : Language -> NominalDate -> Model -> Html Msg
+viewHeader language currentDate model =
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -54,7 +54,7 @@ viewHeader language currentDate user backend cache model =
             [ text <| translate language Translate.RegisterNewPatient ]
         , a
             [ class "link-back"
-            , onClick <| SetActivePage LoginPage
+            , onClick <| SetActivePage PinCodePage
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -62,8 +62,8 @@ viewHeader language currentDate user backend cache model =
         ]
 
 
-viewBody : Language -> NominalDate -> User -> ModelBackend -> ModelCached -> Model -> Html Msg
-viewBody language currentDate user backend cache model =
+viewBody : Language -> NominalDate -> Model -> Html Msg
+viewBody language currentDate model =
     let
         previousPhase =
             List.head model.previousPhases
@@ -71,13 +71,13 @@ viewBody language currentDate user backend cache model =
         body =
             case model.registrationPhase of
                 ParticipantSearch searchString ->
-                    viewSearchForm language currentDate user backend cache model.participantsData searchString model.submittedSearch model.relationPatient
+                    viewSearchForm language currentDate model.participantsData searchString model.submittedSearch model.relationPatient
 
                 ParticipantRegistration step ->
-                    viewRegistrationForm language currentDate user backend cache step model.registrationForm model.geoInfo model.photo model.relationPatient previousPhase
+                    viewRegistrationForm language currentDate step model.registrationForm model.geoInfo model.photo model.relationPatient previousPhase
 
                 ParticipantView patientData ->
-                    viewPatientDetailsForm language currentDate user backend cache patientData model.participantsData previousPhase
+                    viewPatientDetailsForm language currentDate patientData model.participantsData previousPhase
     in
     div [ class "content" ]
         [ body ]
@@ -86,9 +86,6 @@ viewBody language currentDate user backend cache model =
 viewRegistrationForm :
     Language
     -> NominalDate
-    -> User
-    -> ModelBackend
-    -> ModelCached
     -> RegistrationStep
     -> Form () RegistrationForm
     -> GeoInfo
@@ -96,7 +93,7 @@ viewRegistrationForm :
     -> Maybe PatientData
     -> Maybe RegistrationPhase
     -> Html Msg
-viewRegistrationForm language currentDate user backend cache step registrationForm geoInfo photo maybeRelationPatient maybePreviousPhase =
+viewRegistrationForm language currentDate step registrationForm geoInfo photo maybeRelationPatient maybePreviousPhase =
     let
         -- FORM FIELDS --
         firstName =
@@ -729,15 +726,12 @@ viewRegistrationForm language currentDate user backend cache step registrationFo
 viewSearchForm :
     Language
     -> NominalDate
-    -> User
-    -> ModelBackend
-    -> ModelCached
     -> ParticipantsData
     -> Maybe String
     -> Maybe String
     -> Maybe PatientData
     -> Html Msg
-viewSearchForm language currentDate user backend cache participantsData searchString submittedSearch maybeRelationPatient =
+viewSearchForm language currentDate participantsData searchString submittedSearch maybeRelationPatient =
     let
         ( disableSubmitButton, searchValue ) =
             case searchString of
@@ -792,7 +786,7 @@ viewSearchForm language currentDate user backend cache participantsData searchSt
                                         (\relationPatient ->
                                             case relationPatient of
                                                 PatientMother _ _ ->
-                                                    ( \mother -> False, \child -> isNothing child.motherUuid )
+                                                    ( \mother -> False, \child -> isNothing child.motherId )
 
                                                 PatientChild _ _ ->
                                                     ( \mother -> True, \child -> False )
@@ -860,25 +854,22 @@ viewSearchForm language currentDate user backend cache participantsData searchSt
 viewPatientDetailsForm :
     Language
     -> NominalDate
-    -> User
-    -> ModelBackend
-    -> ModelCached
     -> PatientData
     -> ParticipantsData
     -> Maybe RegistrationPhase
     -> Html Msg
-viewPatientDetailsForm language currentDate user backend cache viewedPatient participantsData maybePreviousPhase =
+viewPatientDetailsForm language currentDate viewedPatient participantsData maybePreviousPhase =
     let
         ( topLabel, bottomLabel, familyMembersList ) =
             case viewedPatient of
-                PatientMother _ mother ->
+                PatientMother motherUuid mother ->
                     ( Translate.MotherDemographicInformation
                     , Translate.Children
                     , participantsData.childrenToRegister
                         |> EveryDict.toList
                         |> List.filterMap
                             (\( uuid, child ) ->
-                                if List.member uuid mother.childrenUuids then
+                                if child.motherId == Just motherUuid then
                                     Just <| PatientChild uuid child
 
                                 else
@@ -889,7 +880,7 @@ viewPatientDetailsForm language currentDate user backend cache viewedPatient par
                 PatientChild _ child ->
                     ( Translate.ChildDemographicInformation
                     , Translate.Mother
-                    , child.motherUuid
+                    , child.motherId
                         |> unwrap
                             []
                             (\motherUuid ->
@@ -1238,7 +1229,7 @@ viewBackButton language maybePreviousPhase =
                 StepBack
 
             else
-                SetActivePage LoginPage
+                SetActivePage PinCodePage
     in
     button
         [ class "ui primary button"

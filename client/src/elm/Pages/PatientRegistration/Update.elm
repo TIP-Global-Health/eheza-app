@@ -12,7 +12,7 @@ import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page
 import Pages.PatientRegistration.Model exposing (..)
-import Pages.PatientRegistration.Utils exposing (generateUuid, getFormFieldValue, getRegistratingParticipant, sequenceExtra)
+import Pages.PatientRegistration.Utils exposing (getFormFieldValue, getRegistratingParticipant, sequenceExtra)
 import Participant.Model exposing (ParticipantType(..))
 import Time exposing (Time)
 import Time.Date
@@ -50,14 +50,11 @@ update currentTime msg model =
 
                                 Just (PatientChild childUuid child) ->
                                     let
-                                        motherAfterRelation =
-                                            { mother | childrenUuids = [ childUuid ] }
-
                                         childAfterRelation =
-                                            { child | motherUuid = Just motherUuid }
+                                            { child | motherId = Just motherUuid }
                                     in
                                     ( Just <| SuccessfulRelation <| PatientChild childUuid child
-                                    , { mothersToRegister = EveryDict.insert motherUuid motherAfterRelation model.participantsData.mothersToRegister
+                                    , { mothersToRegister = model.participantsData.mothersToRegister
                                       , childrenToRegister = EveryDict.insert childUuid childAfterRelation model.participantsData.childrenToRegister
                                       }
                                     )
@@ -72,13 +69,10 @@ update currentTime msg model =
                                 Just (PatientMother motherUuid mother) ->
                                     let
                                         childAfterRelation =
-                                            { child | motherUuid = Just motherUuid }
-
-                                        motherAfterRelation =
-                                            { mother | childrenUuids = childUuid :: mother.childrenUuids }
+                                            { child | motherId = Just motherUuid }
                                     in
                                     ( Just <| SuccessfulRelation <| PatientMother motherUuid mother
-                                    , { mothersToRegister = EveryDict.insert motherUuid motherAfterRelation model.participantsData.mothersToRegister
+                                    , { mothersToRegister = model.participantsData.mothersToRegister
                                       , childrenToRegister = EveryDict.insert childUuid childAfterRelation model.participantsData.childrenToRegister
                                       }
                                     )
@@ -208,7 +202,7 @@ update currentTime msg model =
 
         Reset ->
             ( model, Cmd.none, [] )
-                |> sequenceExtra (update currentTime) [ SetActivePage Pages.Page.LoginPage ]
+                |> sequenceExtra (update currentTime) [ SetActivePage Pages.Page.PinCodePage ]
 
         SearchForParticipant searchValue ->
             ( { model | submittedSearch = Just searchValue }, Cmd.none, [] )
@@ -388,9 +382,6 @@ update currentTime msg model =
                                 motherID =
                                     Nothing
 
-                                motherUuid =
-                                    Nothing
-
                                 modeOfDelivery =
                                     Form.getFieldAsString "modeOfDelivery" model.registrationForm
                                         |> .value
@@ -445,7 +436,6 @@ update currentTime msg model =
                                         nationalIdNumber
                                         avatarUrl
                                         motherID
-                                        motherUuid
                                         birthDate
                                         isDateOfBirthEstimated
                                         gender
@@ -466,20 +456,17 @@ update currentTime msg model =
                                         healthCenterName
 
                                 newUuid =
-                                    generateUuid currentTime
+                                    Debug.crash "todo"
 
                                 ( newDialogState, updatedParticipantsData ) =
                                     case model.relationPatient of
                                         Just (PatientMother motherUuid mother) ->
                                             let
                                                 childAfterRelation =
-                                                    { child | motherUuid = Just motherUuid }
-
-                                                motherAfterRelation =
-                                                    { mother | childrenUuids = newUuid :: mother.childrenUuids }
+                                                    { child | motherId = Just motherUuid }
                                             in
                                             ( Just <| SuccessfulRelation <| PatientMother motherUuid mother
-                                            , { mothersToRegister = EveryDict.insert motherUuid motherAfterRelation model.participantsData.mothersToRegister
+                                            , { mothersToRegister = model.participantsData.mothersToRegister
                                               , childrenToRegister = EveryDict.insert newUuid childAfterRelation model.participantsData.childrenToRegister
                                               }
                                             )
@@ -592,8 +579,6 @@ update currentTime msg model =
                                         (secondName |> Maybe.withDefault "")
                                         nationalIdNumber
                                         avatarUrl
-                                        children
-                                        childrenUuids
                                         (Just birthDate)
                                         isDateOfBirthEstimated
                                         MotherRelation
@@ -614,7 +599,7 @@ update currentTime msg model =
                                         healthCenterName
 
                                 newUuid =
-                                    generateUuid currentTime
+                                    Debug.crash "todo"
 
                                 ( newDialogState, updatedParticipantsData ) =
                                     case model.relationPatient of
@@ -626,14 +611,11 @@ update currentTime msg model =
 
                                         Just (PatientChild childUuid child) ->
                                             let
-                                                motherAfterRelation =
-                                                    { mother | childrenUuids = [ childUuid ] }
-
                                                 childAfterRelation =
-                                                    { child | motherUuid = Just newUuid }
+                                                    { child | motherId = Just newUuid }
                                             in
                                             ( Just <| SuccessfulRelation <| PatientChild childUuid child
-                                            , { mothersToRegister = EveryDict.insert newUuid motherAfterRelation model.participantsData.mothersToRegister
+                                            , { mothersToRegister = model.participantsData.mothersToRegister
                                               , childrenToRegister = EveryDict.insert childUuid childAfterRelation model.participantsData.childrenToRegister
                                               }
                                             )

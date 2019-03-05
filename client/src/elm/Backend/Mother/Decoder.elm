@@ -7,8 +7,6 @@ import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, at, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required)
-import Restful.Endpoint exposing (decodeEntityId)
-import Utils.Json exposing (decodeDate, decodeNullAsEmptyArray)
 
 
 decodeMother : Decoder Mother
@@ -30,8 +28,6 @@ decodeMother =
                 , succeed Nothing
                 ]
             )
-        |> optional "children" (oneOf [ list decodeEntityId, decodeNullAsEmptyArray ]) []
-        |> hardcoded []
         |> optional "date_birth" (nullable decodeYYYYMMDD) Nothing
         -- Is birth date estimated
         |> hardcoded False
