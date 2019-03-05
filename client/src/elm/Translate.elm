@@ -1930,8 +1930,8 @@ translateActivePage page =
                     , kinyarwanda = Just "Compte"
                     }
 
-                PatientRegistartionPage ->
-                    { english = "Patient Registartion"
+                PatientRegistrationPage ->
+                    { english = "Patient Registration"
                     , kinyarwanda = Nothing
                     }
 

@@ -119,7 +119,7 @@ type UserPage
     | ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
     | SessionPage SessionId SessionPage -- pages that manipulate a group session
     | MyAccountPage -- shows information about the logged-in user
-    | PatientRegistartionPage -- alllows registration of new patients.
+    | PatientRegistrationPage -- alllows registration of new patients.
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it
