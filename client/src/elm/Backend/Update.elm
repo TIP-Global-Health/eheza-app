@@ -25,6 +25,17 @@ updateIndexedDb currentDate nurseId msg model =
             applyBackendUrl "/sw"
     in
     case msg of
+        FetchChild childId ->
+            ( { model | children = EveryDict.insert childId Loading model.children }
+            , sw.get childEndpoint childId
+                |> toCmd (RemoteData.fromResult >> HandleFetchedChild childId)
+            )
+
+        HandleFetchedChild childId data ->
+            ( { model | children = EveryDict.insert childId data model.children }
+            , Cmd.none
+            )
+
         FetchChildMeasurements childId ->
             ( { model | childMeasurements = EveryDict.insert childId Loading model.childMeasurements }
             , sw.get childMeasurementListEndpoint childId
@@ -33,6 +44,17 @@ updateIndexedDb currentDate nurseId msg model =
 
         HandleFetchedChildMeasurements childId data ->
             ( { model | childMeasurements = EveryDict.insert childId data model.childMeasurements }
+            , Cmd.none
+            )
+
+        FetchChildrenOfMother motherId ->
+            ( { model | childrenOfMother = EveryDict.insert motherId Loading model.childrenOfMother }
+            , sw.select childEndpoint { mother = Just motherId, nameContains = Nothing, session = Nothing }
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDict.fromList) >> HandleFetchedChildrenOfMother motherId)
+            )
+
+        HandleFetchedChildrenOfMother motherId data ->
+            ( { model | childrenOfMother = EveryDict.insert motherId data model.childrenOfMother }
             , Cmd.none
             )
 
@@ -74,7 +96,7 @@ updateIndexedDb currentDate nurseId msg model =
         FetchExpectedParticipants sessionId ->
             let
                 childTask =
-                    sw.select childEndpoint { session = Just sessionId, nameContains = Nothing }
+                    sw.select childEndpoint { session = Just sessionId, nameContains = Nothing, mother = Nothing }
                         |> toTask
                         |> Task.map (.items >> EveryDictList.fromList)
                         |> RemoteData.fromTask
@@ -103,7 +125,7 @@ updateIndexedDb currentDate nurseId msg model =
                 -- We'll limit the search to 100 each for now ... basically,
                 -- just to avoid truly pathological cases.
                 childTask =
-                    sw.selectRange childEndpoint { nameContains = Just trimmed, session = Nothing } 0 (Just 100)
+                    sw.selectRange childEndpoint { nameContains = Just trimmed, session = Nothing, mother = Nothing } 0 (Just 100)
                         |> toTask
                         |> Task.map (.items >> EveryDictList.fromList)
                         |> RemoteData.fromTask
@@ -143,6 +165,17 @@ updateIndexedDb currentDate nurseId msg model =
 
         HandleFetchedHealthCenters data ->
             ( { model | healthCenters = data }
+            , Cmd.none
+            )
+
+        FetchMother motherId ->
+            ( { model | mothers = EveryDict.insert motherId Loading model.mothers }
+            , sw.get motherEndpoint motherId
+                |> toCmd (RemoteData.fromResult >> HandleFetchedMother motherId)
+            )
+
+        HandleFetchedMother motherId data ->
+            ( { model | mothers = EveryDict.insert motherId data model.mothers }
             , Cmd.none
             )
 
@@ -256,12 +289,33 @@ handleRevision revision model =
             model
 
         ChildRevision uuid data ->
-            -- For now, we just invalidate ... if someone needs it, they will
-            -- ask again.
+            -- Some of these we currently just invalidate, to let the query run
+            -- again.  Others we adjust directly. We could do more of that, as
+            -- an optimization.
+            let
+                -- Update with a Success value, but only if we've asked for it.
+                children =
+                    EveryDict.update uuid (Maybe.map (always (Success data))) model.children
+
+                -- First, we remove this child from all mothers, and then add
+                -- it to the correct mother (if we have data for that mother).
+                childrenOfMother =
+                    model.childrenOfMother
+                        |> EveryDict.map (always (RemoteData.map (EveryDict.remove uuid)))
+                        |> (case data.motherId of
+                                Nothing ->
+                                    identity
+
+                                Just motherId ->
+                                    EveryDict.update motherId (Maybe.map (RemoteData.map (EveryDict.insert uuid data)))
+                           )
+            in
             { model
                 | expectedParticipants = EveryDict.empty
                 , expectedSessions = EveryDict.remove uuid model.expectedSessions
                 , nameSearches = Dict.empty
+                , children = children
+                , childrenOfMother = childrenOfMother
             }
 
         ChildNutritionRevision uuid data ->
@@ -312,10 +366,15 @@ handleRevision revision model =
         MotherRevision uuid data ->
             -- We'll need to refetch the expected participants, at least for now ... eventually
             -- we might be able to do something smaller.
+            let
+                mothers =
+                    EveryDict.update uuid (Maybe.map (always (Success data))) model.mothers
+            in
             { model
                 | expectedParticipants = EveryDict.empty
                 , expectedSessions = EveryDict.empty
                 , nameSearches = Dict.empty
+                , mothers = mothers
             }
 
         MuacRevision uuid data ->

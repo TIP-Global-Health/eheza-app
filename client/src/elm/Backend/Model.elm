@@ -120,12 +120,21 @@ type alias ModelIndexedDb =
     -- Tracks searchs for participants by name. The key is the phrase we are
     -- searching for.
     , nameSearches : Dict String (WebData Participants)
+
+    -- A simple cache of mothers and children.
+    , mothers : EveryDict MotherId (WebData Mother)
+    , children : EveryDict ChildId (WebData Child)
+
+    -- A cache of children of a mother
+    , childrenOfMother : EveryDict MotherId (WebData (EveryDict ChildId Child))
     }
 
 
 emptyModelIndexedDb : ModelIndexedDb
 emptyModelIndexedDb =
     { childMeasurements = EveryDict.empty
+    , children = EveryDict.empty
+    , childrenOfMother = EveryDict.empty
     , clinics = NotAsked
     , deleteSyncDataRequests = EveryDict.empty
     , everyCounselingSchedule = NotAsked
@@ -133,6 +142,7 @@ emptyModelIndexedDb =
     , expectedSessions = EveryDict.empty
     , healthCenters = NotAsked
     , motherMeasurements = EveryDict.empty
+    , mothers = EveryDict.empty
     , nameSearches = Dict.empty
     , participantForms = NotAsked
     , saveSyncDataRequests = EveryDict.empty
@@ -145,12 +155,15 @@ emptyModelIndexedDb =
 
 type MsgIndexedDb
     = -- Messages which fetch various kinds of data
-      FetchChildMeasurements ChildId
+      FetchChild ChildId
+    | FetchChildMeasurements ChildId
+    | FetchChildrenOfMother MotherId
     | FetchClinics
     | FetchEveryCounselingSchedule
     | FetchExpectedParticipants SessionId
     | FetchExpectedSessions ChildId
     | FetchHealthCenters
+    | FetchMother MotherId
     | FetchMotherMeasurements MotherId
     | FetchParticipantForms
     | FetchParticipantsByName String
@@ -158,6 +171,8 @@ type MsgIndexedDb
     | FetchSessionsByClinic ClinicId
     | FetchSyncData
       -- Messages which handle responses to data
+    | HandleFetchedChild ChildId (WebData Child)
+    | HandleFetchedChildrenOfMother MotherId (WebData (EveryDict ChildId Child))
     | HandleFetchedChildMeasurements ChildId (WebData ChildMeasurementList)
     | HandleFetchedEveryCounselingSchedule (WebData EveryCounselingSchedule)
     | HandleFetchedMotherMeasurements MotherId (WebData MotherMeasurementList)
@@ -165,6 +180,7 @@ type MsgIndexedDb
     | HandleFetchedExpectedParticipants SessionId (WebData Participants)
     | HandleFetchedExpectedSessions ChildId (WebData (EveryDictList SessionId Session))
     | HandleFetchedHealthCenters (WebData (EveryDictList HealthCenterId HealthCenter))
+    | HandleFetchedMother MotherId (WebData Mother)
     | HandleFetchedParticipantForms (WebData (EveryDictList ParticipantFormId ParticipantForm))
     | HandleFetchedParticipantsByName String (WebData Participants)
     | HandleFetchedSession SessionId (WebData Session)

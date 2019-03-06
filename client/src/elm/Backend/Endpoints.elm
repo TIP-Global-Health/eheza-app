@@ -59,6 +59,7 @@ childEndpoint =
 type alias ChildParams =
     { session : Maybe SessionId
     , nameContains : Maybe String
+    , mother : Maybe MotherId
     }
 
 
@@ -67,6 +68,7 @@ encodeChildParams params =
     List.filterMap identity
         [ Maybe.map (\id -> ( "session", fromEntityUuid id )) params.session
         , Maybe.map (\name -> ( "name_contains", name )) params.nameContains
+        , Maybe.map (\mother -> ( "mother", fromEntityUuid mother )) params.mother
         ]
 
 

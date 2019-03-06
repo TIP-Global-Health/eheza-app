@@ -387,7 +387,8 @@
     // Fields which we index along with type, so we can search for them.
     var searchFields = [
         'pin_code',
-        'clinic'
+        'clinic',
+        'mother'
     ];
 
     function index (url, type) {
