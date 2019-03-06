@@ -17,6 +17,7 @@ import Pages.Page
 import Pages.PatientRegistration.Model exposing (..)
 import Pages.PatientRegistration.Utils exposing (getFormFieldValue, getRegistratingParticipant, sequenceExtra)
 import Participant.Model exposing (ParticipantType(..))
+import Restful.Endpoint exposing (toEntityUuid)
 import Time exposing (Time)
 import Time.Date
 
@@ -444,7 +445,12 @@ update currentDate msg model =
                                         healthCenterName
 
                                 newUuid =
-                                    Debug.crash "todo"
+                                    "temporary-uuid-"
+                                        ++ toString model.nextUuid
+                                        |> toEntityUuid
+
+                                nextUuid =
+                                    model.nextUuid + 1
 
                                 ( newDialogState, updatedParticipantsData ) =
                                     case model.relationPatient of
@@ -475,6 +481,7 @@ update currentDate msg model =
                             ( { model
                                 | participantsData = updatedParticipantsData
                                 , dialogState = newDialogState
+                                , nextUuid = nextUuid
                               }
                             , Cmd.none
                             , []
@@ -597,7 +604,12 @@ update currentDate msg model =
                                         healthCenterName
 
                                 newUuid =
-                                    Debug.crash "todo"
+                                    "temporary-uuid-"
+                                        ++ toString model.nextUuid
+                                        |> toEntityUuid
+
+                                nextUuid =
+                                    model.nextUuid + 1
 
                                 ( newDialogState, updatedParticipantsData ) =
                                     case model.relationPatient of
@@ -628,6 +640,7 @@ update currentDate msg model =
                             ( { model
                                 | participantsData = updatedParticipantsData
                                 , dialogState = newDialogState
+                                , nextUuid = nextUuid
                               }
                             , Cmd.none
                             , []

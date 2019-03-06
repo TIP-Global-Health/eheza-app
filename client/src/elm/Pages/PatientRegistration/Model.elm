@@ -42,6 +42,9 @@ type alias Model =
     , submittedSearch : Maybe String
     , geoInfo : GeoInfo
     , dialogState : Maybe DialogState
+
+    -- Temporary ...
+    , nextUuid : Int
     }
 
 
@@ -62,6 +65,7 @@ emptyModel =
     , submittedSearch = Nothing
     , geoInfo = GeoInfo getGeoProvinces getGeoDistricts getGeoSectors getGeoCells getGeoVillages
     , dialogState = Nothing
+    , nextUuid = 0
     }
 
 
