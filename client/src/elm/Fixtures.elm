@@ -126,5 +126,6 @@ exampleMother =
     , cell = Nothing
     , village = Nothing
     , telephoneNumber = Nothing
+    , clinic = Nothing
     , healthCenterName = Nothing
     }
