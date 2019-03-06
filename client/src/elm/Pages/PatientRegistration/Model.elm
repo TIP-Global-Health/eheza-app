@@ -15,8 +15,6 @@ module Pages.PatientRegistration.Model exposing
     , validateRegistrationForm
     )
 
--- import Pages.PatientRegistration.Utils exposing (generateUuid)
-
 import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (PhotoValue)
@@ -225,10 +223,6 @@ validateAlphanumeric =
 alphanumericPattern : Regex
 alphanumericPattern =
     Regex.regex "^[a-zA-Z0-9]*$"
-
-
-
--- Temporary copy of function from Utils to solve cyclic dependency.
 
 
 child1Uuid : ChildId
