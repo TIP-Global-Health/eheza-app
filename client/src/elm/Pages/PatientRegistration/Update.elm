@@ -592,6 +592,8 @@ update currentDate msg model =
                                         cell
                                         village
                                         telephoneNumber
+                                        -- TODO: Edit ClinicId
+                                        Nothing
                                         healthCenterName
 
                                 newUuid =

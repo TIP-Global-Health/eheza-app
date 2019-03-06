@@ -5,22 +5,21 @@ import Backend.Patient.Decoder exposing (decodeGender, decodeUbudehe)
 import Backend.Patient.Model exposing (Gender(..))
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, andThen, at, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
+import Json.Decode exposing (Decoder, andThen, at, bool, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required)
+import Restful.Endpoint exposing (decodeEntityUuid)
 
 
 decodeMother : Decoder Mother
 decodeMother =
     decode Mother
         |> required "label" string
-        -- There 3 are first, middle and second names.
-        -- We do not pull actual values from server yet.
-        |> hardcoded ""
-        |> hardcoded Nothing
-        |> hardcoded ""
-        -- National ID Number
-        |> hardcoded Nothing
+        |> optional "first_name" string ""
+        |> optional "middle_name" (nullable string) Nothing
+        |> optional "second_name" string ""
+        |> optional "national_id_number" (nullable string) Nothing
         -- We accommodate the JSON from the server or from the cache
+        -- TODO: Normalize this when syncing.
         |> custom
             (oneOf
                 [ map Just <| at [ "avatar", "styles", "patient-photo" ] string
@@ -29,23 +28,24 @@ decodeMother =
                 ]
             )
         |> optional "date_birth" (nullable decodeYYYYMMDD) Nothing
-        -- Is birth date estimated
-        |> hardcoded False
+        |> optional "birth_date_estimated" bool False
         |> optional "relation" decodeChildrenRelation MotherRelation
         |> optional "gender" decodeGender Female
         |> optional "ubudehe" (nullable decodeUbudehe) Nothing
         |> optional "education_level" (nullable decodeEducationLevel) Nothing
-        |> hardcoded Nothing
-        |> hardcoded Nothing
-        |> hardcoded Nothing
-        |> hardcoded Nothing
-        |> hardcoded Nothing
-        |> hardcoded Nothing
-        |> hardcoded Nothing
-        |> hardcoded Nothing
-        |> hardcoded Nothing
-        |> hardcoded Nothing
-        |> hardcoded Nothing
+        |> optional "profession" (nullable string) Nothing
+        |> optional "marital_status" (nullable decodeMaritalStatus) Nothing
+        |> optional "hiv_status" (nullable decodeHivStatus) Nothing
+        |> optional "household_size" (nullable decodeInt) Nothing
+        |> optional "number_of_children" (nullable decodeInt) Nothing
+        |> optional "province" (nullable string) Nothing
+        |> optional "district" (nullable string) Nothing
+        |> optional "sector" (nullable string) Nothing
+        |> optional "cell" (nullable string) Nothing
+        |> optional "village" (nullable string) Nothing
+        |> optional "phone_number" (nullable string) Nothing
+        |> optional "clinic" (nullable decodeEntityUuid) Nothing
+        -- TODO: Convert to HealthCenterId and create on backend.
         |> hardcoded Nothing
 
 
