@@ -58,14 +58,16 @@ childEndpoint =
 
 type alias ChildParams =
     { session : Maybe SessionId
+    , nameContains : Maybe String
     }
 
 
 encodeChildParams : ChildParams -> List ( String, String )
 encodeChildParams params =
-    params.session
-        |> Maybe.map (\id -> ( "session", fromEntityUuid id ))
-        |> Maybe.Extra.toList
+    List.filterMap identity
+        [ Maybe.map (\id -> ( "session", fromEntityUuid id )) params.session
+        , Maybe.map (\name -> ( "name_contains", name )) params.nameContains
+        ]
 
 
 motherEndpoint : ReadWriteEndPoint Error MotherId Mother Mother MotherParams
@@ -77,14 +79,16 @@ motherEndpoint =
 
 type alias MotherParams =
     { session : Maybe SessionId
+    , nameContains : Maybe String
     }
 
 
 encodeMotherParams : MotherParams -> List ( String, String )
 encodeMotherParams params =
-    params.session
-        |> Maybe.map (\id -> ( "session", fromEntityUuid id ))
-        |> Maybe.Extra.toList
+    List.filterMap identity
+        [ Maybe.map (\id -> ( "session", fromEntityUuid id )) params.session
+        , Maybe.map (\name -> ( "name_contains", name )) params.nameContains
+        ]
 
 
 healthCenterEndpoint : ReadOnlyEndPoint Error HealthCenterId HealthCenter ()

@@ -6,12 +6,14 @@ module Pages.PatientRegistration.View exposing (view)
 import Backend.Child.Encoder exposing (encodeModeOfDelivery)
 import Backend.Child.Model exposing (ModeOfDelivery(..), allModesOfDelivery)
 import Backend.Measurement.Model exposing (PhotoValue)
-import Backend.Model exposing (ModelBackend, MsgBackend(..))
+import Backend.Model exposing (ModelBackend, ModelIndexedDb, MsgBackend(..))
 import Backend.Mother.Encoder exposing (encodeEducationLevel, encodeHivStatus, encodeMaritalStatus)
 import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), allEducationLevels, allHivStatuses, allMaritalStatuses)
 import Backend.Patient.Encoder exposing (encodeUbudehe)
 import Backend.Patient.Model exposing (Gender(..), Ubudehe(..), allUbudehes)
+import Dict
 import EveryDict
+import EveryDictList
 import Form exposing (Form)
 import Form.Error
 import Form.Input
@@ -27,6 +29,7 @@ import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRegistration.Model exposing (..)
 import Pages.PatientRegistration.Utils exposing (getCommonDetails, getFormFieldValue, getRegistratingParticipant)
 import Participant.Model exposing (ParticipantType(..))
+import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityId, toEntityId)
 import Time.Date
 import Translate exposing (Language, TranslationId, translate)
@@ -34,15 +37,16 @@ import User.Model exposing (User)
 import Utils.Form exposing (isFormFieldSet, isFormFieldValid)
 import Utils.Html exposing (script, thumbnailImage, viewModal)
 import Utils.NominalDate exposing (renderDate)
+import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> Model -> Html Msg
-view language currentDate model =
+view : Language -> NominalDate -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate db model =
     div [ class "wrap wrap-alt-2" ]
         [ viewHeader language currentDate model
         , div
             [ class "ui full segment blue" ]
-            [ viewBody language currentDate model
+            [ viewBody language currentDate db model
             ]
         , viewModal <| viewDialog language model.dialogState
         ]
@@ -65,8 +69,8 @@ viewHeader language currentDate model =
         ]
 
 
-viewBody : Language -> NominalDate -> Model -> Html Msg
-viewBody language currentDate model =
+viewBody : Language -> NominalDate -> ModelIndexedDb -> Model -> Html Msg
+viewBody language currentDate db model =
     let
         previousPhase =
             List.head model.previousPhases
@@ -74,7 +78,7 @@ viewBody language currentDate model =
         body =
             case model.registrationPhase of
                 ParticipantSearch searchString ->
-                    viewSearchForm language currentDate model.participantsData searchString model.submittedSearch model.relationPatient
+                    viewSearchForm language currentDate db searchString model.submittedSearch model.relationPatient
 
                 ParticipantRegistration step ->
                     viewRegistrationForm language currentDate step model.registrationForm model.geoInfo model.photo model.relationPatient previousPhase
@@ -734,12 +738,12 @@ viewRegistrationForm language currentDate step registrationForm geoInfo photo ma
 viewSearchForm :
     Language
     -> NominalDate
-    -> ParticipantsData
+    -> ModelIndexedDb
     -> Maybe String
     -> Maybe String
     -> Maybe PatientData
     -> Html Msg
-viewSearchForm language currentDate participantsData searchString submittedSearch maybeRelationPatient =
+viewSearchForm language currentDate db searchString submittedSearch maybeRelationPatient =
     let
         ( disableSubmitButton, searchValue ) =
             case searchString of
@@ -807,30 +811,54 @@ viewSearchForm language currentDate participantsData searchString submittedSearc
                                 else
                                     Just Forward
 
-                            mothers =
-                                participantsData.mothersToRegister
-                                    |> EveryDict.toList
-                                    |> List.filter
-                                        (\( _, mother ) ->
-                                            String.contains searchValue mother.name && relationPatientConditionMother mother
+                            searchResults =
+                                Dict.get (String.trim searchValue) db.nameSearches
+                                    |> Maybe.withDefault NotAsked
+
+                            mothersData =
+                                searchResults
+                                    |> RemoteData.map
+                                        (\results ->
+                                            results.mothers
+                                                |> EveryDictList.toList
+                                                |> List.filter
+                                                    (\( _, mother ) ->
+                                                        relationPatientConditionMother mother
+                                                    )
                                         )
 
-                            children =
-                                participantsData.childrenToRegister
-                                    |> EveryDict.toList
-                                    |> List.filter
-                                        (\( _, child ) ->
-                                            String.contains searchValue child.name && relationPatientConditionChild child
+                            childrenData =
+                                searchResults
+                                    |> RemoteData.map
+                                        (\results ->
+                                            results.children
+                                                |> EveryDictList.toList
+                                                |> List.filter
+                                                    (\( _, child ) ->
+                                                        relationPatientConditionChild child
+                                                    )
                                         )
 
-                            total =
-                                List.length mothers + List.length children
+                            totalData =
+                                RemoteData.map2
+                                    (\mothers children -> List.length mothers + List.length children)
+                                    mothersData
+                                    childrenData
+
+                            summary =
+                                -- We just use the `mothers` here to get a
+                                viewWebData language
+                                    (\total -> text <| translate language <| Translate.ReportResultsOfSearch total)
+                                    identity
+                                    totalData
                         in
-                        ( [ text <| translate language <| Translate.ReportResultsOfSearch total ]
-                        , (mothers
+                        ( [ summary ]
+                        , (mothersData
+                            |> RemoteData.withDefault []
                             |> List.map (\( uuid, mother ) -> viewPatient language (PatientMother uuid mother) relationDependentAction)
                           )
-                            ++ (children
+                            ++ (childrenData
+                                    |> RemoteData.withDefault []
                                     |> List.map (\( uuid, child ) -> viewPatient language (PatientChild uuid child) relationDependentAction)
                                )
                         )

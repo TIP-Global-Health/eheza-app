@@ -1,6 +1,7 @@
 module App.Fetch exposing (andThenFetch)
 
 import App.Model exposing (..)
+import App.Utils exposing (getLoggedInModel)
 import Backend.Fetch
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
@@ -8,6 +9,7 @@ import Pages.Admin.Fetch
 import Pages.Clinics.Fetch
 import Pages.Device.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.PatientRegistration.Fetch
 import Pages.Session.Fetch
 import Update.Extra exposing (sequence)
 
@@ -40,6 +42,15 @@ fetch model =
         UserPage (ClinicsPage clinicId) ->
             Pages.Clinics.Fetch.fetch clinicId
                 |> List.map MsgIndexedDb
+
+        UserPage PatientRegistrationPage ->
+            getLoggedInModel model
+                |> Maybe.map
+                    (\loggedIn ->
+                        Pages.PatientRegistration.Fetch.fetch loggedIn.patientRegistrationPage
+                            |> List.map MsgIndexedDb
+                    )
+                |> Maybe.withDefault []
 
         UserPage AdminPage ->
             []

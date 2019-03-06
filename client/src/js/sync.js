@@ -397,15 +397,37 @@
         });
     }
 
+    var integerFields = [
+        'household_size',
+        'id',
+        'number_of_children',
+        'status',
+        'timestamp',
+        'vid'
+    ];
+
+    var floatFields = [
+        'height',
+        'muac',
+        'weight'
+    ];
+
     function formatNode (node, shardUuid) {
         if (shardUuid !== nodesUuid) {
             node.shard = shardUuid;
         }
 
-        node.vid = parseInt(node.vid);
-        node.id = parseInt(node.id);
-        node.timestamp = parseInt(node.timestamp);
-        node.status = parseInt(node.status);
+        integerFields.forEach(function (field) {
+            if (node.hasOwnProperty(field)) {
+                node[field] = parseInt(node[field]);
+            }
+        });
+
+        floatFields.forEach(function (field) {
+            if (node.hasOwnProperty(field)) {
+                node[field] = parseFloat(node[field]);
+            }
+        });
     }
 
     function tryRefreshToken (credentials) {

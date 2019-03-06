@@ -28,6 +28,7 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
+import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -115,6 +116,10 @@ type alias ModelIndexedDb =
     -- report.
     , childMeasurements : EveryDict ChildId (WebData ChildMeasurementList)
     , motherMeasurements : EveryDict MotherId (WebData MotherMeasurementList)
+
+    -- Tracks searchs for participants by name. The key is the phrase we are
+    -- searching for.
+    , nameSearches : Dict String (WebData Participants)
     }
 
 
@@ -128,6 +133,7 @@ emptyModelIndexedDb =
     , expectedSessions = EveryDict.empty
     , healthCenters = NotAsked
     , motherMeasurements = EveryDict.empty
+    , nameSearches = Dict.empty
     , participantForms = NotAsked
     , saveSyncDataRequests = EveryDict.empty
     , sessionRequests = EveryDict.empty
@@ -147,6 +153,7 @@ type MsgIndexedDb
     | FetchHealthCenters
     | FetchMotherMeasurements MotherId
     | FetchParticipantForms
+    | FetchParticipantsByName String
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
     | FetchSyncData
@@ -159,6 +166,7 @@ type MsgIndexedDb
     | HandleFetchedExpectedSessions ChildId (WebData (EveryDictList SessionId Session))
     | HandleFetchedHealthCenters (WebData (EveryDictList HealthCenterId HealthCenter))
     | HandleFetchedParticipantForms (WebData (EveryDictList ParticipantFormId ParticipantForm))
+    | HandleFetchedParticipantsByName String (WebData Participants)
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (EveryDictList SessionId Session))
     | HandleFetchedSyncData (WebData (EveryDictList HealthCenterId SyncData))

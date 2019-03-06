@@ -431,20 +431,22 @@
                         // sessions have a `clinic` field. So, we'll get the
                         // session, and then get mothers who have the same clinic
                         // field.
-                        modifyQuery = dbSync.nodes.get(sessionId).then(function (session) {
-                            if (session) {
-                                criteria = {
-                                    type: 'mother',
-                                    clinic: session.clinic
-                                };
+                        modifyQuery = modifyQuery.then(function () {
+                            return dbSync.nodes.get(sessionId).then(function (session) {
+                                if (session) {
+                                    criteria = {
+                                        type: 'mother',
+                                        clinic: session.clinic
+                                    };
 
-                                query = table.where(criteria);
-                                countQuery = query.clone();
+                                    query = table.where(criteria);
+                                    countQuery = query.clone();
 
-                                return Promise.resolve();
-                            } else {
-                                return Promise.reject('Session not found: ' + sessionId);
-                            }
+                                    return Promise.resolve();
+                                } else {
+                                    return Promise.reject('Session not found: ' + sessionId);
+                                }
+                            });
                         });
                     }
                 } else if (type === 'child') {
@@ -455,33 +457,52 @@
                         // We have to get them via the mothers, because the
                         // mothers have the clinic field. Oh, to have a query
                         // planner!
-                        modifyQuery = dbSync.nodes.get(sessionId).then(function (session) {
-                            if (session) {
-                                var motherQuery = dbSync.nodes.where({
-                                    type: 'mother',
-                                    clinic: session.clinic
-                                });
-
-                                return motherQuery.primaryKeys().then(function (motherIds) {
-                                    // Construct a compound criteria for each mother
-                                    criteria = motherIds.map(function (motherId) {
-                                        return ['child', motherId];
+                        modifyQuery = modifyQuery.then(function () {
+                            return dbSync.nodes.get(sessionId).then(function (session) {
+                                if (session) {
+                                    var motherQuery = dbSync.nodes.where({
+                                        type: 'mother',
+                                        clinic: session.clinic
                                     });
 
-                                    // For some reason, query.clone() doesn't
-                                    // work properly to construct the query
-                                    // here. Possibly the `anyOf` ends up
-                                    // mutating something later?
-                                    query = dbSync.nodes.where('[type+mother]').anyOf(criteria);
-                                    countQuery = dbSync.nodes.where('[type+mother]').anyOf(criteria);
+                                    return motherQuery.primaryKeys().then(function (motherIds) {
+                                        // Construct a compound criteria for each mother
+                                        criteria = motherIds.map(function (motherId) {
+                                            return ['child', motherId];
+                                        });
 
-                                    return Promise.resolve();
-                                });
-                            } else {
-                                return Promise.reject('Session not found: ' + sessionId);
-                            }
+                                        // For some reason, query.clone() doesn't
+                                        // work properly to construct the query
+                                        // here. Possibly the `anyOf` ends up
+                                        // mutating something later?
+                                        query = dbSync.nodes.where('[type+mother]').anyOf(criteria);
+                                        countQuery = dbSync.nodes.where('[type+mother]').anyOf(criteria);
+
+                                        return Promise.resolve();
+                                    });
+                                } else {
+                                    return Promise.reject('Session not found: ' + sessionId);
+                                }
+                            });
                         });
                     }
+                }
+
+                var nameContains = params.get('name_contains');
+                if (nameContains) {
+                    var filter = nameContains.toLowerCase();
+
+                    var doFilter = function (participant) {
+                        var name = (participant.label || '').toLowerCase();
+                        return name.includes(filter);
+                    };
+
+                    modifyQuery = modifyQuery.then(function () {
+                        query = query.and(doFilter);
+                        countQuery = countQuery.and(doFilter);
+
+                        return Promise.resolve();
+                    });
                 }
 
                 return modifyQuery.then(function () {
