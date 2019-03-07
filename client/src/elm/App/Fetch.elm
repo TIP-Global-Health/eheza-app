@@ -47,7 +47,7 @@ fetch model =
             getLoggedInModel model
                 |> Maybe.map
                     (\loggedIn ->
-                        Pages.PatientRegistration.Fetch.fetch loggedIn.patientRegistrationPage
+                        Pages.PatientRegistration.Fetch.fetch model.indexedDb loggedIn.patientRegistrationPage
                             |> List.map MsgIndexedDb
                     )
                 |> Maybe.withDefault []

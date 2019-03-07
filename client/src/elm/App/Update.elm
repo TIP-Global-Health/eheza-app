@@ -21,7 +21,6 @@ import Pages.Admin.Update
 import Pages.Device.Model
 import Pages.Device.Update
 import Pages.Page exposing (Page(..), UserPage(AdminPage, ClinicsPage))
-import Pages.PatientRegistration.Model
 import Pages.PatientRegistration.Update
 import Pages.PinCode.Model
 import Pages.PinCode.Update

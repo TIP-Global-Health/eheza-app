@@ -1,4 +1,4 @@
-module Participant.Model exposing (Participant, ParticipantType(..))
+module Participant.Model exposing (Participant, ParticipantId(..), ParticipantType(..))
 
 {-| This module provides a type which allows us to do certain things
 with either children or mothers, by providing a typeclass-like
@@ -12,12 +12,14 @@ with Child and ChildActivity.
 
 import Activity.Model exposing (Activity, CompletedAndPending)
 import Backend.Entities exposing (..)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (EditableSession)
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html)
 import Pages.Activity.Model
 import Pages.Session.Model
+import RemoteData exposing (WebData)
 import Time.Date
 import Translate exposing (Language)
 import ZScore.Model
@@ -35,6 +37,8 @@ type alias Participant id value activity msg =
     , getMotherId : id -> EditableSession -> Maybe MotherId
     , getName : value -> String
     , getParticipants : EditableSession -> EveryDictList id value
+    , getValue : id -> ModelIndexedDb -> WebData value
+    , getVillage : value -> Maybe String
     , iconClass : String
     , showProgressReportTab : Bool
     , summarizeActivitiesForParticipant : id -> EditableSession -> CompletedAndPending (List activity)
@@ -42,10 +46,19 @@ type alias Participant id value activity msg =
     , tagActivity : activity -> Activity
     , toChildId : id -> Maybe ChildId
     , toMotherId : id -> Maybe MotherId
+    , toParticipantId : id -> ParticipantId
     , viewMeasurements : Language -> NominalDate -> ZScore.Model.Model -> id -> activity -> Pages.Session.Model.Model -> EditableSession -> Html (Pages.Activity.Model.Msg id msg)
     }
 
 
+{-| TODO: Remove this -- should explicitly choose between child and mother,
+rather than depending on age at time of data entry.
+-}
 type ParticipantType
     = ChildParticipant Time.Date.DateDelta
     | MotherParticipant Time.Date.DateDelta
+
+
+type ParticipantId
+    = ParticipantMother MotherId
+    | ParticipantChild ChildId

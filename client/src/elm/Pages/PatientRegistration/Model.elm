@@ -4,9 +4,8 @@ module Pages.PatientRegistration.Model exposing
     , GeoLocation
     , Model
     , Msg(..)
+    , ParticipantAction(..)
     , ParticipantsData
-    , PatientActionType(..)
-    , PatientData(..)
     , RegistrationForm
     , RegistrationPhase(..)
     , RegistrationStep(..)
@@ -26,6 +25,7 @@ import Form.Error exposing (ErrorValue(..))
 import Form.Validate exposing (Validation, andMap, andThen, bool, emptyString, field, format, mapError, oneOf, string, succeed)
 import Measurement.Model exposing (DropZoneFile)
 import Pages.Page exposing (Page)
+import Participant.Model exposing (ParticipantId)
 import Regex exposing (Regex)
 import Restful.Endpoint exposing (EntityId(..), toEntityId, toEntityUuid)
 import Time exposing (Time)
@@ -38,7 +38,7 @@ type alias Model =
     , registrationPhase : RegistrationPhase
     , previousPhases : List RegistrationPhase
     , participantsData : ParticipantsData
-    , relationPatient : Maybe PatientData
+    , relationParticipant : Maybe ParticipantId
     , submittedSearch : Maybe String
     , geoInfo : GeoInfo
     , dialogState : Maybe DialogState
@@ -60,8 +60,8 @@ emptyModel =
     , registrationForm = Form.initial [] validateRegistrationForm
     , registrationPhase = ParticipantSearch Nothing
     , previousPhases = []
-    , participantsData = dummyParticipantsData
-    , relationPatient = Nothing
+    , participantsData = emptyParticipantsData
+    , relationParticipant = Nothing
     , submittedSearch = Nothing
     , geoInfo = GeoInfo getGeoProvinces getGeoDistricts getGeoSectors getGeoCells getGeoVillages
     , dialogState = Nothing
@@ -74,13 +74,6 @@ initModel model =
     { emptyModel | participantsData = model.participantsData }
 
 
-dummyParticipantsData : ParticipantsData
-dummyParticipantsData =
-    { mothersToRegister = EveryDict.fromList [ ( mother1Uuid, mother1 ), ( mother2Uuid, mother2 ), ( mother3Uuid, mother3 ), ( mother4Uuid, mother4 ) ]
-    , childrenToRegister = EveryDict.fromList [ ( child1Uuid, child1 ), ( child2Uuid, child2 ), ( child3Uuid, child3 ), ( child4Uuid, child4 ) ]
-    }
-
-
 emptyParticipantsData : ParticipantsData
 emptyParticipantsData =
     { mothersToRegister = EveryDict.empty
@@ -91,7 +84,7 @@ emptyParticipantsData =
 type RegistrationPhase
     = ParticipantSearch (Maybe String)
     | ParticipantRegistration RegistrationStep
-    | ParticipantView PatientData
+    | ParticipantView ParticipantId
 
 
 type alias GeoInfo =
@@ -109,26 +102,21 @@ type RegistrationStep
     | Third
 
 
-type PatientData
-    = PatientMother MotherId Mother
-    | PatientChild ChildId Child
-
-
-type PatientActionType
+type ParticipantAction
     = Forward
     | Link
 
 
 type Msg
     = DropZoneComplete DropZoneFile
-    | MakeRelation PatientData
+    | MakeRelation ParticipantId
     | MsgRegistrationForm Form.Msg
     | Reset
     | SearchForParticipant String
     | SetActivePage Page
     | SetDialogState (Maybe DialogState)
     | SetRegistrationPhase RegistrationPhase
-    | SetRelationPatient (Maybe PatientData)
+    | SetRelationParticipant (Maybe ParticipantId)
     | StepBack
     | Submit
 
@@ -141,8 +129,8 @@ type alias GeoLocation =
 
 type DialogState
     = ConfirmSubmision
-    | SuccessfulRegistration (Maybe PatientData)
-    | SuccessfulRelation PatientData
+    | SuccessfulRegistration (Maybe ParticipantId)
+    | SuccessfulRelation ParticipantId
 
 
 type alias RegistrationForm =
@@ -227,294 +215,6 @@ validateAlphanumeric =
 alphanumericPattern : Regex
 alphanumericPattern =
     Regex.regex "^[a-zA-Z0-9]*$"
-
-
-child1Uuid : ChildId
-child1Uuid =
-    toEntityUuid "child-21"
-
-
-child2Uuid : ChildId
-child2Uuid =
-    toEntityUuid "child-22"
-
-
-child3Uuid : ChildId
-child3Uuid =
-    toEntityUuid "child-23"
-
-
-child4Uuid : ChildId
-child4Uuid =
-    toEntityUuid "child-24"
-
-
-mother1Uuid : MotherId
-mother1Uuid =
-    toEntityUuid "mother-11"
-
-
-mother2Uuid : MotherId
-mother2Uuid =
-    toEntityUuid "mother-12"
-
-
-mother3Uuid : MotherId
-mother3Uuid =
-    toEntityUuid "mother-13"
-
-
-mother4Uuid : MotherId
-mother4Uuid =
-    toEntityUuid "mother-14"
-
-
-child1 : Child
-child1 =
-    Child "child1 child1"
-        "child1"
-        Nothing
-        "child1"
-        Nothing
-        Nothing
-        (Just mother1Uuid)
-        (date 2016 1 1)
-        False
-        Male
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        (Just
-            "Murumbu"
-        )
-        Nothing
-        Nothing
-
-
-child2 : Child
-child2 =
-    Child "child2 child2"
-        "child2"
-        Nothing
-        "child2"
-        Nothing
-        Nothing
-        (Just mother1Uuid)
-        (date 2014 2 2)
-        True
-        Female
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        (Just
-            "Zurumbu"
-        )
-        Nothing
-        Nothing
-
-
-child3 : Child
-child3 =
-    Child "child3 child3"
-        "child3"
-        Nothing
-        "child3"
-        Nothing
-        Nothing
-        (Just mother2Uuid)
-        (date 2013 3 3)
-        True
-        Male
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        (Just
-            "Purumbu"
-        )
-        Nothing
-        Nothing
-
-
-child4 : Child
-child4 =
-    Child "child4 child4"
-        "child4"
-        Nothing
-        "child4"
-        Nothing
-        Nothing
-        Nothing
-        (date 2011 4 4)
-        False
-        Female
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        (Just
-            "Kurumbu"
-        )
-        Nothing
-        Nothing
-
-
-mother1 : Mother
-mother1 =
-    Mother "mother1 mother1"
-        "mother1"
-        Nothing
-        "mother1"
-        Nothing
-        Nothing
-        (Just (date 2001 1 1))
-        False
-        MotherRelation
-        Female
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        (Just
-            "Wurumbu"
-        )
-        Nothing
-        Nothing
-        Nothing
-
-
-mother2 : Mother
-mother2 =
-    Mother "mother2 mother2"
-        "mother2"
-        Nothing
-        "mother2"
-        Nothing
-        Nothing
-        (Just (date 2002 2 2))
-        True
-        MotherRelation
-        Female
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        (Just
-            "Durumbu"
-        )
-        Nothing
-        Nothing
-        Nothing
-
-
-mother3 : Mother
-mother3 =
-    Mother "mother3 mother3"
-        "mother3"
-        Nothing
-        "mother3"
-        Nothing
-        Nothing
-        (Just (date 2003 3 3))
-        True
-        MotherRelation
-        Female
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        (Just
-            "Urumbu"
-        )
-        Nothing
-        Nothing
-        Nothing
-
-
-mother4 : Mother
-mother4 =
-    Mother "mother4 mother4"
-        "mother4"
-        Nothing
-        "mother4"
-        Nothing
-        Nothing
-        (Just (date 2004 4 4))
-        False
-        MotherRelation
-        Male
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        (Just
-            "Gurumbu"
-        )
-        Nothing
-        Nothing
-        Nothing
 
 
 getGeoProvinces : EveryDict GeoLocationId GeoLocation

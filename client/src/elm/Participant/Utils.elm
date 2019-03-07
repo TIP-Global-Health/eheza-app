@@ -6,9 +6,11 @@ import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Utils exposing (getMyMother)
+import EveryDict
 import Measurement.Model
 import Pages.Activity.Utils exposing (viewChildMeasurements, viewMotherMeasurements)
-import Participant.Model exposing (Participant)
+import Participant.Model exposing (Participant, ParticipantId(..))
+import RemoteData exposing (RemoteData(..))
 
 
 childParticipant : Participant ChildId Child ChildActivity Measurement.Model.MsgChild
@@ -18,6 +20,8 @@ childParticipant =
     , getMotherId = \childId session -> getMyMother childId session.offlineSession |> Maybe.map Tuple.first
     , getName = .name
     , getParticipants = \session -> session.offlineSession.children
+    , getValue = \id db -> EveryDict.get id db.children |> Maybe.withDefault NotAsked
+    , getVillage = .village
     , iconClass = "child"
     , showProgressReportTab = True
     , summarizeActivitiesForParticipant = summarizeChildParticipant
@@ -25,6 +29,7 @@ childParticipant =
     , tagActivity = ChildActivity
     , toChildId = Just
     , toMotherId = always Nothing
+    , toParticipantId = ParticipantChild
     , viewMeasurements = viewChildMeasurements
     }
 
@@ -36,6 +41,8 @@ motherParticipant =
     , getMotherId = \motherId session -> Just motherId
     , getName = .name
     , getParticipants = \session -> session.offlineSession.mothers
+    , getValue = \id db -> EveryDict.get id db.mothers |> Maybe.withDefault NotAsked
+    , getVillage = .village
     , iconClass = "mother"
     , showProgressReportTab = False
     , summarizeActivitiesForParticipant = summarizeMotherParticipant
@@ -43,5 +50,6 @@ motherParticipant =
     , tagActivity = MotherActivity
     , toChildId = always Nothing
     , toMotherId = Just
+    , toParticipantId = ParticipantMother
     , viewMeasurements = \language date zscores -> viewMotherMeasurements language date
     }

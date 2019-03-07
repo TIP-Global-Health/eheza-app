@@ -27,8 +27,9 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRegistration.Model exposing (..)
-import Pages.PatientRegistration.Utils exposing (getCommonDetails, getFormFieldValue, getRegistratingParticipant)
-import Participant.Model exposing (ParticipantType(..))
+import Pages.PatientRegistration.Utils exposing (getFormFieldValue, getRegistratingParticipant)
+import Participant.Model exposing (Participant, ParticipantId(..), ParticipantType(..))
+import Participant.Utils exposing (childParticipant, motherParticipant)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityId, toEntityId)
 import Time.Date
@@ -78,13 +79,13 @@ viewBody language currentDate db model =
         body =
             case model.registrationPhase of
                 ParticipantSearch searchString ->
-                    viewSearchForm language currentDate db searchString model.submittedSearch model.relationPatient
+                    viewSearchForm language currentDate db searchString model.submittedSearch model.relationParticipant
 
                 ParticipantRegistration step ->
-                    viewRegistrationForm language currentDate step model.registrationForm model.geoInfo model.photo model.relationPatient previousPhase
+                    viewRegistrationForm language currentDate step model.registrationForm model.geoInfo model.photo model.relationParticipant previousPhase
 
-                ParticipantView patientData ->
-                    viewPatientDetailsForm language currentDate patientData model.participantsData previousPhase
+                ParticipantView participantId ->
+                    viewParticipantDetailsForm language currentDate participantId db previousPhase
     in
     div [ class "content" ]
         [ body ]
@@ -97,10 +98,10 @@ viewRegistrationForm :
     -> Form () RegistrationForm
     -> GeoInfo
     -> Maybe PhotoValue
-    -> Maybe PatientData
+    -> Maybe ParticipantId
     -> Maybe RegistrationPhase
     -> Html Msg
-viewRegistrationForm language currentDate step registrationForm geoInfo photo maybeRelationPatient maybePreviousPhase =
+viewRegistrationForm language currentDate step registrationForm geoInfo photo maybeRelationParticipant maybePreviousPhase =
     let
         -- FORM FIELDS --
         firstName =
@@ -201,7 +202,7 @@ viewRegistrationForm language currentDate step registrationForm geoInfo photo ma
                 (getFormFieldValue dayOfBirth)
                 (getFormFieldValue monthOfBirth)
                 (getFormFieldValue yearOfBirth)
-                maybeRelationPatient
+                maybeRelationParticipant
 
         emptyOption =
             ( "", "" )
@@ -228,15 +229,15 @@ viewRegistrationForm language currentDate step registrationForm geoInfo photo ma
                                     Time.Date.year currentDate
 
                                 ( totalYears, startFromYear ) =
-                                    maybeRelationPatient
+                                    maybeRelationParticipant
                                         |> unwrap
                                             ( 100, currentYear - 99 )
-                                            (\relationPatient ->
-                                                case relationPatient of
-                                                    PatientChild _ _ ->
+                                            (\relationParticipant ->
+                                                case relationParticipant of
+                                                    ParticipantChild _ ->
                                                         ( 88, currentYear - 99 )
 
-                                                    PatientMother _ _ ->
+                                                    ParticipantMother _ ->
                                                         ( 13, currentYear - 12 )
                                             )
 
@@ -657,7 +658,7 @@ viewRegistrationForm language currentDate step registrationForm geoInfo photo ma
                         (getFormFieldValue dayOfBirth)
                         (getFormFieldValue monthOfBirth)
                         (getFormFieldValue yearOfBirth)
-                        maybeRelationPatient
+                        maybeRelationParticipant
 
                 ( label, action, disabled ) =
                     case step of
@@ -741,9 +742,9 @@ viewSearchForm :
     -> ModelIndexedDb
     -> Maybe String
     -> Maybe String
-    -> Maybe PatientData
+    -> Maybe ParticipantId
     -> Html Msg
-viewSearchForm language currentDate db searchString submittedSearch maybeRelationPatient =
+viewSearchForm language currentDate db searchString submittedSearch maybeRelationParticipant =
     let
         ( disableSubmitButton, searchValue ) =
             case searchString of
@@ -781,31 +782,31 @@ viewSearchForm language currentDate db searchString submittedSearch maybeRelatio
                     [ text <| translate language Translate.Search ]
                 ]
 
-        ( searchResultsSummary, searchResultsPatients ) =
+        ( searchResultsSummary, searchResultsParticipants ) =
             submittedSearch
                 |> unwrap
                     ( [], [] )
                     (\searchValue ->
                         let
-                            -- When relation patient is set, if it's a child, search search results
+                            -- When relation participant is set, if it's a child, search search results
                             -- should display only mothers.
                             -- If it's a mother, search results should display only children that
                             -- are not attached to mother.
-                            ( relationPatientConditionMother, relationPatientConditionChild ) =
-                                maybeRelationPatient
+                            ( relationParticipantConditionMother, relationParticipantConditionChild ) =
+                                maybeRelationParticipant
                                     |> unwrap
                                         ( \mother -> True, \child -> True )
-                                        (\relationPatient ->
-                                            case relationPatient of
-                                                PatientMother _ _ ->
+                                        (\relationParticipant ->
+                                            case relationParticipant of
+                                                ParticipantMother _ ->
                                                     ( \mother -> False, \child -> isNothing child.motherId )
 
-                                                PatientChild _ _ ->
+                                                ParticipantChild _ ->
                                                     ( \mother -> True, \child -> False )
                                         )
 
                             relationDependentAction =
-                                if isJust maybeRelationPatient then
+                                if isJust maybeRelationParticipant then
                                     Just Link
 
                                 else
@@ -823,7 +824,7 @@ viewSearchForm language currentDate db searchString submittedSearch maybeRelatio
                                                 |> EveryDictList.toList
                                                 |> List.filter
                                                     (\( _, mother ) ->
-                                                        relationPatientConditionMother mother
+                                                        relationParticipantConditionMother mother
                                                     )
                                         )
 
@@ -835,7 +836,7 @@ viewSearchForm language currentDate db searchString submittedSearch maybeRelatio
                                                 |> EveryDictList.toList
                                                 |> List.filter
                                                     (\( _, child ) ->
-                                                        relationPatientConditionChild child
+                                                        relationParticipantConditionChild child
                                                     )
                                         )
 
@@ -855,11 +856,11 @@ viewSearchForm language currentDate db searchString submittedSearch maybeRelatio
                         ( [ summary ]
                         , (mothersData
                             |> RemoteData.withDefault []
-                            |> List.map (\( uuid, mother ) -> viewPatient language (PatientMother uuid mother) relationDependentAction)
+                            |> List.map (\( uuid, mother ) -> viewParticipant language motherParticipant uuid mother relationDependentAction)
                           )
                             ++ (childrenData
                                     |> RemoteData.withDefault []
-                                    |> List.map (\( uuid, child ) -> viewPatient language (PatientChild uuid child) relationDependentAction)
+                                    |> List.map (\( uuid, child ) -> viewParticipant language childParticipant uuid child relationDependentAction)
                                )
                         )
                     )
@@ -874,7 +875,7 @@ viewSearchForm language currentDate db searchString submittedSearch maybeRelatio
         , div [ class "results-summary" ]
             searchResultsSummary
         , div [ class "ui unstackable items patients-list" ]
-            searchResultsPatients
+            searchResultsParticipants
         , div [ class "register-helper" ]
             [ text <| translate language Translate.RegisterHelper ]
         , div [ class "actions" ]
@@ -887,133 +888,162 @@ viewSearchForm language currentDate db searchString submittedSearch maybeRelatio
         ]
 
 
-viewPatientDetailsForm :
+viewParticipantDetailsForm :
     Language
     -> NominalDate
-    -> PatientData
-    -> ParticipantsData
+    -> ParticipantId
+    -> ModelIndexedDb
     -> Maybe RegistrationPhase
     -> Html Msg
-viewPatientDetailsForm language currentDate viewedPatient participantsData maybePreviousPhase =
+viewParticipantDetailsForm language currentDate participantId db maybePreviousPhase =
     let
-        ( topLabel, bottomLabel, familyMembersList ) =
-            case viewedPatient of
-                PatientMother motherUuid mother ->
+        ( topLabel, bottomLabel ) =
+            case participantId of
+                ParticipantMother motherId ->
                     ( Translate.MotherDemographicInformation
                     , Translate.Children
-                    , participantsData.childrenToRegister
-                        |> EveryDict.toList
-                        |> List.filterMap
-                            (\( uuid, child ) ->
-                                if child.motherId == Just motherUuid then
-                                    Just <| PatientChild uuid child
-
-                                else
-                                    Nothing
-                            )
                     )
 
-                PatientChild _ child ->
+                ParticipantChild childId ->
                     ( Translate.ChildDemographicInformation
                     , Translate.Mother
-                    , child.motherId
-                        |> unwrap
-                            []
-                            (\motherUuid ->
-                                case EveryDict.get motherUuid participantsData.mothersToRegister of
-                                    Just mother ->
-                                        [ PatientMother motherUuid mother ]
-
-                                    Nothing ->
-                                        []
-                            )
                     )
 
-        familyMembers =
+        ( familyMembers, participantHtml ) =
             let
-                addPatientModal patientClass label =
+                addParticipantModal participantClass label =
                     div [ class "ui grid" ]
                         [ div [ class "four wide column" ]
-                            [ span [ class <| "icon-participant add " ++ patientClass ] [] ]
+                            [ span [ class <| "icon-participant add " ++ participantClass ] [] ]
                         , div [ class "eight wide column add-patient-label" ]
                             [ text <| translate language label ]
                         , div [ class "three wide column" ]
                             [ div [ class "add-patient-icon-wrapper" ]
                                 [ span
                                     [ class "add-patient-icon"
-                                    , onClick <| SetRelationPatient <| Just viewedPatient
+                                    , onClick <| SetRelationParticipant <| Just participantId
                                     ]
                                     []
                                 ]
                             ]
                         ]
             in
-            case viewedPatient of
-                PatientChild _ _ ->
-                    case familyMembersList of
-                        [ patientMother ] ->
-                            [ viewPatient language patientMother Nothing ]
-
-                        _ ->
-                            [ addPatientModal "mother" Translate.AddMother ]
-
-                PatientMother _ _ ->
+            case participantId of
+                ParticipantChild childId ->
                     let
-                        addChildModal =
-                            addPatientModal "child" Translate.AddChild
-                    in
-                    if List.isEmpty familyMembersList then
-                        [ addChildModal ]
+                        participantData =
+                            childParticipant.getValue childId db
 
-                    else
-                        familyMembersList
-                            |> List.map (\childPatient -> viewPatient language childPatient Nothing)
-                            |> List.append [ addChildModal ]
-                            |> List.reverse
+                        motherData =
+                            RemoteData.andThen
+                                (\participant ->
+                                    case participant.motherId of
+                                        Nothing ->
+                                            -- We have the data, and there is no mother
+                                            Success Nothing
+
+                                        Just motherId ->
+                                            EveryDict.get motherId db.mothers
+                                                |> Maybe.withDefault NotAsked
+                                                |> RemoteData.map (\mother -> Just ( motherId, mother ))
+                                )
+                                participantData
+
+                        viewMotherData data =
+                            case data of
+                                Just ( motherId, mother ) ->
+                                    div
+                                        [ class "ui unstackable items patients-list" ]
+                                        [ viewParticipant language motherParticipant motherId mother Nothing ]
+
+                                Nothing ->
+                                    div
+                                        [ class "ui unstackable items patients-list" ]
+                                        [ addParticipantModal "mother" Translate.AddMother ]
+
+                        viewParticipantData participant =
+                            viewParticipant language childParticipant childId participant Nothing
+                    in
+                    ( viewWebData language viewMotherData identity motherData
+                    , viewWebData language viewParticipantData identity participantData
+                    )
+
+                ParticipantMother motherId ->
+                    let
+                        participantData =
+                            motherParticipant.getValue motherId db
+
+                        addChildModal =
+                            addParticipantModal "child" Translate.AddChild
+
+                        familyMembersListData =
+                            EveryDict.get motherId db.childrenOfMother
+                                |> Maybe.withDefault NotAsked
+                                |> RemoteData.map EveryDict.toList
+
+                        viewFamilyMembersList familyMembersList =
+                            familyMembersList
+                                |> List.map (\( childId, child ) -> viewParticipant language childParticipant childId child Nothing)
+                                |> List.append [ addChildModal ]
+                                |> List.reverse
+                                |> div [ class "ui unstackable items patients-list" ]
+
+                        viewParticipantData participant =
+                            viewParticipant language motherParticipant motherId participant Nothing
+                    in
+                    ( viewWebData language viewFamilyMembersList identity familyMembersListData
+                    , viewWebData language viewParticipantData identity participantData
+                    )
     in
     div [ class "wrap-list registration-page view" ]
-        [ h3 [ class "ui header" ]
+        [ h3
+            [ class "ui header" ]
             [ text <| translate language topLabel ++ ": " ]
-        , div [ class "ui unstackable items" ]
-            [ viewPatient language viewedPatient Nothing ]
+        , div
+            [ class "ui unstackable items" ]
+            [ participantHtml ]
         , div [ class "separator-line" ] []
-        , h3 [ class "ui header" ]
+        , h3
+            [ class "ui header" ]
             [ text <| translate language bottomLabel ++ ": " ]
-        , div [ class "ui unstackable items patients-list" ]
-            familyMembers
-        , div [ class "actions" ]
+        , familyMembers
+        , div
+            [ class "actions" ]
             [ viewBackButton language maybePreviousPhase ]
         ]
 
 
-viewPatient : Language -> PatientData -> Maybe PatientActionType -> Html Msg
-viewPatient language patientData maybeActionType =
+viewParticipant : Language -> Participant id value activity msg -> id -> value -> Maybe ParticipantAction -> Html Msg
+viewParticipant language config id participant maybeActionType =
     let
-        ( typeForThumbnail, details, healthCenter ) =
-            case patientData of
-                PatientMother _ mother ->
-                    ( "mother", getCommonDetails patientData, "Unknown" )
+        participantId =
+            config.toParticipantId id
 
-                PatientChild _ child ->
-                    ( "child", getCommonDetails patientData, "Unknown" )
+        ( typeForThumbnail, healthCenter ) =
+            case participantId of
+                ParticipantMother _ ->
+                    ( "mother", "TODO" )
+
+                ParticipantChild _ ->
+                    ( "child", "TODO" )
 
         content =
             div [ class "content" ] <|
                 div [ class "details" ]
                     [ h2
                         [ class "ui header" ]
-                        [ text details.name ]
+                        [ text <| config.getName participant ]
                     , p []
                         [ label [] [ text <| translate language Translate.DOB ++ ": " ]
                         , span []
-                            [ details.birthDate
+                            [ config.getBirthDate participant
                                 |> Maybe.map (renderDate language >> text)
                                 |> showMaybe
                             ]
                         ]
                     , p []
                         [ label [] [ text <| translate language Translate.Village ++ ": " ]
-                        , span [] [ details.village |> Maybe.withDefault "" |> text ]
+                        , span [] [ config.getVillage participant |> Maybe.withDefault "" |> text ]
                         ]
                     , p []
                         [ label [] [ text <| translate language Translate.HealthCenter ++ ": " ]
@@ -1026,10 +1056,10 @@ viewPatient language patientData maybeActionType =
                                     ( action, actionClass ) =
                                         case actionType of
                                             Forward ->
-                                                ( SetRegistrationPhase <| ParticipantView patientData, "forward" )
+                                                ( SetRegistrationPhase <| ParticipantView participantId, "forward" )
 
                                             Link ->
-                                                ( MakeRelation patientData, "link" )
+                                                ( MakeRelation participantId, "link" )
                                 in
                                 [ div [ class "action" ]
                                     [ div [ class "action-icon-wrapper" ]
@@ -1050,7 +1080,7 @@ viewPatient language patientData maybeActionType =
         [ class "item patient-view" ]
         [ div
             [ class "ui image" ]
-            [ thumbnailImage typeForThumbnail details.avatarUrl details.name 120 120 ]
+            [ thumbnailImage typeForThumbnail (config.getAvatarUrl participant) (config.getName participant) 120 120 ]
         , content
         ]
 
@@ -1064,11 +1094,11 @@ viewDialog language dialogState =
                     ConfirmSubmision ->
                         Just <| confirmSubmisionDialog language
 
-                    SuccessfulRegistration maybePatientData ->
-                        Just <| successfulRegistrationDialog language maybePatientData
+                    SuccessfulRegistration maybeParticipantId ->
+                        Just <| successfulRegistrationDialog language maybeParticipantId
 
-                    SuccessfulRelation patientData ->
-                        Just <| successfulRelationDialog language patientData
+                    SuccessfulRelation participantId ->
+                        Just <| successfulRelationDialog language participantId
             )
 
 
@@ -1100,22 +1130,22 @@ confirmSubmisionDialog language =
         ]
 
 
-successfulRegistrationDialog : Language -> Maybe PatientData -> Html Msg
-successfulRegistrationDialog language maybePatientData =
+successfulRegistrationDialog : Language -> Maybe ParticipantId -> Html Msg
+successfulRegistrationDialog language maybeParticipantId =
     let
         message =
-            case maybePatientData of
-                Just (PatientMother _ _) ->
+            case maybeParticipantId of
+                Just (ParticipantMother _) ->
                     Translate.RegistartionSuccessfulSuggestAddingChild
 
-                Just (PatientChild _ _) ->
+                Just (ParticipantChild _) ->
                     Translate.RegistartionSuccessfulSuggestAddingMother
 
                 Nothing ->
                     Translate.RegistartionSuccessfulPatientAdded
 
         buttons =
-            if isJust maybePatientData then
+            if isJust maybeParticipantId then
                 div [ class "ui buttons two" ]
                     [ button
                         [ class "ui fluid button"
@@ -1124,7 +1154,7 @@ successfulRegistrationDialog language maybePatientData =
                         [ text <| translate language Translate.No ]
                     , button
                         [ class "ui primary fluid button"
-                        , onClick <| SetRelationPatient maybePatientData
+                        , onClick <| SetRelationParticipant maybeParticipantId
                         ]
                         [ text <| translate language Translate.Yes ]
                     ]
@@ -1139,15 +1169,15 @@ successfulRegistrationDialog language maybePatientData =
     reportSuccessDialog language Translate.RegistartionSuccessful message buttons
 
 
-successfulRelationDialog : Language -> PatientData -> Html Msg
-successfulRelationDialog language relationPatient =
+successfulRelationDialog : Language -> ParticipantId -> Html Msg
+successfulRelationDialog language relationParticipant =
     let
         message =
-            case relationPatient of
-                PatientChild _ _ ->
+            case relationParticipant of
+                ParticipantChild _ ->
                     Translate.RelationSuccessfulChildWithMother
 
-                PatientMother _ _ ->
+                ParticipantMother _ ->
                     Translate.RelationSuccessfulMotherWithChild
 
         button =

@@ -1,31 +1,12 @@
-module Pages.PatientRegistration.Utils exposing (getCommonDetails, getFormFieldValue, getRegistratingParticipant, sequenceExtra)
+module Pages.PatientRegistration.Utils exposing (getFormFieldValue, getRegistratingParticipant, sequenceExtra)
 
 import Form
 import Gizra.NominalDate exposing (NominalDate)
 import List
 import Maybe.Extra exposing (unwrap)
-import Pages.PatientRegistration.Model exposing (PatientData(..))
-import Participant.Model exposing (ParticipantType(..))
+import Participant.Model exposing (ParticipantId(..), ParticipantType(..))
 import Time exposing (Time)
 import Time.Date
-
-
-getCommonDetails : PatientData -> { name : String, avatarUrl : Maybe String, birthDate : Maybe NominalDate, village : Maybe String }
-getCommonDetails patient =
-    case patient of
-        PatientMother _ mother ->
-            { name = mother.name
-            , avatarUrl = mother.avatarUrl
-            , birthDate = mother.birthDate
-            , village = mother.village
-            }
-
-        PatientChild _ child ->
-            { name = child.name
-            , avatarUrl = child.avatarUrl
-            , birthDate = Just child.birthDate
-            , village = child.village
-            }
 
 
 getFormFieldValue : Form.FieldState e String -> Int
@@ -43,14 +24,17 @@ getFormFieldValue field =
         field.value
 
 
-getRegistratingParticipant : NominalDate -> Int -> Int -> Int -> Maybe PatientData -> Maybe ParticipantType
-getRegistratingParticipant currentDate birthDay birthMonth birthYear maybeRelationPatient =
+{-| TODO: Remove this. Should explicitly choose between child and mother,
+rather than depending on age at time of data entry.
+-}
+getRegistratingParticipant : NominalDate -> Int -> Int -> Int -> Maybe ParticipantId -> Maybe ParticipantType
+getRegistratingParticipant currentDate birthDay birthMonth birthYear maybeRelationParticipant =
     if birthDay > 0 && birthMonth > 0 && birthYear > 0 then
         let
             delta =
                 Time.Date.delta currentDate (Time.Date.date birthYear birthMonth birthDay)
         in
-        maybeRelationPatient
+        maybeRelationParticipant
             |> unwrap
                 (if delta.years > 12 then
                     Just <| MotherParticipant delta
@@ -58,12 +42,12 @@ getRegistratingParticipant currentDate birthDay birthMonth birthYear maybeRelati
                  else
                     Just <| ChildParticipant delta
                 )
-                (\relationPatient ->
-                    case relationPatient of
-                        PatientMother _ _ ->
+                (\relationParticipant ->
+                    case relationParticipant of
+                        ParticipantMother _ ->
                             Just <| MotherParticipant delta
 
-                        PatientChild _ _ ->
+                        ParticipantChild _ ->
                             Just <| ChildParticipant delta
                 )
 
