@@ -36,6 +36,7 @@ import Time.Date
 import Translate exposing (Language, TranslationId, translate)
 import User.Model exposing (User)
 import Utils.Form exposing (isFormFieldSet, isFormFieldValid)
+import Utils.GeoLocation exposing (GeoInfo, geoInfo)
 import Utils.Html exposing (script, thumbnailImage, viewModal)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewWebData)
@@ -82,7 +83,7 @@ viewBody language currentDate db model =
                     viewSearchForm language currentDate db searchString model.submittedSearch model.relationParticipant
 
                 ParticipantRegistration step ->
-                    viewRegistrationForm language currentDate step model.registrationForm model.geoInfo model.photo model.relationParticipant previousPhase
+                    viewRegistrationForm language currentDate step model.registrationForm geoInfo model.photo model.relationParticipant previousPhase
 
                 ParticipantView participantId ->
                     viewParticipantDetailsForm language currentDate participantId db previousPhase

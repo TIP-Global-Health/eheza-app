@@ -1,4 +1,4 @@
-module Backend.Entities exposing (AttendanceId, AttendanceUuidType(..), CatchmentAreaId, CatchmentAreaUuidType(..), ChildId, ChildNutritionId, ChildNutritionUuidType(..), ChildUuidType(..), ClinicId, ClinicUuidType(..), CounselingScheduleId, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicUuidType(..), FamilyPlanningId, FamilyPlanningUuidType(..), GeoLocationId, GeoLocationIdType(..), HealthCenterId, HealthCenterUuidType(..), HeightId, HeightUuidType(..), MotherId, MotherUuidType(..), MuacId, MuacUuidType(..), NurseId, NurseUuidType(..), ParticipantConsentId, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormUuidType(..), PhotoId, PhotoUuidType(..), SessionId, SessionUuidType(..), WeightId, WeightUuidType(..))
+module Backend.Entities exposing (AttendanceId, AttendanceUuidType(..), CatchmentAreaId, CatchmentAreaUuidType(..), ChildId, ChildNutritionId, ChildNutritionUuidType(..), ChildUuidType(..), ClinicId, ClinicUuidType(..), CounselingScheduleId, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicUuidType(..), FamilyPlanningId, FamilyPlanningUuidType(..), HealthCenterId, HealthCenterUuidType(..), HeightId, HeightUuidType(..), MotherId, MotherUuidType(..), MuacId, MuacUuidType(..), NurseId, NurseUuidType(..), ParticipantConsentId, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormUuidType(..), PhotoId, PhotoUuidType(..), SessionId, SessionUuidType(..), WeightId, WeightUuidType(..))
 
 {-|
 
@@ -49,7 +49,7 @@ we need it.
 
 -}
 
-import Restful.Endpoint exposing (EntityId(..), EntityUuid(..))
+import Restful.Endpoint exposing (EntityUuid(..))
 
 
 
@@ -157,14 +157,6 @@ type alias FamilyPlanningId =
 
 type FamilyPlanningUuidType
     = FamilyPlanningUuidType
-
-
-type alias GeoLocationId =
-    EntityId GeoLocationIdType
-
-
-type GeoLocationIdType
-    = GeoLocationIdType
 
 
 type alias HealthCenterId =
