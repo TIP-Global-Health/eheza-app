@@ -1,7 +1,7 @@
 module Backend.Child.Decoder exposing (decodeChild, decodeModeOfDelivery)
 
 import Backend.Child.Model exposing (..)
-import Backend.Patient.Decoder exposing (decodeGender, decodeUbudehe)
+import Backend.Participant.Decoder exposing (decodeGender, decodeUbudehe)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, at, bool, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required)

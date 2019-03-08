@@ -1,4 +1,4 @@
-module Pages.PatientRegistration.Utils exposing (getFormFieldValue, getRegistratingParticipant, sequenceExtra)
+module Pages.ParticipantRegistration.Utils exposing (getFormFieldValue, getRegistratingParticipant, sequenceExtra)
 
 import Form
 import Gizra.NominalDate exposing (NominalDate)

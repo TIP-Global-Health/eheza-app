@@ -1,4 +1,4 @@
-module Pages.PatientRegistration.View exposing (view)
+module Pages.ParticipantRegistration.View exposing (view)
 
 {-| The purpose of this page is
 -}
@@ -9,8 +9,8 @@ import Backend.Measurement.Model exposing (PhotoValue)
 import Backend.Model exposing (ModelBackend, ModelIndexedDb, MsgBackend(..))
 import Backend.Mother.Encoder exposing (encodeEducationLevel, encodeHivStatus, encodeMaritalStatus)
 import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), allEducationLevels, allHivStatuses, allMaritalStatuses)
-import Backend.Patient.Encoder exposing (encodeUbudehe)
-import Backend.Patient.Model exposing (Gender(..), Ubudehe(..), allUbudehes)
+import Backend.Participant.Encoder exposing (encodeUbudehe)
+import Backend.Participant.Model exposing (Gender(..), Ubudehe(..), allUbudehes)
 import Dict
 import EveryDict
 import EveryDictList
@@ -26,8 +26,8 @@ import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.PatientRegistration.Model exposing (..)
-import Pages.PatientRegistration.Utils exposing (getFormFieldValue, getRegistratingParticipant)
+import Pages.ParticipantRegistration.Model exposing (..)
+import Pages.ParticipantRegistration.Utils exposing (getFormFieldValue, getRegistratingParticipant)
 import Participant.Model exposing (Participant, ParticipantId(..), ParticipantType(..))
 import Participant.Utils exposing (childParticipant, motherParticipant)
 import RemoteData exposing (RemoteData(..))
@@ -60,7 +60,7 @@ viewHeader language currentDate model =
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <| translate language Translate.RegisterNewPatient ]
+            [ text <| translate language Translate.RegisterNewParticipant ]
         , a
             [ class "link-back"
             , onClick <| SetActivePage PinCodePage
@@ -406,7 +406,7 @@ viewRegistrationForm language currentDate step registrationForm geoInfo photo ma
                                     []
                     in
                     [ h3 [ class "ui header" ]
-                        [ text <| translate language Translate.PatientDemographicInformation ++ ":" ]
+                        [ text <| translate language Translate.ParticipantDemographicInformation ++ ":" ]
                     , viewPhoto language photo
                     , Html.map MsgRegistrationForm <|
                         fieldset [ class "registration-form" ] <|
@@ -764,7 +764,7 @@ viewSearchForm language currentDate db searchString submittedSearch maybeRelatio
                     [ class "ui search form" ]
                     [ div []
                         [ input
-                            [ placeholder <| translate language Translate.PlaceholderEnterPatientName
+                            [ placeholder <| translate language Translate.PlaceholderEnterParticipantName
                             , type_ "text"
                             , onInput <| SetRegistrationPhase << ParticipantSearch << Just
                             , value searchValue
@@ -868,14 +868,14 @@ viewSearchForm language currentDate db searchString submittedSearch maybeRelatio
     in
     div [ class "wrap-list registration-page search" ]
         [ h3 [ class "ui header" ]
-            [ text <| translate language Translate.PatientInformation ++ ": " ]
+            [ text <| translate language Translate.ParticipantInformation ++ ": " ]
         , span [ class "search-helper" ] [ text <| translate language Translate.SearchHelper ]
         , h3 [ class "ui header" ]
             [ text <| translate language Translate.ParticipantDirectory ++ ": " ]
         , searchForm
         , div [ class "results-summary" ]
             searchResultsSummary
-        , div [ class "ui unstackable items patients-list" ]
+        , div [ class "ui unstackable items participants-list" ]
             searchResultsParticipants
         , div [ class "register-helper" ]
             [ text <| translate language Translate.RegisterHelper ]
@@ -884,7 +884,7 @@ viewSearchForm language currentDate db searchString submittedSearch maybeRelatio
                 [ class "ui primary button"
                 , onClick <| SetRegistrationPhase (ParticipantRegistration First)
                 ]
-                [ text <| translate language Translate.RegisterNewPatient ]
+                [ text <| translate language Translate.RegisterNewParticipant ]
             ]
         ]
 
@@ -916,12 +916,12 @@ viewParticipantDetailsForm language currentDate participantId db maybePreviousPh
                     div [ class "ui grid" ]
                         [ div [ class "four wide column" ]
                             [ span [ class <| "icon-participant add " ++ participantClass ] [] ]
-                        , div [ class "eight wide column add-patient-label" ]
+                        , div [ class "eight wide column add-participant-label" ]
                             [ text <| translate language label ]
                         , div [ class "three wide column" ]
-                            [ div [ class "add-patient-icon-wrapper" ]
+                            [ div [ class "add-participant-icon-wrapper" ]
                                 [ span
-                                    [ class "add-patient-icon"
+                                    [ class "add-participant-icon"
                                     , onClick <| SetRelationParticipant <| Just participantId
                                     ]
                                     []
@@ -954,12 +954,12 @@ viewParticipantDetailsForm language currentDate participantId db maybePreviousPh
                             case data of
                                 Just ( motherId, mother ) ->
                                     div
-                                        [ class "ui unstackable items patients-list" ]
+                                        [ class "ui unstackable items participants-list" ]
                                         [ viewParticipant language motherParticipant motherId mother Nothing ]
 
                                 Nothing ->
                                     div
-                                        [ class "ui unstackable items patients-list" ]
+                                        [ class "ui unstackable items participants-list" ]
                                         [ addParticipantModal "mother" Translate.AddMother ]
 
                         viewParticipantData participant =
@@ -987,7 +987,7 @@ viewParticipantDetailsForm language currentDate participantId db maybePreviousPh
                                 |> List.map (\( childId, child ) -> viewParticipant language childParticipant childId child Nothing)
                                 |> List.append [ addChildModal ]
                                 |> List.reverse
-                                |> div [ class "ui unstackable items patients-list" ]
+                                |> div [ class "ui unstackable items participants-list" ]
 
                         viewParticipantData participant =
                             viewParticipant language motherParticipant motherId participant Nothing
@@ -1078,7 +1078,7 @@ viewParticipant language config id participant maybeActionType =
                        )
     in
     div
-        [ class "item patient-view" ]
+        [ class "item participant-view" ]
         [ div
             [ class "ui image" ]
             [ thumbnailImage typeForThumbnail (config.getAvatarUrl participant) (config.getName participant) 120 120 ]
@@ -1111,7 +1111,7 @@ confirmSubmisionDialog language =
             [ text <| translate language Translate.ConfirmationRequired ]
         , div
             [ class "content" ]
-            [ text <| translate language Translate.ConfirmRegisterPatient ]
+            [ text <| translate language Translate.ConfirmRegisterParticipant ]
         , div
             [ class "actions" ]
             [ div
@@ -1137,13 +1137,13 @@ successfulRegistrationDialog language maybeParticipantId =
         message =
             case maybeParticipantId of
                 Just (ParticipantMother _) ->
-                    Translate.RegistartionSuccessfulSuggestAddingChild
+                    Translate.RegistrationSuccessfulSuggestAddingChild
 
                 Just (ParticipantChild _) ->
-                    Translate.RegistartionSuccessfulSuggestAddingMother
+                    Translate.RegistrationSuccessfulSuggestAddingMother
 
                 Nothing ->
-                    Translate.RegistartionSuccessfulPatientAdded
+                    Translate.RegistrationSuccessfulParticipantAdded
 
         buttons =
             if isJust maybeParticipantId then
@@ -1167,7 +1167,7 @@ successfulRegistrationDialog language maybeParticipantId =
                     ]
                     [ text <| translate language Translate.OK ]
     in
-    reportSuccessDialog language Translate.RegistartionSuccessful message buttons
+    reportSuccessDialog language Translate.RegistrationSuccessful message buttons
 
 
 successfulRelationDialog : Language -> ParticipantId -> Html Msg

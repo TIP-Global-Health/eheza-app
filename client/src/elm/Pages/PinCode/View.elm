@@ -136,12 +136,12 @@ viewWhenLoggedIn language nurse =
             else
                 Nothing
 
-        registerPatientButton =
+        registerParticipantButton =
             button
                 [ class "ui fluid primary button"
-                , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.PatientRegistrationPage
+                , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.ParticipantRegistrationPage
                 ]
-                [ text <| translate language Translate.RegisterAPatient ]
+                [ text <| translate language Translate.RegisterAParticipant ]
 
         logoutButton =
             button
@@ -165,7 +165,7 @@ viewWhenLoggedIn language nurse =
     , Just deviceStatusButton
     , Just selectClinicButton
     , administrationButton
-    , Just registerPatientButton
+    , Just registerParticipantButton
     , Just logoutButton
     ]
         |> List.filterMap identity

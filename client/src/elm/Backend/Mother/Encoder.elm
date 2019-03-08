@@ -1,7 +1,7 @@
 module Backend.Mother.Encoder exposing (encodeChildrenRelation, encodeEducationLevel, encodeHivStatus, encodeMaritalStatus, encodeMother)
 
 import Backend.Mother.Model exposing (..)
-import Backend.Patient.Encoder exposing (encodeGender, encodeUbudehe)
+import Backend.Participant.Encoder exposing (encodeGender, encodeUbudehe)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)

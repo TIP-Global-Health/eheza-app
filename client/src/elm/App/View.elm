@@ -16,7 +16,7 @@ import Pages.Device.View
 import Pages.MyAccount.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
-import Pages.PatientRegistration.View
+import Pages.ParticipantRegistration.View
 import Pages.PinCode.View
 import Pages.Session.Model
 import Pages.Session.View exposing (view)
@@ -154,9 +154,9 @@ viewUserPage page model configured =
                 ClinicsPage clinicId ->
                     Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) clinicId model.indexedDb
 
-                PatientRegistrationPage ->
-                    Pages.PatientRegistration.View.view model.language currentDate model.indexedDb loggedInModel.patientRegistrationPage
-                        |> Html.map (MsgLoggedIn << MsgPagePatientRegistration)
+                ParticipantRegistrationPage ->
+                    Pages.ParticipantRegistration.View.view model.language currentDate model.indexedDb loggedInModel.participantRegistrationPage
+                        |> Html.map (MsgLoggedIn << MsgPageParticipantRegistration)
 
                 SessionPage sessionId subPage ->
                     let

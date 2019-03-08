@@ -46,8 +46,8 @@ delta2url previous current =
                 MyAccountPage ->
                     Just <| UrlChange NewEntry "#my-account"
 
-                PatientRegistrationPage ->
-                    Just <| UrlChange NewEntry "#patient-registration"
+                ParticipantRegistrationPage ->
+                    Just <| UrlChange NewEntry "#participant-registration"
 
                 SessionPage sessionId sessionPage ->
                     let
@@ -95,7 +95,7 @@ parseUrl =
         , map PinCodePage (s "pincode")
         , map ServiceWorkerPage (s "deployment")
         , map (UserPage MyAccountPage) (s "my-account")
-        , map (UserPage PatientRegistrationPage) (s "patient-registration")
+        , map (UserPage ParticipantRegistrationPage) (s "participant-registration")
         , map (\id page -> UserPage <| SessionPage id page) (s "session" </> parseUuid </> parseSessionPage)
 
         -- `top` represents the page without any segements ... i.e. the

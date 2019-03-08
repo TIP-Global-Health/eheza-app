@@ -1,6 +1,6 @@
-module Backend.Patient.Decoder exposing (decodeGender, decodeUbudehe)
+module Backend.Participant.Decoder exposing (decodeGender, decodeUbudehe)
 
-import Backend.Patient.Model exposing (Gender(..), Ubudehe(..))
+import Backend.Participant.Model exposing (Gender(..), Ubudehe(..))
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (Decoder, andThen, at, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
 

@@ -1,4 +1,4 @@
-module Pages.PatientRegistration.Model exposing
+module Pages.ParticipantRegistration.Model exposing
     ( DialogState(..)
     , Model
     , Msg(..)
@@ -16,7 +16,7 @@ import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (PhotoValue)
 import Backend.Mother.Model exposing (ChildrenRelationType(..), Mother)
-import Backend.Patient.Model exposing (Gender(..))
+import Backend.Participant.Model exposing (Gender(..))
 import EveryDict exposing (EveryDict)
 import Form exposing (Form)
 import Form.Error exposing (ErrorValue(..))

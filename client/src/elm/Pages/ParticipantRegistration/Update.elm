@@ -1,11 +1,11 @@
-module Pages.PatientRegistration.Update exposing (update)
+module Pages.ParticipantRegistration.Update exposing (update)
 
 import App.Model
 import Backend.Child.Decoder exposing (decodeModeOfDelivery)
 import Backend.Child.Model exposing (Child, ModeOfDelivery(..))
 import Backend.Mother.Decoder exposing (decodeHivStatus)
 import Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother)
-import Backend.Patient.Model exposing (Gender(..), Ubudehe(..))
+import Backend.Participant.Model exposing (Gender(..), Ubudehe(..))
 import Date
 import EveryDict
 import Form
@@ -14,8 +14,8 @@ import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Json.Decode exposing (decodeString)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page
-import Pages.PatientRegistration.Model exposing (..)
-import Pages.PatientRegistration.Utils exposing (getFormFieldValue, getRegistratingParticipant, sequenceExtra)
+import Pages.ParticipantRegistration.Model exposing (..)
+import Pages.ParticipantRegistration.Utils exposing (getFormFieldValue, getRegistratingParticipant, sequenceExtra)
 import Participant.Model exposing (ParticipantId(..), ParticipantType(..))
 import Restful.Endpoint exposing (toEntityUuid)
 import Time exposing (Time)

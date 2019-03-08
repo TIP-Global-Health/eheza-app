@@ -1,6 +1,6 @@
-module Backend.Patient.Encoder exposing (encodeGender, encodeUbudehe)
+module Backend.Participant.Encoder exposing (encodeGender, encodeUbudehe)
 
-import Backend.Patient.Model exposing (Gender(..), Ubudehe(..))
+import Backend.Participant.Model exposing (Gender(..), Ubudehe(..))
 import Json.Encode exposing (..)
 
 

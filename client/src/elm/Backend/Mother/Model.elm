@@ -1,7 +1,7 @@
 module Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother, allEducationLevels, allHivStatuses, allMaritalStatuses)
 
 import Backend.Entities exposing (..)
-import Backend.Patient.Model exposing (Gender, Ubudehe)
+import Backend.Participant.Model exposing (Gender, Ubudehe)
 import Gizra.NominalDate exposing (NominalDate)
 
 

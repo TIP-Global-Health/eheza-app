@@ -1,8 +1,8 @@
-module Pages.PatientRegistration.Fetch exposing (fetch)
+module Pages.ParticipantRegistration.Fetch exposing (fetch)
 
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import EveryDict
-import Pages.PatientRegistration.Model exposing (..)
+import Pages.ParticipantRegistration.Model exposing (..)
 import Participant.Model exposing (ParticipantId(..))
 import RemoteData exposing (RemoteData(..))
 

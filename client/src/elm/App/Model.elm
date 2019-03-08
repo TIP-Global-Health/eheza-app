@@ -12,7 +12,7 @@ import Json.Encode exposing (Value)
 import Pages.Admin.Model
 import Pages.Device.Model
 import Pages.Page exposing (Page(..))
-import Pages.PatientRegistration.Model
+import Pages.ParticipantRegistration.Model
 import Pages.PinCode.Model
 import Pages.Session.Model
 import RemoteData exposing (RemoteData(..), WebData)
@@ -123,7 +123,7 @@ it at the appropriate moment.
 type alias LoggedInModel =
     { backend : Backend.Model.ModelBackend
     , adminPage : Pages.Admin.Model.Model
-    , patientRegistrationPage : Pages.PatientRegistration.Model.Model
+    , participantRegistrationPage : Pages.ParticipantRegistration.Model.Model
 
     -- The nurse who has logged in.
     , nurse : ( NurseId, Nurse )
@@ -137,7 +137,7 @@ emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel nurse =
     { backend = Backend.Model.emptyModelBackend
     , adminPage = Pages.Admin.Model.emptyModel
-    , patientRegistrationPage = Pages.PatientRegistration.Model.emptyModel
+    , participantRegistrationPage = Pages.ParticipantRegistration.Model.emptyModel
     , nurse = nurse
     , sessionPages = EveryDict.empty
     }
@@ -177,7 +177,7 @@ type Msg
 type MsgLoggedIn
     = MsgBackend Backend.Model.MsgBackend
     | MsgPageAdmin Pages.Admin.Model.Msg
-    | MsgPagePatientRegistration Pages.PatientRegistration.Model.Msg
+    | MsgPageParticipantRegistration Pages.ParticipantRegistration.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
 
 

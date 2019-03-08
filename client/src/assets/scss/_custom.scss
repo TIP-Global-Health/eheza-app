@@ -720,7 +720,7 @@ h3.ui.header {
 
   &.view {
 
-    .items.patients-list {
+    .items.participants-list {
 
       .icon-participant.add {
         background-color: white;
@@ -729,13 +729,13 @@ h3.ui.header {
         width: 120px;
       }
 
-      .add-patient-label {
+      .add-participant-label {
         font-weight: bold;
         margin-top: 35px;
         padding-left: 30px;
       }
 
-      .add-patient-icon-wrapper {
+      .add-participant-icon-wrapper {
         height: 50px;
         border: 2px solid gray;
         border-radius: 28px;
@@ -743,7 +743,7 @@ h3.ui.header {
         margin-top: 30px;
         margin-left: 25px;
 
-        .add-patient-icon {
+        .add-participant-icon {
           background: url(#{$img-path}icon-add.svg) no-repeat center;
           background-size: 62% 62%;
           cursor: pointer;
@@ -773,7 +773,7 @@ h3.ui.header {
       overflow-y: auto;
       overflow-x: hidden;
 
-      &.patients-list {
+      &.participants-list {
         height: 600px;
       }
 

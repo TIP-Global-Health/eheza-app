@@ -9,7 +9,7 @@ import Pages.Admin.Fetch
 import Pages.Clinics.Fetch
 import Pages.Device.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.PatientRegistration.Fetch
+import Pages.ParticipantRegistration.Fetch
 import Pages.Session.Fetch
 import Update.Extra exposing (sequence)
 
@@ -43,11 +43,11 @@ fetch model =
             Pages.Clinics.Fetch.fetch clinicId
                 |> List.map MsgIndexedDb
 
-        UserPage PatientRegistrationPage ->
+        UserPage ParticipantRegistrationPage ->
             getLoggedInModel model
                 |> Maybe.map
                     (\loggedIn ->
-                        Pages.PatientRegistration.Fetch.fetch model.indexedDb loggedIn.patientRegistrationPage
+                        Pages.ParticipantRegistration.Fetch.fetch model.indexedDb loggedIn.participantRegistrationPage
                             |> List.map MsgIndexedDb
                     )
                 |> Maybe.withDefault []

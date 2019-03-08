@@ -1,8 +1,8 @@
 module Backend.Mother.Decoder exposing (decodeHivStatus, decodeMother)
 
 import Backend.Mother.Model exposing (..)
-import Backend.Patient.Decoder exposing (decodeGender, decodeUbudehe)
-import Backend.Patient.Model exposing (Gender(..))
+import Backend.Participant.Decoder exposing (decodeGender, decodeUbudehe)
+import Backend.Participant.Model exposing (Gender(..))
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, at, bool, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)

@@ -2,7 +2,7 @@ module Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildA, 
 
 import Backend.Child.Model exposing (Child)
 import Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), Mother)
-import Backend.Patient.Model exposing (Gender(..), Ubudehe(..))
+import Backend.Participant.Model exposing (Gender(..), Ubudehe(..))
 import EverySet
 import Restful.Endpoint exposing (toEntityId)
 import Time.Date exposing (date)

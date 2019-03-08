@@ -21,7 +21,7 @@ import Pages.Admin.Update
 import Pages.Device.Model
 import Pages.Device.Update
 import Pages.Page exposing (Page(..), UserPage(AdminPage, ClinicsPage))
-import Pages.PatientRegistration.Update
+import Pages.ParticipantRegistration.Update
 import Pages.PinCode.Model
 import Pages.PinCode.Update
 import Pages.Session.Model
@@ -194,13 +194,13 @@ update msg model =
                             , appMsgs
                             )
 
-                        MsgPagePatientRegistration subMsg ->
+                        MsgPageParticipantRegistration subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.PatientRegistration.Update.update currentDate subMsg data.patientRegistrationPage
+                                    Pages.ParticipantRegistration.Update.update currentDate subMsg data.participantRegistrationPage
                             in
-                            ( { data | patientRegistrationPage = subModel }
-                            , Cmd.map (MsgLoggedIn << MsgPagePatientRegistration) subCmd
+                            ( { data | participantRegistrationPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageParticipantRegistration) subCmd
                             , appMsgs
                             )
 

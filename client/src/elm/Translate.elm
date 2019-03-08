@@ -29,7 +29,7 @@ import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
 import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..))
-import Backend.Patient.Model exposing (Gender(..))
+import Backend.Participant.Model exposing (Gender(..))
 import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
@@ -164,7 +164,7 @@ type TranslationId
     | Closed
     | ConfirmationRequired
     | ConfirmDeleteTrainingSessions
-    | ConfirmRegisterPatient
+    | ConfirmRegisterParticipant
     | Connected
     | ContactInformation
     | Continue
@@ -267,12 +267,12 @@ type TranslationId
     | ParticipantReviewed
     | ParticipantSignature
     | ParticipantSummary
-    | PatientDemographicInformation
-    | PatientInformation
+    | ParticipantDemographicInformation
+    | ParticipantInformation
     | PersistentStorage Bool
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
-    | PlaceholderEnterPatientName
+    | PlaceholderEnterParticipantName
     | PlaceholderEnterWeight
     | PleaseSelectClinic
     | PreviousFloatMeasurement Float
@@ -280,14 +280,14 @@ type TranslationId
     | ProgressReport
     | Province
     | Register
-    | RegisterAPatient
+    | RegisterAParticipant
     | RegisterHelper
-    | RegisterNewPatient
+    | RegisterNewParticipant
     | RegistratingHealthCenter
-    | RegistartionSuccessful
-    | RegistartionSuccessfulPatientAdded
-    | RegistartionSuccessfulSuggestAddingChild
-    | RegistartionSuccessfulSuggestAddingMother
+    | RegistrationSuccessful
+    | RegistrationSuccessfulParticipantAdded
+    | RegistrationSuccessfulSuggestAddingChild
+    | RegistrationSuccessfulSuggestAddingMother
     | RelationSuccessful
     | RelationSuccessfulChildWithMother
     | RelationSuccessfulMotherWithChild
@@ -832,8 +832,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        ConfirmRegisterPatient ->
-            { english = "Are you sure you want to save this patient's data?"
+        ConfirmRegisterParticipant ->
+            { english = "Are you sure you want to save this participant's data?"
             , kinyarwanda = Nothing
             }
 
@@ -1504,13 +1504,13 @@ translationSet trans =
             , kinyarwanda = Just "Umwirondoro w’urera umwana"
             }
 
-        PatientDemographicInformation ->
-            { english = "Patient Demographic Information"
+        ParticipantDemographicInformation ->
+            { english = "Participant Demographic Information"
             , kinyarwanda = Nothing
             }
 
-        PatientInformation ->
-            { english = "Patient Information"
+        ParticipantInformation ->
+            { english = "Participant Information"
             , kinyarwanda = Nothing
             }
 
@@ -1535,8 +1535,8 @@ translationSet trans =
             , kinyarwanda = Just "Andika uburebure hano…"
             }
 
-        PlaceholderEnterPatientName ->
-            { english = "Enter patient name here"
+        PlaceholderEnterParticipantName ->
+            { english = "Enter participant name here"
             , kinyarwanda = Nothing
             }
 
@@ -1575,18 +1575,18 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        RegisterAPatient ->
-            { english = "Register a patient"
+        RegisterAParticipant ->
+            { english = "Register a participant"
             , kinyarwanda = Nothing
             }
 
         RegisterHelper ->
-            { english = "Not the patient you were looking for?"
+            { english = "Not the participant you were looking for?"
             , kinyarwanda = Nothing
             }
 
-        RegisterNewPatient ->
-            { english = "Register a new patient"
+        RegisterNewParticipant ->
+            { english = "Register a new participant"
             , kinyarwanda = Nothing
             }
 
@@ -1595,23 +1595,23 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        RegistartionSuccessful ->
-            { english = "Registartion Successful"
+        RegistrationSuccessful ->
+            { english = "Registration Successful"
             , kinyarwanda = Nothing
             }
 
-        RegistartionSuccessfulPatientAdded ->
-            { english = "The patient has been added to E-Heza."
+        RegistrationSuccessfulParticipantAdded ->
+            { english = "The participant has been added to E-Heza."
             , kinyarwanda = Nothing
             }
 
-        RegistartionSuccessfulSuggestAddingChild ->
-            { english = "The patient has been added to E-Heza. Would you like to add a child for this patient?"
+        RegistrationSuccessfulSuggestAddingChild ->
+            { english = "The participant has been added to E-Heza. Would you like to add a child for this participant?"
             , kinyarwanda = Nothing
             }
 
-        RegistartionSuccessfulSuggestAddingMother ->
-            { english = "The patient has been added to E-Heza. Would you like to add a mother for this patient?"
+        RegistrationSuccessfulSuggestAddingMother ->
+            { english = "The participant has been added to E-Heza. Would you like to add a mother for this participant?"
             , kinyarwanda = Nothing
             }
 
@@ -1696,7 +1696,7 @@ translationSet trans =
             }
 
         SearchHelper ->
-            { english = "Search to see if patient already exists in E-Heza. If the person you are looking for does not appear in the search, please create a new record for them."
+            { english = "Search to see if the participant already exists in E-Heza. If the person you are looking for does not appear in the search, please create a new record for them."
             , kinyarwanda = Nothing
             }
 
@@ -2052,8 +2052,8 @@ translateActivePage page =
                     , kinyarwanda = Just "Compte"
                     }
 
-                PatientRegistrationPage ->
-                    { english = "Patient Registration"
+                ParticipantRegistrationPage ->
+                    { english = "Participant Registration"
                     , kinyarwanda = Nothing
                     }
 

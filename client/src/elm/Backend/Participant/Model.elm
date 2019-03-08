@@ -1,4 +1,4 @@
-module Backend.Patient.Model exposing (Gender(..), Ubudehe(..), allUbudehes)
+module Backend.Participant.Model exposing (Gender(..), Ubudehe(..), allUbudehes)
 
 {-| This module contains common types for Backend.Child and Backend.Mother modules.
 -}
