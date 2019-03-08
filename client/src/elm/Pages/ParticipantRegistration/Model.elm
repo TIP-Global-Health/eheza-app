@@ -3,12 +3,10 @@ module Pages.ParticipantRegistration.Model exposing
     , Model
     , Msg(..)
     , ParticipantAction(..)
-    , ParticipantsData
     , RegistrationForm
     , RegistrationPhase(..)
     , RegistrationStep(..)
     , emptyModel
-    , initModel
     , validateRegistrationForm
     )
 
@@ -35,19 +33,9 @@ type alias Model =
     , registrationForm : Form () RegistrationForm
     , registrationPhase : RegistrationPhase
     , previousPhases : List RegistrationPhase
-    , participantsData : ParticipantsData
     , relationParticipant : Maybe ParticipantId
     , submittedSearch : Maybe String
     , dialogState : Maybe DialogState
-
-    -- Temporary ...
-    , nextUuid : Int
-    }
-
-
-type alias ParticipantsData =
-    { mothersToRegister : EveryDict MotherId Mother
-    , childrenToRegister : EveryDict ChildId Child
     }
 
 
@@ -57,23 +45,9 @@ emptyModel =
     , registrationForm = Form.initial [] validateRegistrationForm
     , registrationPhase = ParticipantSearch Nothing
     , previousPhases = []
-    , participantsData = emptyParticipantsData
     , relationParticipant = Nothing
     , submittedSearch = Nothing
     , dialogState = Nothing
-    , nextUuid = 0
-    }
-
-
-initModel : Model -> Model
-initModel model =
-    { emptyModel | participantsData = model.participantsData }
-
-
-emptyParticipantsData : ParticipantsData
-emptyParticipantsData =
-    { mothersToRegister = EveryDict.empty
-    , childrenToRegister = EveryDict.empty
     }
 
 

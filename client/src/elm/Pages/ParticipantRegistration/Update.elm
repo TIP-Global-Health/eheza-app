@@ -41,71 +41,61 @@ update currentDate msg model =
             )
 
         MakeRelation participantId ->
-            let
-                ( newDialogState, updatedParticipantsData ) =
-                    case participantId of
-                        ParticipantMother motherUuid ->
-                            case model.relationParticipant of
-                                -- We're make relation with a mother, so we should never
-                                -- get here, since we're not supposed to relate a
-                                -- mother with nother mother.
-                                Just (ParticipantMother _) ->
-                                    ( Nothing, model.participantsData )
+            Debug.crash "todo"
 
-                                Just (ParticipantChild childUuid) ->
-                                    Debug.crash "todo"
+        {-
+           let
+               ( newDialogState, updatedParticipantsData ) =
+                   case participantId of
+                       ParticipantMother motherUuid ->
+                           case model.relationParticipant of
+                               -- We're make relation with a mother, so we should never
+                               -- get here, since we're not supposed to relate a
+                               -- mother with nother mother.
+                               Just (ParticipantMother _) ->
+                                   ( Nothing, model.participantsData )
 
-                                {-
-                                   let
-                                       childAfterRelation =
-                                           { child | motherId = Just motherUuid }
-                                   in
-                                   ( Just <| SuccessfulRelation <| ParticipantChild childUuid
-                                   , { mothersToRegister = model.participantsData.mothersToRegister
-                                     , childrenToRegister = EveryDict.insert childUuid childAfterRelation model.participantsData.childrenToRegister
-                                     }
-                                   )
-                                -}
-                                -- This should never happen, as there must be a
-                                -- relation participant in order to create a relation.
-                                Nothing ->
-                                    ( Nothing, model.participantsData )
+                               Just (ParticipantChild childUuid) ->
+                                  let
+                                      childAfterRelation =
+                                          { child | motherId = Just motherUuid }
+                                  in
+                                  ( Just <| SuccessfulRelation <| ParticipantChild childUuid
+                                  , { mothersToRegister = model.participantsData.mothersToRegister
+                                    , childrenToRegister = EveryDict.insert childUuid childAfterRelation model.participantsData.childrenToRegister
+                                    }
+                                  )
+                               -- This should never happen, as there must be a
+                               -- relation participant in order to create a relation.
+                               Nothing ->
+                                   ( Nothing, model.participantsData )
 
-                        ParticipantChild childUuid ->
-                            case model.relationParticipant of
-                                Just (ParticipantMother motherUuid) ->
-                                    Debug.crash "todo"
+                       ParticipantChild childUuid ->
+                           case model.relationParticipant of
+                               Just (ParticipantMother motherUuid) ->
+                                  let
+                                      childAfterRelation =
+                                          { child | motherId = Just motherUuid }
+                                  in
+                               -- We're make relation with a child, so we should never
+                               -- get here, since we're not supposed to relate a
+                               -- child with another child.
+                               Just (ParticipantChild _) ->
+                                   ( Nothing, model.participantsData )
 
-                                {-
-                                   let
-                                       childAfterRelation =
-                                           { child | motherId = Just motherUuid }
-                                   in
-                                   ( Just <| SuccessfulRelation <| ParticipantMother motherUuid mother
-                                   , { mothersToRegister = model.participantsData.mothersToRegister
-                                     , childrenToRegister = EveryDict.insert childUuid childAfterRelation model.participantsData.childrenToRegister
-                                     }
-                                   )
-                                -}
-                                -- We're make relation with a child, so we should never
-                                -- get here, since we're not supposed to relate a
-                                -- child with another child.
-                                Just (ParticipantChild _) ->
-                                    ( Nothing, model.participantsData )
-
-                                -- This should never happen, as there must be a
-                                -- relation participant in order to create a relation.
-                                Nothing ->
-                                    ( Nothing, model.participantsData )
-            in
-            ( { model
-                | participantsData = updatedParticipantsData
-                , dialogState = newDialogState
-              }
-            , Cmd.none
-            , []
-            )
-
+                               -- This should never happen, as there must be a
+                               -- relation participant in order to create a relation.
+                               Nothing ->
+                                   ( Nothing, model.participantsData )
+           in
+           ( { model
+               | participantsData = updatedParticipantsData
+               , dialogState = newDialogState
+             }
+           , Cmd.none
+           , []
+           )
+        -}
         MsgRegistrationForm subMsg ->
             let
                 extraMsgs =
@@ -215,7 +205,7 @@ update currentDate msg model =
             ( { model | submittedSearch = Just searchValue }, Cmd.none, [] )
 
         SetActivePage page ->
-            ( initModel model, Cmd.none, [ App.Model.SetActivePage page ] )
+            ( emptyModel, Cmd.none, [ App.Model.SetActivePage page ] )
 
         SetDialogState state ->
             ( { model | dialogState = state }, Cmd.none, [] )
@@ -450,48 +440,36 @@ update currentDate msg model =
                                         telephoneNumber
                                         healthCenterName
 
-                                newUuid =
-                                    "temporary-uuid-"
-                                        ++ toString model.nextUuid
-                                        |> toEntityUuid
+                                newDialogState =
+                                    Debug.crash "todo"
 
-                                nextUuid =
-                                    model.nextUuid + 1
+                                {-
+                                   case model.relationParticipant of
+                                       Just (ParticipantMother motherUuid) ->
+                                           let
+                                               childAfterRelation =
+                                                   { child | motherId = Just motherUuid }
+                                           in
+                                          ( Just <| SuccessfulRelation <| ParticipantMother motherUuid mother
+                                          , { mothersToRegister = model.participantsData.mothersToRegister
+                                            , childrenToRegister = EveryDict.insert newUuid childAfterRelation model.participantsData.childrenToRegister
+                                            }
+                                          )
+                                       -- We're registering a child, so we should never gets
+                                       -- here, since we're not supposed to relate a child with
+                                       -- another child.
+                                       Just (ParticipantChild childUuid) ->
+                                           ( Nothing, model.participantsData )
 
-                                ( newDialogState, updatedParticipantsData ) =
-                                    case model.relationParticipant of
-                                        Just (ParticipantMother motherUuid) ->
-                                            let
-                                                childAfterRelation =
-                                                    { child | motherId = Just motherUuid }
-                                            in
-                                            Debug.crash "todo"
-
-                                        {-
-                                           ( Just <| SuccessfulRelation <| ParticipantMother motherUuid mother
+                                       Nothing ->
+                                           ( Just <| SuccessfulRegistration <| Just <| ParticipantChild newUuid
                                            , { mothersToRegister = model.participantsData.mothersToRegister
-                                             , childrenToRegister = EveryDict.insert newUuid childAfterRelation model.participantsData.childrenToRegister
+                                             , childrenToRegister = EveryDict.insert newUuid child model.participantsData.childrenToRegister
                                              }
                                            )
-                                        -}
-                                        -- We're registering a child, so we should never gets
-                                        -- here, since we're not supposed to relate a child with
-                                        -- another child.
-                                        Just (ParticipantChild childUuid) ->
-                                            ( Nothing, model.participantsData )
-
-                                        Nothing ->
-                                            ( Just <| SuccessfulRegistration <| Just <| ParticipantChild newUuid
-                                            , { mothersToRegister = model.participantsData.mothersToRegister
-                                              , childrenToRegister = EveryDict.insert newUuid child model.participantsData.childrenToRegister
-                                              }
-                                            )
+                                -}
                             in
-                            ( { model
-                                | participantsData = updatedParticipantsData
-                                , dialogState = newDialogState
-                                , nextUuid = nextUuid
-                              }
+                            ( { model | dialogState = newDialogState }
                             , Cmd.none
                             , []
                             )
@@ -613,47 +591,41 @@ update currentDate msg model =
                                         healthCenterName
 
                                 newUuid =
-                                    "temporary-uuid-"
-                                        ++ toString model.nextUuid
-                                        |> toEntityUuid
+                                    Debug.crash "todo"
 
                                 nextUuid =
-                                    model.nextUuid + 1
+                                    Debug.crash "todo"
 
                                 ( newDialogState, updatedParticipantsData ) =
-                                    case model.relationParticipant of
-                                        -- We're registering a mother, so we should never gets
-                                        -- here, since we're not supposed to relate a mother with
-                                        -- another mother.
-                                        Just (ParticipantMother motherUuid) ->
-                                            ( Nothing, model.participantsData )
+                                    Debug.crash "todo"
 
-                                        Just (ParticipantChild childUuid) ->
-                                            Debug.crash "todo"
+                                {-
+                                   case model.relationParticipant of
+                                       -- We're registering a mother, so we should never gets
+                                       -- here, since we're not supposed to relate a mother with
+                                       -- another mother.
+                                       Just (ParticipantMother motherUuid) ->
+                                           ( Nothing, model.participantsData )
 
-                                        {-
-                                           let
-                                               childAfterRelation =
-                                                   { child | motherId = Just newUuid }
-                                           in
-                                           ( Just <| SuccessfulRelation <| ParticipantChild childUuid child
-                                           , { mothersToRegister = model.participantsData.mothersToRegister
-                                             , childrenToRegister = EveryDict.insert childUuid childAfterRelation model.participantsData.childrenToRegister
+                                       Just (ParticipantChild childUuid) ->
+                                          let
+                                              childAfterRelation =
+                                                  { child | motherId = Just newUuid }
+                                          in
+                                          ( Just <| SuccessfulRelation <| ParticipantChild childUuid child
+                                          , { mothersToRegister = model.participantsData.mothersToRegister
+                                            , childrenToRegister = EveryDict.insert childUuid childAfterRelation model.participantsData.childrenToRegister
+                                            }
+                                          )
+                                       Nothing ->
+                                           ( Just <| SuccessfulRegistration <| Just <| ParticipantMother newUuid
+                                           , { mothersToRegister = EveryDict.insert newUuid mother model.participantsData.mothersToRegister
+                                             , childrenToRegister = model.participantsData.childrenToRegister
                                              }
                                            )
-                                        -}
-                                        Nothing ->
-                                            ( Just <| SuccessfulRegistration <| Just <| ParticipantMother newUuid
-                                            , { mothersToRegister = EveryDict.insert newUuid mother model.participantsData.mothersToRegister
-                                              , childrenToRegister = model.participantsData.childrenToRegister
-                                              }
-                                            )
+                                -}
                             in
-                            ( { model
-                                | participantsData = updatedParticipantsData
-                                , dialogState = newDialogState
-                                , nextUuid = nextUuid
-                              }
+                            ( { model | dialogState = newDialogState }
                             , Cmd.none
                             , []
                             )
