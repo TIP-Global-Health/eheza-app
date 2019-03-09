@@ -1,5 +1,6 @@
 module Backend.Update exposing (updateBackend, updateIndexedDb)
 
+import Backend.Child.Encoder exposing (encodeMotherField)
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
@@ -12,6 +13,7 @@ import Dict
 import EveryDict
 import EveryDictList
 import Gizra.NominalDate exposing (NominalDate)
+import Json.Encode exposing (object)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityUuid, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityUuid, endpoint, fromEntityUuid, toCmd, toEntityUuid, toTask, withKeyEncoder, withParamsEncoder, withValueEncoder, withoutDecoder)
 import Task
@@ -273,6 +275,19 @@ updateIndexedDb currentDate nurseId msg model =
             in
             ( { model | sessionRequests = EveryDict.insert sessionId subModel model.sessionRequests }
             , Cmd.map (MsgSession sessionId) subCmd
+            )
+
+        SetMotherOfChild childId motherId ->
+            ( { model | setMotherOfChild = EveryDict.insert ( childId, motherId ) Loading model.setMotherOfChild }
+            , object [ encodeMotherField (Just motherId) ]
+                |> sw.patchAny childEndpoint childId
+                |> withoutDecoder
+                |> toCmd (RemoteData.fromResult >> HandleSetMotherOfChild childId motherId)
+            )
+
+        HandleSetMotherOfChild childId motherId data ->
+            ( { model | setMotherOfChild = EveryDict.insert ( childId, motherId ) data model.setMotherOfChild }
+            , Cmd.none
             )
 
 

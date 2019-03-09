@@ -127,6 +127,9 @@ type alias ModelIndexedDb =
 
     -- A cache of children of a mother
     , childrenOfMother : EveryDict MotherId (WebData (EveryDict ChildId Child))
+
+    -- Track requests to mutate data
+    , setMotherOfChild : EveryDict ( ChildId, MotherId ) (WebData ())
     }
 
 
@@ -149,6 +152,7 @@ emptyModelIndexedDb =
     , sessionRequests = EveryDict.empty
     , sessions = EveryDict.empty
     , sessionsByClinic = EveryDict.empty
+    , setMotherOfChild = EveryDict.empty
     , syncData = NotAsked
     }
 
@@ -186,6 +190,10 @@ type MsgIndexedDb
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (EveryDictList SessionId Session))
     | HandleFetchedSyncData (WebData (EveryDictList HealthCenterId SyncData))
+      -- Messages which mutate data
+    | SetMotherOfChild ChildId MotherId
+      -- Messages which handle responses to mutating data
+    | HandleSetMotherOfChild ChildId MotherId (WebData ())
       -- Process some revisions we've received from the backend. In some cases,
       -- we can update our in-memory structures appropriately. In other cases, we
       -- can set them to `NotAsked` and let the "fetch" mechanism re-fetch them.

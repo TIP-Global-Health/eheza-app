@@ -1,6 +1,7 @@
-module Backend.Child.Encoder exposing (encodeChild, encodeModeOfDelivery)
+module Backend.Child.Encoder exposing (encodeChild, encodeModeOfDelivery, encodeMotherField)
 
 import Backend.Child.Model exposing (..)
+import Backend.Entities exposing (..)
 import Backend.Participant.Encoder exposing (encodeGender, encodeUbudehe)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
@@ -16,7 +17,7 @@ encodeChild child =
     , ( "second_name", string child.secondName )
     , ( "national_id_number", maybe string child.nationalIdNumber )
     , ( "avatar", maybe string child.avatarUrl )
-    , ( "mother", maybe encodeEntityUuid child.motherId )
+    , encodeMotherField child.motherId
     , ( "date_birth", encodeYYYYMMDD child.birthDate )
     , ( "birth_date_estimated", bool child.isDateOfBirthEstimated )
     , ( "gender", encodeGender child.gender )
@@ -35,6 +36,11 @@ encodeChild child =
     , ( "village", maybe string child.village )
     , ( "phone_number", maybe string child.telephoneNumber )
     ]
+
+
+encodeMotherField : Maybe MotherId -> ( String, Value )
+encodeMotherField id =
+    ( "mother", maybe encodeEntityUuid id )
 
 
 encodeModeOfDelivery : ModeOfDelivery -> String

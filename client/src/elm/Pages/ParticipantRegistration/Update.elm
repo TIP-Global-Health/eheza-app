@@ -3,6 +3,7 @@ module Pages.ParticipantRegistration.Update exposing (update)
 import App.Model
 import Backend.Child.Decoder exposing (decodeModeOfDelivery)
 import Backend.Child.Model exposing (Child, ModeOfDelivery(..))
+import Backend.Model
 import Backend.Mother.Decoder exposing (decodeHivStatus)
 import Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother)
 import Backend.Participant.Model exposing (Gender(..), Ubudehe(..))
@@ -41,61 +42,50 @@ update currentDate msg model =
             )
 
         MakeRelation participantId ->
-            Debug.crash "todo"
+            let
+                ( newDialogState, backendCmds ) =
+                    case participantId of
+                        ParticipantMother motherUuid ->
+                            case model.relationParticipant of
+                                -- We're make relation with a mother, so we should never
+                                -- get here, since we're not supposed to relate a
+                                -- mother with nother mother.
+                                Just (ParticipantMother _) ->
+                                    ( Nothing, [] )
 
-        {-
-           let
-               ( newDialogState, updatedParticipantsData ) =
-                   case participantId of
-                       ParticipantMother motherUuid ->
-                           case model.relationParticipant of
-                               -- We're make relation with a mother, so we should never
-                               -- get here, since we're not supposed to relate a
-                               -- mother with nother mother.
-                               Just (ParticipantMother _) ->
-                                   ( Nothing, model.participantsData )
+                                Just (ParticipantChild childUuid) ->
+                                    ( Just <| SuccessfulRelation <| ParticipantChild childUuid
+                                    , [ Backend.Model.SetMotherOfChild childUuid motherUuid ]
+                                    )
 
-                               Just (ParticipantChild childUuid) ->
-                                  let
-                                      childAfterRelation =
-                                          { child | motherId = Just motherUuid }
-                                  in
-                                  ( Just <| SuccessfulRelation <| ParticipantChild childUuid
-                                  , { mothersToRegister = model.participantsData.mothersToRegister
-                                    , childrenToRegister = EveryDict.insert childUuid childAfterRelation model.participantsData.childrenToRegister
-                                    }
-                                  )
-                               -- This should never happen, as there must be a
-                               -- relation participant in order to create a relation.
-                               Nothing ->
-                                   ( Nothing, model.participantsData )
+                                -- This should never happen, as there must be a
+                                -- relation participant in order to create a relation.
+                                Nothing ->
+                                    ( Nothing, [] )
 
-                       ParticipantChild childUuid ->
-                           case model.relationParticipant of
-                               Just (ParticipantMother motherUuid) ->
-                                  let
-                                      childAfterRelation =
-                                          { child | motherId = Just motherUuid }
-                                  in
-                               -- We're make relation with a child, so we should never
-                               -- get here, since we're not supposed to relate a
-                               -- child with another child.
-                               Just (ParticipantChild _) ->
-                                   ( Nothing, model.participantsData )
+                        ParticipantChild childUuid ->
+                            case model.relationParticipant of
+                                Just (ParticipantMother motherUuid) ->
+                                    ( Just <| SuccessfulRelation <| ParticipantMother motherUuid
+                                    , [ Backend.Model.SetMotherOfChild childUuid motherUuid ]
+                                    )
 
-                               -- This should never happen, as there must be a
-                               -- relation participant in order to create a relation.
-                               Nothing ->
-                                   ( Nothing, model.participantsData )
-           in
-           ( { model
-               | participantsData = updatedParticipantsData
-               , dialogState = newDialogState
-             }
-           , Cmd.none
-           , []
-           )
-        -}
+                                -- We're make relation with a child, so we should never
+                                -- get here, since we're not supposed to relate a
+                                -- child with another child.
+                                Just (ParticipantChild _) ->
+                                    ( Nothing, [] )
+
+                                -- This should never happen, as there must be a
+                                -- relation participant in order to create a relation.
+                                Nothing ->
+                                    ( Nothing, [] )
+            in
+            ( { model | dialogState = newDialogState }
+            , Cmd.none
+            , List.map App.Model.MsgIndexedDb backendCmds
+            )
+
         MsgRegistrationForm subMsg ->
             let
                 extraMsgs =
