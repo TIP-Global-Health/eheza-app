@@ -277,6 +277,47 @@ updateIndexedDb currentDate nurseId msg model =
             , Cmd.map (MsgSession sessionId) subCmd
             )
 
+        PostChild child ->
+            ( { model | postChild = Loading }
+            , sw.post childEndpoint child
+                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostChild)
+            )
+
+        HandlePostChild data ->
+            ( { model | postChild = data }
+            , Cmd.none
+            )
+
+        PostMother mother maybeChildId ->
+            let
+                motherTask =
+                    sw.post motherEndpoint mother
+                        |> toTask
+                        |> Task.map Tuple.first
+
+                childTask motherId =
+                    case maybeChildId of
+                        Just childId ->
+                            object [ encodeMotherField (Just motherId) ]
+                                |> sw.patchAny childEndpoint childId
+                                |> toTask
+                                |> Task.map (always motherId)
+
+                        Nothing ->
+                            Task.succeed motherId
+            in
+            ( { model | postMother = Loading }
+            , motherTask
+                |> Task.andThen childTask
+                |> RemoteData.fromTask
+                |> Task.perform HandlePostMother
+            )
+
+        HandlePostMother data ->
+            ( { model | postMother = data }
+            , Cmd.none
+            )
+
         SetMotherOfChild childId motherId ->
             ( { model | setMotherOfChild = EveryDict.insert ( childId, motherId ) Loading model.setMotherOfChild }
             , object [ encodeMotherField (Just motherId) ]

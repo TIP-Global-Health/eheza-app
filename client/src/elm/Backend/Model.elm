@@ -129,6 +129,8 @@ type alias ModelIndexedDb =
     , childrenOfMother : EveryDict MotherId (WebData (EveryDict ChildId Child))
 
     -- Track requests to mutate data
+    , postChild : WebData ChildId
+    , postMother : WebData MotherId
     , setMotherOfChild : EveryDict ( ChildId, MotherId ) (WebData ())
     }
 
@@ -148,6 +150,8 @@ emptyModelIndexedDb =
     , mothers = EveryDict.empty
     , nameSearches = Dict.empty
     , participantForms = NotAsked
+    , postChild = NotAsked
+    , postMother = NotAsked
     , saveSyncDataRequests = EveryDict.empty
     , sessionRequests = EveryDict.empty
     , sessions = EveryDict.empty
@@ -191,8 +195,12 @@ type MsgIndexedDb
     | HandleFetchedSessionsByClinic ClinicId (WebData (EveryDictList SessionId Session))
     | HandleFetchedSyncData (WebData (EveryDictList HealthCenterId SyncData))
       -- Messages which mutate data
+    | PostChild Child
+    | PostMother Mother (Maybe ChildId) -- The child is an existing child whose mother this is.
     | SetMotherOfChild ChildId MotherId
       -- Messages which handle responses to mutating data
+    | HandlePostChild (WebData ChildId)
+    | HandlePostMother (WebData MotherId)
     | HandleSetMotherOfChild ChildId MotherId (WebData ())
       -- Process some revisions we've received from the backend. In some cases,
       -- we can update our in-memory structures appropriately. In other cases, we

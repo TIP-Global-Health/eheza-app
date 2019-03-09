@@ -50,7 +50,7 @@ view language currentDate db model =
             [ class "ui full segment blue" ]
             [ viewBody language currentDate db model
             ]
-        , viewModal <| viewDialog language model.dialogState
+        , viewModal <| viewDialog language model.dialogState db
         ]
 
 
@@ -1086,8 +1086,8 @@ viewParticipant language config id participant maybeActionType =
         ]
 
 
-viewDialog : Language -> Maybe DialogState -> Maybe (Html Msg)
-viewDialog language dialogState =
+viewDialog : Language -> Maybe DialogState -> ModelIndexedDb -> Maybe (Html Msg)
+viewDialog language dialogState db =
     dialogState
         |> Maybe.andThen
             (\state ->
@@ -1095,8 +1095,8 @@ viewDialog language dialogState =
                     ConfirmSubmision ->
                         Just <| confirmSubmisionDialog language
 
-                    SuccessfulRegistration maybeParticipantId ->
-                        Just <| successfulRegistrationDialog language maybeParticipantId
+                    Registering participant ->
+                        Just <| successfulRegistrationDialog language participant db
 
                     SuccessfulRelation participantId ->
                         Just <| successfulRelationDialog language participantId
@@ -1131,22 +1131,50 @@ confirmSubmisionDialog language =
         ]
 
 
-successfulRegistrationDialog : Language -> Maybe ParticipantId -> Html Msg
-successfulRegistrationDialog language maybeParticipantId =
+successfulRegistrationDialog : Language -> ParticipantType -> ModelIndexedDb -> Html Msg
+successfulRegistrationDialog language participantType db =
     let
-        message =
-            case maybeParticipantId of
+        -- We want to figure out whether we've added a child a or mother, what
+        -- the status of the request is, and whether the added child already
+        -- has a mother or not. If some further relation should be suggested,
+        -- we return a `Just ParticipantId` to reflect what we just added. If
+        -- no further relation should be suggested, we return `Nothing`.  And,
+        -- it's all wrapped in a `RemoteData`.
+        addedParticipantIdData =
+            case participantType of
+                ChildParticipant _ ->
+                    db.postChild
+                        |> RemoteData.andThen
+                            (\childId ->
+                                EveryDict.get childId db.children
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.map
+                                        (\child ->
+                                            case child.motherId of
+                                                Just _ ->
+                                                    Nothing
+
+                                                Nothing ->
+                                                    Just (ParticipantChild childId)
+                                        )
+                            )
+
+                MotherParticipant _ ->
+                    RemoteData.map (Just << ParticipantMother) db.postMother
+
+        message participantId =
+            case participantId of
                 Just (ParticipantMother _) ->
-                    Translate.RegistrationSuccessfulSuggestAddingChild
+                    text <| translate language Translate.RegistrationSuccessfulSuggestAddingChild
 
                 Just (ParticipantChild _) ->
-                    Translate.RegistrationSuccessfulSuggestAddingMother
+                    text <| translate language Translate.RegistrationSuccessfulSuggestAddingMother
 
                 Nothing ->
-                    Translate.RegistrationSuccessfulParticipantAdded
+                    text <| translate language Translate.RegistrationSuccessfulParticipantAdded
 
-        buttons =
-            if isJust maybeParticipantId then
+        buttons participantId =
+            if isJust participantId then
                 div [ class "ui buttons two" ]
                     [ button
                         [ class "ui fluid button"
@@ -1155,7 +1183,7 @@ successfulRegistrationDialog language maybeParticipantId =
                         [ text <| translate language Translate.No ]
                     , button
                         [ class "ui primary fluid button"
-                        , onClick <| SetRelationParticipant maybeParticipantId
+                        , onClick <| SetRelationParticipant participantId
                         ]
                         [ text <| translate language Translate.Yes ]
                     ]
@@ -1167,7 +1195,17 @@ successfulRegistrationDialog language maybeParticipantId =
                     ]
                     [ text <| translate language Translate.OK ]
     in
-    reportSuccessDialog language Translate.RegistrationSuccessful message buttons
+    div [ class "ui tiny active modal" ]
+        [ div
+            [ class "header" ]
+            [ text <| translate language Translate.RegistrationSuccessful ]
+        , div
+            [ class "content" ]
+            [ viewWebData language message identity addedParticipantIdData ]
+        , div
+            [ class "actions" ]
+            [ viewWebData language buttons identity addedParticipantIdData ]
+        ]
 
 
 successfulRelationDialog : Language -> ParticipantId -> Html Msg
@@ -1188,21 +1226,16 @@ successfulRelationDialog language relationParticipant =
                 ]
                 [ text <| translate language Translate.OK ]
     in
-    reportSuccessDialog language Translate.RelationSuccessful message button
-
-
-reportSuccessDialog : Language -> TranslationId -> TranslationId -> Html Msg -> Html Msg
-reportSuccessDialog language header message buttons =
     div [ class "ui tiny active modal" ]
         [ div
             [ class "header" ]
-            [ text <| translate language header ]
+            [ text <| translate language Translate.RelationSuccessful ]
         , div
             [ class "content" ]
             [ text <| translate language message ]
         , div
             [ class "actions" ]
-            [ buttons ]
+            [ button ]
         ]
 
 

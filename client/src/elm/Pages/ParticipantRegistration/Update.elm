@@ -363,8 +363,13 @@ update currentDate msg model =
                     case participant of
                         ChildParticipant _ ->
                             let
-                                motherID =
-                                    Nothing
+                                motherId =
+                                    case model.relationParticipant of
+                                        Just (ParticipantMother id) ->
+                                            Just id
+
+                                        _ ->
+                                            Nothing
 
                                 modeOfDelivery =
                                     Form.getFieldAsString "modeOfDelivery" model.registrationForm
@@ -410,7 +415,7 @@ update currentDate msg model =
                                         (secondName |> Maybe.withDefault "")
                                         nationalIdNumber
                                         avatarUrl
-                                        motherID
+                                        motherId
                                         birthDate
                                         isDateOfBirthEstimated
                                         gender
@@ -431,37 +436,16 @@ update currentDate msg model =
                                         healthCenterName
 
                                 newDialogState =
-                                    Debug.crash "todo"
+                                    case model.relationParticipant of
+                                        Just (ParticipantMother motherUuid) ->
+                                            Just <| SuccessfulRelation <| ParticipantMother motherUuid
 
-                                {-
-                                   case model.relationParticipant of
-                                       Just (ParticipantMother motherUuid) ->
-                                           let
-                                               childAfterRelation =
-                                                   { child | motherId = Just motherUuid }
-                                           in
-                                          ( Just <| SuccessfulRelation <| ParticipantMother motherUuid mother
-                                          , { mothersToRegister = model.participantsData.mothersToRegister
-                                            , childrenToRegister = EveryDict.insert newUuid childAfterRelation model.participantsData.childrenToRegister
-                                            }
-                                          )
-                                       -- We're registering a child, so we should never gets
-                                       -- here, since we're not supposed to relate a child with
-                                       -- another child.
-                                       Just (ParticipantChild childUuid) ->
-                                           ( Nothing, model.participantsData )
-
-                                       Nothing ->
-                                           ( Just <| SuccessfulRegistration <| Just <| ParticipantChild newUuid
-                                           , { mothersToRegister = model.participantsData.mothersToRegister
-                                             , childrenToRegister = EveryDict.insert newUuid child model.participantsData.childrenToRegister
-                                             }
-                                           )
-                                -}
+                                        _ ->
+                                            Just (Registering participant)
                             in
                             ( { model | dialogState = newDialogState }
                             , Cmd.none
-                            , []
+                            , [ App.Model.MsgIndexedDb <| Backend.Model.PostChild child ]
                             )
 
                         MotherParticipant _ ->
@@ -580,44 +564,21 @@ update currentDate msg model =
                                         Nothing
                                         healthCenterName
 
-                                newUuid =
-                                    Debug.crash "todo"
+                                ( newDialogState, relatedChild ) =
+                                    case model.relationParticipant of
+                                        Just (ParticipantChild childUuid) ->
+                                            ( Just <| SuccessfulRelation <| ParticipantChild childUuid
+                                            , Just childUuid
+                                            )
 
-                                nextUuid =
-                                    Debug.crash "todo"
-
-                                ( newDialogState, updatedParticipantsData ) =
-                                    Debug.crash "todo"
-
-                                {-
-                                   case model.relationParticipant of
-                                       -- We're registering a mother, so we should never gets
-                                       -- here, since we're not supposed to relate a mother with
-                                       -- another mother.
-                                       Just (ParticipantMother motherUuid) ->
-                                           ( Nothing, model.participantsData )
-
-                                       Just (ParticipantChild childUuid) ->
-                                          let
-                                              childAfterRelation =
-                                                  { child | motherId = Just newUuid }
-                                          in
-                                          ( Just <| SuccessfulRelation <| ParticipantChild childUuid child
-                                          , { mothersToRegister = model.participantsData.mothersToRegister
-                                            , childrenToRegister = EveryDict.insert childUuid childAfterRelation model.participantsData.childrenToRegister
-                                            }
-                                          )
-                                       Nothing ->
-                                           ( Just <| SuccessfulRegistration <| Just <| ParticipantMother newUuid
-                                           , { mothersToRegister = EveryDict.insert newUuid mother model.participantsData.mothersToRegister
-                                             , childrenToRegister = model.participantsData.childrenToRegister
-                                             }
-                                           )
-                                -}
+                                        _ ->
+                                            ( Just <| Registering participant
+                                            , Nothing
+                                            )
                             in
                             ( { model | dialogState = newDialogState }
                             , Cmd.none
-                            , []
+                            , [ App.Model.MsgIndexedDb <| Backend.Model.PostMother mother relatedChild ]
                             )
 
                 Nothing ->

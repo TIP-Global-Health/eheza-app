@@ -21,7 +21,7 @@ import Form.Error exposing (ErrorValue(..))
 import Form.Validate exposing (Validation, andMap, andThen, bool, emptyString, field, format, mapError, oneOf, string, succeed)
 import Measurement.Model exposing (DropZoneFile)
 import Pages.Page exposing (Page)
-import Participant.Model exposing (ParticipantId)
+import Participant.Model exposing (ParticipantId, ParticipantType)
 import Regex exposing (Regex)
 import Restful.Endpoint exposing (EntityId(..), toEntityId, toEntityUuid)
 import Time exposing (Time)
@@ -84,7 +84,7 @@ type Msg
 
 type DialogState
     = ConfirmSubmision
-    | SuccessfulRegistration (Maybe ParticipantId)
+    | Registering ParticipantType
     | SuccessfulRelation ParticipantId
 
 
