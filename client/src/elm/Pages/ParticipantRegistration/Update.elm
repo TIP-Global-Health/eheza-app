@@ -8,6 +8,7 @@ import Backend.Mother.Decoder exposing (decodeEducationLevel, decodeHivStatus, d
 import Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother)
 import Backend.Participant.Decoder exposing (decodeGender, decodeUbudehe)
 import Backend.Participant.Model exposing (Gender(..), Ubudehe(..))
+import EveryDict
 import Form
 import Form.Field exposing (FieldValue(..))
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
@@ -15,7 +16,9 @@ import Pages.Page
 import Pages.ParticipantRegistration.Model exposing (..)
 import Pages.ParticipantRegistration.Utils exposing (decodeStringToMaybe, getFormFieldValue, getRegistratingParticipant, sequenceExtra)
 import Participant.Model exposing (ParticipantId(..), ParticipantType(..))
+import Restful.Endpoint exposing (toEntityId)
 import Time.Date
+import Utils.GeoLocation exposing (geoInfo)
 
 
 update : NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -306,22 +309,42 @@ update currentDate msg model =
                         province =
                             Form.getFieldAsString "province" model.registrationForm
                                 |> .value
+                                |> Maybe.andThen (String.toInt >> Result.toMaybe)
+                                |> Maybe.map toEntityId
+                                |> Maybe.andThen (\id -> EveryDict.get id geoInfo.provinces)
+                                |> Maybe.map .name
 
                         district =
                             Form.getFieldAsString "district" model.registrationForm
                                 |> .value
+                                |> Maybe.andThen (String.toInt >> Result.toMaybe)
+                                |> Maybe.map toEntityId
+                                |> Maybe.andThen (\id -> EveryDict.get id geoInfo.districts)
+                                |> Maybe.map .name
 
                         sector =
                             Form.getFieldAsString "sector" model.registrationForm
                                 |> .value
+                                |> Maybe.andThen (String.toInt >> Result.toMaybe)
+                                |> Maybe.map toEntityId
+                                |> Maybe.andThen (\id -> EveryDict.get id geoInfo.sectors)
+                                |> Maybe.map .name
 
                         cell =
                             Form.getFieldAsString "cell" model.registrationForm
                                 |> .value
+                                |> Maybe.andThen (String.toInt >> Result.toMaybe)
+                                |> Maybe.map toEntityId
+                                |> Maybe.andThen (\id -> EveryDict.get id geoInfo.cells)
+                                |> Maybe.map .name
 
                         village =
                             Form.getFieldAsString "village" model.registrationForm
                                 |> .value
+                                |> Maybe.andThen (String.toInt >> Result.toMaybe)
+                                |> Maybe.map toEntityId
+                                |> Maybe.andThen (\id -> EveryDict.get id geoInfo.villages)
+                                |> Maybe.map .name
 
                         telephoneNumber =
                             Form.getFieldAsString "telephoneNumber" model.registrationForm
