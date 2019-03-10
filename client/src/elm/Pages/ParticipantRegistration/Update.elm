@@ -322,7 +322,8 @@ update currentDate msg model =
                                     )
 
                         province =
-                            Nothing
+                            Form.getFieldAsString "province" model.registrationForm
+                                |> .value
 
                         district =
                             Form.getFieldAsString "district" model.registrationForm
