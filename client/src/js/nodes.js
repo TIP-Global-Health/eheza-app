@@ -235,6 +235,9 @@
 
                                     return addShard.then(function () {
                                         return changeTable.add(change).then(function (localId) {
+                                            // Kick off a sync
+                                            self.registration.sync.register('sync');
+
                                             return sendRevisedNode(table, uuid).then(function () {
                                                 return Promise.resolve(response);
                                             });
@@ -310,6 +313,9 @@
                                     }
 
                                     return changeTable.add(change).then(function (localId) {
+                                        // Kick off a sync
+                                        self.registration.sync.register('sync');
+
                                         return sendRevisedNode(table, uuid).then(function () {
                                             return Promise.resolve(response);
                                         });
