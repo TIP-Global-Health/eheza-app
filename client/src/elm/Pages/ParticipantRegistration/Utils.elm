@@ -6,7 +6,6 @@ import Json.Decode exposing (Decoder)
 import List
 import Maybe.Extra exposing (unwrap)
 import Participant.Model exposing (ParticipantId(..), ParticipantType(..))
-import Time exposing (Time)
 import Time.Date
 
 
@@ -61,7 +60,8 @@ successful, Nothing if not.
 -}
 decodeStringToMaybe : Decoder a -> String -> Maybe a
 decodeStringToMaybe decoder value =
-    case Json.Decode.decodeString decoder value of
+    -- We need to add the quotes to make it a value JSON string
+    case Json.Decode.decodeString decoder ("\"" ++ value ++ "\"") of
         Err _ ->
             Nothing
 
