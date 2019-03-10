@@ -1475,11 +1475,7 @@ function hedley_patient_field_default_field_instances() {
   // Exported field_instance: 'node-mother-field_marital_status'.
   $field_instances['node-mother-field_marital_status'] = array(
     'bundle' => 'mother',
-    'default_value' => array(
-      0 => array(
-        'value' => 'single',
-      ),
-    ),
+    'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
     'display' => array(
