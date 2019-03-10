@@ -1,7 +1,8 @@
-module Pages.ParticipantRegistration.Utils exposing (getFormFieldValue, getRegistratingParticipant, sequenceExtra)
+module Pages.ParticipantRegistration.Utils exposing (decodeStringToMaybe, getFormFieldValue, getRegistratingParticipant, sequenceExtra)
 
 import Form
 import Gizra.NominalDate exposing (NominalDate)
+import Json.Decode exposing (Decoder)
 import List
 import Maybe.Extra exposing (unwrap)
 import Participant.Model exposing (ParticipantId(..), ParticipantType(..))
@@ -53,6 +54,19 @@ getRegistratingParticipant currentDate birthDay birthMonth birthYear maybeRelati
 
     else
         Nothing
+
+
+{-| Given a string value, tries to decode it. Returns a Just if
+successful, Nothing if not.
+-}
+decodeStringToMaybe : Decoder a -> String -> Maybe a
+decodeStringToMaybe decoder value =
+    case Json.Decode.decodeString decoder value of
+        Err _ ->
+            Nothing
+
+        Ok result ->
+            Just result
 
 
 {-| Like `Update.Extra.sequence`, but for `update` signatures that also

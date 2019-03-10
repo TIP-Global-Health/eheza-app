@@ -4,9 +4,9 @@ import App.Model
 import Backend.Child.Decoder exposing (decodeModeOfDelivery)
 import Backend.Child.Model exposing (Child, ModeOfDelivery(..))
 import Backend.Model
-import Backend.Mother.Decoder exposing (decodeHivStatus)
+import Backend.Mother.Decoder exposing (decodeEducationLevel, decodeHivStatus, decodeMaritalStatus)
 import Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother)
-import Backend.Participant.Decoder exposing (decodeUbudehe)
+import Backend.Participant.Decoder exposing (decodeGender, decodeUbudehe)
 import Backend.Participant.Model exposing (Gender(..), Ubudehe(..))
 import Form
 import Form.Field exposing (FieldValue(..))
@@ -15,7 +15,7 @@ import Json.Decode exposing (decodeString)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page
 import Pages.ParticipantRegistration.Model exposing (..)
-import Pages.ParticipantRegistration.Utils exposing (getFormFieldValue, getRegistratingParticipant, sequenceExtra)
+import Pages.ParticipantRegistration.Utils exposing (decodeStringToMaybe, getFormFieldValue, getRegistratingParticipant, sequenceExtra)
 import Participant.Model exposing (ParticipantId(..), ParticipantType(..))
 import Time.Date
 
@@ -297,29 +297,13 @@ update currentDate msg model =
                         gender =
                             Form.getFieldAsString "gender" model.registrationForm
                                 |> .value
-                                |> unwrap
-                                    Male
-                                    (\gender ->
-                                        case gender of
-                                            "female" ->
-                                                Female
-
-                                            _ ->
-                                                Male
-                                    )
+                                |> Maybe.andThen (decodeStringToMaybe decodeGender)
+                                |> Maybe.withDefault Male
 
                         familyUbudehe =
                             Form.getFieldAsString "familyUbudehe" model.registrationForm
                                 |> .value
-                                |> Maybe.andThen
-                                    (\ubudehe ->
-                                        case decodeString decodeUbudehe ubudehe of
-                                            Err _ ->
-                                                Nothing
-
-                                            Ok result ->
-                                                Just result
-                                    )
+                                |> Maybe.andThen (decodeStringToMaybe decodeUbudehe)
 
                         province =
                             Form.getFieldAsString "province" model.registrationForm
@@ -363,15 +347,7 @@ update currentDate msg model =
                                 modeOfDelivery =
                                     Form.getFieldAsString "modeOfDelivery" model.registrationForm
                                         |> .value
-                                        |> Maybe.andThen
-                                            (\mode ->
-                                                case decodeString decodeModeOfDelivery mode of
-                                                    Err _ ->
-                                                        Nothing
-
-                                                    Ok result ->
-                                                        Just result
-                                            )
+                                        |> Maybe.andThen (decodeStringToMaybe decodeModeOfDelivery)
 
                                 motherName =
                                     Form.getFieldAsString "motherName" model.registrationForm
@@ -439,42 +415,10 @@ update currentDate msg model =
 
                         MotherParticipant _ ->
                             let
-                                children =
-                                    []
-
-                                childrenUuids =
-                                    []
-
                                 levelOfEducation =
                                     Form.getFieldAsString "levelOfEducation" model.registrationForm
                                         |> .value
-                                        |> Maybe.andThen
-                                            (\level ->
-                                                case level of
-                                                    "0" ->
-                                                        Just NoSchooling
-
-                                                    "1" ->
-                                                        Just PrimarySchool
-
-                                                    "2" ->
-                                                        Just VocationalTrainingSchool
-
-                                                    "3" ->
-                                                        Just SecondarySchool
-
-                                                    "4" ->
-                                                        Just DiplomaProgram
-
-                                                    "5" ->
-                                                        Just HigherEducation
-
-                                                    "6" ->
-                                                        Just AdvancedDiploma
-
-                                                    _ ->
-                                                        Nothing
-                                            )
+                                        |> Maybe.andThen (decodeStringToMaybe decodeEducationLevel)
 
                                 profession =
                                     Form.getFieldAsString "profession" model.registrationForm
@@ -483,37 +427,12 @@ update currentDate msg model =
                                 maritalStatus =
                                     Form.getFieldAsString "maritalStatus" model.registrationForm
                                         |> .value
-                                        |> Maybe.andThen
-                                            (\status ->
-                                                case status of
-                                                    "divorced" ->
-                                                        Just Divorced
-
-                                                    "maried" ->
-                                                        Just Married
-
-                                                    "single" ->
-                                                        Just Single
-
-                                                    "widowed" ->
-                                                        Just Widowed
-
-                                                    _ ->
-                                                        Nothing
-                                            )
+                                        |> Maybe.andThen (decodeStringToMaybe decodeMaritalStatus)
 
                                 hivStatus =
                                     Form.getFieldAsString "hivStatus" model.registrationForm
                                         |> .value
-                                        |> Maybe.andThen
-                                            (\value ->
-                                                case decodeString decodeHivStatus value of
-                                                    Err _ ->
-                                                        Nothing
-
-                                                    Ok result ->
-                                                        Just result
-                                            )
+                                        |> Maybe.andThen (decodeStringToMaybe decodeHivStatus)
 
                                 householdSize =
                                     Form.getFieldAsString "householdSize" model.registrationForm

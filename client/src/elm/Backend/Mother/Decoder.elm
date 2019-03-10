@@ -1,4 +1,4 @@
-module Backend.Mother.Decoder exposing (decodeHivStatus, decodeMother)
+module Backend.Mother.Decoder exposing (decodeEducationLevel, decodeHivStatus, decodeMaritalStatus, decodeMother)
 
 import Backend.Mother.Model exposing (..)
 import Backend.Participant.Decoder exposing (decodeGender, decodeUbudehe)
