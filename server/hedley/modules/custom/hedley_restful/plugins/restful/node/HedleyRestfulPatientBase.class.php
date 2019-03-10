@@ -47,19 +47,12 @@ class HedleyRestfulPatientBase extends HedleyRestfulSyncBase {
       ];
     }
 
-    foreach (array_keys(field_info_instances($this->getEntityType(), $this->getBundle())) as $field_name) {
-      if (strpos($field_name, 'field_date') !== 0) {
-        // Not a date field.
-        continue;
-      }
-      $public_name = str_replace('field_', '', $field_name);
-      $public_fields[$public_name] = [
-        'property' => $field_name,
-        'process_callbacks' => [
-          [$this, 'convertTimestampToIso8601'],
-        ],
-      ];
-    }
+    $public_fields['date_birth'] = [
+      'property' => 'field_date_birth',
+      'process_callbacks' => [
+        [$this, 'convertTimestampToYmd'],
+      ],
+    ];
 
     return $public_fields;
   }
