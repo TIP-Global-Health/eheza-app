@@ -8,8 +8,6 @@ import Backend.Mother.Decoder exposing (decodeHivStatus)
 import Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother)
 import Backend.Participant.Decoder exposing (decodeUbudehe)
 import Backend.Participant.Model exposing (Gender(..), Ubudehe(..))
-import Date
-import EveryDict
 import Form
 import Form.Field exposing (FieldValue(..))
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
@@ -19,8 +17,6 @@ import Pages.Page
 import Pages.ParticipantRegistration.Model exposing (..)
 import Pages.ParticipantRegistration.Utils exposing (getFormFieldValue, getRegistratingParticipant, sequenceExtra)
 import Participant.Model exposing (ParticipantId(..), ParticipantType(..))
-import Restful.Endpoint exposing (toEntityUuid)
-import Time exposing (Time)
 import Time.Date
 
 

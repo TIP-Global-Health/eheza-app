@@ -34,7 +34,6 @@ import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityId, toEntityId)
 import Time.Date
 import Translate exposing (Language, TranslationId, translate)
-import User.Model exposing (User)
 import Utils.Form exposing (isFormFieldSet, isFormFieldValid)
 import Utils.GeoLocation exposing (GeoInfo, geoInfo)
 import Utils.Html exposing (script, thumbnailImage, viewModal)
