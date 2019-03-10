@@ -422,7 +422,7 @@ viewRegistrationForm language currentDate step registrationForm geoInfo photo ma
                                     allUbudehes
                                         |> List.map
                                             (\ubudehe ->
-                                                ( toString ubudehe
+                                                ( toString (encodeUbudehe ubudehe)
                                                 , toString (encodeUbudehe ubudehe)
                                                 )
                                             )

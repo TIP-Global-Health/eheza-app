@@ -6,6 +6,7 @@ import Backend.Child.Model exposing (Child, ModeOfDelivery(..))
 import Backend.Model
 import Backend.Mother.Decoder exposing (decodeHivStatus)
 import Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother)
+import Backend.Participant.Decoder exposing (decodeUbudehe)
 import Backend.Participant.Model exposing (Gender(..), Ubudehe(..))
 import Date
 import EveryDict
@@ -316,21 +317,12 @@ update currentDate msg model =
                                 |> .value
                                 |> Maybe.andThen
                                     (\ubudehe ->
-                                        case ubudehe of
-                                            "1" ->
-                                                Just Ubudehe1
-
-                                            "2" ->
-                                                Just Ubudehe2
-
-                                            "3" ->
-                                                Just Ubudehe3
-
-                                            "4" ->
-                                                Just Ubudehe4
-
-                                            _ ->
+                                        case decodeString decodeUbudehe ubudehe of
+                                            Err _ ->
                                                 Nothing
+
+                                            Ok result ->
+                                                Just result
                                     )
 
                         province =
