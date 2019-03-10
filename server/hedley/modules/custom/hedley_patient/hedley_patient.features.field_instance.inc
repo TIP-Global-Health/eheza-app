@@ -479,6 +479,50 @@ function hedley_patient_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-child-field_health_center'.
+  $field_instances['node-child-field_health_center'] = array(
+    'bundle' => 'child',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 28,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_health_center',
+    'label' => 'Health Center',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 25,
+    ),
+  );
+
   // Exported field_instance: 'node-child-field_middle_name'.
   $field_instances['node-child-field_middle_name'] = array(
     'bundle' => 'child',
@@ -1385,6 +1429,50 @@ function hedley_patient_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-mother-field_health_center'.
+  $field_instances['node-mother-field_health_center'] = array(
+    'bundle' => 'mother',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 31,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_health_center',
+    'label' => 'Health Center',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 24,
+    ),
+  );
+
   // Exported field_instance: 'node-mother-field_hiv_status'.
   $field_instances['node-mother-field_hiv_status'] = array(
     'bundle' => 'mother',
@@ -2006,6 +2094,7 @@ function hedley_patient_field_default_field_instances() {
   t('First name');
   t('Gender');
   t('HIV status');
+  t('Health Center');
   t('Household size');
   t('Marital status');
   t('Middle name');

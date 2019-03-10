@@ -10,12 +10,7 @@ module Pages.ParticipantRegistration.Model exposing
     , validateRegistrationForm
     )
 
-import Backend.Child.Model exposing (Child)
-import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (PhotoValue)
-import Backend.Mother.Model exposing (ChildrenRelationType(..), Mother)
-import Backend.Participant.Model exposing (Gender(..))
-import EveryDict exposing (EveryDict)
 import Form exposing (Form)
 import Form.Error exposing (ErrorValue(..))
 import Form.Validate exposing (Validation, andMap, andThen, bool, emptyString, field, format, mapError, oneOf, string, succeed)
@@ -23,9 +18,6 @@ import Measurement.Model exposing (DropZoneFile)
 import Pages.Page exposing (Page)
 import Participant.Model exposing (ParticipantId, ParticipantType)
 import Regex exposing (Regex)
-import Restful.Endpoint exposing (EntityId(..), toEntityId, toEntityUuid)
-import Time exposing (Time)
-import Time.Date exposing (date)
 
 
 type alias Model =
@@ -118,7 +110,7 @@ type alias RegistrationForm =
     , cell : String
     , village : String
     , telephoneNumber : String
-    , healthCenterName : String
+    , healthCenter : String
     }
 
 
@@ -154,7 +146,7 @@ validateRegistrationForm =
         |> andMap (field "cell" string)
         |> andMap (field "village" string)
         |> andMap (field "telephoneNumber" string)
-        |> andMap (field "healthCenterName" string)
+        |> andMap (field "healthCenter" string)
 
 
 validateAlphanumeric : Validation e String

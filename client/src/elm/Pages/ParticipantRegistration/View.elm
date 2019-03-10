@@ -31,7 +31,7 @@ import Pages.ParticipantRegistration.Utils exposing (getFormFieldValue, getRegis
 import Participant.Model exposing (Participant, ParticipantId(..), ParticipantType(..))
 import Participant.Utils exposing (childParticipant, motherParticipant)
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (fromEntityId, toEntityId)
+import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Time.Date
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (isFormFieldSet, isFormFieldValid)
@@ -82,7 +82,7 @@ viewBody language currentDate db model =
                     viewSearchForm language currentDate db searchString model.submittedSearch model.relationParticipant
 
                 ParticipantRegistration step ->
-                    viewRegistrationForm language currentDate step model.registrationForm geoInfo model.photo model.relationParticipant previousPhase
+                    viewRegistrationForm language currentDate db step model.registrationForm geoInfo model.photo model.relationParticipant previousPhase
 
                 ParticipantView participantId ->
                     viewParticipantDetailsForm language currentDate participantId db previousPhase
@@ -94,6 +94,7 @@ viewBody language currentDate db model =
 viewRegistrationForm :
     Language
     -> NominalDate
+    -> ModelIndexedDb
     -> RegistrationStep
     -> Form () RegistrationForm
     -> GeoInfo
@@ -101,7 +102,7 @@ viewRegistrationForm :
     -> Maybe ParticipantId
     -> Maybe RegistrationPhase
     -> Html Msg
-viewRegistrationForm language currentDate step registrationForm geoInfo photo maybeRelationParticipant maybePreviousPhase =
+viewRegistrationForm language currentDate db step registrationForm geoInfo photo maybeRelationParticipant maybePreviousPhase =
     let
         -- FORM FIELDS --
         firstName =
@@ -193,8 +194,8 @@ viewRegistrationForm language currentDate step registrationForm geoInfo photo ma
             Form.getFieldAsString "telephoneNumber" registrationForm
 
         -- END STEP 2 FIELDS --
-        healthCenterName =
-            Form.getFieldAsString "healthCenterName" registrationForm
+        healthCenter =
+            Form.getFieldAsString "healthCenter" registrationForm
 
         -- END STEP 3 FIELDS --
         maybeRegistratingParticipant =
@@ -636,19 +637,30 @@ viewRegistrationForm language currentDate step registrationForm geoInfo photo ma
 
                 Third ->
                     let
-                        viewHealthCenterName =
+                        viewHealthCenter allHealthCenters =
+                            let
+                                options =
+                                    allHealthCenters
+                                        |> EveryDictList.sortBy .name
+                                        |> EveryDictList.map (\id data -> ( fromEntityUuid id, data.name ))
+                                        |> EveryDictList.values
+                                        |> (::) emptyOption
+                            in
                             div [ class "ui grid" ]
-                                [ div [ class "six wide column" ]
+                                [ div
+                                    [ class "six wide column" ]
                                     [ text <| translate language Translate.HealthCenterName ++ ":" ]
-                                , div [ class "ten wide column" ]
-                                    [ Form.Input.textInput healthCenterName [] ]
+                                , div
+                                    [ class "ten wide column" ]
+                                    [ Form.Input.selectInput options healthCenter [] ]
                                 ]
                     in
                     [ h3 [ class "ui header" ]
                         [ text <| translate language Translate.RegistratingHealthCenter ++ ":" ]
                     , Html.map MsgRegistrationForm <|
-                        fieldset [ class "registration-form registrating-health-center" ]
-                            [ viewHealthCenterName ]
+                        fieldset
+                            [ class "registration-form registrating-health-center" ]
+                            [ viewWebData language viewHealthCenter identity db.healthCenters ]
                     ]
 
         rightButton =
@@ -856,11 +868,11 @@ viewSearchForm language currentDate db searchString submittedSearch maybeRelatio
                         ( [ summary ]
                         , (mothersData
                             |> RemoteData.withDefault []
-                            |> List.map (\( uuid, mother ) -> viewParticipant language motherParticipant uuid mother relationDependentAction)
+                            |> List.map (\( uuid, mother ) -> viewParticipant language db motherParticipant uuid mother relationDependentAction)
                           )
                             ++ (childrenData
                                     |> RemoteData.withDefault []
-                                    |> List.map (\( uuid, child ) -> viewParticipant language childParticipant uuid child relationDependentAction)
+                                    |> List.map (\( uuid, child ) -> viewParticipant language db childParticipant uuid child relationDependentAction)
                                )
                         )
                     )
@@ -954,7 +966,7 @@ viewParticipantDetailsForm language currentDate participantId db maybePreviousPh
                                 Just ( motherId, mother ) ->
                                     div
                                         [ class "ui unstackable items participants-list" ]
-                                        [ viewParticipant language motherParticipant motherId mother Nothing ]
+                                        [ viewParticipant language db motherParticipant motherId mother Nothing ]
 
                                 Nothing ->
                                     div
@@ -962,7 +974,7 @@ viewParticipantDetailsForm language currentDate participantId db maybePreviousPh
                                         [ addParticipantModal "mother" Translate.AddMother ]
 
                         viewParticipantData participant =
-                            viewParticipant language childParticipant childId participant Nothing
+                            viewParticipant language db childParticipant childId participant Nothing
                     in
                     ( viewWebData language viewMotherData identity motherData
                     , viewWebData language viewParticipantData identity participantData
@@ -983,13 +995,13 @@ viewParticipantDetailsForm language currentDate participantId db maybePreviousPh
 
                         viewFamilyMembersList familyMembersList =
                             familyMembersList
-                                |> List.map (\( childId, child ) -> viewParticipant language childParticipant childId child Nothing)
+                                |> List.map (\( childId, child ) -> viewParticipant language db childParticipant childId child Nothing)
                                 |> List.append [ addChildModal ]
                                 |> List.reverse
                                 |> div [ class "ui unstackable items participants-list" ]
 
                         viewParticipantData participant =
-                            viewParticipant language motherParticipant motherId participant Nothing
+                            viewParticipant language db motherParticipant motherId participant Nothing
                     in
                     ( viewWebData language viewFamilyMembersList identity familyMembersListData
                     , viewWebData language viewParticipantData identity participantData
@@ -1013,19 +1025,33 @@ viewParticipantDetailsForm language currentDate participantId db maybePreviousPh
         ]
 
 
-viewParticipant : Language -> Participant id value activity msg -> id -> value -> Maybe ParticipantAction -> Html Msg
-viewParticipant language config id participant maybeActionType =
+viewParticipant : Language -> ModelIndexedDb -> Participant id value activity msg -> id -> value -> Maybe ParticipantAction -> Html Msg
+viewParticipant language db config id participant maybeActionType =
     let
         participantId =
             config.toParticipantId id
 
-        ( typeForThumbnail, healthCenter ) =
+        typeForThumbnail =
             case participantId of
                 ParticipantMother _ ->
-                    ( "mother", "TODO" )
+                    "mother"
 
                 ParticipantChild _ ->
-                    ( "child", "TODO" )
+                    "child"
+
+        healthCenterNameData =
+            case config.getHealthCenterId participant of
+                Just id ->
+                    RemoteData.map
+                        (\healthCenters ->
+                            EveryDictList.get id healthCenters
+                                |> Maybe.map .name
+                                |> Maybe.withDefault (fromEntityUuid id)
+                        )
+                        db.healthCenters
+
+                Nothing ->
+                    Success ""
 
         content =
             div [ class "content" ] <|
@@ -1047,7 +1073,7 @@ viewParticipant language config id participant maybeActionType =
                         ]
                     , p []
                         [ label [] [ text <| translate language Translate.HealthCenter ++ ": " ]
-                        , span [] [ text healthCenter ]
+                        , span [] [ viewWebData language text identity healthCenterNameData ]
                         ]
                     ]
                     :: (case maybeActionType of

@@ -35,9 +35,7 @@ type alias Mother =
     , village : Maybe String
     , telephoneNumber : Maybe String
     , clinic : Maybe ClinicId
-
-    -- TODO: Convert to HealthCenterId, and create on backend.
-    , healthCenterName : Maybe String
+    , healthCenter : Maybe HealthCenterId
     }
 
 

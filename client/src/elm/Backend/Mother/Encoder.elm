@@ -34,6 +34,7 @@ encodeMother mother =
     , ( "village", maybe string mother.village )
     , ( "phone_number", maybe string mother.telephoneNumber )
     , ( "clinic", maybe encodeEntityUuid mother.clinic )
+    , ( "health_center", maybe encodeEntityUuid mother.healthCenter )
     ]
 
 

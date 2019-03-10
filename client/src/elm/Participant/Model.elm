@@ -34,6 +34,7 @@ things here that it needs. But this is faster for the moment.
 type alias Participant id value activity msg =
     { getAvatarUrl : value -> Maybe String
     , getBirthDate : value -> Maybe NominalDate
+    , getHealthCenterId : value -> Maybe HealthCenterId
     , getMotherId : id -> EditableSession -> Maybe MotherId
     , getName : value -> String
     , getParticipants : EditableSession -> EveryDictList id value

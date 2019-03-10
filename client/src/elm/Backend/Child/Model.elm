@@ -33,9 +33,7 @@ type alias Child =
     , cell : Maybe String
     , village : Maybe String
     , telephoneNumber : Maybe String
-
-    -- TODO: Convert to HealthCenterId and create on backend.
-    , healthCenterName : Maybe String
+    , healthCenter : Maybe HealthCenterId
     }
 
 

@@ -55,15 +55,17 @@ fetch db model =
                             in
                             List.filterMap identity
                                 [ Just <| FetchChild childId
+                                , Just FetchHealthCenters
                                 , fetchMother
                                 ]
 
                         ParticipantMother motherId ->
                             [ FetchMother motherId
                             , FetchChildrenOfMother motherId
+                            , FetchHealthCenters
                             ]
 
                 ParticipantRegistration step ->
-                    []
+                    [ FetchHealthCenters ]
     in
     forDialog ++ forPhase

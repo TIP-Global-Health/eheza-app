@@ -54,6 +54,11 @@ class HedleyRestfulPatientBase extends HedleyRestfulSyncBase {
       ],
     ];
 
+    $public_fields['health_center'] = [
+      'property' => 'field_health_center',
+      'sub_property' => 'field_uuid',
+    ];
+
     return $public_fields;
   }
 

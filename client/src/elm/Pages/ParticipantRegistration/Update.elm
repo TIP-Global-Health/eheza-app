@@ -16,7 +16,7 @@ import Pages.Page
 import Pages.ParticipantRegistration.Model exposing (..)
 import Pages.ParticipantRegistration.Utils exposing (decodeStringToMaybe, getFormFieldValue, getRegistratingParticipant, sequenceExtra)
 import Participant.Model exposing (ParticipantId(..), ParticipantType(..))
-import Restful.Endpoint exposing (toEntityId)
+import Restful.Endpoint exposing (toEntityId, toEntityUuid)
 import Time.Date
 import Utils.GeoLocation exposing (geoInfo)
 
@@ -350,9 +350,10 @@ update currentDate msg model =
                             Form.getFieldAsString "telephoneNumber" model.registrationForm
                                 |> .value
 
-                        healthCenterName =
-                            Form.getFieldAsString "healthCenterName" model.registrationForm
+                        healthCenter =
+                            Form.getFieldAsString "healthCenter" model.registrationForm
                                 |> .value
+                                |> Maybe.map toEntityUuid
                     in
                     case participant of
                         ChildParticipant _ ->
@@ -419,7 +420,7 @@ update currentDate msg model =
                                         cell
                                         village
                                         telephoneNumber
-                                        healthCenterName
+                                        healthCenter
 
                                 newDialogState =
                                     case model.relationParticipant of
@@ -491,7 +492,7 @@ update currentDate msg model =
                                         telephoneNumber
                                         -- TODO: Edit ClinicId
                                         Nothing
-                                        healthCenterName
+                                        healthCenter
 
                                 ( newDialogState, relatedChild ) =
                                     case model.relationParticipant of

@@ -17,6 +17,7 @@ childParticipant : Participant ChildId Child ChildActivity Measurement.Model.Msg
 childParticipant =
     { getAvatarUrl = .avatarUrl
     , getBirthDate = .birthDate >> Just
+    , getHealthCenterId = .healthCenter
     , getMotherId = \childId session -> getMyMother childId session.offlineSession |> Maybe.map Tuple.first
     , getName = .name
     , getParticipants = \session -> session.offlineSession.children
@@ -38,6 +39,7 @@ motherParticipant : Participant MotherId Mother MotherActivity Measurement.Model
 motherParticipant =
     { getAvatarUrl = .avatarUrl
     , getBirthDate = .birthDate
+    , getHealthCenterId = .healthCenter
     , getMotherId = \motherId session -> Just motherId
     , getName = .name
     , getParticipants = \session -> session.offlineSession.mothers

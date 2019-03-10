@@ -45,8 +45,7 @@ decodeMother =
         |> optional "village" (nullable string) Nothing
         |> optional "phone_number" (nullable string) Nothing
         |> optional "clinic" (nullable decodeEntityUuid) Nothing
-        -- TODO: Convert to HealthCenterId and create on backend.
-        |> hardcoded Nothing
+        |> optional "health_center" (nullable decodeEntityUuid) Nothing
 
 
 decodeChildrenRelation : Decoder ChildrenRelationType

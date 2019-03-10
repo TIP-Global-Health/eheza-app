@@ -44,8 +44,7 @@ decodeChild =
         |> optional "cell" (nullable string) Nothing
         |> optional "village" (nullable string) Nothing
         |> optional "phone_number" (nullable string) Nothing
-        -- TODO: Convert to HealthCenterId and create on backend.
-        |> hardcoded Nothing
+        |> optional "health_center" (nullable decodeEntityUuid) Nothing
 
 
 decodeModeOfDelivery : Decoder ModeOfDelivery

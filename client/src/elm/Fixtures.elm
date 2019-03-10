@@ -63,7 +63,7 @@ exampleChildA =
     , cell = Nothing
     , village = Nothing
     , telephoneNumber = Nothing
-    , healthCenterName = Nothing
+    , healthCenter = Nothing
     }
 
 
@@ -95,7 +95,7 @@ exampleChildB =
     , cell = Nothing
     , village = Nothing
     , telephoneNumber = Nothing
-    , healthCenterName = Nothing
+    , healthCenter = Nothing
     }
 
 
@@ -127,5 +127,5 @@ exampleMother =
     , village = Nothing
     , telephoneNumber = Nothing
     , clinic = Nothing
-    , healthCenterName = Nothing
+    , healthCenter = Nothing
     }

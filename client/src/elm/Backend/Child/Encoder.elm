@@ -35,6 +35,7 @@ encodeChild child =
     , ( "cell", maybe string child.cell )
     , ( "village", maybe string child.village )
     , ( "phone_number", maybe string child.telephoneNumber )
+    , ( "health_center", maybe encodeEntityUuid child.healthCenter )
     ]
 
 
