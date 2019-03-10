@@ -11,8 +11,6 @@ import Backend.Participant.Model exposing (Gender(..), Ubudehe(..))
 import Form
 import Form.Field exposing (FieldValue(..))
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
-import Json.Decode exposing (decodeString)
-import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page
 import Pages.ParticipantRegistration.Model exposing (..)
 import Pages.ParticipantRegistration.Utils exposing (decodeStringToMaybe, getFormFieldValue, getRegistratingParticipant, sequenceExtra)
