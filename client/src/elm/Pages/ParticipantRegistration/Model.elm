@@ -111,6 +111,7 @@ type alias RegistrationForm =
     , village : String
     , telephoneNumber : String
     , healthCenter : String
+    , clinic : String
     }
 
 
@@ -147,6 +148,7 @@ validateRegistrationForm =
         |> andMap (field "village" string)
         |> andMap (field "telephoneNumber" string)
         |> andMap (field "healthCenter" string)
+        |> andMap (field "clinic" string)
 
 
 validateAlphanumeric : Validation e String

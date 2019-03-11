@@ -206,7 +206,6 @@ type TranslationId
     | GenderLabel
     | GoHome
     | HealthCenter
-    | HealthCenterName
     | HIVStatusLabel
     | HIVStatus HIVStatus
     | HouseholdSize
@@ -1097,11 +1096,6 @@ translationSet trans =
 
         HealthCenter ->
             { english = "Health Center"
-            , kinyarwanda = Nothing
-            }
-
-        HealthCenterName ->
-            { english = "Health Center Name"
             , kinyarwanda = Nothing
             }
 

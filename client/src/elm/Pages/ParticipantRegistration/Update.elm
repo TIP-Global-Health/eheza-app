@@ -358,6 +358,11 @@ update currentDate msg model =
                             Form.getFieldAsString "healthCenter" model.registrationForm
                                 |> .value
                                 |> Maybe.map toEntityUuid
+
+                        clinic =
+                            Form.getFieldAsString "clinic" model.registrationForm
+                                |> .value
+                                |> Maybe.map toEntityUuid
                     in
                     case participant of
                         ChildParticipant _ ->
@@ -492,8 +497,7 @@ update currentDate msg model =
                                         cell
                                         village
                                         telephoneNumber
-                                        -- TODO: Edit ClinicId
-                                        Nothing
+                                        clinic
                                         healthCenter
 
                                 ( newDialogState, relatedChild ) =

@@ -66,6 +66,8 @@ fetch db model =
                             ]
 
                 ParticipantRegistration step ->
-                    [ FetchHealthCenters ]
+                    [ FetchClinics
+                    , FetchHealthCenters
+                    ]
     in
     forDialog ++ forPhase

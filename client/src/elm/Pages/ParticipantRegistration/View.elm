@@ -197,6 +197,9 @@ viewRegistrationForm language currentDate db step registrationForm geoInfo photo
         healthCenter =
             Form.getFieldAsString "healthCenter" registrationForm
 
+        clinic =
+            Form.getFieldAsString "clinic" registrationForm
+
         -- END STEP 3 FIELDS --
         maybeRegistratingParticipant =
             getRegistratingParticipant currentDate
@@ -649,18 +652,44 @@ viewRegistrationForm language currentDate db step registrationForm geoInfo photo
                             div [ class "ui grid" ]
                                 [ div
                                     [ class "six wide column" ]
-                                    [ text <| translate language Translate.HealthCenterName ++ ":" ]
+                                    [ text <| translate language Translate.HealthCenter ++ ":" ]
                                 , div
                                     [ class "ten wide column" ]
                                     [ Form.Input.selectInput options healthCenter [] ]
                                 ]
+
+                        viewClinic allClinics =
+                            let
+                                options =
+                                    allClinics
+                                        |> EveryDictList.sortBy .name
+                                        |> EveryDictList.map (\id data -> ( fromEntityUuid id, data.name ))
+                                        |> EveryDictList.values
+                                        |> (::) emptyOption
+                            in
+                            case maybeRegistratingParticipant of
+                                Just (MotherParticipant _) ->
+                                    div [ class "ui grid" ]
+                                        [ div
+                                            [ class "six wide column" ]
+                                            [ text <| translate language Translate.Clinic ++ ":" ]
+                                        , div
+                                            [ class "ten wide column" ]
+                                            [ Form.Input.selectInput options clinic [] ]
+                                        ]
+
+                                _ ->
+                                    emptyNode
                     in
-                    [ h3 [ class "ui header" ]
+                    [ h3
+                        [ class "ui header" ]
                         [ text <| translate language Translate.RegistratingHealthCenter ++ ":" ]
                     , Html.map MsgRegistrationForm <|
                         fieldset
                             [ class "registration-form registrating-health-center" ]
-                            [ viewWebData language viewHealthCenter identity db.healthCenters ]
+                            [ viewWebData language viewHealthCenter identity db.healthCenters
+                            , viewWebData language viewClinic identity db.clinics
+                            ]
                     ]
 
         rightButton =
