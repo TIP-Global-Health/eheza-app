@@ -109,59 +109,60 @@ update currentDate msg model =
 
                                 birthDateExtraMsgs fieldDay fieldMonth fieldYear =
                                     let
-                                        day =
+                                        maybeDay =
                                             getFormFieldValue fieldDay
 
-                                        month =
+                                        maybeMonth =
                                             getFormFieldValue fieldMonth
 
-                                        year =
+                                        maybeYear =
                                             getFormFieldValue fieldYear
                                     in
-                                    -- All 3 inputs are set.
-                                    if day > 0 && month > 0 && year > 0 then
-                                        let
-                                            adjustedInputDate =
-                                                Time.Date.date year month day
+                                    case ( maybeDay, maybeMonth, maybeYear ) of
+                                        -- All 3 inputs are set.
+                                        ( Just day, Just month, Just year ) ->
+                                            let
+                                                adjustedInputDate =
+                                                    Time.Date.date year month day
 
-                                            adjustedInputDay =
-                                                Time.Date.day adjustedInputDate
+                                                adjustedInputDay =
+                                                    Time.Date.day adjustedInputDate
 
-                                            adjustedInputMonth =
-                                                Time.Date.month adjustedInputDate
+                                                adjustedInputMonth =
+                                                    Time.Date.month adjustedInputDate
 
-                                            adjustedInputYear =
-                                                Time.Date.year adjustedInputDate
+                                                adjustedInputYear =
+                                                    Time.Date.year adjustedInputDate
 
-                                            currentDay =
-                                                Time.Date.day currentDate
+                                                currentDay =
+                                                    Time.Date.day currentDate
 
-                                            currentMonth =
-                                                Time.Date.month currentDate
+                                                currentMonth =
+                                                    Time.Date.month currentDate
 
-                                            currentYear =
-                                                Time.Date.year currentDate
-                                        in
-                                        if currentYear == adjustedInputYear && currentMonth < adjustedInputMonth then
-                                            -- Per selected month, we understand that we got future date as input.
-                                            -- Need to update input month to current month.
-                                            [ MsgRegistrationForm (Form.Input "monthOfBirth" Form.Select (String (toString currentMonth))) ]
+                                                currentYear =
+                                                    Time.Date.year currentDate
+                                            in
+                                            if currentYear == adjustedInputYear && currentMonth < adjustedInputMonth then
+                                                -- Per selected month, we understand that we got future date as input.
+                                                -- Need to update input month to current month.
+                                                [ MsgRegistrationForm (Form.Input "monthOfBirth" Form.Select (String (toString currentMonth))) ]
 
-                                        else if currentYear == adjustedInputYear && currentMonth == adjustedInputMonth && currentDay < adjustedInputDay then
-                                            -- Per selected day, we understand that we got future date as input.
-                                            -- Need to update input day to current day.
-                                            [ MsgRegistrationForm (Form.Input "dayOfBirth" Form.Select (String (toString currentDay))) ]
+                                            else if currentYear == adjustedInputYear && currentMonth == adjustedInputMonth && currentDay < adjustedInputDay then
+                                                -- Per selected day, we understand that we got future date as input.
+                                                -- Need to update input day to current day.
+                                                [ MsgRegistrationForm (Form.Input "dayOfBirth" Form.Select (String (toString currentDay))) ]
 
-                                        else if day /= adjustedInputDay then
-                                            -- We got invalid day as input, and this was fixed by Time.Date.date.
-                                            -- Need to update input day to fixed value.
-                                            [ MsgRegistrationForm (Form.Input "dayOfBirth" Form.Select (String (toString adjustedInputDay))) ]
+                                            else if day /= adjustedInputDay then
+                                                -- We got invalid day as input, and this was fixed by Time.Date.date.
+                                                -- Need to update input day to fixed value.
+                                                [ MsgRegistrationForm (Form.Input "dayOfBirth" Form.Select (String (toString adjustedInputDay))) ]
 
-                                        else
+                                            else
+                                                []
+
+                                        _ ->
                                             []
-
-                                    else
-                                        []
                             in
                             case input of
                                 "dayOfBirth" ->
@@ -235,23 +236,29 @@ update currentDate msg model =
 
         Submit ->
             let
-                dayOfBirth =
+                maybeDayOfBirth =
                     Form.getFieldAsString "dayOfBirth" model.registrationForm
                         |> getFormFieldValue
 
-                monthOfBirth =
+                maybeMonthOfBirth =
                     Form.getFieldAsString "monthOfBirth" model.registrationForm
                         |> getFormFieldValue
 
-                yearOfBirth =
+                maybeYearOfBirth =
                     Form.getFieldAsString "yearOfBirth" model.registrationForm
                         |> getFormFieldValue
 
-                maybeRegistratingParticipant =
-                    getRegistratingParticipant currentDate dayOfBirth monthOfBirth yearOfBirth model.relationParticipant
+                birthData =
+                    case ( maybeDayOfBirth, maybeMonthOfBirth, maybeYearOfBirth ) of
+                        ( Just dayOfBirth, Just monthOfBirth, Just yearOfBirth ) ->
+                            getRegistratingParticipant currentDate maybeDayOfBirth maybeMonthOfBirth maybeYearOfBirth model.relationParticipant
+                                |> Maybe.map (\participant -> ( participant, Time.Date.date yearOfBirth monthOfBirth dayOfBirth ))
+
+                        _ ->
+                            Nothing
             in
-            case maybeRegistratingParticipant of
-                Just participant ->
+            case birthData of
+                Just ( participant, birthDate ) ->
                     let
                         firstName =
                             Form.getFieldAsString "firstName" model.registrationForm
@@ -286,9 +293,6 @@ update currentDate msg model =
 
                         avatarUrl =
                             model.photo |> Maybe.andThen (.url >> Just)
-
-                        birthDate =
-                            Time.Date.date yearOfBirth monthOfBirth dayOfBirth
 
                         isDateOfBirthEstimated =
                             Form.getFieldAsBool "isDateOfBirthEstimated" model.registrationForm
@@ -459,12 +463,10 @@ update currentDate msg model =
                                 householdSize =
                                     Form.getFieldAsString "householdSize" model.registrationForm
                                         |> getFormFieldValue
-                                        |> Just
 
                                 numberOfChildren =
                                     Form.getFieldAsString "numberOfChildren" model.registrationForm
                                         |> getFormFieldValue
-                                        |> Just
 
                                 mother =
                                     Mother name

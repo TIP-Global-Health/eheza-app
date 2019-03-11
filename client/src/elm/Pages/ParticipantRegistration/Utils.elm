@@ -9,50 +9,41 @@ import Participant.Model exposing (ParticipantId(..), ParticipantType(..))
 import Time.Date
 
 
-getFormFieldValue : Form.FieldState e String -> Int
+getFormFieldValue : Form.FieldState e String -> Maybe Int
 getFormFieldValue field =
-    unwrap
-        0
-        (\value ->
-            case String.toInt value of
-                Ok value ->
-                    value
-
-                _ ->
-                    0
-        )
-        field.value
+    Maybe.andThen (String.toInt >> Result.toMaybe) field.value
 
 
 {-| TODO: Remove this. Should explicitly choose between child and mother,
 rather than depending on age at time of data entry.
 -}
-getRegistratingParticipant : NominalDate -> Int -> Int -> Int -> Maybe ParticipantId -> Maybe ParticipantType
-getRegistratingParticipant currentDate birthDay birthMonth birthYear maybeRelationParticipant =
-    if birthDay > 0 && birthMonth > 0 && birthYear > 0 then
-        let
-            delta =
-                Time.Date.delta currentDate (Time.Date.date birthYear birthMonth birthDay)
-        in
-        maybeRelationParticipant
-            |> unwrap
-                (if delta.years > 12 then
-                    Just <| MotherParticipant delta
+getRegistratingParticipant : NominalDate -> Maybe Int -> Maybe Int -> Maybe Int -> Maybe ParticipantId -> Maybe ParticipantType
+getRegistratingParticipant currentDate maybeDay maybeMonth maybeYear maybeRelationParticipant =
+    case ( maybeDay, maybeMonth, maybeYear ) of
+        ( Just birthDay, Just birthMonth, Just birthYear ) ->
+            let
+                delta =
+                    Time.Date.delta currentDate (Time.Date.date birthYear birthMonth birthDay)
+            in
+            maybeRelationParticipant
+                |> unwrap
+                    (if delta.years > 12 then
+                        Just <| MotherParticipant delta
 
-                 else
-                    Just <| ChildParticipant delta
-                )
-                (\relationParticipant ->
-                    case relationParticipant of
-                        ParticipantMother _ ->
-                            Just <| MotherParticipant delta
+                     else
+                        Just <| ChildParticipant delta
+                    )
+                    (\relationParticipant ->
+                        case relationParticipant of
+                            ParticipantMother _ ->
+                                Just <| MotherParticipant delta
 
-                        ParticipantChild _ ->
-                            Just <| ChildParticipant delta
-                )
+                            ParticipantChild _ ->
+                                Just <| ChildParticipant delta
+                    )
 
-    else
-        Nothing
+        _ ->
+            Nothing
 
 
 {-| Given a string value, tries to decode it. Returns a Just if

@@ -518,10 +518,10 @@ viewRegistrationForm language currentDate db step registrationForm geoInfo photo
                                 options =
                                     emptyOption
                                         :: (case getFormFieldValue province of
-                                                0 ->
+                                                Nothing ->
                                                     []
 
-                                                provinceId ->
+                                                Just provinceId ->
                                                     geoInfo.districts
                                                         |> filterGeoLocationDictByParent provinceId
                                                         |> geoLocationDictToOptions
@@ -543,10 +543,10 @@ viewRegistrationForm language currentDate db step registrationForm geoInfo photo
                                 options =
                                     emptyOption
                                         :: (case getFormFieldValue district of
-                                                0 ->
+                                                Nothing ->
                                                     []
 
-                                                districtId ->
+                                                Just districtId ->
                                                     geoInfo.sectors
                                                         |> filterGeoLocationDictByParent districtId
                                                         |> geoLocationDictToOptions
@@ -568,10 +568,10 @@ viewRegistrationForm language currentDate db step registrationForm geoInfo photo
                                 options =
                                     emptyOption
                                         :: (case getFormFieldValue sector of
-                                                0 ->
+                                                Nothing ->
                                                     []
 
-                                                sectorId ->
+                                                Just sectorId ->
                                                     geoInfo.cells
                                                         |> filterGeoLocationDictByParent sectorId
                                                         |> geoLocationDictToOptions
@@ -593,10 +593,10 @@ viewRegistrationForm language currentDate db step registrationForm geoInfo photo
                                 options =
                                     emptyOption
                                         :: (case getFormFieldValue cell of
-                                                0 ->
+                                                Nothing ->
                                                     []
 
-                                                cellId ->
+                                                Just cellId ->
                                                     geoInfo.villages
                                                         |> filterGeoLocationDictByParent cellId
                                                         |> geoLocationDictToOptions
