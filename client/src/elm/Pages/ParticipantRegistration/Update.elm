@@ -512,7 +512,14 @@ update currentDate msg model =
                                             , Nothing
                                             )
                             in
-                            ( { model | dialogState = newDialogState }
+                            -- TODO: We're blanking the form on submission. It
+                            -- would be better to go into a state in which
+                            -- we're waiting to see what the result is.
+                            ( { model
+                                | dialogState = newDialogState
+                                , previousPhases = []
+                                , registrationForm = emptyRegistrationForm
+                              }
                             , Cmd.none
                             , [ App.Model.MsgIndexedDb <| Backend.Model.PostMother mother relatedChild ]
                             )

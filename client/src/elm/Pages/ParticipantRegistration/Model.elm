@@ -7,12 +7,14 @@ module Pages.ParticipantRegistration.Model exposing
     , RegistrationPhase(..)
     , RegistrationStep(..)
     , emptyModel
+    , emptyRegistrationForm
     , validateRegistrationForm
     )
 
 import Backend.Measurement.Model exposing (PhotoValue)
 import Form exposing (Form)
 import Form.Error exposing (ErrorValue(..))
+import Form.Field
 import Form.Validate exposing (Validation, andMap, andThen, bool, emptyString, field, format, mapError, oneOf, string, succeed)
 import Measurement.Model exposing (DropZoneFile)
 import Pages.Page exposing (Page)
@@ -34,7 +36,7 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { photo = Nothing
-    , registrationForm = Form.initial [] validateRegistrationForm
+    , registrationForm = emptyRegistrationForm
     , registrationPhase = ParticipantSearch Nothing
     , previousPhases = []
     , relationParticipant = Nothing
@@ -113,6 +115,18 @@ type alias RegistrationForm =
     , healthCenter : String
     , clinic : String
     }
+
+
+emptyRegistrationForm : Form () RegistrationForm
+emptyRegistrationForm =
+    -- Our `gender` field is mandatory, and we are defaulting to `male`, so
+    -- indicate that in the UI. (Perhaps the better alternative would be to
+    -- start with it blank and force data-entry. But, if we're going to default
+    -- to male, we should at least indicate that in the UI).
+    Form.initial
+        [ ( "gender", Form.Field.string "male" )
+        ]
+        validateRegistrationForm
 
 
 validateRegistrationForm : Validation () RegistrationForm
