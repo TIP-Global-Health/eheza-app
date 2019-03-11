@@ -40,7 +40,9 @@ fetch db model =
                         []
 
                     else
-                        [ FetchParticipantsByName trimmed ]
+                        [ FetchParticipantsByName trimmed
+                        , FetchHealthCenters
+                        ]
 
                 ParticipantView participantId ->
                     case participantId of
