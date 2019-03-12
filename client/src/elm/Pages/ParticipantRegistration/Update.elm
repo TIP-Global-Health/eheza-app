@@ -439,7 +439,11 @@ update currentDate msg model =
                                         _ ->
                                             Just (Registering participant)
                             in
-                            ( { model | dialogState = newDialogState }
+                            ( { model
+                                | dialogState = newDialogState
+                                , previousPhases = []
+                                , registrationForm = emptyRegistrationForm
+                              }
                             , Cmd.none
                             , [ App.Model.MsgIndexedDb <| Backend.Model.PostChild child ]
                             )
