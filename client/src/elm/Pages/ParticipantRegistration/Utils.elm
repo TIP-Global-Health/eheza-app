@@ -36,10 +36,10 @@ getRegistratingParticipant currentDate maybeDay maybeMonth maybeYear maybeRelati
                     (\relationParticipant ->
                         case relationParticipant of
                             ParticipantMother _ ->
-                                Just <| MotherParticipant delta
+                                Just <| ChildParticipant delta
 
                             ParticipantChild _ ->
-                                Just <| ChildParticipant delta
+                                Just <| MotherParticipant delta
                     )
 
         _ ->
