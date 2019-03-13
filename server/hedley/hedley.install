@@ -509,3 +509,11 @@ function hedley_update_7018() {
 function hedley_update_7019() {
   hedley_initial_sync_permissions();
 }
+
+/**
+ * Enable hedley_health_center module.
+ */
+function hedley_update_7020() {
+  $modules = ['hedley_health_center'];
+  module_enable($modules);
+}
