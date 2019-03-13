@@ -15,6 +15,7 @@ function hedley_user_user_default_permissions() {
     'name' => 'create child content',
     'roles' => array(
       'administrator' => 'administrator',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -24,6 +25,7 @@ function hedley_user_user_default_permissions() {
     'name' => 'create clinic content',
     'roles' => array(
       'administrator' => 'administrator',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -34,6 +36,7 @@ function hedley_user_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -44,6 +47,7 @@ function hedley_user_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -53,6 +57,7 @@ function hedley_user_user_default_permissions() {
     'name' => 'create mother content',
     'roles' => array(
       'administrator' => 'administrator',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -63,6 +68,7 @@ function hedley_user_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -73,6 +79,7 @@ function hedley_user_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -83,6 +90,7 @@ function hedley_user_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -92,6 +100,7 @@ function hedley_user_user_default_permissions() {
     'name' => 'create session content',
     'roles' => array(
       'administrator' => 'administrator',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -102,6 +111,7 @@ function hedley_user_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -291,6 +301,7 @@ function hedley_user_user_default_permissions() {
     'name' => 'edit any child content',
     'roles' => array(
       'administrator' => 'administrator',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -300,6 +311,7 @@ function hedley_user_user_default_permissions() {
     'name' => 'edit any clinic content',
     'roles' => array(
       'administrator' => 'administrator',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -310,6 +322,7 @@ function hedley_user_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -320,6 +333,7 @@ function hedley_user_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -329,6 +343,7 @@ function hedley_user_user_default_permissions() {
     'name' => 'edit any mother content',
     'roles' => array(
       'administrator' => 'administrator',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -339,6 +354,7 @@ function hedley_user_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -349,6 +365,7 @@ function hedley_user_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -359,6 +376,7 @@ function hedley_user_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -368,6 +386,7 @@ function hedley_user_user_default_permissions() {
     'name' => 'edit any session content',
     'roles' => array(
       'administrator' => 'administrator',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -378,6 +397,7 @@ function hedley_user_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -387,6 +407,7 @@ function hedley_user_user_default_permissions() {
     'name' => 'edit own child content',
     'roles' => array(
       'administrator' => 'administrator',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -396,6 +417,7 @@ function hedley_user_user_default_permissions() {
     'name' => 'edit own clinic content',
     'roles' => array(
       'administrator' => 'administrator',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -406,6 +428,7 @@ function hedley_user_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -416,6 +439,7 @@ function hedley_user_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -425,6 +449,7 @@ function hedley_user_user_default_permissions() {
     'name' => 'edit own mother content',
     'roles' => array(
       'administrator' => 'administrator',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -435,6 +460,7 @@ function hedley_user_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -445,6 +471,7 @@ function hedley_user_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -455,6 +482,7 @@ function hedley_user_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -464,6 +492,7 @@ function hedley_user_user_default_permissions() {
     'name' => 'edit own session content',
     'roles' => array(
       'administrator' => 'administrator',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -474,6 +503,7 @@ function hedley_user_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
