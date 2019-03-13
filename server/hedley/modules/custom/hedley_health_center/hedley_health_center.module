@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Hedley Health Center feature.
+ */
+
+include_once 'hedley_health_center.features.inc';
