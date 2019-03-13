@@ -95,7 +95,7 @@ function hedley_user_field_default_field_instances() {
     'bundle' => 'nurse',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'Code which this nurse can use to login on the frontend, whether online or offline. When creating a new nurse, you can leave this blank -- a PIN code will be randomly generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -357,6 +357,7 @@ function hedley_user_field_default_field_instances() {
   // Included for use with string extractors like potx.
   t('A code which users can provide on devices to identify themselves.');
   t('Clinics');
+  t('Code which this nurse can use to login on the frontend, whether online or offline. When creating a new nurse, you can leave this blank -- a PIN code will be randomly generated.');
   t('Email');
   t('PIN code');
   t('Phone');
