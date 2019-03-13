@@ -58,9 +58,8 @@ encodeActivityAsString activity =
                 ChildPicture ->
                     "picture"
 
-                Counseling ->
-                    "counseling"
-
+                -- Counseling ->
+                --   "counseling"
                 Height ->
                     "height"
 
@@ -78,8 +77,10 @@ encodeActivityAsString activity =
                 FamilyPlanning ->
                     "family_planning"
 
-                ParticipantConsent ->
-                    "participants_consent"
+
+
+-- ParticipantConsent ->
+-- "participants_consent"
 
 
 {-| The inverse of encodeActivityTypeAsString
@@ -90,9 +91,8 @@ decodeActivityFromString s =
         "picture" ->
             Just <| ChildActivity ChildPicture
 
-        "counseling" ->
-            Just <| ChildActivity Counseling
-
+        -- "counseling" ->
+        --  Just <| ChildActivity Counseling
         "height" ->
             Just <| ChildActivity Height
 
@@ -108,9 +108,8 @@ decodeActivityFromString s =
         "family_planning" ->
             Just <| MotherActivity FamilyPlanning
 
-        "participants_consent" ->
-            Just <| MotherActivity ParticipantConsent
-
+        -- "participants_consent" ->
+        --    Just <| MotherActivity ParticipantConsent
         _ ->
             Nothing
 
@@ -133,9 +132,8 @@ getActivityIcon activity =
                 ChildPicture ->
                     "photo"
 
-                Counseling ->
-                    "counseling"
-
+                -- Counseling ->
+                --    "counseling"
                 Height ->
                     "height"
 
@@ -153,8 +151,10 @@ getActivityIcon activity =
                 FamilyPlanning ->
                     "planning"
 
-                ParticipantConsent ->
-                    "forms"
+
+
+-- ParticipantConsent ->
+--    "forms"
 
 
 getAllActivities : List Activity
@@ -167,13 +167,14 @@ getAllActivities =
 
 getAllChildActivities : List ChildActivity
 getAllChildActivities =
-    [ Counseling, Height, Muac, NutritionSigns, Weight, ChildPicture ]
+    [ {- Counseling, -} Height, Muac, NutritionSigns, Weight, ChildPicture ]
 
 
 getAllMotherActivities : List MotherActivity
 getAllMotherActivities =
     [ FamilyPlanning
-    , ParticipantConsent
+
+    -- , ParticipantConsent
     ]
 
 
@@ -184,10 +185,10 @@ whether we would expect to perform this action if checked in.
 expectChildActivity : EditableSession -> ChildId -> ChildActivity -> Bool
 expectChildActivity session childId activity =
     case activity of
-        Counseling ->
-            Maybe.Extra.isJust <|
-                expectCounselingActivity session childId
-
+        {- Counseling ->
+           Maybe.Extra.isJust <|
+               expectCounselingActivity session childId
+        -}
         _ ->
             -- In all other cases, we expect each ativity each time.
             True
@@ -403,11 +404,11 @@ expectMotherActivity session motherId activity =
 
                             CaregiverRelation ->
                                 False
-
-                    ParticipantConsent ->
-                        expectParticipantConsent session motherId
-                            |> EveryDictList.isEmpty
-                            |> not
+             {- ParticipantConsent ->
+                expectParticipantConsent session motherId
+                    |> EveryDictList.isEmpty
+                    |> not
+             -}
             )
         |> Maybe.withDefault False
 
@@ -617,9 +618,8 @@ hasCompletedChildActivity activityType measurements =
         ChildPicture ->
             isCompleted measurements.edits.photo (Maybe.map Tuple.second measurements.current.photo)
 
-        Counseling ->
-            isCompleted measurements.edits.counseling (Maybe.map Tuple.second measurements.current.counselingSession)
-
+        -- Counseling ->
+        --    isCompleted measurements.edits.counseling (Maybe.map Tuple.second measurements.current.counselingSession)
         Height ->
             isCompleted measurements.edits.height (Maybe.map Tuple.second measurements.current.height)
 
@@ -645,18 +645,22 @@ hasCompletedMotherActivity session motherId activityType measurements =
         FamilyPlanning ->
             isCompleted measurements.edits.familyPlanning (Maybe.map Tuple.second measurements.current.familyPlanning)
 
-        ParticipantConsent ->
-            -- We only consider this activity completed if all expected
-            -- consents have been saved.
-            let
-                current =
-                    mapMeasurementData .consent .consent measurements
-                        |> currentValues
-                        |> List.map (Tuple.second >> .value >> .formId)
-                        |> EverySet.fromList
-            in
-            expectParticipantConsent session motherId
-                |> EveryDictList.all (\id _ -> EverySet.member id current)
+
+
+{-
+   ParticipantConsent ->
+       -- We only consider this activity completed if all expected
+       -- consents have been saved.
+       let
+           current =
+               mapMeasurementData .consent .consent measurements
+                   |> currentValues
+                   |> List.map (Tuple.second >> .value >> .formId)
+                   |> EverySet.fromList
+       in
+       expectParticipantConsent session motherId
+           |> EveryDictList.all (\id _ -> EverySet.member id current)
+-}
 
 
 motherHasCompletedActivity : MotherId -> MotherActivity -> EditableSession -> Bool
