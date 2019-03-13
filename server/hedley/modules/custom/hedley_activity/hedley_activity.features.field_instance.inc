@@ -239,7 +239,7 @@ function hedley_activity_field_default_field_instances() {
     'bundle' => 'attendance',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -504,7 +504,7 @@ function hedley_activity_field_default_field_instances() {
     'bundle' => 'family_planning',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -776,7 +776,7 @@ function hedley_activity_field_default_field_instances() {
     'bundle' => 'height',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -795,12 +795,13 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_uuid',
     'label' => 'UUID',
-    'required' => FALSE,
+    'required' => 0,
     'settings' => array(
       'text_processing' => 0,
       'user_register_form' => FALSE,
     ),
     'widget' => array(
+      'active' => 1,
       'module' => 'text',
       'settings' => array(
         'size' => 60,
@@ -1093,7 +1094,7 @@ function hedley_activity_field_default_field_instances() {
     'bundle' => 'muac',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -1356,7 +1357,7 @@ function hedley_activity_field_default_field_instances() {
     'bundle' => 'nutrition',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -1633,7 +1634,7 @@ function hedley_activity_field_default_field_instances() {
     'bundle' => 'photo',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -1905,7 +1906,7 @@ function hedley_activity_field_default_field_instances() {
     'bundle' => 'weight',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -2145,6 +2146,7 @@ function hedley_activity_field_default_field_instances() {
   t('UUID');
   t('Weight');
   t('When was this measurement actually made (as opposed to scheduled, or entered)?');
+  t('You can leave the UUID blank -- it will be automatically generated.');
   t('ZScore Age');
   t('ZScore BMI');
   t('ZScore Length');

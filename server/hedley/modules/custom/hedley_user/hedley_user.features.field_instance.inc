@@ -172,7 +172,7 @@ function hedley_user_field_default_field_instances() {
     'bundle' => 'nurse',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -366,6 +366,7 @@ function hedley_user_field_default_field_instances() {
   t('UUID');
   t('Which clinics is this user allowed to participate in?');
   t('Which clinics is this user authorized to work with?');
+  t('You can leave the UUID blank -- it will be automatically generated.');
 
   return $field_instances;
 }
