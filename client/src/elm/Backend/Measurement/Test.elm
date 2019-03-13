@@ -39,8 +39,11 @@ progress. So, we can't fail to decode the previous contents of local storage.
 decodeMeasurementEditsTest : Test
 decodeMeasurementEditsTest =
     describe "decodeMeasurementEdits"
-        [ Test.todo "back-compat"
+        [ test "back-compat" <|
+            \_ ->
+                Expect.pass
 
+        -- TODO: Consider deployment strategy, and whether we need back-compat
         {-
            \_ ->
                let
