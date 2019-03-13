@@ -24,8 +24,7 @@ type Activity
 
 
 type ChildActivity
-    = ChildPicture
-    | Counseling
+    = ChildPicture --| Counseling
     | Height
     | Muac
     | NutritionSigns
@@ -38,8 +37,7 @@ of the mother activities, rather than an entirely different type. Also, we
 show mothers and caregivers in very similar ways in the UI.
 -}
 type MotherActivity
-    = FamilyPlanning
-    | ParticipantConsent
+    = FamilyPlanning --| ParticipantConsent
 
 
 {-| This is basically a tuple, but it's nice to have meaningful names for the
