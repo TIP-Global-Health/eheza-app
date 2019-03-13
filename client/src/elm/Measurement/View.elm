@@ -54,9 +54,8 @@ viewChild language currentDate child activity measurements zscores session model
         NutritionSigns ->
             viewNutritionSigns language (mapMeasurementData .nutrition measurements) model.nutritionSigns
 
-        Counseling ->
-            viewCounselingSession language (mapMeasurementData .counselingSession measurements) session model.counseling
-
+        -- Counseling ->
+        --    viewCounselingSession language (mapMeasurementData .counselingSession measurements) session model.counseling
         Weight ->
             viewWeight language currentDate child (mapMeasurementData .weight measurements) zscores model
 
@@ -613,69 +612,72 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
         ]
 
 
-viewCounselingSession : Language -> MeasurementData (Maybe ( CounselingSessionId, CounselingSession )) -> EditableSession -> Maybe ( CounselingTiming, EverySet CounselingTopicId ) -> Html MsgChild
-viewCounselingSession language measurement session value =
-    let
-        existingId =
-            Maybe.map Tuple.first measurement.current
-    in
-    case value of
-        Nothing ->
-            emptyNode
 
-        Just ( timing, topics ) ->
-            let
-                activity =
-                    ChildActivity Counseling
+{-
+   viewCounselingSession : Language -> MeasurementData (Maybe ( CounselingSessionId, CounselingSession )) -> EditableSession -> Maybe ( CounselingTiming, EverySet CounselingTopicId ) -> Html MsgChild
+   viewCounselingSession language measurement session value =
+       let
+           existingId =
+               Maybe.map Tuple.first measurement.current
+       in
+       case value of
+           Nothing ->
+               emptyNode
 
-                allTopicsChecked =
-                    EveryDictList.all
-                        (\id _ -> EverySet.member id topics)
-                        expected
+           Just ( timing, topics ) ->
+               let
+                   activity =
+                       ChildActivity Counseling
 
-                completed =
-                    isJust measurement.current
+                   allTopicsChecked =
+                       EveryDictList.all
+                           (\id _ -> EverySet.member id topics)
+                           expected
 
-                -- For counseling sessions, we don't allow saves unless all the
-                -- topics are checked. Also, we don't allow an update if the
-                -- activity has been completed. That is, once the nurse says the
-                -- counseling session is done, the nurse cannot correct that.
-                saveMsg =
-                    if allTopicsChecked && not completed then
-                        SaveCounselingSession existingId timing topics
-                            |> SendOutMsgChild
-                            |> Just
+                   completed =
+                       isJust measurement.current
 
-                    else
-                        Nothing
+                   -- For counseling sessions, we don't allow saves unless all the
+                   -- topics are checked. Also, we don't allow an update if the
+                   -- activity has been completed. That is, once the nurse says the
+                   -- counseling session is done, the nurse cannot correct that.
+                   saveMsg =
+                       if allTopicsChecked && not completed then
+                           SaveCounselingSession existingId timing topics
+                               |> SendOutMsgChild
+                               |> Just
 
-                expected =
-                    session.offlineSession.everyCounselingSchedule
-                        |> EveryDict.get timing
-                        |> Maybe.withDefault EveryDictList.empty
-            in
-            div
-                [ class "ui full segment counseling"
-                , id "counselingSessionEntryForm"
-                ]
-                [ div [ class "content" ]
-                    [ h3 [ class "ui header" ]
-                        [ text <| translate language (Trans.ActivitiesTitle activity)
-                        ]
-                    , h3 [ class "ui header" ]
-                        [ text <| translate language (Trans.CounselingTimingHeading timing)
-                        ]
-                    , div [ class "ui form" ] <|
-                        p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
-                            :: viewCounselingTopics language completed expected topics
-                    ]
-                , div [ class "actions" ] <|
-                    saveButton
-                        language
-                        saveMsg
-                        measurement
-                        Nothing
-                ]
+                       else
+                           Nothing
+
+                   expected =
+                       session.offlineSession.everyCounselingSchedule
+                           |> EveryDict.get timing
+                           |> Maybe.withDefault EveryDictList.empty
+               in
+               div
+                   [ class "ui full segment counseling"
+                   , id "counselingSessionEntryForm"
+                   ]
+                   [ div [ class "content" ]
+                       [ h3 [ class "ui header" ]
+                           [ text <| translate language (Trans.ActivitiesTitle activity)
+                           ]
+                       , h3 [ class "ui header" ]
+                           [ text <| translate language (Trans.CounselingTimingHeading timing)
+                           ]
+                       , div [ class "ui form" ] <|
+                           p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
+                               :: viewCounselingTopics language completed expected topics
+                       ]
+                   , div [ class "actions" ] <|
+                       saveButton
+                           language
+                           saveMsg
+                           measurement
+                           Nothing
+                   ]
+-}
 
 
 viewCounselingTopics : Language -> Bool -> EveryDictList CounselingTopicId CounselingTopic -> EverySet CounselingTopicId -> List (Html MsgChild)
@@ -723,243 +725,245 @@ viewMother language activity measurements model =
         FamilyPlanning ->
             viewFamilyPlanning language (mapMeasurementData .familyPlanning measurements) model.familyPlanningSigns
 
-        ParticipantConsent ->
-            viewParticipantConsent language (mapMeasurementData .consent measurements) model.participantConsent
 
 
-viewParticipantConsent : Language -> MeasurementData (EveryDictList ParticipantConsentId ParticipantConsent) -> ParticipantFormUI -> Html MsgMother
-viewParticipantConsent language measurement ui =
-    let
-        activity =
-            MotherActivity ParticipantConsent
+-- ParticipantConsent ->
+--    viewParticipantConsent language (mapMeasurementData .consent measurements) model.participantConsent
+{-
+   viewParticipantConsent : Language -> MeasurementData (EveryDictList ParticipantConsentId ParticipantConsent) -> ParticipantFormUI -> Html MsgMother
+   viewParticipantConsent language measurement ui =
+       let
+           activity =
+               MotherActivity ParticipantConsent
 
-        viewParticipantForm formId form =
-            let
-                completed =
-                    EverySet.member formId completedFormIds
+           viewParticipantForm formId form =
+               let
+                   completed =
+                       EverySet.member formId completedFormIds
 
-                iconVisibility =
-                    if completed then
-                        "visible"
+                   iconVisibility =
+                       if completed then
+                           "visible"
 
-                    else
-                        "hidden"
-            in
-            div
-                [ class "item"
-                , onClick <| ViewParticipantForm <| Just formId
-                ]
-                [ div
-                    [ class "ui image icon-item icon-item-forms"
-                    , style [ ( "height", "140px" ), ( "width", "140px" ) ]
-                    ]
-                    []
-                , div
-                    [ class "middle aligned content" ]
-                    [ div
-                        [ style [ ( "float", "right" ) ] ]
-                        [ i
-                            [ class "icon check circle outline green large"
-                            , style [ ( "visibility", iconVisibility ) ]
+                       else
+                           "hidden"
+               in
+               div
+                   [ class "item"
+                   , onClick <| ViewParticipantForm <| Just formId
+                   ]
+                   [ div
+                       [ class "ui image icon-item icon-item-forms"
+                       , style [ ( "height", "140px" ), ( "width", "140px" ) ]
+                       ]
+                       []
+                   , div
+                       [ class "middle aligned content" ]
+                       [ div
+                           [ style [ ( "float", "right" ) ] ]
+                           [ i
+                               [ class "icon check circle outline green large"
+                               , style [ ( "visibility", iconVisibility ) ]
+                               ]
+                               []
+                           ]
+                       , div
+                           [ class "consent-form-list" ]
+                           [ text <| selectLanguage language form.title ]
+                       ]
+                   ]
+
+           viewFormList expected =
+               let
+                   completedLast =
+                       expected
+                           |> EveryDictList.partition (\id _ -> EverySet.member id completedFormIds)
+                           |> (\( completed, todo ) -> EveryDictList.union todo completed)
+               in
+               div
+                   [ class "ui full segment participant-consent"
+                   , id "participantConsentForm"
+                   ]
+                   [ div [ class "content" ]
+                       [ h3
+                           [ class "ui header" ]
+                           [ text <| translate language (Trans.ActivitiesTitle activity)
+                           ]
+                       , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+                       , completedLast
+                           |> EveryDictList.map viewParticipantForm
+                           |> EveryDictList.values
+                           |> div [ class "ui items" ]
+                       ]
+                   ]
+
+           completedFormIds =
+               currentValues measurement
+                   |> List.map (Tuple.second >> .value >> .formId)
+                   |> EverySet.fromList
+
+           viewForm formId expected =
+               let
+                   backIcon =
+                       a
+                           [ class "icon-back"
+                           , onClick <| ViewParticipantForm Nothing
+                           ]
+                           []
+
+                   completed =
+                       EverySet.member formId completedFormIds
+
+                   form =
+                       EveryDictList.get formId expected
+
+                   progress =
+                       EveryDict.get formId ui.progress
+                           |> Maybe.withDefault emptyParticipantFormProgress
+
+                   progressCompleted =
+                       progress.participantSigned && progress.counselorSigned
+
+                   titleText =
+                       Maybe.map (selectLanguage language << .title) form
+                           |> Maybe.withDefault ""
+
+                   title =
+                       h1
+                           [ class "ui report header"
+                           , style
+                               [ ( "padding-left", "60px" )
+                               , ( "padding-right", "60px" )
+                               ]
+                           ]
+                           [ text titleText ]
+
+                   body =
+                       Maybe.map (toVirtualDom << .parsed << selectLanguage language << .body) form
+                           |> Maybe.withDefault []
+                           |> div []
+
+                   counselorReviewed =
+                       div [ class "ui checkbox activity" ]
+                           [ input
+                               [ type_ "checkbox"
+                               , id "counselor-reviewed"
+                               , name "counselor-reviewed"
+                               , onClick <| SetCounselorSigned formId (not progress.counselorSigned)
+                               , checked progress.counselorSigned
+                               , classList [ ( "checked", progress.counselorSigned ) ]
+                               , disabled completed
+                               ]
+                               []
+                           , label
+                               [ for "counselor-reviewed" ]
+                               [ text <| translate language Trans.CounselorReviewed ]
+                           ]
+
+                   participantReviewed =
+                       div [ class "ui checkbox activity" ]
+                           [ input
+                               [ type_ "checkbox"
+                               , id "participant-reviewed"
+                               , name "participant-reviewed"
+                               , onClick <| SetParticipantSigned formId (not progress.participantSigned)
+                               , checked progress.participantSigned
+                               , classList [ ( "checked", progress.participantSigned ) ]
+                               , disabled completed
+                               ]
+                               []
+                           , label
+                               [ for "participant-reviewed" ]
+                               [ text <| translate language Trans.ParticipantReviewed ]
+                           ]
+
+                   msg =
+                       if completed || not progressCompleted then
+                           Nothing
+
+                       else
+                           -- If the form has already been consented to (i.e.
+                           -- completed), we don't allow any edits. So, if we get
+                           -- here, we don't have a current ParticipantConsentId
+                           -- to supply -- it's always new.
+                           SaveCompletedForm Nothing formId language
+                               |> SendOutMsgMother
+                               |> Just
+
+                   isLoading =
+                       measurement.update == Loading
+
+                   isFailure =
+                       RemoteData.isFailure measurement.update
+
+                   ( updateText, errorText ) =
+                       if EverySet.member formId completedFormIds then
+                           ( Trans.Update, Trans.UpdateError )
+
+                       else
+                           ( Trans.Save, Trans.SaveError )
+
+                   saveAttr =
+                       if isLoading then
+                           []
+
+                       else
+                           Maybe.map onClick msg
+                               |> Maybe.Extra.toList
+
+                   saveButton =
+                       [ button
+                           ([ classList
+                               [ ( "ui fluid primary button", True )
+                               , ( "loading", isLoading )
+                               , ( "negative", isFailure )
+                               , ( "disabled", Maybe.Extra.isNothing msg )
+                               ]
+                            , id "save-form"
                             ]
-                            []
-                        ]
-                    , div
-                        [ class "consent-form-list" ]
-                        [ text <| selectLanguage language form.title ]
-                    ]
-                ]
+                               ++ saveAttr
+                           )
+                           [ text <| translate language updateText
+                           ]
+                       , [ text <| translate language errorText ]
+                           |> div []
+                           |> showIf isFailure
+                       ]
+               in
+               viewModal <|
+                   Just <|
+                       divKeyed
+                           [ class "page-form" ]
+                           [ div
+                               [ class "wrap-form"
+                               ]
+                               [ div
+                                   [ class "form-title" ]
+                                   [ backIcon
+                                   , title
+                                   ]
+                               , div
+                                   [ class "form-body" ]
+                                   [ body
+                                   , hr [] []
+                                   , h2 [] [ text <| translate language Trans.ParticipantSignature ]
+                                   , participantReviewed
+                                   , h2 [] [ text <| translate language Trans.CounselorSignature ]
+                                   , counselorReviewed
+                                   ]
+                               , div [ class "actions" ] saveButton
+                               ]
+                               -- Use keys to force the browser to re-scroll when we switch forms.
+                               |> keyed ("consent-form-" ++ fromEntityUuid formId)
+                           ]
+       in
+       case ui.view of
+           Nothing ->
+               viewFormList ui.expected
 
-        viewFormList expected =
-            let
-                completedLast =
-                    expected
-                        |> EveryDictList.partition (\id _ -> EverySet.member id completedFormIds)
-                        |> (\( completed, todo ) -> EveryDictList.union todo completed)
-            in
-            div
-                [ class "ui full segment participant-consent"
-                , id "participantConsentForm"
-                ]
-                [ div [ class "content" ]
-                    [ h3
-                        [ class "ui header" ]
-                        [ text <| translate language (Trans.ActivitiesTitle activity)
-                        ]
-                    , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
-                    , completedLast
-                        |> EveryDictList.map viewParticipantForm
-                        |> EveryDictList.values
-                        |> div [ class "ui items" ]
-                    ]
-                ]
-
-        completedFormIds =
-            currentValues measurement
-                |> List.map (Tuple.second >> .value >> .formId)
-                |> EverySet.fromList
-
-        viewForm formId expected =
-            let
-                backIcon =
-                    a
-                        [ class "icon-back"
-                        , onClick <| ViewParticipantForm Nothing
-                        ]
-                        []
-
-                completed =
-                    EverySet.member formId completedFormIds
-
-                form =
-                    EveryDictList.get formId expected
-
-                progress =
-                    EveryDict.get formId ui.progress
-                        |> Maybe.withDefault emptyParticipantFormProgress
-
-                progressCompleted =
-                    progress.participantSigned && progress.counselorSigned
-
-                titleText =
-                    Maybe.map (selectLanguage language << .title) form
-                        |> Maybe.withDefault ""
-
-                title =
-                    h1
-                        [ class "ui report header"
-                        , style
-                            [ ( "padding-left", "60px" )
-                            , ( "padding-right", "60px" )
-                            ]
-                        ]
-                        [ text titleText ]
-
-                body =
-                    Maybe.map (toVirtualDom << .parsed << selectLanguage language << .body) form
-                        |> Maybe.withDefault []
-                        |> div []
-
-                counselorReviewed =
-                    div [ class "ui checkbox activity" ]
-                        [ input
-                            [ type_ "checkbox"
-                            , id "counselor-reviewed"
-                            , name "counselor-reviewed"
-                            , onClick <| SetCounselorSigned formId (not progress.counselorSigned)
-                            , checked progress.counselorSigned
-                            , classList [ ( "checked", progress.counselorSigned ) ]
-                            , disabled completed
-                            ]
-                            []
-                        , label
-                            [ for "counselor-reviewed" ]
-                            [ text <| translate language Trans.CounselorReviewed ]
-                        ]
-
-                participantReviewed =
-                    div [ class "ui checkbox activity" ]
-                        [ input
-                            [ type_ "checkbox"
-                            , id "participant-reviewed"
-                            , name "participant-reviewed"
-                            , onClick <| SetParticipantSigned formId (not progress.participantSigned)
-                            , checked progress.participantSigned
-                            , classList [ ( "checked", progress.participantSigned ) ]
-                            , disabled completed
-                            ]
-                            []
-                        , label
-                            [ for "participant-reviewed" ]
-                            [ text <| translate language Trans.ParticipantReviewed ]
-                        ]
-
-                msg =
-                    if completed || not progressCompleted then
-                        Nothing
-
-                    else
-                        -- If the form has already been consented to (i.e.
-                        -- completed), we don't allow any edits. So, if we get
-                        -- here, we don't have a current ParticipantConsentId
-                        -- to supply -- it's always new.
-                        SaveCompletedForm Nothing formId language
-                            |> SendOutMsgMother
-                            |> Just
-
-                isLoading =
-                    measurement.update == Loading
-
-                isFailure =
-                    RemoteData.isFailure measurement.update
-
-                ( updateText, errorText ) =
-                    if EverySet.member formId completedFormIds then
-                        ( Trans.Update, Trans.UpdateError )
-
-                    else
-                        ( Trans.Save, Trans.SaveError )
-
-                saveAttr =
-                    if isLoading then
-                        []
-
-                    else
-                        Maybe.map onClick msg
-                            |> Maybe.Extra.toList
-
-                saveButton =
-                    [ button
-                        ([ classList
-                            [ ( "ui fluid primary button", True )
-                            , ( "loading", isLoading )
-                            , ( "negative", isFailure )
-                            , ( "disabled", Maybe.Extra.isNothing msg )
-                            ]
-                         , id "save-form"
-                         ]
-                            ++ saveAttr
-                        )
-                        [ text <| translate language updateText
-                        ]
-                    , [ text <| translate language errorText ]
-                        |> div []
-                        |> showIf isFailure
-                    ]
-            in
-            viewModal <|
-                Just <|
-                    divKeyed
-                        [ class "page-form" ]
-                        [ div
-                            [ class "wrap-form"
-                            ]
-                            [ div
-                                [ class "form-title" ]
-                                [ backIcon
-                                , title
-                                ]
-                            , div
-                                [ class "form-body" ]
-                                [ body
-                                , hr [] []
-                                , h2 [] [ text <| translate language Trans.ParticipantSignature ]
-                                , participantReviewed
-                                , h2 [] [ text <| translate language Trans.CounselorSignature ]
-                                , counselorReviewed
-                                ]
-                            , div [ class "actions" ] saveButton
-                            ]
-                            -- Use keys to force the browser to re-scroll when we switch forms.
-                            |> keyed ("consent-form-" ++ fromEntityUuid formId)
-                        ]
-    in
-    case ui.view of
-        Nothing ->
-            viewFormList ui.expected
-
-        Just formId ->
-            viewForm formId ui.expected
+           Just formId ->
+               viewForm formId ui.expected
+-}
 
 
 viewFamilyPlanning : Language -> MeasurementData (Maybe ( FamilyPlanningId, FamilyPlanning )) -> EverySet FamilyPlanningSign -> Html MsgMother
