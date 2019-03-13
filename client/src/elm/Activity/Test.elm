@@ -189,8 +189,8 @@ makeChildMeasurementList test =
                 |> EveryDictList.fromList
 
         makeCounselingSessionWithId ( daysOld, timing ) =
-            ( toEntityUuid "1"
-              -- the id doesn't matter
+            -- We need a locally unique ID, but it doesn't need to be real.
+            ( toEntityUuid (toString ( daysOld, timing ))
             , makeCounselingSession (addDays (daysOld - test.daysOld) sessionDate) timing
             )
     in
