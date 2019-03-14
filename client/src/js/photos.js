@@ -12,22 +12,10 @@
 // simplify some of the nested promises below in that case, I believe.
 
 (function () {
-    var cacheName = "photos";
-
-    // So, we're matching all Drupally-provided files here. In theory, this is
-    // a bit over-broad, since we could limit it to our actual backend. But, we
-    // don't actually know that here, and it probably won't cause any trouble --
-    // if it's not in the cache, we'll just try to fetch it.
-    var matchUrl = /\/sites\/default\/files\//;
-
-    var uploadCache = "photos-upload";
-    var uploadUrl = /\/cache-upload\/images/;
-    var backendUploadUrl = /\/backend-upload\/images/;
-
     self.addEventListener('fetch', function (event) {
         // Handle avatars and photos we've cached from the backend.
-        if ((event.request.method === 'GET') && matchUrl.test(event.request.url)) {
-            var response = caches.open(cacheName).then(function (cache) {
+        if ((event.request.method === 'GET') && photosDownloadUrlRegex.test(event.request.url)) {
+            var response = caches.open(photosDownloadCache).then(function (cache) {
                 return cache.match(event.request.url).then(function(response) {
                     if (response) {
                         return response;
@@ -49,8 +37,8 @@
 
         // Handle GET for images which we've uploaded to the cache, but which
         // have not yet reached the backend.
-        if ((event.request.method === 'GET') && uploadUrl.test(event.request.url)) {
-            var response = caches.open(uploadCache).then(function (cache) {
+        if ((event.request.method === 'GET') && photosUploadUrlRegex.test(event.request.url)) {
+            var response = caches.open(photosUploadCache).then(function (cache) {
                 return cache.match(event.request.url).then(function(response) {
                     if (response) {
                         return response;
@@ -83,8 +71,8 @@
         //
         // Given that, we'll upload to the backend as Dropzone would have, and
         // then pass through whatever result the backend provides.
-        if ((event.request.method === 'POST') && backendUploadUrl.test(event.request.url)) {
-            var response = caches.open(uploadCache).then(function (cache) {
+        if ((event.request.method === 'POST') && backendUploadUrlRegex.test(event.request.url)) {
+            var response = caches.open(photosUploadCache).then(function (cache) {
                 return event.request.json().then (function (json) {
                     return cache.match(json.cachedUrl).then(function(cachedResponse) {
                         if (cachedResponse) {
@@ -120,8 +108,8 @@
         }
 
         // Handle the POST requests from Dropzone, uploading the image to our cache
-        if ((event.request.method === 'POST') && uploadUrl.test(event.request.url)) {
-            var response = caches.open(uploadCache).then (function (cache) {
+        if ((event.request.method === 'POST') && photosUploadUrlRegex.test(event.request.url)) {
+            var response = caches.open(photosUploadCache).then (function (cache) {
                 return cache.keys().then(function (keys) {
                     // We'll generate a unique URL here, to simulate what happens
                     // on a POST
