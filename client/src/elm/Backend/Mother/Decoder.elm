@@ -11,14 +11,7 @@ decodeMother : Decoder Mother
 decodeMother =
     decode Mother
         |> required "label" string
-        -- We accommodate the JSON from the server or from the cache
-        |> custom
-            (oneOf
-                [ map Just <| at [ "avatar", "styles", "patient-photo" ] string
-                , map Just <| field "avatar" string
-                , succeed Nothing
-                ]
-            )
+        |> optional "avatar" (nullable string) Nothing
         |> optional "date_birth" (nullable decodeYYYYMMDD) Nothing
         |> optional "relation" decodeChildrenRelation MotherRelation
         |> optional "ubudehe" (nullable decodeUbudehe) Nothing
