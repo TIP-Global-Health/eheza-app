@@ -354,11 +354,11 @@ viewMuacIndication language muac =
 
 {-| Show a photo thumbnail.
 -}
-viewPhotoThumb : PhotoValue -> Html any
-viewPhotoThumb photo =
+viewPhotoThumb : PhotoUrl -> Html any
+viewPhotoThumb (PhotoUrl url) =
     div []
         [ img
-            [ src photo.url
+            [ src url
             , class "ui small image"
             ]
             []
@@ -416,7 +416,7 @@ viewFloatDiff config language previousValue currentValue =
         viewMessage False
 
 
-viewPhoto : Language -> MeasurementData (Maybe ( PhotoId, Photo )) -> Maybe PhotoValue -> Html MsgChild
+viewPhoto : Language -> MeasurementData (Maybe ( PhotoId, Photo )) -> Maybe PhotoUrl -> Html MsgChild
 viewPhoto language measurement photo =
     let
         activity =

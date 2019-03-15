@@ -440,28 +440,30 @@
         node.timestamp = parseInt(node.timestamp);
         node.status = parseInt(node.status);
 
-        return checkAvatar(table, node);
+        return checkImageField(table, node, 'avatar').then(function (checked) {
+            return checkImageField(table, node, 'photo');
+        });
     }
 
-    function checkAvatar (table, node) {
-        if (node.hasOwnProperty('avatar')) {
+    function checkImageField (table, node, field) {
+        if (node.hasOwnProperty(field)) {
             // First, we want to normalize the property ... we're only
             // recording the URL for one style.
-            if (node.avatar) {
-                node.avatar = node.avatar.styles['patient-photo'];
+            if (node[field]) {
+                node[field] = node[field].styles['patient-photo'];
             }
 
             // Then, we need to see whether it has changed.
             return table.get(node.uuid).then(function (existing) {
                 if (existing) {
                     // There is an existing node, so check for a change.
-                    if (node.avatar) {
+                    if (node[field]) {
                         // If we now have an avatar, we'll always check to
                         // see that we have cached it.
-                        return cachePhotoUrl(node.avatar).then(function () {
+                        return cachePhotoUrl(node[field]).then(function () {
                             // Then, we check whether to delete the old one.
-                            if (existing.avatar && node.avatar !== existing.avatar) {
-                                return deleteCachedPhotoUrl(existing.avatar).then(function () {
+                            if (existing[field] && node[field] !== existing[field]) {
+                                return deleteCachedPhotoUrl(existing[field]).then(function () {
                                     return Promise.resolve(node);
                                 });
                             } else {
@@ -471,8 +473,8 @@
                     } else {
                         // If we don't now have an avatar, the only question
                         // is whether to delete the old one.
-                        if (existing.avatar) {
-                            return deleteCachedPhotoUrl(existing.avatar).then(function () {
+                        if (existing[field]) {
+                            return deleteCachedPhotoUrl(existing[field]).then(function () {
                                 return Promise.resolve(node);
                             });
                         } else {
@@ -482,8 +484,8 @@
                 } else {
                     // There is no existing node, so just fetch the avatar if
                     // specified.
-                    if (node.avatar) {
-                        return cachePhotoUrl(node.avatar).then(function () {
+                    if (node[field]) {
+                        return cachePhotoUrl(node[field]).then(function () {
                             return Promise.resolve(node);
                         });
                     } else {
@@ -512,7 +514,11 @@
 
     function deleteCachedPhotoUrl (url) {
         return caches.open(photosDownloadCache).then(function (cache) {
-            return cache.delete(url);
+            return cache.delete(url).then(function () {
+                return caches.open(photosUploadCache).then(function (uploadCache) {
+                    return uploadCache.delete(url);
+                });
+            });
         });
     }
 

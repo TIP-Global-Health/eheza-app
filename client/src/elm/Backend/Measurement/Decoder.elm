@@ -145,18 +145,10 @@ decodeChildMeasurementList =
         |> optional "counseling_session" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeCounselingSession)) EveryDictList.empty
 
 
-{-| The `oneOf` provides some back-compat for locally stored values.
--}
 decodePhoto : Decoder Photo
 decodePhoto =
-    decode PhotoValue
-        |> custom
-            (oneOf
-                [ at [ "photo", "styles", "patient-photo" ] string
-                , at [ "photo", "styles", "thumbnail" ] string
-                ]
-            )
-        |> optionalAt [ "photo", "id" ] (map Just decodeInt) Nothing
+    field "photo" string
+        |> map PhotoUrl
         |> decodeChildMeasurement
 
 

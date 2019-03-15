@@ -188,7 +188,7 @@ update nurseId sessionId currentDate msg model =
                                         |> toCmd (RemoteData.fromResult >> HandleSavePhoto childId)
 
                                 Just id ->
-                                    encodePhotoValue photo
+                                    encodePhotoUrl photo
                                         |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
                                         |> object
                                         |> sw.patchAny photoEndpoint id
