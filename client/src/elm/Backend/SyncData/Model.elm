@@ -54,3 +54,4 @@ type SyncError
     | NoCredentials
     | BadResponse Int String
     | BadJson
+    | ImageNotFound String

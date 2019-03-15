@@ -79,7 +79,20 @@ updateChild msg model =
             )
 
         SendOutMsgChild outMsg ->
-            ( model
+            let
+                newModel =
+                    case outMsg of
+                        SavePhoto id photo ->
+                            -- When we save a photo, we blank our local record
+                            -- of the unsaved photo URL. We're saving the photo
+                            -- locally, and when we succeed, we'll see it in
+                            -- the view at the URL it gets.
+                            { model | photo = Nothing }
+
+                        _ ->
+                            model
+            in
+            ( newModel
             , Cmd.none
             , Just outMsg
             )
@@ -241,34 +254,3 @@ selectNextForm measurements formId model =
                         { consent | view = remaining }
                 }
            )
-
-
-{-| Send new photo of a child to the backend.
--}
-postPhoto : BackendUrl -> String -> ChildId -> ModelChild -> ( ModelChild, Cmd MsgChild )
-postPhoto backendUrl accessToken childId model =
-    -- TODO: Re-implement
-    ( model, Cmd.none )
-
-
-
-{-
-   case model.photo of
-       ( Nothing, _ ) ->
-           -- This shouldn't happen, but in case we don't have a file ID, we won't issue
-           -- a POST request.
-           ( model, Cmd.none )
-
-       ( Just fileId, _ ) ->
-           let
-               command =
-                   HttpBuilder.post (backendUrl ++ "/api/photos")
-                       |> withQueryParams [ ( "access_token", accessToken ) ]
-                       -- TODO: Fix up types to avoid `toEntityUuid`
-                       |> withJsonBody (encodePhoto (toEntityUuid childId) fileId)
-                       |> sendWithHandler decodePhotoFromResponse HandlePhotoSave
-           in
-               ( { model | status = Loading }
-               , command
-               )
--}

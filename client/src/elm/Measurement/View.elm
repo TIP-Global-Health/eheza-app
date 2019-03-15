@@ -424,6 +424,18 @@ viewPhoto language measurement photo =
 
         photoId =
             Maybe.map Tuple.first measurement.current
+
+        -- If we have a photo that we've just taken, but not saved, that is in
+        -- `photo`. We show that if we have it. Otherwise, we'll show the saved
+        -- measurement, if we have that.
+        displayPhoto =
+            case photo of
+                Just url ->
+                    Just url
+
+                Nothing ->
+                    Maybe.map (Tuple.second >> .value)
+                        measurement.current
     in
     divKeyed
         [ class "ui full segment photo" ]
@@ -437,7 +449,7 @@ viewPhoto language measurement photo =
                 |> keyed "help"
             , keyedDivKeyed "grid"
                 [ class "ui grid" ]
-                [ Maybe.map viewPhotoThumb photo
+                [ Maybe.map viewPhotoThumb displayPhoto
                     |> showMaybe
                     |> List.singleton
                     |> div [ class "eight wide column" ]
