@@ -5,7 +5,7 @@ module Pages.PatientRegistration.View exposing (view)
 
 import Backend.Child.Encoder exposing (encodeModeOfDelivery)
 import Backend.Child.Model exposing (Gender(..), ModeOfDelivery(..), allModesOfDelivery)
-import Backend.Measurement.Model exposing (PhotoValue)
+import Backend.Measurement.Model exposing (PhotoUrl(..))
 import Backend.Model exposing (ModelBackend, MsgBackend(..))
 import Backend.Mother.Encoder exposing (encodeHivStatus, encodeUbudehe)
 import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), Ubudehe(..), allEducationLevels, allHivStatuses, allMaritalStatuses, allUbudehes)
@@ -823,7 +823,7 @@ viewSelectInput language labelId options field width inputClass isRequired =
         ]
 
 
-viewPhoto : Language -> Maybe PhotoValue -> Html Msg
+viewPhoto : Language -> Maybe PhotoUrl -> Html Msg
 viewPhoto language photo =
     div
         [ class "ui grid photo" ]
@@ -852,11 +852,11 @@ viewPhoto language photo =
         ]
 
 
-viewPhotoThumb : PhotoValue -> Html any
-viewPhotoThumb photo =
+viewPhotoThumb : PhotoUrl -> Html any
+viewPhotoThumb (PhotoUrl url) =
     div []
         [ img
-            [ src photo.url
+            [ src url
             , class "ui small image"
             ]
             []

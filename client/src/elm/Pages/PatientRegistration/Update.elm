@@ -1,6 +1,7 @@
 module Pages.PatientRegistration.Update exposing (update)
 
 import App.Model
+import Backend.Measurement.Model exposing (PhotoUrl(..))
 import Form
 import Form.Field exposing (FieldValue(..))
 import Gizra.NominalDate exposing (NominalDate)
@@ -13,16 +14,7 @@ update : NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate msg model =
     case msg of
         DropZoneComplete result ->
-            -- The `fid` being Nothing signifies that we haven't uploaded this to
-            -- the backend yet, so we don't know what file ID the backend will
-            -- ultimately give it.
-            ( { model
-                | photo =
-                    Just
-                        { url = result.url
-                        , fid = Nothing
-                        }
-              }
+            ( { model | photo = Just (PhotoUrl result.url) }
             , Cmd.none
             , []
             )

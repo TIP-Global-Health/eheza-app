@@ -10,7 +10,7 @@ module Pages.PatientRegistration.Model exposing
     )
 
 import Backend.Entities exposing (GeoLocationId, GeoLocationIdType(..))
-import Backend.Measurement.Model exposing (PhotoValue)
+import Backend.Measurement.Model exposing (PhotoUrl)
 import EveryDict exposing (EveryDict)
 import Form exposing (Form)
 import Form.Error exposing (ErrorValue(..))
@@ -22,7 +22,7 @@ import Restful.Endpoint exposing (EntityId(..), toEntityId)
 
 
 type alias Model =
-    { photo : Maybe PhotoValue
+    { photo : Maybe PhotoUrl
     , registrationForm : Form () RegistrationForm
     , registrationStep : RegistrationStep
     , geoInfo : GeoInfo
