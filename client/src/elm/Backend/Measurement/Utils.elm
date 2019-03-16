@@ -56,49 +56,6 @@ mapMeasurementData dataFunc measurements =
     }
 
 
-
--- TODO: Reimplement, possibly in service worker.
-{- Get a list of all the photo edits (some will be `Unedited`). -}
-{-
-   getPhotoEdits : MeasurementEdits -> List (Edit PhotoId Photo)
-   getPhotoEdits edits =
-       edits.children
-           |> EveryDict.values
-           |> List.map .photo
--}
-{- Given the photo edits, get all the photos for which we don't know the
-   file ID ... that is, those which we haven't uploaded to the backend yet.
--}
-{-
-   getPhotosToUpload : MeasurementEdits -> List Photo
-   getPhotosToUpload =
-       getPhotoEdits
-           >> List.filterMap
-               (\edit ->
-                   case edit of
-                       Unedited ->
-                           Nothing
-
-                       Created photo ->
-                           if photo.value.fid == Nothing then
-                               Just photo
-
-                           else
-                               Nothing
-
-                       Edited { edited } ->
-                           if edited.value.fid == Nothing then
-                               Just edited
-
-                           else
-                               Nothing
-
-                       Deleted _ _ ->
-                           Nothing
-               )
--}
-
-
 splitMotherMeasurements : SessionId -> EveryDict MotherId MotherMeasurementList -> EveryDict MotherId { current : MotherMeasurements, previous : MotherMeasurements }
 splitMotherMeasurements sessionId =
     EveryDict.map

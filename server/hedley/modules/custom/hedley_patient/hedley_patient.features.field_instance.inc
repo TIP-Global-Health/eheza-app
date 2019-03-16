@@ -1684,7 +1684,7 @@ function hedley_patient_field_default_field_instances() {
     'bundle' => 'mother',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -1958,7 +1958,7 @@ function hedley_patient_field_default_field_instances() {
     'bundle' => 'mother',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -2030,6 +2030,7 @@ function hedley_patient_field_default_field_instances() {
   t('Ubudehe');
   t('Village');
   t('What is the highest level of education you have completed?');
+  t('You can leave the UUID blank -- it will be automatically generated.');
 
   return $field_instances;
 }

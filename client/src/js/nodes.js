@@ -153,7 +153,11 @@
                     json.type = type;
 
                     return table.put(json).catch(databaseError).then(function () {
-                        var response = new Response(JSON.stringify(json), {
+                        var body = JSON.stringify({
+                            data: [json]
+                        });
+
+                        var response = new Response(body, {
                             status: 200,
                             statusText: 'OK',
                             headers: {
@@ -184,53 +188,66 @@
             return getTableForType(type).then(function (table) {
                 return request.json().catch(jsonError).then(function (json) {
                     return table.update(uuid, json).catch(databaseError).then(function () {
-                        var response = new Response(JSON.stringify(json), {
-                            status: 200,
-                            statusText: 'OK',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
+                        return table.get(uuid).catch(databaseError).then(function (node) {
+                            if (node) {
+                                var body = JSON.stringify({
+                                    data: [node]
+                                });
 
-                        if (type === 'syncmetadata') {
-                            // If our syncmetadata changes, kick off a sync
-                            self.registration.sync.register('sync');
-
-                            return sendSyncData().then(function () {
-                                return Promise.resolve(response);
-                            });
-                        } else {
-                            var change = {
-                                type: type,
-                                uuid: uuid,
-                                method: 'PATCH',
-                                data: json,
-                                timestamp: Date.now()
-                            };
-
-                            var changeTable = dbSync.nodeChanges;
-                            var addShard = Promise.resolve();
-
-                            if (table === dbSync.shards) {
-                                changeTable = dbSync.shardChanges;
-
-                                addShard = table.get(uuid).catch(databaseError).then(function (item) {
-                                    if (item) {
-                                        change.shard = item.shard;
-                                    } else {
-                                        return Promise.reject('Unexpectedly could not find: ' + uuid);
+                                var response = new Response(body, {
+                                    status: 200,
+                                    statusText: 'OK',
+                                    headers: {
+                                        'Content-Type': 'application/json'
                                     }
                                 });
-                            }
 
-                            return addShard.then(function () {
-                                return changeTable.add(change).then(function (localId) {
-                                    return sendRevisedNode(table, uuid).then(function () {
+                                if (type === 'syncmetadata') {
+                                    // If our syncmetadata changes, kick off a sync
+                                    self.registration.sync.register('sync');
+
+                                    return sendSyncData().then(function () {
                                         return Promise.resolve(response);
                                     });
-                                });
-                            });
-                        }
+                                } else {
+                                    var change = {
+                                        type: type,
+                                        uuid: uuid,
+                                        method: 'PATCH',
+                                        data: json,
+                                        timestamp: Date.now()
+                                    };
+
+                                    var changeTable = dbSync.nodeChanges;
+                                    var addShard = Promise.resolve();
+
+                                    if (table === dbSync.shards) {
+                                        changeTable = dbSync.shardChanges;
+
+                                        addShard = table.get(uuid).catch(databaseError).then(function (item) {
+                                            if (item) {
+                                                change.shard = item.shard;
+                                            } else {
+                                                return Promise.reject('Unexpectedly could not find: ' + uuid);
+                                            }
+                                        });
+                                    }
+
+                                    return addShard.then(function () {
+                                        return changeTable.add(change).then(function (localId) {
+                                            // Kick off a sync
+                                            self.registration.sync.register('sync');
+
+                                            return sendRevisedNode(table, uuid).then(function () {
+                                                return Promise.resolve(response);
+                                            });
+                                        });
+                                    });
+                                }
+                            } else {
+                                return Promise.reject("UUID unexpectedly not found.");
+                            }
+                        });
                     });
                 });
             });
@@ -260,7 +277,11 @@
 
                         return addShard.then(function (json) {
                             return table.put(json).catch(databaseError).then(function () {
-                                var response = new Response(JSON.stringify(json), {
+                                var body = JSON.stringify({
+                                    data: [json]
+                                });
+
+                                var response = new Response(body, {
                                     status: 200,
                                     statusText: 'OK',
                                     headers: {
@@ -292,6 +313,9 @@
                                     }
 
                                     return changeTable.add(change).then(function (localId) {
+                                        // Kick off a sync
+                                        self.registration.sync.register('sync');
+
                                         return sendRevisedNode(table, uuid).then(function () {
                                             return Promise.resolve(response);
                                         });

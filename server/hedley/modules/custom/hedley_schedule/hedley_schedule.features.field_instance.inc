@@ -15,7 +15,7 @@ function hedley_schedule_field_default_field_instances() {
     'bundle' => 'catchment_area',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -98,7 +98,7 @@ function hedley_schedule_field_default_field_instances() {
     'bundle' => 'clinic',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -219,7 +219,7 @@ function hedley_schedule_field_default_field_instances() {
     'bundle' => 'counseling_schedule',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -527,7 +527,7 @@ function hedley_schedule_field_default_field_instances() {
     'bundle' => 'counseling_session',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -607,7 +607,7 @@ function hedley_schedule_field_default_field_instances() {
     'bundle' => 'counseling_topic',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -734,7 +734,7 @@ function hedley_schedule_field_default_field_instances() {
     'bundle' => 'health_center',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -958,7 +958,7 @@ This should not be used on the "live" site -- it is only intended for the "sandb
     'bundle' => 'session',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -1022,6 +1022,7 @@ The end date is the last day on which data entry will be allowed for this sessio
   t('UUID');
   t('Which kind of counseling session was this?');
   t('Which topics should be addressed?');
+  t('You can leave the UUID blank -- it will be automatically generated.');
 
   return $field_instances;
 }

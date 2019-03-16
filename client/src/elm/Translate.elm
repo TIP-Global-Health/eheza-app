@@ -1420,8 +1420,8 @@ translationSet trans =
             }
 
         OnceYouEndYourSession ->
-            { english = "Once you end your session, you will no longer be able to edit or add data. Remember to upload this session within the next 48 hours."
-            , kinyarwanda = Just "Igihe igikorwa cyawe ukirangije, ntubasha guhindura cyangwa kongera kubipimo, ibka kubyohereza mumasaha 48"
+            { english = "Once you end your session, you will no longer be able to edit or add data."
+            , kinyarwanda = Just "Igihe igikorwa cyawe ukirangije, ntubasha guhindura cyangwa kongera kubipimo."
             }
 
         Page ->

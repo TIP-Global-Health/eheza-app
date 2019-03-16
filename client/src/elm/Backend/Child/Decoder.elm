@@ -11,15 +11,7 @@ decodeChild : Decoder Child
 decodeChild =
     decode Child
         |> required "label" string
-        -- We're accommodating the JSON from the backend and the JSON
-        -- we store in the cache.
-        |> custom
-            (oneOf
-                [ map Just <| at [ "avatar", "styles", "patient-photo" ] string
-                , map Just <| field "avatar" string
-                , succeed Nothing
-                ]
-            )
+        |> optional "avatar" (nullable string) Nothing
         |> required "mother" (nullable decodeEntityUuid)
         |> required "date_birth" decodeYYYYMMDD
         |> required "gender" decodeGender
