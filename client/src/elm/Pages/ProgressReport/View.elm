@@ -3,7 +3,7 @@ module Pages.ProgressReport.View exposing (view)
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (ChildMeasurementList, Height, HeightInCm(..), MuacInCm(..), MuacIndication(..), Weight, WeightInKg(..))
+import Backend.Measurement.Model exposing (ChildMeasurementList, Height, HeightInCm(..), MuacInCm(..), MuacIndication(..), PhotoUrl(..), Weight, WeightInKg(..))
 import Backend.Measurement.Utils exposing (currentValue, currentValueWithId, mapMeasurementData, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Mother.Model exposing (ChildrenRelationType(..))
@@ -356,6 +356,11 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                 [ class "first" ]
                 [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Muac)) ]
 
+        viewPhotoUrl (PhotoUrl url) =
+            div
+                [ class "image" ]
+                [ img [ src url ] [] ]
+
         photos =
             photoValues
                 |> List.map
@@ -365,9 +370,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                             [ div
                                 [ class "content" ]
                                 [ text <| renderAgeMonthsDays language child.birthDate photo.dateMeasured ]
-                            , div
-                                [ class "image" ]
-                                [ img [ src photo.value.url ] [] ]
+                            , viewPhotoUrl photo.value
                             ]
                     )
                 |> div [ class "ui five report cards" ]

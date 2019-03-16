@@ -40,7 +40,7 @@ type alias ModelChild =
     { height : String
     , muac : String
     , nutritionSigns : EverySet ChildNutritionSign
-    , photo : Maybe PhotoValue
+    , photo : Maybe PhotoUrl
     , weight : String
     , counseling : Maybe ( CounselingTiming, EverySet CounselingTopicId )
     }
@@ -154,7 +154,7 @@ type OutMsgChild
     | SaveMuac (Maybe MuacId) MuacInCm
     | SaveCounselingSession (Maybe CounselingSessionId) CounselingTiming (EverySet CounselingTopicId)
     | SaveChildNutritionSigns (Maybe ChildNutritionId) (EverySet ChildNutritionSign)
-    | SavePhoto (Maybe PhotoId) PhotoValue
+    | SavePhoto (Maybe PhotoId) PhotoUrl
 
 
 type OutMsgMother

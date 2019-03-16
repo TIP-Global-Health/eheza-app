@@ -15,6 +15,14 @@ var credentialsUrl = '/sw/config/device';
 
 var deviceUuidUrl = '/sw/config/device-uuid';
 
+var photosDownloadCache = "photos";
+var photosUploadCache = "photos-upload";
+
+var photosDownloadUrlRegex = /\/sites\/default\/files\//;
+var photosUploadUrlRegex = /\/cache-upload\/images/;
+var backendUploadUrlRegex = /\/backend-upload\/images/;
+
+
 // A UUID which represents the "shard" which is our general data that
 // all devices get. (That is, unsharded data).
 var nodesUuid = '78cf21d1-b3f4-496a-b312-d8ae73041f09';

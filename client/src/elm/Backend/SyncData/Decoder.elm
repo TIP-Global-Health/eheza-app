@@ -52,6 +52,11 @@ decodeSyncAttempt =
                             |> required "message" string
                             |> decodeFailure
 
+                    "ImageNotFound" ->
+                        succeed ImageNotFound
+                            |> required "url" string
+                            |> decodeFailure
+
                     "NoCredentials" ->
                         succeed NoCredentials
                             |> decodeFailure
