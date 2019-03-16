@@ -36,12 +36,14 @@ import Backend.Entities exposing (..)
 type alias Model id =
     { selectedParticipant : Maybe id
     , selectedTab : Tab
+    , filter : String
     }
 
 
 type Msg id measurement
     = GoBackToActivitiesPage SessionId
     | MsgMeasurement measurement
+    | SetFilter String
     | SetSelectedParticipant (Maybe id)
     | SetSelectedTab Tab
 
@@ -66,4 +68,5 @@ emptyModel : Model any
 emptyModel =
     { selectedParticipant = Nothing
     , selectedTab = Pending
+    , filter = ""
     }
