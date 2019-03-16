@@ -3,6 +3,7 @@ module Pages.ParticipantRegistration.Update exposing (update)
 import App.Model
 import Backend.Child.Decoder exposing (decodeModeOfDelivery)
 import Backend.Child.Model exposing (Child, ModeOfDelivery(..))
+import Backend.Measurement.Model exposing (PhotoUrl(..))
 import Backend.Model
 import Backend.Mother.Decoder exposing (decodeEducationLevel, decodeHivStatus, decodeMaritalStatus)
 import Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother)
@@ -25,16 +26,7 @@ update : NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate msg model =
     case msg of
         DropZoneComplete result ->
-            -- The `fid` being Nothing signifies that we haven't uploaded this to
-            -- the backend yet, so we don't know what file ID the backend will
-            -- ultimately give it.
-            ( { model
-                | photo =
-                    Just
-                        { url = result.url
-                        , fid = Nothing
-                        }
-              }
+            ( { model | photo = Just (PhotoUrl result.url) }
             , Cmd.none
             , []
             )
@@ -292,7 +284,8 @@ update currentDate msg model =
                                 |> .value
 
                         avatarUrl =
-                            model.photo |> Maybe.andThen (.url >> Just)
+                            model.photo
+                                |> Maybe.map (\(PhotoUrl url) -> url)
 
                         isDateOfBirthEstimated =
                             Form.getFieldAsBool "isDateOfBirthEstimated" model.registrationForm
