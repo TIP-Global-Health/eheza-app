@@ -11,6 +11,7 @@ import Html.Events exposing (onClick)
 import List as List
 import Maybe.Extra
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
+import Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, normalizeFilter, viewNameFilter)
 import Participant.Model exposing (Participant)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage)
@@ -38,6 +39,20 @@ view config language currentDate zscores selectedActivity session model =
     let
         participants =
             config.summarizeParticipantsForActivity selectedActivity session
+                |> applyNameFilter
+
+        applyNameFilter { pending, completed } =
+            { pending = EveryDictList.filter filterParticipantNames pending
+            , completed = EveryDictList.filter filterParticipantNames completed
+            }
+
+        filterParticipantNames _ participant =
+            participant
+                |> config.getName
+                |> matchFilter filter
+
+        filter =
+            normalizeFilter model.filter
 
         activityDescription =
             div
@@ -99,10 +114,10 @@ view config language currentDate zscores selectedActivity session model =
                 ( selectedParticipants, emptySectionMessage ) =
                     case model.selectedTab of
                         Pending ->
-                            ( participants.pending, translate language Translate.NoParticipantsPendingForThisActivity )
+                            ( participants.pending, filterDependentNoResultsMessage language filter Translate.NoParticipantsPendingForThisActivity )
 
                         Completed ->
-                            ( participants.completed, translate language Translate.NoParticipantsCompletedForThisActivity )
+                            ( participants.completed, filterDependentNoResultsMessage language filter Translate.NoParticipantsCompletedForThisActivity )
 
                 viewParticipantCard ( participantId, participant ) =
                     let
@@ -142,7 +157,8 @@ view config language currentDate zscores selectedActivity session model =
             in
             div
                 [ class "ui participant segment" ]
-                [ div [ class "ui four participant cards" ]
+                [ viewNameFilter language model.filter SetFilter
+                , div [ class "ui four participant cards" ]
                     participantsCards
                 ]
 
@@ -174,7 +190,7 @@ view config language currentDate zscores selectedActivity session model =
                 ]
     in
     ( divKeyed
-        [ class "wrap" ]
+        [ class "wrap page-activity" ]
         [ header |> keyed "header"
         , activityDescription |> keyed "activity-description"
         , tabs |> keyed "tabs"

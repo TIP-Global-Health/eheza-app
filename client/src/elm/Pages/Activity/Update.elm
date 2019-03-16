@@ -20,7 +20,12 @@ updateChild :
 updateChild msg model childForm =
     case msg of
         GoBackToActivitiesPage ->
-            ( model, Cmd.none, childForm, Nothing, Just <| SessionPage ActivitiesPage )
+            ( { model | filter = "" }
+            , Cmd.none
+            , childForm
+            , Nothing
+            , Just <| SessionPage ActivitiesPage
+            )
 
         MsgMeasurement subMsg ->
             childForm
@@ -38,6 +43,14 @@ updateChild msg model childForm =
                         )
                     )
                 |> Maybe.withDefault ( model, Cmd.none, Nothing, Nothing, Nothing )
+
+        SetFilter filter ->
+            ( { model | filter = filter }
+            , Cmd.none
+            , Nothing
+            , Nothing
+            , Nothing
+            )
 
         SetSelectedParticipant val ->
             ( { model | selectedParticipant = val }
@@ -83,6 +96,14 @@ updateMother msg model motherForm measurements =
                         )
                     )
                 |> Maybe.withDefault ( model, Cmd.none, Nothing, Nothing, Nothing )
+
+        SetFilter filter ->
+            ( { model | filter = filter }
+            , Cmd.none
+            , Nothing
+            , Nothing
+            , Nothing
+            )
 
         SetSelectedParticipant val ->
             ( { model | selectedParticipant = val }
