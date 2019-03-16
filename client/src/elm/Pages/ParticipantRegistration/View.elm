@@ -5,7 +5,7 @@ module Pages.ParticipantRegistration.View exposing (view)
 
 import Backend.Child.Encoder exposing (encodeModeOfDelivery)
 import Backend.Child.Model exposing (ModeOfDelivery(..), allModesOfDelivery)
-import Backend.Measurement.Model exposing (PhotoValue)
+import Backend.Measurement.Model exposing (PhotoUrl(..))
 import Backend.Model exposing (ModelBackend, ModelIndexedDb, MsgBackend(..))
 import Backend.Mother.Encoder exposing (encodeEducationLevel, encodeHivStatus, encodeMaritalStatus)
 import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), allEducationLevels, allHivStatuses, allMaritalStatuses)
@@ -98,7 +98,7 @@ viewRegistrationForm :
     -> RegistrationStep
     -> Form () RegistrationForm
     -> GeoInfo
-    -> Maybe PhotoValue
+    -> Maybe PhotoUrl
     -> Maybe ParticipantId
     -> Maybe RegistrationPhase
     -> Html Msg
@@ -1335,7 +1335,7 @@ viewSelectInput language labelId options field width inputClass isRequired =
         ]
 
 
-viewPhoto : Language -> Maybe PhotoValue -> Html Msg
+viewPhoto : Language -> Maybe PhotoUrl -> Html Msg
 viewPhoto language photo =
     div
         [ class "ui grid photo" ]
@@ -1364,11 +1364,11 @@ viewPhoto language photo =
         ]
 
 
-viewPhotoThumb : PhotoValue -> Html any
-viewPhotoThumb photo =
+viewPhotoThumb : PhotoUrl -> Html any
+viewPhotoThumb (PhotoUrl url) =
     div []
         [ img
-            [ src photo.url
+            [ src url
             , class "ui small image"
             ]
             []

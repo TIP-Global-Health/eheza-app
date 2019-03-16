@@ -11,7 +11,7 @@ module Pages.ParticipantRegistration.Model exposing
     , validateRegistrationForm
     )
 
-import Backend.Measurement.Model exposing (PhotoValue)
+import Backend.Measurement.Model exposing (PhotoUrl)
 import Form exposing (Form)
 import Form.Error exposing (ErrorValue(..))
 import Form.Field
@@ -23,7 +23,7 @@ import Regex exposing (Regex)
 
 
 type alias Model =
-    { photo : Maybe PhotoValue
+    { photo : Maybe PhotoUrl
     , registrationForm : Form () RegistrationForm
     , registrationPhase : RegistrationPhase
     , previousPhases : List RegistrationPhase

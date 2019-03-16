@@ -68,6 +68,11 @@ encodeSyncAttempt data =
                                 , ( "message", string message )
                                 ]
 
+                            ImageNotFound url ->
+                                [ ( "tag", string "ImageNotFound" )
+                                , ( "url", string url )
+                                ]
+
                             NoCredentials ->
                                 [ ( "tag", string "NoCredentials" )
                                 ]

@@ -20,11 +20,13 @@ import Pages.Page exposing (Page(..))
 type alias Model =
     { selectedTab : Tab
     , showEndSessionDialog : Bool
+    , filter : String
     }
 
 
 type Msg
     = CloseSession
+    | SetFilter String
     | SetRedirectPage Page
     | SetSelectedTab Tab
     | ShowEndSessionDialog Bool
@@ -45,4 +47,5 @@ emptyModel : Model
 emptyModel =
     { selectedTab = Pending
     , showEndSessionDialog = False
+    , filter = ""
     }

@@ -1,4 +1,4 @@
-module Backend.Measurement.Encoder exposing (encodeAttendance, encodeAttendanceValue, encodeChildMeasurement, encodeChildMeasurementList, encodeCounselingSession, encodeCounselingSessionValue, encodeEntity, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeHeight, encodeHeightValue, encodeMeasurement, encodeMotherMeasurement, encodeMotherMeasurementList, encodeMuac, encodeMuacValue, encodeNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoValue, encodeWeight, encodeWeightValue)
+module Backend.Measurement.Encoder exposing (encodeAttendance, encodeAttendanceValue, encodeChildMeasurement, encodeChildMeasurementList, encodeCounselingSession, encodeCounselingSessionValue, encodeEntity, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeHeight, encodeHeightValue, encodeMeasurement, encodeMotherMeasurement, encodeMotherMeasurementList, encodeMuac, encodeMuacValue, encodeNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodeWeight, encodeWeightValue)
 
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Counseling.Model exposing (CounselingTiming)
@@ -45,24 +45,12 @@ encodeWeightValue (WeightInKg weight) =
 
 encodePhoto : Photo -> List ( String, Value )
 encodePhoto =
-    encodeChildMeasurement encodePhotoValue
+    encodeChildMeasurement encodePhotoUrl
 
 
-encodePhotoValue : PhotoValue -> List ( String, Value )
-encodePhotoValue photo =
-    [ ( "photo"
-      , object
-            [ ( "styles"
-              , object
-                    [ ( "patient-photo"
-                      , string photo.url
-                      )
-                    ]
-              )
-            , ( "id", maybe int photo.fid )
-            ]
-      )
-    ]
+encodePhotoUrl : PhotoUrl -> List ( String, Value )
+encodePhotoUrl (PhotoUrl url) =
+    [ ( "photo", string url ) ]
 
 
 encodeNutrition : ChildNutrition -> List ( String, Value )

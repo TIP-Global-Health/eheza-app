@@ -18,15 +18,7 @@ decodeMother =
         |> optional "middle_name" (nullable string) Nothing
         |> optional "second_name" string ""
         |> optional "national_id_number" (nullable string) Nothing
-        -- We accommodate the JSON from the server or from the cache
-        -- TODO: Normalize this when syncing.
-        |> custom
-            (oneOf
-                [ map Just <| at [ "avatar", "styles", "patient-photo" ] string
-                , map Just <| field "avatar" string
-                , succeed Nothing
-                ]
-            )
+        |> optional "avatar" (nullable string) Nothing
         |> optional "date_birth" (nullable decodeYYYYMMDD) Nothing
         |> optional "birth_date_estimated" bool False
         |> optional "relation" decodeChildrenRelation MotherRelation

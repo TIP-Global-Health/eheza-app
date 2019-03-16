@@ -1,13 +1,7 @@
-module Backend.Session.Decoder exposing (decodeChildren, decodeMothers, decodeSession, decodeTrainingSessionAction, decodeTrainingSessionRequest)
+module Backend.Session.Decoder exposing (decodeSession, decodeTrainingSessionAction, decodeTrainingSessionRequest)
 
-import Backend.Child.Decoder exposing (decodeChild)
-import Backend.Child.Model exposing (Child)
-import Backend.Entities exposing (..)
 import Backend.Model exposing (TrainingSessionAction(..), TrainingSessionRequest)
-import Backend.Mother.Decoder exposing (decodeMother)
-import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (..)
-import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (decodeDrupalRange, decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, at, bool, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
@@ -54,15 +48,3 @@ decodeSession =
             )
         |> optional "closed" bool False
         |> optional "training" bool False
-
-
-decodeMothers : Decoder (EveryDictList MotherId Mother)
-decodeMothers =
-    EveryDictList.decodeArray2 (field "id" decodeEntityUuid) decodeMother
-        |> map (EveryDictList.sortBy .name)
-
-
-decodeChildren : Decoder (EveryDictList ChildId Child)
-decodeChildren =
-    EveryDictList.decodeArray2 (field "id" decodeEntityUuid) decodeChild
-        |> map (EveryDictList.sortBy .name)

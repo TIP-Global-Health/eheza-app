@@ -10,7 +10,7 @@ update : Msg -> Model -> ( Model, Cmd Msg, List Pages.Session.Model.Msg )
 update msg model =
     case msg of
         SetActivePage page ->
-            ( model
+            ( { model | filter = "" }
             , Cmd.none
             , [ Pages.Session.Model.SetActivePage page ]
             )
