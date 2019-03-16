@@ -77,22 +77,7 @@ type alias OfflineSession =
     }
 
 
-{-| This combines an OfflineSession with some structures that track
-the set of forms we use to record measurements, and the requests
-to save those measurements (locally).
-
-`edits` includes things like attendance and whether we've closed the
-session since downloading it.
-
-The childForms and motherForms fields could be put elsewhere, since they aren't
-backend concepts. However, they don't belong at the level of particular pages,
-since we actually use them in two different pages and don't want multiple
-sources of truth for what's going on in the editor. Plus, logically the
-motherForms and childForms belong in the `EditableSession` since they are tied
-to an editable session. And, we fundamentally want one for each child and
-mother (to represent the edits for each child and mother) ... that way we
-guarantee that they don't "leak" to the wrong child or mother.
-
+{-| This adds to an OfflineSession some structures to keep track of editing.
 -}
 type alias EditableSession =
     { offlineSession : OfflineSession

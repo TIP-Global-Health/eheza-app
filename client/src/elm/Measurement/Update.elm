@@ -3,7 +3,6 @@ module Measurement.Update exposing (updateChild, updateMother)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MeasurementData, MotherMeasurements, PhotoUrl(..))
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
-import Config.Model exposing (BackendUrl)
 import EveryDict
 import EveryDictList
 import EverySet exposing (EverySet)
