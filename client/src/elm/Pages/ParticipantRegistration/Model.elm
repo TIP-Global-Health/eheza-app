@@ -23,8 +23,7 @@ import Regex exposing (Regex)
 
 
 type alias Model =
-    { photo : Maybe PhotoUrl
-    , registrationForm : Form () RegistrationForm
+    { registrationForm : Form () RegistrationForm
     , registrationPhase : RegistrationPhase
     , previousPhases : List RegistrationPhase
     , relationParticipant : Maybe ParticipantId
@@ -35,8 +34,7 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    { photo = Nothing
-    , registrationForm = emptyRegistrationForm
+    { registrationForm = emptyRegistrationForm
     , registrationPhase = ParticipantSearch Nothing
     , previousPhases = []
     , relationParticipant = Nothing
@@ -114,6 +112,7 @@ type alias RegistrationForm =
     , telephoneNumber : String
     , healthCenter : String
     , clinic : String
+    , photoUrl : String
     }
 
 
@@ -163,6 +162,7 @@ validateRegistrationForm =
         |> andMap (field "telephoneNumber" string)
         |> andMap (field "healthCenter" string)
         |> andMap (field "clinic" string)
+        |> andMap (field "photoUrl" string)
 
 
 validateAlphanumeric : Validation e String

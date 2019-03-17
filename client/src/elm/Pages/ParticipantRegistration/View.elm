@@ -17,7 +17,7 @@ import EveryDictList
 import Form exposing (Form)
 import Form.Error
 import Form.Input
-import Gizra.Html exposing (emptyNode, showMaybe)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -43,13 +43,18 @@ import Utils.WebData exposing (viewWebData)
 
 view : Language -> NominalDate -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate db model =
-    div [ class "wrap wrap-alt-2" ]
+    divKeyed
+        [ class "wrap wrap-alt-2" ]
         [ viewHeader language currentDate model
+            |> keyed "header"
         , div
             [ class "ui full segment blue" ]
             [ viewBody language currentDate db model
             ]
-        , viewModal <| viewDialog language model.dialogState db
+            |> keyed "body"
+        , keyed "modal" <|
+            viewModal <|
+                viewDialog language model.dialogState db
         ]
 
 
@@ -82,13 +87,14 @@ viewBody language currentDate db model =
                     viewSearchForm language currentDate db searchString model.submittedSearch model.relationParticipant
 
                 ParticipantRegistration step ->
-                    viewRegistrationForm language currentDate db step model.registrationForm geoInfo model.photo model.relationParticipant previousPhase
+                    viewRegistrationForm language currentDate db step model.registrationForm geoInfo model.relationParticipant previousPhase
 
                 ParticipantView participantId ->
                     viewParticipantDetailsForm language currentDate participantId db previousPhase
     in
-    div [ class "content" ]
-        [ body ]
+    divKeyed
+        [ class "content" ]
+        [ keyed "body" body ]
 
 
 viewRegistrationForm :
@@ -98,11 +104,10 @@ viewRegistrationForm :
     -> RegistrationStep
     -> Form () RegistrationForm
     -> GeoInfo
-    -> Maybe PhotoUrl
     -> Maybe ParticipantId
     -> Maybe RegistrationPhase
     -> Html Msg
-viewRegistrationForm language currentDate db step registrationForm geoInfo photo maybeRelationParticipant maybePreviousPhase =
+viewRegistrationForm language currentDate db step registrationForm geoInfo maybeRelationParticipant maybePreviousPhase =
     let
         -- FORM FIELDS --
         firstName =
@@ -410,11 +415,14 @@ viewRegistrationForm language currentDate db step registrationForm geoInfo photo
                     in
                     [ h3 [ class "ui header" ]
                         [ text <| translate language Translate.ParticipantDemographicInformation ++ ":" ]
-                    , viewPhoto language photo
-                    , Html.map MsgRegistrationForm <|
-                        fieldset [ class "registration-form" ] <|
-                            staticComponents
-                                ++ dynamicComponents
+                        |> keyed "header"
+                    , viewPhoto language registrationForm
+                        |> keyed "photo"
+                    , keyed "static-dynamic" <|
+                        Html.map MsgRegistrationForm <|
+                            fieldset [ class "registration-form" ] <|
+                                staticComponents
+                                    ++ dynamicComponents
                     ]
 
                 Second ->
@@ -618,24 +626,30 @@ viewRegistrationForm language currentDate db step registrationForm geoInfo photo
                     in
                     [ h3 [ class "ui header" ]
                         [ text <| translate language Translate.FamilyInformation ++ ":" ]
-                    , Html.map MsgRegistrationForm <|
-                        fieldset [ class "registration-form family-info" ]
-                            familyInfoInputs
+                        |> keyed "family-header"
+                    , keyed "family-info" <|
+                        Html.map MsgRegistrationForm <|
+                            fieldset [ class "registration-form family-info" ]
+                                familyInfoInputs
                     , h3 [ class "ui header" ]
                         [ text <| translate language Translate.AddressInformation ++ ":" ]
-                    , Html.map MsgRegistrationForm <|
-                        fieldset [ class "registration-form address-info" ]
-                            [ viewProvince
-                            , viewDistrict
-                            , viewSector
-                            , viewCell
-                            , viewVillage
-                            ]
+                        |> keyed "address-header"
+                    , keyed "address-fields" <|
+                        Html.map MsgRegistrationForm <|
+                            fieldset [ class "registration-form address-info" ]
+                                [ viewProvince
+                                , viewDistrict
+                                , viewSector
+                                , viewCell
+                                , viewVillage
+                                ]
                     , h3 [ class "ui header" ]
                         [ text <| translate language Translate.ContactInformation ++ ":" ]
-                    , Html.map MsgRegistrationForm <|
-                        fieldset [ class "registration-form address-info" ]
-                            [ viewTelephoneNumber ]
+                        |> keyed "contact-header"
+                    , keyed "contact-info" <|
+                        Html.map MsgRegistrationForm <|
+                            fieldset [ class "registration-form address-info" ]
+                                [ viewTelephoneNumber ]
                     ]
 
                 Third ->
@@ -684,12 +698,14 @@ viewRegistrationForm language currentDate db step registrationForm geoInfo photo
                     [ h3
                         [ class "ui header" ]
                         [ text <| translate language Translate.RegistratingHealthCenter ++ ":" ]
-                    , Html.map MsgRegistrationForm <|
-                        fieldset
-                            [ class "registration-form registrating-health-center" ]
-                            [ viewWebData language viewHealthCenter identity db.healthCenters
-                            , viewWebData language viewClinic identity db.clinics
-                            ]
+                        |> keyed "health-center-header"
+                    , keyed "health-center-fields" <|
+                        Html.map MsgRegistrationForm <|
+                            fieldset
+                                [ class "registration-form registrating-health-center" ]
+                                [ viewWebData language viewHealthCenter identity db.healthCenters
+                                , viewWebData language viewClinic identity db.clinics
+                                ]
                     ]
 
         rightButton =
@@ -769,11 +785,12 @@ viewRegistrationForm language currentDate db step registrationForm geoInfo photo
                 ]
                 [ text <| translate language label ++ " >" ]
     in
-    div [ class "wrap-list registration-page form" ]
-        [ div [ class "ui form registration" ]
-            formContent
+    divKeyed [ class "wrap-list registration-page form" ]
+        [ divKeyed [ class "ui form registration" ] formContent
+            |> keyed "form-content"
         , div [ class "actions" ]
             [ viewBackButton language maybePreviousPhase, rightButton ]
+            |> keyed "back-button"
         ]
 
 
@@ -1335,14 +1352,20 @@ viewSelectInput language labelId options field width inputClass isRequired =
         ]
 
 
-viewPhoto : Language -> Maybe PhotoUrl -> Html Msg
-viewPhoto language photo =
-    div
+viewPhoto : Language -> Form () RegistrationForm -> Html Msg
+viewPhoto language form =
+    let
+        photoUrl =
+            Form.getFieldAsString "photoUrl" form
+                |> .value
+    in
+    divKeyed
         [ class "ui grid photo" ]
-        [ Maybe.map viewPhotoThumb photo
+        [ Maybe.map viewPhotoThumb photoUrl
             |> showMaybe
             |> List.singleton
             |> div [ class "eight wide column" ]
+            |> keyed "thumb"
         , div
             [ id "dropzone"
             , class "eight wide column dropzone"
@@ -1357,15 +1380,17 @@ viewPhoto language photo =
                     [ text <| translate language Translate.DropzoneDefaultMessage ]
                 ]
             ]
+            |> keyed "dropzone"
 
         -- This runs the function from our `app.js` at the precise moment this gets
         -- written to the DOM. Indeed very convenient.
         , script "bindDropZone()"
+            |> keyed "script"
         ]
 
 
-viewPhotoThumb : PhotoUrl -> Html any
-viewPhotoThumb (PhotoUrl url) =
+viewPhotoThumb : String -> Html any
+viewPhotoThumb url =
     div []
         [ img
             [ src url

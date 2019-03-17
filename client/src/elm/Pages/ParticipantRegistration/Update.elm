@@ -26,7 +26,14 @@ update : NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate msg model =
     case msg of
         DropZoneComplete result ->
-            ( { model | photo = Just (PhotoUrl result.url) }
+            let
+                subMsg =
+                    Form.Input "photoUrl" Form.Text (Form.Field.String result.url)
+
+                registrationForm =
+                    Form.update validateRegistrationForm subMsg model.registrationForm
+            in
+            ( { model | registrationForm = registrationForm }
             , Cmd.none
             , []
             )
@@ -283,10 +290,6 @@ update currentDate msg model =
                             Form.getFieldAsString "nationalIdNumber" model.registrationForm
                                 |> .value
 
-                        avatarUrl =
-                            model.photo
-                                |> Maybe.map (\(PhotoUrl url) -> url)
-
                         isDateOfBirthEstimated =
                             Form.getFieldAsBool "isDateOfBirthEstimated" model.registrationForm
                                 |> .value
@@ -356,6 +359,10 @@ update currentDate msg model =
                             Form.getFieldAsString "clinic" model.registrationForm
                                 |> .value
                                 |> Maybe.map toEntityUuid
+
+                        avatar =
+                            Form.getFieldAsString "photoUrl" model.registrationForm
+                                |> .value
                     in
                     case participant of
                         ChildParticipant _ ->
@@ -403,7 +410,7 @@ update currentDate msg model =
                                         middleName
                                         (secondName |> Maybe.withDefault "")
                                         nationalIdNumber
-                                        avatarUrl
+                                        avatar
                                         motherId
                                         birthDate
                                         isDateOfBirthEstimated
@@ -476,7 +483,7 @@ update currentDate msg model =
                                         middleName
                                         (secondName |> Maybe.withDefault "")
                                         nationalIdNumber
-                                        avatarUrl
+                                        avatar
                                         (Just birthDate)
                                         isDateOfBirthEstimated
                                         MotherRelation
