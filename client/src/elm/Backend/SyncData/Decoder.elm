@@ -9,16 +9,24 @@ import Json.Decode.Pipeline exposing (..)
 
 decodeSyncData : Decoder SyncData
 decodeSyncData =
-    map2 SyncData
-        (maybe decodeSyncStatus)
-        (field "status" decodeSyncAttempt)
+    succeed SyncData
+        |> optional "download" (nullable decodeDownloadStatus) Nothing
+        |> optional "upload" (nullable decodeUploadStatus) Nothing
+        |> required "attempt" decodeSyncAttempt
 
 
-decodeSyncStatus : Decoder SyncStatus
-decodeSyncStatus =
-    succeed SyncStatus
+decodeDownloadStatus : Decoder DownloadStatus
+decodeDownloadStatus =
+    succeed DownloadStatus
         |> required "last_contact" (map fromTime decodeFloat)
         |> required "last_timestamp" decodeInt
+        |> required "remaining" decodeInt
+
+
+decodeUploadStatus : Decoder UploadStatus
+decodeUploadStatus =
+    succeed UploadStatus
+        |> optional "first_timestamp" (nullable decodeInt) Nothing
         |> required "remaining" decodeInt
 
 
@@ -44,6 +52,11 @@ decodeSyncAttempt =
                             |> required "message" string
                             |> decodeFailure
 
+                    "ImageNotFound" ->
+                        succeed ImageNotFound
+                            |> required "url" string
+                            |> decodeFailure
+
                     "NoCredentials" ->
                         succeed NoCredentials
                             |> decodeFailure
@@ -59,9 +72,13 @@ decodeSyncAttempt =
                             |> decodeFailure
 
                     "Loading" ->
-                        succeed Loading
+                        succeed Downloading
                             |> custom decodeTimestamp
                             |> required "revision" decodeInt
+
+                    "Uploading" ->
+                        succeed Uploading
+                            |> custom decodeTimestamp
 
                     _ ->
                         fail <|

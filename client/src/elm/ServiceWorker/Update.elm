@@ -22,10 +22,10 @@ import Time exposing (Time)
 update : Time -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentTime msg model =
     case msg of
-        BackToLoginPage ->
+        BackToPinCodePage ->
             ( model
             , Cmd.none
-            , [ App.Model.SetActivePage Pages.Page.LoginPage ]
+            , [ App.Model.SetActivePage Pages.Page.PinCodePage ]
             )
 
         HandleIncomingMsg value ->

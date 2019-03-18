@@ -15,7 +15,11 @@ function hedley_device_field_default_field_instances() {
     'bundle' => 'device',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => 'Code used to initially setup the device and start the sync process.',
+    'description' => 'Code used to initially setup the device and start the sync process.
+
+When creating a new device, you can leave this blank and a random pairing code will be generated.
+
+A pairing code can only be used once -- it will be deleted when the device is paired. If it is necessary to re-pair the device, you can enter a new pairing code manually.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -52,7 +56,11 @@ function hedley_device_field_default_field_instances() {
 
   // Translatables
   // Included for use with string extractors like potx.
-  t('Code used to initially setup the device and start the sync process.');
+  t('Code used to initially setup the device and start the sync process.
+
+When creating a new device, you can leave this blank and a random pairing code will be generated.
+
+A pairing code can only be used once -- it will be deleted when the device is paired. If it is necessary to re-pair the device, you can enter a new pairing code manually.');
   t('Pairing Code');
 
   return $field_instances;

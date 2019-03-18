@@ -14,7 +14,7 @@ import Expect
 import Fixtures exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (toEntityId)
+import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
 import Time.Date exposing (addDays, date)
 
@@ -38,74 +38,58 @@ the structures that `expectCounselingActivities` works with.
 -}
 testCases : List TestCase
 testCases =
-    [ { title = "Already editing, which overrides"
+    [ { title = "Not completed entry"
       , daysOld = 65
       , completed = []
-      , editing = Just MidPoint
-      , expected = Just MidPoint
-      }
-    , { title = "Not already editing, not completed entry"
-      , daysOld = 65
-      , completed = []
-      , editing = Nothing
       , expected = Just Entry
       }
     , { title = "Completed entry"
       , daysOld = 280
       , completed = [ ( 32, Entry ) ]
-      , editing = Nothing
       , expected = Nothing
       }
     , { title = "Reminder for midpoint"
       , daysOld = 300
       , completed = [ ( 30, Entry ) ]
-      , editing = Nothing
       , expected = Just BeforeMidpoint
       }
     , -- The case where we've given a reminder, so we follow-up
       { title = "Early midpoint"
       , daysOld = 300
       , completed = [ ( 30, Entry ), ( 270, BeforeMidpoint ) ]
-      , editing = Nothing
       , expected = Just MidPoint
       }
     , -- The case with no reminder
       { title = "No reminder midpoint"
       , daysOld = 330
       , completed = [ ( 30, Entry ) ]
-      , editing = Nothing
       , expected = Just MidPoint
       }
     , { title = "Post midpoint"
       , daysOld = 650
       , completed = [ ( 30, Entry ), ( 300, BeforeMidpoint ), ( 330, MidPoint ) ]
-      , editing = Nothing
       , expected = Nothing
       }
     , { title = "Reminder for exit"
       , daysOld = 660
       , completed = [ ( 30, Entry ), ( 300, BeforeMidpoint ), ( 330, MidPoint ) ]
-      , editing = Nothing
       , expected = Just BeforeExit
       }
     , -- The case where we've given a reminder, so we follow-up
       { title = "Early exit"
       , daysOld = 660
       , completed = [ ( 30, Entry ), ( 300, BeforeMidpoint ), ( 330, MidPoint ), ( 630, BeforeExit ) ]
-      , editing = Nothing
       , expected = Just Exit
       }
     , -- The case with no reminder
       { title = "No reminder exit"
       , daysOld = 690
       , completed = [ ( 30, Entry ), ( 300, BeforeMidpoint ), ( 330, MidPoint ) ]
-      , editing = Nothing
       , expected = Just Exit
       }
     , { title = "Post exit"
       , daysOld = 720
       , completed = [ ( 30, Entry ), ( 300, BeforeMidpoint ), ( 330, MidPoint ), ( 630, BeforeExit ), ( 660, Exit ) ]
-      , editing = Nothing
       , expected = Nothing
       }
 
@@ -115,25 +99,21 @@ testCases =
     , { title = "Late entry"
       , daysOld = 400
       , completed = []
-      , editing = Nothing
       , expected = Just Entry
       }
     , { title = "Gap until midpoint reminder"
       , daysOld = 430
       , completed = [ ( 400, Entry ) ]
-      , editing = Nothing
       , expected = Nothing
       }
     , { title = "Eventually present midpoint reminder"
       , daysOld = 480
       , completed = [ ( 400, Entry ) ]
-      , editing = Nothing
       , expected = Just BeforeMidpoint
       }
     , { title = "Eventually present midpoint"
       , daysOld = 520
       , completed = [ ( 400, Entry ) ]
-      , editing = Nothing
       , expected = Just MidPoint
       }
     ]
@@ -152,7 +132,6 @@ type alias TestCase =
     { title : String
     , daysOld : Int
     , completed : List ( Int, CounselingTiming )
-    , editing : Maybe CounselingTiming
     , expected : Maybe CounselingTiming
     }
 
@@ -168,30 +147,7 @@ runTestCase testCase =
 makeEditableSession : TestCase -> EditableSession
 makeEditableSession test =
     { offlineSession = makeOfflineSession test
-    , edits = makeEdits test
     , update = NotAsked
-    , childForms = EveryDict.empty -- not relevant
-    , motherForms = EveryDict.empty -- not relevant
-    }
-
-
-makeEdits : TestCase -> MeasurementEdits
-makeEdits test =
-    let
-        counseling =
-            case test.editing of
-                Nothing ->
-                    Unedited
-
-                Just timing ->
-                    Created (makeCounselingSession sessionDate timing)
-
-        childEdits =
-            { emptyChildEdits | counseling = counseling }
-    in
-    { explicitlyClosed = False
-    , mothers = EveryDict.empty
-    , children = EveryDict.fromList [ ( childId, childEdits ) ]
     }
 
 
@@ -201,16 +157,15 @@ makeCounselingSession when timing =
     , sessionId = Nothing -- not needed
     , dateMeasured = when
     , value = ( timing, EverySet.empty )
+    , nurse = Nothing
     }
 
 
 makeOfflineSession : TestCase -> OfflineSession
 makeOfflineSession test =
     { session = session sessionDate
-    , allSessions = EveryDictList.empty -- not relevant
     , allParticipantForms = EveryDictList.empty -- not relevant
     , everyCounselingSchedule = EveryDict.empty -- not relevant
-    , clinics = EveryDictList.empty -- not relevant
     , mothers = EveryDictList.empty -- not relevant
     , children = makeChildren test
     , historicalMeasurements = makeHistoricalMeasurements test
@@ -231,10 +186,11 @@ makeChildMeasurementList test =
     let
         counselingSessions =
             List.map makeCounselingSessionWithId test.completed
+                |> EveryDictList.fromList
 
         makeCounselingSessionWithId ( daysOld, timing ) =
-            ( toEntityId 1
-              -- the id doesn't matter
+            -- We need a locally unique ID, but it doesn't need to be real.
+            ( toEntityUuid (toString ( daysOld, timing ))
             , makeCounselingSession (addDays (daysOld - test.daysOld) sessionDate) timing
             )
     in
@@ -254,7 +210,7 @@ session start =
         { start = start
         , end = start
         }
-    , clinicId = toEntityId 1 -- not relevant
+    , clinicId = toEntityUuid "1" -- not relevant
     , closed = False
     , training = False
     }
@@ -264,7 +220,7 @@ session start =
 -}
 childId : ChildId
 childId =
-    toEntityId 1
+    toEntityUuid "1"
 
 
 makeChildren : TestCase -> EveryDictList ChildId Child

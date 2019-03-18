@@ -13,7 +13,7 @@ function hedley_device_install() {
 }
 
 /**
- * Implements hook_update_N().
+ * Create sync role.
  */
 function hedley_device_update_7001() {
   hedley_device_create_sync_role();

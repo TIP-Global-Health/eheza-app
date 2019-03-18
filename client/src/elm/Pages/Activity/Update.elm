@@ -1,11 +1,11 @@
 module Pages.Activity.Update exposing (updateChild, updateMother)
 
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (MeasurementData, MotherEdits, MotherMeasurements)
+import Backend.Measurement.Model exposing (MeasurementData, MotherMeasurements)
 import Measurement.Model
 import Measurement.Update
 import Pages.Activity.Model exposing (Model, Msg(..))
-import Pages.Page exposing (Page(..), SessionPage(..))
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 
 
 {-| Ideally, these would be more generic, but it's easier to have
@@ -19,8 +19,8 @@ updateChild :
     -> ( Model ChildId, Cmd (Msg ChildId Measurement.Model.MsgChild), Maybe Measurement.Model.ModelChild, Maybe Measurement.Model.OutMsgChild, Maybe Page )
 updateChild msg model childForm =
     case msg of
-        GoBackToActivitiesPage ->
-            ( model, Cmd.none, childForm, Nothing, Just <| SessionPage ActivitiesPage )
+        GoBackToActivitiesPage sessionId ->
+            ( model, Cmd.none, childForm, Nothing, Just <| UserPage <| SessionPage sessionId ActivitiesPage )
 
         MsgMeasurement subMsg ->
             childForm
@@ -60,12 +60,12 @@ updateMother :
     Msg MotherId Measurement.Model.MsgMother
     -> Model MotherId
     -> Maybe Measurement.Model.ModelMother
-    -> MeasurementData MotherMeasurements MotherEdits
+    -> MeasurementData MotherMeasurements
     -> ( Model MotherId, Cmd (Msg MotherId Measurement.Model.MsgMother), Maybe Measurement.Model.ModelMother, Maybe Measurement.Model.OutMsgMother, Maybe Page )
 updateMother msg model motherForm measurements =
     case msg of
-        GoBackToActivitiesPage ->
-            ( model, Cmd.none, Nothing, Nothing, Just <| SessionPage ActivitiesPage )
+        GoBackToActivitiesPage sessionId ->
+            ( model, Cmd.none, Nothing, Nothing, Just <| UserPage <| SessionPage sessionId ActivitiesPage )
 
         MsgMeasurement subMsg ->
             motherForm

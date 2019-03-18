@@ -3,54 +3,77 @@ module Pages.ProgressReport.View exposing (view)
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (Height, HeightInCm(..), MuacInCm(..), MuacIndication(..), Weight, WeightInKg(..))
+import Backend.Measurement.Model exposing (ChildMeasurementList, Height, HeightInCm(..), MuacInCm(..), MuacIndication(..), PhotoUrl(..), Weight, WeightInKg(..))
 import Backend.Measurement.Utils exposing (currentValue, currentValueWithId, mapMeasurementData, muacIndication)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.Mother.Model exposing (ChildrenRelationType(..))
-import Backend.Session.Model exposing (EditableSession)
+import Backend.Session.Model exposing (EditableSession, Session)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother)
 import EveryDict
-import EveryDictList
+import EveryDictList exposing (EveryDictList)
 import EverySet
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra
-import Pages.Model exposing (MsgSession(..))
-import Pages.Page exposing (Page(..), SessionPage(..))
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
+import Pages.Session.Model
+import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate)
+import Utils.WebData exposing (viewWebData)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), Length(..), ZScore)
 import ZScore.Utils exposing (zScoreLengthHeightForAge, zScoreWeightForAge)
 import ZScore.View
 
 
-view : Language -> ZScore.Model.Model -> ChildId -> ( SessionId, EditableSession ) -> Html MsgSession
-view language zscores childId ( sessionId, session ) =
+view : Language -> ZScore.Model.Model -> ChildId -> ( SessionId, EditableSession ) -> ModelIndexedDb -> Html Pages.Session.Model.Msg
+view language zscores childId ( sessionId, session ) db =
     case getChild childId session.offlineSession of
         Just child ->
-            viewFoundChild language zscores ( childId, child ) ( sessionId, session )
+            let
+                childMeasurements =
+                    EveryDict.get childId db.childMeasurements
+                        |> Maybe.withDefault NotAsked
+
+                expectedSessions =
+                    EveryDict.get childId db.expectedSessions
+                        |> Maybe.withDefault NotAsked
+            in
+            viewWebData language
+                (viewFoundChild language zscores ( childId, child ) ( sessionId, session ))
+                identity
+                (RemoteData.append expectedSessions childMeasurements)
 
         Nothing ->
+            let
+                participantsPage =
+                    ParticipantsPage
+                        |> SessionPage sessionId
+                        |> UserPage
+            in
             ProgressReportPage childId
-                |> SessionPage
-                |> Pages.PageNotFound.View.viewPage language (SetActivePage LoginPage)
+                |> SessionPage sessionId
+                |> UserPage
+                |> Pages.PageNotFound.View.viewPage language (Pages.Session.Model.SetActivePage participantsPage)
 
 
 {-| This function is more complex than one would like ... when reviewing the
 data model in future, it might be nice to take this function into account.
 -}
-viewFoundChild : Language -> ZScore.Model.Model -> ( ChildId, Child ) -> ( SessionId, EditableSession ) -> Html MsgSession
-viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
+viewFoundChild : Language -> ZScore.Model.Model -> ( ChildId, Child ) -> ( SessionId, EditableSession ) -> ( EveryDictList SessionId Session, ChildMeasurementList ) -> Html Pages.Session.Model.Msg
+viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expectedSessions, historical ) =
     let
         backIcon =
             a
                 [ class "icon-back"
                 , ChildPage childId
-                    |> SessionPage
-                    |> SetActivePage
+                    |> SessionPage sessionId
+                    |> UserPage
+                    |> Pages.Session.Model.SetActivePage
                     |> onClick
                 ]
                 []
@@ -65,7 +88,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
         -- session.
         dateOfLastAssessment =
             lastSessionWithMeasurement
-                |> Maybe.map (\last -> last.scheduledDate.start)
+                |> Maybe.map (\( _, last ) -> last.scheduledDate.start)
                 |> Maybe.withDefault session.offlineSession.session.scheduledDate.start
 
         subtitle =
@@ -163,7 +186,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                                 |> text
                             ]
                         , current
-                            |> mapMeasurementData .nutrition .nutrition
+                            |> mapMeasurementData .nutrition
                             |> currentValue
                             |> Maybe.map .value
                             |> Maybe.withDefault EverySet.empty
@@ -177,59 +200,8 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                     ]
                 ]
 
-        -- What we're doing here is figuring out which sessions we expect the
-        -- child to have attended. Our data model isn't perfect for this
-        -- purpose at the moment ... eventually, we should probably deal with
-        -- this more thoroughly.
-        --
-        -- For now, what we have is `sessions.offlineSession.allSessions`,
-        -- which is, in fact, basic data for all sessions and all clinics, in
-        -- order by date. We also have our measurement values, indexed by
-        -- session ID. So, basically we fold through `allSessions`, with a
-        -- `Maybe ClinicId` and a list of session ID's as our state.
-        --
-        -- * If we have a measurement for the session ID, then the child was
-        --   expected (so we add the session to the list), and we set the
-        --   child's current clinic to the clinic for that session.
-        --
-        -- * If we don't have a measurement for the session ID, we consider
-        --   it an expected session only if it matches the current clinic that
-        --   we're tracking.
-        --
-        -- So, we start by inferring "no clinic" (and thus no expected sessions),
-        -- and then infer a change in clinic whenever we see a measurement in a
-        -- session for a different clinic. That should produce reasonable results
-        -- until we model all of this more explicitly.
-        --
-        -- We do a reverse at the end for the sake of just reversing once.
-        expectedSessions =
-            session.offlineSession.allSessions
-                |> EveryDictList.foldl checkSession ( [], Nothing )
-                |> Tuple.first
-                |> List.reverse
-
-        checkSession id currentSession (( expectedIds, currentClinic ) as state) =
-            if hasMeasurement id then
-                -- We add the id at the front, and reverse everything once
-                -- we're all done.
-                ( id :: expectedIds
-                , Just currentSession.clinicId
-                )
-
-            else if currentClinic == Just currentSession.clinicId then
-                -- This is a session for the clinic the child appears to be
-                -- assigned to at this time, so it's expected even though
-                -- missed.
-                ( id :: expectedIds
-                , currentClinic
-                )
-
-            else
-                -- No measurement, and not the current clinic, so just keep going.
-                state
-
         -- Do we have any kind of measurement for the child for the specified session?
-        hasMeasurement id =
+        hasMeasurement ( id, _ ) =
             EveryDict.member id heightValuesBySession
                 || EveryDict.member id muacValuesBySession
                 || EveryDict.member id weightValuesBySession
@@ -239,12 +211,13 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
         -- What's the last session for which we have some measurement?
         lastSessionWithMeasurement =
             expectedSessions
+                |> EveryDictList.toList
                 |> List.reverse
                 |> List.Extra.find hasMeasurement
-                |> Maybe.andThen (\id -> EveryDictList.get id session.offlineSession.allSessions)
 
         heightWeightMuacTable =
             expectedSessions
+                |> EveryDictList.toList
                 |> greedyGroupsOf 12
                 |> List.map
                     (\groupOfTwelve ->
@@ -252,10 +225,8 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                             ages =
                                 groupOfTwelve
                                     |> List.map
-                                        (\id ->
-                                            EveryDictList.get id session.offlineSession.allSessions
-                                                |> Maybe.map (\columnSession -> renderAgeMonthsDaysHtml language child.birthDate columnSession.scheduledDate.start)
-                                                |> Maybe.withDefault []
+                                        (\( id, columnSession ) ->
+                                            renderAgeMonthsDaysHtml language child.birthDate columnSession.scheduledDate.start
                                                 |> th
                                                     [ classList
                                                         [ ( "center", True )
@@ -272,7 +243,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                             heights =
                                 groupOfTwelve
                                     |> List.map
-                                        (\id ->
+                                        (\( id, _ ) ->
                                             EveryDict.get id heightValuesBySession
                                                 |> Maybe.map viewHeightWithIndication
                                                 |> Maybe.withDefault (text "--")
@@ -285,7 +256,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                             muacs =
                                 groupOfTwelve
                                     |> List.map
-                                        (\id ->
+                                        (\( id, _ ) ->
                                             EveryDict.get id muacValuesBySession
                                                 |> Maybe.map .value
                                                 |> Maybe.map
@@ -344,7 +315,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                             weights =
                                 groupOfTwelve
                                     |> List.map
-                                        (\id ->
+                                        (\( id, _ ) ->
                                             EveryDict.get id weightValuesBySession
                                                 |> Maybe.map viewWeightWithIndication
                                                 |> Maybe.withDefault (text "--")
@@ -385,6 +356,11 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                 [ class "first" ]
                 [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Muac)) ]
 
+        viewPhotoUrl (PhotoUrl url) =
+            div
+                [ class "image" ]
+                [ img [ src url ] [] ]
+
         photos =
             photoValues
                 |> List.map
@@ -394,9 +370,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                             [ div
                                 [ class "content" ]
                                 [ text <| renderAgeMonthsDays language child.birthDate photo.dateMeasured ]
-                            , div
-                                [ class "image" ]
-                                [ img [ src photo.value.url ] [] ]
+                            , viewPhotoUrl photo.value
                             ]
                     )
                 |> div [ class "ui five report cards" ]
@@ -415,55 +389,28 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) =
                     , ZScore.View.viewWeightForHeightGirls
                     )
 
-        historical =
-            getChildHistoricalMeasurements childId session.offlineSession
-
         current =
             getChildMeasurementData childId session
 
         -- This includes any edits that have been saved locally, but not as-you=type
         -- in the UI before you hit "Save" or "Update".
-        getValues func1 func2 func3 =
-            let
-                currentValue =
-                    current
-                        |> mapMeasurementData func1 func2
-                        |> currentValueWithId
-
-                historicalValues =
-                    func3 historical
-            in
-            case currentValue of
-                Nothing ->
-                    -- No current value, so just use historical
-                    List.map Tuple.second historicalValues
-
-                Just ( Nothing, currentValue ) ->
-                    -- We have a new current value, so use it
-                    currentValue :: List.map Tuple.second historicalValues
-
-                Just ( Just currentId, currentValue ) ->
-                    -- We've edited an old value, so use the edited version
-                    -- and leave out the old one.
-                    historicalValues
-                        |> List.filter (\( id, _ ) -> id /= currentId)
-                        |> List.map Tuple.second
-                        |> List.append [ currentValue ]
+        getValues func =
+            EveryDictList.values (func historical)
 
         heightValues =
-            getValues .height .height .heights
+            getValues .heights
 
         weightValues =
-            getValues .weight .weight .weights
+            getValues .weights
 
         muacValues =
-            getValues .muac .muac .muacs
+            getValues .muacs
 
         photoValues =
-            getValues .photo .photo .photos
+            getValues .photos
 
         nutritionValues =
-            getValues .nutrition .nutrition .nutritions
+            getValues .nutritions
 
         indexBySession values =
             values

@@ -43,50 +43,6 @@ class HedleyRestfulSessions extends HedleyRestfulSyncBase {
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function getQueryForList() {
-    $request = $this->getRequest();
-
-    $query = parent::getQueryForList();
-
-    // Note that this isn't a security implementation ... we allow the client
-    // to specify what day is desired. This helps avoid complications due to
-    // differences between server and local time zones (i.e. differences in
-    // interpreting what day it is).  The security aspect of this (i.e.
-    // preventing data entry after a certain day) will be handled elsewhere.
-    //
-    // Note that the open_after param should be specified as YYYY-MM-DD.
-    if (!empty($request['open_after'])) {
-      // We want to include all sessions either open now or which will be
-      // open in the future.
-      $openAfter = $request['open_after'];
-
-      $query->fieldCondition('field_scheduled_date', 'value2', $openAfter, '>=');
-      $query->fieldCondition('field_closed', 'value', TRUE, '<>');
-    }
-
-    return $query;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getQueryCount() {
-    $request = $this->getRequest();
-    $query = parent::getQueryCount();
-
-    if (!empty($request['open_after'])) {
-      $openAfter = $request['open_after'];
-
-      $query->fieldCondition('field_scheduled_date', 'value2', $openAfter, '<=');
-      $query->fieldCondition('field_closed', 'value', TRUE, '<>');
-    }
-
-    return $query;
-  }
-
-  /**
    * Show the scheduled_date with date only.
    */
   public function renderDate($date) {

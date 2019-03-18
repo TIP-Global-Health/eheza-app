@@ -10,6 +10,270 @@
 function hedley_activity_field_default_field_instances() {
   $field_instances = array();
 
+  // Exported field_instance: 'node-attendance-field_attended'.
+  $field_instances['node-attendance-field_attended'] = array(
+    'bundle' => 'attendance',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Has the mother attended for this session?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_attended',
+    'label' => 'Attended',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance: 'node-attendance-field_date_measured'.
+  $field_instances['node-attendance-field_date_measured'] = array(
+    'bundle' => 'attendance',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 2,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_date_measured',
+    'label' => 'Date Measured',
+    'required' => 1,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance: 'node-attendance-field_mother'.
+  $field_instances['node-attendance-field_mother'] = array(
+    'bundle' => 'attendance',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 1,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_mother',
+    'label' => 'Mother / Caregiver',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-attendance-field_nurse'.
+  $field_instances['node-attendance-field_nurse'] = array(
+    'bundle' => 'attendance',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 3,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 4,
+    ),
+  );
+
+  // Exported field_instance: 'node-attendance-field_session'.
+  $field_instances['node-attendance-field_session'] = array(
+    'bundle' => 'attendance',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 4,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_session',
+    'label' => 'Session',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance: 'node-attendance-field_uuid'.
+  $field_instances['node-attendance-field_uuid'] = array(
+    'bundle' => 'attendance',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 5,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 6,
+    ),
+  );
+
   // Exported field_instance: 'node-family_planning-field_date_measured'.
   $field_instances['node-family_planning-field_date_measured'] = array(
     'bundle' => 'family_planning',
@@ -240,7 +504,7 @@ function hedley_activity_field_default_field_instances() {
     'bundle' => 'family_planning',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -512,7 +776,7 @@ function hedley_activity_field_default_field_instances() {
     'bundle' => 'height',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -531,12 +795,13 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_uuid',
     'label' => 'UUID',
-    'required' => FALSE,
+    'required' => 0,
     'settings' => array(
       'text_processing' => 0,
       'user_register_form' => FALSE,
     ),
     'widget' => array(
+      'active' => 1,
       'module' => 'text',
       'settings' => array(
         'size' => 60,
@@ -829,7 +1094,7 @@ function hedley_activity_field_default_field_instances() {
     'bundle' => 'muac',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -1092,7 +1357,7 @@ function hedley_activity_field_default_field_instances() {
     'bundle' => 'nutrition',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -1369,7 +1634,7 @@ function hedley_activity_field_default_field_instances() {
     'bundle' => 'photo',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -1641,7 +1906,7 @@ function hedley_activity_field_default_field_instances() {
     'bundle' => 'weight',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -1862,13 +2127,16 @@ function hedley_activity_field_default_field_instances() {
 
   // Translatables
   // Included for use with string extractors like potx.
+  t('Attended');
   t('BMI');
   t('Child');
   t('Date Measured');
   t('Family Planning');
+  t('Has the mother attended for this session?');
   t('Height');
   t('MUAC');
   t('Mother');
+  t('Mother / Caregiver');
   t('Nurse');
   t('Nutrition Signs');
   t('Photo');
@@ -1878,6 +2146,7 @@ function hedley_activity_field_default_field_instances() {
   t('UUID');
   t('Weight');
   t('When was this measurement actually made (as opposed to scheduled, or entered)?');
+  t('You can leave the UUID blank -- it will be automatically generated.');
   t('ZScore Age');
   t('ZScore BMI');
   t('ZScore Length');

@@ -1,34 +1,32 @@
-port module App.Update exposing (init, loginConfig, subscriptions, update)
+port module App.Update exposing (init, subscriptions, updateAndThenFetch)
 
+import App.Fetch
 import App.Model exposing (..)
-import App.Utils exposing (..)
+import App.Utils exposing (getLoggedInModel)
+import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
-import Backend.Session.Model
 import Backend.Update
-import Backend.Utils exposing (withEditableSession)
 import Config
 import Date
 import Device.Decoder
 import Device.Encoder
 import Dict
-import EverySet
+import EveryDict
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Http exposing (Error(..))
 import HttpBuilder
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
-import Maybe.Extra
 import Pages.Admin.Update
 import Pages.Device.Model
 import Pages.Device.Update
-import Pages.Login.Model
-import Pages.Login.Update
-import Pages.Model
 import Pages.Page exposing (Page(..), UserPage(AdminPage, ClinicsPage))
-import Pages.Update
+import Pages.PinCode.Model
+import Pages.PinCode.Update
+import Pages.Session.Model
+import Pages.Session.Update
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, toEntityId)
-import Restful.Login exposing (AuthenticatedUser, Credentials, LoginEvent(..), UserAndData(..), checkCachedCredentials)
+import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, select, toCmd, toEntityId)
 import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
@@ -37,27 +35,9 @@ import Time exposing (minute)
 import Translate.Model exposing (Language(..))
 import Translate.Utils exposing (languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
-import User.Decoder exposing (decodeUser)
-import User.Encoder exposing (encodeUser)
-import User.Model exposing (Role(Administrator), User)
 import Version
 import ZScore.Model
 import ZScore.Update
-
-
-loginConfig : Restful.Login.Config () User LoggedInModel Msg
-loginConfig =
-    -- The `oneOf` below is necessary because how the backend sends the user is
-    -- a little different from how we encode it for local storage ... this
-    -- could possibly be solved another way.
-    Restful.Login.drupalConfig
-        { decodeUser = oneOf [ decodeSingleDrupalEntity decodeUser, decodeUser ]
-        , encodeUser = Just encodeUser
-        , initialAnonymousData = ()
-        , initialAuthenticatedData = \_ _ -> emptyLoggedInModel
-        , cacheCredentials = curry cacheCredentials
-        , tag = MsgLogin
-        }
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -78,11 +58,6 @@ init flags =
             case Dict.get flags.hostname Config.configs of
                 Just config ->
                     let
-                        ( loginStatus, loginCmd ) =
-                            -- We kick off the process of checking the cached credentials which
-                            -- we were provided.
-                            checkCachedCredentials loginConfig config.backendUrl (Just flags.credentials)
-
                         fetchCachedDevice =
                             HttpBuilder.get "/sw/config/device"
                                 |> HttpBuilder.withExpectJson (Device.Decoder.decode config.backendUrl)
@@ -120,26 +95,33 @@ init flags =
                                      )
                                   -}
                                   Task.perform Tick Time.now
-                                , loginCmd
                                 , fetchCachedDevice
-                                , Backend.Update.fetchEditableSession ()
                                 ]
 
                         configuredModel =
                             { config = config
-                            , loginPage = Pages.Login.Model.emptyModel
-                            , login = loginStatus
                             , device = Loading
                             , devicePage = Pages.Device.Model.emptyModel
+                            , loggedIn = NotAsked
+                            , pinCodePage = Pages.PinCode.Model.emptyModel
                             }
+
+                        tryPinCode =
+                            if flags.pinCode == "" then
+                                []
+
+                            else
+                                [ TryPinCode flags.pinCode ]
                     in
                     ( { model | configuration = Success configuredModel }
                     , cmd
                     )
                         |> sequence update
-                            [ MsgServiceWorker (ServiceWorker.Model.SendOutgoingMsg ServiceWorker.Model.Register)
-                            , MsgZScore ZScore.Model.FetchAllTables
-                            ]
+                            (List.append tryPinCode
+                                [ MsgServiceWorker (ServiceWorker.Model.SendOutgoingMsg ServiceWorker.Model.Register)
+                                , MsgZScore ZScore.Model.FetchAllTables
+                                ]
+                            )
 
                 Nothing ->
                     ( { model | configuration = Failure <| "No config found for: " ++ flags.hostname }
@@ -149,44 +131,56 @@ init flags =
     ( { updatedModel | language = activeLanguage }, cmd )
 
 
+updateAndThenFetch : Msg -> Model -> ( Model, Cmd Msg )
+updateAndThenFetch msg model =
+    update msg model
+        |> App.Fetch.andThenFetch update
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
         currentDate =
             fromLocalDateTime <| Date.fromTime model.currentTime
+
+        nurseId =
+            getLoggedInModel model
+                |> Maybe.map (.nurse >> Tuple.first)
     in
     case msg of
-        MsgCache subMsg ->
-            let
-                ( subModel, subCmd, extraMsgs ) =
-                    Backend.Update.updateCache (getUserId model) currentDate subMsg model.cache
-            in
-            ( { model | cache = subModel }
-            , Cmd.map MsgCache subCmd
-            )
-                |> sequence update extraMsgs
-
         MsgIndexedDb subMsg ->
             let
                 ( subModel, subCmd ) =
-                    Backend.Update.updateIndexedDb subMsg model.indexedDb
+                    Backend.Update.updateIndexedDb currentDate nurseId subMsg model.indexedDb
+
+                -- Most revisions are handled at the IndexedDB level, but there
+                -- is at least one we need to catch here.
+                extraMsgs =
+                    case subMsg of
+                        Backend.Model.HandleRevisions revisions ->
+                            List.filterMap (handleRevision model) revisions
+
+                        _ ->
+                            []
             in
             ( { model | indexedDb = subModel }
             , Cmd.map MsgIndexedDb subCmd
             )
+                |> sequence update extraMsgs
 
         MsgLoggedIn loggedInMsg ->
             updateLoggedIn
-                (\credentials data ->
+                (\data ->
                     case loggedInMsg of
                         MsgBackend subMsg ->
                             let
-                                ( backend, cmd, cacheMsgs ) =
-                                    Backend.Update.updateBackend credentials.backendUrl credentials.accessToken subMsg data.backend
+                                ( backend, cmd ) =
+                                    -- TODO: delete this
+                                    Backend.Update.updateBackend "" "" subMsg data.backend
                             in
                             ( { data | backend = backend }
                             , Cmd.map (MsgLoggedIn << MsgBackend) cmd
-                            , List.map MsgCache cacheMsgs
+                            , []
                             )
 
                         MsgPageAdmin subMsg ->
@@ -198,74 +192,19 @@ update msg model =
                             , Cmd.map (MsgLoggedIn << MsgPageAdmin) cmd
                             , appMsgs
                             )
-                )
-                model
 
-        MsgLogin subMsg ->
-            updateConfigured
-                (\configured ->
-                    let
-                        ( subModel, cmd, loggedIn ) =
-                            Restful.Login.update loginConfig subMsg configured.login
-
-                        extraMsgs =
-                            -- This will be true only at the very moment of
-                            -- successful login.
-                            if loggedIn == Just LoggedIn then
-                                let
-                                    -- Transition away from the `LoginPage` if
-                                    -- that's where we are. We don't want to
-                                    -- **prohibit** being on the LoginPage if
-                                    -- you're already logged in, so we can't
-                                    -- just detect the state of being logged in
-                                    -- ... we have to get a message at the
-                                    -- moment of login.
-                                    redirect =
-                                        case model.activePage of
-                                            LoginPage ->
-                                                case subModel of
-                                                    Authenticated { credentials } ->
-                                                        if EverySet.member Administrator credentials.user.roles then
-                                                            -- We leave admins on the login page
-                                                            []
-
-                                                        else
-                                                            [ SetActivePage <| UserPage <| ClinicsPage Nothing ]
-
-                                                    _ ->
-                                                        []
-
-                                            _ ->
-                                                -- If we were showing the LoginPage
-                                                -- **instead of** the activePage, we
-                                                -- can just actually show the activePage
-                                                -- now
-                                                []
-
-                                    -- We also try to refetch the offlineSession.
-                                    -- We actually do this in two places ...
-                                    -- here, and when we get the session
-                                    -- information from the cache.  Whichever
-                                    -- gets triggered first will fail silently
-                                    -- ...  the second will succeed.
-                                    refetch =
-                                        MsgSession <|
-                                            Pages.Model.MsgEditableSession Backend.Session.Model.RefetchSession
-
-                                    -- And, we reset errors, since the errors
-                                    -- may have been authorization errors.
-                                    resetErrors =
-                                        MsgLoggedIn <| MsgBackend <| Backend.Model.ResetErrors
-                                in
-                                refetch :: resetErrors :: redirect
-
-                            else
-                                []
-                    in
-                    ( { configured | login = subModel }
-                    , cmd
-                    , extraMsgs
-                    )
+                        MsgPageSession sessionId subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.sessionPages
+                                        |> EveryDict.get sessionId
+                                        |> Maybe.withDefault Pages.Session.Model.emptyModel
+                                        |> Pages.Session.Update.update sessionId model.indexedDb subMsg
+                            in
+                            ( { data | sessionPages = EveryDict.insert sessionId subModel data.sessionPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageSession sessionId) subCmd
+                            , extraMsgs
+                            )
                 )
                 model
 
@@ -324,32 +263,31 @@ update msg model =
                 )
                 model
 
-        MsgPageLogin subMsg ->
+        MsgPagePinCode subMsg ->
             updateConfigured
                 (\configured ->
                     let
                         ( subModel, subCmd, outMsg ) =
-                            Pages.Login.Update.update subMsg configured.loginPage
+                            Pages.PinCode.Update.update subMsg configured.pinCodePage
 
-                        extraMsgs =
+                        ( extraMsgs, extraCmds ) =
                             outMsg
-                                |> Maybe.Extra.toList
-                                |> List.map
+                                |> Maybe.map
                                     (\out ->
                                         case out of
-                                            Pages.Login.Model.TryLogin name pass ->
-                                                Restful.Login.tryLogin configured.config.backendUrl [] name pass
-                                                    |> MsgLogin
+                                            Pages.PinCode.Model.TryPinCode code ->
+                                                ( [ TryPinCode code ], [] )
 
-                                            Pages.Login.Model.Logout ->
-                                                MsgLogin Restful.Login.logout
+                                            Pages.PinCode.Model.Logout ->
+                                                ( [ SetLoggedIn NotAsked ], [ cachePinCode "" ] )
 
-                                            Pages.Login.Model.SetActivePage page ->
-                                                SetActivePage page
+                                            Pages.PinCode.Model.SetActivePage page ->
+                                                ( [ SetActivePage page ], [] )
                                     )
+                                |> Maybe.withDefault ( [], [] )
                     in
-                    ( { configured | loginPage = subModel }
-                    , Cmd.map MsgPageLogin subCmd
+                    ( { configured | pinCodePage = subModel }
+                    , Cmd.batch (Cmd.map MsgPagePinCode subCmd :: extraCmds)
                     , extraMsgs
                     )
                 )
@@ -364,22 +302,6 @@ update msg model =
             , Cmd.map MsgServiceWorker subCmd
             )
                 |> sequence update extraMsgs
-
-        MsgSession subMsg ->
-            -- TODO: Should ideally reflect the fact that an EditableSession is
-            -- required in the types.
-            withEditableSession ( model, Cmd.none )
-                (\_ session ->
-                    let
-                        ( subModel, subCmd, extraMsgs ) =
-                            Pages.Update.updateSession session subMsg model.sessionPages
-                    in
-                    ( { model | sessionPages = subModel }
-                    , Cmd.map MsgSession subCmd
-                    )
-                        |> sequence update extraMsgs
-                )
-                model.cache
 
         MsgZScore subMsg ->
             let
@@ -448,6 +370,11 @@ update msg model =
             , Cmd.none
             )
 
+        SetMemoryQuota quota ->
+            ( { model | memoryQuota = Just quota }
+            , Cmd.none
+            )
+
         SetStorageQuota quota ->
             ( { model | storageQuota = Just quota }
             , Cmd.none
@@ -477,6 +404,58 @@ update msg model =
             -- Normally handled automatically, but sometimes nice to trigger manually
             ( model, trySyncing () )
 
+        TryPinCode code ->
+            updateConfigured
+                (\configured ->
+                    let
+                        formatResponse =
+                            .items >> List.head >> Maybe.map RemoteData.succeed >> Maybe.withDefault (RemoteData.Failure NetworkError)
+
+                        checkPinCode =
+                            select "/sw" nurseEndpoint { pinCode = Just code }
+                                |> toCmd (RemoteData.fromResult >> RemoteData.andThen formatResponse >> SetLoggedIn)
+                    in
+                    ( { configured | loggedIn = Loading }
+                    , Cmd.batch
+                        [ checkPinCode
+                        , cachePinCode code
+                        ]
+                    , []
+                    )
+                )
+                model
+
+        -- Note that this also resets any data which depends on being logged in.
+        SetLoggedIn nurse ->
+            updateConfigured
+                (\configured ->
+                    ( { configured | loggedIn = RemoteData.map emptyLoggedInModel nurse }
+                    , Cmd.none
+                    , []
+                    )
+                )
+                model
+
+
+{-| Updates our `nurse` user if the uuid matches the logged-in user.
+-}
+handleRevision : Model -> Backend.Model.Revision -> Maybe Msg
+handleRevision model revision =
+    case revision of
+        Backend.Model.NurseRevision uuid data ->
+            Maybe.andThen
+                (\loggedIn ->
+                    if Tuple.first loggedIn.nurse == uuid then
+                        Just (SetLoggedIn (Success ( uuid, data )))
+
+                    else
+                        Nothing
+                )
+                (getLoggedInModel model)
+
+        _ ->
+            Nothing
+
 
 {-| Convenience function to process a msg which depends on having a configuration.
 
@@ -502,29 +481,25 @@ updateConfigured func model =
 
 
 {-| Convenience function to process a msg which depends on being logged in.
-
-TODO: Put a version of this in `Restful.Login`.
-
 -}
-updateLoggedIn : (Credentials User -> LoggedInModel -> ( LoggedInModel, Cmd Msg, List Msg )) -> Model -> ( Model, Cmd Msg )
+updateLoggedIn : (LoggedInModel -> ( LoggedInModel, Cmd Msg, List Msg )) -> Model -> ( Model, Cmd Msg )
 updateLoggedIn func model =
     updateConfigured
         (\configured ->
-            -- TODO: Perhaps we should Debug.log some errors in cases where we get
-            -- messages we can't handle ...
-            case configured.login of
-                Anonymous _ ->
-                    ( configured, Cmd.none, [] )
-
-                Authenticated login ->
-                    let
-                        ( subModel, cmd, extraMsgs ) =
-                            func login.credentials login.data
-                    in
-                    ( { configured | login = Authenticated { login | data = subModel } }
-                    , cmd
-                    , extraMsgs
+            configured.loggedIn
+                |> RemoteData.map
+                    (\loggedIn ->
+                        let
+                            ( subModel, cmd, extraMsgs ) =
+                                func loggedIn
+                        in
+                        ( { configured | loggedIn = Success subModel }
+                        , cmd
+                        , extraMsgs
+                        )
                     )
+                |> RemoteData.withDefault
+                    ( configured, Cmd.none, [] )
         )
         model
 
@@ -533,16 +508,17 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Time.every minute Tick
-        , Sub.map MsgCache Backend.Update.subscriptions
         , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
         , persistentStorage SetPersistentStorage
         , storageQuota SetStorageQuota
+        , memoryQuota SetMemoryQuota
         ]
 
 
-{-| Saves credentials provided by `Restful.Login`.
+{-| Saves PIN code entered by user, so that we can use it again if
+the browser is reloaded.
 -}
-port cacheCredentials : ( String, String ) -> Cmd msg
+port cachePinCode : String -> Cmd msg
 
 
 {-| Manually kick off a sync event. Normally, handled automatically.
@@ -564,6 +540,11 @@ port setLanguage : String -> Cmd msg
 storage.
 -}
 port persistentStorage : (Bool -> msg) -> Sub msg
+
+
+{-| Let the Javascript tell us about memory quotas.
+-}
+port memoryQuota : (MemoryQuota -> msg) -> Sub msg
 
 
 {-| Let the Javascript tell us about our storage quota.

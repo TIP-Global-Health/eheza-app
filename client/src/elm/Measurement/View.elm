@@ -9,7 +9,7 @@ import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (applyEdit, currentValues, mapMeasurementData, muacIndication)
+import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData, muacIndication)
 import Backend.Session.Model exposing (EditableSession)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
@@ -26,7 +26,7 @@ import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
 import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
-import Restful.Endpoint exposing (fromEntityId)
+import Restful.Endpoint exposing (fromEntityUuid)
 import Round
 import Translate as Trans exposing (Language, TranslationId, translate)
 import Translate.Utils exposing (selectLanguage)
@@ -39,31 +39,31 @@ import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeight
 {-| We need the current date in order to immediately construct a ZScore for the
 child when we enter something.
 -}
-viewChild : Language -> NominalDate -> Child -> ChildActivity -> MeasurementData ChildMeasurements ChildEdits -> ZScore.Model.Model -> EditableSession -> ModelChild -> Html MsgChild
+viewChild : Language -> NominalDate -> Child -> ChildActivity -> MeasurementData ChildMeasurements -> ZScore.Model.Model -> EditableSession -> ModelChild -> Html MsgChild
 viewChild language currentDate child activity measurements zscores session model =
     case activity of
         ChildPicture ->
-            viewPhoto language (mapMeasurementData (Maybe.map Tuple.second << .photo) .photo measurements) model.photo
+            viewPhoto language (mapMeasurementData .photo measurements) model.photo
 
         Height ->
-            viewHeight language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .height) .height measurements) zscores model
+            viewHeight language currentDate child (mapMeasurementData .height measurements) zscores model
 
         Muac ->
-            viewMuac language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .muac) .muac measurements) zscores model
+            viewMuac language currentDate child (mapMeasurementData .muac measurements) zscores model
 
         NutritionSigns ->
-            viewNutritionSigns language (mapMeasurementData (Maybe.map Tuple.second << .nutrition) .nutrition measurements) model.nutritionSigns
+            viewNutritionSigns language (mapMeasurementData .nutrition measurements) model.nutritionSigns
 
         -- Counseling ->
-        --    viewCounselingSession language (mapMeasurementData (Maybe.map Tuple.second << .counselingSession) .counseling measurements) session model.counseling
+        --    viewCounselingSession language (mapMeasurementData .counselingSession measurements) session model.counseling
         Weight ->
-            viewWeight language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .weight) .weight measurements) zscores model
+            viewWeight language currentDate child (mapMeasurementData .weight measurements) zscores model
 
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
 different types of `Float` inputs.
 -}
-type alias FloatFormConfig value =
+type alias FloatFormConfig id value =
     { blockName : String
     , activity : Activity
     , placeholderText : TranslationId
@@ -77,11 +77,11 @@ type alias FloatFormConfig value =
     , dateMeasured : value -> NominalDate
     , viewIndication : Maybe (Language -> Float -> Html MsgChild)
     , updateMsg : String -> MsgChild
-    , saveMsg : Float -> MsgChild
+    , saveMsg : Maybe id -> Float -> MsgChild
     }
 
 
-heightFormConfig : FloatFormConfig Height
+heightFormConfig : FloatFormConfig HeightId Height
 heightFormConfig =
     { blockName = "height"
     , activity = ChildActivity Height
@@ -96,11 +96,11 @@ heightFormConfig =
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateHeight
-    , saveMsg = SendOutMsgChild << SaveHeight << HeightInCm
+    , saveMsg = \id value -> SendOutMsgChild <| SaveHeight id (HeightInCm value)
     }
 
 
-muacFormConfig : FloatFormConfig Muac
+muacFormConfig : FloatFormConfig MuacId Muac
 muacFormConfig =
     { blockName = "muac"
     , activity = ChildActivity Muac
@@ -115,11 +115,11 @@ muacFormConfig =
     , dateMeasured = .dateMeasured
     , viewIndication = Just <| \language val -> viewMuacIndication language (muacIndication (MuacInCm val))
     , updateMsg = UpdateMuac
-    , saveMsg = SendOutMsgChild << SaveMuac << MuacInCm
+    , saveMsg = \id value -> SendOutMsgChild <| SaveMuac id (MuacInCm value)
     }
 
 
-weightFormConfig : FloatFormConfig Weight
+weightFormConfig : FloatFormConfig WeightId Weight
 weightFormConfig =
     { blockName = "weight"
     , activity = ChildActivity Weight
@@ -134,7 +134,7 @@ weightFormConfig =
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateWeight
-    , saveMsg = SendOutMsgChild << SaveWeight << WeightInKg
+    , saveMsg = \id value -> SendOutMsgChild <| SaveWeight id (WeightInKg value)
     }
 
 
@@ -147,22 +147,22 @@ zScoreForHeightOrLength model (Days days) (Centimetres cm) gender weight =
         zScoreWeightForHeight model (ZScore.Model.Height cm) gender (Kilograms weight)
 
 
-viewHeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Height) (Edit HeightId Height) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewHeight : Language -> NominalDate -> Child -> MeasurementData (Maybe ( HeightId, Height )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewHeight =
     viewFloatForm heightFormConfig
 
 
-viewWeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Weight) (Edit WeightId Weight) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewWeight : Language -> NominalDate -> Child -> MeasurementData (Maybe ( WeightId, Weight )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewWeight =
     viewFloatForm weightFormConfig
 
 
-viewMuac : Language -> NominalDate -> Child -> MeasurementData (Maybe Muac) (Edit MuacId Muac) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewMuac : Language -> NominalDate -> Child -> MeasurementData (Maybe ( MuacId, Muac )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewMuac =
     viewFloatForm muacFormConfig
 
 
-viewFloatForm : FloatFormConfig value -> Language -> NominalDate -> Child -> MeasurementData (Maybe value) (Edit id value) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewFloatForm : FloatFormConfig id value -> Language -> NominalDate -> Child -> MeasurementData (Maybe ( id, value )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewFloatForm config language currentDate child measurements zscores model =
     let
         -- What is the string input value from the form?
@@ -196,7 +196,6 @@ viewFloatForm config language currentDate child measurements zscores model =
         -- measurement we haven't saved yet, this will be Nothing.
         savedMeasurement =
             measurements.current
-                |> applyEdit measurements.edits
 
         -- What measurement should we be comparing to? That is, what's the most
         -- recent measurement of this kind that we're **not** editing?
@@ -215,7 +214,7 @@ viewFloatForm config language currentDate child measurements zscores model =
         -- to change that if necessary.
         dateMeasured =
             savedMeasurement
-                |> Maybe.map config.dateMeasured
+                |> Maybe.map (Tuple.second >> config.dateMeasured)
                 |> Maybe.withDefault currentDate
 
         -- And, we'll need the child's age.
@@ -304,7 +303,7 @@ viewFloatForm config language currentDate child measurements zscores model =
                         [ class "five wide column" ]
                         [ showMaybe <|
                             Maybe.map2 (viewFloatDiff config language)
-                                measurements.previous
+                                (Maybe.map Tuple.second measurements.previous)
                                 floatValue
                         , showMaybe <|
                             Maybe.map2 (\func value -> func language value)
@@ -313,7 +312,7 @@ viewFloatForm config language currentDate child measurements zscores model =
                         ]
                     ]
                 , previousMeasurement
-                    |> Maybe.map (viewPreviousMeasurement config language)
+                    |> Maybe.map (Tuple.second >> viewPreviousMeasurement config language)
                     |> showMaybe
                 ]
             , showMaybe renderedZScoreForAge
@@ -321,7 +320,7 @@ viewFloatForm config language currentDate child measurements zscores model =
             ]
         , div [ class "actions" ] <|
             saveButton language
-                (Maybe.map config.saveMsg floatValue)
+                (Maybe.map (config.saveMsg (Maybe.map Tuple.first measurements.current)) floatValue)
                 measurements
                 Nothing
         ]
@@ -355,18 +354,18 @@ viewMuacIndication language muac =
 
 {-| Show a photo thumbnail.
 -}
-viewPhotoThumb : PhotoValue -> Html any
-viewPhotoThumb photo =
+viewPhotoThumb : PhotoUrl -> Html any
+viewPhotoThumb (PhotoUrl url) =
     div []
         [ img
-            [ src photo.url
+            [ src url
             , class "ui small image"
             ]
             []
         ]
 
 
-viewPreviousMeasurement : FloatFormConfig value -> Language -> value -> Html any
+viewPreviousMeasurement : FloatFormConfig id value -> Language -> value -> Html any
 viewPreviousMeasurement config language previousValue =
     [ previousValue
         |> config.storedValue
@@ -381,7 +380,7 @@ viewPreviousMeasurement config language previousValue =
 
 {-| Show a diff of values, if they were gained or lost.
 -}
-viewFloatDiff : FloatFormConfig value -> Language -> value -> Float -> Html any
+viewFloatDiff : FloatFormConfig id value -> Language -> value -> Float -> Html any
 viewFloatDiff config language previousValue currentValue =
     let
         previousFloatValue =
@@ -417,11 +416,26 @@ viewFloatDiff config language previousValue currentValue =
         viewMessage False
 
 
-viewPhoto : Language -> MeasurementData (Maybe Photo) (Edit PhotoId Photo) -> Maybe PhotoValue -> Html MsgChild
+viewPhoto : Language -> MeasurementData (Maybe ( PhotoId, Photo )) -> Maybe PhotoUrl -> Html MsgChild
 viewPhoto language measurement photo =
     let
         activity =
             ChildActivity ChildPicture
+
+        photoId =
+            Maybe.map Tuple.first measurement.current
+
+        -- If we have a photo that we've just taken, but not saved, that is in
+        -- `photo`. We show that if we have it. Otherwise, we'll show the saved
+        -- measurement, if we have that.
+        displayPhoto =
+            case photo of
+                Just url ->
+                    Just url
+
+                Nothing ->
+                    Maybe.map (Tuple.second >> .value)
+                        measurement.current
     in
     divKeyed
         [ class "ui full segment photo" ]
@@ -435,7 +449,7 @@ viewPhoto language measurement photo =
                 |> keyed "help"
             , keyedDivKeyed "grid"
                 [ class "ui grid" ]
-                [ Maybe.map viewPhotoThumb photo
+                [ Maybe.map viewPhotoThumb displayPhoto
                     |> showMaybe
                     |> List.singleton
                     |> div [ class "eight wide column" ]
@@ -465,7 +479,7 @@ viewPhoto language measurement photo =
         , keyed "button" <|
             div [ class "actions" ] <|
                 saveButton language
-                    (Maybe.map (SendOutMsgChild << SavePhoto) photo)
+                    (Maybe.map (SendOutMsgChild << SavePhoto photoId) photo)
                     measurement
                     (Just "column")
         ]
@@ -477,7 +491,7 @@ Button will also take care of preventing double submission,
 and showing success and error indications.
 
 -}
-saveButton : Language -> Maybe msg -> MeasurementData (Maybe a) (Edit id a) -> Maybe String -> List (Html msg)
+saveButton : Language -> Maybe msg -> MeasurementData (Maybe a) -> Maybe String -> List (Html msg)
 saveButton language msg measurement maybeDivClass =
     let
         isLoading =
@@ -487,7 +501,7 @@ saveButton language msg measurement maybeDivClass =
             RemoteData.isFailure measurement.update
 
         ( updateText, errorText ) =
-            if isJust <| applyEdit measurement.edits measurement.current then
+            if isJust measurement.current then
                 ( Trans.Update, Trans.UpdateError )
 
             else
@@ -520,18 +534,21 @@ saveButton language msg measurement maybeDivClass =
     ]
 
 
-viewNutritionSigns : Language -> MeasurementData (Maybe ChildNutrition) (Edit ChildNutritionId ChildNutrition) -> EverySet ChildNutritionSign -> Html MsgChild
+viewNutritionSigns : Language -> MeasurementData (Maybe ( ChildNutritionId, ChildNutrition )) -> EverySet ChildNutritionSign -> Html MsgChild
 viewNutritionSigns language measurement signs =
     let
         activity =
             ChildActivity NutritionSigns
+
+        existingId =
+            Maybe.map Tuple.first measurement.current
 
         saveMsg =
             if EverySet.isEmpty signs then
                 Nothing
 
             else
-                Just <| SendOutMsgChild <| SaveChildNutritionSigns signs
+                Just <| SendOutMsgChild <| SaveChildNutritionSigns existingId signs
     in
     div
         [ class "ui full segment nutrition"
@@ -609,8 +626,12 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
 
 
 {-
-   viewCounselingSession : Language -> MeasurementData (Maybe CounselingSession) (Edit CounselingSessionId CounselingSession) -> EditableSession -> Maybe ( CounselingTiming, EverySet CounselingTopicId ) -> Html MsgChild
+   viewCounselingSession : Language -> MeasurementData (Maybe ( CounselingSessionId, CounselingSession )) -> EditableSession -> Maybe ( CounselingTiming, EverySet CounselingTopicId ) -> Html MsgChild
    viewCounselingSession language measurement session value =
+       let
+           existingId =
+               Maybe.map Tuple.first measurement.current
+       in
        case value of
            Nothing ->
                emptyNode
@@ -626,8 +647,7 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
                            expected
 
                    completed =
-                       isJust <|
-                           applyEdit measurement.edits measurement.current
+                       isJust measurement.current
 
                    -- For counseling sessions, we don't allow saves unless all the
                    -- topics are checked. Also, we don't allow an update if the
@@ -635,7 +655,7 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
                    -- counseling session is done, the nurse cannot correct that.
                    saveMsg =
                        if allTopicsChecked && not completed then
-                           SaveCounselingSession timing topics
+                           SaveCounselingSession existingId timing topics
                                |> SendOutMsgChild
                                |> Just
 
@@ -679,7 +699,7 @@ viewCounselingTopics language completed expectedTopics selectedTopics =
             (\topicId topic ->
                 let
                     inputId =
-                        "counseling-checkbox-" ++ toString (fromEntityId topicId)
+                        "counseling-checkbox-" ++ fromEntityUuid topicId
 
                     isChecked =
                         EverySet.member topicId selectedTopics
@@ -707,23 +727,22 @@ viewCounselingTopics language completed expectedTopics selectedTopics =
 type alias MotherMeasurementData =
     { previous : MotherMeasurements
     , current : MotherMeasurements
-    , edits : MotherEdits
     , status : WebData ()
     }
 
 
-viewMother : Language -> MotherActivity -> MeasurementData MotherMeasurements MotherEdits -> ModelMother -> Html MsgMother
+viewMother : Language -> MotherActivity -> MeasurementData MotherMeasurements -> ModelMother -> Html MsgMother
 viewMother language activity measurements model =
     case activity of
         FamilyPlanning ->
-            viewFamilyPlanning language (mapMeasurementData (Maybe.map Tuple.second << .familyPlanning) .familyPlanning measurements) model.familyPlanningSigns
+            viewFamilyPlanning language (mapMeasurementData .familyPlanning measurements) model.familyPlanningSigns
 
 
 
 -- ParticipantConsent ->
---    viewParticipantConsent language (mapMeasurementData .consent .consent measurements) model.participantConsent
+--    viewParticipantConsent language (mapMeasurementData .consent measurements) model.participantConsent
 {-
-   viewParticipantConsent : Language -> MeasurementData (EveryDict ParticipantConsentId ParticipantConsent) (List (Edit ParticipantConsentId ParticipantConsent)) -> ParticipantFormUI -> Html MsgMother
+   viewParticipantConsent : Language -> MeasurementData (EveryDictList ParticipantConsentId ParticipantConsent) -> ParticipantFormUI -> Html MsgMother
    viewParticipantConsent language measurement ui =
        let
            activity =
@@ -875,7 +894,11 @@ viewMother language activity measurements model =
                            Nothing
 
                        else
-                           SaveCompletedForm formId language
+                           -- If the form has already been consented to (i.e.
+                           -- completed), we don't allow any edits. So, if we get
+                           -- here, we don't have a current ParticipantConsentId
+                           -- to supply -- it's always new.
+                           SaveCompletedForm Nothing formId language
                                |> SendOutMsgMother
                                |> Just
 
@@ -943,7 +966,7 @@ viewMother language activity measurements model =
                                , div [ class "actions" ] saveButton
                                ]
                                -- Use keys to force the browser to re-scroll when we switch forms.
-                               |> keyed ("consent-form-" ++ toString (fromEntityId formId))
+                               |> keyed ("consent-form-" ++ fromEntityUuid formId)
                            ]
        in
        case ui.view of
@@ -955,18 +978,21 @@ viewMother language activity measurements model =
 -}
 
 
-viewFamilyPlanning : Language -> MeasurementData (Maybe FamilyPlanning) (Edit FamilyPlanningId FamilyPlanning) -> EverySet FamilyPlanningSign -> Html MsgMother
+viewFamilyPlanning : Language -> MeasurementData (Maybe ( FamilyPlanningId, FamilyPlanning )) -> EverySet FamilyPlanningSign -> Html MsgMother
 viewFamilyPlanning language measurement signs =
     let
         activity =
             MotherActivity FamilyPlanning
+
+        existingId =
+            Maybe.map Tuple.first measurement.current
 
         saveMsg =
             if EverySet.isEmpty signs then
                 Nothing
 
             else
-                Just <| SendOutMsgMother <| SaveFamilyPlanningSigns signs
+                Just <| SendOutMsgMother <| SaveFamilyPlanningSigns existingId signs
     in
     div
         [ class "ui full segment family-planning"

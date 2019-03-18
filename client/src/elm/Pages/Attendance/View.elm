@@ -11,7 +11,7 @@ import Activity.Utils exposing (motherIsCheckedIn)
 import Backend.Entities exposing (..)
 import Backend.Mother.Model exposing (Mother)
 import Backend.Session.Model exposing (EditableSession)
-import Backend.Session.Utils exposing (getChildren)
+import Backend.Session.Utils exposing (getChildren, getMotherMeasurementData)
 import EveryDictList
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -22,8 +22,8 @@ import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 
 
-view : Language -> EditableSession -> Model -> Html Msg
-view language session model =
+view : Language -> ( SessionId, EditableSession ) -> Model -> Html Msg
+view language ( sessionId, session ) model =
     let
         filter =
             model.filter
@@ -102,10 +102,10 @@ view language session model =
                     [ class "active" ]
                     [ a [] [ span [ class "icon-completed" ] [] ] ]
                 , li
-                    [ onClick <| SetActivePage <| SessionPage ParticipantsPage ]
+                    [ onClick <| SetActivePage <| UserPage <| SessionPage sessionId ParticipantsPage ]
                     [ a [] [ span [ class "icon-mother" ] [] ] ]
                 , li
-                    [ onClick <| SetActivePage <| SessionPage ActivitiesPage ]
+                    [ onClick <| SetActivePage <| UserPage <| SessionPage sessionId ActivitiesPage ]
                     [ a [] [ span [ class "icon-measurements" ] [] ] ]
                 ]
             ]
@@ -146,18 +146,23 @@ view language session model =
 viewMother : EditableSession -> MotherId -> Mother -> Html Msg
 viewMother session motherId mother =
     let
+        attendanceId =
+            getMotherMeasurementData motherId session
+                |> (.current >> .attendance)
+                |> Maybe.map Tuple.first
+
         checkIn =
             if motherIsCheckedIn motherId session then
                 a
                     [ class "link-checked-in"
-                    , onClick <| SetCheckedIn motherId False
+                    , onClick <| SetCheckedIn attendanceId motherId False
                     ]
                     [ span [ class "icon-checked-in" ] [] ]
 
             else
                 a
                     [ class "link-check-in"
-                    , onClick <| SetCheckedIn motherId True
+                    , onClick <| SetCheckedIn attendanceId motherId True
                     ]
                     [ span [ class "icon-check-in" ] [] ]
 
