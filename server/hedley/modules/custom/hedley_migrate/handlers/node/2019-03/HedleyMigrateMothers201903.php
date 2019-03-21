@@ -152,7 +152,7 @@ class HedleyMigrateMothers201903 extends HedleyMigrateBase {
       return $trimmed;
     }
 
-    // Some dates are year-only ... we'll make those Jan. 1
+    // Some dates are year-only ... we'll make those Jan. 1.
     if (preg_match('/^\\d\\d\\d\\d$/', $trimmed)) {
       $trimmed = "$trimmed-01-01";
     }
