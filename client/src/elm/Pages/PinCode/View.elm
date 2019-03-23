@@ -122,7 +122,7 @@ viewWhenLoggedIn language nurse =
                 [ class "ui primary button"
                 , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.ClinicsPage Nothing
                 ]
-                [ text <| translate language Translate.SelectYourClinic ]
+                [ text <| translate language Translate.SelectYourPMTCTGroup ]
 
         administrationButton =
             if EverySet.member RoleAdministrator nurse.roles then

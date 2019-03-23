@@ -686,7 +686,7 @@ viewRegistrationForm language currentDate db step registrationForm geoInfo maybe
                                     div [ class "ui grid" ]
                                         [ div
                                             [ class "six wide column" ]
-                                            [ text <| translate language Translate.Clinic ++ ":" ]
+                                            [ text <| translate language Translate.PMTCTGroup ++ ":" ]
                                         , div
                                             [ class "ten wide column" ]
                                             [ Form.Input.selectInput options clinic [] ]

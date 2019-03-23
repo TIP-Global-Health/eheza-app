@@ -74,7 +74,7 @@ view language ( sessionId, session ) model =
                         , div
                             [ class "content" ]
                             [ p []
-                                [ text <| translate language Trans.OnceYouEndYourSession ]
+                                [ text <| translate language Trans.OnceYouEndYourPMTCTGroupEncounter ]
                             ]
                         , div
                             [ class "actions" ]
@@ -151,7 +151,7 @@ view language ( sessionId, session ) model =
                     [ class "ui fluid primary button"
                     , onClick <| ShowEndSessionDialog True
                     ]
-                    [ text <| translate language Trans.EndSession ]
+                    [ text <| translate language Trans.EndPMTCTGroupEncounter ]
                 ]
             ]
         , viewModal endSessionDialog
