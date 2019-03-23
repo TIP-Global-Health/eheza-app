@@ -36,7 +36,7 @@ function hedley_user_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_clinics',
-    'label' => 'Clinics',
+    'label' => 'PMTCT Groups',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -271,7 +271,7 @@ function hedley_user_field_default_field_instances() {
     ),
     'entity_type' => 'user',
     'field_name' => 'field_clinics',
-    'label' => 'Clinics',
+    'label' => 'PMTCT Groups',
     'required' => 0,
     'settings' => array(
       'user_register_form' => 1,
@@ -356,10 +356,10 @@ function hedley_user_field_default_field_instances() {
   // Translatables
   // Included for use with string extractors like potx.
   t('A code which users can provide on devices to identify themselves.');
-  t('Clinics');
   t('Code which this nurse can use to login on the frontend, whether online or offline. When creating a new nurse, you can leave this blank -- a PIN code will be randomly generated.');
   t('Email');
   t('PIN code');
+  t('PMTCT Groups');
   t('Phone');
   t('Profile photo');
   t('Role');

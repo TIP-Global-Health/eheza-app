@@ -19,9 +19,9 @@ function hedley_schedule_ctools_plugin_api($module = NULL, $api = NULL) {
 function hedley_schedule_node_info() {
   $items = array(
     'clinic' => array(
-      'name' => t('Clinic'),
+      'name' => t('PMTCT Group'),
       'base' => 'node_content',
-      'description' => t('A Clinic represents a group of mothers and babies for which group post-natal sessions are scheduled.'),
+      'description' => t('A PMTCT Group is a group of mothers and babies who are seen together for group health assessments.'),
       'has_title' => '1',
       'title_label' => t('Title'),
       'help' => '',
@@ -51,12 +51,12 @@ function hedley_schedule_node_info() {
       'help' => '',
     ),
     'session' => array(
-      'name' => t('Session'),
+      'name' => t('PMTCT Group Encounter'),
       'base' => 'node_content',
-      'description' => t('A Session represents a date on which data-entry is scheduled for a clinic.'),
+      'description' => t('A PMTC Group Encounter represents a date on which a health assessment is scheduled for a PMTCT Group. It ties together the various measurements taken at that group encounter.'),
       'has_title' => '1',
       'title_label' => t('Title'),
-      'help' => t('In order to schedule data entry for a clinic,  create a new <em>Session</em>, assign the relevant <em>Clinic</em>, and specify the <em>Scheduled Date</em> for the measurements. This needs to be done in advance, using the Drupal admin UI. It will then show up in the client app as being available for data entry, until the <em>Close On</em> date.'),
+      'help' => t('In order to schedule a group encounter,  create a new <em>PMTCT Group Encoutner</em>, assign the relevant <em>PMTCT Group</em>, and specify the <em>Scheduled Date</em> for the measurements. This needs to be done in advance, using the Drupal admin UI. It will then show up in the client app as being available for data entry, until the <em>Close On</em> date.'),
     ),
   );
   drupal_alter('node_info', $items);

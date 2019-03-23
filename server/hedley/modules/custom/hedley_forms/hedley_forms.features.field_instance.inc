@@ -260,7 +260,7 @@ function hedley_forms_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_session',
-    'label' => 'Session',
+    'label' => 'PMTCT Group Encounter',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -493,8 +493,8 @@ function hedley_forms_field_default_field_instances() {
   t('Language');
   t('Mother');
   t('Nurse');
+  t('PMTCT Group Encounter');
   t('Participant Form');
-  t('Session');
   t('UUID');
   t('You can leave the UUID blank -- it will be automatically generated.');
 
