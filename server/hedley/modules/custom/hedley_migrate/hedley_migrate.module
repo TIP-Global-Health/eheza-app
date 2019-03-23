@@ -20,6 +20,9 @@ function hedley_migrate_migrate_api() {
       'batch_2019_02' => [
         'title' => t('Batch data added 2019/02'),
       ],
+      'batch_2019_03' => [
+        'title' => t('Batch data added 2019/03'),
+      ],
       'counseling' => [
         'title' => t('Counseling'),
       ],
@@ -39,6 +42,14 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateChildren_2019_02' => [
         'class_name' => 'HedleyMigrateChildren201902',
         'group_name' => 'batch_2019_02',
+      ],
+      'HedleyMigrateMothers_2019_03' => [
+        'class_name' => 'HedleyMigrateMothers201903',
+        'group_name' => 'batch_2019_03',
+      ],
+      'HedleyMigrateChildren_2019_03' => [
+        'class_name' => 'HedleyMigrateChildren201903',
+        'group_name' => 'batch_2019_03',
       ],
       'HedleyMigrateUsers' => [
         'class_name' => 'HedleyMigrateUsers',

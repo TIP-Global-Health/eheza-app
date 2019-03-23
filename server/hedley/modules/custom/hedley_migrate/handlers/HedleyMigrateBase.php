@@ -18,6 +18,7 @@ abstract class HedleyMigrateBase extends Migration {
   protected $simpleMappings = [];
   protected $simpleMultipleMappings = [];
   protected $csvPrefix = '';
+  protected $keyName = 'id';
 
   /**
    * HedleyMigrateBase constructor.
@@ -47,7 +48,7 @@ abstract class HedleyMigrateBase extends Migration {
     $this->destination = new $destination_class($this->bundle);
 
     $key = [
-      'id' => [
+      $this->keyName => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
