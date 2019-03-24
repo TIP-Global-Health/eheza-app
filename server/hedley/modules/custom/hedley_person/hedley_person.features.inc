@@ -14,6 +14,30 @@ function hedley_person_ctools_plugin_api($module = NULL, $api = NULL) {
 }
 
 /**
+ * Implements hook_image_default_styles().
+ */
+function hedley_person_image_default_styles() {
+  $styles = array();
+
+  // Exported image style: patient-photo.
+  $styles['patient-photo'] = array(
+    'label' => 'Patient photo',
+    'effects' => array(
+      2 => array(
+        'name' => 'image_scale_and_crop',
+        'data' => array(
+          'width' => 200,
+          'height' => 200,
+        ),
+        'weight' => 1,
+      ),
+    ),
+  );
+
+  return $styles;
+}
+
+/**
  * Implements hook_node_info().
  */
 function hedley_person_node_info() {
