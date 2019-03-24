@@ -1,4 +1,5 @@
 name = Hedley Health Center
+description = Health Center and Catchment Area
 core = 7.x
 package = Hedley
 dependencies[] = ctools
