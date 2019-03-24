@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Hedley Person feature.
+ */
+
+include_once 'hedley_person.features.inc';
