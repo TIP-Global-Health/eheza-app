@@ -146,6 +146,46 @@ function hedley_person_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-person-field_clinic'.
+  $field_instances['node-person-field_clinic'] = array(
+    'bundle' => 'person',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 19,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_clinic',
+    'label' => 'Clinic',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 19,
+    ),
+  );
+
   // Exported field_instance: 'node-person-field_district'.
   $field_instances['node-person-field_district'] = array(
     'bundle' => 'person',
@@ -740,7 +780,7 @@ function hedley_person_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 19,
+      'weight' => 20,
     ),
   );
 
@@ -789,6 +829,7 @@ function hedley_person_field_default_field_instances() {
   t('Birth date');
   t('Birth date estimated');
   t('Cell');
+  t('Clinic');
   t('District');
   t('Education Level');
   t('First name');

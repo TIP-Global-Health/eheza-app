@@ -22,7 +22,6 @@ features[features_api][] = api:2
 features[field_base][] = field_caregiver_name
 features[field_base][] = field_caregiver_national_id
 features[field_base][] = field_child
-features[field_base][] = field_clinic
 features[field_base][] = field_date_birth
 features[field_base][] = field_father_name
 features[field_base][] = field_father_national_id
