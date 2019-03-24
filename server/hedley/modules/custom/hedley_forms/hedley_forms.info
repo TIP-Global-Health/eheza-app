@@ -25,6 +25,7 @@ features[field_instance][] = node-participant_consent-field_language
 features[field_instance][] = node-participant_consent-field_mother
 features[field_instance][] = node-participant_consent-field_nurse
 features[field_instance][] = node-participant_consent-field_participant_form
+features[field_instance][] = node-participant_consent-field_person
 features[field_instance][] = node-participant_consent-field_session
 features[field_instance][] = node-participant_consent-field_uuid
 features[field_instance][] = node-participant_form-body
