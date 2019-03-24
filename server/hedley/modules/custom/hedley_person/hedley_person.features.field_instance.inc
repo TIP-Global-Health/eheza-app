@@ -824,6 +824,131 @@ function hedley_person_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-relationship-field_person'.
+  $field_instances['node-relationship-field_person'] = array(
+    'bundle' => 'relationship',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'The person who is the parent or caregiver of another person.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 0,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_person',
+    'label' => 'Person',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance: 'node-relationship-field_related_by'.
+  $field_instances['node-relationship-field_related_by'] = array(
+    'bundle' => 'relationship',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'How are these persons related?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 2,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_related_by',
+    'label' => 'Related by',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-relationship-field_related_to'.
+  $field_instances['node-relationship-field_related_to'] = array(
+    'bundle' => 'relationship',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'The child the person is the parent of, or caregiver for.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 1,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_related_to',
+    'label' => 'Related to',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 3,
+    ),
+  );
+
   // Translatables
   // Included for use with string extractors like potx.
   t('Birth date');
@@ -834,16 +959,22 @@ function hedley_person_field_default_field_instances() {
   t('Education Level');
   t('First name');
   t('Gender');
+  t('How are these persons related?');
   t('Marital status');
   t('Middle name');
   t('National ID number');
+  t('Person');
   t('Phone number');
   t('Photo');
   t('Profession');
   t('Province');
+  t('Related by');
+  t('Related to');
   t('Second name');
   t('Sector');
   t('The UUID will be automatically generated -- you need not enter it.');
+  t('The child the person is the parent of, or caregiver for.');
+  t('The person who is the parent or caregiver of another person.');
   t('UUID');
   t('Ubudehe');
   t('Village');

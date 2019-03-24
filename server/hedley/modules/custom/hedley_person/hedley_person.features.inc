@@ -50,6 +50,14 @@ function hedley_person_node_info() {
       'title_label' => t('Name'),
       'help' => '',
     ),
+    'relationship' => array(
+      'name' => t('Relationship'),
+      'base' => 'node_content',
+      'description' => t('Records a relationship between two persons.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
   );
   drupal_alter('node_info', $items);
   return $items;
