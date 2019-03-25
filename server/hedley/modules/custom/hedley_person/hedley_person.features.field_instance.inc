@@ -40,7 +40,7 @@ function hedley_person_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_birth_date',
     'label' => 'Birth date',
-    'required' => FALSE,
+    'required' => 0,
     'settings' => array(
       'default_value' => 'now',
       'default_value2' => 'same',
@@ -49,13 +49,17 @@ function hedley_person_field_default_field_instances() {
       'user_register_form' => FALSE,
     ),
     'widget' => array(
+      'active' => 1,
       'module' => 'date',
       'settings' => array(
         'increment' => 15,
         'input_format' => 'm/d/Y - H:i:s',
         'input_format_custom' => '',
         'label_position' => 'above',
-        'text_parts' => array(),
+        'no_fieldset' => 0,
+        'text_parts' => array(
+          0 => 'year',
+        ),
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
@@ -99,7 +103,7 @@ function hedley_person_field_default_field_instances() {
       'active' => 1,
       'module' => 'options',
       'settings' => array(
-        'display_label' => 0,
+        'display_label' => 1,
       ),
       'type' => 'options_onoff',
       'weight' => 6,
