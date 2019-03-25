@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Contains HedleyRestfulMothers.
+ * Contains HedleyRestfulRelationships.
  */
 
 /**
- * Class HedleyRestfulMothers.
+ * Class HedleyRestfulRelationships.
  */
-class HedleyRestfulMothers extends HedleyRestfulPatientBase {
+class HedleyRestfulRelationships extends HedleyRestfulSyncBase {
 
   /**
    * {@inheritdoc}
@@ -17,13 +17,7 @@ class HedleyRestfulMothers extends HedleyRestfulPatientBase {
     $public_fields = parent::publicFieldsInfo();
 
     $standard_fields_names = [
-      'field_education_level',
-      'field_gender',
-      'field_profession',
-      'field_marital_status',
-      'field_hiv_status',
-      'field_household_size',
-      'field_number_of_children',
+      'related_by',
     ];
 
     foreach ($standard_fields_names as $field_name) {
@@ -33,12 +27,13 @@ class HedleyRestfulMothers extends HedleyRestfulPatientBase {
       ];
     }
 
-    $public_fields['relation'] = [
-      'property' => 'field_relationship',
+    $public_fields['person'] = [
+      'property' => 'field_person',
+      'sub_property' => 'field_uuid',
     ];
 
-    $public_fields['clinic'] = [
-      'property' => 'field_clinic',
+    $public_fields['related_to'] = [
+      'property' => 'field_related_to',
       'sub_property' => 'field_uuid',
     ];
 
