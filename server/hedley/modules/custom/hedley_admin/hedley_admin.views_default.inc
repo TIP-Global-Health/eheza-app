@@ -1713,21 +1713,15 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['relationships']['field_session_target_id']['field'] = 'field_session_target_id';
   $handler->display->display_options['relationships']['field_session_target_id']['label'] = 'Session';
   /* Relationship: Entity Reference: Referenced Entity */
-  $handler->display->display_options['relationships']['field_mother_target_id']['id'] = 'field_mother_target_id';
-  $handler->display->display_options['relationships']['field_mother_target_id']['table'] = 'field_data_field_mother';
-  $handler->display->display_options['relationships']['field_mother_target_id']['field'] = 'field_mother_target_id';
-  $handler->display->display_options['relationships']['field_mother_target_id']['label'] = 'Mother';
-  /* Relationship: Content: Author */
-  $handler->display->display_options['relationships']['uid']['id'] = 'uid';
-  $handler->display->display_options['relationships']['uid']['table'] = 'node';
-  $handler->display->display_options['relationships']['uid']['field'] = 'uid';
-  $handler->display->display_options['relationships']['uid']['label'] = 'Nurse';
-  /* Relationship: Entity Reference: Referencing entity */
-  $handler->display->display_options['relationships']['reverse_field_mother_node']['id'] = 'reverse_field_mother_node';
-  $handler->display->display_options['relationships']['reverse_field_mother_node']['table'] = 'node';
-  $handler->display->display_options['relationships']['reverse_field_mother_node']['field'] = 'reverse_field_mother_node';
-  $handler->display->display_options['relationships']['reverse_field_mother_node']['relationship'] = 'field_mother_target_id';
-  $handler->display->display_options['relationships']['reverse_field_mother_node']['label'] = 'Child';
+  $handler->display->display_options['relationships']['field_person_target_id']['id'] = 'field_person_target_id';
+  $handler->display->display_options['relationships']['field_person_target_id']['table'] = 'field_data_field_person';
+  $handler->display->display_options['relationships']['field_person_target_id']['field'] = 'field_person_target_id';
+  $handler->display->display_options['relationships']['field_person_target_id']['label'] = 'Person';
+  /* Relationship: Entity Reference: Referenced Entity */
+  $handler->display->display_options['relationships']['field_nurse_target_id']['id'] = 'field_nurse_target_id';
+  $handler->display->display_options['relationships']['field_nurse_target_id']['table'] = 'field_data_field_nurse';
+  $handler->display->display_options['relationships']['field_nurse_target_id']['field'] = 'field_nurse_target_id';
+  $handler->display->display_options['relationships']['field_nurse_target_id']['label'] = 'Nurse';
   $handler->display->display_options['defaults']['fields'] = FALSE;
   /* Field: Bulk operations: Content */
   $handler->display->display_options['fields']['views_bulk_operations']['id'] = 'views_bulk_operations';
@@ -1781,17 +1775,17 @@ function hedley_admin_views_default_views() {
     'bypass_access' => 0,
     'link' => 0,
   );
-  /* Field: User: Name */
-  $handler->display->display_options['fields']['name']['id'] = 'name';
-  $handler->display->display_options['fields']['name']['table'] = 'users';
-  $handler->display->display_options['fields']['name']['field'] = 'name';
-  $handler->display->display_options['fields']['name']['relationship'] = 'uid';
-  $handler->display->display_options['fields']['name']['label'] = 'Nurse';
+  /* Field: Content: Title */
+  $handler->display->display_options['fields']['title']['id'] = 'title';
+  $handler->display->display_options['fields']['title']['table'] = 'node';
+  $handler->display->display_options['fields']['title']['field'] = 'title';
+  $handler->display->display_options['fields']['title']['relationship'] = 'field_nurse_target_id';
+  $handler->display->display_options['fields']['title']['label'] = 'Nurse';
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title_1']['id'] = 'title_1';
   $handler->display->display_options['fields']['title_1']['table'] = 'node';
   $handler->display->display_options['fields']['title_1']['field'] = 'title';
-  $handler->display->display_options['fields']['title_1']['relationship'] = 'field_mother_target_id';
+  $handler->display->display_options['fields']['title_1']['relationship'] = 'field_person_target_id';
   $handler->display->display_options['fields']['title_1']['label'] = 'Mother Name';
   /* Field: Content: Family Planning */
   $handler->display->display_options['fields']['field_family_planning_signs']['id'] = 'field_family_planning_signs';
@@ -1820,6 +1814,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['sorts']['field_date_measured_value']['id'] = 'field_date_measured_value';
   $handler->display->display_options['sorts']['field_date_measured_value']['table'] = 'field_data_field_date_measured';
   $handler->display->display_options['sorts']['field_date_measured_value']['field'] = 'field_date_measured_value';
+  $handler->display->display_options['sorts']['field_date_measured_value']['order'] = 'DESC';
   /* Sort criterion: Content: Post date */
   $handler->display->display_options['sorts']['created']['id'] = 'created';
   $handler->display->display_options['sorts']['created']['table'] = 'node';
@@ -1844,6 +1839,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['type']['field'] = 'type';
   $handler->display->display_options['filters']['type']['value'] = array(
     'family_planning' => 'family_planning',
+    'participant_consent' => 'participant_consent',
   );
   $handler->display->display_options['filters']['type']['group'] = 1;
   /* Filter criterion: Content: Nid */
@@ -1864,28 +1860,9 @@ function hedley_admin_views_default_views() {
     4 => 0,
   );
   /* Filter criterion: Content: Title */
-  $handler->display->display_options['filters']['title']['id'] = 'title';
-  $handler->display->display_options['filters']['title']['table'] = 'node';
-  $handler->display->display_options['filters']['title']['field'] = 'title';
-  $handler->display->display_options['filters']['title']['relationship'] = 'reverse_field_mother_node';
-  $handler->display->display_options['filters']['title']['operator'] = 'word';
-  $handler->display->display_options['filters']['title']['group'] = 1;
-  $handler->display->display_options['filters']['title']['exposed'] = TRUE;
-  $handler->display->display_options['filters']['title']['expose']['operator_id'] = 'title_op';
-  $handler->display->display_options['filters']['title']['expose']['label'] = 'Child';
-  $handler->display->display_options['filters']['title']['expose']['operator'] = 'title_op';
-  $handler->display->display_options['filters']['title']['expose']['identifier'] = 'title';
-  $handler->display->display_options['filters']['title']['expose']['remember_roles'] = array(
-    2 => '2',
-    1 => 0,
-    3 => 0,
-    4 => 0,
-  );
-  /* Filter criterion: Content: Title */
   $handler->display->display_options['filters']['title_1']['id'] = 'title_1';
   $handler->display->display_options['filters']['title_1']['table'] = 'node';
   $handler->display->display_options['filters']['title_1']['field'] = 'title';
-  $handler->display->display_options['filters']['title_1']['relationship'] = 'field_mother_target_id';
   $handler->display->display_options['filters']['title_1']['operator'] = 'word';
   $handler->display->display_options['filters']['title_1']['group'] = 1;
   $handler->display->display_options['filters']['title_1']['exposed'] = TRUE;
