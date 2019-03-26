@@ -192,3 +192,4 @@ features[variable][] = node_submitted_nutrition
 features[variable][] = node_submitted_photo
 features[variable][] = node_submitted_weight
 files[] = tests/HedleyActivityEndpoints.test
+files[] = tests/HedleyActivityZscoreUpdate.test

@@ -1,0 +1,77 @@
+<?php
+
+/**
+ * @file
+ * Contains \HedleyActivityZscoreUpdate.
+ */
+
+/**
+ * HedleyActivityZscoreUpdate tests.
+ */
+class HedleyActivityZscoreUpdate extends HedleyWebTestBase {
+
+  /**
+   * Info hook.
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'HedleyActivityZscoreUpdate tests',
+      'description' => 'Tests updating of ZScores.',
+      'group' => 'Hedley',
+    ];
+  }
+
+  /**
+   * Test updating ZScores.
+   */
+  public function testUpdatingZscores() {
+    $clinic_id = $this->createClinic();
+    $mother_id = $this->createMother($clinic_id);
+    $child_id = $this->createChild($mother_id);
+
+    // Our default child is born on 2015-06-27, so we'll start out as a 1-year
+    // old.
+    $one_year_old = strtotime('2016-06-27');
+    $session_id = $this->createSession($clinic_id, $one_year_old);
+
+    $weight_id = $this->createWeight($session_id, $child_id, 13, $one_year_old);
+    $weight = entity_metadata_wrapper('node', $weight_id);
+
+    // Check that we have calculated a zscore-age.
+    $this->assertEqual(round($weight->field_zscore_age->value(), 2), 2.75);
+
+    // Then, add a height ...
+    $height_id = $this->createHeight($session_id, $child_id, 82, $one_year_old);
+    $height = entity_metadata_wrapper('node', $height_id);
+
+    // Check that we have a ZScore age
+    $this->assertEqual(round($height->field_zscore_age->value(), 2), 2.62);
+
+    // We should now also have several additional calculations on the weight.
+    entity_get_controller('node')->resetCache([$weight_id]);
+    $weight = entity_metadata_wrapper('node', $weight_id);
+
+    $this->assertEqual(round($weight->field_bmi->value(), 2), 19.33);
+    $this->assertEqual(round($weight->field_zscore_length->value(), 2), 2.14);
+    $this->assertEqual(round($weight->field_zscore_bmi->value(), 2), 1.71);
+
+    // If we change the child's birth date, then the zscores should get
+    // updated.
+    $child = entity_metadata_wrapper('node', $child_id);
+    $child->field_birth_date->set(strtotime('2016-01-27'));
+    $child->save();
+
+    // Reset
+    entity_get_controller('node')->resetCache([
+      $weight_id,
+      $height_id,
+    ]);
+
+    $weight = entity_metadata_wrapper('node', $weight_id);
+    $height = entity_metadata_wrapper('node', $height_id);
+
+    $this->assertEqual(round($height->field_zscore_age->value(), 2), 7.63);
+    $this->assertEqual(round($weight->field_zscore_age->value(), 2), 5.48);
+  }
+
+}
