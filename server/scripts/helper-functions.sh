@@ -295,8 +295,6 @@ function generate_demo_content {
   # Generating all types of nodes.
   # Hardcoding the list because of the dependencies between them.
   TYPES=(
-    mother
-    child
     height
     muac
     nutrition
