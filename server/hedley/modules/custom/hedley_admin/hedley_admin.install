@@ -9,8 +9,23 @@
  * Remove the "Create user" menu.
  */
 function hedley_admin_update_7001() {
-    db_delete('menu_links')
-        ->condition('menu_name', 'menu-ihangane-admin-menu')
-        ->condition('link_path', 'admin/people/create')
-        ->execute();
+  db_delete('menu_links')
+    ->condition('menu_name', 'menu-ihangane-admin-menu')
+    ->condition('link_path', 'admin/people/create')
+    ->execute();
+}
+
+/**
+ * Remove the Create child, mother and caregiver menus.
+ */
+function hedley_admin_update_7002() {
+  db_delete('menu_links')
+    ->condition('menu_name', 'menu-ihangane-admin-menu')
+    ->condition('link_path', 'node/add/mother')
+    ->execute();
+
+  db_delete('menu_links')
+    ->condition('menu_name', 'menu-ihangane-admin-menu')
+    ->condition('link_path', 'node/add/child')
+    ->execute();
 }
