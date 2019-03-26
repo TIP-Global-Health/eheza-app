@@ -283,10 +283,6 @@ function generate_demo_content {
   # Make sure devel-generate is enabled.
   drush en devel_generate -y
 
-  # Generate users.
-  echo -e "${LBLUE}Generating users.${RESTORE}"
-  drush generate-users 50
-
   # Generating taxonomy terms for all defined vocabularies.
   # Taxonomy terms has no dependencies, hence we can automate the list.
   VOCABS=$(drush sqlq "SELECT machine_name FROM taxonomy_vocabulary")
