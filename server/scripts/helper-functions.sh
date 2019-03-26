@@ -311,10 +311,6 @@ function generate_demo_content {
   # Add some sessions for today
   drush create-sessions-today
 
-  # After all of this is done, we need to update the "Counseling Sessions" because it's dependent on the randomly
-  # generated content above. (Temporary until all of the randomly generated content is replaced with csv migration).
-  drush mi HedleyMigrateCounselingSessions --update
-
   cd "$ROOT"
   echo
 }
