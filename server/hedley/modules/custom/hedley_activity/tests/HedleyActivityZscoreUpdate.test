@@ -44,7 +44,7 @@ class HedleyActivityZscoreUpdate extends HedleyWebTestBase {
     $height_id = $this->createHeight($session_id, $child_id, 82, $one_year_old);
     $height = entity_metadata_wrapper('node', $height_id);
 
-    // Check that we have a ZScore age
+    // Check that we have a ZScore age.
     $this->assertEqual(round($height->field_zscore_age->value(), 2), 2.62);
 
     // We should now also have several additional calculations on the weight.
@@ -61,7 +61,7 @@ class HedleyActivityZscoreUpdate extends HedleyWebTestBase {
     $child->field_birth_date->set(strtotime('2016-01-27'));
     $child->save();
 
-    // Reset
+    // Reset.
     entity_get_controller('node')->resetCache([
       $weight_id,
       $height_id,
