@@ -420,6 +420,9 @@ function _hedley_migrate_preprocess_child($node, Generator $faker) {
   $second_name = $faker->lastName;
   $wrapper->title->set("$first_name $middle_name $second_name");
 
+  // Leave this blank, to test our migration scripts.
+  $wrapper->field_person->set(NULL);
+
   $mode_of_delivery = [
     'svd-episiotomy',
     'svd-no-episiotomy',
@@ -456,6 +459,9 @@ function _hedley_migrate_preprocess_mother($node, Generator $faker) {
   $middle_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
   $second_name = $faker->lastName;
   $wrapper->title->set("$first_name $middle_name $second_name");
+
+  // Leave this blank, to test our migration scripts.
+  $wrapper->field_person->set(NULL);
 
   $hiv_status = [
     'hiv-exposed-infant',
