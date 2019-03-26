@@ -27,7 +27,6 @@ features[field_instance][] = node-clinic-field_uuid
 features[field_instance][] = node-counseling_schedule-field_timing
 features[field_instance][] = node-counseling_schedule-field_topics
 features[field_instance][] = node-counseling_schedule-field_uuid
-features[field_instance][] = node-counseling_session-field_child
 features[field_instance][] = node-counseling_session-field_date_measured
 features[field_instance][] = node-counseling_session-field_nurse
 features[field_instance][] = node-counseling_session-field_person

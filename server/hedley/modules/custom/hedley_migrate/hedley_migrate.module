@@ -55,6 +55,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateHealthCenters' => [
         'class_name' => 'HedleyMigrateHealthCenters',
       ],
+      'HedleyMigratePeople' => [
+        'class_name' => 'HedleyMigratePeople',
+      ],
       'HedleyMigrateNurses' => [
         'class_name' => 'HedleyMigrateNurses',
       ],

@@ -22,7 +22,6 @@ features[field_base][] = field_language
 features[field_base][] = field_participant_form
 features[field_instance][] = node-participant_consent-field_date_measured
 features[field_instance][] = node-participant_consent-field_language
-features[field_instance][] = node-participant_consent-field_mother
 features[field_instance][] = node-participant_consent-field_nurse
 features[field_instance][] = node-participant_consent-field_participant_form
 features[field_instance][] = node-participant_consent-field_person

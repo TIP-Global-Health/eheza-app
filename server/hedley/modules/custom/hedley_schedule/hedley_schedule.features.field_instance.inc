@@ -215,50 +215,6 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-counseling_session-field_child'.
-  $field_instances['node-counseling_session-field_child'] = array(
-    'bundle' => 'counseling_session',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'entityreference',
-        'settings' => array(
-          'bypass_access' => FALSE,
-          'link' => FALSE,
-        ),
-        'type' => 'entityreference_label',
-        'weight' => 2,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_child',
-    'label' => 'Child',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'entityreference',
-      'settings' => array(
-        'match_operator' => 'CONTAINS',
-        'path' => '',
-        'size' => 60,
-      ),
-      'type' => 'entityreference_autocomplete',
-      'weight' => 2,
-    ),
-  );
-
   // Exported field_instance: 'node-counseling_session-field_date_measured'.
   $field_instances['node-counseling_session-field_date_measured'] = array(
     'bundle' => 'counseling_session',
@@ -918,7 +874,6 @@ This should not be used on the "live" site -- it is only intended for the "sandb
   // Translatables
   // Included for use with string extractors like potx.
   t('At which point should these topics be addressed?');
-  t('Child');
   t('Clinic');
   t('Closed');
   t('Date Measured');

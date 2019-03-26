@@ -102,50 +102,6 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-attendance-field_mother'.
-  $field_instances['node-attendance-field_mother'] = array(
-    'bundle' => 'attendance',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'entityreference',
-        'settings' => array(
-          'bypass_access' => FALSE,
-          'link' => FALSE,
-        ),
-        'type' => 'entityreference_label',
-        'weight' => 1,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_mother',
-    'label' => 'Mother / Caregiver',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'entityreference',
-      'settings' => array(
-        'match_operator' => 'CONTAINS',
-        'path' => '',
-        'size' => 60,
-      ),
-      'type' => 'entityreference_autocomplete',
-      'weight' => 2,
-    ),
-  );
-
   // Exported field_instance: 'node-attendance-field_nurse'.
   $field_instances['node-attendance-field_nurse'] = array(
     'bundle' => 'attendance',
@@ -2444,7 +2400,6 @@ function hedley_activity_field_default_field_instances() {
   t('Height');
   t('MUAC');
   t('Mother');
-  t('Mother / Caregiver');
   t('Nurse');
   t('Nutrition Signs');
   t('Person');
