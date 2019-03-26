@@ -1,0 +1,16 @@
+<?php
+
+/**
+ * @file
+ * Install and update functions.
+ */
+
+/**
+ * Remove the "Create user" menu.
+ */
+function hedley_admin_update_7001() {
+    db_delete('menu_links')
+        ->condition('menu_name', 'menu-ihangane-admin-menu')
+        ->condition('link_path', 'admin/people/create')
+        ->execute();
+}

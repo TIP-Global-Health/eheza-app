@@ -267,26 +267,6 @@ function hedley_admin_menu_default_menu_links() {
     'weight' => -45,
     'customized' => 1,
   );
-  // Exported menu link: menu-ihangane-admin-menu_create-user:admin/people/create.
-  $menu_links['menu-ihangane-admin-menu_create-user:admin/people/create'] = array(
-    'menu_name' => 'menu-ihangane-admin-menu',
-    'link_path' => 'admin/people/create',
-    'router_path' => 'admin/people/create',
-    'link_title' => 'Create user',
-    'options' => array(
-      'attributes' => array(
-        'title' => '',
-      ),
-      'identifier' => 'menu-ihangane-admin-menu_create-user:admin/people/create',
-    ),
-    'module' => 'menu',
-    'hidden' => 0,
-    'external' => 0,
-    'has_children' => 0,
-    'expanded' => 0,
-    'weight' => -46,
-    'customized' => 1,
-  );
 
   // Translatables
   // Included for use with string extractors like potx.
@@ -298,7 +278,6 @@ function hedley_admin_menu_default_menu_links() {
   t('Create clinic');
   t('Create mother');
   t('Create session');
-  t('Create user');
   t('Historical Child');
   t('Historical Mother');
   t('Home');
