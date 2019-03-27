@@ -49,6 +49,12 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateClinics' => [
         'class_name' => 'HedleyMigrateClinics',
       ],
+      'HedleyMigrateRelationships' => [
+        'class_name' => 'HedleyMigrateRelationships',
+      ],
+      'HedleyMigrateSessions' => [
+        'class_name' => 'HedleyMigrateSessions',
+      ],
       'HedleyMigrateCatchmentAreas' => [
         'class_name' => 'HedleyMigrateCatchmentAreas',
       ],

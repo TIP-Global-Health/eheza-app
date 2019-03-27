@@ -1,11 +1,11 @@
-id,title,field_gender,field_clinic
-1,Tasnim Knapp,female,1
-2,Gianni Carr,male,1
-3,Ariella Davidson,female,2
-4,Mia Lu,female,3
-5,Shayaan Fisher,female,2
-6,Amos Mora,male,2
-7,Eshaal Zimmerman,male,2
-8,Sherri Albert,female,3
-9,Theodora David,female,1
-10,Radhika Saunders,female,1
+id,title,field_gender,field_birth_date,field_clinic
+1,Tasnim Knapp,female,1996-01-01,1
+2,Gianni Carr,male,2018-09-27,
+3,Ariella Davidson,female,1997-02-01,2
+4,Mia Lu,female,2018-10-01,
+5,Shayaan Fisher,female,1998-05-02,2
+6,Amos Mora,male,2018-07-06,
+7,Eshaal Zimmerman,male,2018-11-05,
+8,Sherri Albert,female,1989-06-07,3
+9,Theodora David,female,1995-02-05,1
+10,Radhika Saunders,female,2018-08-02,

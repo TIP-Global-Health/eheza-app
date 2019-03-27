@@ -2,31 +2,25 @@
 
 /**
  * @file
- * Contains \HedleyMigratePeople.
+ * Contains \HedleyMigrateSessions.
  */
 
 /**
- * Class HedleyMigratePeople.
+ * Class HedleyMigrateSessions.
  */
-class HedleyMigratePeople extends HedleyMigrateBase {
+class HedleyMigrateSessions extends HedleyMigrateBase {
 
   protected $entityType = 'node';
-  protected $bundle = 'person';
+  protected $bundle = 'session';
 
   protected $csvColumns = [
     'id',
-    'title',
-    'field_gender',
-    'field_birth_date',
     'field_clinic',
-  ];
-
-  protected $simpleMappings = [
-    'field_gender',
+    'field_scheduled_date',
   ];
 
   /**
-   * HedleyMigrateClinics constructor.
+   * HedleyMigrateSessions constructor.
    *
    * {@inheritdoc}
    */
@@ -38,7 +32,7 @@ class HedleyMigratePeople extends HedleyMigrateBase {
     ];
 
     $this
-      ->addFieldMapping('field_birth_date', 'field_birth_date')
+      ->addFieldMapping('field_scheduled_date', 'field_scheduled_date')
       ->callbacks([$this, 'dateProcess']);
 
     $this
@@ -64,7 +58,12 @@ class HedleyMigratePeople extends HedleyMigrateBase {
     }
 
     if (preg_match('/^\\d\\d\\d\\d-\\d\\d-\\d\\d$/', $trimmed)) {
-      return DateTime::createFromFormat('!Y-m-d', $trimmed)->getTimestamp();
+      $stamp = DateTime::createFromFormat('!Y-m-d', $trimmed)->getTimestamp();
+
+      return [
+        'value' => $stamp,
+        'value2' => $stamp,
+      ];
     }
 
     throw new Exception("$date was not a recognized date format.");
