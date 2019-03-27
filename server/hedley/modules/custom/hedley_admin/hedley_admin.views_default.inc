@@ -679,10 +679,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['relationships']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
   $handler->display->display_options['relationships']['field_clinic_target_id']['relationship'] = 'field_session_target_id';
   $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'Clinic';
-  /* Relationship: Content: Author */
-  $handler->display->display_options['relationships']['uid']['id'] = 'uid';
-  $handler->display->display_options['relationships']['uid']['table'] = 'node';
-  $handler->display->display_options['relationships']['uid']['field'] = 'uid';
   $handler->display->display_options['defaults']['fields'] = FALSE;
   /* Field: Content: Nid */
   $handler->display->display_options['fields']['nid']['id'] = 'nid';
@@ -716,12 +712,10 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['type']['table'] = 'node';
   $handler->display->display_options['fields']['type']['field'] = 'type';
   $handler->display->display_options['fields']['type']['label'] = 'Measurement type';
-  /* Field: User: Name */
-  $handler->display->display_options['fields']['name']['id'] = 'name';
-  $handler->display->display_options['fields']['name']['table'] = 'users';
-  $handler->display->display_options['fields']['name']['field'] = 'name';
-  $handler->display->display_options['fields']['name']['relationship'] = 'uid';
-  $handler->display->display_options['fields']['name']['label'] = 'Nurse';
+  /* Field: Content: Nurse */
+  $handler->display->display_options['fields']['field_nurse']['id'] = 'field_nurse';
+  $handler->display->display_options['fields']['field_nurse']['table'] = 'field_data_field_nurse';
+  $handler->display->display_options['fields']['field_nurse']['field'] = 'field_nurse';
   /* Field: Content: Family Planning */
   $handler->display->display_options['fields']['field_family_planning_signs']['id'] = 'field_family_planning_signs';
   $handler->display->display_options['fields']['field_family_planning_signs']['table'] = 'field_data_field_family_planning_signs';
