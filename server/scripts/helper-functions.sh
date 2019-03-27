@@ -292,6 +292,9 @@ function generate_demo_content {
     drush generate-terms "$VOCAB"
   done
 
+  # Add some sessions for today
+  drush create-sessions-today
+
   # Generating all types of nodes.
   # Hardcoding the list because of the dependencies between them.
   TYPES=(
@@ -307,9 +310,6 @@ function generate_demo_content {
     echo -e "${LBLUE}Generating nodes of type: $TYPE ${RESTORE}"
     drush generate-content 20 0 --types="$TYPE" --skip-fields=field_uuid
   done
-
-  # Add some sessions for today
-  drush create-sessions-today
 
   cd "$ROOT"
   echo
