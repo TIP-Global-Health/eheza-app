@@ -111,17 +111,18 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title']['label'] = 'Name';
   $handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
   $handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
-  /* Field: Content: Title */
+  /* Field: MAX(Content: Title) */
   $handler->display->display_options['fields']['title_1']['id'] = 'title_1';
   $handler->display->display_options['fields']['title_1']['table'] = 'node';
   $handler->display->display_options['fields']['title_1']['field'] = 'title';
-  $handler->display->display_options['fields']['title_1']['relationship'] = 'field_mother_target_id';
+  $handler->display->display_options['fields']['title_1']['relationship'] = 'field_person_target_id';
+  $handler->display->display_options['fields']['title_1']['group_type'] = 'max';
   $handler->display->display_options['fields']['title_1']['label'] = 'Mother / Caregiver';
   /* Field: Content: Clinic */
   $handler->display->display_options['fields']['field_clinic']['id'] = 'field_clinic';
   $handler->display->display_options['fields']['field_clinic']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['fields']['field_clinic']['field'] = 'field_clinic';
-  $handler->display->display_options['fields']['field_clinic']['relationship'] = 'field_mother_target_id';
+  $handler->display->display_options['fields']['field_clinic']['relationship'] = 'field_person_target_id';
   $handler->display->display_options['fields']['field_clinic']['settings'] = array(
     'bypass_access' => 0,
     'link' => 0,
@@ -147,7 +148,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['type']['table'] = 'node';
   $handler->display->display_options['filters']['type']['field'] = 'type';
   $handler->display->display_options['filters']['type']['value'] = array(
-    'child' => 'child',
+    'person' => 'person',
   );
   /* Filter criterion: Child name */
   $handler->display->display_options['filters']['title']['id'] = 'title';
@@ -169,7 +170,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['title_1']['id'] = 'title_1';
   $handler->display->display_options['filters']['title_1']['table'] = 'node';
   $handler->display->display_options['filters']['title_1']['field'] = 'title';
-  $handler->display->display_options['filters']['title_1']['relationship'] = 'field_mother_target_id';
+  $handler->display->display_options['filters']['title_1']['relationship'] = 'field_person_target_id';
   $handler->display->display_options['filters']['title_1']['ui_name'] = 'Mother name';
   $handler->display->display_options['filters']['title_1']['exposed'] = TRUE;
   $handler->display->display_options['filters']['title_1']['expose']['operator_id'] = 'title_1_op';
@@ -179,14 +180,15 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['title_1']['expose']['remember_roles'] = array(
     2 => '2',
     1 => 0,
-    3 => 0,
     4 => 0,
+    3 => 0,
+    5 => 0,
   );
   /* Filter criterion: Clinic */
   $handler->display->display_options['filters']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
   $handler->display->display_options['filters']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['filters']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
-  $handler->display->display_options['filters']['field_clinic_target_id']['relationship'] = 'field_mother_target_id';
+  $handler->display->display_options['filters']['field_clinic_target_id']['relationship'] = 'field_person_target_id';
   $handler->display->display_options['filters']['field_clinic_target_id']['ui_name'] = 'Clinic';
   $handler->display->display_options['filters']['field_clinic_target_id']['exposed'] = TRUE;
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator_id'] = 'field_clinic_target_id_op';
@@ -196,9 +198,18 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['remember_roles'] = array(
     2 => '2',
     1 => 0,
-    3 => 0,
     4 => 0,
+    3 => 0,
+    5 => 0,
   );
+  /* Filter criterion: COUNT(Content: Nid) */
+  $handler->display->display_options['filters']['nid']['id'] = 'nid';
+  $handler->display->display_options['filters']['nid']['table'] = 'node';
+  $handler->display->display_options['filters']['nid']['field'] = 'nid';
+  $handler->display->display_options['filters']['nid']['relationship'] = 'reverse_field_related_to_node';
+  $handler->display->display_options['filters']['nid']['group_type'] = 'count';
+  $handler->display->display_options['filters']['nid']['operator'] = '>';
+  $handler->display->display_options['filters']['nid']['value']['value'] = '0';
 
   /* Display: Child */
   $handler = $view->new_display('page', 'Child', 'page');
