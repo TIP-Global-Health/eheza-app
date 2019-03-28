@@ -51,6 +51,13 @@ function hedley_schedule_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create pmtct_participant content'.
+  $permissions['create pmtct_participant content'] = array(
+    'name' => 'create pmtct_participant content',
+    'roles' => array(),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create session content'.
   $permissions['create session content'] = array(
     'name' => 'create session content',
@@ -97,6 +104,13 @@ function hedley_schedule_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any pmtct_participant content'.
+  $permissions['delete any pmtct_participant content'] = array(
+    'name' => 'delete any pmtct_participant content',
+    'roles' => array(),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any session content'.
   $permissions['delete any session content'] = array(
     'name' => 'delete any session content',
@@ -139,6 +153,13 @@ function hedley_schedule_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
     ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own pmtct_participant content'.
+  $permissions['delete own pmtct_participant content'] = array(
+    'name' => 'delete own pmtct_participant content',
+    'roles' => array(),
     'module' => 'node',
   );
 
@@ -192,6 +213,13 @@ function hedley_schedule_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any pmtct_participant content'.
+  $permissions['edit any pmtct_participant content'] = array(
+    'name' => 'edit any pmtct_participant content',
+    'roles' => array(),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any session content'.
   $permissions['edit any session content'] = array(
     'name' => 'edit any session content',
@@ -240,6 +268,13 @@ function hedley_schedule_user_default_permissions() {
       'administrator' => 'administrator',
       'sync' => 'sync',
     ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own pmtct_participant content'.
+  $permissions['edit own pmtct_participant content'] = array(
+    'name' => 'edit own pmtct_participant content',
+    'roles' => array(),
     'module' => 'node',
   );
 

@@ -646,6 +646,270 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-pmtct_participant-field_adult'.
+  $field_instances['node-pmtct_participant-field_adult'] = array(
+    'bundle' => 'pmtct_participant',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Which adult is participating in the PMTCT Group with the child?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 2,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_adult',
+    'label' => 'Adult',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-pmtct_participant-field_adult_activities'.
+  $field_instances['node-pmtct_participant-field_adult_activities'] = array(
+    'bundle' => 'pmtct_participant',
+    'default_value' => array(
+      0 => array(
+        'value' => 'mother',
+      ),
+    ),
+    'deleted' => 0,
+    'description' => 'Will the adult be participating in mother activities, or just the caregiver activities?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_adult_activities',
+    'label' => 'Adult Activities',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance: 'node-pmtct_participant-field_clinic'.
+  $field_instances['node-pmtct_participant-field_clinic'] = array(
+    'bundle' => 'pmtct_participant',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Which PMTCT Group is this child participating in?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 1,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_clinic',
+    'label' => 'Clinic',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance: 'node-pmtct_participant-field_expected'.
+  $field_instances['node-pmtct_participant-field_expected'] = array(
+    'bundle' => 'pmtct_participant',
+    'deleted' => 0,
+    'description' => 'Between what dates is the child expected to participate in PMTCT encounters?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 5,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_expected',
+    'label' => 'Expected',
+    'required' => 1,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 4,
+    ),
+  );
+
+  // Exported field_instance: 'node-pmtct_participant-field_person'.
+  $field_instances['node-pmtct_participant-field_person'] = array(
+    'bundle' => 'pmtct_participant',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'The child who is participating in PMTCT child activities.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 0,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_person',
+    'label' => 'Child',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance: 'node-pmtct_participant-field_uuid'.
+  $field_instances['node-pmtct_participant-field_uuid'] = array(
+    'bundle' => 'pmtct_participant',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 3,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 6,
+    ),
+  );
+
   // Exported field_instance: 'node-session-field_clinic'.
   $field_instances['node-session-field_clinic'] = array(
     'bundle' => 'session',
@@ -873,12 +1137,17 @@ This should not be used on the "live" site -- it is only intended for the "sandb
 
   // Translatables
   // Included for use with string extractors like potx.
+  t('Adult');
+  t('Adult Activities');
   t('At which point should these topics be addressed?');
+  t('Between what dates is the child expected to participate in PMTCT encounters?');
+  t('Child');
   t('Clinic');
   t('Closed');
   t('Date Measured');
   t('English Title');
   t('Enter the clinic for which data-entry is being scheduled.');
+  t('Expected');
   t('Has the session been explicitly closed by the user?');
   t('Health Center');
   t('If checked, indicates that this is a "training" session that should be deleted when deleting all training sessions. (Other sessions in the training site would remain, to populate the progress report).
@@ -890,6 +1159,7 @@ This should not be used on the "live" site -- it is only intended for the "sandb
   t('Person');
   t('Scheduled Date');
   t('Session');
+  t('The child who is participating in PMTCT child activities.');
   t('The start date is the date on which the data entry is scheduled.
 
 The end date is the last day on which data entry will be allowed for this session through the client app (for editing, or measurements that are taken later). After this date, the session will be considered closed.');
@@ -897,8 +1167,11 @@ The end date is the last day on which data entry will be allowed for this sessio
   t('Topics');
   t('Training');
   t('UUID');
+  t('Which PMTCT Group is this child participating in?');
+  t('Which adult is participating in the PMTCT Group with the child?');
   t('Which kind of counseling session was this?');
   t('Which topics should be addressed?');
+  t('Will the adult be participating in mother activities, or just the caregiver activities?');
   t('You can leave the UUID blank -- it will be automatically generated.');
 
   return $field_instances;
