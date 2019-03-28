@@ -757,7 +757,7 @@ function hedley_schedule_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_clinic',
-    'label' => 'Clinic',
+    'label' => 'PMTCT Group',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -1156,6 +1156,7 @@ This should not be used on the "live" site -- it is only intended for the "sandb
   t('Kinyarwanda Title');
   t('Nurse');
   t('Once you have created a "Counseling Topic" and it has been used, make only minor edits -- any edit will affect the historical data of which topics have been discussed with participants. If an edit would represent a different topic, then create a new topic instead. You can remove an unused topic from the relevant "Counseling Schedule" -- but do not delete the unused topic, since that would also affect the historical data.');
+  t('PMTCT Group');
   t('Person');
   t('Scheduled Date');
   t('Session');
