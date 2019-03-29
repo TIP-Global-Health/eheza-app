@@ -7,6 +7,9 @@
 
 include_once 'hedley_schedule.features.inc';
 
+define('HEDLEY_SCHEDULE_PMTCT_ACTIVITIES_CAREGIVER', 'caregiver');
+define('HEDLEY_SCHEDULE_PMTCT_ACTIVITIES_MOTHER', 'mother');
+
 /**
  * Implements hook_form_FORM_ID_alter().
  *
