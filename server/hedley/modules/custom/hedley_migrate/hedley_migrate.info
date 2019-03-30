@@ -23,6 +23,7 @@ files[] = handlers/node/HedleyMigrateMissingWeights.php
 files[] = handlers/node/HedleyMigrateMissingMuacs.php
 files[] = handlers/node/HedleyMigrateNurses.php
 files[] = handlers/node/HedleyMigratePeople.php
+files[] = handlers/node/HedleyMigratePmtctParticipants.php
 files[] = handlers/node/HedleyMigrateRelationships.php
 files[] = handlers/node/HedleyMigrateSessions.php
 files[] = handlers/node/2019-02/HedleyMigrateClinics201902.php
