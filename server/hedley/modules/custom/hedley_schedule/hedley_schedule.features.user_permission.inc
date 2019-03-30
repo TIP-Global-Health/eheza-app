@@ -54,7 +54,10 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'create pmtct_participant content'.
   $permissions['create pmtct_participant content'] = array(
     'name' => 'create pmtct_participant content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 
@@ -107,7 +110,9 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'delete any pmtct_participant content'.
   $permissions['delete any pmtct_participant content'] = array(
     'name' => 'delete any pmtct_participant content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
     'module' => 'node',
   );
 
@@ -159,7 +164,9 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'delete own pmtct_participant content'.
   $permissions['delete own pmtct_participant content'] = array(
     'name' => 'delete own pmtct_participant content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
     'module' => 'node',
   );
 
@@ -216,7 +223,10 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'edit any pmtct_participant content'.
   $permissions['edit any pmtct_participant content'] = array(
     'name' => 'edit any pmtct_participant content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 
@@ -274,7 +284,10 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'edit own pmtct_participant content'.
   $permissions['edit own pmtct_participant content'] = array(
     'name' => 'edit own pmtct_participant content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 
