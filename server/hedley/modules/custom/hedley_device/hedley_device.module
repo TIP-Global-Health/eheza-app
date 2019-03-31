@@ -26,35 +26,34 @@ function hedley_device_node_presave($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
 
   if ($wrapper->__isset('field_uuid')) {
-    // This node type has a field_uuid.
-    $uuid = $wrapper->field_uuid->value();
-
-    if (empty($uuid)) {
-      // If we don't have a UUID, then make one.
-      $uuid = Uuid::uuid5(HEDLEY_DEVICE_BACKEND_UUID, uniqid('', TRUE));
-      $wrapper->field_uuid->set($uuid->toString());
-    }
-    elseif (!Uuid::isValid($uuid)) {
-      // If we do have a UUID, then validate it.
-      $message = "The supplied UUID '$uuid' is not a valid UUID. Leave it blank to auto-generate.";
-      throw new Exception($message);
-    }
-    elseif (!empty($node->original)) {
-      // If we had a UUID, prevent modifying it.
-      $original_wrapper = entity_metadata_wrapper('node', $node->original);
-      $original_uuid = $original_wrapper->field_uuid->value();
-
-      if (!empty($original_uuid) && $uuid != $original_uuid) {
-        throw new Exception('You cannot modify a UUID once it is assigned.');
-      }
-    }
+    hedley_device_assign_uuid($node, $wrapper);
   }
 
-  if ($node->type != 'device') {
-    // Not a device.
+  if ($node->type == 'device') {
+    hedley_device_assign_pairing_code($node, $wrapper);
+  }
+
+  if ($wrapper->__isset('field_shards')) {
+    hedley_device_assign_shards($node, $wrapper);
+  }
+}
+
+/**
+ * Implements hook_node_delete().
+ */
+function hedley_device_node_delete($node) {
+  // Allow to manually skip this exception.
+  if (!empty($node->allow_delete)) {
     return;
   }
 
+  throw new Exception('Cannot delete this node. Consider unpublishing it instead.');
+}
+
+/**
+ * Assign or check a pairing code.
+ */
+function hedley_device_assign_pairing_code($node, $wrapper) {
   if (empty($node->nid)) {
     // New device, so we generate a pairing code if not set manually.
     if (empty($wrapper->field_pairing_code->value())) {
@@ -84,18 +83,6 @@ function hedley_device_node_presave($node) {
     // Existing device, so throw error if it's not unique.
     throw new Exception('The provided pairing code was not unique.');
   }
-}
-
-/**
- * Implements hook_node_delete().
- */
-function hedley_device_node_delete($node) {
-  // Allow to manually skip this exception.
-  if (!empty($node->allow_delete)) {
-    return;
-  }
-
-  throw new Exception('Cannot delete this node. Consider unpublishing it instead.');
 }
 
 /**
@@ -150,4 +137,75 @@ function hedley_device_check_unique_pairing_code($code, $nid = NULL) {
     ->execute();
 
   return $count == 0;
+}
+
+/**
+ * Assign a UUID to the node.
+ */
+function hedley_device_assign_uuid($node, $wrapper) {
+  $uuid = $wrapper->field_uuid->value();
+
+  if (empty($uuid)) {
+    // If we don't have a UUID, then make one.
+    $uuid = Uuid::uuid5(HEDLEY_DEVICE_BACKEND_UUID, uniqid('', TRUE));
+    $wrapper->field_uuid->set($uuid->toString());
+  }
+  elseif (!Uuid::isValid($uuid)) {
+    // If we do have a UUID, then validate it.
+    $message = "The supplied UUID '$uuid' is not a valid UUID. Leave it blank to auto-generate.";
+    throw new Exception($message);
+  }
+  elseif (!empty($node->original)) {
+    // If we had a UUID, prevent modifying it.
+    $original_wrapper = entity_metadata_wrapper('node', $node->original);
+    $original_uuid = $original_wrapper->field_uuid->value();
+
+    if (!empty($original_uuid) && $uuid != $original_uuid) {
+      throw new Exception('You cannot modify a UUID once it is assigned.');
+    }
+  }
+}
+
+/**
+ * Fill in field_shards with the shards this node should be sent to.
+ */
+function hedley_device_assign_shards($node, $wrapper) {
+  $shards = hedley_device_shards_for_person($wrapper->field_person->getIdentifier());
+  $wrapper->field_shards->set($shards);
+}
+
+/**
+ * Which shards should a person's measurements be sent to?
+ *
+ * @param int $nid
+ *   The nid of the person.
+ *
+ * @return array
+ *   An array of shard ID's.
+ */
+function hedley_device_shards_for_person($nid) {
+  // For now, we just look at their pmtct_participant records.  If they have
+  // one, we send their measurements to the associated health center.
+  //
+  // We do this as a db_select because we need an `OR`, and we can
+  // do it all at once with several joins, which is pleasant.
+  $query = db_select('node', 'n');
+
+  $query->condition('n.type', 'pmtct_participant');
+
+  $query->join('field_data_field_adult', 'adult', 'adult.entity_id = n.nid');
+  $query->join('field_data_field_person', 'child', 'child.entity_id = n.nid');
+
+  $adult_or_child = db_or();
+  $adult_or_child->condition('adult.field_adult_target_id', $nid);
+  $adult_or_child->condition('child.field_person_target_id', $nid);
+
+  $query->condition($adult_or_child);
+
+  $query->join('field_data_field_clinic', 'clinic', 'clinic.entity_id = n.nid');
+  $query->join('field_data_field_health_center', 'hc', 'hc.entity_id = clinic.field_clinic_target_id');
+
+  $query->fields('hc', ['field_health_center_target_id']);
+
+  return $query->execute()->fetchCol();
 }

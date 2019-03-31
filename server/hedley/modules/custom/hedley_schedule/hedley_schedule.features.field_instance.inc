@@ -310,7 +310,7 @@ function hedley_schedule_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 8,
+      'weight' => 6,
     ),
   );
 
@@ -354,7 +354,7 @@ function hedley_schedule_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 2,
     ),
   );
 
@@ -398,7 +398,51 @@ function hedley_schedule_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 4,
+      'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance: 'node-counseling_session-field_shards'.
+  $field_instances['node-counseling_session-field_shards'] = array(
+    'bundle' => 'counseling_session',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'This field will be calculated -- you can leave it blank.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_shards',
+    'label' => 'Shards',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 9,
     ),
   );
 
@@ -435,7 +479,7 @@ function hedley_schedule_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 6,
+      'weight' => 5,
     ),
   );
 
@@ -479,7 +523,7 @@ function hedley_schedule_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 5,
+      'weight' => 4,
     ),
   );
 
@@ -1160,10 +1204,12 @@ This should not be used on the "live" site -- it is only intended for the "sandb
   t('Person');
   t('Scheduled Date');
   t('Session');
+  t('Shards');
   t('The child who is participating in PMTCT child activities.');
   t('The start date is the date on which the data entry is scheduled.
 
 The end date is the last day on which data entry will be allowed for this session through the client app (for editing, or measurements that are taken later). After this date, the session will be considered closed.');
+  t('This field will be calculated -- you can leave it blank.');
   t('Timing');
   t('Topics');
   t('Training');

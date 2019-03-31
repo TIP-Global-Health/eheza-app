@@ -308,7 +308,7 @@ function generate_demo_content {
   for TYPE in "${TYPES[@]}"
   do
     echo -e "${LBLUE}Generating nodes of type: $TYPE ${RESTORE}"
-    drush generate-content 20 0 --types="$TYPE" --skip-fields=field_uuid
+    drush generate-content 20 0 --types="$TYPE" --skip-fields=field_uuid,field_shards
   done
 
   cd "$ROOT"
