@@ -51,6 +51,30 @@ function hedley_device_node_delete($node) {
 }
 
 /**
+ * Implements hook_node_insert().
+ */
+function hedley_device_node_insert($node) {
+  if ($node->type == 'pmtct_participant') {
+    $wrapper = entity_metadata_wrapper('node', $node);
+
+    hedley_recalculate_shards_for_person($wrapper->field_person->getIdentifier());
+    hedley_recalculate_shards_for_person($wrapper->field_adult->getIdentifier());
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ */
+function hedley_device_node_update($node) {
+  if ($node->type == 'pmtct_participant') {
+    $wrapper = entity_metadata_wrapper('node', $node);
+
+    hedley_recalculate_shards_for_person($wrapper->field_person->getIdentifier());
+    hedley_recalculate_shards_for_person($wrapper->field_adult->getIdentifier());
+  }
+}
+
+/**
  * Assign or check a pairing code.
  */
 function hedley_device_assign_pairing_code($node, $wrapper) {
@@ -209,4 +233,54 @@ function hedley_device_shards_for_person($nid) {
   $query->distinct();
 
   return $query->execute()->fetchCol();
+}
+
+/**
+ * Recalculate and potentially update shard assignments.
+ *
+ * @param int $nid
+ *   The node ID of a person to recalculate for.
+ */
+function hedley_recalculate_shards_for_person($nid) {
+  // Figure out what the shards for this person ought to be.
+  $shards = hedley_device_shards_for_person($nid);
+  sort($shards);
+
+  // Now, we need to cycle through the sharded entities for the person and
+  // update those that do not match, so that they will get sent to the right
+  // devices.
+  $query = db_select('node', 'n');
+
+  // Join field_shards and field_person. So, we're getting all sharded nodes
+  // that have a field_person.
+  $query->join('field_data_field_shards', 's', 's.entity_id = n.nid');
+  $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
+
+  // Limit to the person we're interested in.
+  $query->condition('p.field_person_target_id', $nid);
+
+  $query->fields('n', ['nid']);
+  $query->fields('s', ['field_shards_target_id']);
+
+  $result = $query->execute();
+  $measurement = [];
+
+  // Group the resulting shards by the nid of the sharded node.
+  foreach ($result as $record) {
+    if (empty($measurement[$record->nid])) {
+      $measurement[$record->nid] = [];
+    }
+
+    $measurement[$record->nid][] = $record->field_shards_target_id;
+  }
+
+  // For each sharded node, check whether we need to update it.
+  foreach ($measurement as $key => $value) {
+    sort($value);
+    if ($value != $shards) {
+      $wrapper = entity_metadata_wrapper('node', $key);
+      $wrapper->field_shards->set($shards);
+      $wrapper->save();
+    }
+  }
 }
