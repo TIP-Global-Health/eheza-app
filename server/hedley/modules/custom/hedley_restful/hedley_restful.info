@@ -10,5 +10,4 @@ files[] = plugins/restful/node/activity/HedleyRestfulChildActivityBase.class.php
 files[] = plugins/restful/node/activity/HedleyRestfulMotherActivityBase.class.php
 files[] = plugins/restful/node/HedleyRestfulEntityBaseNode.php
 files[] = plugins/restful/node/HedleyRestfulSyncBase.class.php
-files[] = plugins/restful/node/HedleyRestfulPatientBase.class.php
 files[] = tests/HedleyRestfulTests.test

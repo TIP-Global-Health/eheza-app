@@ -166,47 +166,6 @@ function hedley_admin_menu_default_menu_links() {
     'weight' => -44,
     'customized' => 1,
   );
-  // Exported menu link: menu-ihangane-admin-menu_create-caregiver:node/add/mother.
-  $menu_links['menu-ihangane-admin-menu_create-caregiver:node/add/mother'] = array(
-    'menu_name' => 'menu-ihangane-admin-menu',
-    'link_path' => 'node/add/mother',
-    'router_path' => 'node/add',
-    'link_title' => 'Create caregiver',
-    'options' => array(
-      'attributes' => array(),
-      'identifier' => 'menu-ihangane-admin-menu_create-caregiver:node/add/mother',
-      'query' => array(
-        'type' => 'caregiver',
-      ),
-    ),
-    'module' => 'menu',
-    'hidden' => 0,
-    'external' => 0,
-    'has_children' => 0,
-    'expanded' => 0,
-    'weight' => -48,
-    'customized' => 1,
-  );
-  // Exported menu link: menu-ihangane-admin-menu_create-child:node/add/child.
-  $menu_links['menu-ihangane-admin-menu_create-child:node/add/child'] = array(
-    'menu_name' => 'menu-ihangane-admin-menu',
-    'link_path' => 'node/add/child',
-    'router_path' => 'node/add',
-    'link_title' => 'Create child',
-    'options' => array(
-      'attributes' => array(
-        'title' => '',
-      ),
-      'identifier' => 'menu-ihangane-admin-menu_create-child:node/add/child',
-    ),
-    'module' => 'menu',
-    'hidden' => 0,
-    'external' => 0,
-    'has_children' => 0,
-    'expanded' => 0,
-    'weight' => -47,
-    'customized' => 1,
-  );
   // Exported menu link: menu-ihangane-admin-menu_create-clinic:node/add/clinic.
   $menu_links['menu-ihangane-admin-menu_create-clinic:node/add/clinic'] = array(
     'menu_name' => 'menu-ihangane-admin-menu',
@@ -225,26 +184,6 @@ function hedley_admin_menu_default_menu_links() {
     'has_children' => 0,
     'expanded' => 0,
     'weight' => -50,
-    'customized' => 1,
-  );
-  // Exported menu link: menu-ihangane-admin-menu_create-mother:node/add/mother.
-  $menu_links['menu-ihangane-admin-menu_create-mother:node/add/mother'] = array(
-    'menu_name' => 'menu-ihangane-admin-menu',
-    'link_path' => 'node/add/mother',
-    'router_path' => 'node/add',
-    'link_title' => 'Create mother',
-    'options' => array(
-      'attributes' => array(
-        'title' => '',
-      ),
-      'identifier' => 'menu-ihangane-admin-menu_create-mother:node/add/mother',
-    ),
-    'module' => 'menu',
-    'hidden' => 0,
-    'external' => 0,
-    'has_children' => 0,
-    'expanded' => 0,
-    'weight' => -49,
     'customized' => 1,
   );
   // Exported menu link: menu-ihangane-admin-menu_create-session:node/add/session.
@@ -267,38 +206,14 @@ function hedley_admin_menu_default_menu_links() {
     'weight' => -45,
     'customized' => 1,
   );
-  // Exported menu link: menu-ihangane-admin-menu_create-user:admin/people/create.
-  $menu_links['menu-ihangane-admin-menu_create-user:admin/people/create'] = array(
-    'menu_name' => 'menu-ihangane-admin-menu',
-    'link_path' => 'admin/people/create',
-    'router_path' => 'admin/people/create',
-    'link_title' => 'Create user',
-    'options' => array(
-      'attributes' => array(
-        'title' => '',
-      ),
-      'identifier' => 'menu-ihangane-admin-menu_create-user:admin/people/create',
-    ),
-    'module' => 'menu',
-    'hidden' => 0,
-    'external' => 0,
-    'has_children' => 0,
-    'expanded' => 0,
-    'weight' => -46,
-    'customized' => 1,
-  );
 
   // Translatables
   // Included for use with string extractors like potx.
   t('Children');
   t('Clinics');
   t('Content list');
-  t('Create caregiver');
-  t('Create child');
   t('Create clinic');
-  t('Create mother');
   t('Create session');
-  t('Create user');
   t('Historical Child');
   t('Historical Mother');
   t('Home');

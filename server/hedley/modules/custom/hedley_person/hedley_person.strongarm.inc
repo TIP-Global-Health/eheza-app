@@ -1,61 +1,40 @@
 <?php
 /**
  * @file
- * hedley_forms.strongarm.inc
+ * hedley_person.strongarm.inc
  */
 
 /**
  * Implements hook_strongarm().
  */
-function hedley_forms_strongarm() {
+function hedley_person_strongarm() {
   $export = array();
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'auto_entitylabel_node_participant_consent';
+  $strongarm->name = 'auto_entitylabel_node_relationship';
   $strongarm->value = '1';
-  $export['auto_entitylabel_node_participant_consent'] = $strongarm;
+  $export['auto_entitylabel_node_relationship'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'auto_entitylabel_node_participant_form';
-  $strongarm->value = '0';
-  $export['auto_entitylabel_node_participant_form'] = $strongarm;
+  $strongarm->name = 'auto_entitylabel_pattern_node_relationship';
+  $strongarm->value = '[node:field-person:title] - [node:field-related-by] - [node:field-related-to:title]';
+  $export['auto_entitylabel_pattern_node_relationship'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'auto_entitylabel_pattern_node_participant_consent';
-  $strongarm->value = '[node:content-type] - [node:field-mother:title] - [node:field-date-measured:custom:Y-m-d] - [node:field-session:nid]';
-  $export['auto_entitylabel_pattern_node_participant_consent'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'auto_entitylabel_pattern_node_participant_form';
-  $strongarm->value = '[node:content-type] - [node:nid]';
-  $export['auto_entitylabel_pattern_node_participant_form'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'auto_entitylabel_php_node_participant_consent';
+  $strongarm->name = 'auto_entitylabel_php_node_relationship';
   $strongarm->value = 0;
-  $export['auto_entitylabel_php_node_participant_consent'] = $strongarm;
+  $export['auto_entitylabel_php_node_relationship'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'auto_entitylabel_php_node_participant_form';
-  $strongarm->value = 0;
-  $export['auto_entitylabel_php_node_participant_form'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'field_bundle_settings_node__participant_consent';
+  $strongarm->name = 'field_bundle_settings_node__person';
   $strongarm->value = array(
     'view_modes' => array(),
     'extra_fields' => array(
@@ -67,12 +46,12 @@ function hedley_forms_strongarm() {
       'display' => array(),
     ),
   );
-  $export['field_bundle_settings_node__participant_consent'] = $strongarm;
+  $export['field_bundle_settings_node__person'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'field_bundle_settings_node__participant_form';
+  $strongarm->name = 'field_bundle_settings_node__relationship';
   $strongarm->value = array(
     'view_modes' => array(),
     'extra_fields' => array(
@@ -84,87 +63,87 @@ function hedley_forms_strongarm() {
       'display' => array(),
     ),
   );
-  $export['field_bundle_settings_node__participant_form'] = $strongarm;
+  $export['field_bundle_settings_node__relationship'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_options_participant_consent';
+  $strongarm->name = 'menu_options_person';
   $strongarm->value = array(
     0 => 'main-menu',
   );
-  $export['menu_options_participant_consent'] = $strongarm;
+  $export['menu_options_person'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_options_participant_form';
+  $strongarm->name = 'menu_options_relationship';
   $strongarm->value = array(
     0 => 'main-menu',
   );
-  $export['menu_options_participant_form'] = $strongarm;
+  $export['menu_options_relationship'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_parent_participant_consent';
+  $strongarm->name = 'menu_parent_person';
   $strongarm->value = 'main-menu:0';
-  $export['menu_parent_participant_consent'] = $strongarm;
+  $export['menu_parent_person'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_parent_participant_form';
+  $strongarm->name = 'menu_parent_relationship';
   $strongarm->value = 'main-menu:0';
-  $export['menu_parent_participant_form'] = $strongarm;
+  $export['menu_parent_relationship'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_options_participant_consent';
+  $strongarm->name = 'node_options_person';
   $strongarm->value = array(
     0 => 'status',
     1 => 'promote',
   );
-  $export['node_options_participant_consent'] = $strongarm;
+  $export['node_options_person'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_options_participant_form';
+  $strongarm->name = 'node_options_relationship';
   $strongarm->value = array(
     0 => 'status',
     1 => 'promote',
   );
-  $export['node_options_participant_form'] = $strongarm;
+  $export['node_options_relationship'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_preview_participant_consent';
+  $strongarm->name = 'node_preview_person';
   $strongarm->value = '1';
-  $export['node_preview_participant_consent'] = $strongarm;
+  $export['node_preview_person'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_preview_participant_form';
+  $strongarm->name = 'node_preview_relationship';
   $strongarm->value = '1';
-  $export['node_preview_participant_form'] = $strongarm;
+  $export['node_preview_relationship'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_submitted_participant_consent';
+  $strongarm->name = 'node_submitted_person';
   $strongarm->value = 1;
-  $export['node_submitted_participant_consent'] = $strongarm;
+  $export['node_submitted_person'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_submitted_participant_form';
+  $strongarm->name = 'node_submitted_relationship';
   $strongarm->value = 1;
-  $export['node_submitted_participant_form'] = $strongarm;
+  $export['node_submitted_relationship'] = $strongarm;
 
   return $export;
 }
