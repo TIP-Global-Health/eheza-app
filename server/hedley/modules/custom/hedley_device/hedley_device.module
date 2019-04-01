@@ -206,6 +206,7 @@ function hedley_device_shards_for_person($nid) {
   $query->join('field_data_field_health_center', 'hc', 'hc.entity_id = clinic.field_clinic_target_id');
 
   $query->fields('hc', ['field_health_center_target_id']);
+  $query->distinct();
 
   return $query->execute()->fetchCol();
 }
