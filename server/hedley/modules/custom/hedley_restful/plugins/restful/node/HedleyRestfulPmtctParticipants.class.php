@@ -17,7 +17,7 @@ class HedleyRestfulPmtctParticipants extends HedleyRestfulSyncBase {
     $public_fields = parent::publicFieldsInfo();
 
     $standard_fields_names = [
-      'adult_activities',
+      'field_adult_activities',
     ];
 
     foreach ($standard_fields_names as $field_name) {

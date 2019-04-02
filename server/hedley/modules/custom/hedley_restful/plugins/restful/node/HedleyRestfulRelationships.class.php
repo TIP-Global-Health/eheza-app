@@ -17,7 +17,7 @@ class HedleyRestfulRelationships extends HedleyRestfulSyncBase {
     $public_fields = parent::publicFieldsInfo();
 
     $standard_fields_names = [
-      'related_by',
+      'field_related_by',
     ];
 
     foreach ($standard_fields_names as $field_name) {
