@@ -5,10 +5,10 @@ import Backend.Child.Decoder exposing (decodeModeOfDelivery)
 import Backend.Child.Model exposing (Child, ModeOfDelivery(..))
 import Backend.Measurement.Model exposing (PhotoUrl(..))
 import Backend.Model
-import Backend.Mother.Decoder exposing (decodeEducationLevel, decodeHivStatus, decodeMaritalStatus)
-import Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother)
-import Backend.Participant.Decoder exposing (decodeGender, decodeUbudehe)
-import Backend.Participant.Model exposing (Gender(..), Ubudehe(..))
+import Backend.Mother.Decoder exposing (decodeHivStatus)
+import Backend.Mother.Model exposing (ChildrenRelationType(..), HIVStatus(..), Mother)
+import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeMaritalStatus, decodeUbudehe)
+import Backend.Person.Model exposing (EducationLevel(..), Gender(..), MaritalStatus(..), Ubudehe(..))
 import EveryDict
 import Form
 import Form.Field exposing (FieldValue(..))

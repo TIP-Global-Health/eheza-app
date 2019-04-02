@@ -26,6 +26,9 @@ import Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, Chi
 import Backend.Mother.Model exposing (Mother)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
+import Backend.Person.Model exposing (Person)
+import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
+import Backend.Relationship.Model exposing (Relationship)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
 import Dict exposing (Dict)
@@ -234,7 +237,10 @@ type Revision
     | NurseRevision NurseId Nurse
     | ParticipantConsentRevision ParticipantConsentId ParticipantConsent
     | ParticipantFormRevision ParticipantFormId ParticipantForm
+    | PersonRevision PersonId Person
     | PhotoRevision PhotoId Photo
+    | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
+    | RelationshipRevision RelationshipId Relationship
     | SessionRevision SessionId Session
     | WeightRevision WeightId Weight
 

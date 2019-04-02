@@ -1,4 +1,4 @@
-module Backend.Entities exposing (AttendanceId, AttendanceUuidType(..), CatchmentAreaId, CatchmentAreaUuidType(..), ChildId, ChildNutritionId, ChildNutritionUuidType(..), ChildUuidType(..), ClinicId, ClinicUuidType(..), CounselingScheduleId, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicUuidType(..), FamilyPlanningId, FamilyPlanningUuidType(..), HealthCenterId, HealthCenterUuidType(..), HeightId, HeightUuidType(..), MotherId, MotherUuidType(..), MuacId, MuacUuidType(..), NurseId, NurseUuidType(..), ParticipantConsentId, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormUuidType(..), PhotoId, PhotoUuidType(..), SessionId, SessionUuidType(..), WeightId, WeightUuidType(..))
+module Backend.Entities exposing (AttendanceId, AttendanceUuidType(..), CatchmentAreaId, CatchmentAreaUuidType(..), ChildId, ChildNutritionId, ChildNutritionUuidType(..), ChildUuidType(..), ClinicId, ClinicUuidType(..), CounselingScheduleId, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicUuidType(..), FamilyPlanningId, FamilyPlanningUuidType(..), HealthCenterId, HealthCenterUuidType(..), HeightId, HeightUuidType(..), MotherId, MotherUuidType(..), MuacId, MuacUuidType(..), NurseId, NurseUuidType(..), ParticipantConsentId, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormUuidType(..), PersonId, PersonUuidType(..), PhotoId, PhotoUuidType(..), PmtctParticipantId, PmtctParticipantUuidType(..), RelationshipId, RelationshipUuidType(..), SessionId, SessionUuidType(..), WeightId, WeightUuidType(..))
 
 {-|
 
@@ -215,12 +215,36 @@ type ParticipantFormUuidType
     = ParticipantFormUuidType
 
 
+type alias PersonId =
+    EntityUuid PersonUuidType
+
+
+type PersonUuidType
+    = PersonUuidType
+
+
 type alias PhotoId =
     EntityUuid PhotoUuidType
 
 
 type PhotoUuidType
     = PhotoUuidType
+
+
+type alias PmtctParticipantId =
+    EntityUuid PmtctParticipantUuidType
+
+
+type PmtctParticipantUuidType
+    = PmtctParticipantUuidType
+
+
+type alias RelationshipId =
+    EntityUuid RelationshipUuidType
+
+
+type RelationshipUuidType
+    = RelationshipUuidType
 
 
 type alias SessionId =

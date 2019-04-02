@@ -1,7 +1,7 @@
-module Backend.Mother.Encoder exposing (encodeChildrenRelation, encodeEducationLevel, encodeHivStatus, encodeMaritalStatus, encodeMother)
+module Backend.Mother.Encoder exposing (encodeChildrenRelation, encodeHivStatus, encodeMother)
 
 import Backend.Mother.Model exposing (..)
-import Backend.Participant.Encoder exposing (encodeGender, encodeUbudehe)
+import Backend.Person.Encoder exposing (encodeEducationLevel, encodeGender, encodeMaritalStatus, encodeUbudehe)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
@@ -48,31 +48,6 @@ encodeChildrenRelation relation =
             string "caregiver"
 
 
-encodeEducationLevel : EducationLevel -> Int
-encodeEducationLevel educationLevel =
-    case educationLevel of
-        NoSchooling ->
-            0
-
-        PrimarySchool ->
-            1
-
-        VocationalTrainingSchool ->
-            2
-
-        SecondarySchool ->
-            3
-
-        DiplomaProgram ->
-            4
-
-        HigherEducation ->
-            5
-
-        AdvancedDiploma ->
-            6
-
-
 encodeHivStatus : HIVStatus -> String
 encodeHivStatus status =
     case status of
@@ -90,19 +65,3 @@ encodeHivStatus status =
 
         Unknown ->
             "unknown"
-
-
-encodeMaritalStatus : MaritalStatus -> String
-encodeMaritalStatus status =
-    case status of
-        Divorced ->
-            "divorced"
-
-        Married ->
-            "married"
-
-        Single ->
-            "single"
-
-        Widowed ->
-            "widowed"

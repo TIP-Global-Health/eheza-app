@@ -7,7 +7,7 @@ import Backend.Measurement.Model exposing (ChildMeasurementList, Height, HeightI
 import Backend.Measurement.Utils exposing (currentValue, currentValueWithId, mapMeasurementData, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Mother.Model exposing (ChildrenRelationType(..))
-import Backend.Participant.Model exposing (Gender(..))
+import Backend.Person.Model exposing (Gender(..))
 import Backend.Session.Model exposing (EditableSession, Session)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother)
 import EveryDict

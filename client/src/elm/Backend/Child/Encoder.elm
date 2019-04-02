@@ -2,7 +2,7 @@ module Backend.Child.Encoder exposing (encodeChild, encodeModeOfDelivery, encode
 
 import Backend.Child.Model exposing (..)
 import Backend.Entities exposing (..)
-import Backend.Participant.Encoder exposing (encodeGender, encodeUbudehe)
+import Backend.Person.Encoder exposing (encodeGender, encodeUbudehe)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)

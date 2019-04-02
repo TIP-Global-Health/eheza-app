@@ -9,6 +9,9 @@ import Backend.Model exposing (..)
 import Backend.Mother.Decoder exposing (decodeMother)
 import Backend.Nurse.Decoder exposing (decodeNurse)
 import Backend.ParticipantConsent.Decoder exposing (decodeParticipantForm)
+import Backend.Person.Decoder exposing (decodePerson)
+import Backend.PmtctParticipant.Decoder exposing (decodePmtctParticipant)
+import Backend.Relationship.Decoder exposing (decodeRelationship)
 import Backend.Session.Decoder exposing (decodeSession)
 import Json.Decode exposing (..)
 import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid)
@@ -28,9 +31,6 @@ decodeRevision =
                     "catchment_area" ->
                         decodeWithUuid CatchmentAreaRevision decodeCatchmentArea
 
-                    "child" ->
-                        decodeWithUuid ChildRevision decodeChild
-
                     "clinic" ->
                         decodeWithUuid ClinicRevision decodeClinic
 
@@ -46,8 +46,14 @@ decodeRevision =
                     "health_center" ->
                         decodeWithUuid HealthCenterRevision decodeHealthCenter
 
-                    "mother" ->
-                        decodeWithUuid MotherRevision decodeMother
+                    "person" ->
+                        decodeWithUuid PersonRevision decodePerson
+
+                    "relationship" ->
+                        decodeWithUuid RelationshipRevision decodeRelationship
+
+                    "pmtct_participant" ->
+                        decodeWithUuid PmtctParticipantRevision decodePmtctParticipant
 
                     "session" ->
                         decodeWithUuid SessionRevision decodeSession

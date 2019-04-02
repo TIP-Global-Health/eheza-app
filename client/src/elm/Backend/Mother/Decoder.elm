@@ -1,8 +1,8 @@
-module Backend.Mother.Decoder exposing (decodeEducationLevel, decodeHivStatus, decodeMaritalStatus, decodeMother)
+module Backend.Mother.Decoder exposing (decodeHivStatus, decodeMother)
 
 import Backend.Mother.Model exposing (..)
-import Backend.Participant.Decoder exposing (decodeGender, decodeUbudehe)
-import Backend.Participant.Model exposing (Gender(..))
+import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeMaritalStatus, decodeUbudehe)
+import Backend.Person.Model exposing (Gender(..))
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, at, bool, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
@@ -57,40 +57,6 @@ decodeChildrenRelation =
             )
 
 
-decodeEducationLevel : Decoder EducationLevel
-decodeEducationLevel =
-    decodeInt
-        |> andThen
-            (\educationLevel ->
-                case educationLevel of
-                    0 ->
-                        succeed NoSchooling
-
-                    1 ->
-                        succeed PrimarySchool
-
-                    2 ->
-                        succeed VocationalTrainingSchool
-
-                    3 ->
-                        succeed SecondarySchool
-
-                    4 ->
-                        succeed DiplomaProgram
-
-                    5 ->
-                        succeed HigherEducation
-
-                    6 ->
-                        succeed AdvancedDiploma
-
-                    _ ->
-                        fail <|
-                            toString educationLevel
-                                ++ " is not a recognized EducationLevel"
-            )
-
-
 decodeHivStatus : Decoder HIVStatus
 decodeHivStatus =
     string
@@ -114,27 +80,4 @@ decodeHivStatus =
 
                     _ ->
                         fail (s ++ " is not a recognized HIVStatus")
-            )
-
-
-decodeMaritalStatus : Decoder MaritalStatus
-decodeMaritalStatus =
-    string
-        |> andThen
-            (\status ->
-                case status of
-                    "divorced" ->
-                        succeed Divorced
-
-                    "married" ->
-                        succeed Married
-
-                    "single" ->
-                        succeed Single
-
-                    "widowed" ->
-                        succeed Widowed
-
-                    _ ->
-                        fail (status ++ " is not a recognized MaritalStatus")
             )

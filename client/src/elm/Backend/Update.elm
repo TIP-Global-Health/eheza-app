@@ -452,11 +452,23 @@ handleRevision revision model =
         ParticipantFormRevision uuid data ->
             { model | participantForms = RemoteData.map (EveryDictList.insert uuid data) model.participantForms }
 
+        PersonRevision uuid data ->
+            -- TODO
+            model
+
         PhotoRevision uuid data ->
             mapChildMeasurements
                 data.participantId
                 (\measurements -> { measurements | photos = EveryDictList.insert uuid data measurements.photos })
                 model
+
+        PmtctParticipantRevision uuid data ->
+            -- TODO
+            model
+
+        RelationshipRevision uuid data ->
+            -- TODO
+            model
 
         SessionRevision uuid data ->
             let

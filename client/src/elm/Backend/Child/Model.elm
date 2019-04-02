@@ -1,7 +1,7 @@
 module Backend.Child.Model exposing (Child, ModeOfDelivery(..), VaginalDelivery(..), allModesOfDelivery)
 
 import Backend.Entities exposing (..)
-import Backend.Participant.Model exposing (Gender, Ubudehe)
+import Backend.Person.Model exposing (Gender, Ubudehe)
 import Gizra.NominalDate exposing (NominalDate)
 
 

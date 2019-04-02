@@ -13,7 +13,7 @@ module ZScore.Utils exposing
 -}
 
 import AllDict exposing (AllDict)
-import Backend.Participant.Model exposing (Gender(..))
+import Backend.Person.Model exposing (Gender(..))
 import Maybe.Extra exposing (orElseLazy)
 import RemoteData
 import Round

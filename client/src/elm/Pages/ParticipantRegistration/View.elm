@@ -7,10 +7,10 @@ import Backend.Child.Encoder exposing (encodeModeOfDelivery)
 import Backend.Child.Model exposing (ModeOfDelivery(..), allModesOfDelivery)
 import Backend.Measurement.Model exposing (PhotoUrl(..))
 import Backend.Model exposing (ModelBackend, ModelIndexedDb, MsgBackend(..))
-import Backend.Mother.Encoder exposing (encodeEducationLevel, encodeHivStatus, encodeMaritalStatus)
-import Backend.Mother.Model exposing (EducationLevel(..), HIVStatus(..), MaritalStatus(..), allEducationLevels, allHivStatuses, allMaritalStatuses)
-import Backend.Participant.Encoder exposing (encodeUbudehe)
-import Backend.Participant.Model exposing (Gender(..), Ubudehe(..), allUbudehes)
+import Backend.Mother.Encoder exposing (encodeHivStatus)
+import Backend.Mother.Model exposing (HIVStatus(..), allHivStatuses)
+import Backend.Person.Encoder exposing (encodeEducationLevel, encodeMaritalStatus, encodeUbudehe)
+import Backend.Person.Model exposing (EducationLevel(..), Gender(..), MaritalStatus(..), Ubudehe(..), allEducationLevels, allMaritalStatuses, allUbudehes)
 import Dict
 import EveryDict
 import EveryDictList

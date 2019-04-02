@@ -1,7 +1,7 @@
-module Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), HIVStatus(..), MaritalStatus(..), Mother, allEducationLevels, allHivStatuses, allMaritalStatuses)
+module Backend.Mother.Model exposing (ChildrenRelationType(..), HIVStatus(..), Mother, allHivStatuses)
 
 import Backend.Entities exposing (..)
-import Backend.Participant.Model exposing (Gender, Ubudehe)
+import Backend.Person.Model exposing (EducationLevel, Gender, MaritalStatus, Ubudehe)
 import Gizra.NominalDate exposing (NominalDate)
 
 
@@ -37,44 +37,6 @@ type alias Mother =
     , clinic : Maybe ClinicId
     , healthCenter : Maybe HealthCenterId
     }
-
-
-type EducationLevel
-    = NoSchooling
-    | PrimarySchool
-    | VocationalTrainingSchool
-    | SecondarySchool
-    | DiplomaProgram
-    | HigherEducation
-    | AdvancedDiploma
-
-
-allEducationLevels : List EducationLevel
-allEducationLevels =
-    [ NoSchooling
-    , PrimarySchool
-    , VocationalTrainingSchool
-    , SecondarySchool
-    , DiplomaProgram
-    , HigherEducation
-    , AdvancedDiploma
-    ]
-
-
-type MaritalStatus
-    = Divorced
-    | Married
-    | Single
-    | Widowed
-
-
-allMaritalStatuses : List MaritalStatus
-allMaritalStatuses =
-    [ Divorced
-    , Married
-    , Single
-    , Widowed
-    ]
 
 
 type HIVStatus
