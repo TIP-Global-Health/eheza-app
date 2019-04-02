@@ -953,6 +953,46 @@ function hedley_person_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-relationship-field_uuid'.
+  $field_instances['node-relationship-field_uuid'] = array(
+    'bundle' => 'relationship',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'This field will be generated -- you can leave it blank.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 3,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 5,
+    ),
+  );
+
   // Translatables
   // Included for use with string extractors like potx.
   t('Birth date');
@@ -979,6 +1019,7 @@ function hedley_person_field_default_field_instances() {
   t('The UUID will be automatically generated -- you need not enter it.');
   t('The child the person is the parent of, or caregiver for.');
   t('The person who is the parent or caregiver of another person.');
+  t('This field will be generated -- you can leave it blank.');
   t('UUID');
   t('Ubudehe');
   t('Village');
