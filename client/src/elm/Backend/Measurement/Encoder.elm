@@ -125,12 +125,12 @@ encodeFamilyPlanning =
 
 encodeChildMeasurement : (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
 encodeChildMeasurement =
-    encodeMeasurement "child"
+    encodeMeasurement "person"
 
 
 encodeMotherMeasurement : (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
 encodeMotherMeasurement =
-    encodeMeasurement "mother"
+    encodeMeasurement "person"
 
 
 encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
