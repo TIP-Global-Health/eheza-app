@@ -70,6 +70,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'nurse' => 'nurses',
       'participant_form' => 'participants-form',
       'person' => 'people',
+      'pmtct_participant' => 'pmtct-participants',
       'relationship' => 'relationships',
       'session' => 'sessions',
     ];
