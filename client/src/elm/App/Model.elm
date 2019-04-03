@@ -61,11 +61,12 @@ type alias Model =
     , zscores : ZScore.Model.Model
 
     -- What data did we want last time we checked? We track this so we can
-    -- forget data we don't want any longer. As an optimization, we should
-    -- probably track the last time we wanted each thing, so we can delay
-    -- forgetting for a period of time. (But, in this app, the latency to
-    -- IndexedDB is so low that it isn't likely to matter).
-    , dataWanted : List Msg
+    -- forget data we don't want any longer. Using an EveryDict relies on the
+    -- relevant `Msg` values behaving well for `toString`, which should
+    -- typically be fine. The time reflects the last time the data was wanted,
+    -- permitting us to keep recently wanted data around for a little while
+    -- after it is not wanted. (Often, it may be wanted again soon).
+    , dataWanted : EveryDict Msg Time
     }
 
 
@@ -194,7 +195,7 @@ emptyModel flags =
     { activePage = PinCodePage
     , configuration = NotAsked
     , currentTime = 0
-    , dataWanted = []
+    , dataWanted = EveryDict.empty
     , indexedDb = Backend.Model.emptyModelIndexedDb
     , language = English
     , memoryQuota = Nothing
