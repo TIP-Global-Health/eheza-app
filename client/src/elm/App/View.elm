@@ -157,7 +157,7 @@ viewUserPage page model configured =
                     Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) clinicId model.indexedDb
 
                 PersonPage id ->
-                    Pages.Person.View.view model.language id model.indexedDb
+                    Pages.Person.View.view model.language currentDate id model.indexedDb
 
                 PersonsPage search ->
                     Pages.People.View.view model.language currentDate search model.indexedDb

@@ -181,6 +181,7 @@ type TranslationId
     | DateOfBirth
     | Days
     | Delete
+    | DemographicInformation
     | Device
     | DeviceNotAuthorized
     | DeviceStatus
@@ -917,6 +918,11 @@ translationSet trans =
 
         Delete ->
             { english = "Delete"
+            , kinyarwanda = Nothing
+            }
+
+        DemographicInformation ->
+            { english = "Demographic Information"
             , kinyarwanda = Nothing
             }
 

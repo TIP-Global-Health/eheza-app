@@ -11,6 +11,7 @@ import Pages.Device.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.ParticipantRegistration.Fetch
 import Pages.People.Fetch
+import Pages.Person.Fetch
 import Pages.Session.Fetch
 import Update.Extra exposing (sequence)
 
@@ -52,6 +53,10 @@ fetch model =
                             |> List.map MsgIndexedDb
                     )
                 |> Maybe.withDefault []
+
+        UserPage (PersonPage id) ->
+            Pages.Person.Fetch.fetch id
+                |> List.map MsgIndexedDb
 
         UserPage (PersonsPage search) ->
             Pages.People.Fetch.fetch search
