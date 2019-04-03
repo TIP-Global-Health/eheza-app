@@ -481,8 +481,14 @@ handleRevision revision model =
             { model | participantForms = RemoteData.map (EveryDictList.insert uuid data) model.participantForms }
 
         PersonRevision uuid data ->
-            -- TODO
-            model
+            let
+                people =
+                    EveryDict.update uuid (Maybe.map (always (Success data))) model.people
+            in
+            { model
+                | personSearches = Dict.empty
+                , people = people
+            }
 
         PhotoRevision uuid data ->
             mapChildMeasurements
