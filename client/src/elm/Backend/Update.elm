@@ -220,6 +220,17 @@ updateIndexedDb currentDate nurseId msg model =
             , Cmd.none
             )
 
+        FetchPerson id ->
+            ( { model | people = EveryDict.insert id Loading model.people }
+            , sw.get personEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedPerson id)
+            )
+
+        HandleFetchedPerson id data ->
+            ( { model | people = EveryDict.insert id data model.people }
+            , Cmd.none
+            )
+
         FetchSession sessionId ->
             ( { model | sessions = EveryDict.insert sessionId Loading model.sessions }
             , sw.get sessionEndpoint sessionId

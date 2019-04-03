@@ -50,6 +50,9 @@ delta2url previous current =
                 ParticipantRegistrationPage ->
                     Just <| UrlChange NewEntry "#participant-registration"
 
+                PersonPage id ->
+                    Just <| UrlChange NewEntry ("#person/" ++ fromEntityUuid id)
+
                 PersonsPage search ->
                     let
                         change =
@@ -122,6 +125,7 @@ parseUrl =
         , map (\id page -> UserPage <| SessionPage id page) (s "session" </> parseUuid </> parseSessionPage)
         , map (UserPage <| PersonsPage Nothing) (s "persons")
         , map (UserPage << PersonsPage << Just) (s "persons" </> string)
+        , map (UserPage << PersonPage) (s "person" </> parseUuid)
 
         -- `top` represents the page without any segements ... i.e. the
         -- root page.

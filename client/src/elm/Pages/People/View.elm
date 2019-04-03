@@ -160,9 +160,21 @@ viewParticipant language currentDate db id person =
                     )
                 |> Maybe.withDefault "mother"
 
+        action =
+            div [ class "action" ]
+                [ div [ class "action-icon-wrapper" ]
+                    [ span
+                        [ class "action-icon forward"
+                        , onClick <| SetActivePage <| UserPage <| PersonPage id
+                        ]
+                        []
+                    ]
+                ]
+
         content =
             div [ class "content" ]
-                [ div [ class "details" ]
+                [ div
+                    [ class "details" ]
                     [ h2
                         [ class "ui header" ]
                         [ text <| person.name ]
@@ -179,6 +191,7 @@ viewParticipant language currentDate db id person =
                         , span [] [ person.village |> Maybe.withDefault "" |> text ]
                         ]
                     ]
+                , action
                 ]
     in
     div

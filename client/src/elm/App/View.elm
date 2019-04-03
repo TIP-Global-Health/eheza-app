@@ -18,6 +18,7 @@ import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.ParticipantRegistration.View
 import Pages.People.View
+import Pages.Person.View
 import Pages.PinCode.View
 import Pages.Session.Model
 import Pages.Session.View exposing (view)
@@ -154,6 +155,9 @@ viewUserPage page model configured =
 
                 ClinicsPage clinicId ->
                     Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) clinicId model.indexedDb
+
+                PersonPage id ->
+                    Pages.Person.View.view model.language id model.indexedDb
 
                 PersonsPage search ->
                     Pages.People.View.view model.language currentDate search model.indexedDb

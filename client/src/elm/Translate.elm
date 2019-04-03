@@ -2052,6 +2052,11 @@ translateActivePage page =
                     , kinyarwanda = Just "Compte"
                     }
 
+                PersonPage id ->
+                    { english = "Person"
+                    , kinyarwanda = Nothing
+                    }
+
                 PersonsPage _ ->
                     { english = "People"
                     , kinyarwanda = Nothing
