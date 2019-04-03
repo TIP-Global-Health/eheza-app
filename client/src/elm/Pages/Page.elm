@@ -119,6 +119,7 @@ type UserPage
     | ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
     | SessionPage SessionId SessionPage -- pages that manipulate a group session
     | MyAccountPage -- shows information about the logged-in user
+    | PersonsPage (Maybe String) -- shows list of people using search string
     | ParticipantRegistrationPage -- alllows registration of new participants.
 
 

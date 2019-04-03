@@ -91,7 +91,10 @@
         nutrition: 'shards',
         participant_consent: 'shards',
         participant_form: 'nodes',
+        person: 'nodes',
         photo: 'shards',
+        pmtct_participant: 'nodes',
+        relationship: 'nodes',
         session: 'nodes',
         syncmetadata: 'syncMetadata',
         weight: 'shards'

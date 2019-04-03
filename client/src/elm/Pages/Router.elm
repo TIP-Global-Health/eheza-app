@@ -2,6 +2,7 @@ module Pages.Router exposing (delta2url, parseUrl)
 
 import Activity.Model exposing (Activity)
 import Activity.Utils exposing (decodeActivityFromString, defaultActivity, encodeActivityAsString)
+import Http exposing (encodeUri)
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (EntityUuid, fromEntityUuid, toEntityUuid)
 import RouteUrl exposing (HistoryEntry(..), UrlChange)
@@ -48,6 +49,28 @@ delta2url previous current =
 
                 ParticipantRegistrationPage ->
                     Just <| UrlChange NewEntry "#participant-registration"
+
+                PersonsPage search ->
+                    let
+                        change =
+                            -- If we're typing the search string, we just
+                            -- modify the entry.
+                            case previous of
+                                UserPage (PersonsPage _) ->
+                                    ModifyEntry
+
+                                _ ->
+                                    NewEntry
+
+                        encodedSearch =
+                            search
+                                |> Maybe.map (\s -> "/" ++ encodeUri s)
+                                |> Maybe.withDefault ""
+
+                        url =
+                            "#persons" ++ encodedSearch
+                    in
+                    Just <| UrlChange change url
 
                 SessionPage sessionId sessionPage ->
                     let
@@ -97,6 +120,8 @@ parseUrl =
         , map (UserPage MyAccountPage) (s "my-account")
         , map (UserPage ParticipantRegistrationPage) (s "participant-registration")
         , map (\id page -> UserPage <| SessionPage id page) (s "session" </> parseUuid </> parseSessionPage)
+        , map (UserPage <| PersonsPage Nothing) (s "persons")
+        , map (UserPage << PersonsPage << Just) (s "persons" </> string)
 
         -- `top` represents the page without any segements ... i.e. the
         -- root page.

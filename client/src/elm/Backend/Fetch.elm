@@ -70,6 +70,11 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchPeopleByName search ->
+            Dict.get (String.trim search) model.personSearches
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchSession sessionId ->
             EveryDict.get sessionId model.sessions
                 |> Maybe.withDefault NotAsked
@@ -128,6 +133,9 @@ forget msg model =
 
         FetchParticipantsByName search ->
             { model | nameSearches = Dict.remove (String.trim search) model.nameSearches }
+
+        FetchPeopleByName search ->
+            { model | personSearches = Dict.remove (String.trim search) model.personSearches }
 
         FetchSession sessionId ->
             { model | sessions = EveryDict.remove sessionId model.sessions }

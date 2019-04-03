@@ -123,6 +123,7 @@ type alias ModelIndexedDb =
     -- Tracks searchs for participants by name. The key is the phrase we are
     -- searching for.
     , nameSearches : Dict String (WebData Participants)
+    , personSearches : Dict String (WebData (EveryDictList PersonId Person))
 
     -- A simple cache of mothers and children.
     , mothers : EveryDict MotherId (WebData Mother)
@@ -153,6 +154,7 @@ emptyModelIndexedDb =
     , mothers = EveryDict.empty
     , nameSearches = Dict.empty
     , participantForms = NotAsked
+    , personSearches = Dict.empty
     , postChild = NotAsked
     , postMother = NotAsked
     , saveSyncDataRequests = EveryDict.empty
@@ -178,6 +180,7 @@ type MsgIndexedDb
     | FetchMotherMeasurements MotherId
     | FetchParticipantForms
     | FetchParticipantsByName String
+    | FetchPeopleByName String
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
     | FetchSyncData
@@ -194,6 +197,7 @@ type MsgIndexedDb
     | HandleFetchedMother MotherId (WebData Mother)
     | HandleFetchedParticipantForms (WebData (EveryDictList ParticipantFormId ParticipantForm))
     | HandleFetchedParticipantsByName String (WebData Participants)
+    | HandleFetchedPeopleByName String (WebData (EveryDictList PersonId Person))
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (EveryDictList SessionId Session))
     | HandleFetchedSyncData (WebData (EveryDictList HealthCenterId SyncData))

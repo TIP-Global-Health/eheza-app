@@ -10,6 +10,7 @@ import Pages.Clinics.Fetch
 import Pages.Device.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.ParticipantRegistration.Fetch
+import Pages.People.Fetch
 import Pages.Session.Fetch
 import Update.Extra exposing (sequence)
 
@@ -51,6 +52,10 @@ fetch model =
                             |> List.map MsgIndexedDb
                     )
                 |> Maybe.withDefault []
+
+        UserPage (PersonsPage search) ->
+            Pages.People.Fetch.fetch search
+                |> List.map MsgIndexedDb
 
         UserPage AdminPage ->
             []

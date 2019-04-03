@@ -7,7 +7,7 @@ import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
-import Pages.Page exposing (Page(..))
+import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PinCode.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
@@ -120,7 +120,7 @@ viewWhenLoggedIn language nurse =
         selectClinicButton =
             button
                 [ class "ui primary button"
-                , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.ClinicsPage Nothing
+                , onClick <| SendOutMsg <| SetActivePage <| UserPage <| ClinicsPage Nothing
                 ]
                 [ text <| translate language Translate.SelectYourClinic ]
 
@@ -129,7 +129,7 @@ viewWhenLoggedIn language nurse =
                 Just <|
                     button
                         [ class "ui primary button"
-                        , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage Pages.Page.AdminPage
+                        , onClick <| SendOutMsg <| SetActivePage <| UserPage AdminPage
                         ]
                         [ text <| translate language Translate.Admin ]
 
@@ -139,7 +139,7 @@ viewWhenLoggedIn language nurse =
         registerParticipantButton =
             button
                 [ class "ui fluid primary button"
-                , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.ParticipantRegistrationPage
+                , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing
                 ]
                 [ text <| translate language Translate.RegisterAParticipant ]
 

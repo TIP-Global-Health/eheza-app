@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (ChildParams, MotherParams, NurseParams, SessionParams(..), attendanceEndpoint, childEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeChildParams, encodeMotherParams, encodeNurseParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, motherEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, photoEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, trainingSessionsEndpoint, weightEndpoint)
+module Backend.Endpoints exposing (ChildParams, MotherParams, NurseParams, PersonParams, SessionParams(..), attendanceEndpoint, childEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeChildParams, encodeMotherParams, encodeNurseParams, encodePersonParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, motherEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, trainingSessionsEndpoint, weightEndpoint)
 
 import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Child.Encoder exposing (encodeChild)
@@ -24,6 +24,9 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.ParticipantConsent.Decoder exposing (decodeParticipantForm)
 import Backend.ParticipantConsent.Encoder exposing (encodeParticipantForm)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
+import Backend.Person.Decoder exposing (decodePerson)
+import Backend.Person.Encoder exposing (encodePerson)
+import Backend.Person.Model exposing (Person)
 import Backend.Session.Decoder exposing (decodeSession, decodeTrainingSessionRequest)
 import Backend.Session.Encoder exposing (encodeSession, encodeTrainingSessionRequest)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
@@ -90,6 +93,25 @@ encodeMotherParams params =
     List.filterMap identity
         [ Maybe.map (\id -> ( "session", fromEntityUuid id )) params.session
         , Maybe.map (\name -> ( "name_contains", name )) params.nameContains
+        ]
+
+
+personEndpoint : ReadWriteEndPoint Error PersonId Person Person PersonParams
+personEndpoint =
+    swEndpoint "nodes/person" decodePerson
+        |> withValueEncoder encodePerson
+        |> withParamsEncoder encodePersonParams
+
+
+type alias PersonParams =
+    { nameContains : Maybe String
+    }
+
+
+encodePersonParams : PersonParams -> List ( String, String )
+encodePersonParams params =
+    List.filterMap identity
+        [ Maybe.map (\name -> ( "name_contains", name )) params.nameContains
         ]
 
 

@@ -148,6 +148,23 @@ updateIndexedDb currentDate nurseId msg model =
             , Cmd.none
             )
 
+        FetchPeopleByName name ->
+            let
+                trimmed =
+                    String.trim name
+            in
+            -- We'll limit the search to 100 each for now ... basically,
+            -- just to avoid truly pathological cases.
+            ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
+            , sw.selectRange personEndpoint { nameContains = Just trimmed } 0 (Just 100)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedPeopleByName trimmed)
+            )
+
+        HandleFetchedPeopleByName name data ->
+            ( { model | personSearches = Dict.insert (String.trim name) data model.personSearches }
+            , Cmd.none
+            )
+
         FetchExpectedSessions childId ->
             ( { model | expectedSessions = EveryDict.insert childId Loading model.expectedSessions }
             , sw.select sessionEndpoint (ForChild childId)

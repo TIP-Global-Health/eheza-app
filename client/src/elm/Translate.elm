@@ -268,6 +268,7 @@ type TranslationId
     | ParticipantSummary
     | ParticipantDemographicInformation
     | ParticipantInformation
+    | People
     | PersistentStorage Bool
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
@@ -1508,6 +1509,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        People ->
+            { english = "People"
+            , kinyarwanda = Nothing
+            }
+
         PersistentStorage authorized ->
             if authorized then
                 { english = "Persistent storage has been authorized. The browser will not delete locally cached data without your approval."
@@ -2044,6 +2050,11 @@ translateActivePage page =
                 MyAccountPage ->
                     { english = "My Account"
                     , kinyarwanda = Just "Compte"
+                    }
+
+                PersonsPage _ ->
+                    { english = "People"
+                    , kinyarwanda = Nothing
                     }
 
                 ParticipantRegistrationPage ->
