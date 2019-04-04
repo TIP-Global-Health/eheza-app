@@ -30,6 +30,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
 import Backend.Mother.Model exposing (HIVStatus(..))
 import Backend.Person.Model exposing (EducationLevel(..), Gender(..), MaritalStatus(..))
+import Backend.Relationship.Model exposing (MyRelationship(..))
 import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
@@ -194,6 +195,7 @@ type TranslationId
     | ErrorConfigurationError
     | Estimated
     | FamilyInformation
+    | FamilyMembers
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
     | Fetch
@@ -239,6 +241,7 @@ type TranslationId
     | Mothers
     | MuacIndication MuacIndication
     | MyAccount
+    | MyRelationship MyRelationship
     | NationalIdNumber
     | Next
     | No
@@ -1006,6 +1009,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        FamilyMembers ->
+            { english = "Family Members"
+            , kinyarwanda = Nothing
+            }
+
         FamilyPlanningSignLabel sign ->
             case sign of
                 Condoms ->
@@ -1364,6 +1372,9 @@ translationSet trans =
             { english = "My Account"
             , kinyarwanda = Just "Konti yanjye"
             }
+
+        MyRelationship relationship ->
+            translateMyRelationship relationship
 
         NationalIdNumber ->
             { english = "National ID Number"
@@ -2015,6 +2026,30 @@ translationSet trans =
         ZScoreWeightForHeight ->
             { english = "Z-Score Weight for Height: "
             , kinyarwanda = Just "Z-score Ibiro ku uburebure: "
+            }
+
+
+translateMyRelationship : MyRelationship -> TranslationSet String
+translateMyRelationship relationship =
+    case relationship of
+        MyChild _ ->
+            { english = "Child"
+            , kinyarwanda = Just "Umwana"
+            }
+
+        MyParent _ ->
+            { english = "Parent"
+            , kinyarwanda = Nothing
+            }
+
+        MyCaregiverFor _ ->
+            { english = "Caregiver for"
+            , kinyarwanda = Nothing
+            }
+
+        MyCaregiver _ ->
+            { english = "Caregiver"
+            , kinyarwanda = Nothing
             }
 
 

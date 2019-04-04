@@ -165,6 +165,34 @@ updateIndexedDb currentDate nurseId msg model =
             , Cmd.none
             )
 
+        FetchRelationshipsForPerson personId ->
+            let
+                -- We run two queries, one for the `person` field, and one for
+                -- `related_to` One could do this as an OR in the service
+                -- worker instead, but it would basically run two queries
+                -- anyway, so it's no more efficient.
+                query1 =
+                    sw.select relationshipEndpoint { person = Just personId, relatedTo = Nothing }
+                        |> toTask
+                        |> Task.map (.items >> EveryDictList.fromList)
+                        |> RemoteData.fromTask
+
+                query2 =
+                    sw.select relationshipEndpoint { person = Nothing, relatedTo = Just personId }
+                        |> toTask
+                        |> Task.map (.items >> EveryDictList.fromList)
+                        |> RemoteData.fromTask
+            in
+            ( { model | relationshipsByPerson = EveryDict.insert personId Loading model.relationshipsByPerson }
+            , Task.map2 (RemoteData.map2 EveryDictList.union) query1 query2
+                |> Task.perform (HandleFetchedRelationshipsForPerson personId)
+            )
+
+        HandleFetchedRelationshipsForPerson personId data ->
+            ( { model | relationshipsByPerson = EveryDict.insert personId data model.relationshipsByPerson }
+            , Cmd.none
+            )
+
         FetchExpectedSessions childId ->
             ( { model | expectedSessions = EveryDict.insert childId Loading model.expectedSessions }
             , sw.select sessionEndpoint (ForChild childId)
@@ -501,8 +529,7 @@ handleRevision revision model =
             model
 
         RelationshipRevision uuid data ->
-            -- TODO
-            model
+            { model | relationshipsByPerson = EveryDict.empty }
 
         SessionRevision uuid data ->
             let

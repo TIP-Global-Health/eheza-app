@@ -56,7 +56,7 @@ fetch model =
                 |> Maybe.withDefault []
 
         UserPage (PersonPage id) ->
-            Pages.Person.Fetch.fetch id
+            Pages.Person.Fetch.fetch id model.indexedDb
                 |> List.map MsgIndexedDb
 
         UserPage (PersonsPage search) ->

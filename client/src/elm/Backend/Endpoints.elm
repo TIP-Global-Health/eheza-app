@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (ChildParams, MotherParams, NurseParams, PersonParams, SessionParams(..), attendanceEndpoint, childEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeChildParams, encodeMotherParams, encodeNurseParams, encodePersonParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, motherEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, trainingSessionsEndpoint, weightEndpoint)
+module Backend.Endpoints exposing (ChildParams, MotherParams, NurseParams, PersonParams, RelationshipParams, SessionParams(..), attendanceEndpoint, childEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeChildParams, encodeMotherParams, encodeNurseParams, encodePersonParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, motherEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, relationshipEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, trainingSessionsEndpoint, weightEndpoint)
 
 import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Child.Encoder exposing (encodeChild)
@@ -27,6 +27,9 @@ import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Decoder exposing (decodePerson)
 import Backend.Person.Encoder exposing (encodePerson)
 import Backend.Person.Model exposing (Person)
+import Backend.Relationship.Decoder exposing (decodeRelationship)
+import Backend.Relationship.Encoder exposing (encodeRelationship)
+import Backend.Relationship.Model exposing (Relationship)
 import Backend.Session.Decoder exposing (decodeSession, decodeTrainingSessionRequest)
 import Backend.Session.Encoder exposing (encodeSession, encodeTrainingSessionRequest)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
@@ -112,6 +115,27 @@ encodePersonParams : PersonParams -> List ( String, String )
 encodePersonParams params =
     List.filterMap identity
         [ Maybe.map (\name -> ( "name_contains", name )) params.nameContains
+        ]
+
+
+relationshipEndpoint : ReadWriteEndPoint Error RelationshipId Relationship Relationship RelationshipParams
+relationshipEndpoint =
+    swEndpoint "nodes/relationship" decodeRelationship
+        |> withValueEncoder encodeRelationship
+        |> withParamsEncoder encodeRelationshipParams
+
+
+type alias RelationshipParams =
+    { person : Maybe PersonId
+    , relatedTo : Maybe PersonId
+    }
+
+
+encodeRelationshipParams : RelationshipParams -> List ( String, String )
+encodeRelationshipParams params =
+    List.filterMap identity
+        [ Maybe.map (\person -> ( "person", fromEntityUuid person )) params.person
+        , Maybe.map (\relatedTo -> ( "related_to", fromEntityUuid relatedTo )) params.relatedTo
         ]
 
 

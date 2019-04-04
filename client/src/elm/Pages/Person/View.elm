@@ -5,7 +5,10 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
+import Backend.Relationship.Model exposing (Relationship)
+import Backend.Relationship.Utils exposing (getRelatedTo, toMyRelationship)
 import EveryDict
+import EveryDictList
 import Gizra.Html exposing (showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -28,7 +31,7 @@ view language currentDate id db =
             [ class "ui full segment blue" ]
             [ EveryDict.get id db.people
                 |> Maybe.withDefault NotAsked
-                |> viewWebData language (viewParticipantDetailsForm language currentDate id) identity
+                |> viewWebData language (viewParticipantDetailsForm language currentDate db id) identity
             ]
         ]
 
@@ -50,8 +53,46 @@ viewHeader language =
         ]
 
 
-viewParticipantDetailsForm : Language -> NominalDate -> PersonId -> Person -> Html Msg
-viewParticipantDetailsForm language currentDate id person =
+viewRelationship : Language -> NominalDate -> ModelIndexedDb -> PersonId -> RelationshipId -> Relationship -> Html Msg
+viewRelationship language currentDate db personId relationshipId relationship =
+    let
+        viewMyRelationship myRelationship =
+            let
+                relatedToId =
+                    getRelatedTo myRelationship
+
+                relatedTo =
+                    EveryDict.get relatedToId db.people
+                        |> Maybe.withDefault NotAsked
+            in
+            div []
+                [ h4
+                    [ class "ui header" ]
+                    [ text <| translate language <| Translate.MyRelationship myRelationship ]
+                , div
+                    [ class "ui unstackable items" ]
+                    [ viewWebData language (viewParticipant language currentDate relatedToId) identity relatedTo ]
+                ]
+    in
+    toMyRelationship personId relationship
+        |> Maybe.map viewMyRelationship
+        |> showMaybe
+
+
+viewParticipantDetailsForm : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Person -> Html Msg
+viewParticipantDetailsForm language currentDate db id person =
+    let
+        viewFamilyMembers relationships =
+            relationships
+                |> EveryDictList.map (viewRelationship language currentDate db id)
+                |> EveryDictList.values
+                |> div []
+
+        familyMembers =
+            EveryDict.get id db.relationshipsByPerson
+                |> Maybe.withDefault NotAsked
+                |> viewWebData language viewFamilyMembers identity
+    in
     div [ class "wrap-list registration-page view" ]
         [ h3
             [ class "ui header" ]
@@ -59,6 +100,11 @@ viewParticipantDetailsForm language currentDate id person =
         , div
             [ class "ui unstackable items" ]
             [ viewParticipant language currentDate id person ]
+        , div [ class "separator-line" ] []
+        , h3
+            [ class "ui header" ]
+            [ text <| translate language Translate.FamilyMembers ++ ": " ]
+        , familyMembers
         ]
 
 

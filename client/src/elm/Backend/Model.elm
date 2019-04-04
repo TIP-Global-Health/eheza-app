@@ -129,6 +129,7 @@ type alias ModelIndexedDb =
     , mothers : EveryDict MotherId (WebData Mother)
     , children : EveryDict ChildId (WebData Child)
     , people : EveryDict PersonId (WebData Person)
+    , relationshipsByPerson : EveryDict PersonId (WebData (EveryDictList RelationshipId Relationship))
 
     -- A cache of children of a mother
     , childrenOfMother : EveryDict MotherId (WebData (EveryDict ChildId Child))
@@ -159,6 +160,7 @@ emptyModelIndexedDb =
     , personSearches = Dict.empty
     , postChild = NotAsked
     , postMother = NotAsked
+    , relationshipsByPerson = EveryDict.empty
     , saveSyncDataRequests = EveryDict.empty
     , sessionRequests = EveryDict.empty
     , sessions = EveryDict.empty
@@ -184,6 +186,7 @@ type MsgIndexedDb
     | FetchParticipantsByName String
     | FetchPeopleByName String
     | FetchPerson PersonId
+    | FetchRelationshipsForPerson PersonId
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
     | FetchSyncData
@@ -202,6 +205,7 @@ type MsgIndexedDb
     | HandleFetchedParticipantsByName String (WebData Participants)
     | HandleFetchedPeopleByName String (WebData (EveryDictList PersonId Person))
     | HandleFetchedPerson PersonId (WebData Person)
+    | HandleFetchedRelationshipsForPerson PersonId (WebData (EveryDictList RelationshipId Relationship))
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (EveryDictList SessionId Session))
     | HandleFetchedSyncData (WebData (EveryDictList HealthCenterId SyncData))

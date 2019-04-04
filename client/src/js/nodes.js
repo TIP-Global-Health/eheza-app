@@ -415,7 +415,9 @@
     var searchFields = [
         'pin_code',
         'clinic',
-        'mother'
+        'mother',
+        'person',
+        'related_to'
     ];
 
     function index (url, type) {

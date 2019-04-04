@@ -74,6 +74,10 @@ dbSync.version(1).stores({
     shardChanges: '++localId,shard'
 });
 
+dbSync.version(2).stores({
+    nodes: '&uuid,type,vid,status,[type+pin_code],[type+clinic],[type+person],[type+related_to]',
+});
+
 // For when any sync metadata changes, send it all to the app
 function sendSyncData () {
     return dbSync.syncMetadata.toArray().then (function (syncData) {
