@@ -13,6 +13,7 @@ import Pages.Admin.Model
 import Pages.Device.Model
 import Pages.Page exposing (Page(..))
 import Pages.ParticipantRegistration.Model
+import Pages.Person.Model
 import Pages.PinCode.Model
 import Pages.Session.Model
 import RemoteData exposing (RemoteData(..), WebData)
@@ -125,6 +126,7 @@ type alias LoggedInModel =
     { backend : Backend.Model.ModelBackend
     , adminPage : Pages.Admin.Model.Model
     , participantRegistrationPage : Pages.ParticipantRegistration.Model.Model
+    , createPersonPage : Pages.Person.Model.Model
 
     -- The nurse who has logged in.
     , nurse : ( NurseId, Nurse )
@@ -138,6 +140,7 @@ emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel nurse =
     { backend = Backend.Model.emptyModelBackend
     , adminPage = Pages.Admin.Model.emptyModel
+    , createPersonPage = Pages.Person.Model.emptyModel
     , participantRegistrationPage = Pages.ParticipantRegistration.Model.emptyModel
     , nurse = nurse
     , sessionPages = EveryDict.empty
@@ -179,6 +182,7 @@ type MsgLoggedIn
     = MsgBackend Backend.Model.MsgBackend
     | MsgPageAdmin Pages.Admin.Model.Msg
     | MsgPageParticipantRegistration Pages.ParticipantRegistration.Model.Msg
+    | MsgPageCreatePerson Pages.Person.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
 
 

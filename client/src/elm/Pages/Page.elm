@@ -120,6 +120,7 @@ type UserPage
     | SessionPage SessionId SessionPage -- pages that manipulate a group session
     | MyAccountPage -- shows information about the logged-in user
     | PersonPage PersonId -- shows a particular person
+    | CreatePersonPage -- create a new person
     | PersonsPage (Maybe String) -- shows list of people using search string
     | ParticipantRegistrationPage -- alllows registration of new participants.
 

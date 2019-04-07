@@ -1,12 +1,10 @@
 module Backend.Decoder exposing (decodeRevision)
 
-import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
 import Backend.Measurement.Decoder exposing (decodeAttendance, decodeCounselingSession, decodeFamilyPlanning, decodeHeight, decodeMuac, decodeNutrition, decodeParticipantConsent, decodePhoto, decodeWeight)
 import Backend.Model exposing (..)
-import Backend.Mother.Decoder exposing (decodeMother)
 import Backend.Nurse.Decoder exposing (decodeNurse)
 import Backend.ParticipantConsent.Decoder exposing (decodeParticipantForm)
 import Backend.Person.Decoder exposing (decodePerson)

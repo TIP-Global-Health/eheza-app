@@ -156,6 +156,10 @@ viewUserPage page model configured =
                 ClinicsPage clinicId ->
                     Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) clinicId model.indexedDb
 
+                CreatePersonPage ->
+                    Pages.Person.View.viewCreateForm model.language currentDate loggedInModel.createPersonPage model.indexedDb.postPerson
+                        |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
+
                 PersonPage id ->
                     Pages.Person.View.view model.language currentDate id model.indexedDb
 

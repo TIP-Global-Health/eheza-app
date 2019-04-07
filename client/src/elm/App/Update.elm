@@ -22,6 +22,7 @@ import Pages.Device.Model
 import Pages.Device.Update
 import Pages.Page exposing (Page(..), UserPage(AdminPage, ClinicsPage))
 import Pages.ParticipantRegistration.Update
+import Pages.Person.Update
 import Pages.PinCode.Model
 import Pages.PinCode.Update
 import Pages.Session.Model
@@ -151,12 +152,12 @@ update msg model =
     case msg of
         MsgIndexedDb subMsg ->
             let
-                ( subModel, subCmd ) =
+                ( subModel, subCmd, extraMsgs ) =
                     Backend.Update.updateIndexedDb currentDate nurseId subMsg model.indexedDb
 
                 -- Most revisions are handled at the IndexedDB level, but there
                 -- is at least one we need to catch here.
-                extraMsgs =
+                revisionMsgs =
                     case subMsg of
                         Backend.Model.HandleRevisions revisions ->
                             List.filterMap (handleRevision model) revisions
@@ -167,7 +168,7 @@ update msg model =
             ( { model | indexedDb = subModel }
             , Cmd.map MsgIndexedDb subCmd
             )
-                |> sequence update extraMsgs
+                |> sequence update (extraMsgs ++ revisionMsgs)
 
         MsgLoggedIn loggedInMsg ->
             updateLoggedIn
@@ -191,6 +192,16 @@ update msg model =
                             in
                             ( { data | adminPage = newModel }
                             , Cmd.map (MsgLoggedIn << MsgPageAdmin) cmd
+                            , appMsgs
+                            )
+
+                        MsgPageCreatePerson subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.Person.Update.update subMsg data.createPersonPage
+                            in
+                            ( { data | createPersonPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageCreatePerson) subCmd
                             , appMsgs
                             )
 

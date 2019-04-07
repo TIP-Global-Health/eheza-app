@@ -1,9 +1,30 @@
-module Utils.Form exposing (isFormFieldSet, isFormFieldValid, onError)
+module Utils.Form exposing (dateInput, fromDecoder, getValueAsInt, isFormFieldSet, isFormFieldValid, nullable, onError, viewFormError)
 
+import Backend.Session.Form
 import Form exposing (..)
 import Form.Error exposing (..)
+import Form.Field exposing (asBool, asString)
+import Form.Input exposing (..)
 import Form.Validate exposing (..)
+import Html exposing (Html, li, text, ul)
+import Json.Decode exposing (Decoder)
 import Maybe.Extra exposing (isNothing)
+import Translate exposing (Language, ValidationError, translate)
+
+
+viewFormError : Language -> ( String, ErrorValue ValidationError ) -> Html msg
+viewFormError language ( path, error ) =
+    if path == Backend.Session.Form.clinicId then
+        -- We special-case this one because it's common, to get a nicer
+        -- customized message
+        li [] [ text <| translate language Translate.PleaseSelectClinic ]
+
+    else
+        li []
+            [ text <| translate language <| Translate.FormField path
+            , text " "
+            , text <| translate language <| Translate.FormError error
+            ]
 
 
 {-| Possibly recover from an error.
@@ -34,3 +55,64 @@ isFormFieldSet field =
 isFormFieldValid : Form.FieldState e String -> Bool
 isFormFieldValid field =
     isNothing field.error
+
+
+{-| Validates an empty field as `Nothing`. If the field is not empty, applies
+the provided validation and returns a `Just` if it succeeds, and fails if it
+fails.
+-}
+nullable : Validation e a -> Validation e (Maybe a)
+nullable validation field =
+    case asString field of
+        Just s ->
+            if String.isEmpty (String.trim s) then
+                Ok Nothing
+
+            else
+                validation field
+                    |> Result.map Just
+
+        Nothing ->
+            case asBool field of
+                Just b ->
+                    validation field
+                        |> Result.map Just
+
+                Nothing ->
+                    Ok Nothing
+
+
+{-| Applies a JSON Decoder to a string field. If the decoder succeeds, returns
+the result of decoding. If the decoder fails, wraps the failure in the provided
+error tag.
+-}
+fromDecoder : (String -> e) -> Decoder a -> Validation e a
+fromDecoder errorTag decoder field =
+    Result.andThen
+        (\s ->
+            let
+                -- We assume we're getting a bare string, which we need to
+                -- wrap in quotes to get a valid JSON string.  If we ever
+                -- need to decode objects here, we'll need to provide a
+                -- different method, or a way to figure out whether we're
+                -- getting a string or an object.
+                json =
+                    "\"" ++ String.trim s ++ "\""
+            in
+            Json.Decode.decodeString decoder json
+                |> Result.mapError (customError << errorTag)
+        )
+        (string field)
+
+
+{-| An `<input>` with `type=date`. The value provided must be in YYYY-MM-DD
+format, and the value returned will also be in that format.
+-}
+dateInput : Input e String
+dateInput =
+    baseInput "date" Form.Field.String Text
+
+
+getValueAsInt : Form.FieldState e String -> Maybe Int
+getValueAsInt field =
+    Maybe.andThen (String.toInt >> Result.toMaybe) field.value

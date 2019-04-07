@@ -5,7 +5,6 @@ import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
-import Restful.Endpoint exposing (decodeEntityUuid)
 
 
 decodePerson : Decoder Person

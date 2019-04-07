@@ -50,6 +50,9 @@ delta2url previous current =
                 ParticipantRegistrationPage ->
                     Just <| UrlChange NewEntry "#participant-registration"
 
+                CreatePersonPage ->
+                    Just <| UrlChange NewEntry "#person/new"
+
                 PersonPage id ->
                     Just <| UrlChange NewEntry ("#person/" ++ fromEntityUuid id)
 
@@ -125,6 +128,7 @@ parseUrl =
         , map (\id page -> UserPage <| SessionPage id page) (s "session" </> parseUuid </> parseSessionPage)
         , map (UserPage <| PersonsPage Nothing) (s "persons")
         , map (UserPage << PersonsPage << Just) (s "persons" </> string)
+        , map (UserPage <| CreatePersonPage) (s "person" </> s "new")
         , map (UserPage << PersonPage) (s "person" </> parseUuid)
 
         -- `top` represents the page without any segements ... i.e. the

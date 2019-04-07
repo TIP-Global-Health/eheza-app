@@ -103,6 +103,12 @@ type ChartPhrase
 
 type ValidationError
     = UnknownClinic
+    | UnknownProvince
+    | UnknownDistrict
+    | UnknownSector
+    | UnknownCell
+    | UnknownVillage
+    | DecoderError String
 
 
 type Adherence
@@ -274,6 +280,7 @@ type TranslationId
     | ParticipantInformation
     | People
     | PersistentStorage Bool
+    | PersonHasBeenSaved
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
     | PlaceholderEnterParticipantName
@@ -1542,6 +1549,11 @@ translationSet trans =
                 , kinyarwanda = Nothing
                 }
 
+        PersonHasBeenSaved ->
+            { english = "Person has been saved"
+            , kinyarwanda = Nothing
+            }
+
         PlaceholderEnterHeight ->
             { english = "Enter height here…"
             , kinyarwanda = Just "Andika uburebure hano…"
@@ -2093,6 +2105,11 @@ translateActivePage page =
                     , kinyarwanda = Just "Compte"
                     }
 
+                CreatePersonPage ->
+                    { english = "Create Person"
+                    , kinyarwanda = Nothing
+                    }
+
                 PersonPage id ->
                     { english = "Person"
                     , kinyarwanda = Nothing
@@ -2470,6 +2487,36 @@ translateValidationError id =
     case id of
         UnknownClinic ->
             { english = "is not a known clinic"
+            , kinyarwanda = Nothing
+            }
+
+        UnknownProvince ->
+            { english = "is not a known province"
+            , kinyarwanda = Nothing
+            }
+
+        UnknownDistrict ->
+            { english = "is not a known district"
+            , kinyarwanda = Nothing
+            }
+
+        UnknownSector ->
+            { english = "is not a known sector"
+            , kinyarwanda = Nothing
+            }
+
+        UnknownCell ->
+            { english = "is not a known cell"
+            , kinyarwanda = Nothing
+            }
+
+        UnknownVillage ->
+            { english = "is not a known village"
+            , kinyarwanda = Nothing
+            }
+
+        DecoderError err ->
+            { english = "Decoder error: " ++ err
             , kinyarwanda = Nothing
             }
 

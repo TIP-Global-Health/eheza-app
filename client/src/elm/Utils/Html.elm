@@ -5,6 +5,7 @@ module Utils.Html exposing
     , spinner
     , tabItem
     , thumbnailImage
+    , viewLoading
     , viewLogo
     , viewModal
     , wrapPage
@@ -106,6 +107,16 @@ thumbnailImage subClass maybeAvatarUrl label height width =
                 , class <| "photo-participant " ++ subClass
                 ]
                 []
+
+
+{-| Just show a generic loading indicator, for cases that will resolve soon,
+where we don't need to show any progress.
+-}
+viewLoading : Html any
+viewLoading =
+    div
+        [ class "ui basic segment" ]
+        [ spinner ]
 
 
 {-| Takes some HTML with a "modal" class, and puts it in an overlay

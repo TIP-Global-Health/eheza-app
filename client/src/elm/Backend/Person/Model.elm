@@ -1,6 +1,5 @@
 module Backend.Person.Model exposing (EducationLevel(..), Gender(..), MaritalStatus(..), Person, Ubudehe(..), allEducationLevels, allMaritalStatuses, allUbudehes)
 
-import Backend.Entities exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
 
 

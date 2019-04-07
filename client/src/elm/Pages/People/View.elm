@@ -139,6 +139,7 @@ viewSearchForm language currentDate searchString db =
             [ class "actions" ]
             [ button
                 [ class "ui primary button"
+                , onClick <| SetActivePage <| UserPage <| CreatePersonPage
                 ]
                 [ text <| translate language Translate.RegisterNewParticipant ]
             ]
