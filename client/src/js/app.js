@@ -283,20 +283,29 @@ elmApp.ports.cacheStorageRequest.subscribe(function (request) {
   switch (request.tag) {
     case 'CachePhotos':
       withPhotos(function (cache) {
-        cache.keys().then(function (keys) {
-          var existing = keys.map(function (request) {
-            return request.url;
-          });
+        // Create a promise for every requested photo.
+        var promises = request.value.map(function (url) {
+          return cache.match(url).then(function (response) {
+            if (response) {
+              // We already have it, so nothing to do.
+              return Promise.resolve();
+            } else {
+              var fetchUrl = new URL(url);
+              fetchUrl.searchParams.set('access_token', request.access_token);
 
-          // We'll cache just the ones we don't have already.  This should be
-          // fine, since Drupal generates new URLs if the picture chagnes.
-          var uncached = request.value.filter(function (url) {
-            return existing.indexOf(url) < 0;
-          });
+              return fetch(fetchUrl).then(function(response) {
+                if (!response.ok) {
+                    throw new TypeError('Bad response status');
+                }
 
-          cache.addAll(uncached).then(updatePhotos, function (err) {
-            console.log(err);
+                return cache.put(url, response);
+              })
+            }
           });
+        });
+
+        return Promise.all(promises).then(updatePhotos, function (err) {
+          console.log(err);
         });
       });
       break;
