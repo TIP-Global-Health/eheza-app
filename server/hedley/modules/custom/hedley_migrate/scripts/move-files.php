@@ -4,8 +4,6 @@
  * @file
  * Move files to `private`.
  *
- * Run migrate-mothers first.
- *
  * Drush scr
  * profiles/hedley/modules/custom/hedley_migrate/scripts/move-files.php.
  */
