@@ -91,14 +91,6 @@ class HedleyMigrateMothers201904 extends HedleyMigrateBase {
 
     $health_center = strtoupper($row->health_center);
 
-    // Calculate which clinic to put the mother into.
-    if ($health_center === 'RULI') {
-      $row->clinic = 'ruli';
-    }
-    else {
-      throw new Exception("{$row->clinic} is not a recognized clinic");
-    }
-
     // Calculate the mother's name.
     $row->title = implode(' ', array_filter([
       trim($row->second_name),
@@ -106,10 +98,21 @@ class HedleyMigrateMothers201904 extends HedleyMigrateBase {
       trim($row->middle_name),
     ]));
 
+    // Calculate which clinic to put the mother into.
+    if ($health_center === 'RULI') {
+      $row->clinic = 'ruli';
+    }
+    else {
+      throw new Exception("{$row->health_center} is not a recognized health center for {$row->title}");
+    }
+
     // Education.
     if ($row->education) {
       if ($row->education === 'Primary') {
         $row->education = HEDLEY_PATIENT_EDUCATION_PRIMARY;
+      }
+      elseif ($row->education === 'Secondary') {
+        $row->education = HEDLEY_PATIENT_EDUCATION_SECONDARY;
       }
       elseif ($row->education === 'NTABWOYIZE') {
         // Means "no education".
