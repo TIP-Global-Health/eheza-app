@@ -37,6 +37,7 @@ class HedleyMigrateMothers201904 extends HedleyMigrateBase {
       4 => ['birth_date', 'birth_date'],
       8 => ['ubudehe', 'ubudehe'],
       9 => ['education', 'education'],
+      19 => ['cell', 'cell'],
       21 => ['health_center', 'health_center'],
     ];
 
@@ -90,6 +91,7 @@ class HedleyMigrateMothers201904 extends HedleyMigrateBase {
     }
 
     $health_center = strtoupper($row->health_center);
+    $cell = strtoupper($row->cell);
 
     // Calculate the mother's name.
     $row->title = implode(' ', array_filter([
@@ -102,8 +104,17 @@ class HedleyMigrateMothers201904 extends HedleyMigrateBase {
     if ($health_center === 'RULI') {
       $row->clinic = 'ruli';
     }
+    elseif ($cell === 'RUKURA') {
+      $row->clinic = 'rukura';
+    }
+    elseif ($cell === 'SHYOMBWE') {
+      $row->clinic = 'shyombwe';
+    }
+    elseif ($cell === 'MBOGO') {
+      $row->clinic = 'mbogo';
+    }
     else {
-      throw new Exception("{$row->health_center} is not a recognized health center for {$row->title}");
+      throw new Exception("{$row->health_center}, {$row->cell} is not a recognized health center/cell for {$row->id}");
     }
 
     // Education.
@@ -111,8 +122,15 @@ class HedleyMigrateMothers201904 extends HedleyMigrateBase {
       if ($row->education === 'Primary') {
         $row->education = HEDLEY_PATIENT_EDUCATION_PRIMARY;
       }
+      elseif ($row->education === 'Primary School') {
+        $row->education = HEDLEY_PATIENT_EDUCATION_PRIMARY;
+      }
       elseif ($row->education === 'Secondary') {
         $row->education = HEDLEY_PATIENT_EDUCATION_SECONDARY;
+      }
+      elseif ($row->education === 'No Schooling') {
+        // Means "no education".
+        $row->education = HEDLEY_PATIENT_EDUCATION_NONE;
       }
       elseif ($row->education === 'NTABWOYIZE') {
         // Means "no education".
@@ -125,7 +143,7 @@ class HedleyMigrateMothers201904 extends HedleyMigrateBase {
         $row->education = HEDLEY_PATIENT_EDUCATION_SECONDARY;
       }
       else {
-        throw new Exception("{$row->education} is not a recognized education level.");
+        throw new Exception("{$row->education} is not a recognized education level for {$row->id}.");
       }
     }
   }
