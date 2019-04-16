@@ -600,7 +600,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_1']['relationship'] = 'field_clinic_target_id';
   $handler->display->display_options['fields']['title_1']['label'] = 'PMTCT Group';
   $handler->display->display_options['fields']['title_1']['link_to_node'] = FALSE;
-  /* Field: Content: Family Ubudehe */
+  /* Field: Content: Ubudehe */
   $handler->display->display_options['fields']['field_ubudehe']['id'] = 'field_ubudehe';
   $handler->display->display_options['fields']['field_ubudehe']['table'] = 'field_data_field_ubudehe';
   $handler->display->display_options['fields']['field_ubudehe']['field'] = 'field_ubudehe';
@@ -923,7 +923,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title']['field'] = 'title';
   $handler->display->display_options['fields']['title']['label'] = 'Name';
   $handler->display->display_options['fields']['title']['link_to_node'] = FALSE;
-  /* Field: COUNT(Content: Family Ubudehe) */
+  /* Field: COUNT(Content: Ubudehe) */
   $handler->display->display_options['fields']['field_ubudehe']['id'] = 'field_ubudehe';
   $handler->display->display_options['fields']['field_ubudehe']['table'] = 'field_data_field_ubudehe';
   $handler->display->display_options['fields']['field_ubudehe']['field'] = 'field_ubudehe';
@@ -1136,7 +1136,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_1']['relationship'] = 'field_clinic_target_id';
   $handler->display->display_options['fields']['title_1']['label'] = 'PMTCT Group';
   $handler->display->display_options['fields']['title_1']['link_to_node'] = FALSE;
-  /* Field: Content: Family Ubudehe */
+  /* Field: Content: Ubudehe */
   $handler->display->display_options['fields']['field_ubudehe']['id'] = 'field_ubudehe';
   $handler->display->display_options['fields']['field_ubudehe']['table'] = 'field_data_field_ubudehe';
   $handler->display->display_options['fields']['field_ubudehe']['field'] = 'field_ubudehe';
