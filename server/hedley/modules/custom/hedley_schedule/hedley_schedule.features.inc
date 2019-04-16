@@ -19,9 +19,9 @@ function hedley_schedule_ctools_plugin_api($module = NULL, $api = NULL) {
 function hedley_schedule_node_info() {
   $items = array(
     'clinic' => array(
-      'name' => t('PMTCT Group'),
+      'name' => t('Group'),
       'base' => 'node_content',
-      'description' => t('A PMTCT Group is a group of mothers and babies who are seen together for group health assessments.'),
+      'description' => t('A Group is a group of mothers and babies who are seen together for group health assessments.'),
       'has_title' => '1',
       'title_label' => t('Title'),
       'help' => '',
@@ -51,12 +51,12 @@ function hedley_schedule_node_info() {
       'help' => '',
     ),
     'session' => array(
-      'name' => t('PMTCT Group Encounter'),
+      'name' => t('Group Encounter'),
       'base' => 'node_content',
-      'description' => t('A PMTC Group Encounter represents a date on which a health assessment is scheduled for a PMTCT Group. It ties together the various measurements taken at that group encounter.'),
+      'description' => t('A Group Encounter represents a date on which a health assessment is scheduled for a Group. It ties together the various measurements taken at that group encounter.'),
       'has_title' => '1',
       'title_label' => t('Title'),
-      'help' => t('In order to schedule a group encounter,  create a new <em>PMTCT Group Encoutner</em>, assign the relevant <em>PMTCT Group</em>, and specify the <em>Scheduled Date</em> for the measurements. This needs to be done in advance, using the Drupal admin UI. It will then show up in the client app as being available for data entry, until the <em>Close On</em> date.'),
+      'help' => t('In order to schedule a group encounter,  create a new <em>Group Encounter</em>, assign the relevant <em>Group</em>, and specify the <em>Scheduled Date</em> for the measurements. This needs to be done in advance, using the Drupal admin UI. It will then show up in the client app as being available for data entry, until the <em>Close On</em> date.'),
     ),
   );
   drupal_alter('node_info', $items);

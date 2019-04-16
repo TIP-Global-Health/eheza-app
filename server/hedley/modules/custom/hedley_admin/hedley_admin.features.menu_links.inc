@@ -27,6 +27,40 @@ function hedley_admin_menu_default_menu_links() {
     'weight' => -47,
     'customized' => 1,
   );
+  // Exported menu link: main-menu_group-encounters:admin/content/sessions.
+  $menu_links['main-menu_group-encounters:admin/content/sessions'] = array(
+    'menu_name' => 'main-menu',
+    'link_path' => 'admin/content/sessions',
+    'router_path' => 'admin/content',
+    'link_title' => 'Group Encounters',
+    'options' => array(
+      'identifier' => 'main-menu_group-encounters:admin/content/sessions',
+    ),
+    'module' => 'system',
+    'hidden' => 0,
+    'external' => 0,
+    'has_children' => 0,
+    'expanded' => 0,
+    'weight' => -46,
+    'customized' => 1,
+  );
+  // Exported menu link: main-menu_groups:admin/content/clinics.
+  $menu_links['main-menu_groups:admin/content/clinics'] = array(
+    'menu_name' => 'main-menu',
+    'link_path' => 'admin/content/clinics',
+    'router_path' => 'admin/content',
+    'link_title' => 'Groups',
+    'options' => array(
+      'identifier' => 'main-menu_groups:admin/content/clinics',
+    ),
+    'module' => 'system',
+    'hidden' => 0,
+    'external' => 0,
+    'has_children' => 0,
+    'expanded' => 0,
+    'weight' => -49,
+    'customized' => 1,
+  );
   // Exported menu link: main-menu_historical-child:admin/measurement-historical-child.
   $menu_links['main-menu_historical-child:admin/measurement-historical-child'] = array(
     'menu_name' => 'main-menu',
@@ -112,40 +146,6 @@ function hedley_admin_menu_default_menu_links() {
     'weight' => -48,
     'customized' => 1,
   );
-  // Exported menu link: main-menu_pmtct-group-encounters:admin/content/sessions.
-  $menu_links['main-menu_pmtct-group-encounters:admin/content/sessions'] = array(
-    'menu_name' => 'main-menu',
-    'link_path' => 'admin/content/sessions',
-    'router_path' => 'admin/content',
-    'link_title' => 'PMTCT Group Encounters',
-    'options' => array(
-      'identifier' => 'main-menu_pmtct-group-encounters:admin/content/sessions',
-    ),
-    'module' => 'system',
-    'hidden' => 0,
-    'external' => 0,
-    'has_children' => 0,
-    'expanded' => 0,
-    'weight' => -46,
-    'customized' => 1,
-  );
-  // Exported menu link: main-menu_pmtct-groups:admin/content/clinics.
-  $menu_links['main-menu_pmtct-groups:admin/content/clinics'] = array(
-    'menu_name' => 'main-menu',
-    'link_path' => 'admin/content/clinics',
-    'router_path' => 'admin/content',
-    'link_title' => 'PMTCT Groups',
-    'options' => array(
-      'identifier' => 'main-menu_pmtct-groups:admin/content/clinics',
-    ),
-    'module' => 'system',
-    'hidden' => 0,
-    'external' => 0,
-    'has_children' => 0,
-    'expanded' => 0,
-    'weight' => -49,
-    'customized' => 1,
-  );
   // Exported menu link: menu-ihangane-admin-menu_content-list:admin/content.
   $menu_links['menu-ihangane-admin-menu_content-list:admin/content'] = array(
     'menu_name' => 'menu-ihangane-admin-menu',
@@ -213,13 +213,13 @@ function hedley_admin_menu_default_menu_links() {
   t('Content list');
   t('Create clinic');
   t('Create session');
+  t('Group Encounters');
+  t('Groups');
   t('Historical Child');
   t('Historical Mother');
   t('Home');
   t('Measurements');
   t('Mothers / Caregivers');
-  t('PMTCT Group Encounters');
-  t('PMTCT Groups');
 
   return $menu_links;
 }

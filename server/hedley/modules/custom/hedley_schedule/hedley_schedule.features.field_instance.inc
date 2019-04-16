@@ -384,7 +384,7 @@ function hedley_schedule_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_session',
-    'label' => 'PMTCT Group Encounter',
+    'label' => 'Group Encounter',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -672,7 +672,7 @@ function hedley_schedule_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_clinic',
-    'label' => 'PMTCT Group',
+    'label' => 'Group',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -878,6 +878,8 @@ This should not be used on the "live" site -- it is only intended for the "sandb
   t('Date Measured');
   t('English Title');
   t('Enter the clinic for which data-entry is being scheduled.');
+  t('Group');
+  t('Group Encounter');
   t('Has the session been explicitly closed by the user?');
   t('Health Center');
   t('If checked, indicates that this is a "training" session that should be deleted when deleting all training sessions. (Other sessions in the training site would remain, to populate the progress report).
@@ -886,8 +888,6 @@ This should not be used on the "live" site -- it is only intended for the "sandb
   t('Kinyarwanda Title');
   t('Nurse');
   t('Once you have created a "Counseling Topic" and it has been used, make only minor edits -- any edit will affect the historical data of which topics have been discussed with participants. If an edit would represent a different topic, then create a new topic instead. You can remove an unused topic from the relevant "Counseling Schedule" -- but do not delete the unused topic, since that would also affect the historical data.');
-  t('PMTCT Group');
-  t('PMTCT Group Encounter');
   t('Person');
   t('Scheduled Date');
   t('The start date is the date on which the data entry is scheduled.

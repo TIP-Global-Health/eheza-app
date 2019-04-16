@@ -29,7 +29,7 @@ function hedley_health_center_node_info() {
     'health_center' => array(
       'name' => t('Health Center'),
       'base' => 'node_content',
-      'description' => t('A location at which health services are provided. Each health centre has multiple PMTCT groups. Each health centre falls within a "catchment area" (a group of health centers).'),
+      'description' => t('A location at which health services are provided. Each health centre has multiple groups. Each health centre falls within a "catchment area" (a group of health centers).'),
       'has_title' => '1',
       'title_label' => t('Title'),
       'help' => '',

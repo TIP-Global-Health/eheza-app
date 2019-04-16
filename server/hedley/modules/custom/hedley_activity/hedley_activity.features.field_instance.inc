@@ -216,7 +216,7 @@ function hedley_activity_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_session',
-    'label' => 'PMTCT Group Encounter',
+    'label' => 'Group Encounter',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -525,7 +525,7 @@ function hedley_activity_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_session',
-    'label' => 'PMTCT Group Encounter',
+    'label' => 'Group Encounter',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -841,7 +841,7 @@ function hedley_activity_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_session',
-    'label' => 'PMTCT Group Encounter',
+    'label' => 'Group Encounter',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -1203,7 +1203,7 @@ function hedley_activity_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_session',
-    'label' => 'PMTCT Group Encounter',
+    'label' => 'Group Encounter',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -1510,7 +1510,7 @@ function hedley_activity_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_session',
-    'label' => 'PMTCT Group Encounter',
+    'label' => 'Group Encounter',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -1831,7 +1831,7 @@ function hedley_activity_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_session',
-    'label' => 'PMTCT Group Encounter',
+    'label' => 'Group Encounter',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -2147,7 +2147,7 @@ function hedley_activity_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_session',
-    'label' => 'PMTCT Group Encounter',
+    'label' => 'Group Encounter',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -2396,13 +2396,13 @@ function hedley_activity_field_default_field_instances() {
   t('Child');
   t('Date Measured');
   t('Family Planning');
+  t('Group Encounter');
   t('Has the mother attended for this session?');
   t('Height');
   t('MUAC');
   t('Mother');
   t('Nurse');
   t('Nutrition Signs');
-  t('PMTCT Group Encounter');
   t('Person');
   t('Photo');
   t('Refers to the date-entry session which this measurement was taken in.');

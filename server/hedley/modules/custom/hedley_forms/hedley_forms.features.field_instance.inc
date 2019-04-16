@@ -260,7 +260,7 @@ function hedley_forms_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_session',
-    'label' => 'PMTCT Group Encounter',
+    'label' => 'Group Encounter',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -488,11 +488,11 @@ function hedley_forms_field_default_field_instances() {
   // Included for use with string extractors like potx.
   t('Body');
   t('Date Measured');
+  t('Group Encounter');
   t('Kinyarwanda Body');
   t('Kinyarwanda Title');
   t('Language');
   t('Nurse');
-  t('PMTCT Group Encounter');
   t('Participant Form');
   t('Person');
   t('UUID');

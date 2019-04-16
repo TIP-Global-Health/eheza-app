@@ -97,13 +97,13 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['relationships']['field_person_target_id']['relationship'] = 'reverse_field_related_to_node';
   $handler->display->display_options['relationships']['field_person_target_id']['ui_name'] = 'Mother/Caregiver';
   $handler->display->display_options['relationships']['field_person_target_id']['label'] = 'Mother/Caregiver';
-  /* Relationship: PMTCT Group */
+  /* Relationship: Group */
   $handler->display->display_options['relationships']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
   $handler->display->display_options['relationships']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['relationships']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
   $handler->display->display_options['relationships']['field_clinic_target_id']['relationship'] = 'field_person_target_id';
-  $handler->display->display_options['relationships']['field_clinic_target_id']['ui_name'] = 'PMTCT Group';
-  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'PMTCT Group';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['ui_name'] = 'Group';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'Group';
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
   $handler->display->display_options['fields']['title']['table'] = 'node';
@@ -118,7 +118,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_1']['relationship'] = 'field_person_target_id';
   $handler->display->display_options['fields']['title_1']['group_type'] = 'max';
   $handler->display->display_options['fields']['title_1']['label'] = 'Mother / Caregiver';
-  /* Field: Content: PMTCT Group */
+  /* Field: Content: Group */
   $handler->display->display_options['fields']['field_clinic']['id'] = 'field_clinic';
   $handler->display->display_options['fields']['field_clinic']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['fields']['field_clinic']['field'] = 'field_clinic';
@@ -184,15 +184,15 @@ function hedley_admin_views_default_views() {
     3 => 0,
     5 => 0,
   );
-  /* Filter criterion: PMTCT Group */
+  /* Filter criterion: Group */
   $handler->display->display_options['filters']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
   $handler->display->display_options['filters']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['filters']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
   $handler->display->display_options['filters']['field_clinic_target_id']['relationship'] = 'field_person_target_id';
-  $handler->display->display_options['filters']['field_clinic_target_id']['ui_name'] = 'PMTCT Group';
+  $handler->display->display_options['filters']['field_clinic_target_id']['ui_name'] = 'Group';
   $handler->display->display_options['filters']['field_clinic_target_id']['exposed'] = TRUE;
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator_id'] = 'field_clinic_target_id_op';
-  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['label'] = 'PMTCT Group';
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['label'] = 'Group';
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator'] = 'field_clinic_target_id_op';
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['identifier'] = 'clinic';
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['remember_roles'] = array(
@@ -237,7 +237,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_1']['group_type'] = 'min';
   $handler->display->display_options['fields']['title_1']['label'] = 'Mother / Caregiver';
   $handler->display->display_options['fields']['title_1']['link_to_node'] = TRUE;
-  /* Field: MIN(Content: PMTCT Group) */
+  /* Field: MIN(Content: Group) */
   $handler->display->display_options['fields']['field_clinic']['id'] = 'field_clinic';
   $handler->display->display_options['fields']['field_clinic']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['fields']['field_clinic']['field'] = 'field_clinic';
@@ -304,15 +304,15 @@ function hedley_admin_views_default_views() {
     3 => 0,
     5 => 0,
   );
-  /* Filter criterion: PMTCT Group */
+  /* Filter criterion: Group */
   $handler->display->display_options['filters']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
   $handler->display->display_options['filters']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['filters']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
   $handler->display->display_options['filters']['field_clinic_target_id']['relationship'] = 'field_person_target_id';
-  $handler->display->display_options['filters']['field_clinic_target_id']['ui_name'] = 'PMTCT Group';
+  $handler->display->display_options['filters']['field_clinic_target_id']['ui_name'] = 'Group';
   $handler->display->display_options['filters']['field_clinic_target_id']['exposed'] = TRUE;
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator_id'] = 'field_clinic_target_id_op';
-  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['label'] = 'PMTCT Group';
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['label'] = 'Group';
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator'] = 'field_clinic_target_id_op';
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['identifier'] = 'clinic';
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['remember_roles'] = array(
@@ -338,10 +338,10 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['menu']['context'] = 0;
   $handler->display->display_options['menu']['context_only_inline'] = 0;
 
-  /* Display: PMTCT Group */
-  $handler = $view->new_display('page', 'PMTCT Group', 'page_1');
+  /* Display: Group */
+  $handler = $view->new_display('page', 'Group', 'page_1');
   $handler->display->display_options['defaults']['title'] = FALSE;
-  $handler->display->display_options['title'] = 'PMTCT Groups';
+  $handler->display->display_options['title'] = 'Groups';
   $handler->display->display_options['defaults']['relationships'] = FALSE;
   /* Relationship: Author */
   $handler->display->display_options['relationships']['uid']['id'] = 'uid';
@@ -422,22 +422,22 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['type']['group'] = 1;
   $handler->display->display_options['path'] = 'admin/content/clinics';
   $handler->display->display_options['menu']['type'] = 'normal';
-  $handler->display->display_options['menu']['title'] = 'PMTCT Groups';
+  $handler->display->display_options['menu']['title'] = 'Groups';
   $handler->display->display_options['menu']['weight'] = '2';
   $handler->display->display_options['menu']['name'] = 'main-menu';
   $handler->display->display_options['menu']['context'] = 0;
   $handler->display->display_options['menu']['context_only_inline'] = 0;
 
-  /* Display: PMTCT Group Encounter */
-  $handler = $view->new_display('page', 'PMTCT Group Encounter', 'page_2');
+  /* Display: Group Encounter */
+  $handler = $view->new_display('page', 'Group Encounter', 'page_2');
   $handler->display->display_options['defaults']['title'] = FALSE;
-  $handler->display->display_options['title'] = 'PMTCT Group Encounters';
+  $handler->display->display_options['title'] = 'Group Encounters';
   $handler->display->display_options['defaults']['relationships'] = FALSE;
   /* Relationship: Entity Reference: Referenced Entity */
   $handler->display->display_options['relationships']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
   $handler->display->display_options['relationships']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['relationships']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
-  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'PMTCT Group';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'Group';
   $handler->display->display_options['defaults']['fields'] = FALSE;
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title_1']['id'] = 'title_1';
@@ -486,7 +486,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title']['table'] = 'node';
   $handler->display->display_options['fields']['title']['field'] = 'title';
   $handler->display->display_options['fields']['title']['relationship'] = 'field_clinic_target_id';
-  $handler->display->display_options['fields']['title']['label'] = 'PMTCT Group';
+  $handler->display->display_options['fields']['title']['label'] = 'Group';
   $handler->display->display_options['fields']['title']['link_to_node'] = FALSE;
   /* Field: Content: Closed */
   $handler->display->display_options['fields']['field_closed']['id'] = 'field_closed';
@@ -534,7 +534,7 @@ function hedley_admin_views_default_views() {
   );
   $handler->display->display_options['path'] = 'admin/content/sessions';
   $handler->display->display_options['menu']['type'] = 'normal';
-  $handler->display->display_options['menu']['title'] = 'PMTCT Group Encounters';
+  $handler->display->display_options['menu']['title'] = 'Group Encounters';
   $handler->display->display_options['menu']['weight'] = '8';
   $handler->display->display_options['menu']['name'] = 'main-menu';
   $handler->display->display_options['menu']['context'] = 0;
@@ -553,12 +553,12 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['empty']['area']['content'] = 'No records exist for these criteria';
   $handler->display->display_options['empty']['area']['format'] = 'filtered_html';
   $handler->display->display_options['defaults']['relationships'] = FALSE;
-  /* Relationship: PMTCT Group */
+  /* Relationship: Group */
   $handler->display->display_options['relationships']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
   $handler->display->display_options['relationships']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['relationships']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
-  $handler->display->display_options['relationships']['field_clinic_target_id']['ui_name'] = 'PMTCT Group';
-  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'PMTCT Group';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['ui_name'] = 'Group';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'Group';
   /* Relationship: Relationship as parent */
   $handler->display->display_options['relationships']['reverse_field_person_node']['id'] = 'reverse_field_person_node';
   $handler->display->display_options['relationships']['reverse_field_person_node']['table'] = 'node';
@@ -598,7 +598,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_1']['table'] = 'node';
   $handler->display->display_options['fields']['title_1']['field'] = 'title';
   $handler->display->display_options['fields']['title_1']['relationship'] = 'field_clinic_target_id';
-  $handler->display->display_options['fields']['title_1']['label'] = 'PMTCT Group';
+  $handler->display->display_options['fields']['title_1']['label'] = 'Group';
   $handler->display->display_options['fields']['title_1']['link_to_node'] = FALSE;
   /* Field: Content: Ubudehe */
   $handler->display->display_options['fields']['field_ubudehe']['id'] = 'field_ubudehe';
@@ -667,14 +667,14 @@ function hedley_admin_views_default_views() {
     3 => 0,
     5 => 0,
   );
-  /* Filter criterion: Content: PMTCT Group (field_clinic) */
+  /* Filter criterion: Content: Group (field_clinic) */
   $handler->display->display_options['filters']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
   $handler->display->display_options['filters']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['filters']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
   $handler->display->display_options['filters']['field_clinic_target_id']['group'] = 1;
   $handler->display->display_options['filters']['field_clinic_target_id']['exposed'] = TRUE;
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator_id'] = 'field_clinic_target_id_op';
-  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['label'] = 'PMTCT Group';
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['label'] = 'Group';
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator'] = 'field_clinic_target_id_op';
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['identifier'] = 'field_clinic_target_id';
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['remember_roles'] = array(
@@ -700,26 +700,26 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['relationships']['field_session_target_id']['id'] = 'field_session_target_id';
   $handler->display->display_options['relationships']['field_session_target_id']['table'] = 'field_data_field_session';
   $handler->display->display_options['relationships']['field_session_target_id']['field'] = 'field_session_target_id';
-  $handler->display->display_options['relationships']['field_session_target_id']['label'] = 'PMTCT Group Encounter';
+  $handler->display->display_options['relationships']['field_session_target_id']['label'] = 'Group Encounter';
   /* Relationship: Entity Reference: Referenced Entity */
   $handler->display->display_options['relationships']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
   $handler->display->display_options['relationships']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['relationships']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
   $handler->display->display_options['relationships']['field_clinic_target_id']['relationship'] = 'field_session_target_id';
-  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'PMTCT Group';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'Group';
   $handler->display->display_options['defaults']['fields'] = FALSE;
   /* Field: Content: Nid */
   $handler->display->display_options['fields']['nid']['id'] = 'nid';
   $handler->display->display_options['fields']['nid']['table'] = 'node';
   $handler->display->display_options['fields']['nid']['field'] = 'nid';
   $handler->display->display_options['fields']['nid']['relationship'] = 'field_session_target_id';
-  $handler->display->display_options['fields']['nid']['label'] = 'PMTCT Group Encounter Id';
+  $handler->display->display_options['fields']['nid']['label'] = 'Group Encounter Id';
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
   $handler->display->display_options['fields']['title']['table'] = 'node';
   $handler->display->display_options['fields']['title']['field'] = 'title';
   $handler->display->display_options['fields']['title']['relationship'] = 'field_clinic_target_id';
-  $handler->display->display_options['fields']['title']['label'] = 'PMTCT Group';
+  $handler->display->display_options['fields']['title']['label'] = 'Group';
   $handler->display->display_options['fields']['title']['link_to_node'] = FALSE;
   /* Field: Content: Date Measured */
   $handler->display->display_options['fields']['field_date_measured']['id'] = 'field_date_measured';
@@ -887,10 +887,10 @@ function hedley_admin_views_default_views() {
     'page_4' => 0,
   );
 
-  /* Display: PMTCT Group CSV */
-  $handler = $view->new_display('views_data_export', 'PMTCT Group CSV', 'views_data_export_2');
+  /* Display: Group CSV */
+  $handler = $view->new_display('views_data_export', 'Group CSV', 'views_data_export_2');
   $handler->display->display_options['defaults']['title'] = FALSE;
-  $handler->display->display_options['title'] = 'PMTCT Group CSV';
+  $handler->display->display_options['title'] = 'Group CSV';
   $handler->display->display_options['pager']['type'] = 'none';
   $handler->display->display_options['pager']['options']['offset'] = '0';
   $handler->display->display_options['style_plugin'] = 'views_data_export_csv';
@@ -964,10 +964,10 @@ function hedley_admin_views_default_views() {
   );
   $handler->display->display_options['sitename_title'] = 0;
 
-  /* Display: PMTCT Group Encounter CSV */
-  $handler = $view->new_display('views_data_export', 'PMTCT Group Encounter CSV', 'views_data_export_3');
+  /* Display: Group Encounter CSV */
+  $handler = $view->new_display('views_data_export', 'Group Encounter CSV', 'views_data_export_3');
   $handler->display->display_options['defaults']['title'] = FALSE;
-  $handler->display->display_options['title'] = 'PMTCT Group Encounter CSV';
+  $handler->display->display_options['title'] = 'Group Encounter CSV';
   $handler->display->display_options['pager']['type'] = 'none';
   $handler->display->display_options['pager']['options']['offset'] = '0';
   $handler->display->display_options['style_plugin'] = 'views_data_export_csv';
@@ -981,12 +981,12 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['style_options']['header'] = 1;
   $handler->display->display_options['style_options']['keep_html'] = 0;
   $handler->display->display_options['defaults']['relationships'] = FALSE;
-  /* Relationship: PMTCT Group */
+  /* Relationship: Group */
   $handler->display->display_options['relationships']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
   $handler->display->display_options['relationships']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['relationships']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
-  $handler->display->display_options['relationships']['field_clinic_target_id']['ui_name'] = 'PMTCT Group';
-  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'PMTCT Group';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['ui_name'] = 'Group';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'Group';
   $handler->display->display_options['defaults']['fields'] = FALSE;
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
@@ -1030,7 +1030,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_1']['table'] = 'node';
   $handler->display->display_options['fields']['title_1']['field'] = 'title';
   $handler->display->display_options['fields']['title_1']['relationship'] = 'field_clinic_target_id';
-  $handler->display->display_options['fields']['title_1']['label'] = 'PMTCT Group';
+  $handler->display->display_options['fields']['title_1']['label'] = 'Group';
   $handler->display->display_options['fields']['title_1']['link_to_node'] = FALSE;
   /* Field: Content: Closed */
   $handler->display->display_options['fields']['field_closed']['id'] = 'field_closed';
@@ -1090,12 +1090,12 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['style_options']['header'] = 1;
   $handler->display->display_options['style_options']['keep_html'] = 0;
   $handler->display->display_options['defaults']['relationships'] = FALSE;
-  /* Relationship: PMTCT Group */
+  /* Relationship: Group */
   $handler->display->display_options['relationships']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
   $handler->display->display_options['relationships']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['relationships']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
-  $handler->display->display_options['relationships']['field_clinic_target_id']['ui_name'] = 'PMTCT Group';
-  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'PMTCT Group';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['ui_name'] = 'Group';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'Group';
   /* Relationship: Relationship as parent */
   $handler->display->display_options['relationships']['reverse_field_person_node']['id'] = 'reverse_field_person_node';
   $handler->display->display_options['relationships']['reverse_field_person_node']['table'] = 'node';
@@ -1134,7 +1134,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_1']['table'] = 'node';
   $handler->display->display_options['fields']['title_1']['field'] = 'title';
   $handler->display->display_options['fields']['title_1']['relationship'] = 'field_clinic_target_id';
-  $handler->display->display_options['fields']['title_1']['label'] = 'PMTCT Group';
+  $handler->display->display_options['fields']['title_1']['label'] = 'Group';
   $handler->display->display_options['fields']['title_1']['link_to_node'] = FALSE;
   /* Field: Content: Ubudehe */
   $handler->display->display_options['fields']['field_ubudehe']['id'] = 'field_ubudehe';
@@ -1176,13 +1176,13 @@ function hedley_admin_views_default_views() {
     3 => 0,
     4 => 0,
   );
-  /* Filter criterion: Content: PMTCT Group (field_clinic) */
+  /* Filter criterion: Content: Group (field_clinic) */
   $handler->display->display_options['filters']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
   $handler->display->display_options['filters']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['filters']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
   $handler->display->display_options['filters']['field_clinic_target_id']['exposed'] = TRUE;
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator_id'] = 'field_clinic_target_id_op';
-  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['label'] = 'PMTCT Group';
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['label'] = 'Group';
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator'] = 'field_clinic_target_id_op';
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['identifier'] = 'field_clinic_target_id';
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['remember_roles'] = array(
@@ -1226,32 +1226,32 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['style_options']['header'] = 1;
   $handler->display->display_options['style_options']['keep_html'] = 0;
   $handler->display->display_options['defaults']['relationships'] = FALSE;
-  /* Relationship: PMTCT Group Encounter */
+  /* Relationship: Group Encounter */
   $handler->display->display_options['relationships']['field_session_target_id']['id'] = 'field_session_target_id';
   $handler->display->display_options['relationships']['field_session_target_id']['table'] = 'field_data_field_session';
   $handler->display->display_options['relationships']['field_session_target_id']['field'] = 'field_session_target_id';
-  $handler->display->display_options['relationships']['field_session_target_id']['ui_name'] = 'PMTCT Group Encounter';
-  $handler->display->display_options['relationships']['field_session_target_id']['label'] = 'PMTCT Group Encounter';
-  /* Relationship: PMTCT Group */
+  $handler->display->display_options['relationships']['field_session_target_id']['ui_name'] = 'Group Encounter';
+  $handler->display->display_options['relationships']['field_session_target_id']['label'] = 'Group Encounter';
+  /* Relationship: Group */
   $handler->display->display_options['relationships']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
   $handler->display->display_options['relationships']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['relationships']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
   $handler->display->display_options['relationships']['field_clinic_target_id']['relationship'] = 'field_session_target_id';
-  $handler->display->display_options['relationships']['field_clinic_target_id']['ui_name'] = 'PMTCT Group';
-  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'PMTCT Group';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['ui_name'] = 'Group';
+  $handler->display->display_options['relationships']['field_clinic_target_id']['label'] = 'Group';
   $handler->display->display_options['defaults']['fields'] = FALSE;
   /* Field: Content: Nid */
   $handler->display->display_options['fields']['nid']['id'] = 'nid';
   $handler->display->display_options['fields']['nid']['table'] = 'node';
   $handler->display->display_options['fields']['nid']['field'] = 'nid';
   $handler->display->display_options['fields']['nid']['relationship'] = 'field_session_target_id';
-  $handler->display->display_options['fields']['nid']['label'] = 'PMTCT Group Encounter Id';
+  $handler->display->display_options['fields']['nid']['label'] = 'Group Encounter Id';
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
   $handler->display->display_options['fields']['title']['table'] = 'node';
   $handler->display->display_options['fields']['title']['field'] = 'title';
   $handler->display->display_options['fields']['title']['relationship'] = 'field_clinic_target_id';
-  $handler->display->display_options['fields']['title']['label'] = 'PMTCT Group';
+  $handler->display->display_options['fields']['title']['label'] = 'Group';
   $handler->display->display_options['fields']['title']['link_to_node'] = FALSE;
   /* Field: Content: Date Measured */
   $handler->display->display_options['fields']['field_date_measured']['id'] = 'field_date_measured';
@@ -1404,7 +1404,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['relationships']['field_session_target_id']['id'] = 'field_session_target_id';
   $handler->display->display_options['relationships']['field_session_target_id']['table'] = 'field_data_field_session';
   $handler->display->display_options['relationships']['field_session_target_id']['field'] = 'field_session_target_id';
-  $handler->display->display_options['relationships']['field_session_target_id']['label'] = 'PMTCT Group Encounter';
+  $handler->display->display_options['relationships']['field_session_target_id']['label'] = 'Group Encounter';
   /* Relationship: Child */
   $handler->display->display_options['relationships']['field_person_target_id']['id'] = 'field_person_target_id';
   $handler->display->display_options['relationships']['field_person_target_id']['table'] = 'field_data_field_person';
@@ -1458,7 +1458,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['nid']['table'] = 'node';
   $handler->display->display_options['fields']['nid']['field'] = 'nid';
   $handler->display->display_options['fields']['nid']['relationship'] = 'field_session_target_id';
-  $handler->display->display_options['fields']['nid']['label'] = 'PMTCT Group Encounter ID';
+  $handler->display->display_options['fields']['nid']['label'] = 'Group Encounter ID';
   /* Field: Content: Date Measured */
   $handler->display->display_options['fields']['field_date_measured']['id'] = 'field_date_measured';
   $handler->display->display_options['fields']['field_date_measured']['table'] = 'field_data_field_date_measured';
@@ -1474,7 +1474,7 @@ function hedley_admin_views_default_views() {
     'multiple_to' => '',
     'show_remaining_days' => 0,
   );
-  /* Field: Content: PMTCT Group */
+  /* Field: Content: Group */
   $handler->display->display_options['fields']['field_clinic']['id'] = 'field_clinic';
   $handler->display->display_options['fields']['field_clinic']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['fields']['field_clinic']['field'] = 'field_clinic';
@@ -1670,7 +1670,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['nid']['group'] = 1;
   $handler->display->display_options['filters']['nid']['exposed'] = TRUE;
   $handler->display->display_options['filters']['nid']['expose']['operator_id'] = 'nid_op';
-  $handler->display->display_options['filters']['nid']['expose']['label'] = 'PMTCT Group Encounter ID';
+  $handler->display->display_options['filters']['nid']['expose']['label'] = 'Group Encounter ID';
   $handler->display->display_options['filters']['nid']['expose']['operator'] = 'nid_op';
   $handler->display->display_options['filters']['nid']['expose']['identifier'] = 'nid';
   $handler->display->display_options['filters']['nid']['expose']['remember_roles'] = array(
@@ -1717,7 +1717,7 @@ function hedley_admin_views_default_views() {
     3 => 0,
     5 => 0,
   );
-  /* Filter criterion: Content: PMTCT Group (field_clinic) */
+  /* Filter criterion: Content: Group (field_clinic) */
   $handler->display->display_options['filters']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
   $handler->display->display_options['filters']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['filters']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
@@ -1725,7 +1725,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['field_clinic_target_id']['group'] = 1;
   $handler->display->display_options['filters']['field_clinic_target_id']['exposed'] = TRUE;
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator_id'] = 'field_clinic_target_id_op';
-  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['label'] = 'PMTCT Group';
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['label'] = 'Group';
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator'] = 'field_clinic_target_id_op';
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['identifier'] = 'field_clinic_target_id';
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['remember_roles'] = array(
@@ -1776,7 +1776,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['relationships']['field_session_target_id']['id'] = 'field_session_target_id';
   $handler->display->display_options['relationships']['field_session_target_id']['table'] = 'field_data_field_session';
   $handler->display->display_options['relationships']['field_session_target_id']['field'] = 'field_session_target_id';
-  $handler->display->display_options['relationships']['field_session_target_id']['label'] = 'PMTCT Group Encounter';
+  $handler->display->display_options['relationships']['field_session_target_id']['label'] = 'Group Encounter';
   /* Relationship: Entity Reference: Referenced Entity */
   $handler->display->display_options['relationships']['field_person_target_id']['id'] = 'field_person_target_id';
   $handler->display->display_options['relationships']['field_person_target_id']['table'] = 'field_data_field_person';
@@ -1815,7 +1815,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['nid']['table'] = 'node';
   $handler->display->display_options['fields']['nid']['field'] = 'nid';
   $handler->display->display_options['fields']['nid']['relationship'] = 'field_session_target_id';
-  $handler->display->display_options['fields']['nid']['label'] = 'PMTCT Group Encounter ID';
+  $handler->display->display_options['fields']['nid']['label'] = 'Group Encounter ID';
   /* Field: Content: Date Measured */
   $handler->display->display_options['fields']['field_date_measured']['id'] = 'field_date_measured';
   $handler->display->display_options['fields']['field_date_measured']['table'] = 'field_data_field_date_measured';
@@ -1831,7 +1831,7 @@ function hedley_admin_views_default_views() {
     'multiple_to' => '',
     'show_remaining_days' => 0,
   );
-  /* Field: Content: PMTCT Group */
+  /* Field: Content: Group */
   $handler->display->display_options['fields']['field_clinic']['id'] = 'field_clinic';
   $handler->display->display_options['fields']['field_clinic']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['fields']['field_clinic']['field'] = 'field_clinic';
@@ -1915,7 +1915,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['nid']['group'] = 1;
   $handler->display->display_options['filters']['nid']['exposed'] = TRUE;
   $handler->display->display_options['filters']['nid']['expose']['operator_id'] = 'nid_op';
-  $handler->display->display_options['filters']['nid']['expose']['label'] = 'PMTCT Group Encounter ID';
+  $handler->display->display_options['filters']['nid']['expose']['label'] = 'Group Encounter ID';
   $handler->display->display_options['filters']['nid']['expose']['operator'] = 'nid_op';
   $handler->display->display_options['filters']['nid']['expose']['identifier'] = 'nid';
   $handler->display->display_options['filters']['nid']['expose']['remember_roles'] = array(
@@ -1941,7 +1941,7 @@ function hedley_admin_views_default_views() {
     3 => 0,
     4 => 0,
   );
-  /* Filter criterion: Content: PMTCT Group (field_clinic) */
+  /* Filter criterion: Content: Group (field_clinic) */
   $handler->display->display_options['filters']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
   $handler->display->display_options['filters']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
   $handler->display->display_options['filters']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
@@ -1949,7 +1949,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['field_clinic_target_id']['group'] = 1;
   $handler->display->display_options['filters']['field_clinic_target_id']['exposed'] = TRUE;
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator_id'] = 'field_clinic_target_id_op';
-  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['label'] = 'PMTCT Group';
+  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['label'] = 'Group';
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator'] = 'field_clinic_target_id_op';
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['identifier'] = 'field_clinic_target_id';
   $handler->display->display_options['filters']['field_clinic_target_id']['expose']['remember_roles'] = array(
