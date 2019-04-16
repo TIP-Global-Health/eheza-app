@@ -108,5 +108,5 @@ validateClinicId knownClinic =
                     succeed id
 
                 else
-                    fail (customError UnknownPMTCTGroup)
+                    fail (customError UnknownGroup)
             )

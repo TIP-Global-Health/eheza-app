@@ -101,7 +101,7 @@ type ChartPhrase
 
 
 type ValidationError
-    = UnknownPMTCTGroup
+    = UnknownGroup
 
 
 type Adherence
@@ -157,13 +157,13 @@ type TranslationId
     | ChildOf
     | Children
     | ClickTheCheckMark
-    | PMTCTGroupNotFound
-    | PMTCTGroup
-    | PMTCTGroups
-    | PMTCTGroupUnauthorized
+    | GroupNotFound
+    | Group
+    | Groups
+    | GroupUnauthorized
     | Closed
     | ConfirmationRequired
-    | ConfirmDeleteTrainingPMTCTGroupEncounters
+    | ConfirmDeleteTrainingGroupEncounters
     | ConfirmRegisterParticipant
     | Connected
     | ContactInformation
@@ -172,9 +172,9 @@ type TranslationId
     | CounselingTopic CounselingTopic
     | CounselorReviewed
     | CounselorSignature
-    | CreatePMTCTGroupEncounter
-    | CreateTrainingPMTCTGroupEncounters
-    | DeleteTrainingPMTCTGroupEncounters
+    | CreateGroupEncounter
+    | CreateTrainingGroupEncounters
+    | DeleteTrainingGroupEncounters
     | Dashboard
     | DateOfLastAssessment
     | Day
@@ -187,7 +187,7 @@ type TranslationId
     | District
     | DOB
     | DropzoneDefaultMessage
-    | EndPMTCTGroupEncounter
+    | EndGroupEncounter
     | EnterPairingCode
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
@@ -257,7 +257,7 @@ type TranslationId
     | NumberOfChildren
     | OK
     | Old
-    | OnceYouEndYourPMTCTGroupEncounter
+    | OnceYouEndYourGroupEncounter
     | Page
     | Page404
     | PageNotFoundMsg
@@ -273,7 +273,7 @@ type TranslationId
     | PlaceholderEnterMUAC
     | PlaceholderEnterParticipantName
     | PlaceholderEnterWeight
-    | PleaseSelectPMTCTGroup
+    | PleaseSelectGroup
     | PreviousFloatMeasurement Float
     | Profession
     | ProgressReport
@@ -294,7 +294,7 @@ type TranslationId
     | ReportDOB String
     | ReportRemaining Int
     | ReportResultsOfSearch Int
-    | RecentAndUpcomingPMTCTGroupEncounters
+    | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
     | ResolveMonth Month
     | Retry
@@ -305,9 +305,9 @@ type TranslationId
     | SearchHelper
     | SecondName
     | Sector
-    | SelectPMTCTGroup
+    | SelectGroup
     | SelectLanguage
-    | SelectYourPMTCTGroup
+    | SelectYourGroup
     | ServiceWorkerActive
     | ServiceWorkerCurrent
     | ServiceWorkerCheckForUpdates
@@ -324,11 +324,11 @@ type TranslationId
     | ServiceWorkerRegErr
     | ServiceWorkerRegSuccess
     | ServiceWorkerStatus
-    | PMTCTGroupEncounterClosed
-    | PMTCTGroupEncounterClosed2 SessionId
-    | PMTCTGroupEncounterLoading SessionId
-    | PMTCTGroupEncounterUnauthorized
-    | PMTCTGroupEncounterUnauthorized2
+    | GroupEncounterClosed
+    | GroupEncounterClosed2 SessionId
+    | GroupEncounterLoading SessionId
+    | GroupEncounterUnauthorized
+    | GroupEncounterUnauthorized2
     | ShowAll
     | StartEndDate
     | StartDate
@@ -343,10 +343,10 @@ type TranslationId
     | TelephoneNumber
     | TakenCareOfBy
     | ThisActionCannotBeUndone
-    | ThisPMTCTGroupHasNoMothers
+    | ThisGroupHasNoMothers
     | Training
-    | TrainingPMTCTGroupEncounterCreateSuccessMessage
-    | TrainingPMTCTGroupEncounterDeleteSuccessMessage
+    | TrainingGroupEncounterCreateSuccessMessage
+    | TrainingGroupEncounterDeleteSuccessMessage
     | TrySyncing
     | UbudeheLabel
     | Unknown
@@ -360,7 +360,7 @@ type TranslationId
     | Year
     | Yes
     | YouAreNotAnAdmin
-    | YourPMTCTGroupEncounterHasBeenSaved
+    | YourGroupEncounterHasBeenSaved
     | ZScoreHeightForAge
     | ZScoreMuacForAge
     | ZScoreWeightForAge
@@ -801,18 +801,18 @@ translationSet trans =
             , kinyarwanda = Just "Kanda (kuri) ku kazu niba umubyeyi ahari. Ku kazu harahita hahindura ibara habe icyaytsi niba wemeje ko umubyeyi ahari"
             }
 
-        PMTCTGroupNotFound ->
-            { english = "PMTCT Group not found"
+        GroupNotFound ->
+            { english = "Group not found"
             , kinyarwanda = Nothing
             }
 
-        PMTCTGroup ->
-            { english = "PMTCT Gruop"
+        Group ->
+            { english = "Group"
             , kinyarwanda = Nothing
             }
 
-        PMTCTGroups ->
-            { english = "PMTCT Groups"
+        Groups ->
+            { english = "Groups"
             , kinyarwanda = Nothing
             }
 
@@ -821,13 +821,13 @@ translationSet trans =
             , kinyarwanda = Just "Gufunga"
             }
 
-        PMTCTGroupUnauthorized ->
-            { english = "You are not authorized to work with this PMTCT Group."
+        GroupUnauthorized ->
+            { english = "You are not authorized to work with this Group."
             , kinyarwanda = Nothing
             }
 
-        ConfirmDeleteTrainingPMTCTGroupEncounters ->
-            { english = "Are you sure you want to delete all training PMTCT Group Encounters?"
+        ConfirmDeleteTrainingGroupEncounters ->
+            { english = "Are you sure you want to delete all training Group Encounters?"
             , kinyarwanda = Nothing
             }
 
@@ -874,18 +874,18 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        CreatePMTCTGroupEncounter ->
-            { english = "Create PMTCT Group Encounter"
+        CreateGroupEncounter ->
+            { english = "Create Group Encounter"
             , kinyarwanda = Just "Tangira igikorwa"
             }
 
-        CreateTrainingPMTCTGroupEncounters ->
-            { english = "Create All Training PMTCT Group Encounters"
+        CreateTrainingGroupEncounters ->
+            { english = "Create All Training Group Encounters"
             , kinyarwanda = Nothing
             }
 
-        DeleteTrainingPMTCTGroupEncounters ->
-            { english = "Delete All Training PMTCT Group Encounters"
+        DeleteTrainingGroupEncounters ->
+            { english = "Delete All Training Group Encounters"
             , kinyarwanda = Nothing
             }
 
@@ -954,8 +954,8 @@ translationSet trans =
             , kinyarwanda = Just "Kanda hano niba ushaka gufotora cg ukure ifoto mu bubiko hano."
             }
 
-        EndPMTCTGroupEncounter ->
-            { english = "End PMTCT Group Encounter"
+        EndGroupEncounter ->
+            { english = "End Group Encounter"
             , kinyarwanda = Nothing
             }
 
@@ -1453,8 +1453,8 @@ translationSet trans =
             , kinyarwanda = Just "imyaka"
             }
 
-        OnceYouEndYourPMTCTGroupEncounter ->
-            { english = "Once you end your PMTCT Group Encounter, you will no longer be able to edit or add data."
+        OnceYouEndYourGroupEncounter ->
+            { english = "Once you end your Group Encounter, you will no longer be able to edit or add data."
             , kinyarwanda = Nothing
             }
 
@@ -1539,8 +1539,8 @@ translationSet trans =
             , kinyarwanda = Just "Andika ibiro hano…"
             }
 
-        PleaseSelectPMTCTGroup ->
-            { english = "Please select the relevant PMTCT Group for the new encounter"
+        PleaseSelectGroup ->
+            { english = "Please select the relevant Group for the new encounter"
             , kinyarwanda = Nothing
             }
 
@@ -1651,8 +1651,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        RecentAndUpcomingPMTCTGroupEncounters ->
-            { english = "Recent and upcoming PMTCT Group Encounters"
+        RecentAndUpcomingGroupEncounters ->
+            { english = "Recent and upcoming Group Encounters"
             , kinyarwanda = Nothing
             }
 
@@ -1709,13 +1709,13 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        SelectPMTCTGroup ->
-            { english = "Select PMTCT Group..."
+        SelectGroup ->
+            { english = "Select Group..."
             , kinyarwanda = Nothing
             }
 
-        SelectYourPMTCTGroup ->
-            { english = "Select your PMTCT Group"
+        SelectYourGroup ->
+            { english = "Select your Group"
             , kinyarwanda = Nothing
             }
 
@@ -1799,15 +1799,15 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        PMTCTGroupEncounterClosed ->
-            { english = "PMTCT Group Encounter closed"
+        GroupEncounterClosed ->
+            { english = "Group Encounter closed"
             , kinyarwanda = Nothing
             }
 
-        PMTCTGroupEncounterClosed2 sessionId ->
+        GroupEncounterClosed2 sessionId ->
             { english =
                 String.join " "
-                    [ "PMTCT Group Encounter"
+                    [ "Group Encounter"
                     , fromEntityUuid sessionId
                     , """is closed. If you need to make further modifications
                     to it, please contact an administrator to have it
@@ -1816,17 +1816,17 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        PMTCTGroupEncounterLoading sessionId ->
-            { english = "Loading PMTCT Group Encounter " ++ fromEntityUuid sessionId
+        GroupEncounterLoading sessionId ->
+            { english = "Loading Group Encounter " ++ fromEntityUuid sessionId
             , kinyarwanda = Nothing
             }
 
-        PMTCTGroupEncounterUnauthorized ->
-            { english = "PMTCT Group Encounter unauthorized"
+        GroupEncounterUnauthorized ->
+            { english = "Group Encounter unauthorized"
             , kinyarwanda = Nothing
             }
 
-        PMTCTGroupEncounterUnauthorized2 ->
+        GroupEncounterUnauthorized2 ->
             { english =
                 """You are not authorized to view this health assessment.
                 Please contact the Ihangane project for further
@@ -1894,8 +1894,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        ThisPMTCTGroupHasNoMothers ->
-            { english = "This PMTCTGroup has no mothers assigned to it."
+        ThisGroupHasNoMothers ->
+            { english = "This Group has no mothers assigned to it."
             , kinyarwanda = Nothing
             }
 
@@ -1904,12 +1904,12 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        TrainingPMTCTGroupEncounterCreateSuccessMessage ->
+        TrainingGroupEncounterCreateSuccessMessage ->
             { english = "Training encounters were created."
             , kinyarwanda = Nothing
             }
 
-        TrainingPMTCTGroupEncounterDeleteSuccessMessage ->
+        TrainingGroupEncounterDeleteSuccessMessage ->
             { english = "Training encounters were deleted."
             , kinyarwanda = Nothing
             }
@@ -1980,8 +1980,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        YourPMTCTGroupEncounterHasBeenSaved ->
-            { english = "Your PMTCT Group Encounter has been saved."
+        YourGroupEncounterHasBeenSaved ->
+            { english = "Your Group Encounter has been saved."
             , kinyarwanda = Nothing
             }
 
@@ -2037,7 +2037,7 @@ translateActivePage page =
                     }
 
                 ClinicsPage _ ->
-                    { english = "PMTCT Groups"
+                    { english = "Groups"
                     , kinyarwanda = Nothing
                     }
 
@@ -2411,8 +2411,8 @@ translateHttpError error =
 translateValidationError : ValidationError -> TranslationSet String
 translateValidationError id =
     case id of
-        UnknownPMTCTGroup ->
-            { english = "is not a known PMTCT Group"
+        UnknownGroup ->
+            { english = "is not a known Group"
             , kinyarwanda = Nothing
             }
 
@@ -2506,13 +2506,13 @@ translateFormField : String -> TranslationSet String
 translateFormField field =
     case field of
         "clinic_id" ->
-            translationSet PMTCTGroup
+            translationSet Group
 
         "closed" ->
             translationSet Closed
 
         "training" ->
-            translationSet PMTCTGroup
+            translationSet Group
 
         "scheduled_date.start" ->
             translationSet StartDate
