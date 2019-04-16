@@ -283,10 +283,6 @@ function generate_demo_content {
   # Make sure devel-generate is enabled.
   drush en devel_generate -y
 
-  # Generate users.
-  echo -e "${LBLUE}Generating users.${RESTORE}"
-  drush generate-users 50
-
   # Generating taxonomy terms for all defined vocabularies.
   # Taxonomy terms has no dependencies, hence we can automate the list.
   VOCABS=$(drush sqlq "SELECT machine_name FROM taxonomy_vocabulary")
@@ -296,11 +292,12 @@ function generate_demo_content {
     drush generate-terms "$VOCAB"
   done
 
+  # Add some sessions for today
+  drush create-sessions-today
+
   # Generating all types of nodes.
   # Hardcoding the list because of the dependencies between them.
   TYPES=(
-    mother
-    child
     height
     muac
     nutrition
@@ -313,13 +310,6 @@ function generate_demo_content {
     echo -e "${LBLUE}Generating nodes of type: $TYPE ${RESTORE}"
     drush generate-content 20 0 --types="$TYPE" --skip-fields=field_uuid
   done
-
-  # Add some sessions for today
-  drush create-sessions-today
-
-  # After all of this is done, we need to update the "Counseling Sessions" because it's dependent on the randomly
-  # generated content above. (Temporary until all of the randomly generated content is replaced with csv migration).
-  drush mi HedleyMigrateCounselingSessions --update
 
   cd "$ROOT"
   echo

@@ -63,14 +63,14 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
   public function entitiesForAllDevices() {
     return [
       'catchment_area' => 'catchment_areas',
-      'child' => 'children',
       'clinic' => 'clinics',
       'counseling_schedule' => 'counseling-schedule',
       'counseling_topic' => 'counseling-topics',
       'health_center' => 'health_centers',
-      'mother' => 'mothers',
       'nurse' => 'nurses',
       'participant_form' => 'participants-form',
+      'person' => 'people',
+      'relationship' => 'relationships',
       'session' => 'sessions',
     ];
   }
