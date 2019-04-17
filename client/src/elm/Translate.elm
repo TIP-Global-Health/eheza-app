@@ -101,7 +101,7 @@ type ChartPhrase
 
 
 type ValidationError
-    = UnknownClinic
+    = UnknownGroup
 
 
 type Adherence
@@ -157,13 +157,13 @@ type TranslationId
     | ChildOf
     | Children
     | ClickTheCheckMark
-    | ClinicNotFound
-    | Clinic
-    | Clinics
-    | ClinicUnauthorized
+    | GroupNotFound
+    | Group
+    | Groups
+    | GroupUnauthorized
     | Closed
     | ConfirmationRequired
-    | ConfirmDeleteTrainingSessions
+    | ConfirmDeleteTrainingGroupEncounters
     | ConfirmRegisterParticipant
     | Connected
     | ContactInformation
@@ -172,9 +172,9 @@ type TranslationId
     | CounselingTopic CounselingTopic
     | CounselorReviewed
     | CounselorSignature
-    | CreateSession
-    | CreateTrainingSessions
-    | DeleteTrainingSessions
+    | CreateGroupEncounter
+    | CreateTrainingGroupEncounters
+    | DeleteTrainingGroupEncounters
     | Dashboard
     | DateOfLastAssessment
     | Day
@@ -187,7 +187,7 @@ type TranslationId
     | District
     | DOB
     | DropzoneDefaultMessage
-    | EndSession
+    | EndGroupEncounter
     | EnterPairingCode
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
@@ -257,7 +257,7 @@ type TranslationId
     | NumberOfChildren
     | OK
     | Old
-    | OnceYouEndYourSession
+    | OnceYouEndYourGroupEncounter
     | Page
     | Page404
     | PageNotFoundMsg
@@ -273,7 +273,7 @@ type TranslationId
     | PlaceholderEnterMUAC
     | PlaceholderEnterParticipantName
     | PlaceholderEnterWeight
-    | PleaseSelectClinic
+    | PleaseSelectGroup
     | PreviousFloatMeasurement Float
     | Profession
     | ProgressReport
@@ -294,7 +294,7 @@ type TranslationId
     | ReportDOB String
     | ReportRemaining Int
     | ReportResultsOfSearch Int
-    | RecentAndUpcomingGroupSessions
+    | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
     | ResolveMonth Month
     | Retry
@@ -305,9 +305,9 @@ type TranslationId
     | SearchHelper
     | SecondName
     | Sector
-    | SelectClinic
+    | SelectGroup
     | SelectLanguage
-    | SelectYourClinic
+    | SelectYourGroup
     | ServiceWorkerActive
     | ServiceWorkerCurrent
     | ServiceWorkerCheckForUpdates
@@ -324,11 +324,11 @@ type TranslationId
     | ServiceWorkerRegErr
     | ServiceWorkerRegSuccess
     | ServiceWorkerStatus
-    | SessionClosed
-    | SessionClosed2 SessionId
-    | SessionLoading SessionId
-    | SessionUnauthorized
-    | SessionUnauthorized2
+    | GroupEncounterClosed
+    | GroupEncounterClosed2 SessionId
+    | GroupEncounterLoading SessionId
+    | GroupEncounterUnauthorized
+    | GroupEncounterUnauthorized2
     | ShowAll
     | StartEndDate
     | StartDate
@@ -343,10 +343,10 @@ type TranslationId
     | TelephoneNumber
     | TakenCareOfBy
     | ThisActionCannotBeUndone
-    | ThisClinicHasNoMothers
+    | ThisGroupHasNoMothers
     | Training
-    | TrainingSessionCreateSuccessMessage
-    | TrainingSessionDeleteSuccessMessage
+    | TrainingGroupEncounterCreateSuccessMessage
+    | TrainingGroupEncounterDeleteSuccessMessage
     | TrySyncing
     | UbudeheLabel
     | Unknown
@@ -360,7 +360,7 @@ type TranslationId
     | Year
     | Yes
     | YouAreNotAnAdmin
-    | YourSessionHasBeenSaved
+    | YourGroupEncounterHasBeenSaved
     | ZScoreHeightForAge
     | ZScoreMuacForAge
     | ZScoreWeightForAge
@@ -801,19 +801,19 @@ translationSet trans =
             , kinyarwanda = Just "Kanda (kuri) ku kazu niba umubyeyi ahari. Ku kazu harahita hahindura ibara habe icyaytsi niba wemeje ko umubyeyi ahari"
             }
 
-        ClinicNotFound ->
-            { english = "Clinic not found"
-            , kinyarwanda = Just "Ikigo nderabuzima nticyabonetse"
+        GroupNotFound ->
+            { english = "Group not found"
+            , kinyarwanda = Nothing
             }
 
-        Clinic ->
-            { english = "Clinic"
-            , kinyarwanda = Just "Ikigo nderabuzima"
+        Group ->
+            { english = "Group"
+            , kinyarwanda = Nothing
             }
 
-        Clinics ->
-            { english = "Clinics"
-            , kinyarwanda = Just "Ibigo nderebuzima"
+        Groups ->
+            { english = "Groups"
+            , kinyarwanda = Nothing
             }
 
         Closed ->
@@ -821,13 +821,13 @@ translationSet trans =
             , kinyarwanda = Just "Gufunga"
             }
 
-        ClinicUnauthorized ->
-            { english = "You are not authorized to work with this clinic."
+        GroupUnauthorized ->
+            { english = "You are not authorized to work with this Group."
             , kinyarwanda = Nothing
             }
 
-        ConfirmDeleteTrainingSessions ->
-            { english = "Are you sure you want to delete all training sessions?"
+        ConfirmDeleteTrainingGroupEncounters ->
+            { english = "Are you sure you want to delete all training Group Encounters?"
             , kinyarwanda = Nothing
             }
 
@@ -874,18 +874,18 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        CreateSession ->
-            { english = "Create Session"
+        CreateGroupEncounter ->
+            { english = "Create Group Encounter"
             , kinyarwanda = Just "Tangira igikorwa"
             }
 
-        CreateTrainingSessions ->
-            { english = "Create All Training Sessions"
+        CreateTrainingGroupEncounters ->
+            { english = "Create All Training Group Encounters"
             , kinyarwanda = Nothing
             }
 
-        DeleteTrainingSessions ->
-            { english = "Delete All Training Sessions"
+        DeleteTrainingGroupEncounters ->
+            { english = "Delete All Training Group Encounters"
             , kinyarwanda = Nothing
             }
 
@@ -954,9 +954,9 @@ translationSet trans =
             , kinyarwanda = Just "Kanda hano niba ushaka gufotora cg ukure ifoto mu bubiko hano."
             }
 
-        EndSession ->
-            { english = "End Session"
-            , kinyarwanda = Just "Kurangiza ipima (gupima)"
+        EndGroupEncounter ->
+            { english = "End Group Encounter"
+            , kinyarwanda = Nothing
             }
 
         EnterPairingCode ->
@@ -1453,9 +1453,9 @@ translationSet trans =
             , kinyarwanda = Just "imyaka"
             }
 
-        OnceYouEndYourSession ->
-            { english = "Once you end your session, you will no longer be able to edit or add data."
-            , kinyarwanda = Just "Igihe igikorwa cyawe ukirangije, ntubasha guhindura cyangwa kongera kubipimo."
+        OnceYouEndYourGroupEncounter ->
+            { english = "Once you end your Group Encounter, you will no longer be able to edit or add data."
+            , kinyarwanda = Nothing
             }
 
         Page ->
@@ -1539,8 +1539,8 @@ translationSet trans =
             , kinyarwanda = Just "Andika ibiro hano…"
             }
 
-        PleaseSelectClinic ->
-            { english = "Please select the relevant clinic for the new session"
+        PleaseSelectGroup ->
+            { english = "Please select the relevant Group for the new encounter"
             , kinyarwanda = Nothing
             }
 
@@ -1651,8 +1651,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        RecentAndUpcomingGroupSessions ->
-            { english = "Recent and upcoming group sessions"
+        RecentAndUpcomingGroupEncounters ->
+            { english = "Recent and upcoming Group Encounters"
             , kinyarwanda = Nothing
             }
 
@@ -1709,14 +1709,14 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        SelectClinic ->
-            { english = "Select Clinic..."
-            , kinyarwanda = Just "hitamo ikigo nderabuzima..."
+        SelectGroup ->
+            { english = "Select Group..."
+            , kinyarwanda = Nothing
             }
 
-        SelectYourClinic ->
-            { english = "Select your clinic"
-            , kinyarwanda = Just "Guhitamo ikigo nderabuzima"
+        SelectYourGroup ->
+            { english = "Select your Group"
+            , kinyarwanda = Nothing
             }
 
         ServiceWorkerActive ->
@@ -1799,15 +1799,15 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        SessionClosed ->
-            { english = "Session closed"
-            , kinyarwanda = Just "igikorwa kirafunze:"
+        GroupEncounterClosed ->
+            { english = "Group Encounter closed"
+            , kinyarwanda = Nothing
             }
 
-        SessionClosed2 sessionId ->
+        GroupEncounterClosed2 sessionId ->
             { english =
                 String.join " "
-                    [ "Session"
+                    [ "Group Encounter"
                     , fromEntityUuid sessionId
                     , """is closed. If you need to make further modifications
                     to it, please contact an administrator to have it
@@ -1816,17 +1816,17 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        SessionLoading sessionId ->
-            { english = "Loading session " ++ fromEntityUuid sessionId
+        GroupEncounterLoading sessionId ->
+            { english = "Loading Group Encounter " ++ fromEntityUuid sessionId
             , kinyarwanda = Nothing
             }
 
-        SessionUnauthorized ->
-            { english = "Session unauthorized"
+        GroupEncounterUnauthorized ->
+            { english = "Group Encounter unauthorized"
             , kinyarwanda = Nothing
             }
 
-        SessionUnauthorized2 ->
+        GroupEncounterUnauthorized2 ->
             { english =
                 """You are not authorized to view this health assessment.
                 Please contact the Ihangane project for further
@@ -1894,8 +1894,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        ThisClinicHasNoMothers ->
-            { english = "This clinic has no mothers assigned to it."
+        ThisGroupHasNoMothers ->
+            { english = "This Group has no mothers assigned to it."
             , kinyarwanda = Nothing
             }
 
@@ -1904,13 +1904,13 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        TrainingSessionCreateSuccessMessage ->
-            { english = "Training sessions were created."
+        TrainingGroupEncounterCreateSuccessMessage ->
+            { english = "Training encounters were created."
             , kinyarwanda = Nothing
             }
 
-        TrainingSessionDeleteSuccessMessage ->
-            { english = "Training sessions were deleted."
+        TrainingGroupEncounterDeleteSuccessMessage ->
+            { english = "Training encounters were deleted."
             , kinyarwanda = Nothing
             }
 
@@ -1980,9 +1980,9 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        YourSessionHasBeenSaved ->
-            { english = "Your session has been saved."
-            , kinyarwanda = Just "Igikorwa cyawe cyabitswe."
+        YourGroupEncounterHasBeenSaved ->
+            { english = "Your Group Encounter has been saved."
+            , kinyarwanda = Nothing
             }
 
         ZScoreHeightForAge ->
@@ -2037,8 +2037,8 @@ translateActivePage page =
                     }
 
                 ClinicsPage _ ->
-                    { english = "Clinics"
-                    , kinyarwanda = Just "Ibigo nderabuzima"
+                    { english = "Groups"
+                    , kinyarwanda = Nothing
                     }
 
                 MyAccountPage ->
@@ -2411,8 +2411,8 @@ translateHttpError error =
 translateValidationError : ValidationError -> TranslationSet String
 translateValidationError id =
     case id of
-        UnknownClinic ->
-            { english = "is not a known clinic"
+        UnknownGroup ->
+            { english = "is not a known Group"
             , kinyarwanda = Nothing
             }
 
@@ -2506,13 +2506,13 @@ translateFormField : String -> TranslationSet String
 translateFormField field =
     case field of
         "clinic_id" ->
-            translationSet Clinic
+            translationSet Group
 
         "closed" ->
             translationSet Closed
 
         "training" ->
-            translationSet Clinic
+            translationSet Group
 
         "scheduled_date.start" ->
             translationSet StartDate

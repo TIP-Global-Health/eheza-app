@@ -176,7 +176,7 @@ function hedley_person_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_clinic',
-    'label' => 'Clinic',
+    'label' => 'Group',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -958,11 +958,11 @@ function hedley_person_field_default_field_instances() {
   t('Birth date');
   t('Birth date estimated');
   t('Cell');
-  t('Clinic');
   t('District');
   t('Education Level');
   t('First name');
   t('Gender');
+  t('Group');
   t('How are these persons related?');
   t('Marital status');
   t('Middle name');
