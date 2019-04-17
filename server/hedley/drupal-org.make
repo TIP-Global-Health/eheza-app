@@ -3,7 +3,7 @@ api = 2
 
 ; Modules
 projects[admin_menu][subdir] = "contrib"
-projects[admin_menu][version] = "3.0-rc5"
+projects[admin_menu][version] = "3.0-rc6"
 
 projects[admin_views][subdir] = "contrib"
 projects[admin_views][version] = "1.6"
@@ -12,7 +12,7 @@ projects[auto_entitylabel][subdir] = "contrib"
 projects[auto_entitylabel][version] = "1.4"
 
 projects[ctools][subdir] = "contrib"
-projects[ctools][version] = "1.14"
+projects[ctools][version] = "1.15"
 projects[ctools][patch][] = "https://www.drupal.org/files/issues/2067997-reload-plugins-class-7.patch"
 
 projects[composer_manager][subdir] = "contrib"
@@ -43,7 +43,7 @@ projects[facetapi][subdir] = "contrib"
 projects[facetapi][version] = "1.5"
 
 projects[features][subdir] = "contrib"
-projects[features][version] = "2.10"
+projects[features][version] = "2.11"
 
 projects[flag][subdir] = "contrib"
 projects[flag][version] = "3.9"
@@ -52,7 +52,7 @@ projects[jquery_update][subdir] = "contrib"
 projects[jquery_update][version] = "2.4"
 
 projects[libraries][subdir] = "contrib"
-projects[libraries][version] = "2.4"
+projects[libraries][version] = "2.5"
 
 projects[logs_rollbar][type] = "module"
 projects[logs_rollbar][subdir] = "contrib"
@@ -74,7 +74,7 @@ projects[mimemail][version] = 1.1
 projects[mimemail][subdir] = "contrib"
 
 projects[module_filter][subdir] = "contrib"
-projects[module_filter][version] = 2.1
+projects[module_filter][version] = 2.2
 
 projects[og][subdir] = "contrib"
 projects[og][version] = 2.x
@@ -84,7 +84,7 @@ projects[prepopulate][version] = 2.1
 projects[prepopulate][patch][] = "https://www.drupal.org/files/issues/prepopulate-2679839-55.patch"
 
 projects[restful][subdir] = "contrib"
-projects[restful][version] = "1.8"
+projects[restful][version] = "1.10"
 
 projects[search_api][subdir] = "contrib"
 projects[search_api][version] = "1.12"
@@ -102,13 +102,13 @@ projects[token][subdir] = "contrib"
 projects[token][version] = "1.7"
 
 projects[views][subdir] = "contrib"
-projects[views][version] = "3.20"
+projects[views][version] = "3.22"
 
 projects[views_bulk_operations][subdir] = "contrib"
 projects[views_bulk_operations][version] = "3.5"
 
 projects[vbo_export][subdir] = "contrib"
-projects[vbo_export][version] = "1.2"
+projects[vbo_export][version] = "1.3"
 
 projects[views_data_export][subdir] = "contrib"
 projects[views_data_export][version] = "3.2"
@@ -120,10 +120,7 @@ libraries[faker][download][url] = https://github.com/fzaninotto/Faker/archive/v1
 
 ; Development
 projects[devel][subdir] = "development"
-projects[devel][download][type] = git
-projects[devel][download][branch] = 7.x-1.x
-projects[devel][download][revision] = 2f0db7d7dd41af26fdd71033a2c0258a133efef8
-projects[devel][patch][] = "https://www.drupal.org/files/issues/2879092-devel-generate-php7-warning-4.patch"
+projects[devel][version] = "1.7"
 
 projects[migrate][subdir] = "development"
 projects[migrate][version] = "2.11"
