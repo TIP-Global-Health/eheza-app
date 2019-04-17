@@ -171,7 +171,7 @@ function hedley_admin_menu_default_menu_links() {
     'menu_name' => 'menu-ihangane-admin-menu',
     'link_path' => 'node/add/clinic',
     'router_path' => 'node/add',
-    'link_title' => 'Create clinic',
+    'link_title' => 'Create group',
     'options' => array(
       'attributes' => array(
         'title' => '',
@@ -191,7 +191,7 @@ function hedley_admin_menu_default_menu_links() {
     'menu_name' => 'menu-ihangane-admin-menu',
     'link_path' => 'node/add/session',
     'router_path' => 'node/add',
-    'link_title' => 'Create session',
+    'link_title' => 'Create group encounter',
     'options' => array(
       'attributes' => array(
         'title' => '',
