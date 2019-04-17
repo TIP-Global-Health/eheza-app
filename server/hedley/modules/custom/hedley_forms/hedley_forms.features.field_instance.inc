@@ -260,7 +260,7 @@ function hedley_forms_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_session',
-    'label' => 'Session',
+    'label' => 'Group Encounter',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -532,13 +532,13 @@ function hedley_forms_field_default_field_instances() {
   // Included for use with string extractors like potx.
   t('Body');
   t('Date Measured');
+  t('Group Encounter');
   t('Kinyarwanda Body');
   t('Kinyarwanda Title');
   t('Language');
   t('Nurse');
   t('Participant Form');
   t('Person');
-  t('Session');
   t('Shards');
   t('This field will be calculated -- you can leave it blank.');
   t('UUID');

@@ -17,7 +17,7 @@ viewFormError language ( path, error ) =
     if path == Backend.Session.Form.clinicId then
         -- We special-case this one because it's common, to get a nicer
         -- customized message
-        li [] [ text <| translate language Translate.PleaseSelectClinic ]
+        li [] [ text <| translate language Translate.PleaseSelectGroup ]
 
     else
         li []

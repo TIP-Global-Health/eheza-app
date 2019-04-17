@@ -42,7 +42,7 @@ view language ( sessionId, session ) model =
             if EveryDictList.isEmpty session.offlineSession.mothers then
                 [ div
                     [ class "ui message warning" ]
-                    [ text <| translate language Translate.ThisClinicHasNoMothers ]
+                    [ text <| translate language Translate.ThisGroupHasNoMothers ]
                 ]
 
             else

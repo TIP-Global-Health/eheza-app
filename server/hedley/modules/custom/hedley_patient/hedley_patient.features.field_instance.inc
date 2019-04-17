@@ -340,7 +340,7 @@ function hedley_patient_field_default_field_instances() {
     'bundle' => 'mother',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => 'Assign each mother/caregiver to a clinic so that she will be included when data-entry sessions are scheduled for the clinic.',
+    'description' => 'Assign each mother/caregiver to a Group so that she will be included when data-entry sessions are scheduled for the group.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -361,7 +361,7 @@ function hedley_patient_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_clinic',
-    'label' => 'Clinic',
+    'label' => 'Group',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -725,11 +725,11 @@ function hedley_patient_field_default_field_instances() {
 
   // Translatables
   // Included for use with string extractors like potx.
-  t('Assign each mother/caregiver to a clinic so that she will be included when data-entry sessions are scheduled for the clinic.');
-  t('Clinic');
+  t('Assign each mother/caregiver to a Group so that she will be included when data-entry sessions are scheduled for the group.');
   t('Date birth');
   t('Education Level');
   t('Gender');
+  t('Group');
   t('HIV status');
   t('Household size');
   t('Mode of delivery');

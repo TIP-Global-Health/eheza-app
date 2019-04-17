@@ -384,7 +384,7 @@ function hedley_schedule_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_session',
-    'label' => 'Session',
+    'label' => 'Group Encounter',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -980,7 +980,7 @@ function hedley_schedule_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_clinic',
-    'label' => 'Clinic',
+    'label' => 'Group',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -1186,12 +1186,13 @@ This should not be used on the "live" site -- it is only intended for the "sandb
   t('At which point should these topics be addressed?');
   t('Between what dates is the child expected to participate in PMTCT encounters?');
   t('Child');
-  t('Clinic');
   t('Closed');
   t('Date Measured');
   t('English Title');
   t('Enter the clinic for which data-entry is being scheduled.');
   t('Expected');
+  t('Group');
+  t('Group Encounter');
   t('Has the session been explicitly closed by the user?');
   t('Health Center');
   t('If checked, indicates that this is a "training" session that should be deleted when deleting all training sessions. (Other sessions in the training site would remain, to populate the progress report).
@@ -1203,7 +1204,6 @@ This should not be used on the "live" site -- it is only intended for the "sandb
   t('PMTCT Group');
   t('Person');
   t('Scheduled Date');
-  t('Session');
   t('Shards');
   t('The child who is participating in PMTCT child activities.');
   t('The start date is the date on which the data entry is scheduled.

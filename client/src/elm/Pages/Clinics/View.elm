@@ -57,7 +57,7 @@ viewClinicList language user db =
         [ div
             [ class "ui basic head segment" ]
             [ h1 [ class "ui header" ]
-                [ text <| translate language Translate.Clinics ]
+                [ text <| translate language Translate.Groups ]
             , a
                 [ class "link-back"
                 , onClick <| SetActivePage PinCodePage
@@ -86,7 +86,7 @@ viewLoadedClinicList language user ( clinics, sync ) =
         title =
             p
                 [ class "centered" ]
-                [ text <| translate language Translate.SelectYourClinic
+                [ text <| translate language Translate.SelectYourGroup
                 , text ":"
                 ]
 
@@ -186,7 +186,7 @@ viewFoundClinic language currentDate nurse clinicId clinic sessions =
 
         content =
             if assignedToClinic clinicId nurse then
-                [ h1 [] [ text <| translate language Translate.RecentAndUpcomingGroupSessions ]
+                [ h1 [] [ text <| translate language Translate.RecentAndUpcomingGroupEncounters ]
                 , table
                     [ class "ui table session-list" ]
                     [ thead []
@@ -202,7 +202,7 @@ viewFoundClinic language currentDate nurse clinicId clinic sessions =
 
             else
                 [ div [ class "ui message error" ]
-                    [ text <| translate language Translate.ClinicUnauthorized ]
+                    [ text <| translate language Translate.GroupUnauthorized ]
                 ]
     in
     [ div

@@ -135,7 +135,7 @@ viewCreateSessionForm config language backend model form clinics sessions =
             ( toString (fromEntityUuid clinicId), clinic.name )
 
         clinicOptions =
-            ( "", translate language Translate.SelectClinic )
+            ( "", translate language Translate.SelectGroup )
                 :: (clinics |> EveryDictList.toList |> List.sortBy (Tuple.second >> .name) |> List.map clinicOption)
 
         requestStatus =
@@ -146,7 +146,7 @@ viewCreateSessionForm config language backend model form clinics sessions =
                         div
                             [ class "ui success message" ]
                             [ div [ class "header" ] [ text <| translate language Translate.Success ]
-                            , div [] [ text <| translate language Translate.YourSessionHasBeenSaved ]
+                            , div [] [ text <| translate language Translate.YourGroupEncounterHasBeenSaved ]
                             ]
 
                     else
@@ -165,7 +165,7 @@ viewCreateSessionForm config language backend model form clinics sessions =
                 NotAsked ->
                     emptyNode
     in
-    [ h2 [] [ text <| translate language Translate.CreateSession ]
+    [ h2 [] [ text <| translate language Translate.CreateGroupEncounter ]
     , div
         -- For the moment, we're using "error" for validation errors,
         -- "warning" for HTTP errors.
@@ -183,7 +183,7 @@ viewCreateSessionForm config language backend model form clinics sessions =
                 , ( "error", isJust clinic.liveError )
                 ]
             ]
-            [ label [] [ text <| translate language Translate.Clinic ]
+            [ label [] [ text <| translate language Translate.Group ]
             , selectInput clinicOptions clinic []
                 |> Html.map MsgCreateSession
             ]
@@ -280,12 +280,12 @@ viewClinicList config language backend model clinics ( _, futureSessions ) =
                         [ class "ui primary button small"
                         , onClick <| MsgBackend <| Backend.Model.PostTrainingSessionRequest { action = CreateAll }
                         ]
-                        [ text <| translate language <| Translate.CreateTrainingSessions ]
+                        [ text <| translate language <| Translate.CreateTrainingGroupEncounters ]
                     , text " "
                     , button
                         [ class "ui primary button small"
                         , Confirmation.Open
-                            { title = translate language Translate.ConfirmDeleteTrainingSessions
+                            { title = translate language Translate.ConfirmDeleteTrainingGroupEncounters
                             , body = translate language Translate.ThisActionCannotBeUndone
                             , confirmMsg = MsgBackend <| Backend.Model.PostTrainingSessionRequest { action = DeleteAll }
                             , cancelMsg = Nothing
@@ -295,7 +295,7 @@ viewClinicList config language backend model clinics ( _, futureSessions ) =
                             |> MsgConfirmation
                             |> onClick
                         ]
-                        [ text <| translate language <| Translate.DeleteTrainingSessions
+                        [ text <| translate language <| Translate.DeleteTrainingGroupEncounters
                         ]
                     , Confirmation.view model.confirmation
                         |> Html.map MsgConfirmation
@@ -310,7 +310,7 @@ viewClinicList config language backend model clinics ( _, futureSessions ) =
                     [ class "ui primary button small"
                     , onClick <| ShowCreateSessionForm True
                     ]
-                    [ text <| translate language <| Translate.CreateSession ]
+                    [ text <| translate language <| Translate.CreateGroupEncounter ]
                 , sandboxButtons
                 ]
 
@@ -395,10 +395,10 @@ viewPostTrainingSessionsMessage config language backend =
                         ( messageClass, messageType, message ) =
                             case action of
                                 CreateAll ->
-                                    ( "success", Translate.Success, Translate.TrainingSessionCreateSuccessMessage )
+                                    ( "success", Translate.Success, Translate.TrainingGroupEncounterCreateSuccessMessage )
 
                                 DeleteAll ->
-                                    ( "success", Translate.Success, Translate.TrainingSessionDeleteSuccessMessage )
+                                    ( "success", Translate.Success, Translate.TrainingGroupEncounterDeleteSuccessMessage )
                     in
                     div
                         [ class <| "ui message " ++ messageClass ]
