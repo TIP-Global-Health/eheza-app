@@ -18,7 +18,7 @@
     // a bit over-broad, since we could limit it to our actual backend. But, we
     // don't actually know that here, and it probably won't cause any trouble --
     // if it's not in the cache, we'll just try to fetch it.
-    var matchUrl = /\/sites\/default\/files\//;
+    var matchUrl = /\/system\/files\//;
 
     var uploadCache = "photos-upload";
     var uploadUrl = /\/cache-upload\/images/;
