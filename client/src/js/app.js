@@ -285,19 +285,24 @@ elmApp.ports.cacheStorageRequest.subscribe(function (request) {
       withPhotos(function (cache) {
         // Create a promise for every requested photo.
         var promises = request.value.map(function (url) {
-          return cache.match(url).then(function (response) {
-            if (response) {
+          return cache.match(url).then(function (cached) {
+            if (cached) {
               // We already have it, so nothing to do.
               return Promise.resolve();
             } else {
               var fetchUrl = new URL(url);
               fetchUrl.searchParams.set('access_token', request.access_token);
 
-              return fetch(fetchUrl).then(function(response) {
+              var req = new Request(fetchUrl, {
+                mode: 'cors'
+              });
+
+              return fetch(req).then(function(response) {
                 if (!response.ok) {
-                    throw new TypeError('Bad response status');
+                    throw new TypeError('Response status ' + response.status + ' fetching ' + url);
                 }
 
+                response.url = url;
                 return cache.put(url, response);
               })
             }
