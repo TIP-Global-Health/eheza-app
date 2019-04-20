@@ -392,5 +392,4 @@ function hedley_update_7011() {
  */
 function hedley_update_7012() {
   variable_set('file_private_path', 'sites/default/files/private');
-  variable_set('file_default_scheme', 'private');
 }
