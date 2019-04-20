@@ -12,6 +12,13 @@ class HedleyMigrateClinics201902 extends HedleyMigrateBase {
 
   public $entityType = 'node';
   public $bundle = 'clinic';
+  public $csvPrefix = '2019-02/';
+
+  protected $csvColumns = [
+    'id',
+    'title',
+    'field_health_center',
+  ];
 
   /**
    * HedleyMigrateClinics constructor.
@@ -20,34 +27,10 @@ class HedleyMigrateClinics201902 extends HedleyMigrateBase {
    */
   public function __construct($arguments) {
     parent::__construct($arguments);
-    $this->description = t('Import clinics from the CSV.');
+
     $this->dependencies = [
       'HedleyMigrateHealthCenters',
     ];
-
-    $columns = [
-      ['id', 'ID'],
-      ['title', 'Clinic Name'],
-      ['field_health_center', 'Health Center'],
-    ];
-
-    $source_file = $this->getMigrateDirectory() . '/csv/2019-02/clinics.csv';
-    $options = ['header_rows' => 1];
-    $this->source = new MigrateSourceCSV($source_file, $columns, $options);
-
-    $key = array(
-      'id' => [
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-      ],
-    );
-
-    $this->destination = new MigrateDestinationNode($this->bundle);
-
-    $this->map = new MigrateSQLMap($this->machineName, $key, MigrateDestinationNode::getKeySchema());
-
-    $this->addFieldMapping('title', 'title');
 
     $this
       ->addFieldMapping('field_health_center', 'field_health_center')
