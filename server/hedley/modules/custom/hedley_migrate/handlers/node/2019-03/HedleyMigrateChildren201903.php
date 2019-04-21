@@ -12,6 +12,23 @@ class HedleyMigrateChildren201903 extends HedleyMigrateBase {
 
   public $entityType = 'node';
   public $bundle = 'child';
+  public $csvPrefix = '2019-03/';
+
+  public $columns = [
+    0 => ['id', 'id'],
+    2 => ['first_name', 'first_name'],
+    3 => ['middle_name', 'middle_name'],
+    4 => ['second_name', 'second_name'],
+    5 => ['birth_date', 'birth_date'],
+    8 => ['gender', 'gender'],
+    12 => ['mother_national_id', 'mother_national_id'],
+    20 => ['cell', 'cell'],
+    22 => ['health_center', 'health_center'],
+  ];
+
+  public $fields = [
+    'title' => 'title',
+  ];
 
   /**
    * HedleyMigrateChildren201903 constructor.
@@ -20,50 +37,10 @@ class HedleyMigrateChildren201903 extends HedleyMigrateBase {
    */
   public function __construct($arguments) {
     parent::__construct($arguments);
-    $this->description = t('Import children from the CSV.');
+
     $this->dependencies = [
       'HedleyMigrateMothers_2019_03',
     ];
-
-    // For now, we're not using all columns. We'll eventually modify this and
-    // do a `drush mi --update` when we have new fields in our data model to
-    // fill.
-    $columns = [
-      0 => ['id', 'id'],
-      2 => ['first_name', 'first_name'],
-      3 => ['middle_name', 'middle_name'],
-      4 => ['second_name', 'second_name'],
-      5 => ['birth_date', 'birth_date'],
-      8 => ['gender', 'gender'],
-      12 => ['mother_national_id', 'mother_national_id'],
-      20 => ['cell', 'cell'],
-      22 => ['health_center', 'health_center'],
-    ];
-
-    // Will be added in prepareRow.
-    $fields = [
-      'title' => 'title',
-    ];
-
-    $source_file = $this->getMigrateDirectory() . '/csv/2019-03/children.csv';
-    $options = ['header_rows' => 1];
-    $this->source = new MigrateSourceCSV($source_file, $columns, $options, $fields);
-
-    $key = array(
-      'id' => [
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-      ],
-    );
-
-    $this->destination = new MigrateDestinationNode($this->bundle);
-
-    $this->map = new MigrateSQLMap($this->machineName, $key, MigrateDestinationNode::getKeySchema());
-
-    $this
-      ->addFieldMapping('uid', 'author')
-      ->defaultValue(1);
 
     $this->addFieldMapping('title', 'title');
     $this->addFieldMapping('field_gender', 'gender');

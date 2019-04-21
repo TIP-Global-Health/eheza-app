@@ -2,27 +2,26 @@
 
 /**
  * @file
- * Contains \HedleyMigrateChildren201902.
+ * Contains \HedleyMigrateChildren2019042.
  */
 
 /**
- * Class HedleyMigrateChildren201902.
+ * Class HedleyMigrateChildren2019042.
  */
-class HedleyMigrateChildren201902 extends HedleyMigrateBase {
+class HedleyMigrateChildren2019042 extends HedleyMigrateBase {
 
   public $entityType = 'node';
   public $bundle = 'child';
-  public $csvPrefix = '2019-02/';
+  public $csvPrefix = '2019-04-2/';
 
   public $columns = [
     0 => ['id', 'id'],
-    1 => ['mother', 'mother'],
+    1 => ['mother_id', 'mother_id'],
     2 => ['first_name', 'first_name'],
     3 => ['middle_name', 'middle_name'],
     4 => ['second_name', 'second_name'],
     5 => ['birth_date', 'birth_date'],
     8 => ['gender', 'gender'],
-    20 => ['cell', 'cell'],
     22 => ['health_center', 'health_center'],
   ];
 
@@ -31,7 +30,7 @@ class HedleyMigrateChildren201902 extends HedleyMigrateBase {
   ];
 
   /**
-   * HedleyMigrateChildren201902 constructor.
+   * HedleyMigrateChildren201904 constructor.
    *
    * {@inheritdoc}
    */
@@ -39,7 +38,7 @@ class HedleyMigrateChildren201902 extends HedleyMigrateBase {
     parent::__construct($arguments);
 
     $this->dependencies = [
-      'HedleyMigrateMothers_2019_02',
+      'HedleyMigrateMothers_2019_04_2',
     ];
 
     $this->addFieldMapping('title', 'title');
@@ -50,8 +49,8 @@ class HedleyMigrateChildren201902 extends HedleyMigrateBase {
       ->callbacks([$this, 'dateProcess']);
 
     $this
-      ->addFieldMapping('field_mother', 'mother')
-      ->sourceMigration('HedleyMigrateMothers_2019_02');
+      ->addFieldMapping('field_mother', 'mother_id')
+      ->sourceMigration('HedleyMigrateMothers_2019_04_2');
   }
 
   /**
@@ -59,20 +58,6 @@ class HedleyMigrateChildren201902 extends HedleyMigrateBase {
    */
   public function prepareRow($row) {
     if (parent::prepareRow($row) === FALSE) {
-      return FALSE;
-    }
-
-    // We only want to import the children of mothers we have imported.
-    // (We are selecting mothers based on their health center).
-    $migratedMother = db_select('migrate_map_hedleymigratemothers_2019_02', 'm')
-      ->condition('sourceid1', $row->mother)
-      ->isNotNull('destid1')
-      ->countQuery()
-      ->execute()
-      ->fetchField();
-
-    if ($migratedMother == 0) {
-      // We didn't migrate the mother.
       return FALSE;
     }
 
@@ -96,7 +81,7 @@ class HedleyMigrateChildren201902 extends HedleyMigrateBase {
       }
 
       if ($row->gender != 'female' && $row->gender != 'male') {
-        throw new Exception("{$row->gender} is not a recognized gender");
+        throw new Exception("{$row->gender} is not a recognized gender for {$row->id}");
       }
     }
 
@@ -120,8 +105,24 @@ class HedleyMigrateChildren201902 extends HedleyMigrateBase {
       return $trimmed;
     }
 
-    if (preg_match('/^\\d\\d-\\d\\d-\\d\\d$/', $trimmed)) {
-      return DateTime::createFromFormat('!y-m-d', $trimmed)->getTimestamp();
+    $matches = [];
+
+    if (preg_match('/^(\\d\\d?)-(\\d\\d?)-(\\d\\d?)$/', $trimmed, $matches)) {
+      // This is sometimes y-m-d and sometimes m-d-y, so we need to figure
+      // that out.
+      if (intval($matches[2]) > 12) {
+        return DateTime::createFromFormat('!m-d-y', $trimmed)->getTimestamp();
+      }
+
+      if (intval($matches[1]) > 12) {
+        return DateTime::createFromFormat('!y-m-d', $trimmed)->getTimestamp();
+      }
+
+      // The first part is 12 or less, so if the last part is 17 or 18 then
+      // we're probably m-d-y.
+      if (($matches[3] === '17') || ($matches[3] === '18')) {
+        return DateTime::createFromFormat('!m-d-y', $trimmed)->getTimestamp();
+      }
     }
 
     if (preg_match('/^\\d\\d\\d\\d-\\d\\d-\\d\\d$/', $trimmed)) {
