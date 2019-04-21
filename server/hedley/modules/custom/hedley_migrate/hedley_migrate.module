@@ -26,6 +26,9 @@ function hedley_migrate_migrate_api() {
       'batch_2019_04' => [
         'title' => t('Batch data added 2019/04'),
       ],
+      'batch_2019_04_2' => [
+        'title' => t('Second batch data added 2019/04'),
+      ],
     ],
     'migrations' => [
       'HedleyMigrateClinics_2019_02' => [
@@ -59,6 +62,14 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateClinics_2019_04' => [
         'class_name' => 'HedleyMigrateClinics201904',
         'group_name' => 'batch_2019_04',
+      ],
+      'HedleyMigrateMothers_2019_04_2' => [
+        'class_name' => 'HedleyMigrateMothers2019042',
+        'group_name' => 'batch_2019_04_2',
+      ],
+      'HedleyMigrateChildren_2019_04_2' => [
+        'class_name' => 'HedleyMigrateChildren2019042',
+        'group_name' => 'batch_2019_04_2',
       ],
       'HedleyMigrateUsers' => [
         'class_name' => 'HedleyMigrateUsers',
@@ -249,7 +260,7 @@ function _hedley_migrate_preprocess_weight($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
 
   // Adjust children's weight to realistic figures.
-  $wrapper->field_weight->set(rand(0.5, 60));
+  $wrapper->field_weight->set(rand(1, 60));
 }
 
 /**

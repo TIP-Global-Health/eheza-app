@@ -2,17 +2,17 @@
 
 /**
  * @file
- * Contains \HedleyMigrateMothers201902.
+ * Contains \HedleyMigrateMothers2019042.
  */
 
 /**
- * Class HedleyMigrateMothers201902.
+ * Class HedleyMigrateMothers2019042.
  */
-class HedleyMigrateMothers201902 extends HedleyMigrateBase {
+class HedleyMigrateMothers2019042 extends HedleyMigrateBase {
 
   public $entityType = 'node';
   public $bundle = 'mother';
-  public $csvPrefix = '2019-02/';
+  public $csvPrefix = '2019-04-2/';
 
   public $columns = [
     0 => ['id', 'id'],
@@ -32,7 +32,7 @@ class HedleyMigrateMothers201902 extends HedleyMigrateBase {
   ];
 
   /**
-   * HedleyMigrateClinics constructor.
+   * HedleyMigrateMothers201904 constructor.
    *
    * {@inheritdoc}
    */
@@ -65,21 +65,7 @@ class HedleyMigrateMothers201902 extends HedleyMigrateBase {
     }
 
     $health_center = strtoupper($row->health_center);
-
-    // Calculate which clinic to put the mother into.
-    if ($health_center === 'COKO') {
-      // The COKO mothers are all in one clinic.
-      $row->clinic = 'COKO';
-    }
-    elseif ($health_center === 'RWANKUBA') {
-      // For the RWANKUBA mothers, we're dividing into clinics according to
-      // cell.
-      $row->clinic = $row->cell;
-    }
-    else {
-      // For now, we're only importing for some health centers.
-      return FALSE;
-    }
+    $cell = strtoupper($row->cell);
 
     // Calculate the mother's name.
     $row->title = implode(' ', array_filter([
@@ -88,23 +74,63 @@ class HedleyMigrateMothers201902 extends HedleyMigrateBase {
       trim($row->middle_name),
     ]));
 
+    // Calculate which clinic to put the mother into.
+    if ($health_center === 'COKO') {
+      $row->clinic = 'COKO';
+    }
+    elseif ($health_center === 'RWANKUBA') {
+      $row->clinic = $cell;
+    }
+    elseif ($health_center === 'MUHONDO') {
+      $row->clinic = 'MUHONDO';
+    }
+    elseif ($health_center === 'NYANGE') {
+      $row->clinic = 'NYANGE';
+    }
+    else {
+      throw new Exception("{$row->health_center}, {$row->cell} is not a recognized health center/cell for {$row->id}");
+    }
+
+    $education = strtolower(trim($row->education));
+
     // Education.
-    if ($row->education) {
-      if ($row->education === 'Primary') {
+    if ($education) {
+      if ($education === 'primary') {
         $row->education = HEDLEY_PATIENT_EDUCATION_PRIMARY;
       }
-      elseif ($row->education === 'NTABWOYIZE') {
+      elseif ($education === 'primary school') {
+        $row->education = HEDLEY_PATIENT_EDUCATION_PRIMARY;
+      }
+      elseif ($education === 'primary schooling') {
+        $row->education = HEDLEY_PATIENT_EDUCATION_PRIMARY;
+      }
+      elseif ($education === 'secondary') {
+        $row->education = HEDLEY_PATIENT_EDUCATION_SECONDARY;
+      }
+      elseif ($education === 'secondary school') {
+        $row->education = HEDLEY_PATIENT_EDUCATION_SECONDARY;
+      }
+      elseif ($education === 'secondary schooling') {
+        $row->education = HEDLEY_PATIENT_EDUCATION_SECONDARY;
+      }
+      elseif ($education === 'advanced diploma') {
+        $row->education = HEDLEY_PATIENT_EDUCATION_ADVANCED;
+      }
+      elseif ($education === 'no schooling') {
+        $row->education = HEDLEY_PATIENT_EDUCATION_NONE;
+      }
+      elseif ($education === 'ntabwoyize') {
         // Means "no education".
         $row->education = HEDLEY_PATIENT_EDUCATION_NONE;
       }
-      elseif (preg_match('/^P[1-8]$/', $row->education)) {
+      elseif (preg_match('/^p[1-8]$/', $education)) {
         $row->education = HEDLEY_PATIENT_EDUCATION_PRIMARY;
       }
-      elseif (preg_match('/^S[1-6]$/', $row->education)) {
+      elseif (preg_match('/^s[1-6]$/', $education)) {
         $row->education = HEDLEY_PATIENT_EDUCATION_SECONDARY;
       }
       else {
-        throw new Exception("{$row->education} is not a recognized education level.");
+        throw new Exception("{$row->education} is not a recognized education level for {$row->id}.");
       }
     }
   }
@@ -124,6 +150,11 @@ class HedleyMigrateMothers201902 extends HedleyMigrateBase {
 
     if (empty($trimmed)) {
       return $trimmed;
+    }
+
+    // Some dates are year-only ... we'll make those Jan. 1.
+    if (preg_match('/^\\d\\d\\d\\d$/', $trimmed)) {
+      $trimmed = "$trimmed-01-01";
     }
 
     if (preg_match('/^\\d\\d-\\d\\d-\\d\\d$/', $trimmed)) {

@@ -340,7 +340,7 @@ function hedley_patient_field_default_field_instances() {
         'text_parts' => array(
           0 => 'year',
         ),
-        'year_range' => '1970:-10',
+        'year_range' => '1950:+0',
       ),
       'type' => 'date_select',
       'weight' => 6,
