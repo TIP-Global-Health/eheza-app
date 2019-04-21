@@ -120,7 +120,7 @@ class HedleyMigrateChildren2019042 extends HedleyMigrateBase {
 
       // The first part is 12 or less, so if the last part is 17 or 18 then
       // we're probably m-d-y.
-      if (($matches[3] === '17') || ($matches[3] === '18')) { 
+      if (($matches[3] === '17') || ($matches[3] === '18')) {
         return DateTime::createFromFormat('!m-d-y', $trimmed)->getTimestamp();
       }
     }
