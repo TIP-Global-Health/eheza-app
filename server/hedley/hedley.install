@@ -29,6 +29,9 @@ function hedley_install() {
   variable_set('date_default_timezone', 'Asia/Jerusalem');
   variable_set('date_first_day', 1);
 
+  // Setup private files
+  variable_set('file_private_path', 'sites/default/files/private');
+
   // Perform several of the updates that aren't handled in
   // `hedley_standard_install`, and are needed on a fresh install
   hedley_update_7003();
@@ -382,4 +385,11 @@ function hedley_update_7010() {
 function hedley_update_7011() {
   field_delete_field('field_z_score_age');
   field_delete_field('field_z_score_length');
+}
+
+/**
+ * Setup private files.
+ */
+function hedley_update_7012() {
+  variable_set('file_private_path', 'sites/default/files/private');
 }

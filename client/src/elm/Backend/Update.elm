@@ -416,8 +416,8 @@ updateBackend backendUrl accessToken msg model =
                     )
 
 
-updateCache : NominalDate -> MsgCached -> ModelCached -> ( ModelCached, Cmd MsgCached, List App.Model.Msg )
-updateCache currentDate msg model =
+updateCache : String -> NominalDate -> MsgCached -> ModelCached -> ( ModelCached, Cmd MsgCached, List App.Model.Msg )
+updateCache accessToken currentDate msg model =
     case msg of
         CacheEditableSession ->
             withEditableSession ( model, Cmd.none, [] )
@@ -489,7 +489,7 @@ updateCache currentDate msg model =
             , deleteEditableSession ()
             , []
             )
-                |> sequenceExtra (updateCache currentDate)
+                |> sequenceExtra (updateCache accessToken currentDate)
                     [ MsgCacheStorage clearCachedPhotos ]
 
         FetchEditableSessionFromCache ->
@@ -629,7 +629,7 @@ updateCache currentDate msg model =
         MsgCacheStorage subMsg ->
             let
                 ( subModel, subCmd ) =
-                    CacheStorage.Update.update subMsg model.cacheStorage
+                    CacheStorage.Update.update accessToken subMsg model.cacheStorage
             in
             ( { model | cacheStorage = subModel }
             , Cmd.map MsgCacheStorage subCmd
@@ -650,7 +650,7 @@ updateCache currentDate msg model =
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache accessToken currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -665,7 +665,7 @@ updateCache currentDate msg model =
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache accessToken currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -680,7 +680,7 @@ updateCache currentDate msg model =
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache accessToken currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -704,7 +704,7 @@ updateCache currentDate msg model =
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache accessToken currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -735,7 +735,7 @@ updateCache currentDate msg model =
                             , Cmd.none
                             , []
                             )
-                                |> sequenceExtra (updateCache currentDate) [ CacheEdits ]
+                                |> sequenceExtra (updateCache accessToken currentDate) [ CacheEdits ]
                         )
                         model
 
@@ -744,7 +744,7 @@ updateCache currentDate msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra (updateCache currentDate) [ CacheEditableSession ]
+                |> sequenceExtra (updateCache accessToken currentDate) [ CacheEditableSession ]
 
         -- Like SetEditableSession, but we just substitute the offlineSesttion part.
         -- This works because we never mutate the offlineSession locally.
@@ -760,7 +760,7 @@ updateCache currentDate msg model =
                         , Cmd.none
                         , []
                         )
-                            |> sequenceExtra (updateCache currentDate) [ CacheEditableSession ]
+                            |> sequenceExtra (updateCache accessToken currentDate) [ CacheEditableSession ]
 
                     else
                         ( model, Cmd.none, [] )
