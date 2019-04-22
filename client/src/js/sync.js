@@ -608,12 +608,28 @@
     // Caches provided URL, if not cached already.
     function cachePhotoUrl (url) {
         return caches.open(photosDownloadCache).then(function (cache) {
-            return cache.match(url).then(function (response) {
-                if (response) {
+            return cache.match(url).then(function (cached) {
+                if (cached) {
                     // We've already got it ...
                     return Promise.resolve();
                 } else {
-                    return cache.add(url);
+                    // We need to add our access token.
+                    return getCredentials().then(function (credentials) {
+                        var fetchUrl = new URL(url);
+                        fetchUrl.searchParams.set('access_token', credentials.access_token);
+
+                        var req = new Request(fetchUrl, {
+                            mode: 'cors'
+                        });
+
+                        return fetch(req).then(function(response) {
+                            if (!response.ok) {
+                                throw new TypeError('Response status ' + response.status + ' fetching ' + url);
+                            }
+
+                            return cache.put(url, response);
+                        });
+                    });
                 }
             });
         });
