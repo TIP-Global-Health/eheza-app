@@ -358,7 +358,7 @@ function hedley_person_field_default_field_bases() {
     'module' => 'image',
     'settings' => array(
       'default_image' => 0,
-      'uri_scheme' => 'public',
+      'uri_scheme' => 'private',
     ),
     'translatable' => 0,
     'type' => 'image',

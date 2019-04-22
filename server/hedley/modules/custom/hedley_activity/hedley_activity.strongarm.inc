@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * hedley_activity.strongarm.inc

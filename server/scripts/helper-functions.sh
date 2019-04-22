@@ -214,6 +214,7 @@ function create_sites_default_files_directory {
   if [ ! -d "$ROOT"/www/sites/default/files ]; then
     echo -e "${LBLUE}> Create the files directory (sites/default/files directory)${RESTORE}"
     mkdir -p "$ROOT"/www/sites/default/files
+    mkdir -p "$ROOT"/www/sites/default/files/private
   fi
 
   echo -e "${LBLUE}> Set the file permissions on the sites/default/files directory${RESTORE}"
@@ -308,7 +309,7 @@ function generate_demo_content {
   for TYPE in "${TYPES[@]}"
   do
     echo -e "${LBLUE}Generating nodes of type: $TYPE ${RESTORE}"
-    drush generate-content 20 0 --types="$TYPE" --skip-fields=field_uuid,field_shards
+    drush generate-content 20 0 --types="$TYPE" --skip-fields=field_uuid,field_shards,field_bmi,field_zscore_age,field_zscore_bmi,field_zscore_length
   done
 
   cd "$ROOT"
