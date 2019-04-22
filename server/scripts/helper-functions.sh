@@ -312,7 +312,7 @@ function generate_demo_content {
   for TYPE in "${TYPES[@]}"
   do
     echo -e "${LBLUE}Generating nodes of type: $TYPE ${RESTORE}"
-    drush generate-content 20 0 --types="$TYPE" --skip-fields=field_uuid
+    drush generate-content 20 0 --types="$TYPE" --skip-fields=field_uuid,field_bmi,field_zscore_age,field_zscore_bmi,field_zscore_length
   done
 
   # Add some sessions for today
