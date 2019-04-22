@@ -31,3 +31,5 @@ files[] = handlers/node/2019-03/HedleyMigrateChildren201903.php
 files[] = handlers/node/2019-04/HedleyMigrateMothers201904.php
 files[] = handlers/node/2019-04/HedleyMigrateChildren201904.php
 files[] = handlers/node/2019-04/HedleyMigrateClinics201904.php
+files[] = handlers/node/2019-04-2/HedleyMigrateMothers2019042.php
+files[] = handlers/node/2019-04-2/HedleyMigrateChildren2019042.php
