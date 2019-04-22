@@ -126,8 +126,23 @@ update msg model =
     case msg of
         MsgCache subMsg ->
             let
+                -- This isn't the best code, but it's not worth fixing, since
+                -- this code will go away soon.
+                accessToken =
+                    model.configuration
+                        |> RemoteData.map
+                            (\configured ->
+                                case configured.login of
+                                    Anonymous _ ->
+                                        ""
+
+                                    Authenticated login ->
+                                        login.credentials.accessToken
+                            )
+                        |> RemoteData.withDefault ""
+
                 ( subModel, subCmd, extraMsgs ) =
-                    Backend.Update.updateCache (getUserId model) currentDate subMsg model.cache
+                    Backend.Update.updateCache accessToken (getUserId model) currentDate subMsg model.cache
             in
             ( { model | cache = subModel }
             , Cmd.map MsgCache subCmd

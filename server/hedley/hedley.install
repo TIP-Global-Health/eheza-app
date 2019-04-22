@@ -29,6 +29,9 @@ function hedley_install() {
   variable_set('date_default_timezone', 'Asia/Jerusalem');
   variable_set('date_first_day', 1);
 
+  // Setup private files
+  variable_set('file_private_path', 'sites/default/files/private');
+
   // Perform several of the updates that aren't handled in
   // `hedley_standard_install`, and are needed on a fresh install
   hedley_update_7002();
@@ -435,4 +438,11 @@ function hedley_update_7016() {
 
   $content_types = ['participant_consent'];
   hedley_add_nurse_permissions_for_content_type($content_types);
+}
+
+/**
+ * Setup private files.
+ */
+function hedley_update_7017() {
+  variable_set('file_private_path', 'sites/default/files/private');
 }
