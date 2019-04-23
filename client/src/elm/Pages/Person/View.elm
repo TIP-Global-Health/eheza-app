@@ -7,7 +7,7 @@ import Backend.Person.Encoder exposing (encodeEducationLevel, encodeMaritalStatu
 import Backend.Person.Form exposing (PersonForm)
 import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allMaritalStatuses, allUbudehes)
 import Backend.Person.Utils exposing (ageInYears)
-import Backend.Relationship.Model exposing (Relationship)
+import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Relationship.Utils exposing (getRelatedTo, toMyRelationship)
 import EveryDict
 import EveryDictList
@@ -77,14 +77,9 @@ viewRelationship language currentDate db personId relationshipId relationship =
                     EveryDict.get relatedToId db.people
                         |> Maybe.withDefault NotAsked
             in
-            div []
-                [ h4
-                    [ class "ui header" ]
-                    [ text <| translate language <| Translate.MyRelationship myRelationship ]
-                , div
-                    [ class "ui unstackable items" ]
-                    [ viewWebData language (viewParticipant language currentDate relatedToId) identity relatedTo ]
-                ]
+            div
+                [ class "ui unstackable items" ]
+                [ viewWebData language (viewParticipant language currentDate (Just myRelationship) relatedToId) identity relatedTo ]
     in
     toMyRelationship personId relationship
         |> Maybe.map viewMyRelationship
@@ -104,6 +99,51 @@ viewParticipantDetailsForm language currentDate db id person =
             EveryDict.get id db.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
                 |> viewWebData language viewFamilyMembers identity
+
+        typeForAddFamilyMember =
+            ageInYears currentDate person
+                |> Maybe.map
+                    (\age ->
+                        if age > 12 then
+                            "child"
+
+                        else
+                            "mother"
+                    )
+                |> Maybe.withDefault "child"
+
+        addFamilyMember =
+            div [ class "ui unstackable items" ]
+                [ div
+                    [ class "item participant-view" ]
+                    [ div
+                        [ class "ui image" ]
+                        [ span
+                            [ class ("icon-participant add " ++ typeForAddFamilyMember)
+                            , style
+                                [ ( "height", "120px" )
+                                , ( "width", "120px" )
+                                ]
+                            ]
+                            []
+                        ]
+                    , div
+                        [ class "content" ]
+                        [ div
+                            [ class "details" ]
+                            [ h2
+                                [ class "ui header" ]
+                                [ text <| translate language Translate.AddFamilyMember ]
+                            ]
+                        , div
+                            [ class "action" ]
+                            [ div
+                                [ class "add-participant-icon-wrapper" ]
+                                [ span [ class "add-participant-icon" ] [] ]
+                            ]
+                        ]
+                    ]
+                ]
     in
     div [ class "wrap-list registration-page view" ]
         [ h3
@@ -111,17 +151,19 @@ viewParticipantDetailsForm language currentDate db id person =
             [ text <| translate language Translate.DemographicInformation ++ ": " ]
         , div
             [ class "ui unstackable items" ]
-            [ viewParticipant language currentDate id person ]
+            [ viewParticipant language currentDate Nothing id person ]
         , div [ class "separator-line" ] []
         , h3
             [ class "ui header" ]
             [ text <| translate language Translate.FamilyMembers ++ ": " ]
         , familyMembers
+        , p [] []
+        , addFamilyMember
         ]
 
 
-viewParticipant : Language -> NominalDate -> PersonId -> Person -> Html App.Model.Msg
-viewParticipant language currentDate id person =
+viewParticipant : Language -> NominalDate -> Maybe MyRelationship -> PersonId -> Person -> Html App.Model.Msg
+viewParticipant language currentDate myRelationship id person =
     let
         typeForThumbnail =
             ageInYears currentDate person
@@ -135,11 +177,22 @@ viewParticipant language currentDate id person =
                     )
                 |> Maybe.withDefault "mother"
 
+        relationshipLabel =
+            myRelationship
+                |> Maybe.map
+                    (\relationship ->
+                        h3
+                            [ class "ui header" ]
+                            [ text <| translate language <| Translate.MyRelationship relationship ]
+                    )
+                |> Maybe.withDefault emptyNode
+
         content =
             div [ class "content" ]
                 [ div
                     [ class "details" ]
-                    [ h2
+                    [ relationshipLabel
+                    , h2
                         [ class "ui header" ]
                         [ text <| person.name ]
                     , p []

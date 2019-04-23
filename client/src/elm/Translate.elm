@@ -129,6 +129,7 @@ type TranslationId
     | ActivityProgressReport Activity
     | ActivePage Page
     | AddChild
+    | AddFamilyMember
     | AddMother
     | Admin
     | AddressInformation
@@ -389,6 +390,11 @@ translationSet trans =
 
         AddChild ->
             { english = "Add Child"
+            , kinyarwanda = Nothing
+            }
+
+        AddFamilyMember ->
+            { english = "Add Family Member"
             , kinyarwanda = Nothing
             }
 
