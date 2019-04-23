@@ -15,6 +15,7 @@ import EveryDict
 import EveryDictList
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (object)
+import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityUuid, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityUuid, endpoint, fromEntityUuid, toCmd, toEntityUuid, toTask, withKeyEncoder, withParamsEncoder, withValueEncoder, withoutDecoder)
@@ -398,16 +399,26 @@ updateIndexedDb currentDate nurseId msg model =
             )
 
         HandlePostedPerson data ->
+            let
+                appMsgs =
+                    -- If we succeed, we reset the form, and go to the page
+                    -- showing the new person.
+                    data
+                        |> RemoteData.map
+                            (\personId ->
+                                [ Pages.Person.Model.ResetCreateForm
+                                    |> App.Model.MsgPageCreatePerson
+                                    |> App.Model.MsgLoggedIn
+                                , PersonPage personId
+                                    |> UserPage
+                                    |> App.Model.SetActivePage
+                                ]
+                            )
+                        |> RemoteData.withDefault []
+            in
             ( { model | postPerson = data }
             , Cmd.none
-            , if RemoteData.isSuccess data then
-                [ Pages.Person.Model.ResetCreateForm
-                    |> App.Model.MsgPageCreatePerson
-                    |> App.Model.MsgLoggedIn
-                ]
-
-              else
-                []
+            , appMsgs
             )
 
         PostMother mother maybeChildId ->
