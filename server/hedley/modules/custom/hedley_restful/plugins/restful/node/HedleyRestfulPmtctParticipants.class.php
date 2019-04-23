@@ -27,7 +27,7 @@ class HedleyRestfulPmtctParticipants extends HedleyRestfulSyncBase {
       ];
     }
 
-    $public_fields['child'] = [
+    $public_fields['person'] = [
       'property' => 'field_person',
       'sub_property' => 'field_uuid',
     ];
