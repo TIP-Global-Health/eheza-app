@@ -400,7 +400,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
             // investigate if there are other possibilities.
             $data[$key] = strtotime($value);
           }
-          elseif ($key == 'date_birth' && !empty($value)) {
+          elseif ($key == 'birth_date' && !empty($value)) {
             $data[$key] = strtotime($value);
           }
           else {
