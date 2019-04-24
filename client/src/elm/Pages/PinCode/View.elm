@@ -16,11 +16,9 @@ import Utils.Html exposing (spinner, viewLogo)
 
 view : Language -> Page -> WebData ( NurseId, Nurse ) -> Model -> Html Msg
 view language activePage nurseData model =
-    div [ class "wrap wrap-alt-2" ]
-        [ div
-            [ class "ui basic login segment" ]
-            (viewLogo language :: viewContent language activePage nurseData model)
-        ]
+    div
+        [ class "ui basic segment page-pincode" ]
+        (viewLogo language :: viewContent language activePage nurseData model)
 
 
 viewContent : Language -> Page -> WebData ( NurseId, Nurse ) -> Model -> List (Html Msg)

@@ -37,12 +37,11 @@ view model =
             Config.View.view model.language
 
         Success configuration ->
-            div [ class "container" ]
+            div [ class "page container" ]
                 [ viewLanguageSwitcherAndVersion model
-
-                -- We supply the model as well as the resolved configuration ...
-                -- it's easier that way.
-                , viewConfiguredModel model configuration
+                , div
+                    [ class "page-content" ]
+                    [ viewConfiguredModel model configuration ]
                 ]
 
         _ ->

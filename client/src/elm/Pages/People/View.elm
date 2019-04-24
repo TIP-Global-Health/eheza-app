@@ -25,11 +25,13 @@ import Utils.WebData exposing (viewWebData)
 view : Language -> NominalDate -> Maybe String -> ModelIndexedDb -> Html Msg
 view language currentDate searchString db =
     div
-        [ class "wrap wrap-alt-2" ]
+        [ class "page-people" ]
         [ viewHeader language
         , div
-            [ class "ui full segment blue" ]
-            [ viewSearchForm language currentDate searchString db
+            [ class "search-wrapper" ]
+            [ div
+                [ class "ui full segment blue" ]
+                [ viewSearchForm language currentDate searchString db ]
             ]
         ]
 
@@ -115,33 +117,36 @@ viewSearchForm language currentDate searchString db =
                 |> EveryDictList.map (viewParticipant language currentDate db)
                 |> EveryDictList.values
     in
-    div [ class "wrap-list registration-page search" ]
-        [ h3
-            [ class "ui header" ]
-            [ text <| translate language Translate.ParticipantInformation ++ ": " ]
-        , span
-            [ class "search-helper" ]
-            [ text <| translate language Translate.SearchHelper ]
-        , h3
-            [ class "ui header" ]
-            [ text <| translate language Translate.ParticipantDirectory ++ ": " ]
-        , searchForm
+    div [ class "registration-page search" ]
+        [ div
+            [ class "search-top" ]
+            [ p
+                [ class "search-helper" ]
+                [ text <| translate language Translate.SearchHelper ]
+            , searchForm
+            ]
         , div
-            [ class "results-summary" ]
-            [ summary ]
+            [ class "search-middle" ]
+            [ div
+                [ class "results-summary" ]
+                [ summary ]
+            , div
+                [ class "ui unstackable items participants-list" ]
+                searchResultsParticipants
+            ]
         , div
-            [ class "ui unstackable items participants-list" ]
-            searchResultsParticipants
-        , div
-            [ class "register-helper" ]
-            [ text <| translate language Translate.RegisterHelper ]
-        , div
-            [ class "actions" ]
-            [ button
-                [ class "ui primary button"
-                , onClick <| SetActivePage <| UserPage <| CreatePersonPage
+            [ class "search-bottom" ]
+            [ div
+                [ class "register-helper" ]
+                [ text <| translate language Translate.RegisterHelper ]
+            , div
+                [ class "actions" ]
+                [ button
+                    [ class "ui primary button"
+                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage
+                    ]
+                    [ text <| translate language Translate.RegisterNewParticipant ]
                 ]
-                [ text <| translate language Translate.RegisterNewParticipant ]
             ]
         ]
 

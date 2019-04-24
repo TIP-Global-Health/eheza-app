@@ -78,7 +78,7 @@ viewRelationship language currentDate db personId relationshipId relationship =
                         |> Maybe.withDefault NotAsked
             in
             div
-                [ class "ui unstackable items" ]
+                [ class "ui unstackable items participants-list" ]
                 [ viewWebData language (viewParticipant language currentDate (Just myRelationship) relatedToId) identity relatedTo ]
     in
     toMyRelationship personId relationship
@@ -113,7 +113,7 @@ viewParticipantDetailsForm language currentDate db id person =
                 |> Maybe.withDefault "child"
 
         addFamilyMember =
-            div [ class "ui unstackable items" ]
+            div [ class "ui unstackable items participants-list" ]
                 [ div
                     [ class "item participant-view" ]
                     [ div
@@ -132,7 +132,7 @@ viewParticipantDetailsForm language currentDate db id person =
                         [ div
                             [ class "details" ]
                             [ h2
-                                [ class "ui header" ]
+                                [ class "ui header add-participant-label" ]
                                 [ text <| translate language Translate.AddFamilyMember ]
                             ]
                         , div
@@ -150,7 +150,7 @@ viewParticipantDetailsForm language currentDate db id person =
             [ class "ui header" ]
             [ text <| translate language Translate.DemographicInformation ++ ": " ]
         , div
-            [ class "ui unstackable items" ]
+            [ class "ui unstackable items participants-list" ]
             [ viewParticipant language currentDate Nothing id person ]
         , div [ class "separator-line" ] []
         , h3

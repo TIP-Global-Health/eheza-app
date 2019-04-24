@@ -1,85 +1,7 @@
 // Base
 
-html,
-body {
-  min-height: 100vh;
-}
-
-body {
-  font-family: $font;
-  font-size: 22px;
-  color: $color-text;
-  background: #0393db url(#{$img-path}bg.svg) no-repeat center 12px;
-  background-size: 1193px 818px;
-
-  &.no-bg {
-    background-image: none;
-  }
-}
-
 a {
   color: $color-primary;
-}
-
-.language-switcher {
-  width: 800px;
-  text-align: right;
-  margin: 10px auto;
-  display: flex;
-  justify-content: space-between;
-
-  .version {
-    margin-right: 16px;
-    height: 24px;
-    color: white;
-    font-size: .6em;
-    cursor: pointer;
-  }
-
-  .links-translate {
-    margin: 0;
-    padding: 6px 25px;
-    list-style: none;
-    display: flex;
-    justify-content: flex-start;
-
-    li {
-      display: inline-block;
-      margin-right: 15px;
-      position: relative;
-      display: flex;
-      height: 27px;
-      color: white;
-      font-size: .8em;
-      cursor: pointer;
-
-      &.active {
-        color: $color-dark-blue;
-      }
-
-      a {
-        display: block;
-        width: 27 px;
-        height: 27 px;
-        background: #fff;
-        border-radius: 50%;
-        position: relative;
-        margin-left: 10px;
-      }
-    }
-
-    li.active a:before {
-      width: 35px;
-      height: 35px;
-      border: 2px solid $color-dark-blue;
-      content: " ";
-      display: block;
-      border-radius: 50%;
-      position: absolute;
-      top: -4px;
-      left: -4px;
-    }
-  }
 }
 
 // Page Wraps
@@ -174,10 +96,6 @@ a {
     min-height: 215px;
   }
 
-  .actions {
-    margin: 2.5rem -3rem -2.5rem -3rem;
-  }
-
   &.blue:not(.inverted) {
     border-top: 9px solid $color-primary;
   }
@@ -186,12 +104,6 @@ a {
     color: #fff;
     font-weight: 500;
     font-size: 2.15rem; // 30px
-  }
-
-  &.basic.login {
-    padding-top: 140px;
-    font-size: 1.72rem; //24px;
-    text-align: center;
   }
 
   &.wide {
@@ -709,7 +621,7 @@ h3.ui.header {
     }
 
     .results-summary {
-      margin-top: 30px;
+      margin-top: 15px;
       margin-bottom: 15px;
     }
 
@@ -731,8 +643,7 @@ h3.ui.header {
 
       .add-participant-label {
         font-weight: bold;
-        margin-top: 35px;
-        padding-left: 30px;
+        padding-top: 35px;
       }
 
       .add-participant-icon-wrapper {
@@ -770,12 +681,6 @@ h3.ui.header {
     .items {
       color: $color-gray;
       margin-bottom: 50px;
-      overflow-y: auto;
-      overflow-x: hidden;
-
-      &.participants-list {
-        height: 600px;
-      }
 
       .item .content {
 
