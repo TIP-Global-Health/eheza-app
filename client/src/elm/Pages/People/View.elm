@@ -6,6 +6,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
 import Dict
+import EveryDict
 import EveryDictList
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -14,6 +15,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import RemoteData exposing (RemoteData(..))
+import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderDate)
@@ -31,9 +33,22 @@ import Utils.WebData exposing (viewWebData)
 -}
 view : Language -> NominalDate -> Maybe String -> Maybe PersonId -> ModelIndexedDb -> Html Msg
 view language currentDate searchString relation db =
+    let
+        title =
+            case relation of
+                Just relationId ->
+                    EveryDict.get relationId db.people
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.map .name
+                        |> RemoteData.withDefault (fromEntityUuid relationId)
+                        |> (\name -> translate language (Translate.AddFamilyMemberFor name))
+
+                Nothing ->
+                    translate language Translate.People
+    in
     div
         [ class "page-people" ]
-        [ viewHeader language
+        [ viewHeader title
         , div
             [ class "search-wrapper" ]
             [ div
@@ -43,13 +58,13 @@ view language currentDate searchString relation db =
         ]
 
 
-viewHeader : Language -> Html Msg
-viewHeader language =
+viewHeader : String -> Html Msg
+viewHeader title =
     div
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <| translate language Translate.People ]
+            [ text title ]
         , a
             [ class "link-back"
             , onClick <| SetActivePage PinCodePage
@@ -123,13 +138,21 @@ viewSearchForm language currentDate searchString relation db =
                 |> RemoteData.withDefault EveryDictList.empty
                 |> EveryDictList.map (viewParticipant language currentDate relation db)
                 |> EveryDictList.values
+
+        searchHelper =
+            case relation of
+                Just _ ->
+                    Translate.SearchHelperFamilyMember
+
+                Nothing ->
+                    Translate.SearchHelper
     in
     div [ class "registration-page search" ]
         [ div
             [ class "search-top" ]
             [ p
                 [ class "search-helper" ]
-                [ text <| translate language Translate.SearchHelper ]
+                [ text <| translate language searchHelper ]
             , searchForm
             ]
         , div

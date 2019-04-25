@@ -130,6 +130,7 @@ type TranslationId
     | ActivePage Page
     | AddChild
     | AddFamilyMember
+    | AddFamilyMemberFor String
     | AddMother
     | Admin
     | AddressInformation
@@ -317,6 +318,7 @@ type TranslationId
     | Search
     | SearchByName
     | SearchHelper
+    | SearchHelperFamilyMember
     | SecondName
     | Sector
     | SelectGroup
@@ -396,6 +398,11 @@ translationSet trans =
 
         AddFamilyMember ->
             { english = "Add Family Member"
+            , kinyarwanda = Nothing
+            }
+
+        AddFamilyMemberFor name ->
+            { english = "Add Family Member for " ++ name
             , kinyarwanda = Nothing
             }
 
@@ -1738,6 +1745,11 @@ translationSet trans =
 
         SearchHelper ->
             { english = "Search to see if the participant already exists in E-Heza. If the person you are looking for does not appear in the search, please create a new record for them."
+            , kinyarwanda = Nothing
+            }
+
+        SearchHelperFamilyMember ->
+            { english = "Search to see if the additional family member already exists in E-Heza. If the person you are looking for does not appear in the search, please create a new record for them."
             , kinyarwanda = Nothing
             }
 
