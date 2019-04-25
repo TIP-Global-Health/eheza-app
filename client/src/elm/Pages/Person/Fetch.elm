@@ -4,11 +4,12 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import EveryDict
 import EveryDictList
+import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
 
 
-fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
-fetch id db =
+fetch : PersonId -> Maybe PersonId -> ModelIndexedDb -> List MsgIndexedDb
+fetch id relationId db =
     let
         familyMembers =
             EveryDict.get id db.relationshipsByPerson
@@ -24,8 +25,14 @@ fetch id db =
                     )
                 |> RemoteData.withDefault []
                 |> List.concat
+
+        relation =
+            relationId
+                |> Maybe.map FetchPerson
+                |> Maybe.Extra.toList
     in
     familyMembers
+        ++ relation
         ++ [ FetchPerson id
            , FetchRelationshipsForPerson id
            ]

@@ -2111,18 +2111,18 @@ translateActivePage page =
                     , kinyarwanda = Just "Compte"
                     }
 
-                CreatePersonPage ->
+                CreatePersonPage relationId ->
                     { english = "Create Person"
                     , kinyarwanda = Nothing
                     }
 
-                PersonPage id ->
+                PersonPage id relation ->
                     { english = "Person"
                     , kinyarwanda = Nothing
                     }
 
-                PersonsPage _ ->
-                    { english = "People"
+                PersonsPage _ _ ->
+                    { english = "Participant Directory"
                     , kinyarwanda = Nothing
                     }
 

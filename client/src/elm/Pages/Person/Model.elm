@@ -1,5 +1,6 @@
 module Pages.Person.Model exposing (Model, Msg(..), emptyModel)
 
+import Backend.Entities exposing (..)
 import Backend.Person.Form exposing (PersonForm)
 import Form
 import Measurement.Model exposing (DropZoneFile)
@@ -11,10 +12,12 @@ type alias Model =
 
 
 type Msg
-    = MsgForm Form.Msg
+    = -- The personId, if provided, is a person we should offer to create
+      -- a relationship with.
+      MsgForm (Maybe PersonId) Form.Msg
     | ResetCreateForm
     | SetActivePage Page
-    | DropZoneComplete DropZoneFile
+    | DropZoneComplete (Maybe PersonId) DropZoneFile
 
 
 emptyModel : Model

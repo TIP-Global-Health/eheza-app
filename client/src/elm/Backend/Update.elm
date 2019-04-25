@@ -391,14 +391,14 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
-        PostPerson person ->
+        PostPerson relation person ->
             ( { model | postPerson = Loading }
             , sw.post personEndpoint person
-                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedPerson)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedPerson relation)
             , []
             )
 
-        HandlePostedPerson data ->
+        HandlePostedPerson relation data ->
             let
                 appMsgs =
                     -- If we succeed, we reset the form, and go to the page
@@ -409,7 +409,7 @@ updateIndexedDb currentDate nurseId msg model =
                                 [ Pages.Person.Model.ResetCreateForm
                                     |> App.Model.MsgPageCreatePerson
                                     |> App.Model.MsgLoggedIn
-                                , PersonPage personId
+                                , PersonPage personId relation
                                     |> UserPage
                                     |> App.Model.SetActivePage
                                 ]

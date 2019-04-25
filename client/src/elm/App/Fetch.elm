@@ -55,12 +55,12 @@ fetch model =
                     )
                 |> Maybe.withDefault []
 
-        UserPage (PersonPage id) ->
-            Pages.Person.Fetch.fetch id model.indexedDb
+        UserPage (PersonPage id relation) ->
+            Pages.Person.Fetch.fetch id relation model.indexedDb
                 |> List.map MsgIndexedDb
 
-        UserPage (PersonsPage search) ->
-            Pages.People.Fetch.fetch search
+        UserPage (PersonsPage search relation) ->
+            Pages.People.Fetch.fetch search relation
                 |> List.map MsgIndexedDb
 
         UserPage AdminPage ->

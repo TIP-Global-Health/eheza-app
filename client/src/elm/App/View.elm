@@ -155,15 +155,15 @@ viewUserPage page model configured =
                 ClinicsPage clinicId ->
                     Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) clinicId model.indexedDb
 
-                CreatePersonPage ->
-                    Pages.Person.View.viewCreateForm model.language currentDate loggedInModel.createPersonPage model.indexedDb.postPerson
+                CreatePersonPage relation ->
+                    Pages.Person.View.viewCreateForm model.language currentDate relation loggedInModel.createPersonPage model.indexedDb.postPerson
                         |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
 
-                PersonPage id ->
-                    Pages.Person.View.view model.language currentDate id model.indexedDb
+                PersonPage id relation ->
+                    Pages.Person.View.view model.language currentDate id relation model.indexedDb
 
-                PersonsPage search ->
-                    Pages.People.View.view model.language currentDate search model.indexedDb
+                PersonsPage search relation ->
+                    Pages.People.View.view model.language currentDate search relation model.indexedDb
 
                 ParticipantRegistrationPage ->
                     Pages.ParticipantRegistration.View.view model.language currentDate model.indexedDb loggedInModel.participantRegistrationPage

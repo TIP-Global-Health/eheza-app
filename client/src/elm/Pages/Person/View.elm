@@ -34,8 +34,8 @@ import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
 
 
-view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate id db =
+view : Language -> NominalDate -> PersonId -> Maybe PersonId -> ModelIndexedDb -> Html App.Model.Msg
+view language currentDate id relation db =
     div
         [ class "wrap wrap-alt-2" ]
         [ viewHeader language
@@ -43,7 +43,7 @@ view language currentDate id db =
             [ class "ui full segment blue" ]
             [ EveryDict.get id db.people
                 |> Maybe.withDefault NotAsked
-                |> viewWebData language (viewParticipantDetailsForm language currentDate db id) identity
+                |> viewWebData language (viewParticipantDetailsForm language currentDate db id relation) identity
             ]
         ]
 
@@ -86,8 +86,8 @@ viewRelationship language currentDate db personId relationshipId relationship =
         |> showMaybe
 
 
-viewParticipantDetailsForm : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
-viewParticipantDetailsForm language currentDate db id person =
+viewParticipantDetailsForm : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Maybe PersonId -> Person -> Html App.Model.Msg
+viewParticipantDetailsForm language currentDate db id relation person =
     let
         viewFamilyMembers relationships =
             relationships
@@ -138,7 +138,9 @@ viewParticipantDetailsForm language currentDate db id person =
                         , div
                             [ class "action" ]
                             [ div
-                                [ class "add-participant-icon-wrapper" ]
+                                [ class "add-participant-icon-wrapper"
+                                , onClick <| App.Model.SetActivePage <| UserPage <| PersonsPage Nothing (Just id)
+                                ]
                                 [ span [ class "add-participant-icon" ] [] ]
                             ]
                         ]
@@ -230,8 +232,8 @@ viewPhotoThumb url =
         ]
 
 
-viewCreateForm : Language -> NominalDate -> PersonForm -> WebData PersonId -> Html Msg
-viewCreateForm language currentDate personForm request =
+viewCreateForm : Language -> NominalDate -> Maybe PersonId -> PersonForm -> WebData PersonId -> Html Msg
+viewCreateForm language currentDate relation personForm request =
     let
         emptyOption =
             ( "", "" )
@@ -385,7 +387,7 @@ viewCreateForm language currentDate personForm request =
                 , div
                     [ id "dropzone"
                     , class "eight wide column dropzone"
-                    , on "dropzonecomplete" (Json.Decode.map DropZoneComplete decodeDropZoneFile)
+                    , on "dropzonecomplete" (Json.Decode.map (DropZoneComplete relation) decodeDropZoneFile)
                     ]
                     [ div
                         [ class "dz-message"
@@ -406,7 +408,7 @@ viewCreateForm language currentDate personForm request =
 
         demographicFields =
             viewPhoto
-                :: List.map (Html.map MsgForm)
+                :: List.map (Html.map (MsgForm relation))
                     [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName True personForm
                     , viewTextInput language Translate.MiddleName Backend.Person.Form.middleName False personForm
                     , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
@@ -626,21 +628,21 @@ viewCreateForm language currentDate personForm request =
                 [ text <| translate language Translate.FamilyInformation ++ ":" ]
             , familyInformationFields
                 |> fieldset [ class "registration-form family-info" ]
-                |> Html.map MsgForm
+                |> Html.map (MsgForm relation)
             , h3
                 [ class "ui header" ]
                 [ text <| translate language Translate.AddressInformation ++ ":" ]
             , addressFields
                 |> fieldset [ class "registration-form address-info" ]
-                |> Html.map MsgForm
+                |> Html.map (MsgForm relation)
             , h3
                 [ class "ui header" ]
                 [ text <| translate language Translate.ContactInformation ++ ":" ]
             , contactInformationFields
                 |> fieldset [ class "registration-form address-info" ]
-                |> Html.map MsgForm
+                |> Html.map (MsgForm relation)
             , submitButton
-                |> Html.map MsgForm
+                |> Html.map (MsgForm relation)
 
             -- Note that these are hidden by deafult by semantic-ui ... the
             -- class of the "form" controls whether they are shown.

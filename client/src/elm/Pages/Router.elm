@@ -50,20 +50,36 @@ delta2url previous current =
                 ParticipantRegistrationPage ->
                     Just <| UrlChange NewEntry "#participant-registration"
 
-                CreatePersonPage ->
-                    Just <| UrlChange NewEntry "#person/new"
+                CreatePersonPage relationId ->
+                    let
+                        relation =
+                            relationId
+                                |> Maybe.map (\id -> "/" ++ fromEntityUuid id)
+                                |> Maybe.withDefault ""
+                    in
+                    Just <| UrlChange NewEntry ("#person/new" ++ relation)
 
-                PersonPage id ->
-                    Just <| UrlChange NewEntry ("#person/" ++ fromEntityUuid id)
+                PersonPage id relationId ->
+                    let
+                        relation =
+                            relationId
+                                |> Maybe.map (\id -> "/" ++ fromEntityUuid id)
+                                |> Maybe.withDefault ""
+                    in
+                    Just <| UrlChange NewEntry ("#person/" ++ fromEntityUuid id ++ relation)
 
-                PersonsPage search ->
+                PersonsPage search related ->
                     let
                         change =
                             -- If we're typing the search string, we just
                             -- modify the entry.
                             case previous of
-                                UserPage (PersonsPage _) ->
-                                    ModifyEntry
+                                UserPage (PersonsPage _ previousRelated) ->
+                                    if related == previousRelated then
+                                        ModifyEntry
+
+                                    else
+                                        NewEntry
 
                                 _ ->
                                     NewEntry
@@ -74,7 +90,12 @@ delta2url previous current =
                                 |> Maybe.withDefault ""
 
                         url =
-                            "#persons" ++ encodedSearch
+                            case related of
+                                Nothing ->
+                                    "#persons" ++ encodedSearch
+
+                                Just relatedId ->
+                                    "#relations/" ++ fromEntityUuid relatedId ++ encodedSearch
                     in
                     Just <| UrlChange change url
 
@@ -126,10 +147,14 @@ parseUrl =
         , map (UserPage MyAccountPage) (s "my-account")
         , map (UserPage ParticipantRegistrationPage) (s "participant-registration")
         , map (\id page -> UserPage <| SessionPage id page) (s "session" </> parseUuid </> parseSessionPage)
-        , map (UserPage <| PersonsPage Nothing) (s "persons")
-        , map (UserPage << PersonsPage << Just) (s "persons" </> string)
-        , map (UserPage <| CreatePersonPage) (s "person" </> s "new")
-        , map (UserPage << PersonPage) (s "person" </> parseUuid)
+        , map (UserPage <| PersonsPage Nothing Nothing) (s "persons")
+        , map (\search -> UserPage <| PersonsPage (Just search) Nothing) (s "persons" </> string)
+        , map (\id -> UserPage <| PersonsPage Nothing (Just id)) (s "relations" </> parseUuid)
+        , map (\id search -> UserPage <| PersonsPage (Just search) (Just id)) (s "relations" </> parseUuid </> string)
+        , map (\id -> UserPage <| CreatePersonPage (Just id)) (s "person" </> s "new" </> parseUuid)
+        , map (UserPage <| CreatePersonPage Nothing) (s "person" </> s "new")
+        , map (\id -> UserPage <| PersonPage id Nothing) (s "person" </> parseUuid)
+        , map (\id relatedId -> UserPage <| PersonPage id (Just relatedId)) (s "person" </> parseUuid </> parseUuid)
 
         -- `top` represents the page without any segements ... i.e. the
         -- root page.

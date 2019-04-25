@@ -12,7 +12,7 @@ import RemoteData exposing (RemoteData(..))
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update msg model =
     case msg of
-        MsgForm subMsg ->
+        MsgForm relation subMsg ->
             let
                 newModel =
                     Form.update validatePerson subMsg model
@@ -24,7 +24,7 @@ update msg model =
                                 |> Maybe.map
                                     (\person ->
                                         [ person
-                                            |> Backend.Model.PostPerson
+                                            |> Backend.Model.PostPerson relation
                                             |> App.Model.MsgIndexedDb
                                         ]
                                     )
@@ -33,7 +33,7 @@ update msg model =
                                 -- `NotAsked` (to reset network errors
                                 -- etc.)
                                 |> Maybe.withDefault
-                                    [ Backend.Model.HandlePostedPerson NotAsked
+                                    [ Backend.Model.HandlePostedPerson relation NotAsked
                                         |> App.Model.MsgIndexedDb
                                     ]
 
@@ -45,12 +45,12 @@ update msg model =
             , appMsgs
             )
 
-        DropZoneComplete result ->
+        DropZoneComplete relation result ->
             let
                 subMsg =
                     Form.Input Backend.Person.Form.photo Form.Text (Form.Field.String result.url)
             in
-            update (MsgForm subMsg) model
+            update (MsgForm relation subMsg) model
 
         ResetCreateForm ->
             ( Backend.Person.Form.emptyForm

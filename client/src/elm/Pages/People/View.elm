@@ -21,9 +21,16 @@ import Utils.WebData exposing (viewWebData)
 
 
 {-| Shows a form which can be used to search people.
+
+  - `searchString` is the string we're currently searching for, which is encoded
+    in the URL
+  - `relation` is the ID of a person who we're wanting to add a relationship for ...
+    that is, we're searching in the context of trying to find (or create) a new
+    family member for that person, either child, parent, etc.
+
 -}
-view : Language -> NominalDate -> Maybe String -> ModelIndexedDb -> Html Msg
-view language currentDate searchString db =
+view : Language -> NominalDate -> Maybe String -> Maybe PersonId -> ModelIndexedDb -> Html Msg
+view language currentDate searchString relation db =
     div
         [ class "page-people" ]
         [ viewHeader language
@@ -31,7 +38,7 @@ view language currentDate searchString db =
             [ class "search-wrapper" ]
             [ div
                 [ class "ui full segment blue" ]
-                [ viewSearchForm language currentDate searchString db ]
+                [ viewSearchForm language currentDate searchString relation db ]
             ]
         ]
 
@@ -53,8 +60,8 @@ viewHeader language =
         ]
 
 
-viewSearchForm : Language -> NominalDate -> Maybe String -> ModelIndexedDb -> Html Msg
-viewSearchForm language currentDate searchString db =
+viewSearchForm : Language -> NominalDate -> Maybe String -> Maybe PersonId -> ModelIndexedDb -> Html Msg
+viewSearchForm language currentDate searchString relation db =
     let
         searchValue =
             searchString
@@ -68,10 +75,10 @@ viewSearchForm language currentDate searchString db =
                     String.trim typing
             in
             if String.isEmpty trimmed then
-                UserPage <| PersonsPage Nothing
+                UserPage <| PersonsPage Nothing relation
 
             else
-                UserPage <| PersonsPage <| Just trimmed
+                UserPage <| PersonsPage (Just trimmed) relation
 
         searchForm =
             Html.form []
@@ -114,7 +121,7 @@ viewSearchForm language currentDate searchString db =
             results
                 |> Maybe.withDefault (Success EveryDictList.empty)
                 |> RemoteData.withDefault EveryDictList.empty
-                |> EveryDictList.map (viewParticipant language currentDate db)
+                |> EveryDictList.map (viewParticipant language currentDate relation db)
                 |> EveryDictList.values
     in
     div [ class "registration-page search" ]
@@ -143,7 +150,7 @@ viewSearchForm language currentDate searchString db =
                 [ class "actions" ]
                 [ button
                     [ class "ui primary button"
-                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage
+                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage relation
                     ]
                     [ text <| translate language Translate.RegisterNewParticipant ]
                 ]
@@ -151,8 +158,8 @@ viewSearchForm language currentDate searchString db =
         ]
 
 
-viewParticipant : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Person -> Html Msg
-viewParticipant language currentDate db id person =
+viewParticipant : Language -> NominalDate -> Maybe PersonId -> ModelIndexedDb -> PersonId -> Person -> Html Msg
+viewParticipant language currentDate relation db id person =
     let
         typeForThumbnail =
             ageInYears currentDate person
@@ -171,7 +178,7 @@ viewParticipant language currentDate db id person =
                 [ div [ class "action-icon-wrapper" ]
                     [ span
                         [ class "action-icon forward"
-                        , onClick <| SetActivePage <| UserPage <| PersonPage id
+                        , onClick <| SetActivePage <| UserPage <| PersonPage id relation
                         ]
                         []
                     ]

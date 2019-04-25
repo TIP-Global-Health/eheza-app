@@ -215,11 +215,11 @@ type MsgIndexedDb
     | PostChild Child
     | PostMother Mother (Maybe ChildId) -- The child is an existing child whose mother this is.
     | SetMotherOfChild ChildId MotherId
-    | PostPerson Person
+    | PostPerson (Maybe PersonId) Person -- The first person is a person we ought to offer setting a relationship to.
       -- Messages which handle responses to mutating data
     | HandlePostChild (WebData ChildId)
     | HandlePostMother (WebData MotherId)
-    | HandlePostedPerson (WebData PersonId)
+    | HandlePostedPerson (Maybe PersonId) (WebData PersonId)
     | HandleSetMotherOfChild ChildId MotherId (WebData ())
       -- Process some revisions we've received from the backend. In some cases,
       -- we can update our in-memory structures appropriately. In other cases, we
