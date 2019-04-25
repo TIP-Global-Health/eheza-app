@@ -47,7 +47,7 @@ view language currentDate id relation db =
                 |> RemoteData.withDefault (translate language Translate.Person ++ " " ++ fromEntityUuid id)
     in
     div
-        [ class "wrap wrap-alt-2" ]
+        [ class "page-person" ]
         [ viewHeader language headerName
         , div
             [ class "ui full segment blue" ]
@@ -155,14 +155,13 @@ viewParticipantDetailsForm language currentDate db id relation person =
                     ]
                 ]
     in
-    div [ class "wrap-list registration-page view" ]
+    div [ class "registration-page view" ]
         [ h3
             [ class "ui header" ]
             [ text <| translate language Translate.DemographicInformation ++ ": " ]
         , div
             [ class "ui unstackable items participants-list" ]
             [ viewParticipant language currentDate Nothing id person ]
-        , div [ class "separator-line" ] []
         , h3
             [ class "ui header" ]
             [ text <| translate language Translate.FamilyMembers ++ ": " ]
