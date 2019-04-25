@@ -15,6 +15,7 @@ body {
     background-size: 1193px 818px;
     max-width: 1280px;
     margin: 0 auto;
+    overflow-x: auto;
 
     &.no-bg {
         background-image: none;
@@ -32,7 +33,7 @@ div.page {
 // grow to fill the available height.
 div.page-content {
     flex: 1 1 auto;
-    overflow: scroll;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
 }
@@ -117,14 +118,14 @@ div.page-people {
     margin: 0 auto;
     padding: 0 35px 35px 35px;
     height: 100%;
-    overflow: none;
+    overflow-y: hidden;
     display: flex;
     flex-direction: column;
 
     div.search-wrapper {
         flex: 1 1 auto;
         height: 100%;
-        overflow: hidden;
+        overflow-y: hidden;
 
         > div.ui.segment {
             height: 100%;
@@ -135,12 +136,12 @@ div.page-people {
         display: flex;
         flex-direction: column;
         height: 100%;
-        overflow: hidden;
+        overflow-y: hidden;
 
         div.search-middle {
             height: 100%;
             flex: 1 1 auto;
-            overflow: scroll;
+            overflow-y: auto;
         }
     }
 }
