@@ -281,6 +281,7 @@ type TranslationId
     | ParticipantInformation
     | People
     | PersistentStorage Bool
+    | Person
     | PersonHasBeenSaved
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
@@ -1554,6 +1555,11 @@ translationSet trans =
                 { english = "Persistent storage has not been authorized. The browser may delete locally cached data if storage runs low."
                 , kinyarwanda = Nothing
                 }
+
+        Person ->
+            { english = "Person"
+            , kinyarwanda = Nothing
+            }
 
         PersonHasBeenSaved ->
             { english = "Person has been saved"

@@ -24,7 +24,7 @@ import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (fromEntityId, toEntityId)
+import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Set
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (dateInput, getValueAsInt, isFormFieldSet, viewFormError)
@@ -36,25 +36,33 @@ import Utils.WebData exposing (viewError, viewWebData)
 
 view : Language -> NominalDate -> PersonId -> Maybe PersonId -> ModelIndexedDb -> Html App.Model.Msg
 view language currentDate id relation db =
+    let
+        person =
+            EveryDict.get id db.people
+                |> Maybe.withDefault NotAsked
+
+        headerName =
+            person
+                |> RemoteData.map .name
+                |> RemoteData.withDefault (translate language Translate.Person ++ " " ++ fromEntityUuid id)
+    in
     div
         [ class "wrap wrap-alt-2" ]
-        [ viewHeader language
+        [ viewHeader language headerName
         , div
             [ class "ui full segment blue" ]
-            [ EveryDict.get id db.people
-                |> Maybe.withDefault NotAsked
-                |> viewWebData language (viewParticipantDetailsForm language currentDate db id relation) identity
+            [ viewWebData language (viewParticipantDetailsForm language currentDate db id relation) identity person
             ]
         ]
 
 
-viewHeader : Language -> Html App.Model.Msg
-viewHeader language =
+viewHeader : Language -> String -> Html App.Model.Msg
+viewHeader language name =
     div
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <| translate language Translate.People ]
+            [ text name ]
         , a
             [ class "link-back"
             , onClick <| App.Model.SetActivePage PinCodePage
