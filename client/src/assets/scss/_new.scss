@@ -13,6 +13,8 @@ body {
     color: $color-text;
     background: #0393db url(#{$img-path}bg.svg) no-repeat center 12px;
     background-size: 1193px 818px;
+    max-width: 1280px;
+    margin: 0 auto;
 
     &.no-bg {
         background-image: none;
