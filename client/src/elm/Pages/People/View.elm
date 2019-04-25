@@ -117,8 +117,11 @@ viewSearchForm language currentDate searchString relation db =
                 Nothing
 
             else
+                -- If we're adding a family member, we filter out the person
+                -- we're adding the famnily member to.
                 Dict.get searchValue db.personSearches
                     |> Maybe.withDefault NotAsked
+                    |> RemoteData.map (EveryDictList.filter (\k v -> not (relation == Just k)))
                     |> Just
 
         summary =
