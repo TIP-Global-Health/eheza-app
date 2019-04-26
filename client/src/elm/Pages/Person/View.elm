@@ -190,9 +190,12 @@ viewParticipant language currentDate myRelationship id person =
             myRelationship
                 |> Maybe.map
                     (\relationship ->
-                        h3
-                            [ class "ui header" ]
-                            [ text <| translate language <| Translate.MyRelationship relationship ]
+                        span
+                            [ class "relationship" ]
+                            [ text " ("
+                            , text <| translate language <| Translate.MyRelationship relationship
+                            , text ")"
+                            ]
                     )
                 |> Maybe.withDefault emptyNode
 
@@ -200,10 +203,11 @@ viewParticipant language currentDate myRelationship id person =
             div [ class "content" ]
                 [ div
                     [ class "details" ]
-                    [ relationshipLabel
-                    , h2
+                    [ h2
                         [ class "ui header" ]
-                        [ text <| person.name ]
+                        [ text person.name
+                        , relationshipLabel
+                        ]
                     , p []
                         [ label [] [ text <| translate language Translate.DOB ++ ": " ]
                         , span []
