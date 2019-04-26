@@ -20,6 +20,7 @@ import Pages.ParticipantRegistration.View
 import Pages.People.View
 import Pages.Person.View
 import Pages.PinCode.View
+import Pages.Relationship.View
 import Pages.Session.Model
 import Pages.Session.View exposing (view)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -159,8 +160,8 @@ viewUserPage page model configured =
                     Pages.Person.View.viewCreateForm model.language currentDate relation loggedInModel.createPersonPage model.indexedDb.postPerson
                         |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
 
-                PersonPage id relation ->
-                    Pages.Person.View.view model.language currentDate id relation model.indexedDb
+                PersonPage id ->
+                    Pages.Person.View.view model.language currentDate id model.indexedDb
 
                 PersonsPage search relation ->
                     Pages.People.View.view model.language currentDate search relation model.indexedDb
@@ -168,6 +169,9 @@ viewUserPage page model configured =
                 ParticipantRegistrationPage ->
                     Pages.ParticipantRegistration.View.view model.language currentDate model.indexedDb loggedInModel.participantRegistrationPage
                         |> Html.map (MsgLoggedIn << MsgPageParticipantRegistration)
+
+                RelationshipPage id1 id2 ->
+                    Pages.Relationship.View.view model.language id1 id2 model.indexedDb
 
                 SessionPage sessionId subPage ->
                     let

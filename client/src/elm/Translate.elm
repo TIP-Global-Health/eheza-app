@@ -197,6 +197,7 @@ type TranslationId
     | District
     | DOB
     | DropzoneDefaultMessage
+    | EditRelationship
     | EndGroupEncounter
     | EnterPairingCode
     | ErrorCheckLocalConfig
@@ -983,6 +984,11 @@ translationSet trans =
         DropzoneDefaultMessage ->
             { english = "Touch here to take a photo, or drop a photo file here."
             , kinyarwanda = Just "Kanda hano niba ushaka gufotora cg ukure ifoto mu bubiko hano."
+            }
+
+        EditRelationship ->
+            { english = "Edit Relationship"
+            , kinyarwanda = Nothing
             }
 
         EndGroupEncounter ->
@@ -2134,7 +2140,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                PersonPage id relation ->
+                PersonPage id ->
                     { english = "Person"
                     , kinyarwanda = Nothing
                     }
@@ -2146,6 +2152,11 @@ translateActivePage page =
 
                 ParticipantRegistrationPage ->
                     { english = "Participant Registration"
+                    , kinyarwanda = Nothing
+                    }
+
+                RelationshipPage _ _ ->
+                    { english = "Relationship"
                     , kinyarwanda = Nothing
                     }
 

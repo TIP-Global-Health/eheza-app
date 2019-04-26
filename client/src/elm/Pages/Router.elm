@@ -59,14 +59,8 @@ delta2url previous current =
                     in
                     Just <| UrlChange NewEntry ("#person/new" ++ relation)
 
-                PersonPage id relationId ->
-                    let
-                        relation =
-                            relationId
-                                |> Maybe.map (\id -> "/" ++ fromEntityUuid id)
-                                |> Maybe.withDefault ""
-                    in
-                    Just <| UrlChange NewEntry ("#person/" ++ fromEntityUuid id ++ relation)
+                PersonPage id ->
+                    Just <| UrlChange NewEntry <| "#person/" ++ fromEntityUuid id
 
                 PersonsPage search related ->
                     let
@@ -98,6 +92,14 @@ delta2url previous current =
                                     "#relations/" ++ fromEntityUuid relatedId ++ encodedSearch
                     in
                     Just <| UrlChange change url
+
+                RelationshipPage id1 id2 ->
+                    Just <|
+                        UrlChange NewEntry <|
+                            "#relationship/"
+                                ++ fromEntityUuid id1
+                                ++ "/"
+                                ++ fromEntityUuid id2
 
                 SessionPage sessionId sessionPage ->
                     let
@@ -153,8 +155,8 @@ parseUrl =
         , map (\id search -> UserPage <| PersonsPage (Just search) (Just id)) (s "relations" </> parseUuid </> string)
         , map (\id -> UserPage <| CreatePersonPage (Just id)) (s "person" </> s "new" </> parseUuid)
         , map (UserPage <| CreatePersonPage Nothing) (s "person" </> s "new")
-        , map (\id -> UserPage <| PersonPage id Nothing) (s "person" </> parseUuid)
-        , map (\id relatedId -> UserPage <| PersonPage id (Just relatedId)) (s "person" </> parseUuid </> parseUuid)
+        , map (\id -> UserPage <| PersonPage id) (s "person" </> parseUuid)
+        , map (\id1 id2 -> UserPage <| RelationshipPage id1 id2) (s "relationship" </> parseUuid </> parseUuid)
 
         -- `top` represents the page without any segements ... i.e. the
         -- root page.

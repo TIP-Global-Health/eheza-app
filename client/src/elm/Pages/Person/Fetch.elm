@@ -8,8 +8,8 @@ import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
 
 
-fetch : PersonId -> Maybe PersonId -> ModelIndexedDb -> List MsgIndexedDb
-fetch id relationId db =
+fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
+fetch id db =
     let
         familyMembers =
             EveryDict.get id db.relationshipsByPerson
@@ -25,14 +25,8 @@ fetch id relationId db =
                     )
                 |> RemoteData.withDefault []
                 |> List.concat
-
-        relation =
-            relationId
-                |> Maybe.map FetchPerson
-                |> Maybe.Extra.toList
     in
     familyMembers
-        ++ relation
         ++ [ FetchPerson id
            , FetchRelationshipsForPerson id
            ]

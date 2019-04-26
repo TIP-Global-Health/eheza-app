@@ -199,12 +199,20 @@ viewParticipant language currentDate relation db id person =
                     )
                 |> Maybe.withDefault "mother"
 
+        nextPage =
+            case relation of
+                Just relationId ->
+                    RelationshipPage id relationId
+
+                Nothing ->
+                    PersonPage id
+
         action =
             div [ class "action" ]
                 [ div [ class "action-icon-wrapper" ]
                     [ span
                         [ class "action-icon forward"
-                        , onClick <| SetActivePage <| UserPage <| PersonPage id relation
+                        , onClick <| SetActivePage <| UserPage <| nextPage
                         ]
                         []
                     ]

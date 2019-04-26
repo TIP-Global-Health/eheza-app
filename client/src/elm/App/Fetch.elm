@@ -13,6 +13,7 @@ import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.ParticipantRegistration.Fetch
 import Pages.People.Fetch
 import Pages.Person.Fetch
+import Pages.Relationship.Fetch
 import Pages.Session.Fetch
 import Update.Extra exposing (sequence)
 
@@ -55,12 +56,16 @@ fetch model =
                     )
                 |> Maybe.withDefault []
 
-        UserPage (PersonPage id relation) ->
-            Pages.Person.Fetch.fetch id relation model.indexedDb
+        UserPage (PersonPage id) ->
+            Pages.Person.Fetch.fetch id model.indexedDb
                 |> List.map MsgIndexedDb
 
         UserPage (PersonsPage search relation) ->
             Pages.People.Fetch.fetch search relation
+                |> List.map MsgIndexedDb
+
+        UserPage (RelationshipPage id1 id2) ->
+            Pages.Relationship.Fetch.fetch id1 id2 model.indexedDb
                 |> List.map MsgIndexedDb
 
         UserPage AdminPage ->

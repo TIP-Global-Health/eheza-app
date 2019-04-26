@@ -34,8 +34,8 @@ import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
 
 
-view : Language -> NominalDate -> PersonId -> Maybe PersonId -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate id relation db =
+view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
+view language currentDate id db =
     let
         person =
             EveryDict.get id db.people
@@ -51,7 +51,7 @@ view language currentDate id relation db =
         [ viewHeader language headerName
         , div
             [ class "ui full segment blue" ]
-            [ viewWebData language (viewParticipantDetailsForm language currentDate db id relation) identity person
+            [ viewWebData language (viewParticipantDetailsForm language currentDate db id) identity person
             ]
         ]
 
@@ -94,8 +94,8 @@ viewRelationship language currentDate db personId relationshipId relationship =
         |> showMaybe
 
 
-viewParticipantDetailsForm : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Maybe PersonId -> Person -> Html App.Model.Msg
-viewParticipantDetailsForm language currentDate db id relation person =
+viewParticipantDetailsForm : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
+viewParticipantDetailsForm language currentDate db id person =
     let
         viewFamilyMembers relationships =
             relationships

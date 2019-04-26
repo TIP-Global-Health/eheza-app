@@ -406,10 +406,19 @@ updateIndexedDb currentDate nurseId msg model =
                     data
                         |> RemoteData.map
                             (\personId ->
+                                let
+                                    nextPage =
+                                        case relation of
+                                            Just id ->
+                                                RelationshipPage personId id
+
+                                            Nothing ->
+                                                PersonPage personId
+                                in
                                 [ Pages.Person.Model.ResetCreateForm
                                     |> App.Model.MsgPageCreatePerson
                                     |> App.Model.MsgLoggedIn
-                                , PersonPage personId relation
+                                , nextPage
                                     |> UserPage
                                     |> App.Model.SetActivePage
                                 ]
