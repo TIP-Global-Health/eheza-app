@@ -15,6 +15,7 @@ import Pages.Page exposing (Page(..))
 import Pages.ParticipantRegistration.Model
 import Pages.Person.Model
 import Pages.PinCode.Model
+import Pages.Relationship.Model
 import Pages.Session.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Rollbar
@@ -127,6 +128,7 @@ type alias LoggedInModel =
     , adminPage : Pages.Admin.Model.Model
     , participantRegistrationPage : Pages.ParticipantRegistration.Model.Model
     , createPersonPage : Pages.Person.Model.Model
+    , relationshipPages : EveryDict ( PersonId, PersonId ) Pages.Relationship.Model.Model
 
     -- The nurse who has logged in.
     , nurse : ( NurseId, Nurse )
@@ -142,6 +144,7 @@ emptyLoggedInModel nurse =
     , adminPage = Pages.Admin.Model.emptyModel
     , createPersonPage = Pages.Person.Model.emptyModel
     , participantRegistrationPage = Pages.ParticipantRegistration.Model.emptyModel
+    , relationshipPages = EveryDict.empty
     , nurse = nurse
     , sessionPages = EveryDict.empty
     }
@@ -183,6 +186,7 @@ type MsgLoggedIn
     | MsgPageAdmin Pages.Admin.Model.Msg
     | MsgPageParticipantRegistration Pages.ParticipantRegistration.Model.Msg
     | MsgPageCreatePerson Pages.Person.Model.Msg
+    | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
 
 

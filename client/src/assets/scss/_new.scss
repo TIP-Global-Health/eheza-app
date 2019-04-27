@@ -146,6 +146,16 @@ div.page-people {
     }
 }
 
+div.page-relationship {
+    margin: 0 auto;
+    padding: 0 35px 35px 35px;
+    height: 100%;
+    width: 100%;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
 div.page-person {
     margin: 0 auto;
     padding: 0 35px 35px 35px;

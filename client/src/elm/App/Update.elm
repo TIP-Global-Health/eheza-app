@@ -25,6 +25,8 @@ import Pages.ParticipantRegistration.Update
 import Pages.Person.Update
 import Pages.PinCode.Model
 import Pages.PinCode.Update
+import Pages.Relationship.Model
+import Pages.Relationship.Update
 import Pages.Session.Model
 import Pages.Session.Update
 import RemoteData exposing (RemoteData(..), WebData)
@@ -213,6 +215,19 @@ update msg model =
                             ( { data | participantRegistrationPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageParticipantRegistration) subCmd
                             , appMsgs
+                            )
+
+                        MsgPageRelationship id1 id2 subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.relationshipPages
+                                        |> EveryDict.get ( id1, id2 )
+                                        |> Maybe.withDefault Pages.Relationship.Model.emptyModel
+                                        |> Pages.Relationship.Update.update id1 id2 subMsg
+                            in
+                            ( { data | relationshipPages = EveryDict.insert ( id1, id2 ) subModel data.relationshipPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageRelationship id1 id2) subCmd
+                            , extraMsgs
                             )
 
                         MsgPageSession sessionId subMsg ->

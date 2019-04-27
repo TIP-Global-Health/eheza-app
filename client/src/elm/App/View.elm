@@ -20,6 +20,7 @@ import Pages.ParticipantRegistration.View
 import Pages.People.View
 import Pages.Person.View
 import Pages.PinCode.View
+import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Session.Model
 import Pages.Session.View exposing (view)
@@ -171,7 +172,13 @@ viewUserPage page model configured =
                         |> Html.map (MsgLoggedIn << MsgPageParticipantRegistration)
 
                 RelationshipPage id1 id2 ->
-                    Pages.Relationship.View.view model.language id1 id2 model.indexedDb
+                    let
+                        page =
+                            EveryDict.get ( id1, id2 ) loggedInModel.relationshipPages
+                                |> Maybe.withDefault Pages.Relationship.Model.emptyModel
+                    in
+                    Pages.Relationship.View.view model.language currentDate id1 id2 model.indexedDb page
+                        |> Html.map (MsgLoggedIn << MsgPageRelationship id1 id2)
 
                 SessionPage sessionId subPage ->
                     let
