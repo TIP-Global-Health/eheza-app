@@ -1,11 +1,11 @@
 module Pages.Relationship.View exposing (view)
 
-import App.Model
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
-import Backend.Relationship.Model exposing (Relationship)
+import Backend.Relationship.Model exposing (MyRelationship(..), Relationship)
+import Backend.Relationship.Utils exposing (toMyRelationship)
 import EveryDict
 import EveryDictList exposing (EveryDictList)
 import Gizra.Html exposing (showMaybe)
@@ -13,6 +13,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Maybe.Extra
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Relationship.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
@@ -80,13 +81,106 @@ viewContent language currentDate id1 id2 db model =
 
 viewFetchedContent : Language -> NominalDate -> PersonId -> PersonId -> Model -> FetchedData -> Html Msg
 viewFetchedContent language currentDate id1 id2 model data =
+    let
+        savedRelationship : Maybe ( RelationshipId, MyRelationship )
+        savedRelationship =
+            data.relationships
+                |> EveryDictList.filter (\_ relationship -> relationship.person == id2 || relationship.relatedTo == id2)
+                |> EveryDictList.head
+                |> Maybe.andThen
+                    (\( relationshipId, relationship ) ->
+                        toMyRelationship id1 relationship
+                            |> Maybe.map (\myRelationship -> ( relationshipId, myRelationship ))
+                    )
+
+        viewedRelationship : Maybe MyRelationship
+        viewedRelationship =
+            model
+                |> Maybe.Extra.orElse (Maybe.map Tuple.second savedRelationship)
+
+        -- We could look at the birthdates of person1 and person2 to cut down
+        -- on these possibilities. (E.g. the older one can't be the child of
+        -- the younger one).
+        possibleRelationships =
+            [ MyChild id2
+            , MyCaregiver id2
+            , MyParent id2
+            , MyCaregiverFor id2
+            ]
+
+        relationshipSelector =
+            div
+                [ class "ui form relationship-selector" ]
+                [ div
+                    [ class "grouped fields" ]
+                    (List.indexedMap showRelationship possibleRelationships)
+                ]
+
+        showRelationship index possible =
+            let
+                isChecked =
+                    viewedRelationship == Just possible
+
+                inputId =
+                    "input-relationship-" ++ toString index
+            in
+            div
+                [ class "field" ]
+                [ div
+                    [ classList
+                        [ ( "ui radio checkbox", True )
+                        , ( "checked", isChecked )
+                        ]
+                    ]
+                    [ input
+                        [ type_ "radio"
+                        , id inputId
+                        , checked isChecked
+                        , classList [ ( "checked", isChecked ) ]
+                        , onCheck (always (RelationshipSelected possible))
+                        ]
+                        []
+                    , label
+                        [ class "relationship-selection"
+                        , for inputId
+                        ]
+                        [ text <| translate language <| Translate.MyRelationshipQuestion possible ]
+                    ]
+                ]
+
+        buttons =
+            div
+                [ class "ui grid save-buttons" ]
+                [ div
+                    [ class "four wide column" ]
+                    [ button
+                        [ class "ui button secondary fluid"
+                        , onClick Cancel
+                        ]
+                        [ text <| translate language Translate.Cancel ]
+                    ]
+                , div
+                    [ class "eight wide column" ]
+                    []
+                , div
+                    [ class "four wide column" ]
+                    [ button
+                        [ class "ui button primary fluid"
+                        , onClick Save
+                        ]
+                        [ text <| translate language Translate.Save ]
+                    ]
+                ]
+    in
     div [ class "registration-page view" ]
         [ div
             [ class "ui unstackable items participants-list" ]
             [ viewParticipant language currentDate id1 data.person1 ]
+        , relationshipSelector
         , div
             [ class "ui unstackable items participants-list" ]
             [ viewParticipant language currentDate id2 data.person2 ]
+        , buttons
         ]
 
 

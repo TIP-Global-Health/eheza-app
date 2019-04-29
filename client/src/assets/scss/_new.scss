@@ -154,6 +154,15 @@ div.page-relationship {
     overflow-y: hidden;
     display: flex;
     flex-direction: column;
+
+    label.relationship-selection {
+        font-size: 1.57rem; //22px light
+    }
+
+    div.relationship-selector {
+        margin-bottom: 50px;
+        margin-left: 60px;
+    }
 }
 
 div.page-person {
@@ -164,4 +173,8 @@ div.page-person {
     overflow-y: hidden;
     display: flex;
     flex-direction: column;
+
+    .particiants-list {
+        margin-top: 50px;
+    }
 }

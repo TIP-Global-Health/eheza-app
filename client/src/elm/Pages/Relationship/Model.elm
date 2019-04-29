@@ -14,4 +14,7 @@ emptyModel =
 
 
 type Msg
-    = SetActivePage Page
+    = RelationshipSelected MyRelationship
+    | Save
+    | Cancel
+    | SetActivePage Page

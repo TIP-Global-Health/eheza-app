@@ -251,6 +251,7 @@ type TranslationId
     | MuacIndication MuacIndication
     | MyAccount
     | MyRelationship MyRelationship
+    | MyRelationshipQuestion MyRelationship
     | NationalIdNumber
     | Next
     | No
@@ -1403,6 +1404,9 @@ translationSet trans =
         MyRelationship relationship ->
             translateMyRelationship relationship
 
+        MyRelationshipQuestion relationship ->
+            translateMyRelationshipQuestion relationship
+
         NationalIdNumber ->
             { english = "National ID Number"
             , kinyarwanda = Nothing
@@ -2091,6 +2095,30 @@ translateMyRelationship relationship =
 
         MyCaregiver _ ->
             { english = "Caregiver"
+            , kinyarwanda = Nothing
+            }
+
+
+translateMyRelationshipQuestion : MyRelationship -> TranslationSet String
+translateMyRelationshipQuestion relationship =
+    case relationship of
+        MyChild _ ->
+            { english = "is the parent of"
+            , kinyarwanda = Nothing
+            }
+
+        MyParent _ ->
+            { english = "is the child of"
+            , kinyarwanda = Nothing
+            }
+
+        MyCaregiverFor _ ->
+            { english = "is given care by"
+            , kinyarwanda = Nothing
+            }
+
+        MyCaregiver _ ->
+            { english = "is the caregiver for"
             , kinyarwanda = Nothing
             }
 
