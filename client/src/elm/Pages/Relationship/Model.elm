@@ -5,7 +5,7 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    Maybe MyRelationship
+    Maybe MyRelatedBy
 
 
 emptyModel : Model
@@ -14,7 +14,7 @@ emptyModel =
 
 
 type Msg
-    = RelationshipSelected MyRelationship
+    = RelationshipSelected MyRelatedBy
     | Save
-    | Cancel
+    | Reset
     | SetActivePage Page

@@ -202,7 +202,7 @@ viewParticipant language currentDate relation db id person =
         nextPage =
             case relation of
                 Just relationId ->
-                    RelationshipPage id relationId
+                    RelationshipPage relationId id
 
                 Nothing ->
                     PersonPage id

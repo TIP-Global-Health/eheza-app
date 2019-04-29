@@ -2,6 +2,7 @@ module Pages.Relationship.Update exposing (update)
 
 import App.Model
 import Backend.Entities exposing (..)
+import Backend.Model
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Relationship.Model exposing (..)
 
@@ -15,7 +16,7 @@ update id1 id2 msg model =
             , [ App.Model.SetActivePage page ]
             )
 
-        Cancel ->
+        Reset ->
             ( Nothing
             , Cmd.none
             , [ PersonPage id1
@@ -25,9 +26,23 @@ update id1 id2 msg model =
             )
 
         Save ->
+            let
+                extraMsg =
+                    case model of
+                        Just relatedBy ->
+                            [ Backend.Model.PostRelationship id1
+                                { relatedBy = relatedBy
+                                , relatedTo = id2
+                                }
+                                |> App.Model.MsgIndexedDb
+                            ]
+
+                        Nothing ->
+                            []
+            in
             ( model
             , Cmd.none
-            , []
+            , extraMsg
             )
 
         RelationshipSelected data ->

@@ -30,7 +30,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
 import Backend.Mother.Model exposing (HIVStatus(..))
 import Backend.Person.Model exposing (EducationLevel(..), Gender(..), MaritalStatus(..))
-import Backend.Relationship.Model exposing (MyRelationship(..))
+import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
@@ -250,8 +250,8 @@ type TranslationId
     | Mothers
     | MuacIndication MuacIndication
     | MyAccount
-    | MyRelationship MyRelationship
-    | MyRelationshipQuestion MyRelationship
+    | MyRelatedBy MyRelatedBy
+    | MyRelatedByQuestion MyRelatedBy
     | NationalIdNumber
     | Next
     | No
@@ -1401,11 +1401,11 @@ translationSet trans =
             , kinyarwanda = Just "Konti yanjye"
             }
 
-        MyRelationship relationship ->
-            translateMyRelationship relationship
+        MyRelatedBy relationship ->
+            translateMyRelatedBy relationship
 
-        MyRelationshipQuestion relationship ->
-            translateMyRelationshipQuestion relationship
+        MyRelatedByQuestion relationship ->
+            translateMyRelatedByQuestion relationship
 
         NationalIdNumber ->
             { english = "National ID Number"
@@ -2075,50 +2075,54 @@ translationSet trans =
             }
 
 
-translateMyRelationship : MyRelationship -> TranslationSet String
-translateMyRelationship relationship =
+translateMyRelatedBy : MyRelatedBy -> TranslationSet String
+translateMyRelatedBy relationship =
     case relationship of
-        MyChild _ ->
+        MyChild ->
             { english = "Child"
             , kinyarwanda = Just "Umwana"
             }
 
-        MyParent _ ->
+        MyParent ->
             { english = "Parent"
             , kinyarwanda = Nothing
             }
 
-        MyCaregiverFor _ ->
-            { english = "Caregiver for"
+        MyCaregiven ->
+            { english = "Care given"
             , kinyarwanda = Nothing
             }
 
-        MyCaregiver _ ->
+        MyCaregiver ->
             { english = "Caregiver"
             , kinyarwanda = Nothing
             }
 
 
-translateMyRelationshipQuestion : MyRelationship -> TranslationSet String
-translateMyRelationshipQuestion relationship =
+{-| Basically, this is backwards. Our data is showing what the second
+person is from the first person's point of view, but we want to
+ask the question the opposite way.
+-}
+translateMyRelatedByQuestion : MyRelatedBy -> TranslationSet String
+translateMyRelatedByQuestion relationship =
     case relationship of
-        MyChild _ ->
+        MyChild ->
             { english = "is the parent of"
             , kinyarwanda = Nothing
             }
 
-        MyParent _ ->
+        MyParent ->
             { english = "is the child of"
             , kinyarwanda = Nothing
             }
 
-        MyCaregiverFor _ ->
-            { english = "is given care by"
+        MyCaregiven ->
+            { english = "is the caregiver for"
             , kinyarwanda = Nothing
             }
 
-        MyCaregiver _ ->
-            { english = "is the caregiver for"
+        MyCaregiver ->
+            { english = "is given care by"
             , kinyarwanda = Nothing
             }
 

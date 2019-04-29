@@ -6,6 +6,8 @@ import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (..)
+import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
+import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements)
@@ -17,6 +19,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (object)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model
+import Pages.Relationship.Model
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityUuid, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityUuid, endpoint, fromEntityUuid, toCmd, toEntityUuid, toTask, withKeyEncoder, withParamsEncoder, withValueEncoder, withoutDecoder)
 import Task
@@ -193,13 +196,13 @@ updateIndexedDb currentDate nurseId msg model =
                 query1 =
                     sw.select relationshipEndpoint { person = Just personId, relatedTo = Nothing }
                         |> toTask
-                        |> Task.map (.items >> EveryDictList.fromList)
+                        |> Task.map (.items >> EveryDictList.fromList >> EveryDictList.filterMap (always (toMyRelationship personId)))
                         |> RemoteData.fromTask
 
                 query2 =
                     sw.select relationshipEndpoint { person = Nothing, relatedTo = Just personId }
                         |> toTask
-                        |> Task.map (.items >> EveryDictList.fromList)
+                        |> Task.map (.items >> EveryDictList.fromList >> EveryDictList.filterMap (always (toMyRelationship personId)))
                         |> RemoteData.fromTask
             in
             ( { model | relationshipsByPerson = EveryDict.insert personId Loading model.relationshipsByPerson }
@@ -389,6 +392,84 @@ updateIndexedDb currentDate nurseId msg model =
             ( { model | postChild = data }
             , Cmd.none
             , []
+            )
+
+        PostRelationship personId myRelationship ->
+            let
+                normalized =
+                    toRelationship personId myRelationship
+
+                -- We want to patch any relationship between these two,
+                -- whether or not reversed.
+                query1 =
+                    sw.select relationshipEndpoint
+                        { person = Just normalized.person
+                        , relatedTo = Just normalized.relatedTo
+                        }
+                        |> toTask
+                        |> Task.map (.items >> EveryDictList.fromList)
+
+                query2 =
+                    sw.select relationshipEndpoint
+                        { person = Just normalized.relatedTo
+                        , relatedTo = Just normalized.person
+                        }
+                        |> toTask
+                        |> Task.map (.items >> EveryDictList.fromList)
+
+                existingRelationship =
+                    Task.map2 EveryDictList.union query1 query2
+                        |> Task.map EveryDictList.head
+
+                cmd =
+                    existingRelationship
+                        |> Task.andThen
+                            (\existing ->
+                                case existing of
+                                    Nothing ->
+                                        sw.post relationshipEndpoint normalized
+                                            |> toTask
+                                            |> Task.map (always myRelationship)
+
+                                    Just ( relationshipId, relationship ) ->
+                                        let
+                                            changes =
+                                                encodeRelationshipChanges { old = relationship, new = normalized }
+                                        in
+                                        if List.isEmpty changes then
+                                            -- If no changes, we just report success without posting to the DB
+                                            Task.succeed myRelationship
+
+                                        else
+                                            object changes
+                                                |> sw.patchAny relationshipEndpoint relationshipId
+                                                |> toTask
+                                                |> Task.map (always myRelationship)
+                            )
+                        |> RemoteData.fromTask
+                        |> Task.perform (HandlePostedRelationship personId)
+            in
+            ( { model | postRelationship = EveryDict.insert personId Loading model.postRelationship }
+            , cmd
+            , []
+            )
+
+        HandlePostedRelationship personId data ->
+            let
+                appMsgs =
+                    data
+                        |> RemoteData.map
+                            (\relationship ->
+                                [ Pages.Relationship.Model.Reset
+                                    |> App.Model.MsgPageRelationship personId relationship.relatedTo
+                                    |> App.Model.MsgLoggedIn
+                                ]
+                            )
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postRelationship = EveryDict.insert personId data model.postRelationship }
+            , Cmd.none
+            , appMsgs
             )
 
         PostPerson relation person ->

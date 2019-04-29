@@ -14,17 +14,8 @@ fetch id db =
         familyMembers =
             EveryDict.get id db.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
-                |> RemoteData.map
-                    (EveryDictList.values
-                        >> List.map
-                            (\relationship ->
-                                [ FetchPerson relationship.person
-                                , FetchPerson relationship.relatedTo
-                                ]
-                            )
-                    )
+                |> RemoteData.map (EveryDictList.values >> List.map (.relatedTo >> FetchPerson))
                 |> RemoteData.withDefault []
-                |> List.concat
     in
     familyMembers
         ++ [ FetchPerson id

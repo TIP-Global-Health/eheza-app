@@ -28,7 +28,7 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
-import Backend.Relationship.Model exposing (Relationship)
+import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
 import Dict exposing (Dict)
@@ -129,13 +129,14 @@ type alias ModelIndexedDb =
     , mothers : EveryDict MotherId (WebData Mother)
     , children : EveryDict ChildId (WebData Child)
     , people : EveryDict PersonId (WebData Person)
-    , relationshipsByPerson : EveryDict PersonId (WebData (EveryDictList RelationshipId Relationship))
+    , relationshipsByPerson : EveryDict PersonId (WebData (EveryDictList RelationshipId MyRelationship))
 
     -- A cache of children of a mother
     , childrenOfMother : EveryDict MotherId (WebData (EveryDict ChildId Child))
 
     -- Track requests to mutate data
     , postPerson : WebData PersonId
+    , postRelationship : EveryDict PersonId (WebData MyRelationship)
     , postChild : WebData ChildId
     , postMother : WebData MotherId
     , setMotherOfChild : EveryDict ( ChildId, MotherId ) (WebData ())
@@ -162,6 +163,7 @@ emptyModelIndexedDb =
     , postChild = NotAsked
     , postMother = NotAsked
     , postPerson = NotAsked
+    , postRelationship = EveryDict.empty
     , relationshipsByPerson = EveryDict.empty
     , saveSyncDataRequests = EveryDict.empty
     , sessionRequests = EveryDict.empty
@@ -207,7 +209,7 @@ type MsgIndexedDb
     | HandleFetchedParticipantsByName String (WebData Participants)
     | HandleFetchedPeopleByName String (WebData (EveryDictList PersonId Person))
     | HandleFetchedPerson PersonId (WebData Person)
-    | HandleFetchedRelationshipsForPerson PersonId (WebData (EveryDictList RelationshipId Relationship))
+    | HandleFetchedRelationshipsForPerson PersonId (WebData (EveryDictList RelationshipId MyRelationship))
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (EveryDictList SessionId Session))
     | HandleFetchedSyncData (WebData (EveryDictList HealthCenterId SyncData))
@@ -216,11 +218,13 @@ type MsgIndexedDb
     | PostMother Mother (Maybe ChildId) -- The child is an existing child whose mother this is.
     | SetMotherOfChild ChildId MotherId
     | PostPerson (Maybe PersonId) Person -- The first person is a person we ought to offer setting a relationship to.
+    | PostRelationship PersonId MyRelationship
       -- Messages which handle responses to mutating data
     | HandlePostChild (WebData ChildId)
     | HandlePostMother (WebData MotherId)
     | HandlePostedPerson (Maybe PersonId) (WebData PersonId)
     | HandleSetMotherOfChild ChildId MotherId (WebData ())
+    | HandlePostedRelationship PersonId (WebData MyRelationship)
       -- Process some revisions we've received from the backend. In some cases,
       -- we can update our in-memory structures appropriately. In other cases, we
       -- can set them to `NotAsked` and let the "fetch" mechanism re-fetch them.

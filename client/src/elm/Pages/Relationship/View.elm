@@ -4,11 +4,11 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
-import Backend.Relationship.Model exposing (MyRelationship(..), Relationship)
+import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, Relationship)
 import Backend.Relationship.Utils exposing (toMyRelationship)
 import EveryDict
 import EveryDictList exposing (EveryDictList)
-import Gizra.Html exposing (showMaybe)
+import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -16,13 +16,16 @@ import Html.Events exposing (..)
 import Maybe.Extra
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Relationship.Model exposing (..)
-import RemoteData exposing (RemoteData(..))
+import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderDate)
-import Utils.WebData exposing (viewWebData)
+import Utils.WebData exposing (viewError, viewWebData)
 
 
+{-| Offer to edit the relationship between these persons, from the point of
+view of the first person.
+-}
 view : Language -> NominalDate -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id1 id2 db model =
     div
@@ -51,13 +54,6 @@ viewHeader language =
         ]
 
 
-type alias FetchedData =
-    { person1 : Person
-    , person2 : Person
-    , relationships : EveryDictList RelationshipId Relationship
-    }
-
-
 viewContent : Language -> NominalDate -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
 viewContent language currentDate id1 id2 db model =
     let
@@ -73,39 +69,44 @@ viewContent language currentDate id1 id2 db model =
             EveryDict.get id2 db.people
                 |> Maybe.withDefault NotAsked
 
+        request =
+            EveryDict.get id1 db.postRelationship
+                |> Maybe.withDefault NotAsked
+
         fetched =
             RemoteData.map3 FetchedData person1 person2 relationships
     in
-    viewWebData language (viewFetchedContent language currentDate id1 id2 model) identity fetched
+    viewWebData language (viewFetchedContent language currentDate id1 id2 model request) identity fetched
 
 
-viewFetchedContent : Language -> NominalDate -> PersonId -> PersonId -> Model -> FetchedData -> Html Msg
-viewFetchedContent language currentDate id1 id2 model data =
+type alias FetchedData =
+    { person1 : Person
+    , person2 : Person
+    , relationships : EveryDictList RelationshipId MyRelationship
+    }
+
+
+viewFetchedContent : Language -> NominalDate -> PersonId -> PersonId -> Model -> WebData MyRelationship -> FetchedData -> Html Msg
+viewFetchedContent language currentDate id1 id2 model request data =
     let
-        savedRelationship : Maybe ( RelationshipId, MyRelationship )
         savedRelationship =
             data.relationships
-                |> EveryDictList.filter (\_ relationship -> relationship.person == id2 || relationship.relatedTo == id2)
+                |> EveryDictList.filter (\_ relationship -> relationship.relatedTo == id2)
                 |> EveryDictList.head
-                |> Maybe.andThen
-                    (\( relationshipId, relationship ) ->
-                        toMyRelationship id1 relationship
-                            |> Maybe.map (\myRelationship -> ( relationshipId, myRelationship ))
-                    )
+                |> Maybe.map (Tuple.second >> .relatedBy)
 
-        viewedRelationship : Maybe MyRelationship
         viewedRelationship =
             model
-                |> Maybe.Extra.orElse (Maybe.map Tuple.second savedRelationship)
+                |> Maybe.Extra.orElse savedRelationship
 
         -- We could look at the birthdates of person1 and person2 to cut down
         -- on these possibilities. (E.g. the older one can't be the child of
         -- the younger one).
         possibleRelationships =
-            [ MyChild id2
-            , MyCaregiver id2
-            , MyParent id2
-            , MyCaregiverFor id2
+            [ MyChild
+            , MyParent
+            , MyCaregiven
+            , MyCaregiver
             ]
 
         relationshipSelector =
@@ -144,7 +145,7 @@ viewFetchedContent language currentDate id1 id2 model data =
                         [ class "relationship-selection"
                         , for inputId
                         ]
-                        [ text <| translate language <| Translate.MyRelationshipQuestion possible ]
+                        [ text <| translate language <| Translate.MyRelatedByQuestion possible ]
                     ]
                 ]
 
@@ -155,7 +156,7 @@ viewFetchedContent language currentDate id1 id2 model data =
                     [ class "four wide column" ]
                     [ button
                         [ class "ui button secondary fluid"
-                        , onClick Cancel
+                        , onClick Reset
                         ]
                         [ text <| translate language Translate.Cancel ]
                     ]
@@ -165,12 +166,34 @@ viewFetchedContent language currentDate id1 id2 model data =
                 , div
                     [ class "four wide column" ]
                     [ button
-                        [ class "ui button primary fluid"
+                        [ classList
+                            [ ( "ui button primary fluid", True )
+                            , ( "loading", RemoteData.isLoading request )
+                            , ( "disabled", RemoteData.isLoading request )
+                            ]
                         , onClick Save
                         ]
                         [ text <| translate language Translate.Save ]
                     ]
                 ]
+
+        requestStatus =
+            case request of
+                Success _ ->
+                    emptyNode
+
+                Failure err ->
+                    div
+                        [ class "ui warning message" ]
+                        [ div [ class "header" ] [ text <| translate language Translate.BackendError ]
+                        , viewError language err
+                        ]
+
+                Loading ->
+                    emptyNode
+
+                NotAsked ->
+                    emptyNode
     in
     div [ class "registration-page view" ]
         [ div
@@ -180,6 +203,7 @@ viewFetchedContent language currentDate id1 id2 model data =
         , div
             [ class "ui unstackable items participants-list" ]
             [ viewParticipant language currentDate id2 data.person2 ]
+        , requestStatus
         , buttons
         ]
 

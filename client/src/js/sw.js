@@ -75,7 +75,7 @@ dbSync.version(1).stores({
 });
 
 dbSync.version(2).stores({
-    nodes: '&uuid,type,vid,status,[type+pin_code],[type+clinic],[type+person],[type+related_to]',
+    nodes: '&uuid,type,vid,status,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to]',
 });
 
 // For when any sync metadata changes, send it all to the app

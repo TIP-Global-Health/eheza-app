@@ -8,7 +8,6 @@ import Backend.Person.Form exposing (PersonForm)
 import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allMaritalStatuses, allUbudehes)
 import Backend.Person.Utils exposing (ageInYears)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
-import Backend.Relationship.Utils exposing (getRelatedTo, toMyRelationship)
 import EveryDict
 import EveryDictList
 import Form exposing (Form)
@@ -73,25 +72,16 @@ viewHeader language name =
         ]
 
 
-viewRelationship : Language -> NominalDate -> ModelIndexedDb -> PersonId -> RelationshipId -> Relationship -> Html App.Model.Msg
-viewRelationship language currentDate db personId relationshipId relationship =
+viewRelationship : Language -> NominalDate -> ModelIndexedDb -> MyRelationship -> Html App.Model.Msg
+viewRelationship language currentDate db relationship =
     let
-        viewMyRelationship myRelationship =
-            let
-                relatedToId =
-                    getRelatedTo myRelationship
-
-                relatedTo =
-                    EveryDict.get relatedToId db.people
-                        |> Maybe.withDefault NotAsked
-            in
-            div
-                [ class "ui unstackable items participants-list" ]
-                [ viewWebData language (viewParticipant language currentDate (Just myRelationship) relatedToId) identity relatedTo ]
+        relatedTo =
+            EveryDict.get relationship.relatedTo db.people
+                |> Maybe.withDefault NotAsked
     in
-    toMyRelationship personId relationship
-        |> Maybe.map viewMyRelationship
-        |> showMaybe
+    div
+        [ class "ui unstackable items participants-list" ]
+        [ viewWebData language (viewParticipant language currentDate (Just relationship) relationship.relatedTo) identity relatedTo ]
 
 
 viewParticipantDetailsForm : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
@@ -99,7 +89,7 @@ viewParticipantDetailsForm language currentDate db id person =
     let
         viewFamilyMembers relationships =
             relationships
-                |> EveryDictList.map (viewRelationship language currentDate db id)
+                |> EveryDictList.map (always (viewRelationship language currentDate db))
                 |> EveryDictList.values
                 |> div []
 
@@ -193,7 +183,7 @@ viewParticipant language currentDate myRelationship id person =
                         span
                             [ class "relationship" ]
                             [ text " ("
-                            , text <| translate language <| Translate.MyRelationship relationship
+                            , text <| translate language <| Translate.MyRelatedBy relationship.relatedBy
                             , text ")"
                             ]
                     )

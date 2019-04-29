@@ -1,4 +1,4 @@
-module Backend.Relationship.Utils exposing (getRelatedTo, toMyRelationship)
+module Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 
 import Backend.Entities exposing (..)
 import Backend.Relationship.Model exposing (..)
@@ -11,34 +11,61 @@ toMyRelationship id relationship =
     if relationship.person == id then
         case relationship.relatedBy of
             ParentOf ->
-                Just <| MyChild relationship.relatedTo
+                Just
+                    { relatedTo = relationship.relatedTo
+                    , relatedBy = MyChild
+                    }
 
             CaregiverFor ->
-                Just <| MyCaregiverFor relationship.relatedTo
+                Just
+                    { relatedTo = relationship.relatedTo
+                    , relatedBy = MyCaregiven
+                    }
 
     else if relationship.relatedTo == id then
         case relationship.relatedBy of
             ParentOf ->
-                Just <| MyParent relationship.person
+                Just
+                    { relatedTo = relationship.person
+                    , relatedBy = MyParent
+                    }
 
             CaregiverFor ->
-                Just <| MyCaregiver relationship.person
+                Just
+                    { relatedTo = relationship.person
+                    , relatedBy = MyCaregiver
+                    }
 
     else
         Nothing
 
 
-getRelatedTo : MyRelationship -> PersonId
-getRelatedTo myRelationship =
-    case myRelationship of
-        MyChild id ->
-            id
+{-| Reverse the above ... that is, turn a `MyRelationship` back into the
+normalized form we use in the database.
+-}
+toRelationship : PersonId -> MyRelationship -> Relationship
+toRelationship personId myRelationship =
+    case myRelationship.relatedBy of
+        MyParent ->
+            { person = myRelationship.relatedTo
+            , relatedTo = personId
+            , relatedBy = ParentOf
+            }
 
-        MyCaregiverFor id ->
-            id
+        MyChild ->
+            { person = personId
+            , relatedTo = myRelationship.relatedTo
+            , relatedBy = ParentOf
+            }
 
-        MyParent id ->
-            id
+        MyCaregiver ->
+            { person = myRelationship.relatedTo
+            , relatedTo = personId
+            , relatedBy = CaregiverFor
+            }
 
-        MyCaregiver id ->
-            id
+        MyCaregiven ->
+            { person = personId
+            , relatedTo = myRelationship.relatedTo
+            , relatedBy = CaregiverFor
+            }

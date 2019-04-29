@@ -1,4 +1,4 @@
-module Backend.Relationship.Model exposing (MyRelationship(..), RelatedBy(..), Relationship)
+module Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, RelatedBy(..), Relationship)
 
 import Backend.Entities exposing (..)
 
@@ -20,10 +20,19 @@ type RelatedBy
     | CaregiverFor
 
 
+{-| This expresses all possible relations from a particular point of view --
+that is, from the point of view of either person in the relationship.
+-}
+type MyRelatedBy
+    = MyChild
+    | MyParent
+    | MyCaregiven
+    | MyCaregiver
+
+
 {-| This represents a relationship from the point of view of a specific person.
 -}
-type MyRelationship
-    = MyChild PersonId
-    | MyParent PersonId
-    | MyCaregiverFor PersonId
-    | MyCaregiver PersonId
+type alias MyRelationship =
+    { relatedTo : PersonId
+    , relatedBy : MyRelatedBy
+    }
