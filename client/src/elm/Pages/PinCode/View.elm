@@ -122,18 +122,6 @@ viewWhenLoggedIn language nurse =
                 ]
                 [ text <| translate language Translate.SelectYourGroup ]
 
-        administrationButton =
-            if EverySet.member RoleAdministrator nurse.roles then
-                Just <|
-                    button
-                        [ class "ui primary button"
-                        , onClick <| SendOutMsg <| SetActivePage <| UserPage AdminPage
-                        ]
-                        [ text <| translate language Translate.Admin ]
-
-            else
-                Nothing
-
         registerParticipantButton =
             button
                 [ class "ui fluid primary button"
@@ -159,11 +147,9 @@ viewWhenLoggedIn language nurse =
                 , text <| ": " ++ nurse.name
                 ]
     in
-    [ Just loggedInAs
-    , Just deviceStatusButton
-    , Just selectClinicButton
-    , administrationButton
-    , Just registerParticipantButton
-    , Just logoutButton
+    [ loggedInAs
+    , deviceStatusButton
+    , selectClinicButton
+    , registerParticipantButton
+    , logoutButton
     ]
-        |> List.filterMap identity

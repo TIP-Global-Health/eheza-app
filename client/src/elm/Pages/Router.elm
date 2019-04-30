@@ -32,9 +32,6 @@ delta2url previous current =
         -- These are pages that required a logged-in user
         UserPage userPage ->
             case userPage of
-                AdminPage ->
-                    Just <| UrlChange NewEntry "#admin"
-
                 ClinicsPage clinicId ->
                     let
                         clinic =
@@ -139,7 +136,6 @@ parseUrl =
     oneOf
         [ map (UserPage << ClinicsPage << Just) (s "clinics" </> parseUuid)
         , map (UserPage (ClinicsPage Nothing)) (s "clinics")
-        , map (UserPage AdminPage) (s "admin")
         , map DevicePage (s "device")
         , map PinCodePage (s "pincode")
         , map ServiceWorkerPage (s "deployment")

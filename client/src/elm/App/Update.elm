@@ -17,10 +17,8 @@ import Http exposing (Error(..))
 import HttpBuilder
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
-import Pages.Admin.Update
 import Pages.Device.Model
 import Pages.Device.Update
-import Pages.Page exposing (Page(..), UserPage(AdminPage, ClinicsPage))
 import Pages.Person.Update
 import Pages.PinCode.Model
 import Pages.PinCode.Update
@@ -186,16 +184,6 @@ update msg model =
                             , []
                             )
 
-                        MsgPageAdmin subMsg ->
-                            let
-                                ( newModel, cmd, appMsgs ) =
-                                    Pages.Admin.Update.update currentDate data.backend subMsg data.adminPage
-                            in
-                            ( { data | adminPage = newModel }
-                            , Cmd.map (MsgLoggedIn << MsgPageAdmin) cmd
-                            , appMsgs
-                            )
-
                         MsgPageCreatePerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
@@ -339,21 +327,9 @@ update msg model =
             )
 
         SetActivePage page ->
-            let
-                -- We reset certain requests if we're navigating to the admin
-                -- page from elsewhere.
-                resetSessionRequests =
-                    if page == UserPage AdminPage && page /= model.activePage then
-                        [ MsgLoggedIn <| MsgBackend <| Backend.Model.ResetSessionRequests ]
-
-                    else
-                        []
-            in
-            sequence update
-                resetSessionRequests
-                ( { model | activePage = page }
-                , Cmd.none
-                )
+            ( { model | activePage = page }
+            , Cmd.none
+            )
 
         SendRollbar level message data ->
             updateConfigured

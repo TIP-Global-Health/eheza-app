@@ -5,12 +5,10 @@ import App.Utils exposing (getLoggedInModel)
 import Config.View
 import Date
 import EveryDict
-import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
-import Pages.Admin.View
 import Pages.Clinics.View
 import Pages.Device.View
 import Pages.MyAccount.View
@@ -144,12 +142,6 @@ viewUserPage page model configured =
     case getLoggedInModel model of
         Just loggedInModel ->
             case page of
-                AdminPage ->
-                    emptyNode
-
-                -- TODO: Re-implement
-                -- Pages.Admin.View.view configured.config model.language currentDate login.credentials.user login.data.backend login.data.adminPage
-                --     |> Html.map (MsgLoggedIn << MsgPageAdmin)
                 MyAccountPage ->
                     Pages.MyAccount.View.view model.language loggedInModel.nurse
 

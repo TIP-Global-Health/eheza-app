@@ -1,12 +1,10 @@
 module App.Fetch exposing (andThenFetch)
 
 import App.Model exposing (..)
-import App.Utils exposing (getLoggedInModel)
 import Backend.Fetch
 import Date
 import EveryDict
 import Gizra.NominalDate exposing (fromLocalDateTime)
-import Pages.Admin.Fetch
 import Pages.Clinics.Fetch
 import Pages.Device.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
@@ -58,18 +56,6 @@ fetch model =
             Pages.Relationship.Fetch.fetch id1 id2 model.indexedDb
                 |> List.map MsgIndexedDb
 
-        UserPage AdminPage ->
-            []
-
-        {- TODO
-           getLoggedInModel model
-               |> Maybe.map
-                   (\loggedIn ->
-                       Pages.Admin.Fetch.fetch currentDate loggedIn.backend loggedIn.adminPage
-                           |> List.map (MsgLoggedIn << MsgPageAdmin)
-                   )
-               |> Maybe.withDefault []
-        -}
         UserPage (SessionPage sessionId sessionPage) ->
             Pages.Session.Fetch.fetch sessionId sessionPage model.indexedDb
                 |> List.map MsgIndexedDb

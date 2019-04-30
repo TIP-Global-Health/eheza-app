@@ -2152,11 +2152,6 @@ translateActivePage page =
 
         UserPage userPage ->
             case userPage of
-                AdminPage ->
-                    { english = "Admin"
-                    , kinyarwanda = Nothing
-                    }
-
                 ClinicsPage _ ->
                     { english = "Groups"
                     , kinyarwanda = Nothing

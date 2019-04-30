@@ -9,7 +9,6 @@ import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
 import Http
 import Json.Encode exposing (Value)
-import Pages.Admin.Model
 import Pages.Device.Model
 import Pages.Page exposing (Page(..))
 import Pages.Person.Model
@@ -124,7 +123,6 @@ it at the appropriate moment.
 -}
 type alias LoggedInModel =
     { backend : Backend.Model.ModelBackend
-    , adminPage : Pages.Admin.Model.Model
     , createPersonPage : Pages.Person.Model.Model
     , relationshipPages : EveryDict ( PersonId, PersonId ) Pages.Relationship.Model.Model
 
@@ -139,7 +137,6 @@ type alias LoggedInModel =
 emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel nurse =
     { backend = Backend.Model.emptyModelBackend
-    , adminPage = Pages.Admin.Model.emptyModel
     , createPersonPage = Pages.Person.Model.emptyModel
     , relationshipPages = EveryDict.empty
     , nurse = nurse
@@ -180,7 +177,6 @@ type Msg
 -}
 type MsgLoggedIn
     = MsgBackend Backend.Model.MsgBackend
-    | MsgPageAdmin Pages.Admin.Model.Msg
     | MsgPageCreatePerson Pages.Person.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
