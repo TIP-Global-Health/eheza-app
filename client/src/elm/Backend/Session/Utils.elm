@@ -1,12 +1,11 @@
 module Backend.Session.Utils exposing (emptyMotherMeasurementData, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMyMother, isAuthorized, isClosed, makeEditableSession)
 
-import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Mother.Model exposing (Mother)
 import Backend.Nurse.Model exposing (Nurse)
+import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (..)
 import EveryDict
 import EveryDictList exposing (EveryDictList)
@@ -17,41 +16,47 @@ import Time.Date
 
 {-| Given a mother's id, get all her children from the offline session.
 -}
-getChildren : MotherId -> OfflineSession -> List ( ChildId, Child )
+getChildren : PersonId -> OfflineSession -> List ( PersonId, Person )
 getChildren motherId session =
-    session.children
-        |> EveryDictList.filter (\_ child -> child.motherId == Just motherId)
-        |> EveryDictList.toList
+    {-
+       session.children
+           |> EveryDictList.filter (\_ child -> child.motherId == Just motherId)
+           |> EveryDictList.toList
+    -}
+    Debug.crash "todo"
 
 
-getChild : ChildId -> OfflineSession -> Maybe Child
+getChild : PersonId -> OfflineSession -> Maybe Person
 getChild childId session =
     EveryDictList.get childId session.children
 
 
-getMother : MotherId -> OfflineSession -> Maybe Mother
+getMother : PersonId -> OfflineSession -> Maybe Person
 getMother motherId session =
     EveryDictList.get motherId session.mothers
 
 
-getMyMother : ChildId -> OfflineSession -> Maybe ( MotherId, Mother )
+getMyMother : PersonId -> OfflineSession -> Maybe ( PersonId, Person )
 getMyMother childId session =
-    getChild childId session
-        |> Maybe.andThen .motherId
-        |> Maybe.andThen
-            (\motherId ->
-                getMother motherId session
-                    |> Maybe.map (\mother -> ( motherId, mother ))
-            )
+    {-
+       getChild childId session
+           |> Maybe.andThen .motherId
+           |> Maybe.andThen
+               (\motherId ->
+                   getMother motherId session
+                       |> Maybe.map (\mother -> ( motherId, mother ))
+               )
+    -}
+    Debug.crash "todo"
 
 
-getChildHistoricalMeasurements : ChildId -> OfflineSession -> ChildMeasurementList
+getChildHistoricalMeasurements : PersonId -> OfflineSession -> ChildMeasurementList
 getChildHistoricalMeasurements childId session =
     EveryDict.get childId session.historicalMeasurements.children
         |> Maybe.withDefault emptyChildMeasurementList
 
 
-getMotherHistoricalMeasurements : MotherId -> OfflineSession -> MotherMeasurementList
+getMotherHistoricalMeasurements : PersonId -> OfflineSession -> MotherMeasurementList
 getMotherHistoricalMeasurements motherId session =
     EveryDict.get motherId session.historicalMeasurements.mothers
         |> Maybe.withDefault emptyMotherMeasurementList
@@ -59,7 +64,7 @@ getMotherHistoricalMeasurements motherId session =
 
 {-| Gets the data in the form that `Measurement.View` (and others) will want.
 -}
-getChildMeasurementData : ChildId -> EditableSession -> MeasurementData ChildMeasurements
+getChildMeasurementData : PersonId -> EditableSession -> MeasurementData ChildMeasurements
 getChildMeasurementData childId session =
     { current =
         EveryDict.get childId session.offlineSession.currentMeasurements.children
@@ -73,7 +78,7 @@ getChildMeasurementData childId session =
 
 {-| Gets the data in the form that `Measurement.View` (and others) will want.
 -}
-getMotherMeasurementData : MotherId -> EditableSession -> MeasurementData MotherMeasurements
+getMotherMeasurementData : PersonId -> EditableSession -> MeasurementData MotherMeasurements
 getMotherMeasurementData motherId session =
     { current =
         EveryDict.get motherId session.offlineSession.currentMeasurements.mothers

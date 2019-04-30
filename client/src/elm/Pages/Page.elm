@@ -139,6 +139,6 @@ type SessionPage
     | ActivityPage Activity -- page that focuses on a single activity
     | AttendancePage -- page where mothers can be marked present / absent
     | ParticipantsPage -- page that shows a list of participants
-    | ChildPage ChildId -- page that focuses on a particular child
-    | MotherPage MotherId -- page that focuses on a particular mother
-    | ProgressReportPage ChildId -- shows progress report for child with ID
+    | ChildPage PersonId -- page that focuses on a particular child
+    | MotherPage PersonId -- page that focuses on a particular mother
+    | ProgressReportPage PersonId -- shows progress report for child with ID

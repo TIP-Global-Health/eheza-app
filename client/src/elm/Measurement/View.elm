@@ -4,13 +4,12 @@ module Measurement.View exposing (viewChild, viewMother, viewMuacIndication)
 -}
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
-import Backend.Child.Model exposing (Child)
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData, muacIndication)
-import Backend.Person.Model exposing (Gender)
+import Backend.Person.Model exposing (Gender, Person)
 import Backend.Session.Model exposing (EditableSession)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
@@ -40,7 +39,7 @@ import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeight
 {-| We need the current date in order to immediately construct a ZScore for the
 child when we enter something.
 -}
-viewChild : Language -> NominalDate -> Child -> ChildActivity -> MeasurementData ChildMeasurements -> ZScore.Model.Model -> EditableSession -> ModelChild -> Html MsgChild
+viewChild : Language -> NominalDate -> Person -> ChildActivity -> MeasurementData ChildMeasurements -> ZScore.Model.Model -> EditableSession -> ModelChild -> Html MsgChild
 viewChild language currentDate child activity measurements zscores session model =
     case activity of
         ChildPicture ->
@@ -148,22 +147,22 @@ zScoreForHeightOrLength model (Days days) (Centimetres cm) gender weight =
         zScoreWeightForHeight model (ZScore.Model.Height cm) gender (Kilograms weight)
 
 
-viewHeight : Language -> NominalDate -> Child -> MeasurementData (Maybe ( HeightId, Height )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewHeight : Language -> NominalDate -> Person -> MeasurementData (Maybe ( HeightId, Height )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewHeight =
     viewFloatForm heightFormConfig
 
 
-viewWeight : Language -> NominalDate -> Child -> MeasurementData (Maybe ( WeightId, Weight )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewWeight : Language -> NominalDate -> Person -> MeasurementData (Maybe ( WeightId, Weight )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewWeight =
     viewFloatForm weightFormConfig
 
 
-viewMuac : Language -> NominalDate -> Child -> MeasurementData (Maybe ( MuacId, Muac )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewMuac : Language -> NominalDate -> Person -> MeasurementData (Maybe ( MuacId, Muac )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewMuac =
     viewFloatForm muacFormConfig
 
 
-viewFloatForm : FloatFormConfig id value -> Language -> NominalDate -> Child -> MeasurementData (Maybe ( id, value )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewFloatForm : FloatFormConfig id value -> Language -> NominalDate -> Person -> MeasurementData (Maybe ( id, value )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewFloatForm config language currentDate child measurements zscores model =
     let
         -- What is the string input value from the form?
@@ -219,8 +218,10 @@ viewFloatForm config language currentDate child measurements zscores model =
                 |> Maybe.withDefault currentDate
 
         -- And, we'll need the child's age.
-        ageInDays =
-            diffDays child.birthDate dateMeasured
+        maybeAgeInDays =
+            Maybe.map
+                (\birthDate -> diffDays birthDate dateMeasured)
+                child.birthDate
 
         renderedZScoreForAge =
             config.zScoreForAge
@@ -229,7 +230,14 @@ viewFloatForm config language currentDate child measurements zscores model =
                         let
                             zScoreText =
                                 floatValue
-                                    |> Maybe.andThen (\val -> zScoreForAge zscores ageInDays child.gender val)
+                                    |> Maybe.andThen
+                                        (\val ->
+                                            Maybe.andThen
+                                                (\ageInDays ->
+                                                    zScoreForAge zscores ageInDays child.gender val
+                                                )
+                                                maybeAgeInDays
+                                        )
                                     |> Maybe.map viewZScore
                                     |> Maybe.withDefault (translate language Trans.NotAvailable)
                         in
@@ -262,7 +270,13 @@ viewFloatForm config language currentDate child measurements zscores model =
                                     |> Maybe.andThen
                                         (\height ->
                                             Maybe.andThen
-                                                (\weight -> func zscores ageInDays (Centimetres height) child.gender weight)
+                                                (\weight ->
+                                                    Maybe.andThen
+                                                        (\ageInDays ->
+                                                            func zscores ageInDays (Centimetres height) child.gender weight
+                                                        )
+                                                        maybeAgeInDays
+                                                )
                                                 floatValue
                                         )
                                     |> Maybe.map viewZScore

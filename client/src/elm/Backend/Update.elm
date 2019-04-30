@@ -30,19 +30,6 @@ updateIndexedDb currentDate nurseId msg model =
             applyBackendUrl "/sw"
     in
     case msg of
-        FetchChild childId ->
-            ( { model | children = EveryDict.insert childId Loading model.children }
-            , sw.get childEndpoint childId
-                |> toCmd (RemoteData.fromResult >> HandleFetchedChild childId)
-            , []
-            )
-
-        HandleFetchedChild childId data ->
-            ( { model | children = EveryDict.insert childId data model.children }
-            , Cmd.none
-            , []
-            )
-
         FetchChildMeasurements childId ->
             ( { model | childMeasurements = EveryDict.insert childId Loading model.childMeasurements }
             , sw.get childMeasurementListEndpoint childId
@@ -52,19 +39,6 @@ updateIndexedDb currentDate nurseId msg model =
 
         HandleFetchedChildMeasurements childId data ->
             ( { model | childMeasurements = EveryDict.insert childId data model.childMeasurements }
-            , Cmd.none
-            , []
-            )
-
-        FetchChildrenOfMother motherId ->
-            ( { model | childrenOfMother = EveryDict.insert motherId Loading model.childrenOfMother }
-            , sw.select childEndpoint { mother = Just motherId, nameContains = Nothing, session = Nothing }
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDict.fromList) >> HandleFetchedChildrenOfMother motherId)
-            , []
-            )
-
-        HandleFetchedChildrenOfMother motherId data ->
-            ( { model | childrenOfMother = EveryDict.insert motherId data model.childrenOfMother }
             , Cmd.none
             , []
             )
@@ -109,24 +83,27 @@ updateIndexedDb currentDate nurseId msg model =
             )
 
         FetchExpectedParticipants sessionId ->
-            let
-                childTask =
-                    sw.select childEndpoint { session = Just sessionId, nameContains = Nothing, mother = Nothing }
-                        |> toTask
-                        |> Task.map (.items >> EveryDictList.fromList)
-                        |> RemoteData.fromTask
+            {-
+               let
+                   childTask =
+                       sw.select childEndpoint { session = Just sessionId, nameContains = Nothing, mother = Nothing }
+                           |> toTask
+                           |> Task.map (.items >> EveryDictList.fromList)
+                           |> RemoteData.fromTask
 
-                motherTask =
-                    sw.select motherEndpoint { session = Just sessionId, nameContains = Nothing }
-                        |> toTask
-                        |> Task.map (.items >> EveryDictList.fromList)
-                        |> RemoteData.fromTask
-            in
-            ( { model | expectedParticipants = EveryDict.insert sessionId Loading model.expectedParticipants }
-            , Task.map2 (RemoteData.map2 Participants) childTask motherTask
-                |> Task.perform (HandleFetchedExpectedParticipants sessionId)
-            , []
-            )
+                   motherTask =
+                       sw.select motherEndpoint { session = Just sessionId, nameContains = Nothing }
+                           |> toTask
+                           |> Task.map (.items >> EveryDictList.fromList)
+                           |> RemoteData.fromTask
+               in
+               ( { model | expectedParticipants = EveryDict.insert sessionId Loading model.expectedParticipants }
+               , Task.map2 (RemoteData.map2 Participants) childTask motherTask
+                   |> Task.perform (HandleFetchedExpectedParticipants sessionId)
+               , []
+               )
+            -}
+            Debug.crash "todo"
 
         HandleFetchedExpectedParticipants sessionId data ->
             ( { model | expectedParticipants = EveryDict.insert sessionId data model.expectedParticipants }
@@ -205,19 +182,6 @@ updateIndexedDb currentDate nurseId msg model =
 
         HandleFetchedHealthCenters data ->
             ( { model | healthCenters = data }
-            , Cmd.none
-            , []
-            )
-
-        FetchMother motherId ->
-            ( { model | mothers = EveryDict.insert motherId Loading model.mothers }
-            , sw.get motherEndpoint motherId
-                |> toCmd (RemoteData.fromResult >> HandleFetchedMother motherId)
-            , []
-            )
-
-        HandleFetchedMother motherId data ->
-            ( { model | mothers = EveryDict.insert motherId data model.mothers }
             , Cmd.none
             , []
             )

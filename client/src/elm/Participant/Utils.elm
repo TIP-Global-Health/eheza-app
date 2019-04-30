@@ -2,9 +2,8 @@ module Participant.Utils exposing (childParticipant, motherParticipant)
 
 import Activity.Model exposing (Activity(..), ChildActivity, MotherActivity)
 import Activity.Utils exposing (summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
-import Backend.Child.Model exposing (Child)
 import Backend.Entities exposing (..)
-import Backend.Mother.Model exposing (Mother)
+import Backend.Person.Model exposing (Person)
 import Backend.Session.Utils exposing (getMyMother)
 import EveryDict
 import Measurement.Model
@@ -13,15 +12,14 @@ import Participant.Model exposing (Participant, ParticipantId(..))
 import RemoteData exposing (RemoteData(..))
 
 
-childParticipant : Participant ChildId Child ChildActivity Measurement.Model.MsgChild
+childParticipant : Participant PersonId Person ChildActivity Measurement.Model.MsgChild
 childParticipant =
     { getAvatarUrl = .avatarUrl
-    , getBirthDate = .birthDate >> Just
-    , getHealthCenterId = .healthCenter
+    , getBirthDate = .birthDate
     , getMotherId = \childId session -> getMyMother childId session.offlineSession |> Maybe.map Tuple.first
     , getName = .name
     , getParticipants = \session -> session.offlineSession.children
-    , getValue = \id db -> EveryDict.get id db.children |> Maybe.withDefault NotAsked
+    , getValue = \id db -> EveryDict.get id db.people |> Maybe.withDefault NotAsked
     , getVillage = .village
     , iconClass = "child"
     , showProgressReportTab = True
@@ -35,15 +33,14 @@ childParticipant =
     }
 
 
-motherParticipant : Participant MotherId Mother MotherActivity Measurement.Model.MsgMother
+motherParticipant : Participant PersonId Person MotherActivity Measurement.Model.MsgMother
 motherParticipant =
     { getAvatarUrl = .avatarUrl
     , getBirthDate = .birthDate
-    , getHealthCenterId = .healthCenter
     , getMotherId = \motherId session -> Just motherId
     , getName = .name
     , getParticipants = \session -> session.offlineSession.mothers
-    , getValue = \id db -> EveryDict.get id db.mothers |> Maybe.withDefault NotAsked
+    , getValue = \id db -> EveryDict.get id db.people |> Maybe.withDefault NotAsked
     , getVillage = .village
     , iconClass = "mother"
     , showProgressReportTab = False

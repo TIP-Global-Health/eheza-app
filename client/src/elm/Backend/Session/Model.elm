@@ -12,12 +12,11 @@ because there was so much code written in terms of an `EditableSession`.
 
 -}
 
-import Backend.Child.Model exposing (Child)
 import Backend.Counseling.Model exposing (EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Mother.Model exposing (Mother)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
+import Backend.Person.Model exposing (Person)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDateRange)
@@ -58,8 +57,8 @@ type alias OfflineSession =
     -- We'll sort by mother's name. The children's sort order doesn't really
     -- mean anything, but it's easier to work with mothers and children as
     -- "participants" if we're using the same structure here for both.
-    , mothers : EveryDictList MotherId Mother
-    , children : EveryDictList ChildId Child
+    , mothers : EveryDictList PersonId Person
+    , children : EveryDictList PersonId Person
 
     -- These are all the measurements which have been saved. (Not necessarily
     -- synced to the backend yet).
@@ -90,15 +89,15 @@ to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
     { closeSessionRequest : WebData ()
-    , saveAttendanceRequest : EveryDict MotherId (WebData ())
-    , saveCounselingSessionRequest : EveryDict ChildId (WebData ())
-    , saveFamilyPlanningRequest : EveryDict MotherId (WebData ())
-    , saveHeightRequest : EveryDict ChildId (WebData ())
-    , saveMuacRequest : EveryDict ChildId (WebData ())
-    , saveNutritionRequest : EveryDict ChildId (WebData ())
-    , saveParticipantConsentRequest : EveryDict MotherId (WebData ())
-    , savePhotoRequest : EveryDict ChildId (WebData ())
-    , saveWeightRequest : EveryDict ChildId (WebData ())
+    , saveAttendanceRequest : EveryDict PersonId (WebData ())
+    , saveCounselingSessionRequest : EveryDict PersonId (WebData ())
+    , saveFamilyPlanningRequest : EveryDict PersonId (WebData ())
+    , saveHeightRequest : EveryDict PersonId (WebData ())
+    , saveMuacRequest : EveryDict PersonId (WebData ())
+    , saveNutritionRequest : EveryDict PersonId (WebData ())
+    , saveParticipantConsentRequest : EveryDict PersonId (WebData ())
+    , savePhotoRequest : EveryDict PersonId (WebData ())
+    , saveWeightRequest : EveryDict PersonId (WebData ())
     }
 
 
@@ -120,14 +119,14 @@ emptyModel =
 type Msg
     = CloseSession
     | HandleClosedSession (WebData ())
-    | MeasurementOutMsgChild ChildId Measurement.Model.OutMsgChild
-    | MeasurementOutMsgMother MotherId Measurement.Model.OutMsgMother
-    | HandleSaveAttendance MotherId (WebData ())
-    | HandleSaveCounselingSession ChildId (WebData ())
-    | HandleSaveFamilyPlanning MotherId (WebData ())
-    | HandleSaveHeight ChildId (WebData ())
-    | HandleSaveMuac ChildId (WebData ())
-    | HandleSaveNutrition ChildId (WebData ())
-    | HandleSaveParticipantConsent MotherId (WebData ())
-    | HandleSavePhoto ChildId (WebData ())
-    | HandleSaveWeight ChildId (WebData ())
+    | MeasurementOutMsgChild PersonId Measurement.Model.OutMsgChild
+    | MeasurementOutMsgMother PersonId Measurement.Model.OutMsgMother
+    | HandleSaveAttendance PersonId (WebData ())
+    | HandleSaveCounselingSession PersonId (WebData ())
+    | HandleSaveFamilyPlanning PersonId (WebData ())
+    | HandleSaveHeight PersonId (WebData ())
+    | HandleSaveMuac PersonId (WebData ())
+    | HandleSaveNutrition PersonId (WebData ())
+    | HandleSaveParticipantConsent PersonId (WebData ())
+    | HandleSavePhoto PersonId (WebData ())
+    | HandleSaveWeight PersonId (WebData ())

@@ -2,11 +2,10 @@ module Activity.Test exposing (all)
 
 import Activity.Model exposing (..)
 import Activity.Utils exposing (..)
-import Backend.Child.Model exposing (Child)
 import Backend.Counseling.Model exposing (..)
-import Backend.Entities exposing (ChildId)
+import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model exposing (..)
-import Backend.Person.Model exposing (Gender(..))
+import Backend.Person.Model exposing (Gender(..), Person)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
@@ -219,38 +218,30 @@ session start =
 
 {-| We just need one child ...
 -}
-childId : ChildId
+childId : PersonId
 childId =
     toEntityUuid "1"
 
 
-makeChildren : TestCase -> EveryDictList ChildId Child
+makeChildren : TestCase -> EveryDictList PersonId Person
 makeChildren test =
     EveryDictList.fromList
         [ ( childId, makeChild test )
         ]
 
 
-makeChild : TestCase -> Child
+makeChild : TestCase -> Person
 makeChild test =
     { name = "Test Child"
     , avatarUrl = Nothing
-    , motherId = Nothing -- not relevant
-    , birthDate = addDays -test.daysOld sessionDate
+    , birthDate = Just <| addDays -test.daysOld sessionDate
     , gender = Male
-    , caregiverName = Nothing
-    , caregiverNationalId = Nothing
     , cell = Nothing
     , district = Nothing
-    , fatherName = Nothing
-    , fatherNationalId = Nothing
     , firstName = ""
-    , healthCenter = Nothing
+    , educationLevel = Nothing
+    , maritalStatus = Nothing
     , isDateOfBirthEstimated = False
-    , middleName = Nothing
-    , modeOfDelivery = Nothing
-    , motherName = Nothing
-    , motherNationalId = Nothing
     , nationalIdNumber = Nothing
     , province = Nothing
     , secondName = ""

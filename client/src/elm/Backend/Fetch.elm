@@ -18,18 +18,8 @@ or we will enter an infinite loop.
 shouldFetch : ModelIndexedDb -> MsgIndexedDb -> Bool
 shouldFetch model msg =
     case msg of
-        FetchChild childId ->
-            EveryDict.get childId model.children
-                |> Maybe.withDefault NotAsked
-                |> isNotAsked
-
         FetchChildMeasurements childId ->
             EveryDict.get childId model.childMeasurements
-                |> Maybe.withDefault NotAsked
-                |> isNotAsked
-
-        FetchChildrenOfMother motherId ->
-            EveryDict.get motherId model.childrenOfMother
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
@@ -51,11 +41,6 @@ shouldFetch model msg =
 
         FetchHealthCenters ->
             isNotAsked model.healthCenters
-
-        FetchMother motherId ->
-            EveryDict.get motherId model.mothers
-                |> Maybe.withDefault NotAsked
-                |> isNotAsked
 
         FetchMotherMeasurements motherId ->
             EveryDict.get motherId model.motherMeasurements
@@ -103,14 +88,8 @@ shouldFetch model msg =
 forget : MsgIndexedDb -> ModelIndexedDb -> ModelIndexedDb
 forget msg model =
     case msg of
-        FetchChild childId ->
-            { model | children = EveryDict.remove childId model.children }
-
         FetchChildMeasurements childId ->
             { model | childMeasurements = EveryDict.remove childId model.childMeasurements }
-
-        FetchChildrenOfMother motherId ->
-            { model | childrenOfMother = EveryDict.remove motherId model.childrenOfMother }
 
         FetchClinics ->
             { model | clinics = NotAsked }
@@ -126,9 +105,6 @@ forget msg model =
 
         FetchHealthCenters ->
             { model | healthCenters = NotAsked }
-
-        FetchMother motherId ->
-            { model | mothers = EveryDict.remove motherId model.mothers }
 
         FetchMotherMeasurements motherId ->
             { model | motherMeasurements = EveryDict.remove motherId model.motherMeasurements }

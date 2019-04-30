@@ -7,7 +7,7 @@ import EveryDict
 import RemoteData exposing (RemoteData(..))
 
 
-mapChildMeasurements : ChildId -> (ChildMeasurementList -> ChildMeasurementList) -> ModelIndexedDb -> ModelIndexedDb
+mapChildMeasurements : PersonId -> (ChildMeasurementList -> ChildMeasurementList) -> ModelIndexedDb -> ModelIndexedDb
 mapChildMeasurements childId func model =
     let
         childMeasurements =
@@ -18,7 +18,7 @@ mapChildMeasurements childId func model =
     { model | childMeasurements = EveryDict.insert childId childMeasurements model.childMeasurements }
 
 
-mapMotherMeasurements : MotherId -> (MotherMeasurementList -> MotherMeasurementList) -> ModelIndexedDb -> ModelIndexedDb
+mapMotherMeasurements : PersonId -> (MotherMeasurementList -> MotherMeasurementList) -> ModelIndexedDb -> ModelIndexedDb
 mapMotherMeasurements motherId func model =
     let
         motherMeasurements =

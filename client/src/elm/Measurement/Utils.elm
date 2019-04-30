@@ -105,7 +105,7 @@ fromMotherMeasurementData data =
     }
 
 
-getMotherForm : MotherId -> Pages.Session.Model.Model -> EditableSession -> ModelMother
+getMotherForm : PersonId -> Pages.Session.Model.Model -> EditableSession -> ModelMother
 getMotherForm motherId pages session =
     -- Could use `Maybe.withDefault` here instead, but then
     -- `fromMotherMeasurementData` would get calculated every time
@@ -127,7 +127,7 @@ getMotherForm motherId pages session =
                    )
 
 
-getChildForm : ChildId -> Pages.Session.Model.Model -> EditableSession -> ModelChild
+getChildForm : PersonId -> Pages.Session.Model.Model -> EditableSession -> ModelChild
 getChildForm childId pages session =
     -- Could use `Maybe.withDefault` here instead, but then
     -- `fromChildMeasurementData` would get calculated every time

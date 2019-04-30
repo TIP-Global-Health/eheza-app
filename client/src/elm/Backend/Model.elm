@@ -17,13 +17,11 @@ in the UI.
 
 -}
 
-import Backend.Child.Model exposing (Child)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildNutrition, CounselingSession, FamilyPlanning, Height, MotherMeasurementList, Muac, ParticipantConsent, Photo, Weight)
-import Backend.Mother.Model exposing (Mother)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
@@ -38,8 +36,8 @@ import RemoteData exposing (RemoteData(..), WebData)
 
 
 type alias Participants =
-    { children : EveryDictList ChildId Child
-    , mothers : EveryDictList MotherId Mother
+    { children : EveryDictList PersonId Person
+    , mothers : EveryDictList PersonId Person
     }
 
 
@@ -69,7 +67,7 @@ type alias ModelIndexedDb =
     -- missed sessions.  Because a child could change clinics, it's easier to
     -- ask the service worker to figure out the expected sessions rather than
     -- deriving it from data we already have in memory.
-    , expectedSessions : EveryDict ChildId (WebData (EveryDictList SessionId Session))
+    , expectedSessions : EveryDict PersonId (WebData (EveryDictList SessionId Session))
     , sessionsByClinic : EveryDict ClinicId (WebData (EveryDictList SessionId Session))
     , sessions : EveryDict SessionId (WebData Session)
 
@@ -83,21 +81,18 @@ type alias ModelIndexedDb =
     -- Measurement data for children and mothers. From this, we can construct
     -- the things we need for an `EditableSession` or for use on the progress
     -- report.
-    , childMeasurements : EveryDict ChildId (WebData ChildMeasurementList)
-    , motherMeasurements : EveryDict MotherId (WebData MotherMeasurementList)
+    , childMeasurements : EveryDict PersonId (WebData ChildMeasurementList)
+    , motherMeasurements : EveryDict PersonId (WebData MotherMeasurementList)
 
     -- Tracks searchs for participants by name. The key is the phrase we are
     -- searching for.
     , personSearches : Dict String (WebData (EveryDictList PersonId Person))
 
-    -- A simple cache of mothers and children.
-    , mothers : EveryDict MotherId (WebData Mother)
-    , children : EveryDict ChildId (WebData Child)
+    -- A simple cache of people.
     , people : EveryDict PersonId (WebData Person)
-    , relationshipsByPerson : EveryDict PersonId (WebData (EveryDictList RelationshipId MyRelationship))
 
-    -- A cache of children of a mother
-    , childrenOfMother : EveryDict MotherId (WebData (EveryDict ChildId Child))
+    -- From the point of view of the specified person, all of their relationships.
+    , relationshipsByPerson : EveryDict PersonId (WebData (EveryDictList RelationshipId MyRelationship))
 
     -- Track requests to mutate data
     , postPerson : WebData PersonId
@@ -108,8 +103,6 @@ type alias ModelIndexedDb =
 emptyModelIndexedDb : ModelIndexedDb
 emptyModelIndexedDb =
     { childMeasurements = EveryDict.empty
-    , children = EveryDict.empty
-    , childrenOfMother = EveryDict.empty
     , clinics = NotAsked
     , deleteSyncDataRequests = EveryDict.empty
     , everyCounselingSchedule = NotAsked
@@ -117,7 +110,6 @@ emptyModelIndexedDb =
     , expectedSessions = EveryDict.empty
     , healthCenters = NotAsked
     , motherMeasurements = EveryDict.empty
-    , mothers = EveryDict.empty
     , participantForms = NotAsked
     , people = EveryDict.empty
     , personSearches = Dict.empty
@@ -134,16 +126,13 @@ emptyModelIndexedDb =
 
 type MsgIndexedDb
     = -- Messages which fetch various kinds of data
-      FetchChild ChildId
-    | FetchChildMeasurements ChildId
-    | FetchChildrenOfMother MotherId
+      FetchChildMeasurements PersonId
     | FetchClinics
     | FetchEveryCounselingSchedule
     | FetchExpectedParticipants SessionId
-    | FetchExpectedSessions ChildId
+    | FetchExpectedSessions PersonId
     | FetchHealthCenters
-    | FetchMother MotherId
-    | FetchMotherMeasurements MotherId
+    | FetchMotherMeasurements PersonId
     | FetchParticipantForms
     | FetchPeopleByName String
     | FetchPerson PersonId
@@ -152,16 +141,13 @@ type MsgIndexedDb
     | FetchSessionsByClinic ClinicId
     | FetchSyncData
       -- Messages which handle responses to data
-    | HandleFetchedChild ChildId (WebData Child)
-    | HandleFetchedChildrenOfMother MotherId (WebData (EveryDict ChildId Child))
-    | HandleFetchedChildMeasurements ChildId (WebData ChildMeasurementList)
+    | HandleFetchedChildMeasurements PersonId (WebData ChildMeasurementList)
     | HandleFetchedEveryCounselingSchedule (WebData EveryCounselingSchedule)
-    | HandleFetchedMotherMeasurements MotherId (WebData MotherMeasurementList)
+    | HandleFetchedMotherMeasurements PersonId (WebData MotherMeasurementList)
     | HandleFetchedClinics (WebData (EveryDictList ClinicId Clinic))
     | HandleFetchedExpectedParticipants SessionId (WebData Participants)
-    | HandleFetchedExpectedSessions ChildId (WebData (EveryDictList SessionId Session))
+    | HandleFetchedExpectedSessions PersonId (WebData (EveryDictList SessionId Session))
     | HandleFetchedHealthCenters (WebData (EveryDictList HealthCenterId HealthCenter))
-    | HandleFetchedMother MotherId (WebData Mother)
     | HandleFetchedParticipantForms (WebData (EveryDictList ParticipantFormId ParticipantForm))
     | HandleFetchedPeopleByName String (WebData (EveryDictList PersonId Person))
     | HandleFetchedPerson PersonId (WebData Person)

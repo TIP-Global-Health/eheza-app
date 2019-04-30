@@ -1,8 +1,5 @@
-module Backend.Endpoints exposing (ChildParams, MotherParams, NurseParams, PersonParams, RelationshipParams, SessionParams(..), attendanceEndpoint, childEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeChildParams, encodeMotherParams, encodeNurseParams, encodePersonParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, motherEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, relationshipEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, weightEndpoint)
+module Backend.Endpoints exposing (NurseParams, PersonParams, RelationshipParams, SessionParams(..), attendanceEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeNurseParams, encodePersonParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, relationshipEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, weightEndpoint)
 
-import Backend.Child.Decoder exposing (decodeChild)
-import Backend.Child.Encoder exposing (encodeChild)
-import Backend.Child.Model exposing (Child)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
 import Backend.Clinic.Model exposing (Clinic)
@@ -15,9 +12,6 @@ import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Measurement.Decoder exposing (..)
 import Backend.Measurement.Encoder exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Mother.Decoder exposing (decodeMother)
-import Backend.Mother.Encoder exposing (encodeMother)
-import Backend.Mother.Model exposing (Mother)
 import Backend.Nurse.Decoder exposing (decodeNurse)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ParticipantConsent.Decoder exposing (decodeParticipantForm)
@@ -52,50 +46,6 @@ swEndpoint path decodeValue =
     in
     endpoint path decodeKey decodeValue drupalBackend
         |> withKeyEncoder fromEntityUuid
-
-
-childEndpoint : ReadWriteEndPoint Error ChildId Child Child ChildParams
-childEndpoint =
-    swEndpoint "nodes/child" decodeChild
-        |> withValueEncoder (object << encodeChild)
-        |> withParamsEncoder encodeChildParams
-
-
-type alias ChildParams =
-    { session : Maybe SessionId
-    , nameContains : Maybe String
-    , mother : Maybe MotherId
-    }
-
-
-encodeChildParams : ChildParams -> List ( String, String )
-encodeChildParams params =
-    List.filterMap identity
-        [ Maybe.map (\id -> ( "session", fromEntityUuid id )) params.session
-        , Maybe.map (\name -> ( "name_contains", name )) params.nameContains
-        , Maybe.map (\mother -> ( "mother", fromEntityUuid mother )) params.mother
-        ]
-
-
-motherEndpoint : ReadWriteEndPoint Error MotherId Mother Mother MotherParams
-motherEndpoint =
-    swEndpoint "nodes/mother" decodeMother
-        |> withValueEncoder (object << encodeMother)
-        |> withParamsEncoder encodeMotherParams
-
-
-type alias MotherParams =
-    { session : Maybe SessionId
-    , nameContains : Maybe String
-    }
-
-
-encodeMotherParams : MotherParams -> List ( String, String )
-encodeMotherParams params =
-    List.filterMap identity
-        [ Maybe.map (\id -> ( "session", fromEntityUuid id )) params.session
-        , Maybe.map (\name -> ( "name_contains", name )) params.nameContains
-        ]
 
 
 personEndpoint : ReadWriteEndPoint Error PersonId Person Person PersonParams
@@ -245,12 +195,12 @@ encodeNurseParams params =
         |> Maybe.Extra.toList
 
 
-motherMeasurementListEndpoint : ReadOnlyEndPoint Error MotherId MotherMeasurementList ()
+motherMeasurementListEndpoint : ReadOnlyEndPoint Error PersonId MotherMeasurementList ()
 motherMeasurementListEndpoint =
     swEndpoint "nodes/mother-measurements" decodeMotherMeasurementList
 
 
-childMeasurementListEndpoint : ReadOnlyEndPoint Error ChildId ChildMeasurementList ()
+childMeasurementListEndpoint : ReadOnlyEndPoint Error PersonId ChildMeasurementList ()
 childMeasurementListEndpoint =
     swEndpoint "nodes/child-measurements" decodeChildMeasurementList
 
@@ -260,7 +210,7 @@ childMeasurementListEndpoint =
 type SessionParams
     = AllSessions
     | ForClinic ClinicId
-    | ForChild ChildId
+    | ForChild PersonId
 
 
 encodeSessionParams : SessionParams -> List ( String, String )

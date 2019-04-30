@@ -1,8 +1,6 @@
 module Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildA, exampleChildB, exampleMother, exampleUser)
 
-import Backend.Child.Model exposing (Child)
-import Backend.Mother.Model exposing (ChildrenRelationType(..), Mother)
-import Backend.Person.Model exposing (EducationLevel(..), Gender(..), Ubudehe(..))
+import Backend.Person.Model exposing (EducationLevel(..), Gender(..), Person, Ubudehe(..))
 import EverySet
 import Restful.Endpoint exposing (toEntityId)
 import Time.Date exposing (date)
@@ -37,95 +35,71 @@ exampleUser =
 
 {-| An example child.
 -}
-exampleChildA : Child
+exampleChildA : Person
 exampleChildA =
     { name = "Michelle Kelly"
     , firstName = "Michelle"
-    , middleName = Nothing
     , secondName = "Kelly"
     , nationalIdNumber = Just "324324232"
     , avatarUrl = Just "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
-    , motherId = Nothing
-    , birthDate = date 2016 8 28
+    , birthDate = Just <| date 2016 8 28
+    , educationLevel = Nothing
+    , maritalStatus = Nothing
     , isDateOfBirthEstimated = False
     , gender = Male
-    , modeOfDelivery = Nothing
     , ubudehe = Nothing
-    , motherName = Nothing
-    , motherNationalId = Nothing
-    , fatherName = Nothing
-    , fatherNationalId = Nothing
-    , caregiverName = Nothing
-    , caregiverNationalId = Nothing
     , province = Nothing
     , district = Nothing
     , sector = Nothing
     , cell = Nothing
     , village = Nothing
     , telephoneNumber = Nothing
-    , healthCenter = Nothing
     }
 
 
 {-| Another example child.
 -}
-exampleChildB : Child
+exampleChildB : Person
 exampleChildB =
     { name = "Habimana Hakizimana"
     , firstName = "Habimana"
-    , middleName = Nothing
     , secondName = "Hakizimana"
     , nationalIdNumber = Just "232324232"
     , avatarUrl = Just "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
-    , motherId = Nothing
-    , birthDate = date 2016 11 17
+    , birthDate = Just <| date 2016 11 17
     , isDateOfBirthEstimated = True
+    , educationLevel = Nothing
+    , maritalStatus = Nothing
     , gender = Female
-    , modeOfDelivery = Nothing
     , ubudehe = Nothing
-    , motherName = Nothing
-    , motherNationalId = Nothing
-    , fatherName = Nothing
-    , fatherNationalId = Nothing
-    , caregiverName = Nothing
-    , caregiverNationalId = Nothing
     , province = Nothing
     , district = Nothing
     , sector = Nothing
     , cell = Nothing
     , village = Nothing
     , telephoneNumber = Nothing
-    , healthCenter = Nothing
     }
 
 
 {-| An example mother.
 -}
-exampleMother : Mother
+exampleMother : Person
 exampleMother =
     { name = "Sebabive Gahiji"
     , firstName = "Sebabive"
-    , middleName = Nothing
     , secondName = "Gahiji"
     , nationalIdNumber = Just "192324232"
     , avatarUrl = Just "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , birthDate = Just <| date 2016 8 28
     , isDateOfBirthEstimated = False
     , gender = Female
-    , relation = MotherRelation
     , ubudehe = Just Ubudehe1
     , educationLevel = Just NoSchooling
-    , profession = Nothing
     , maritalStatus = Nothing
-    , hivStatus = Nothing
-    , householdSize = Nothing
-    , numberOfChildren = Nothing
     , province = Nothing
     , district = Nothing
     , sector = Nothing
     , cell = Nothing
     , village = Nothing
     , telephoneNumber = Nothing
-    , clinic = Nothing
-    , healthCenter = Nothing
     }

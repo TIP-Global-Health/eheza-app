@@ -56,7 +56,7 @@ mapMeasurementData dataFunc measurements =
     }
 
 
-splitMotherMeasurements : SessionId -> EveryDict MotherId MotherMeasurementList -> EveryDict MotherId { current : MotherMeasurements, previous : MotherMeasurements }
+splitMotherMeasurements : SessionId -> EveryDict PersonId MotherMeasurementList -> EveryDict PersonId { current : MotherMeasurements, previous : MotherMeasurements }
 splitMotherMeasurements sessionId =
     EveryDict.map
         (\_ list ->
@@ -87,7 +87,7 @@ splitMotherMeasurements sessionId =
         )
 
 
-splitChildMeasurements : SessionId -> EveryDict ChildId ChildMeasurementList -> EveryDict ChildId { current : ChildMeasurements, previous : ChildMeasurements }
+splitChildMeasurements : SessionId -> EveryDict PersonId ChildMeasurementList -> EveryDict PersonId { current : ChildMeasurements, previous : ChildMeasurements }
 splitChildMeasurements sessionId =
     EveryDict.map
         (\_ list ->

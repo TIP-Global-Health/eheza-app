@@ -24,11 +24,9 @@ general utilities, see `Translate.Model` and `Translate.Utils`.
 -}
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
-import Backend.Child.Model exposing (ModeOfDelivery(..), VaginalDelivery(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
-import Backend.Mother.Model exposing (HIVStatus(..))
 import Backend.Person.Model exposing (EducationLevel(..), Gender(..), MaritalStatus(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month(..))
@@ -219,7 +217,6 @@ type TranslationId
     | GoHome
     | HealthCenter
     | HIVStatusLabel
-    | HIVStatus HIVStatus
     | HouseholdSize
     | HttpError Http.Error
     | KilogramShorthand
@@ -237,7 +234,6 @@ type TranslationId
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MiddleName
     | MinutesAgo Int
-    | ModeOfDelivery ModeOfDelivery
     | ModeOfDeliveryLabel
     | Month
     | MonthAbbrev
@@ -1147,33 +1143,6 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        HIVStatus status ->
-            case status of
-                HIVExposedInfant ->
-                    { english = "HIV-exposed Infant"
-                    , kinyarwanda = Nothing
-                    }
-
-                Negative ->
-                    { english = "Negative"
-                    , kinyarwanda = Nothing
-                    }
-
-                NegativeDiscordantCouple ->
-                    { english = "Negative - discordant couple"
-                    , kinyarwanda = Nothing
-                    }
-
-                Positive ->
-                    { english = "Positive"
-                    , kinyarwanda = Nothing
-                    }
-
-                Backend.Mother.Model.Unknown ->
-                    { english = "Unknown"
-                    , kinyarwanda = Nothing
-                    }
-
         HouseholdSize ->
             { english = "Household Size"
             , kinyarwanda = Nothing
@@ -1306,28 +1275,6 @@ translationSet trans =
                     toString minutes ++ " minutes ago"
             , kinyarwanda = Nothing
             }
-
-        ModeOfDelivery mode ->
-            case mode of
-                VaginalDelivery (Spontaneous True) ->
-                    { english = "Spontaneous vaginal delivery with episiotomy"
-                    , kinyarwanda = Nothing
-                    }
-
-                VaginalDelivery (Spontaneous False) ->
-                    { english = "Spontaneous vaginal delivery without episiotomy"
-                    , kinyarwanda = Nothing
-                    }
-
-                VaginalDelivery WithVacuumExtraction ->
-                    { english = "Vaginal delivery with vacuum extraction"
-                    , kinyarwanda = Nothing
-                    }
-
-                CesareanDelivery ->
-                    { english = "Cesarean delivery"
-                    , kinyarwanda = Nothing
-                    }
 
         ModeOfDeliveryLabel ->
             { english = "Mode of delivery"

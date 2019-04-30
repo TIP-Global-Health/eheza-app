@@ -13,10 +13,10 @@ a separate `updateChild` and `updateMother` for the moment. This
 is similar to the code in `Pages.Participant.Update`.
 -}
 updateChild :
-    Msg ChildId Measurement.Model.MsgChild
-    -> Model ChildId
+    Msg PersonId Measurement.Model.MsgChild
+    -> Model PersonId
     -> Maybe Measurement.Model.ModelChild
-    -> ( Model ChildId, Cmd (Msg ChildId Measurement.Model.MsgChild), Maybe Measurement.Model.ModelChild, Maybe Measurement.Model.OutMsgChild, Maybe Page )
+    -> ( Model PersonId, Cmd (Msg PersonId Measurement.Model.MsgChild), Maybe Measurement.Model.ModelChild, Maybe Measurement.Model.OutMsgChild, Maybe Page )
 updateChild msg model childForm =
     case msg of
         GoBackToActivitiesPage sessionId ->
@@ -70,11 +70,11 @@ updateChild msg model childForm =
 
 
 updateMother :
-    Msg MotherId Measurement.Model.MsgMother
-    -> Model MotherId
+    Msg PersonId Measurement.Model.MsgMother
+    -> Model PersonId
     -> Maybe Measurement.Model.ModelMother
     -> MeasurementData MotherMeasurements
-    -> ( Model MotherId, Cmd (Msg MotherId Measurement.Model.MsgMother), Maybe Measurement.Model.ModelMother, Maybe Measurement.Model.OutMsgMother, Maybe Page )
+    -> ( Model PersonId, Cmd (Msg PersonId Measurement.Model.MsgMother), Maybe Measurement.Model.ModelMother, Maybe Measurement.Model.OutMsgMother, Maybe Page )
 updateMother msg model motherForm measurements =
     case msg of
         GoBackToActivitiesPage sessionId ->
