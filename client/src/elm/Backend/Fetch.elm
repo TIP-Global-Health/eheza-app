@@ -65,11 +65,6 @@ shouldFetch model msg =
         FetchParticipantForms ->
             isNotAsked model.participantForms
 
-        FetchParticipantsByName search ->
-            Dict.get (String.trim search) model.nameSearches
-                |> Maybe.withDefault NotAsked
-                |> isNotAsked
-
         FetchPeopleByName search ->
             Dict.get (String.trim search) model.personSearches
                 |> Maybe.withDefault NotAsked
@@ -140,9 +135,6 @@ forget msg model =
 
         FetchParticipantForms ->
             { model | participantForms = NotAsked }
-
-        FetchParticipantsByName search ->
-            { model | nameSearches = Dict.remove (String.trim search) model.nameSearches }
 
         FetchPeopleByName search ->
             { model | personSearches = Dict.remove (String.trim search) model.personSearches }

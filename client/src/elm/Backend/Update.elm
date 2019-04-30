@@ -134,37 +134,6 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
-        FetchParticipantsByName name ->
-            let
-                trimmed =
-                    String.trim name
-
-                -- We'll limit the search to 100 each for now ... basically,
-                -- just to avoid truly pathological cases.
-                childTask =
-                    sw.selectRange childEndpoint { nameContains = Just trimmed, session = Nothing, mother = Nothing } 0 (Just 100)
-                        |> toTask
-                        |> Task.map (.items >> EveryDictList.fromList)
-                        |> RemoteData.fromTask
-
-                motherTask =
-                    sw.selectRange motherEndpoint { nameContains = Just trimmed, session = Nothing } 0 (Just 100)
-                        |> toTask
-                        |> Task.map (.items >> EveryDictList.fromList)
-                        |> RemoteData.fromTask
-            in
-            ( { model | nameSearches = Dict.insert trimmed Loading model.nameSearches }
-            , Task.map2 (RemoteData.map2 Participants) childTask motherTask
-                |> Task.perform (HandleFetchedParticipantsByName trimmed)
-            , []
-            )
-
-        HandleFetchedParticipantsByName name data ->
-            ( { model | nameSearches = Dict.insert (String.trim name) data model.nameSearches }
-            , Cmd.none
-            , []
-            )
-
         FetchPeopleByName name ->
             let
                 trimmed =
