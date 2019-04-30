@@ -2182,11 +2182,6 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                ParticipantRegistrationPage ->
-                    { english = "Participant Registration"
-                    , kinyarwanda = Nothing
-                    }
-
                 RelationshipPage _ _ ->
                     { english = "Relationship"
                     , kinyarwanda = Nothing

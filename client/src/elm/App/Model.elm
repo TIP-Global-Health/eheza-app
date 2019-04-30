@@ -12,7 +12,6 @@ import Json.Encode exposing (Value)
 import Pages.Admin.Model
 import Pages.Device.Model
 import Pages.Page exposing (Page(..))
-import Pages.ParticipantRegistration.Model
 import Pages.Person.Model
 import Pages.PinCode.Model
 import Pages.Relationship.Model
@@ -126,7 +125,6 @@ it at the appropriate moment.
 type alias LoggedInModel =
     { backend : Backend.Model.ModelBackend
     , adminPage : Pages.Admin.Model.Model
-    , participantRegistrationPage : Pages.ParticipantRegistration.Model.Model
     , createPersonPage : Pages.Person.Model.Model
     , relationshipPages : EveryDict ( PersonId, PersonId ) Pages.Relationship.Model.Model
 
@@ -143,7 +141,6 @@ emptyLoggedInModel nurse =
     { backend = Backend.Model.emptyModelBackend
     , adminPage = Pages.Admin.Model.emptyModel
     , createPersonPage = Pages.Person.Model.emptyModel
-    , participantRegistrationPage = Pages.ParticipantRegistration.Model.emptyModel
     , relationshipPages = EveryDict.empty
     , nurse = nurse
     , sessionPages = EveryDict.empty
@@ -184,7 +181,6 @@ type Msg
 type MsgLoggedIn
     = MsgBackend Backend.Model.MsgBackend
     | MsgPageAdmin Pages.Admin.Model.Msg
-    | MsgPageParticipantRegistration Pages.ParticipantRegistration.Model.Msg
     | MsgPageCreatePerson Pages.Person.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg

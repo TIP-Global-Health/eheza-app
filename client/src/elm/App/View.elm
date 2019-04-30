@@ -16,7 +16,6 @@ import Pages.Device.View
 import Pages.MyAccount.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
-import Pages.ParticipantRegistration.View
 import Pages.People.View
 import Pages.Person.View
 import Pages.PinCode.View
@@ -166,10 +165,6 @@ viewUserPage page model configured =
 
                 PersonsPage search relation ->
                     Pages.People.View.view model.language currentDate search relation model.indexedDb
-
-                ParticipantRegistrationPage ->
-                    Pages.ParticipantRegistration.View.view model.language currentDate model.indexedDb loggedInModel.participantRegistrationPage
-                        |> Html.map (MsgLoggedIn << MsgPageParticipantRegistration)
 
                 RelationshipPage id1 id2 ->
                     let

@@ -47,9 +47,6 @@ delta2url previous current =
                 MyAccountPage ->
                     Just <| UrlChange NewEntry "#my-account"
 
-                ParticipantRegistrationPage ->
-                    Just <| UrlChange NewEntry "#participant-registration"
-
                 CreatePersonPage relationId ->
                     let
                         relation =
@@ -147,7 +144,6 @@ parseUrl =
         , map PinCodePage (s "pincode")
         , map ServiceWorkerPage (s "deployment")
         , map (UserPage MyAccountPage) (s "my-account")
-        , map (UserPage ParticipantRegistrationPage) (s "participant-registration")
         , map (\id page -> UserPage <| SessionPage id page) (s "session" </> parseUuid </> parseSessionPage)
         , map (UserPage <| PersonsPage Nothing Nothing) (s "persons")
         , map (\search -> UserPage <| PersonsPage (Just search) Nothing) (s "persons" </> string)
