@@ -5,7 +5,6 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, Relationship)
-import Backend.Relationship.Utils exposing (toMyRelationship)
 import EveryDict
 import EveryDictList exposing (EveryDictList)
 import Gizra.Html exposing (emptyNode, showMaybe)

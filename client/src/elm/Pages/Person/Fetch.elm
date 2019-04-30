@@ -4,7 +4,6 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import EveryDict
 import EveryDictList
-import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
 
 
