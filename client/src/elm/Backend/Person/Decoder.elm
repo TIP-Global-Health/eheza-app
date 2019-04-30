@@ -12,7 +12,6 @@ decodePerson =
     decode Person
         |> required "label" string
         |> optional "first_name" string ""
-        |> optional "middle_name" (nullable string) Nothing
         |> optional "second_name" string ""
         |> optional "national_id_number" (nullable string) Nothing
         |> optional "photo" (nullable string) Nothing
@@ -21,7 +20,6 @@ decodePerson =
         |> optional "gender" decodeGender Female
         |> optional "ubudehe" (nullable decodeUbudehe) Nothing
         |> optional "education_level" (nullable decodeEducationLevel) Nothing
-        |> optional "profession" (nullable string) Nothing
         |> optional "marital_status" (nullable decodeMaritalStatus) Nothing
         |> optional "province" (nullable string) Nothing
         |> optional "district" (nullable string) Nothing

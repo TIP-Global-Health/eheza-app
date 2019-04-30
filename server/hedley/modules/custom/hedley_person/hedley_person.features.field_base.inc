@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * hedley_person.features.field_base.inc
@@ -244,27 +245,6 @@ function hedley_person_field_default_field_bases() {
     'type' => 'list_text',
   );
 
-  // Exported field_base: 'field_middle_name'.
-  $field_bases['field_middle_name'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_middle_name',
-    'indexes' => array(
-      'format' => array(
-        0 => 'format',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'text',
-    'settings' => array(
-      'max_length' => 255,
-    ),
-    'translatable' => 0,
-    'type' => 'text',
-  );
-
   // Exported field_base: 'field_national_id_number'.
   $field_bases['field_national_id_number'] = array(
     'active' => 1,
@@ -362,27 +342,6 @@ function hedley_person_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'image',
-  );
-
-  // Exported field_base: 'field_profession'.
-  $field_bases['field_profession'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_profession',
-    'indexes' => array(
-      'format' => array(
-        0 => 'format',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'text',
-    'settings' => array(
-      'max_length' => 255,
-    ),
-    'translatable' => 0,
-    'type' => 'text',
   );
 
   // Exported field_base: 'field_province'.

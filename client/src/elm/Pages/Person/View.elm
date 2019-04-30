@@ -411,14 +411,12 @@ viewCreateForm language currentDate relation personForm request =
             viewPhoto
                 :: List.map (Html.map (MsgForm relation))
                     [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName True personForm
-                    , viewTextInput language Translate.MiddleName Backend.Person.Form.middleName False personForm
                     , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
                     , viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
                     , birthDateInput
                     , birthDateEstimatedInput
                     , genderInput
                     , viewSelectInput language Translate.LevelOfEducationLabel educationLevelOptions Backend.Person.Form.educationLevel "ten" "select-input" True personForm
-                    , viewTextInput language Translate.Profession Backend.Person.Form.profession False personForm
                     , viewSelectInput language Translate.MaritalStatusLabel maritalStatusOptions Backend.Person.Form.maritalStatus "ten" "select-input" True personForm
                     ]
 

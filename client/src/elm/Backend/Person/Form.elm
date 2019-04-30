@@ -1,4 +1,4 @@
-module Backend.Person.Form exposing (PersonForm, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, firstName, gender, maritalStatus, middleName, nationalIdNumber, phoneNumber, photo, profession, province, secondName, sector, ubudehe, validateCell, validateDate, validateDistrict, validateEducationLevel, validateGender, validateMaritalStatus, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village)
+module Backend.Person.Form exposing (PersonForm, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, firstName, gender, maritalStatus, nationalIdNumber, phoneNumber, photo, province, secondName, sector, ubudehe, validateCell, validateDate, validateDistrict, validateEducationLevel, validateGender, validateMaritalStatus, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village)
 
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeMaritalStatus, decodeUbudehe)
 import Backend.Person.Model exposing (..)
@@ -29,24 +29,18 @@ validatePerson : Validation ValidationError Person
 validatePerson =
     let
         withFirstName firstNameValue =
-            andThen (withFirstAndSecondNames firstNameValue) (field secondName string)
+            andThen (withAllNames firstNameValue) (field secondName string)
 
-        withFirstAndSecondNames firstNameValue secondNameValue =
-            andThen (withAllNames firstNameValue secondNameValue) (field middleName <| nullable string)
-
-        combineNames first second middle =
-            [ Just <| String.trim second
-            , Just <| String.trim first
-            , middle
+        combineNames first second =
+            [ String.trim second
+            , String.trim first
             ]
-                |> List.filterMap identity
                 |> String.join " "
 
-        withAllNames firstNameValue secondNameValue middleNameValue =
+        withAllNames firstNameValue secondNameValue =
             succeed Person
-                |> andMap (succeed (combineNames firstNameValue secondNameValue middleNameValue))
+                |> andMap (succeed (combineNames firstNameValue secondNameValue))
                 |> andMap (succeed <| String.trim firstNameValue)
-                |> andMap (succeed <| middleNameValue)
                 |> andMap (succeed <| String.trim secondNameValue)
                 |> andMap (field nationalIdNumber <| nullable string)
                 |> andMap (field photo <| nullable string)
@@ -55,7 +49,6 @@ validatePerson =
                 |> andMap (field gender validateGender)
                 |> andMap (field ubudehe validateUbudehe)
                 |> andMap (field educationLevel validateEducationLevel)
-                |> andMap (field profession <| nullable string)
                 |> andMap (field maritalStatus validateMaritalStatus)
                 |> andMap (field province validateProvince)
                 |> andMap (field district validateDistrict)
@@ -161,11 +154,6 @@ firstName =
     "first_name"
 
 
-middleName : String
-middleName =
-    "middle_name"
-
-
 secondName : String
 secondName =
     "second_name"
@@ -204,11 +192,6 @@ ubudehe =
 educationLevel : String
 educationLevel =
     "education_level"
-
-
-profession : String
-profession =
-    "profession"
 
 
 maritalStatus : String

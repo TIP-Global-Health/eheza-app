@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * hedley_person.features.field_instance.inc
@@ -381,46 +382,6 @@ function hedley_person_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-person-field_middle_name'.
-  $field_instances['node-person-field_middle_name'] = array(
-    'bundle' => 'person',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'text',
-        'settings' => array(),
-        'type' => 'text_default',
-        'weight' => 3,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_middle_name',
-    'label' => 'Middle name',
-    'required' => 0,
-    'settings' => array(
-      'text_processing' => 0,
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'text',
-      'settings' => array(
-        'size' => 60,
-      ),
-      'type' => 'text_textfield',
-      'weight' => 2,
-    ),
-  );
-
   // Exported field_instance: 'node-person-field_national_id_number'.
   $field_instances['node-person-field_national_id_number'] = array(
     'bundle' => 'person',
@@ -548,46 +509,6 @@ function hedley_person_field_default_field_instances() {
       ),
       'type' => 'image_image',
       'weight' => 4,
-    ),
-  );
-
-  // Exported field_instance: 'node-person-field_profession'.
-  $field_instances['node-person-field_profession'] = array(
-    'bundle' => 'person',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'text',
-        'settings' => array(),
-        'type' => 'text_default',
-        'weight' => 18,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_profession',
-    'label' => 'Profession',
-    'required' => 0,
-    'settings' => array(
-      'text_processing' => 0,
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'text',
-      'settings' => array(
-        'size' => 60,
-      ),
-      'type' => 'text_textfield',
-      'weight' => 12,
     ),
   );
 
@@ -1005,12 +926,10 @@ function hedley_person_field_default_field_instances() {
   t('Group');
   t('How are these persons related?');
   t('Marital status');
-  t('Middle name');
   t('National ID number');
   t('Person');
   t('Phone number');
   t('Photo');
-  t('Profession');
   t('Province');
   t('Related by');
   t('Related to');

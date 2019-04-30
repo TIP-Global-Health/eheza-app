@@ -6,7 +6,6 @@ import Gizra.NominalDate exposing (NominalDate)
 type alias Person =
     { name : String
     , firstName : String
-    , middleName : Maybe String
     , secondName : String
     , nationalIdNumber : Maybe String
     , avatarUrl : Maybe String
@@ -15,7 +14,6 @@ type alias Person =
     , gender : Gender
     , ubudehe : Maybe Ubudehe
     , educationLevel : Maybe EducationLevel
-    , profession : Maybe String
     , maritalStatus : Maybe MaritalStatus
     , province : Maybe String
     , district : Maybe String

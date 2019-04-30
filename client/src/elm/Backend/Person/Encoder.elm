@@ -11,7 +11,6 @@ encodePerson person =
     object
         [ ( "label", string person.name )
         , ( "first_name", string person.firstName )
-        , ( "middle_name", maybe string person.middleName )
         , ( "second_name", string person.secondName )
         , ( "national_id_number", maybe string person.nationalIdNumber )
         , ( "photo", maybe string person.avatarUrl )
@@ -20,7 +19,6 @@ encodePerson person =
         , ( "gender", encodeGender person.gender )
         , ( "ubudehe", maybe (encodeUbudehe >> int) person.ubudehe )
         , ( "education_level", maybe (encodeEducationLevel >> int) person.educationLevel )
-        , ( "profession", maybe string person.profession )
         , ( "marital_status", maybe (encodeMaritalStatus >> string) person.maritalStatus )
         , ( "province", maybe string person.province )
         , ( "district", maybe string person.district )
