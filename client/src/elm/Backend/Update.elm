@@ -491,7 +491,7 @@ updateIndexedDb currentDate nurseId msg model =
                                     nextPage =
                                         case relation of
                                             Just id ->
-                                                RelationshipPage personId id
+                                                RelationshipPage id personId
 
                                             Nothing ->
                                                 PersonPage personId
