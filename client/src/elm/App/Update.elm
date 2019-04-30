@@ -173,17 +173,6 @@ update msg model =
             updateLoggedIn
                 (\data ->
                     case loggedInMsg of
-                        MsgBackend subMsg ->
-                            let
-                                ( backend, cmd ) =
-                                    -- TODO: delete this
-                                    Backend.Update.updateBackend "" "" subMsg data.backend
-                            in
-                            ( { data | backend = backend }
-                            , Cmd.map (MsgLoggedIn << MsgBackend) cmd
-                            , []
-                            )
-
                         MsgPageCreatePerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =

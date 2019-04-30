@@ -122,8 +122,7 @@ it at the appropriate moment.
 
 -}
 type alias LoggedInModel =
-    { backend : Backend.Model.ModelBackend
-    , createPersonPage : Pages.Person.Model.Model
+    { createPersonPage : Pages.Person.Model.Model
     , relationshipPages : EveryDict ( PersonId, PersonId ) Pages.Relationship.Model.Model
 
     -- The nurse who has logged in.
@@ -136,8 +135,7 @@ type alias LoggedInModel =
 
 emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel nurse =
-    { backend = Backend.Model.emptyModelBackend
-    , createPersonPage = Pages.Person.Model.emptyModel
+    { createPersonPage = Pages.Person.Model.emptyModel
     , relationshipPages = EveryDict.empty
     , nurse = nurse
     , sessionPages = EveryDict.empty
@@ -176,8 +174,7 @@ type Msg
 {-| Messages we can only handle if we're logged in.
 -}
 type MsgLoggedIn
-    = MsgBackend Backend.Model.MsgBackend
-    | MsgPageCreatePerson Pages.Person.Model.Msg
+    = MsgPageCreatePerson Pages.Person.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
 

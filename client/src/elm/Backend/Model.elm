@@ -1,4 +1,4 @@
-module Backend.Model exposing (ModelBackend, ModelIndexedDb, MsgBackend(..), MsgIndexedDb(..), Participants, Revision(..), TrainingSessionAction(..), TrainingSessionRequest, emptyModelBackend, emptyModelIndexedDb)
+module Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..), Participants, Revision(..), emptyModelIndexedDb)
 
 {-| The `Backend` hierarchy is for code that represents entities from the
 backend. It is reponsible for fetching them, saving them, etc.
@@ -35,40 +35,6 @@ import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import RemoteData exposing (RemoteData(..), WebData)
-
-
-{-| This model basically represents things we have locally which also belong
-on the backend. So, conceptually it is a kind of a local cache of some of the
-things on the backend.
--}
-type alias ModelBackend =
-    -- Tracks a request to create a new session.
-    { postSessionRequest : WebData ( SessionId, Session )
-
-    -- Tracks a request to handle training session actions. Note that the
-    -- backend currently doesn't supply a key, so we don't track one here.
-    -- (That might change if the backend actually queued these requests, rather
-    -- than processing them immediately).
-    , postTrainingSessionRequest : WebData TrainingSessionRequest
-    }
-
-
-emptyModelBackend : ModelBackend
-emptyModelBackend =
-    { postSessionRequest = NotAsked
-    , postTrainingSessionRequest = NotAsked
-    }
-
-
-{-| These are all the messages related to getting things from the backend and
-putting things back into the backend.
--}
-type MsgBackend
-    = PostSession Session
-    | PostTrainingSessionRequest TrainingSessionRequest
-    | HandlePostedSession (WebData ( SessionId, Session ))
-    | HandleTrainingSessionResponse (WebData TrainingSessionRequest)
-    | ResetSessionRequests
 
 
 type alias Participants =
@@ -263,37 +229,3 @@ type Revision
     | RelationshipRevision RelationshipId Relationship
     | SessionRevision SessionId Session
     | WeightRevision WeightId Weight
-
-
-{-| This represents a request sent to `/api/training_sessions`, which is an
-endpoint that represents certain actions that can be taken with respect to
-training sessions as a whole. So, "creating" a request there is like queueing
-up an action for the backend to take.
-
-As a simplification, the backend currently executes the action immediately, but
-you might imagine it queuing it up, in which case we could have an ID field
-here, to use in future requests. (For instance, DELETE might cancel the
-request).
-
--}
-type alias TrainingSessionRequest =
-    { action : TrainingSessionAction
-    }
-
-
-{-| An action we can ask `/api/training_sessions` to perform.
-
-  - CreateAll will create a new training session, for today, for every clinic
-    that doesn't already have a training session starting today.
-
-  - DeleteAll will delete all training sessions.
-
-A training session is just like a regular session, except that you can delete
-it with `DeleteAll` here. So, it facilitates having some "permanent" sessions
-(for pre-existing data), and some sessions you create and delete as training
-occurs.
-
--}
-type TrainingSessionAction
-    = CreateAll
-    | DeleteAll

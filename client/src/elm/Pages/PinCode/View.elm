@@ -2,7 +2,6 @@ module Pages.PinCode.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.Nurse.Model exposing (Nurse, Role(..))
-import EverySet
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)

@@ -1,4 +1,4 @@
-module Backend.Update exposing (updateBackend, updateIndexedDb)
+module Backend.Update exposing (updateIndexedDb)
 
 import App.Model
 import Backend.Child.Encoder exposing (encodeMotherField)
@@ -11,7 +11,6 @@ import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements)
-import Config.Model exposing (BackendUrl)
 import Dict
 import EveryDict
 import EveryDictList
@@ -23,7 +22,6 @@ import Pages.Relationship.Model
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityUuid, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityUuid, endpoint, fromEntityUuid, toCmd, toEntityUuid, toTask, withKeyEncoder, withParamsEncoder, withValueEncoder, withoutDecoder)
 import Task
-import Utils.WebData exposing (resetError, resetSuccess)
 
 
 updateIndexedDb : NominalDate -> Maybe NurseId -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
@@ -724,51 +722,3 @@ handleRevision revision model =
                 data.participantId
                 (\measurements -> { measurements | weights = EveryDictList.insert uuid data measurements.weights })
                 model
-
-
-updateBackend : BackendUrl -> String -> MsgBackend -> ModelBackend -> ( ModelBackend, Cmd MsgBackend )
-updateBackend backendUrl accessToken msg model =
-    let
-        crud =
-            applyBackendUrl backendUrl
-                |> applyAccessToken accessToken
-    in
-    case msg of
-        PostSession session ->
-            ( { model | postSessionRequest = Loading }
-            , crud.post sessionEndpoint session
-                |> toCmd (RemoteData.fromResult >> HandlePostedSession)
-            )
-
-        PostTrainingSessionRequest request ->
-            ( { model | postTrainingSessionRequest = Loading }
-            , crud.post trainingSessionsEndpoint request
-                -- We use the Tuple.second becausw we're only interested the
-                -- value ... the backend doesn't (currently) send a key.
-                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.second >> HandleTrainingSessionResponse)
-            )
-
-        HandleTrainingSessionResponse webdata ->
-            let
-                newModel =
-                    { model | postTrainingSessionRequest = webdata }
-            in
-            ( newModel, Cmd.none )
-
-        HandlePostedSession webdata ->
-            let
-                newModel =
-                    { model | postSessionRequest = webdata }
-            in
-            ( newModel, Cmd.none )
-
-        ResetSessionRequests ->
-            -- Reset session requests to `NotAsked` if `Error` or `Success`.
-            -- This is for requests where we're showing an  indication in the
-            -- UI, and we want to stop doing that at certain moments.
-            ( { model
-                | postSessionRequest = resetError <| resetSuccess model.postSessionRequest
-                , postTrainingSessionRequest = resetError <| resetSuccess model.postTrainingSessionRequest
-              }
-            , Cmd.none
-            )

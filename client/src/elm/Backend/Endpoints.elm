@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (ChildParams, MotherParams, NurseParams, PersonParams, RelationshipParams, SessionParams(..), attendanceEndpoint, childEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeChildParams, encodeMotherParams, encodeNurseParams, encodePersonParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, motherEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, relationshipEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, trainingSessionsEndpoint, weightEndpoint)
+module Backend.Endpoints exposing (ChildParams, MotherParams, NurseParams, PersonParams, RelationshipParams, SessionParams(..), attendanceEndpoint, childEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeChildParams, encodeMotherParams, encodeNurseParams, encodePersonParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, motherEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, relationshipEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, weightEndpoint)
 
 import Backend.Child.Decoder exposing (decodeChild)
 import Backend.Child.Encoder exposing (encodeChild)
@@ -15,7 +15,6 @@ import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Measurement.Decoder exposing (..)
 import Backend.Measurement.Encoder exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Model exposing (TrainingSessionRequest)
 import Backend.Mother.Decoder exposing (decodeMother)
 import Backend.Mother.Encoder exposing (encodeMother)
 import Backend.Mother.Model exposing (Mother)
@@ -30,8 +29,8 @@ import Backend.Person.Model exposing (Person)
 import Backend.Relationship.Decoder exposing (decodeRelationship)
 import Backend.Relationship.Encoder exposing (encodeRelationship)
 import Backend.Relationship.Model exposing (Relationship)
-import Backend.Session.Decoder exposing (decodeSession, decodeTrainingSessionRequest)
-import Backend.Session.Encoder exposing (encodeSession, encodeTrainingSessionRequest)
+import Backend.Session.Decoder exposing (decodeSession)
+import Backend.Session.Encoder exposing (encodeSession)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.SyncData.Decoder exposing (decodeSyncData)
 import Backend.SyncData.Encoder exposing (encodeSyncData)
@@ -282,15 +281,3 @@ sessionEndpoint =
     swEndpoint "nodes/session" decodeSession
         |> withValueEncoder (object << encodeSession)
         |> withParamsEncoder encodeSessionParams
-
-
-trainingSessionsEndpoint : ReadWriteEndPoint Error () TrainingSessionRequest TrainingSessionRequest ()
-trainingSessionsEndpoint =
-    -- This one is a little different because we're not expecting a key. So, we
-    -- just decode the key successfully as `()`. We can't use `drupalEndpont`
-    -- directly, because it assumes the key is some kind of `EntityId` (which
-    -- is normally convenient). This could change in future if the backend
-    -- were to queue the request and give it an ID, instead of executing it
-    -- immediately.
-    endpoint "api/training_session_actions" (succeed ()) decodeTrainingSessionRequest drupalBackend
-        |> withValueEncoder encodeTrainingSessionRequest
