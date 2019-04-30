@@ -103,9 +103,6 @@ type alias ModelIndexedDb =
     -- Track requests to mutate data
     , postPerson : WebData PersonId
     , postRelationship : EveryDict PersonId (WebData MyRelationship)
-    , postChild : WebData ChildId
-    , postMother : WebData MotherId
-    , setMotherOfChild : EveryDict ( ChildId, MotherId ) (WebData ())
     }
 
 
@@ -126,8 +123,6 @@ emptyModelIndexedDb =
     , participantForms = NotAsked
     , people = EveryDict.empty
     , personSearches = Dict.empty
-    , postChild = NotAsked
-    , postMother = NotAsked
     , postPerson = NotAsked
     , postRelationship = EveryDict.empty
     , relationshipsByPerson = EveryDict.empty
@@ -135,7 +130,6 @@ emptyModelIndexedDb =
     , sessionRequests = EveryDict.empty
     , sessions = EveryDict.empty
     , sessionsByClinic = EveryDict.empty
-    , setMotherOfChild = EveryDict.empty
     , syncData = NotAsked
     }
 
@@ -180,16 +174,10 @@ type MsgIndexedDb
     | HandleFetchedSessionsByClinic ClinicId (WebData (EveryDictList SessionId Session))
     | HandleFetchedSyncData (WebData (EveryDictList HealthCenterId SyncData))
       -- Messages which mutate data
-    | PostChild Child
-    | PostMother Mother (Maybe ChildId) -- The child is an existing child whose mother this is.
-    | SetMotherOfChild ChildId MotherId
     | PostPerson (Maybe PersonId) Person -- The first person is a person we ought to offer setting a relationship to.
     | PostRelationship PersonId MyRelationship
       -- Messages which handle responses to mutating data
-    | HandlePostChild (WebData ChildId)
-    | HandlePostMother (WebData MotherId)
     | HandlePostedPerson (Maybe PersonId) (WebData PersonId)
-    | HandleSetMotherOfChild ChildId MotherId (WebData ())
     | HandlePostedRelationship PersonId (WebData MyRelationship)
       -- Process some revisions we've received from the backend. In some cases,
       -- we can update our in-memory structures appropriately. In other cases, we
@@ -210,7 +198,6 @@ type Revision
     = AttendanceRevision AttendanceId Attendance
     | CatchmentAreaRevision CatchmentAreaId CatchmentArea
     | ChildNutritionRevision ChildNutritionId ChildNutrition
-    | ChildRevision ChildId Child
     | ClinicRevision ClinicId Clinic
     | CounselingScheduleRevision CounselingScheduleId CounselingSchedule
     | CounselingSessionRevision CounselingSessionId CounselingSession
@@ -218,7 +205,6 @@ type Revision
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
     | HealthCenterRevision HealthCenterId HealthCenter
     | HeightRevision HeightId Height
-    | MotherRevision MotherId Mother
     | MuacRevision MuacId Muac
     | NurseRevision NurseId Nurse
     | ParticipantConsentRevision ParticipantConsentId ParticipantConsent

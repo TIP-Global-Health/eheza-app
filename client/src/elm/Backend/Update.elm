@@ -1,7 +1,6 @@
 module Backend.Update exposing (updateIndexedDb)
 
 import App.Model
-import Backend.Child.Encoder exposing (encodeMotherField)
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
@@ -379,19 +378,6 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
-        PostChild child ->
-            ( { model | postChild = Loading }
-            , sw.post childEndpoint child
-                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostChild)
-            , []
-            )
-
-        HandlePostChild data ->
-            ( { model | postChild = data }
-            , Cmd.none
-            , []
-            )
-
         PostRelationship personId myRelationship ->
             let
                 normalized =
@@ -509,53 +495,6 @@ updateIndexedDb currentDate nurseId msg model =
             , appMsgs
             )
 
-        PostMother mother maybeChildId ->
-            let
-                motherTask =
-                    sw.post motherEndpoint mother
-                        |> toTask
-                        |> Task.map Tuple.first
-
-                childTask motherId =
-                    case maybeChildId of
-                        Just childId ->
-                            object [ encodeMotherField (Just motherId) ]
-                                |> sw.patchAny childEndpoint childId
-                                |> toTask
-                                |> Task.map (always motherId)
-
-                        Nothing ->
-                            Task.succeed motherId
-            in
-            ( { model | postMother = Loading }
-            , motherTask
-                |> Task.andThen childTask
-                |> RemoteData.fromTask
-                |> Task.perform HandlePostMother
-            , []
-            )
-
-        HandlePostMother data ->
-            ( { model | postMother = data }
-            , Cmd.none
-            , []
-            )
-
-        SetMotherOfChild childId motherId ->
-            ( { model | setMotherOfChild = EveryDict.insert ( childId, motherId ) Loading model.setMotherOfChild }
-            , object [ encodeMotherField (Just motherId) ]
-                |> sw.patchAny childEndpoint childId
-                |> withoutDecoder
-                |> toCmd (RemoteData.fromResult >> HandleSetMotherOfChild childId motherId)
-            , []
-            )
-
-        HandleSetMotherOfChild childId motherId data ->
-            ( { model | setMotherOfChild = EveryDict.insert ( childId, motherId ) data model.setMotherOfChild }
-            , Cmd.none
-            , []
-            )
-
 
 handleRevision : Revision -> ModelIndexedDb -> ModelIndexedDb
 handleRevision revision model =
@@ -568,36 +507,6 @@ handleRevision revision model =
 
         CatchmentAreaRevision uuid data ->
             model
-
-        ChildRevision uuid data ->
-            -- Some of these we currently just invalidate, to let the query run
-            -- again.  Others we adjust directly. We could do more of that, as
-            -- an optimization.
-            let
-                -- Update with a Success value, but only if we've asked for it.
-                children =
-                    EveryDict.update uuid (Maybe.map (always (Success data))) model.children
-
-                -- First, we remove this child from all mothers, and then add
-                -- it to the correct mother (if we have data for that mother).
-                childrenOfMother =
-                    model.childrenOfMother
-                        |> EveryDict.map (always (RemoteData.map (EveryDict.remove uuid)))
-                        |> (case data.motherId of
-                                Nothing ->
-                                    identity
-
-                                Just motherId ->
-                                    EveryDict.update motherId (Maybe.map (RemoteData.map (EveryDict.insert uuid data)))
-                           )
-            in
-            { model
-                | expectedParticipants = EveryDict.empty
-                , expectedSessions = EveryDict.remove uuid model.expectedSessions
-                , nameSearches = Dict.empty
-                , children = children
-                , childrenOfMother = childrenOfMother
-            }
 
         ChildNutritionRevision uuid data ->
             mapChildMeasurements
@@ -643,20 +552,6 @@ handleRevision revision model =
                 data.participantId
                 (\measurements -> { measurements | heights = EveryDictList.insert uuid data measurements.heights })
                 model
-
-        MotherRevision uuid data ->
-            -- We'll need to refetch the expected participants, at least for now ... eventually
-            -- we might be able to do something smaller.
-            let
-                mothers =
-                    EveryDict.update uuid (Maybe.map (always (Success data))) model.mothers
-            in
-            { model
-                | expectedParticipants = EveryDict.empty
-                , expectedSessions = EveryDict.empty
-                , nameSearches = Dict.empty
-                , mothers = mothers
-            }
 
         MuacRevision uuid data ->
             mapChildMeasurements
