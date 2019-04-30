@@ -655,14 +655,14 @@ viewCreateForm language currentDate relation personForm request =
             ]
     in
     div
-        [ class "wrap wrap-alt-2" ]
+        [ class "page-person-create" ]
         [ header
         , div
             [ class "ui full segment blue" ]
             [ div
                 [ class "content" ]
                 [ div
-                    [ class "wrap-list registration-page form" ]
+                    [ class "registration-page form" ]
                     [ div
                         [ classList
                             [ ( "ui form registration", True )
