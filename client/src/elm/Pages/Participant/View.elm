@@ -59,11 +59,9 @@ viewFoundChild : Language -> NominalDate -> ZScore.Model.Model -> ( PersonId, Pe
 viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, session ) pages model =
     let
         maybeMother =
-            Debug.crash "todo"
+            getMyMother childId session.offlineSession
+                |> Maybe.map Tuple.second
 
-        {- child.motherId
-           |> Maybe.andThen (\motherId -> getMother motherId session.offlineSession)
-        -}
         motherInfo =
             maybeMother
                 |> Maybe.map (\mother -> text <| translate language <| Translate.MotherName mother.name)
