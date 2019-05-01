@@ -286,18 +286,19 @@ viewCreateForm language currentDate relation personForm request =
         birthDateField =
             Form.getFieldAsString Backend.Person.Form.birthDate personForm
 
+        birthDateEstimatedField =
+            Form.getFieldAsBool Backend.Person.Form.birthDateEstimated personForm
+
         birthDateInput =
             div [ class "ui grid" ]
                 [ div
-                    [ classList
-                        [ ( "six wide column", True )
-                        , ( "required", True )
-                        ]
-                    ]
-                    [ text <| translate language Translate.DateOfBirth ++ ":" ]
+                    [ class "six wide column" ]
+                    []
                 , div
-                    [ class "ten wide column" ]
-                    [ dateInput birthDateField
+                    [ class "seven wide column required" ]
+                    [ text <| translate language Translate.DateOfBirth ++ ":"
+                    , br [] []
+                    , dateInput birthDateField
                         [ classList
                             [ ( "error", isJust birthDateField.liveError )
                             , ( "field", True )
@@ -307,23 +308,11 @@ viewCreateForm language currentDate relation personForm request =
                             |> value
                         ]
                     ]
-                ]
-
-        birthDateEstimatedField =
-            Form.getFieldAsBool Backend.Person.Form.birthDateEstimated personForm
-
-        birthDateEstimatedInput =
-            div [ class "ui grid" ]
-                [ div
-                    [ classList
-                        [ ( "six wide column", True )
-                        , ( "required", True )
-                        ]
-                    ]
-                    [ text <| translate language Translate.Estimated ++ ":" ]
                 , div
-                    [ class "ten wide column" ]
-                    [ Form.Input.checkboxInput birthDateEstimatedField
+                    [ class "three wide column required" ]
+                    [ text <| translate language Translate.Estimated ++ ":"
+                    , br [] []
+                    , Form.Input.checkboxInput birthDateEstimatedField
                         [ classList
                             [ ( "error", isJust birthDateEstimatedField.liveError )
                             , ( "field", True )
@@ -414,7 +403,6 @@ viewCreateForm language currentDate relation personForm request =
                     , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
                     , viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
                     , birthDateInput
-                    , birthDateEstimatedInput
                     , genderInput
                     , viewSelectInput language Translate.LevelOfEducationLabel educationLevelOptions Backend.Person.Form.educationLevel "ten" "select-input" True personForm
                     , viewSelectInput language Translate.MaritalStatusLabel maritalStatusOptions Backend.Person.Form.maritalStatus "ten" "select-input" True personForm
@@ -607,7 +595,7 @@ viewCreateForm language currentDate relation personForm request =
         submitButton =
             button
                 [ classList
-                    [ ( "ui button primary", True )
+                    [ ( "ui button primary fluid", True )
                     , ( "loading", RemoteData.isLoading request )
                     , ( "disabled", RemoteData.isLoading request )
                     ]
@@ -640,6 +628,7 @@ viewCreateForm language currentDate relation personForm request =
             , contactInformationFields
                 |> fieldset [ class "registration-form address-info" ]
                 |> Html.map (MsgForm relation)
+            , p [] []
             , submitButton
                 |> Html.map (MsgForm relation)
 
