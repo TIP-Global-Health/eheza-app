@@ -38,16 +38,15 @@ getMother motherId session =
 
 getMyMother : PersonId -> OfflineSession -> Maybe ( PersonId, Person )
 getMyMother childId session =
-    {-
-       getChild childId session
-           |> Maybe.andThen .motherId
-           |> Maybe.andThen
-               (\motherId ->
-                   getMother motherId session
-                       |> Maybe.map (\mother -> ( motherId, mother ))
-               )
-    -}
-    Debug.crash "todo"
+    session.participants
+        |> EveryDictList.values
+        |> List.filter (\value -> value.child == childId)
+        |> List.head
+        |> Maybe.andThen
+            (\participant ->
+                EveryDictList.get participant.adult session.mothers
+                    |> Maybe.map (\person -> ( participant.adult, person ))
+            )
 
 
 getChildHistoricalMeasurements : PersonId -> OfflineSession -> ChildMeasurementList
