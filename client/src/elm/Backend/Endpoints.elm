@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (NurseParams, PersonParams, RelationshipParams, SessionParams(..), attendanceEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeNurseParams, encodePersonParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, relationshipEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, weightEndpoint)
+module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams, RelationshipParams, SessionParams(..), attendanceEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, relationshipEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, weightEndpoint)
 
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
@@ -20,6 +20,9 @@ import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Decoder exposing (decodePerson)
 import Backend.Person.Encoder exposing (encodePerson)
 import Backend.Person.Model exposing (Person)
+import Backend.PmtctParticipant.Decoder exposing (decodePmtctParticipant)
+import Backend.PmtctParticipant.Encoder exposing (encodePmtctParticipant)
+import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Decoder exposing (decodeRelationship)
 import Backend.Relationship.Encoder exposing (encodeRelationship)
 import Backend.Relationship.Model exposing (Relationship)
@@ -231,3 +234,21 @@ sessionEndpoint =
     swEndpoint "nodes/session" decodeSession
         |> withValueEncoder (object << encodeSession)
         |> withParamsEncoder encodeSessionParams
+
+
+type alias PmtctParticipantParams =
+    { session : SessionId
+    }
+
+
+encodePmtctParticipantParams : PmtctParticipantParams -> List ( String, String )
+encodePmtctParticipantParams params =
+    [ ( "session", fromEntityUuid params.session )
+    ]
+
+
+pmtctParticipantEndpoint : ReadWriteEndPoint Error PmtctParticipantId PmtctParticipant PmtctParticipant PmtctParticipantParams
+pmtctParticipantEndpoint =
+    swEndpoint "nodes/pmtct_participant" decodePmtctParticipant
+        |> withValueEncoder encodePmtctParticipant
+        |> withParamsEncoder encodePmtctParticipantParams

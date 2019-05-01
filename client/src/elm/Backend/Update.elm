@@ -83,27 +83,11 @@ updateIndexedDb currentDate nurseId msg model =
             )
 
         FetchExpectedParticipants sessionId ->
-            {-
-               let
-                   childTask =
-                       sw.select childEndpoint { session = Just sessionId, nameContains = Nothing, mother = Nothing }
-                           |> toTask
-                           |> Task.map (.items >> EveryDictList.fromList)
-                           |> RemoteData.fromTask
-
-                   motherTask =
-                       sw.select motherEndpoint { session = Just sessionId, nameContains = Nothing }
-                           |> toTask
-                           |> Task.map (.items >> EveryDictList.fromList)
-                           |> RemoteData.fromTask
-               in
-               ( { model | expectedParticipants = EveryDict.insert sessionId Loading model.expectedParticipants }
-               , Task.map2 (RemoteData.map2 Participants) childTask motherTask
-                   |> Task.perform (HandleFetchedExpectedParticipants sessionId)
-               , []
-               )
-            -}
-            Debug.crash "todo"
+            ( { model | expectedParticipants = EveryDict.insert sessionId Loading model.expectedParticipants }
+            , sw.select pmtctParticipantEndpoint { session = sessionId }
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedExpectedParticipants sessionId)
+            , []
+            )
 
         HandleFetchedExpectedParticipants sessionId data ->
             ( { model | expectedParticipants = EveryDict.insert sessionId data model.expectedParticipants }
