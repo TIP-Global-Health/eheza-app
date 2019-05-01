@@ -166,6 +166,7 @@ makeOfflineSession test =
     { session = session sessionDate
     , allParticipantForms = EveryDictList.empty -- not relevant
     , everyCounselingSchedule = EveryDict.empty -- not relevant
+    , participants = EveryDictList.empty
     , mothers = EveryDictList.empty -- not relevant
     , children = makeChildren test
     , historicalMeasurements = makeHistoricalMeasurements test

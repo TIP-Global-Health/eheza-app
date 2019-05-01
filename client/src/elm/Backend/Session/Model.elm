@@ -17,6 +17,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
+import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDateRange)
@@ -54,9 +55,12 @@ type alias OfflineSession =
     , allParticipantForms : EveryDictList ParticipantFormId ParticipantForm
     , everyCounselingSchedule : EveryCounselingSchedule
 
-    -- We'll sort by mother's name. The children's sort order doesn't really
-    -- mean anything, but it's easier to work with mothers and children as
-    -- "participants" if we're using the same structure here for both.
+    -- This reflects everyone who is expected at the session, given the
+    -- session's date and group.
+    , participants : EveryDictList PmtctParticipantId PmtctParticipant
+
+    -- These reflect the `Person` record for each person included in
+    -- `participants`.
     , mothers : EveryDictList PersonId Person
     , children : EveryDictList PersonId Person
 

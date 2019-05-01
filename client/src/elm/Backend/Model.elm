@@ -1,4 +1,4 @@
-module Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..), Participants, Revision(..), emptyModelIndexedDb)
+module Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..), Revision(..), emptyModelIndexedDb)
 
 {-| The `Backend` hierarchy is for code that represents entities from the
 backend. It is reponsible for fetching them, saving them, etc.
@@ -33,12 +33,6 @@ import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import RemoteData exposing (RemoteData(..), WebData)
-
-
-type alias Participants =
-    { children : EveryDictList PersonId Person
-    , mothers : EveryDictList PersonId Person
-    }
 
 
 {-| This tracks data we fetch from IndexedDB via the service worker. Gradually, we'll
@@ -76,7 +70,7 @@ type alias ModelIndexedDb =
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
-    , expectedParticipants : EveryDict SessionId (WebData Participants)
+    , expectedParticipants : EveryDict SessionId (WebData (EveryDictList PmtctParticipantId PmtctParticipant))
 
     -- Measurement data for children and mothers. From this, we can construct
     -- the things we need for an `EditableSession` or for use on the progress
@@ -145,7 +139,7 @@ type MsgIndexedDb
     | HandleFetchedEveryCounselingSchedule (WebData EveryCounselingSchedule)
     | HandleFetchedMotherMeasurements PersonId (WebData MotherMeasurementList)
     | HandleFetchedClinics (WebData (EveryDictList ClinicId Clinic))
-    | HandleFetchedExpectedParticipants SessionId (WebData Participants)
+    | HandleFetchedExpectedParticipants SessionId (WebData (EveryDictList PmtctParticipantId PmtctParticipant))
     | HandleFetchedExpectedSessions PersonId (WebData (EveryDictList SessionId Session))
     | HandleFetchedHealthCenters (WebData (EveryDictList HealthCenterId HealthCenter))
     | HandleFetchedParticipantForms (WebData (EveryDictList ParticipantFormId ParticipantForm))

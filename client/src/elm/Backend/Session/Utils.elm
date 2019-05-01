@@ -120,15 +120,39 @@ makeEditableSession sessionId db =
         everyCounselingScheduleData =
             db.everyCounselingSchedule
 
-        participantData =
+        participantsData =
             EveryDict.get sessionId db.expectedParticipants
                 |> Maybe.withDefault NotAsked
 
         mothersData =
-            RemoteData.map .mothers participantData
+            RemoteData.andThen
+                (\participants ->
+                    EveryDictList.values participants
+                        |> List.map
+                            (\participant ->
+                                EveryDict.get participant.adult db.people
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.map (\data -> ( participant.adult, data ))
+                            )
+                        |> RemoteData.fromList
+                        |> RemoteData.map (EveryDictList.fromList >> EveryDictList.sortBy .name)
+                )
+                participantsData
 
         childrenData =
-            RemoteData.map .children participantData
+            RemoteData.andThen
+                (\participants ->
+                    EveryDictList.values participants
+                        |> List.map
+                            (\participant ->
+                                EveryDict.get participant.child db.people
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.map (\data -> ( participant.child, data ))
+                            )
+                        |> RemoteData.fromList
+                        |> RemoteData.map EveryDictList.fromList
+                )
+                participantsData
 
         childMeasurementListData =
             RemoteData.andThen
@@ -145,7 +169,7 @@ makeEditableSession sessionId db =
                 )
                 childrenData
 
-        motherMeasurementListData =
+        adultMeasurementListData =
             RemoteData.andThen
                 (\mothers ->
                     EveryDictList.keys mothers
@@ -163,11 +187,11 @@ makeEditableSession sessionId db =
         childMeasurementsSplitData =
             RemoteData.map (splitChildMeasurements sessionId) childMeasurementListData
 
-        motherMeasurementsSplitData =
-            RemoteData.map (splitMotherMeasurements sessionId) motherMeasurementListData
+        adultMeasurementsSplitData =
+            RemoteData.map (splitMotherMeasurements sessionId) adultMeasurementListData
 
         historicalMeasurementData =
-            RemoteData.map2 HistoricalMeasurements motherMeasurementListData childMeasurementListData
+            RemoteData.map2 HistoricalMeasurements adultMeasurementListData childMeasurementListData
 
         currentAndPrevious =
             RemoteData.map2
@@ -183,7 +207,7 @@ makeEditableSession sessionId db =
                     }
                 )
                 childMeasurementsSplitData
-                motherMeasurementsSplitData
+                adultMeasurementsSplitData
 
         currentMeasurementData =
             RemoteData.map .current currentAndPrevious
@@ -195,6 +219,7 @@ makeEditableSession sessionId db =
             RemoteData.map OfflineSession sessionData
                 |> RemoteData.andMap allParticipantFormsData
                 |> RemoteData.andMap everyCounselingScheduleData
+                |> RemoteData.andMap participantsData
                 |> RemoteData.andMap mothersData
                 |> RemoteData.andMap childrenData
                 |> RemoteData.andMap historicalMeasurementData
