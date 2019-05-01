@@ -35,6 +35,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
+import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (..)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMyMother)
 import EveryDict exposing (EveryDict)
@@ -396,30 +397,27 @@ whether we would expect to perform this action if checked in.
 -}
 expectMotherActivity : EditableSession -> PersonId -> MotherActivity -> Bool
 expectMotherActivity session motherId activity =
-    Debug.crash "todo"
+    session.offlineSession.participants
+        |> EveryDictList.values
+        |> List.filter (\value -> value.adult == motherId)
+        |> List.head
+        |> Maybe.map
+            (\participant ->
+                case activity of
+                    FamilyPlanning ->
+                        case participant.adultActivities of
+                            MotherActivities ->
+                                True
 
-
-
-{-
-   getMother motherId session.offlineSession
-       |> Maybe.map
-           (\mother ->
-               case activity of
-                   FamilyPlanning ->
-                       case mother.relation of
-                           MotherRelation ->
-                               True
-
-                           CaregiverRelation ->
-                               False
-            {- ParticipantConsent ->
-               expectParticipantConsent session motherId
-                   |> EveryDictList.isEmpty
-                   |> not
-            -}
-           )
-       |> Maybe.withDefault False
--}
+                            CaregiverActivities ->
+                                False
+             {- ParticipantConsent ->
+                expectParticipantConsent session motherId
+                    |> EveryDictList.isEmpty
+                    |> not
+             -}
+            )
+        |> Maybe.withDefault False
 
 
 {-| Which participant forms would we expect this mother to consent to in this session?
