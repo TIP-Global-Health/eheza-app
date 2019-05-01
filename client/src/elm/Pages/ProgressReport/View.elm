@@ -6,8 +6,9 @@ import Backend.Measurement.Model exposing (ChildMeasurementList, Height, HeightI
 import Backend.Measurement.Utils exposing (currentValue, currentValueWithId, mapMeasurementData, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Gender(..), Person)
+import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (EditableSession, Session)
-import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother)
+import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother, getMyMother)
 import EveryDict
 import EveryDictList exposing (EveryDictList)
 import EverySet
@@ -100,29 +101,24 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                 ]
 
         maybeMother =
-            Debug.crash "todo"
+            getMyMother childId session.offlineSession
+                |> Maybe.map Tuple.second
 
-        {-
-           child.motherId
-               |> Maybe.andThen (\motherId -> getMother motherId session.offlineSession)
-        -}
         relationText =
-            Debug.crash "todo"
+            session.offlineSession.participants
+                |> EveryDictList.filter (\_ participant -> participant.child == childId)
+                |> EveryDictList.head
+                |> Maybe.map
+                    (\( _, participant ) ->
+                        case participant.adultActivities of
+                            MotherActivities ->
+                                Translate.ChildOf
 
-        {-
-           maybeMother
-               |> Maybe.map .relation
-               -- In case if mother is Nothing, we will show `Child of`.
-               |> Maybe.withDefault MotherRelation
-               |> (\relation ->
-                       case relation of
-                           MotherRelation ->
-                               Translate.ChildOf
+                            CaregiverActivities ->
+                                Translate.TakenCareOfBy
+                    )
+                |> Maybe.withDefault Translate.ChildOf
 
-                           CaregiverRelation ->
-                               Translate.TakenCareOfBy
-                  )
-        -}
         childInfo =
             div
                 [ class "ui report unstackable items" ]
