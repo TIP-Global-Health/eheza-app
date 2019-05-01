@@ -748,36 +748,30 @@ any completed activity?
 -}
 getCheckedIn : EditableSession -> { mothers : EveryDictList PersonId Person, children : EveryDictList PersonId Person }
 getCheckedIn session =
-    Debug.crash "todo"
+    let
+        -- A mother is checked in if explicitly checked in or has any completed
+        -- activites.
+        mothers =
+            EveryDictList.filter
+                (\motherId _ ->
+                    motherIsCheckedIn motherId session
+                        || motherOrAnyChildHasAnyCompletedActivity motherId session
+                )
+                session.offlineSession.mothers
 
-
-
-{-
-   let
-       -- A mother is checked in if explicitly checked in or has any completed
-       -- activites.
-       mothers =
-           EveryDictList.filter
-               (\motherId _ ->
-                   motherIsCheckedIn motherId session
-                       || motherOrAnyChildHasAnyCompletedActivity motherId session
-               )
-               session.offlineSession.mothers
-
-       -- A child is checked in if the mother is checked in.
-       children =
-           EveryDictList.filter
-               (\_ child ->
-                   child.motherId
-                       |> Maybe.map (\motherId -> EveryDictList.member motherId mothers)
-                       |> Maybe.withDefault False
-               )
-               session.offlineSession.children
-   in
-   { mothers = mothers
-   , children = children
-   }
--}
+        -- A child is checked in if the mother is checked in.
+        children =
+            EveryDictList.filter
+                (\childId _ ->
+                    getMyMother childId session.offlineSession
+                        |> Maybe.map (\( motherId, _ ) -> EveryDictList.member motherId mothers)
+                        |> Maybe.withDefault False
+                )
+                session.offlineSession.children
+    in
+    { mothers = mothers
+    , children = children
+    }
 
 
 {-| Does the mother herself have any completed activity?
