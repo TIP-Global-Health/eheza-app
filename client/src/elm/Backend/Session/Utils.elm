@@ -18,12 +18,14 @@ import Time.Date
 -}
 getChildren : PersonId -> OfflineSession -> List ( PersonId, Person )
 getChildren motherId session =
-    {-
-       session.children
-           |> EveryDictList.filter (\_ child -> child.motherId == Just motherId)
-           |> EveryDictList.toList
-    -}
-    Debug.crash "todo"
+    session.participants
+        |> EveryDictList.filter (\_ participant -> participant.adult == motherId)
+        |> EveryDictList.values
+        |> List.filterMap
+            (\participant ->
+                EveryDictList.get participant.child session.children
+                    |> Maybe.map (\child -> ( participant.child, child ))
+            )
 
 
 getChild : PersonId -> OfflineSession -> Maybe Person
