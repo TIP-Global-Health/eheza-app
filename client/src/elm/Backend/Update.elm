@@ -506,8 +506,14 @@ handleRevision revision model =
                 model
 
         PmtctParticipantRevision uuid data ->
-            -- TODO
-            model
+            { model
+                | expectedSessions =
+                    model.expectedSessions
+                        |> EveryDict.remove data.child
+                        |> EveryDict.remove data.adult
+                , expectedParticipants =
+                    EveryDict.empty
+            }
 
         RelationshipRevision uuid data ->
             { model | relationshipsByPerson = EveryDict.empty }
