@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * hedley_schedule.features.field_instance.inc
@@ -994,56 +995,11 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-session-field_closed'.
-  $field_instances['node-session-field_closed'] = array(
-    'bundle' => 'session',
-    'default_value' => array(
-      0 => array(
-        'value' => 0,
-      ),
-    ),
-    'deleted' => 0,
-    'description' => 'Has the session been explicitly closed by the user?',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 2,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_closed',
-    'label' => 'Closed',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(
-        'display_label' => 1,
-      ),
-      'type' => 'options_onoff',
-      'weight' => -1,
-    ),
-  );
-
   // Exported field_instance: 'node-session-field_scheduled_date'.
   $field_instances['node-session-field_scheduled_date'] = array(
     'bundle' => 'session',
     'deleted' => 0,
-    'description' => 'The start date is the date on which the data entry is scheduled.
-
-The end date is the last day on which data entry will be allowed for this session through the client app (for editing, or measurements that are taken later). After this date, the session will be considered closed.',
+    'description' => 'The dates the session was active.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -1072,7 +1028,7 @@ The end date is the last day on which data entry will be allowed for this sessio
     'required' => 1,
     'settings' => array(
       'default_value' => 'now',
-      'default_value2' => 'same',
+      'default_value2' => 'blank',
       'default_value_code' => '',
       'default_value_code2' => '',
       'user_register_form' => FALSE,
@@ -1091,51 +1047,6 @@ The end date is the last day on which data entry will be allowed for this sessio
       ),
       'type' => 'date_select',
       'weight' => -4,
-    ),
-  );
-
-  // Exported field_instance: 'node-session-field_training'.
-  $field_instances['node-session-field_training'] = array(
-    'bundle' => 'session',
-    'default_value' => array(
-      0 => array(
-        'value' => 0,
-      ),
-    ),
-    'deleted' => 0,
-    'description' => 'If checked, indicates that this is a "training" session that should be deleted when deleting all training sessions. (Other sessions in the training site would remain, to populate the progress report).
-
-This should not be used on the "live" site -- it is only intended for the "sandbox" site.',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 3,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_training',
-    'label' => 'Training',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(
-        'display_label' => 1,
-      ),
-      'type' => 'options_onoff',
-      'weight' => 0,
     ),
   );
 
@@ -1186,18 +1097,13 @@ This should not be used on the "live" site -- it is only intended for the "sandb
   t('At which point should these topics be addressed?');
   t('Between what dates is the child expected to participate in PMTCT encounters?');
   t('Child');
-  t('Closed');
   t('Date Measured');
   t('English Title');
   t('Enter the clinic for which data-entry is being scheduled.');
   t('Expected');
   t('Group');
   t('Group Encounter');
-  t('Has the session been explicitly closed by the user?');
   t('Health Center');
-  t('If checked, indicates that this is a "training" session that should be deleted when deleting all training sessions. (Other sessions in the training site would remain, to populate the progress report).
-
-This should not be used on the "live" site -- it is only intended for the "sandbox" site.');
   t('Kinyarwanda Title');
   t('Nurse');
   t('Once you have created a "Counseling Topic" and it has been used, make only minor edits -- any edit will affect the historical data of which topics have been discussed with participants. If an edit would represent a different topic, then create a new topic instead. You can remove an unused topic from the relevant "Counseling Schedule" -- but do not delete the unused topic, since that would also affect the historical data.');
@@ -1206,13 +1112,10 @@ This should not be used on the "live" site -- it is only intended for the "sandb
   t('Scheduled Date');
   t('Shards');
   t('The child who is participating in PMTCT child activities.');
-  t('The start date is the date on which the data entry is scheduled.
-
-The end date is the last day on which data entry will be allowed for this session through the client app (for editing, or measurements that are taken later). After this date, the session will be considered closed.');
+  t('The dates the session was active.');
   t('This field will be calculated -- you can leave it blank.');
   t('Timing');
   t('Topics');
-  t('Training');
   t('UUID');
   t('Which PMTCT Group is this child participating in?');
   t('Which adult is participating in the PMTCT Group with the child?');
