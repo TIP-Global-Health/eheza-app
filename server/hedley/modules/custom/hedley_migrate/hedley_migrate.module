@@ -29,6 +29,9 @@ function hedley_migrate_migrate_api() {
       'batch_2019_04_2' => [
         'title' => t('Second batch data added 2019/04'),
       ],
+      'batch_2019_05' => [
+        'title' => t('Batch data added 2019/05'),
+      ],
     ],
     'migrations' => [
       'HedleyMigrateClinics_2019_02' => [
@@ -70,6 +73,14 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateChildren_2019_04_2' => [
         'class_name' => 'HedleyMigrateChildren2019042',
         'group_name' => 'batch_2019_04_2',
+      ],
+      'HedleyMigrateMothers_2019_05' => [
+        'class_name' => 'HedleyMigrateMothers201905',
+        'group_name' => 'batch_2019_05',
+      ],
+      'HedleyMigrateChildren_2019_05' => [
+        'class_name' => 'HedleyMigrateChildren201905',
+        'group_name' => 'batch_2019_05',
       ],
       'HedleyMigrateUsers' => [
         'class_name' => 'HedleyMigrateUsers',
