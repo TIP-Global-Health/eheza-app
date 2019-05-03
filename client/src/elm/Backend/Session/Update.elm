@@ -6,7 +6,7 @@ import Backend.Measurement.Encoder exposing (..)
 import Backend.Session.Encoder exposing (..)
 import Backend.Session.Model exposing (..)
 import EveryDict
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
 import Json.Encode exposing (object)
 import Json.Encode.Extra
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
@@ -23,7 +23,7 @@ update nurseId sessionId currentDate msg model =
     case msg of
         CloseSession ->
             ( { model | closeSessionRequest = Loading }
-            , object [ encodeClosed True ]
+            , object [ ( "scheduled_date.value2", encodeYYYYMMDD currentDate ) ]
                 |> sw.patchAny sessionEndpoint sessionId
                 |> withoutDecoder
                 |> toCmd (RemoteData.fromResult >> HandleClosedSession)

@@ -236,19 +236,21 @@ makeEditableSession sessionId db =
         offlineSession
 
 
-{-| Tracks the various ways in which the session ought to be considered closed:
-
-  - Was explicitly closed.
-  - Has passed its closed date.
-
--}
 isClosed : NominalDate -> Session -> Bool
 isClosed currentDate session =
     let
         pastEnd =
-            Time.Date.compare currentDate session.scheduledDate.end == GT
+            session.endDate
+                |> Maybe.map
+                    (\endDate ->
+                        Time.Date.compare currentDate endDate == GT
+                    )
+                |> Maybe.withDefault False
+
+        beforeBeginning =
+            Time.Date.compare currentDate session.startDate == LT
     in
-    session.closed || pastEnd
+    pastEnd || beforeBeginning
 
 
 isAuthorized : Nurse -> Session -> Bool

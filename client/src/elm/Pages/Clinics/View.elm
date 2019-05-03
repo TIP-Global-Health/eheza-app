@@ -12,6 +12,7 @@ import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (assignedToClinic)
 import Backend.Session.Model exposing (Session)
+import Backend.Session.Utils exposing (isClosed)
 import Backend.SyncData.Model exposing (SyncData)
 import EveryDict
 import EveryDictList exposing (EveryDictList)
@@ -169,10 +170,12 @@ viewFoundClinic language currentDate nurse clinicId clinic sessions =
                     (\sessionId session ->
                         let
                             deltaToEndDate =
-                                delta session.scheduledDate.end currentDate
+                                session.endDate
+                                    |> Maybe.withDefault currentDate
+                                    |> (\endDate -> delta endDate currentDate)
 
                             deltaToStartDate =
-                                delta session.scheduledDate.start currentDate
+                                delta session.startDate currentDate
                         in
                         -- Ends last week or next week
                         (abs deltaToEndDate.days <= daysToShow)
@@ -226,9 +229,7 @@ viewSession : Language -> NominalDate -> SessionId -> Session -> Html Msg
 viewSession language currentDate sessionId session =
     let
         enableLink =
-            ((delta session.scheduledDate.start currentDate).days <= 0)
-                && ((delta session.scheduledDate.end currentDate).days >= 0)
-                && not session.closed
+            not (isClosed currentDate session)
 
         link =
             button
@@ -242,17 +243,9 @@ viewSession language currentDate sessionId session =
                     |> onClick
                 ]
                 [ text <| translate language Translate.Attendance ]
-
-        closed =
-            if session.closed then
-                [ i [ class "check icon" ] [] ]
-
-            else
-                []
     in
     tr []
-        [ td [] [ text <| formatYYYYMMDD session.scheduledDate.start ]
-        , td [] [ text <| formatYYYYMMDD session.scheduledDate.end ]
-        , td [] closed
+        [ td [] [ text <| formatYYYYMMDD session.startDate ]
+        , td [] [ text <| Maybe.withDefault "" <| Maybe.map formatYYYYMMDD session.endDate ]
         , td [] [ link ]
         ]
