@@ -9,12 +9,12 @@ import Json.Encode exposing (Value, object)
 import RemoteData exposing (RemoteData(..))
 
 
-update : String -> Msg -> Model -> ( Model, Cmd Msg )
-update accessToken msg model =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
     case msg of
         SendRequest request ->
             ( { model | cachedPhotos = Loading }
-            , cacheStorageRequest (encodeRequest accessToken request)
+            , cacheStorageRequest (encodeRequest request)
             )
 
         HandleResponse value ->
@@ -52,13 +52,12 @@ port cacheStorageResponse : (Value -> msg) -> Sub msg
 port cacheStorageRequest : Value -> Cmd msg
 
 
-encodeRequest : String -> Request -> Value
-encodeRequest accessToken request =
+encodeRequest : Request -> Value
+encodeRequest request =
     case request of
         CachePhotos urls ->
             object
                 [ ( "tag", Json.Encode.string "CachePhotos" )
-                , ( "access_token", Json.Encode.string accessToken )
                 , ( "value", Json.Encode.list <| List.map Json.Encode.string urls )
                 ]
 
