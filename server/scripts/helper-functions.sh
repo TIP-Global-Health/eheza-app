@@ -293,9 +293,6 @@ function generate_demo_content {
     drush generate-terms "$VOCAB"
   done
 
-  # Add some sessions for today
-  drush create-sessions-today
-
   # Generating all types of nodes.
   # Hardcoding the list because of the dependencies between them.
   TYPES=(
