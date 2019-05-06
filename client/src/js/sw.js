@@ -18,7 +18,7 @@ var deviceUuidUrl = '/sw/config/device-uuid';
 var photosDownloadCache = "photos";
 var photosUploadCache = "photos-upload";
 
-var photosDownloadUrlRegex = /\/system\/files\//;
+var photosDownloadUrlRegex = /\/sites\/default\/files\//;
 var photosUploadUrlRegex = /\/cache-upload\/images/;
 var backendUploadUrlRegex = /\/backend-upload\/images/;
 

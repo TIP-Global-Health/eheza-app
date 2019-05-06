@@ -214,7 +214,6 @@ function create_sites_default_files_directory {
   if [ ! -d "$ROOT"/www/sites/default/files ]; then
     echo -e "${LBLUE}> Create the files directory (sites/default/files directory)${RESTORE}"
     mkdir -p "$ROOT"/www/sites/default/files
-    mkdir -p "$ROOT"/www/sites/default/files/private
   fi
 
   echo -e "${LBLUE}> Set the file permissions on the sites/default/files directory${RESTORE}"
