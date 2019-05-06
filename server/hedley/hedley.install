@@ -378,7 +378,6 @@ function hedley_update_7011() {
   field_delete_field('field_z_score_age');
   field_delete_field('field_z_score_length');
 }
-<<<<<<< HEAD
 
 /**
  * Enable new prepopulate module.
