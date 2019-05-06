@@ -514,8 +514,16 @@ function hedley_update_7019() {
 }
 
 /**
- * Setup private files.
+ * Enable hedley_health_center module.
  */
 function hedley_update_7020() {
+  $modules = ['hedley_health_center'];
+  module_enable($modules);
+}
+
+/**
+ * Setup private files.
+ */
+function hedley_update_7021() {
   variable_set('file_private_path', 'sites/default/files/private');
 }

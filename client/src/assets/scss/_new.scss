@@ -1,0 +1,186 @@
+// We design for a minimum width of 800px.
+html,
+body {
+    height: 100%;
+    min-height: 100vh;
+    min-width: 800px;
+}
+
+// Some things which apply to the whole body.
+body {
+    font-family: $font;
+    font-size: 22px;
+    color: $color-text;
+    background: #0393db url(#{$img-path}bg.svg) no-repeat center 12px;
+    background-size: 1193px 818px;
+    max-width: 1280px;
+    margin: 0 auto;
+    overflow-x: auto;
+
+    &.no-bg {
+        background-image: none;
+    }
+}
+
+// This is our wrapper for the whole page.
+div.page {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+// This is for the content below the language switcher, which should
+// grow to fill the available height.
+div.page-content {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+div.language-switcher {
+    width: 100%;
+    margin: 10px auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    .version {
+        margin-right: 16px;
+        height: 24px;
+        color: white;
+        font-size: .6em;
+        cursor: pointer;
+    }
+
+    .links-translate {
+        margin: 0;
+        padding: 6px 25px;
+        list-style: none;
+        display: flex;
+        justify-content: flex-start;
+
+        li {
+            display: inline-block;
+            margin-right: 15px;
+            position: relative;
+            display: flex;
+            height: 27px;
+            color: white;
+            font-size: .8em;
+            cursor: pointer;
+
+            &.active {
+                color: $color-dark-blue;
+            }
+
+            a {
+                display: block;
+                width: 27 px;
+                height: 27 px;
+                background: #fff;
+                border-radius: 50%;
+                position: relative;
+                margin-left: 10px;
+            }
+        }
+
+        li.active a:before {
+            width: 35px;
+            height: 35px;
+            border: 2px solid $color-dark-blue;
+            content: " ";
+            display: block;
+            border-radius: 50%;
+            position: absolute;
+            top: -4px;
+            left: -4px;
+        }
+    }
+}
+
+div.page-pincode {
+    font-size: 1.72rem; //24px;
+    text-align: center;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    div.ui.login.form {
+        width: 16em;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+div.page-person-create {
+    margin: 0 auto;
+    padding: 0 35px 35px 35px;
+    width: 100%;
+}
+
+div.page-people {
+    margin: 0 auto;
+    padding: 0 35px 35px 35px;
+    height: 100%;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+
+    div.search-wrapper {
+        flex: 1 1 auto;
+        height: 100%;
+        overflow-y: hidden;
+
+        > div.ui.segment {
+            height: 100%;
+        }
+    }
+
+    div.search {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow-y: hidden;
+
+        div.search-middle {
+            height: 100%;
+            flex: 1 1 auto;
+            overflow-y: auto;
+        }
+    }
+}
+
+div.page-relationship {
+    margin: 0 auto;
+    padding: 0 35px 35px 35px;
+    height: 100%;
+    width: 100%;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+
+    label.relationship-selection {
+        font-size: 1.57rem; //22px light
+    }
+
+    div.relationship-selector {
+        margin-bottom: 50px;
+        margin-left: 60px;
+    }
+}
+
+div.page-person {
+    margin: 0 auto;
+    padding: 0 35px 35px 35px;
+    height: 100%;
+    width: 100%;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+
+    .particiants-list {
+        margin-top: 50px;
+    }
+}

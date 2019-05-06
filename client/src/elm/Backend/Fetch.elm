@@ -1,6 +1,7 @@
 module Backend.Fetch exposing (forget, shouldFetch)
 
 import Backend.Model exposing (..)
+import Dict
 import EveryDict
 import RemoteData exposing (RemoteData(..), isNotAsked)
 
@@ -49,6 +50,21 @@ shouldFetch model msg =
         FetchParticipantForms ->
             isNotAsked model.participantForms
 
+        FetchPeopleByName search ->
+            Dict.get (String.trim search) model.personSearches
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchPerson id ->
+            EveryDict.get id model.people
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchRelationshipsForPerson id ->
+            EveryDict.get id model.relationshipsByPerson
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchSession sessionId ->
             EveryDict.get sessionId model.sessions
                 |> Maybe.withDefault NotAsked
@@ -95,6 +111,15 @@ forget msg model =
 
         FetchParticipantForms ->
             { model | participantForms = NotAsked }
+
+        FetchPeopleByName search ->
+            { model | personSearches = Dict.remove (String.trim search) model.personSearches }
+
+        FetchPerson id ->
+            { model | people = EveryDict.remove id model.people }
+
+        FetchRelationshipsForPerson id ->
+            { model | relationshipsByPerson = EveryDict.remove id model.relationshipsByPerson }
 
         FetchSession sessionId ->
             { model | sessions = EveryDict.remove sessionId model.sessions }

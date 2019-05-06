@@ -45,41 +45,6 @@ function hedley_patient_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
-  // Exported field_base: 'field_clinic'.
-  $field_bases['field_clinic'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_clinic',
-    'indexes' => array(
-      'target_id' => array(
-        0 => 'target_id',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'entityreference',
-    'settings' => array(
-      'handler' => 'base',
-      'handler_settings' => array(
-        'behaviors' => array(
-          'views-select-list' => array(
-            'status' => 1,
-          ),
-        ),
-        'sort' => array(
-          'type' => 'none',
-        ),
-        'target_bundles' => array(
-          'clinic' => 'clinic',
-        ),
-      ),
-      'target_type' => 'node',
-    ),
-    'translatable' => 0,
-    'type' => 'entityreference',
-  );
-
   // Exported field_base: 'field_date_birth'.
   $field_bases['field_date_birth'] = array(
     'active' => 1,
@@ -109,13 +74,13 @@ function hedley_patient_field_default_field_bases() {
     'type' => 'datestamp',
   );
 
-  // Exported field_base: 'field_education_level'.
-  $field_bases['field_education_level'] = array(
+  // Exported field_base: 'field_hiv_status'.
+  $field_bases['field_hiv_status'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_education_level',
+    'field_name' => 'field_hiv_status',
     'indexes' => array(
       'value' => array(
         0 => 'value',
@@ -125,13 +90,11 @@ function hedley_patient_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        0 => 'No schooling',
-        1 => 'Primary School',
-        2 => 'Vocational training School',
-        3 => 'Secondary School',
-        4 => 'Diploma Programs (2 years of University)',
-        5 => 'Higher Education (University)',
-        6 => 'Advanced Diploma',
+        'hiv-exposed-infant' => 'HIV-exposed infant',
+        'negative' => 'Negative',
+        'negative-dc' => 'Negative - discordant couple',
+        'positive' => 'Positive',
+        'unknown' => 'Unknown',
       ),
       'allowed_values_function' => '',
     ),
@@ -139,13 +102,28 @@ function hedley_patient_field_default_field_bases() {
     'type' => 'list_text',
   );
 
-  // Exported field_base: 'field_gender'.
-  $field_bases['field_gender'] = array(
+  // Exported field_base: 'field_household_size'.
+  $field_bases['field_household_size'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_gender',
+    'field_name' => 'field_household_size',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_mode_of_delivery'.
+  $field_bases['field_mode_of_delivery'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_mode_of_delivery',
     'indexes' => array(
       'value' => array(
         0 => 'value',
@@ -155,8 +133,10 @@ function hedley_patient_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'male' => 'Male',
-        'female' => 'Female',
+        'svd-episiotomy' => 'Spontaneous vaginal delivery with episiotomy',
+        'svd-no-episiotomy' => 'Spontaneous vaginal delivery without episiotomy',
+        'vd-vacuum' => 'Vaginal delivery with vacuum extraction',
+        'cesarean-delivery' => 'Cesarean delivery',
       ),
       'allowed_values_function' => '',
     ),
@@ -201,56 +181,19 @@ function hedley_patient_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
-  // Exported field_base: 'field_relationship'.
-  $field_bases['field_relationship'] = array(
+  // Exported field_base: 'field_number_of_children'.
+  $field_bases['field_number_of_children'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_relationship',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
-      ),
-    ),
+    'field_name' => 'field_number_of_children',
+    'indexes' => array(),
     'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(
-        'mother' => 'Mother',
-        'caregiver' => 'Caregiver',
-      ),
-      'allowed_values_function' => '',
-    ),
+    'module' => 'number',
+    'settings' => array(),
     'translatable' => 0,
-    'type' => 'list_text',
-  );
-
-  // Exported field_base: 'field_ubudehe'.
-  $field_bases['field_ubudehe'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_ubudehe',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(
-        1 => 1,
-        2 => 2,
-        3 => 3,
-        4 => 4,
-      ),
-      'allowed_values_function' => '',
-    ),
-    'translatable' => 0,
-    'type' => 'list_integer',
+    'type' => 'number_integer',
   );
 
   return $field_bases;

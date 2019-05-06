@@ -40,6 +40,7 @@
         "krisajenkins/remotedata": "4.5.0 <= v < 5.0.0",
         "lukewestby/elm-http-builder": "5.2.0 <= v < 6.0.0",
         "mgold/elm-date-format": "1.6.0 <= v < 2.0.0",
+        "mgold/elm-random-pcg": "5.0.2 <= v < 6.0.0",
         "myrho/elm-round": "1.0.2 <= v < 2.0.0",
         "rgrempel/elm-route-url": "4.0.0 <= v < 5.0.0",
         "sporto/erl": "13.0.2 <= v < 14.0.0",

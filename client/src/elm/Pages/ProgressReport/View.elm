@@ -1,17 +1,18 @@
 module Pages.ProgressReport.View exposing (view)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
-import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildMeasurementList, Height, HeightInCm(..), MuacInCm(..), MuacIndication(..), PhotoUrl(..), Weight, WeightInKg(..))
 import Backend.Measurement.Utils exposing (currentValue, currentValueWithId, mapMeasurementData, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Mother.Model exposing (ChildrenRelationType(..))
+import Backend.Person.Model exposing (Gender(..), Person)
+import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (EditableSession, Session)
-import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother)
+import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother, getMyMother)
 import EveryDict
 import EveryDictList exposing (EveryDictList)
 import EverySet
+import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -30,7 +31,7 @@ import ZScore.Utils exposing (zScoreLengthHeightForAge, zScoreWeightForAge)
 import ZScore.View
 
 
-view : Language -> ZScore.Model.Model -> ChildId -> ( SessionId, EditableSession ) -> ModelIndexedDb -> Html Pages.Session.Model.Msg
+view : Language -> ZScore.Model.Model -> PersonId -> ( SessionId, EditableSession ) -> ModelIndexedDb -> Html Pages.Session.Model.Msg
 view language zscores childId ( sessionId, session ) db =
     case getChild childId session.offlineSession of
         Just child ->
@@ -64,7 +65,7 @@ view language zscores childId ( sessionId, session ) db =
 {-| This function is more complex than one would like ... when reviewing the
 data model in future, it might be nice to take this function into account.
 -}
-viewFoundChild : Language -> ZScore.Model.Model -> ( ChildId, Child ) -> ( SessionId, EditableSession ) -> ( EveryDictList SessionId Session, ChildMeasurementList ) -> Html Pages.Session.Model.Msg
+viewFoundChild : Language -> ZScore.Model.Model -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> ( EveryDictList SessionId Session, ChildMeasurementList ) -> Html Pages.Session.Model.Msg
 viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expectedSessions, historical ) =
     let
         backIcon =
@@ -100,22 +101,23 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                 ]
 
         maybeMother =
-            child.motherId
-                |> Maybe.andThen (\motherId -> getMother motherId session.offlineSession)
+            getMyMother childId session.offlineSession
+                |> Maybe.map Tuple.second
 
         relationText =
-            maybeMother
-                |> Maybe.map .relation
-                -- In case if mother is Nothing, we will show `Child of`.
-                |> Maybe.withDefault MotherRelation
-                |> (\relation ->
-                        case relation of
-                            MotherRelation ->
+            session.offlineSession.participants
+                |> EveryDictList.filter (\_ participant -> participant.child == childId)
+                |> EveryDictList.head
+                |> Maybe.map
+                    (\( _, participant ) ->
+                        case participant.adultActivities of
+                            MotherActivities ->
                                 Translate.ChildOf
 
-                            CaregiverRelation ->
+                            CaregiverActivities ->
                                 Translate.TakenCareOfBy
-                   )
+                    )
+                |> Maybe.withDefault Translate.ChildOf
 
         childInfo =
             div
@@ -132,16 +134,28 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                             [ class "ui header" ]
                             [ text child.name ]
                         , p []
-                            [ text <| renderAgeMonthsDays language child.birthDate dateOfLastAssessment
-                            , text " "
-                            , text <| translate language Translate.Old
-                            , text " "
+                            [ child.birthDate
+                                |> Maybe.map
+                                    (\birthDate ->
+                                        [ text <| renderAgeMonthsDays language birthDate dateOfLastAssessment
+                                        , text " "
+                                        , text <| translate language Translate.Old
+                                        , text " "
+                                        ]
+                                    )
+                                |> Maybe.withDefault []
+                                |> span []
                             , strong [] [ text <| translate language (Translate.Gender child.gender) ]
                             ]
                         , p []
                             [ text <| translate language Translate.Born
                             , text " "
-                            , strong [] [ text <| renderDate language child.birthDate ]
+                            , strong []
+                                [ child.birthDate
+                                    |> Maybe.map (renderDate language)
+                                    |> Maybe.withDefault (translate language Translate.NotAvailable)
+                                    |> text
+                                ]
                             , br [] []
                             , text <| translate language relationText
                             , text " "
@@ -173,7 +187,11 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                             [ text <| translate language Translate.AgeWord ]
                         , th
                             [ class "last" ]
-                            [ text <| renderAgeMonthsDaysAbbrev language child.birthDate session.offlineSession.session.scheduledDate.start ]
+                            [ child.birthDate
+                                |> Maybe.map (\birthDate -> renderAgeMonthsDaysAbbrev language birthDate session.offlineSession.session.scheduledDate.start)
+                                |> Maybe.withDefault ""
+                                |> text
+                            ]
                         ]
                     ]
                 , tbody []
@@ -226,7 +244,9 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                 groupOfTwelve
                                     |> List.map
                                         (\( id, columnSession ) ->
-                                            renderAgeMonthsDaysHtml language child.birthDate columnSession.scheduledDate.start
+                                            child.birthDate
+                                                |> Maybe.map (\birthDate -> renderAgeMonthsDaysHtml language birthDate columnSession.scheduledDate.start)
+                                                |> Maybe.withDefault []
                                                 |> th
                                                     [ classList
                                                         [ ( "center", True )
@@ -279,12 +299,16 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                             HeightInCm cms ->
                                                 cms
 
-                                    ageInDays =
-                                        diffDays child.birthDate height.dateMeasured
+                                    maybeAgeInDays =
+                                        Maybe.map (\birthDate -> diffDays birthDate height.dateMeasured) child.birthDate
 
                                     indication =
-                                        zScoreLengthHeightForAge zscores ageInDays child.gender (Centimetres cm)
-                                            |> Maybe.map (class << classForIndication << zScoreToIndication)
+                                        maybeAgeInDays
+                                            |> Maybe.andThen
+                                                (\ageInDays ->
+                                                    zScoreLengthHeightForAge zscores ageInDays child.gender (Centimetres cm)
+                                                        |> Maybe.map (class << classForIndication << zScoreToIndication)
+                                                )
                                             |> Maybe.Extra.toList
 
                                     value =
@@ -299,12 +323,16 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                             WeightInKg kilos ->
                                                 kilos
 
-                                    ageInDays =
-                                        diffDays child.birthDate weight.dateMeasured
+                                    maybeAgeInDays =
+                                        Maybe.map (\birthDate -> diffDays birthDate weight.dateMeasured) child.birthDate
 
                                     indication =
-                                        zScoreWeightForAge zscores ageInDays child.gender (Kilograms kg)
-                                            |> Maybe.map (class << classForIndication << zScoreToIndication)
+                                        maybeAgeInDays
+                                            |> Maybe.andThen
+                                                (\ageInDays ->
+                                                    zScoreWeightForAge zscores ageInDays child.gender (Kilograms kg)
+                                                        |> Maybe.map (class << classForIndication << zScoreToIndication)
+                                                )
                                             |> Maybe.Extra.toList
 
                                     value =
@@ -369,7 +397,10 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                             [ class "report card" ]
                             [ div
                                 [ class "content" ]
-                                [ text <| renderAgeMonthsDays language child.birthDate photo.dateMeasured ]
+                                [ child.birthDate
+                                    |> Maybe.map (\birthDate -> text <| renderAgeMonthsDays language birthDate photo.dateMeasured)
+                                    |> Maybe.withDefault emptyNode
+                                ]
                             , viewPhotoUrl photo.value
                             ]
                     )
@@ -441,10 +472,10 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
             indexBySession photoValues
 
         heightForAgeData =
-            List.map (chartHeightForAge child) heightValues
+            List.filterMap (chartHeightForAge child) heightValues
 
         weightForAgeData =
-            List.map (chartWeightForAge child) weightValues
+            List.filterMap (chartWeightForAge child) weightValues
 
         weightForHeightData =
             List.filterMap (chartWeightForHeight heightValues) weightValues
@@ -517,26 +548,34 @@ zScoreToIndication zScore =
         Positive
 
 
-chartHeightForAge : Child -> Height -> ( Days, Centimetres )
+chartHeightForAge : Person -> Height -> Maybe ( Days, Centimetres )
 chartHeightForAge child height =
-    ( diffDays child.birthDate height.dateMeasured
-      -- I suppose one could avoid this little transformation
-      -- by unifiying the two tags.
-    , case height.value of
-        HeightInCm cm ->
-            Centimetres cm
-    )
+    child.birthDate
+        |> Maybe.map
+            (\birthDate ->
+                ( diffDays birthDate height.dateMeasured
+                  -- I suppose one could avoid this little transformation
+                  -- by unifiying the two tags.
+                , case height.value of
+                    HeightInCm cm ->
+                        Centimetres cm
+                )
+            )
 
 
-chartWeightForAge : Child -> Weight -> ( Days, Kilograms )
+chartWeightForAge : Person -> Weight -> Maybe ( Days, Kilograms )
 chartWeightForAge child weight =
-    ( diffDays child.birthDate weight.dateMeasured
-      -- I suppose one could avoid this little transformation
-      -- by unifiying the two tags.
-    , case weight.value of
-        WeightInKg cm ->
-            Kilograms cm
-    )
+    child.birthDate
+        |> Maybe.map
+            (\birthDate ->
+                ( diffDays birthDate weight.dateMeasured
+                  -- I suppose one could avoid this little transformation
+                  -- by unifiying the two tags.
+                , case weight.value of
+                    WeightInKg cm ->
+                        Kilograms cm
+                )
+            )
 
 
 chartWeightForHeight : List Height -> Weight -> Maybe ( Length, Kilograms )

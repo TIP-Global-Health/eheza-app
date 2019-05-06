@@ -51,7 +51,7 @@ wrapError language sessionId errorHtml =
             [ class "ui basic head segment" ]
             [ h1
                 [ class "ui header" ]
-                [ text <| translate language <| Translate.SessionLoading sessionId ]
+                [ text <| translate language <| Translate.GroupEncounterLoading sessionId ]
             , a
                 [ class "link-back"
                 , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Nothing
@@ -150,8 +150,8 @@ viewClosedSession language sessionId session db =
             ]
         , div
             [ class "ui error message" ]
-            [ h1 [] [ text <| translate language Translate.SessionClosed ]
-            , p [] [ text <| translate language <| Translate.SessionClosed2 sessionId ]
+            [ h1 [] [ text <| translate language Translate.GroupEncounterClosed ]
+            , p [] [ text <| translate language <| Translate.GroupEncounterClosed2 sessionId ]
             ]
         ]
 
@@ -180,7 +180,7 @@ viewUnauthorizedSession language sessionId session db =
             ]
         , div
             [ class "ui error message" ]
-            [ h1 [] [ text <| translate language Translate.SessionUnauthorized ]
-            , p [] [ text <| translate language Translate.SessionUnauthorized2 ]
+            [ h1 [] [ text <| translate language Translate.GroupEncounterUnauthorized ]
+            , p [] [ text <| translate language Translate.GroupEncounterUnauthorized2 ]
             ]
         ]

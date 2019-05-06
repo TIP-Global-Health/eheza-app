@@ -46,7 +46,7 @@ type PhotoUrl
 
 
 type alias Photo =
-    Measurement ChildId PhotoUrl
+    Measurement PersonId PhotoUrl
 
 
 {-| For the various measurements that are floats, we wrap them in a type to
@@ -57,7 +57,7 @@ type MuacInCm
 
 
 type alias Muac =
-    Measurement ChildId MuacInCm
+    Measurement PersonId MuacInCm
 
 
 {-| An interpretation of a MUAC, according to the measurement
@@ -74,7 +74,7 @@ type HeightInCm
 
 
 type alias Height =
-    Measurement ChildId HeightInCm
+    Measurement PersonId HeightInCm
 
 
 type WeightInKg
@@ -82,7 +82,7 @@ type WeightInKg
 
 
 type alias Weight =
-    Measurement ChildId WeightInKg
+    Measurement PersonId WeightInKg
 
 
 type FamilyPlanningSign
@@ -96,11 +96,11 @@ type FamilyPlanningSign
 
 
 type alias FamilyPlanning =
-    Measurement MotherId (EverySet FamilyPlanningSign)
+    Measurement PersonId (EverySet FamilyPlanningSign)
 
 
 type alias ParticipantConsent =
-    Measurement MotherId ParticipantConsentValue
+    Measurement PersonId ParticipantConsentValue
 
 
 type alias ParticipantConsentValue =
@@ -110,7 +110,7 @@ type alias ParticipantConsentValue =
 
 
 type alias Attendance =
-    Measurement MotherId Bool
+    Measurement PersonId Bool
 
 
 type ChildNutritionSign
@@ -124,11 +124,11 @@ type ChildNutritionSign
 
 
 type alias ChildNutrition =
-    Measurement ChildId (EverySet ChildNutritionSign)
+    Measurement PersonId (EverySet ChildNutritionSign)
 
 
 type alias CounselingSession =
-    Measurement ChildId ( CounselingTiming, EverySet CounselingTopicId )
+    Measurement PersonId ( CounselingTiming, EverySet CounselingTopicId )
 
 
 
@@ -202,8 +202,8 @@ emptyChildMeasurementList =
 our convenience.
 -}
 type alias HistoricalMeasurements =
-    { mothers : EveryDict MotherId MotherMeasurementList
-    , children : EveryDict ChildId ChildMeasurementList
+    { mothers : EveryDict PersonId MotherMeasurementList
+    , children : EveryDict PersonId ChildMeasurementList
     }
 
 
@@ -268,8 +268,8 @@ emptyMotherMeasurements =
 
 
 type alias Measurements =
-    { mothers : EveryDict MotherId MotherMeasurements
-    , children : EveryDict ChildId ChildMeasurements
+    { mothers : EveryDict PersonId MotherMeasurements
+    , children : EveryDict PersonId ChildMeasurements
     }
 
 

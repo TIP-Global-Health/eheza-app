@@ -17,16 +17,16 @@ import Utils.Json exposing (decodeEverySet)
 
 {-| Given a decoder for a value, produces a decoder for our `Measurement` type.
 -}
-decodeChildMeasurement : Decoder value -> Decoder (Measurement ChildId value)
+decodeChildMeasurement : Decoder value -> Decoder (Measurement PersonId value)
 decodeChildMeasurement =
-    decodeMeasurement (field "child" decodeEntityUuid)
+    decodeMeasurement (field "person" decodeEntityUuid)
 
 
 {-| Given a decoder for a value, produces a decoder for our `Measurement` type.
 -}
-decodeMotherMeasurement : Decoder value -> Decoder (Measurement MotherId value)
+decodeMotherMeasurement : Decoder value -> Decoder (Measurement PersonId value)
 decodeMotherMeasurement =
-    decodeMeasurement (field "mother" decodeEntityUuid)
+    decodeMeasurement (field "person" decodeEntityUuid)
 
 
 decodeMeasurement : Decoder participantId -> Decoder value -> Decoder (Measurement participantId value)

@@ -26,8 +26,8 @@ type alias Model =
 
     -- Shows a page for a single activity. We keep separate UI state for
     -- each activity.
-    , childActivityPages : EveryDict ChildActivity (Pages.Activity.Model.Model ChildId)
-    , motherActivityPages : EveryDict MotherActivity (Pages.Activity.Model.Model MotherId)
+    , childActivityPages : EveryDict ChildActivity (Pages.Activity.Model.Model PersonId)
+    , motherActivityPages : EveryDict MotherActivity (Pages.Activity.Model.Model PersonId)
 
     -- Shows a list of participants ... user can select one.
     , participantsPage : Pages.Participants.Model.Model
@@ -38,13 +38,13 @@ type alias Model =
     -- ... we could just keep a single state here if we wanted the selectedTab
     -- and selectedActivity to stay the same when you switch from one
     -- participant to another.
-    , childPages : EveryDict ChildId (Pages.Participant.Model.Model ChildActivity)
-    , motherPages : EveryDict MotherId (Pages.Participant.Model.Model MotherActivity)
+    , childPages : EveryDict PersonId (Pages.Participant.Model.Model ChildActivity)
+    , motherPages : EveryDict PersonId (Pages.Participant.Model.Model MotherActivity)
 
     -- These forms appear on multiple pages, and we want to show the same state
     -- on each page. So, we keep them out here, and supply them as arguments.
-    , childForms : EveryDict ChildId Measurement.Model.ModelChild
-    , motherForms : EveryDict MotherId Measurement.Model.ModelMother
+    , childForms : EveryDict PersonId Measurement.Model.ModelChild
+    , motherForms : EveryDict PersonId Measurement.Model.ModelMother
     }
 
 
@@ -67,10 +67,10 @@ emptyModel =
 type Msg
     = MsgActivities Pages.Activities.Model.Msg
     | MsgAttendance Pages.Attendance.Model.Msg
-    | MsgChildActivity ChildActivity (Maybe ChildId) (Pages.Activity.Model.Msg ChildId Measurement.Model.MsgChild)
-    | MsgMotherActivity MotherActivity (Maybe MotherId) (Pages.Activity.Model.Msg MotherId Measurement.Model.MsgMother)
-    | MsgChild ChildId (Pages.Participant.Model.Msg ChildActivity Measurement.Model.MsgChild)
-    | MsgMother MotherId (Pages.Participant.Model.Msg MotherActivity Measurement.Model.MsgMother)
+    | MsgChildActivity ChildActivity (Maybe PersonId) (Pages.Activity.Model.Msg PersonId Measurement.Model.MsgChild)
+    | MsgMotherActivity MotherActivity (Maybe PersonId) (Pages.Activity.Model.Msg PersonId Measurement.Model.MsgMother)
+    | MsgChild PersonId (Pages.Participant.Model.Msg ChildActivity Measurement.Model.MsgChild)
+    | MsgMother PersonId (Pages.Participant.Model.Msg MotherActivity Measurement.Model.MsgMother)
     | MsgParticipants Pages.Participants.Model.Msg
     | MsgSession Backend.Session.Model.Msg
     | SetActivePage Page

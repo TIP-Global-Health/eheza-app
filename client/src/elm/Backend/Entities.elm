@@ -1,4 +1,4 @@
-module Backend.Entities exposing (AttendanceId, AttendanceUuidType(..), CatchmentAreaId, CatchmentAreaUuidType(..), ChildId, ChildNutritionId, ChildNutritionUuidType(..), ChildUuidType(..), ClinicId, ClinicUuidType(..), CounselingScheduleId, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicUuidType(..), FamilyPlanningId, FamilyPlanningUuidType(..), HealthCenterId, HealthCenterUuidType(..), HeightId, HeightUuidType(..), MotherId, MotherUuidType(..), MuacId, MuacUuidType(..), NurseId, NurseUuidType(..), ParticipantConsentId, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormUuidType(..), PhotoId, PhotoUuidType(..), SessionId, SessionUuidType(..), WeightId, WeightUuidType(..))
+module Backend.Entities exposing (AttendanceId, AttendanceUuidType(..), CatchmentAreaId, CatchmentAreaUuidType(..), ChildNutritionId, ChildNutritionUuidType(..), ClinicId, ClinicUuidType(..), CounselingScheduleId, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicUuidType(..), FamilyPlanningId, FamilyPlanningUuidType(..), HealthCenterId, HealthCenterUuidType(..), HeightId, HeightUuidType(..), MuacId, MuacUuidType(..), NurseId, NurseUuidType(..), ParticipantConsentId, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormUuidType(..), PersonId, PersonUuidType(..), PhotoId, PhotoUuidType(..), PmtctParticipantId, PmtctParticipantUuidType(..), RelationshipId, RelationshipUuidType(..), SessionId, SessionUuidType(..), WeightId, WeightUuidType(..))
 
 {-|
 
@@ -95,14 +95,6 @@ type CatchmentAreaUuidType
     = CatchmentAreaUuidType
 
 
-type alias ChildId =
-    EntityUuid ChildUuidType
-
-
-type ChildUuidType
-    = ChildUuidType
-
-
 type alias ChildNutritionId =
     EntityUuid ChildNutritionUuidType
 
@@ -175,14 +167,6 @@ type HeightUuidType
     = HeightUuidType
 
 
-type alias MotherId =
-    EntityUuid MotherUuidType
-
-
-type MotherUuidType
-    = MotherUuidType
-
-
 type alias MuacId =
     EntityUuid MuacUuidType
 
@@ -215,12 +199,36 @@ type ParticipantFormUuidType
     = ParticipantFormUuidType
 
 
+type alias PersonId =
+    EntityUuid PersonUuidType
+
+
+type PersonUuidType
+    = PersonUuidType
+
+
 type alias PhotoId =
     EntityUuid PhotoUuidType
 
 
 type PhotoUuidType
     = PhotoUuidType
+
+
+type alias PmtctParticipantId =
+    EntityUuid PmtctParticipantUuidType
+
+
+type PmtctParticipantUuidType
+    = PmtctParticipantUuidType
+
+
+type alias RelationshipId =
+    EntityUuid RelationshipUuidType
+
+
+type RelationshipUuidType
+    = RelationshipUuidType
 
 
 type alias SessionId =

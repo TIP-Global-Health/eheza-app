@@ -3,11 +3,14 @@ module App.Fetch exposing (andThenFetch)
 import App.Model exposing (..)
 import Backend.Fetch
 import Date
+import EveryDict
 import Gizra.NominalDate exposing (fromLocalDateTime)
-import Pages.Admin.Fetch
 import Pages.Clinics.Fetch
 import Pages.Device.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.People.Fetch
+import Pages.Person.Fetch
+import Pages.Relationship.Fetch
 import Pages.Session.Fetch
 import Update.Extra exposing (sequence)
 
@@ -41,18 +44,18 @@ fetch model =
             Pages.Clinics.Fetch.fetch clinicId
                 |> List.map MsgIndexedDb
 
-        UserPage AdminPage ->
-            []
+        UserPage (PersonPage id) ->
+            Pages.Person.Fetch.fetch id model.indexedDb
+                |> List.map MsgIndexedDb
 
-        {- TODO
-           getLoggedInModel model
-               |> Maybe.map
-                   (\loggedIn ->
-                       Pages.Admin.Fetch.fetch currentDate loggedIn.backend loggedIn.adminPage
-                           |> List.map (MsgLoggedIn << MsgPageAdmin)
-                   )
-               |> Maybe.withDefault []
-        -}
+        UserPage (PersonsPage search relation) ->
+            Pages.People.Fetch.fetch search relation
+                |> List.map MsgIndexedDb
+
+        UserPage (RelationshipPage id1 id2) ->
+            Pages.Relationship.Fetch.fetch id1 id2 model.indexedDb
+                |> List.map MsgIndexedDb
+
         UserPage (SessionPage sessionId sessionPage) ->
             Pages.Session.Fetch.fetch sessionId sessionPage model.indexedDb
                 |> List.map MsgIndexedDb
@@ -107,7 +110,7 @@ andThenFetch update ( model, cmd ) =
     let
         -- These are messages to fetch the data we want now, without
         -- considering whether we already have it.
-        dataWanted =
+        dataNowWanted =
             fetch model
 
         -- These are the messages we should actually issue to fetch data now.
@@ -117,18 +120,26 @@ andThenFetch update ( model, cmd ) =
         -- instance, we might try to re-fetch it even in a `Failure` state.
         -- (Since that wouldn't infinitely repeat).
         dataToFetch =
-            List.filter (shouldFetch model) dataWanted
+            List.filter (shouldFetch model) dataNowWanted
 
-        -- These are the messages for data we wanted last time, but now don't
-        -- want any more. (As an optimization, we should remember the time we
-        -- last wanted data, and only forget after an interval).
-        dataToForget =
-            List.filter (\msg -> not (List.member msg dataWanted)) model.dataWanted
+        -- Update our existing dataWanted to indicate that the data now wanted
+        -- was last wanted now.
+        dataWanted =
+            List.foldl (\msg -> EveryDict.insert msg model.currentTime) model.dataWanted dataNowWanted
+
+        fiveMinutes =
+            5 * 1000 * 60
+
+        -- Figure out what to remember and what to forget.
+        ( dataToForget, dataToRemember ) =
+            EveryDict.partition (\_ lastWanted -> model.currentTime - lastWanted > fiveMinutes) dataWanted
 
         -- Our new base model, remembering the desired data, and forgetting
         -- the data to forget.
         newModel =
-            List.foldl forget { model | dataWanted = dataWanted } dataToForget
+            dataToForget
+                |> EveryDict.keys
+                |> List.foldl forget { model | dataWanted = dataToRemember }
     in
     if List.isEmpty dataToFetch then
         ( newModel, cmd )

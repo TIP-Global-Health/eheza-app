@@ -5,18 +5,20 @@ import App.Utils exposing (getLoggedInModel)
 import Config.View
 import Date
 import EveryDict
-import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
-import Pages.Admin.View
 import Pages.Clinics.View
 import Pages.Device.View
 import Pages.MyAccount.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
+import Pages.People.View
+import Pages.Person.View
 import Pages.PinCode.View
+import Pages.Relationship.Model
+import Pages.Relationship.View
 import Pages.Session.Model
 import Pages.Session.View exposing (view)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -34,12 +36,11 @@ view model =
             Config.View.view model.language
 
         Success configuration ->
-            div [ class "container" ]
+            div [ class "page container" ]
                 [ viewLanguageSwitcherAndVersion model
-
-                -- We supply the model as well as the resolved configuration ...
-                -- it's easier that way.
-                , viewConfiguredModel model configuration
+                , div
+                    [ class "page-content" ]
+                    [ viewConfiguredModel model configuration ]
                 ]
 
         _ ->
@@ -141,17 +142,30 @@ viewUserPage page model configured =
     case getLoggedInModel model of
         Just loggedInModel ->
             case page of
-                AdminPage ->
-                    emptyNode
-
-                -- TODO: Re-implement
-                -- Pages.Admin.View.view configured.config model.language currentDate login.credentials.user login.data.backend login.data.adminPage
-                --     |> Html.map (MsgLoggedIn << MsgPageAdmin)
                 MyAccountPage ->
                     Pages.MyAccount.View.view model.language loggedInModel.nurse
 
                 ClinicsPage clinicId ->
                     Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) clinicId model.indexedDb
+
+                CreatePersonPage relation ->
+                    Pages.Person.View.viewCreateForm model.language currentDate relation loggedInModel.createPersonPage model.indexedDb.postPerson
+                        |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
+
+                PersonPage id ->
+                    Pages.Person.View.view model.language currentDate id model.indexedDb
+
+                PersonsPage search relation ->
+                    Pages.People.View.view model.language currentDate search relation model.indexedDb
+
+                RelationshipPage id1 id2 ->
+                    let
+                        page =
+                            EveryDict.get ( id1, id2 ) loggedInModel.relationshipPages
+                                |> Maybe.withDefault Pages.Relationship.Model.emptyModel
+                    in
+                    Pages.Relationship.View.view model.language currentDate id1 id2 model.indexedDb page
+                        |> Html.map (MsgLoggedIn << MsgPageRelationship id1 id2)
 
                 SessionPage sessionId subPage ->
                     let

@@ -9,10 +9,11 @@ import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
 import Http
 import Json.Encode exposing (Value)
-import Pages.Admin.Model
 import Pages.Device.Model
 import Pages.Page exposing (Page(..))
+import Pages.Person.Model
 import Pages.PinCode.Model
+import Pages.Relationship.Model
 import Pages.Session.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Rollbar
@@ -60,11 +61,12 @@ type alias Model =
     , zscores : ZScore.Model.Model
 
     -- What data did we want last time we checked? We track this so we can
-    -- forget data we don't want any longer. As an optimization, we should
-    -- probably track the last time we wanted each thing, so we can delay
-    -- forgetting for a period of time. (But, in this app, the latency to
-    -- IndexedDB is so low that it isn't likely to matter).
-    , dataWanted : List Msg
+    -- forget data we don't want any longer. Using an EveryDict relies on the
+    -- relevant `Msg` values behaving well for `toString`, which should
+    -- typically be fine. The time reflects the last time the data was wanted,
+    -- permitting us to keep recently wanted data around for a little while
+    -- after it is not wanted. (Often, it may be wanted again soon).
+    , dataWanted : EveryDict Msg Time
     }
 
 
@@ -120,8 +122,8 @@ it at the appropriate moment.
 
 -}
 type alias LoggedInModel =
-    { backend : Backend.Model.ModelBackend
-    , adminPage : Pages.Admin.Model.Model
+    { createPersonPage : Pages.Person.Model.Model
+    , relationshipPages : EveryDict ( PersonId, PersonId ) Pages.Relationship.Model.Model
 
     -- The nurse who has logged in.
     , nurse : ( NurseId, Nurse )
@@ -133,8 +135,8 @@ type alias LoggedInModel =
 
 emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel nurse =
-    { backend = Backend.Model.emptyModelBackend
-    , adminPage = Pages.Admin.Model.emptyModel
+    { createPersonPage = Pages.Person.Model.emptyModel
+    , relationshipPages = EveryDict.empty
     , nurse = nurse
     , sessionPages = EveryDict.empty
     }
@@ -172,8 +174,8 @@ type Msg
 {-| Messages we can only handle if we're logged in.
 -}
 type MsgLoggedIn
-    = MsgBackend Backend.Model.MsgBackend
-    | MsgPageAdmin Pages.Admin.Model.Msg
+    = MsgPageCreatePerson Pages.Person.Model.Msg
+    | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
 
 
@@ -190,7 +192,7 @@ emptyModel flags =
     { activePage = PinCodePage
     , configuration = NotAsked
     , currentTime = 0
-    , dataWanted = []
+    , dataWanted = EveryDict.empty
     , indexedDb = Backend.Model.emptyModelIndexedDb
     , language = English
     , memoryQuota = Nothing

@@ -17,12 +17,13 @@ import Http exposing (Error(..))
 import HttpBuilder
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
-import Pages.Admin.Update
 import Pages.Device.Model
 import Pages.Device.Update
-import Pages.Page exposing (Page(..), UserPage(AdminPage, ClinicsPage))
+import Pages.Person.Update
 import Pages.PinCode.Model
 import Pages.PinCode.Update
+import Pages.Relationship.Model
+import Pages.Relationship.Update
 import Pages.Session.Model
 import Pages.Session.Update
 import RemoteData exposing (RemoteData(..), WebData)
@@ -150,12 +151,12 @@ update msg model =
     case msg of
         MsgIndexedDb subMsg ->
             let
-                ( subModel, subCmd ) =
+                ( subModel, subCmd, extraMsgs ) =
                     Backend.Update.updateIndexedDb currentDate nurseId subMsg model.indexedDb
 
                 -- Most revisions are handled at the IndexedDB level, but there
                 -- is at least one we need to catch here.
-                extraMsgs =
+                revisionMsgs =
                     case subMsg of
                         Backend.Model.HandleRevisions revisions ->
                             List.filterMap (handleRevision model) revisions
@@ -166,31 +167,33 @@ update msg model =
             ( { model | indexedDb = subModel }
             , Cmd.map MsgIndexedDb subCmd
             )
-                |> sequence update extraMsgs
+                |> sequence update (extraMsgs ++ revisionMsgs)
 
         MsgLoggedIn loggedInMsg ->
             updateLoggedIn
                 (\data ->
                     case loggedInMsg of
-                        MsgBackend subMsg ->
+                        MsgPageCreatePerson subMsg ->
                             let
-                                ( backend, cmd ) =
-                                    -- TODO: delete this
-                                    Backend.Update.updateBackend "" "" subMsg data.backend
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.Person.Update.update subMsg data.createPersonPage
                             in
-                            ( { data | backend = backend }
-                            , Cmd.map (MsgLoggedIn << MsgBackend) cmd
-                            , []
+                            ( { data | createPersonPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageCreatePerson) subCmd
+                            , appMsgs
                             )
 
-                        MsgPageAdmin subMsg ->
+                        MsgPageRelationship id1 id2 subMsg ->
                             let
-                                ( newModel, cmd, appMsgs ) =
-                                    Pages.Admin.Update.update currentDate data.backend subMsg data.adminPage
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.relationshipPages
+                                        |> EveryDict.get ( id1, id2 )
+                                        |> Maybe.withDefault Pages.Relationship.Model.emptyModel
+                                        |> Pages.Relationship.Update.update id1 id2 subMsg
                             in
-                            ( { data | adminPage = newModel }
-                            , Cmd.map (MsgLoggedIn << MsgPageAdmin) cmd
-                            , appMsgs
+                            ( { data | relationshipPages = EveryDict.insert ( id1, id2 ) subModel data.relationshipPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageRelationship id1 id2) subCmd
+                            , extraMsgs
                             )
 
                         MsgPageSession sessionId subMsg ->
@@ -313,21 +316,9 @@ update msg model =
             )
 
         SetActivePage page ->
-            let
-                -- We reset certain requests if we're navigating to the admin
-                -- page from elsewhere.
-                resetSessionRequests =
-                    if page == UserPage AdminPage && page /= model.activePage then
-                        [ MsgLoggedIn <| MsgBackend <| Backend.Model.ResetSessionRequests ]
-
-                    else
-                        []
-            in
-            sequence update
-                resetSessionRequests
-                ( { model | activePage = page }
-                , Cmd.none
-                )
+            ( { model | activePage = page }
+            , Cmd.none
+            )
 
         SendRollbar level message data ->
             updateConfigured

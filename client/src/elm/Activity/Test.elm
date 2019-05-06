@@ -2,10 +2,10 @@ module Activity.Test exposing (all)
 
 import Activity.Model exposing (..)
 import Activity.Utils exposing (..)
-import Backend.Child.Model exposing (Child, Gender(..))
 import Backend.Counseling.Model exposing (..)
-import Backend.Entities exposing (ChildId)
+import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model exposing (..)
+import Backend.Person.Model exposing (Gender(..), Person)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
@@ -166,6 +166,7 @@ makeOfflineSession test =
     { session = session sessionDate
     , allParticipantForms = EveryDictList.empty -- not relevant
     , everyCounselingSchedule = EveryDict.empty -- not relevant
+    , participants = EveryDictList.empty
     , mothers = EveryDictList.empty -- not relevant
     , children = makeChildren test
     , historicalMeasurements = makeHistoricalMeasurements test
@@ -218,23 +219,35 @@ session start =
 
 {-| We just need one child ...
 -}
-childId : ChildId
+childId : PersonId
 childId =
     toEntityUuid "1"
 
 
-makeChildren : TestCase -> EveryDictList ChildId Child
+makeChildren : TestCase -> EveryDictList PersonId Person
 makeChildren test =
     EveryDictList.fromList
         [ ( childId, makeChild test )
         ]
 
 
-makeChild : TestCase -> Child
+makeChild : TestCase -> Person
 makeChild test =
     { name = "Test Child"
     , avatarUrl = Nothing
-    , motherId = Nothing -- not relevant
-    , birthDate = addDays -test.daysOld sessionDate
+    , birthDate = Just <| addDays -test.daysOld sessionDate
     , gender = Male
+    , cell = Nothing
+    , district = Nothing
+    , firstName = ""
+    , educationLevel = Nothing
+    , maritalStatus = Nothing
+    , isDateOfBirthEstimated = False
+    , nationalIdNumber = Nothing
+    , province = Nothing
+    , secondName = ""
+    , sector = Nothing
+    , telephoneNumber = Nothing
+    , ubudehe = Nothing
+    , village = Nothing
     }

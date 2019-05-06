@@ -86,11 +86,23 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateClinics' => [
         'class_name' => 'HedleyMigrateClinics',
       ],
+      'HedleyMigratePmtctParticipants' => [
+        'class_name' => 'HedleyMigratePmtctParticipants',
+      ],
+      'HedleyMigrateRelationships' => [
+        'class_name' => 'HedleyMigrateRelationships',
+      ],
+      'HedleyMigrateSessions' => [
+        'class_name' => 'HedleyMigrateSessions',
+      ],
       'HedleyMigrateCatchmentAreas' => [
         'class_name' => 'HedleyMigrateCatchmentAreas',
       ],
       'HedleyMigrateHealthCenters' => [
         'class_name' => 'HedleyMigrateHealthCenters',
+      ],
+      'HedleyMigratePeople' => [
+        'class_name' => 'HedleyMigratePeople',
       ],
       'HedleyMigrateNurses' => [
         'class_name' => 'HedleyMigrateNurses',
@@ -184,6 +196,201 @@ function hedley_migrate_hedley_faker_taxonomy_term_generate($term, Generator $fa
 }
 
 /**
+ * Function creates Taxonomy vocabulary that describes GeoLocations.
+ *
+ * Currently, it's only use is to generate GeoLocation data structure that
+ * will be set on client.
+ *
+ * Structure:
+ *  - Level 0: province
+ *  - Level 1: district
+ *  - Level 2: sector
+ *  - Level 3: cell
+ *  - Level 4: village
+ */
+function hedley_migrate_generate_geo_terms_vocabulary() {
+  if (taxonomy_vocabulary_machine_name_load('ihangane_geolocation')) {
+    // Vocabulary already exists.
+    return;
+  }
+
+  // Create new vocabulary.
+  $vocabulary = (object) array(
+    'name' => 'Ihangane geolocation vocabulary',
+    'description' => 'This vocabulary lists all geolocations',
+    'machine_name' => 'ihangane_geolocation',
+  );
+  taxonomy_vocabulary_save($vocabulary);
+
+  // Load input file.
+  $migrate_dir = variable_get('hedley_migrate_directory', FALSE) ? variable_get('hedley_migrate_directory') : drupal_get_path('module', 'hedley_migrate');
+  $source_file = $migrate_dir . '/csv/villages.csv';
+
+  $column_mapping = ['province', 'district', 'sector', 'cell', 'village'];
+
+  foreach ($column_mapping as $column) {
+    $data[] = [];
+  }
+
+  // Used to check if term exists (was previously created), so we can
+  // skip it.
+  $locator = [];
+
+  $handler = fopen($source_file, 'r');
+  while ($row = fgetcsv($handler)) {
+    foreach ($row as $index => $column) {
+      _hedley_migrate_process_column($data, $locator, $index, $row, $vocabulary->vid, $column_mapping);
+    }
+  }
+
+  fclose($handler);
+}
+
+/**
+ * Processes a column form input file row.
+ *
+ * Row contains 5 columns:
+ *  [ province, district, sector, cell, village ]
+ *
+ * Function is invoked for each column in a row.
+ *
+ * @param array $data
+ *   Terms created so far.
+ * @param array $locator
+ *   Locator array, that helps to determine if term requires creation.
+ * @param int $index
+ *   Index of column that is being processed.
+ * @param array $row
+ *   The row that contains processed column.
+ * @param int $vocabulary_id
+ *   The ID of vocabulary to which terms are added.
+ * @param array $column_mapping
+ *   Columns mapping array.
+ */
+function _hedley_migrate_process_column(array &$data, array &$locator, $index, array $row, $vocabulary_id, array $column_mapping) {
+  $locator_index = implode('-', array_slice($row, 0, $index + 1));
+
+  if (!empty($locator[$locator_index])) {
+    // Term already exists.
+    return;
+  }
+
+  // Resolve term parent.
+  if ($index != 0) {
+    $parent_key = $row[$index - 1];
+    $parent = $data[$index - 1][$parent_key];
+  }
+  else {
+    $parent = 0;
+  }
+
+  // Create the term.
+  $term = (object) [
+    'name' => ucfirst(strtolower($row[$index])),
+    'description' => ucfirst($column_mapping[$index]) . ' ' . $row[$index],
+    'vid' => $vocabulary_id,
+    'parent' => $parent,
+  ];
+  taxonomy_term_save($term);
+
+  // Update data and locator arrays with new term.
+  $data[$index][$row[$index]] = $locator[$locator_index] = $term->tid;
+}
+
+/**
+ * Generates static geolocation structure to be used by client.
+ */
+function hedley_migrate_generate_geolocation_structure_for_client() {
+  if (!$vocabulary = taxonomy_vocabulary_machine_name_load('ihangane_geolocation')) {
+    // Vocabulary does not exist.
+    return;
+  }
+
+  $column_mapping = ['province', 'district', 'sector', 'cell', 'village'];
+  foreach ($column_mapping as $index => $column) {
+    $data[$index] = [];
+
+    $data[$index]['tids'] = $index == 0 ?
+      // We specify vocabulary ID only for top level.
+      _hedley_migrate_get_children_by_parents([0], $vocabulary->vid) :
+      // We know for sure that all other levels belong to same vocabulary.
+      _hedley_migrate_get_children_by_parents($data[$index - 1]['tids']);
+
+    $data[$index]['structure'] = hedley_migrate_generate_structure_for_terms_of_type($column, $data[$index]['tids']);
+  }
+}
+
+/**
+ * Generates structure for all terms of specified type.
+ *
+ * @param string $type
+ *   Type that term represents - province/district/sector/cell/village.
+ * @param array $tids
+ *   All term IDs for provided type.
+ * @param int $chunk_size
+ *   Number of terms in single chunk, while processing terms array.
+ *
+ * @return string
+ *   Structure that is generated for provided input.
+ */
+function hedley_migrate_generate_structure_for_terms_of_type($type, array $tids, $chunk_size = 256) {
+  $tids_chunks = array_chunk($tids, $chunk_size);
+  $chunks = [];
+
+  foreach ($tids_chunks as $tid_chunk) {
+    $entities = [];
+    foreach (taxonomy_term_load_multiple($tid_chunk) as $term) {
+      $id = 'toEntityId ' . $term->tid;
+      $name = $term->name;
+
+      if ($type == 'province') {
+        $parent = 'Nothing';
+      }
+      else {
+        $wrapper = entity_metadata_wrapper('taxonomy_term', $term);
+        $parent_tids = $wrapper->parent->value(['identifier' => TRUE]);
+        $parent_tid = reset($parent_tids);
+        $parent = "(Just <| toEntityId $parent_tid)";
+      }
+
+      $entities[] = "( $id, GeoLocation \"$name\" $parent)";
+    }
+
+    $chunks[] = '[ ' . implode("\n, ", $entities) . ' ]';
+  }
+
+  return implode(" ++ \n ", $chunks);
+}
+
+/**
+ * IDs of all children terms for specified parents term IDs.
+ *
+ * @param array $parents
+ *   The IDs of parent terms.
+ * @param int|bool $vocabulary_id
+ *   The ID of vocabulary to which terms belong. False if it's not important.
+ *
+ * @return array
+ *   The IDs of all children terms for specified parents.
+ */
+function _hedley_migrate_get_children_by_parents(array $parents, $vocabulary_id = FALSE) {
+  $query = db_select('taxonomy_term_hierarchy', 'hierarchy');
+  if ($vocabulary_id) {
+    $query->innerJoin('taxonomy_term_data', 'data', 'hierarchy.tid = data.tid');
+  }
+
+  $query
+    ->fields('hierarchy', ['tid'])
+    ->condition('hierarchy.parent', $parents, 'IN');
+
+  if ($vocabulary_id) {
+    $query->condition('data.vid', $vocabulary_id);
+  }
+
+  return $query->execute()->fetchCol();
+}
+
+/**
  * Alters devel generated Sites to satisfy business logic.
  *
  * We should have at least one entity from each bundle with an XSS label.
@@ -234,18 +441,7 @@ function _hedley_migrate_preprocess_xss($entity_type, $bundle, $entity) {
       continue;
     }
 
-    // Handle each column.
-    foreach ($field['columns'] as $column => $column_info) {
-      if ($column == 'format') {
-        // We should not allow full html format for XSS attempt.
-        if ($wrapper->{$field_name}->format->value() == 'full_html') {
-          $wrapper->{$field_name}->format->set('filtered_html');
-        }
-      }
-      else {
-        $wrapper->{$field_name}->{$column}->set("<script>alert('XSS-{$entity_type}-{$bundle}-{$field_name}')</script>");
-      }
-    }
+    $wrapper->{$field_name}->set("<script>alert('XSS-{$entity_type}-{$bundle}-{$field_name}')</script>");
   }
 }
 
@@ -259,15 +455,35 @@ function _hedley_migrate_preprocess_xss($entity_type, $bundle, $entity) {
  */
 function _hedley_migrate_preprocess_child($node, Generator $faker) {
   $wrapper = entity_metadata_wrapper('node', $node);
-  $wrapper->title->set($faker->firstName);
+
+  $helpers = _hedley_migrate_participant_helpers();
+
+  $gender = $helpers['gender'][$faker->numberBetween(0, count($helpers['gender']) - 1)];
+  $wrapper->field_gender->set($gender);
+
+  $first_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
+  $middle_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
+  $second_name = $faker->lastName;
+  $wrapper->title->set("$first_name $middle_name $second_name");
+
+  // Leave this blank, to test our migration scripts.
+  $wrapper->field_person->set(NULL);
+
+  $mode_of_delivery = [
+    'svd-episiotomy',
+    'svd-no-episiotomy',
+    'vd-vacuum',
+    'cesarean-delivery',
+  ];
+  $wrapper->field_mode_of_delivery->set($mode_of_delivery[$faker->numberBetween(0, count($mode_of_delivery) - 1)]);
 
   $_hedley_devel_generate = &drupal_static(__FUNCTION__, FALSE);
 
   if ($_hedley_devel_generate) {
     return;
   }
-  $_hedley_devel_generate = TRUE;
 
+  $_hedley_devel_generate = TRUE;
 }
 
 /**
@@ -280,7 +496,49 @@ function _hedley_migrate_preprocess_child($node, Generator $faker) {
  */
 function _hedley_migrate_preprocess_mother($node, Generator $faker) {
   $wrapper = entity_metadata_wrapper('node', $node);
-  $wrapper->title->set($faker->firstNameFemale);
+
+  $helpers = _hedley_migrate_participant_helpers();
+
+  $gender = $helpers['gender'][$faker->numberBetween(0, count($helpers['gender']) - 1)];
+
+  $first_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
+  $middle_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
+  $second_name = $faker->lastName;
+  $wrapper->title->set("$first_name $middle_name $second_name");
+
+  // Leave this blank, to test our migration scripts.
+  $wrapper->field_person->set(NULL);
+
+  $hiv_status = [
+    'hiv-exposed-infant',
+    'negative',
+    'negative-dc',
+    'positive',
+    'unknown',
+  ];
+  $wrapper->field_hiv_status->set($hiv_status[$faker->numberBetween(0, count($hiv_status) - 1)]);
+  $wrapper->field_household_size->set($faker->numberBetween(0, 30));
+  $wrapper->field_number_of_children->set($faker->numberBetween(0, 20));
+}
+
+/**
+ * Generates helper params for participants fields.
+ *
+ * @return array
+ *   Helper params to generate participants fields.
+ */
+function _hedley_migrate_participant_helpers() {
+  return [
+    'gender' =>
+      ['male', 'female'],
+    'geolocation_info' => [
+      ['Amajyaruguru', 'Gakenke', 'Busengo', 'Birambo', 'Birambo'],
+      ['Amajyaruguru', 'Gakenke', 'Ruli', 'Gikingo', 'Nyamugari'],
+      ['Amajyaruguru', 'Gakenke', 'Rushashi', 'Joma', 'Kineza'],
+      ['Amajyaruguru', 'Rulindo', 'Burega', 'Butangampundu', 'Kibiraro'],
+      ['Amajyaruguru', 'Rulindo', 'Bushoki', 'Mukoto', 'Muko'],
+    ],
+  ];
 }
 
 /**

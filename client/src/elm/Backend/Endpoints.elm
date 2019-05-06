@@ -1,8 +1,5 @@
-module Backend.Endpoints exposing (ChildParams, MotherParams, NurseParams, SessionParams(..), attendanceEndpoint, childEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeChildParams, encodeMotherParams, encodeNurseParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, motherEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, photoEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, trainingSessionsEndpoint, weightEndpoint)
+module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams, RelationshipParams, SessionParams(..), attendanceEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, relationshipEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, weightEndpoint)
 
-import Backend.Child.Decoder exposing (decodeChild)
-import Backend.Child.Encoder exposing (encodeChild)
-import Backend.Child.Model exposing (Child)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
 import Backend.Clinic.Model exposing (Clinic)
@@ -15,17 +12,22 @@ import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Measurement.Decoder exposing (..)
 import Backend.Measurement.Encoder exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Model exposing (TrainingSessionRequest)
-import Backend.Mother.Decoder exposing (decodeMother)
-import Backend.Mother.Encoder exposing (encodeMother)
-import Backend.Mother.Model exposing (Mother)
 import Backend.Nurse.Decoder exposing (decodeNurse)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ParticipantConsent.Decoder exposing (decodeParticipantForm)
 import Backend.ParticipantConsent.Encoder exposing (encodeParticipantForm)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
-import Backend.Session.Decoder exposing (decodeSession, decodeTrainingSessionRequest)
-import Backend.Session.Encoder exposing (encodeSession, encodeTrainingSessionRequest)
+import Backend.Person.Decoder exposing (decodePerson)
+import Backend.Person.Encoder exposing (encodePerson)
+import Backend.Person.Model exposing (Person)
+import Backend.PmtctParticipant.Decoder exposing (decodePmtctParticipant)
+import Backend.PmtctParticipant.Encoder exposing (encodePmtctParticipant)
+import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
+import Backend.Relationship.Decoder exposing (decodeRelationship)
+import Backend.Relationship.Encoder exposing (encodeRelationship)
+import Backend.Relationship.Model exposing (Relationship)
+import Backend.Session.Decoder exposing (decodeSession)
+import Backend.Session.Encoder exposing (encodeSession)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.SyncData.Decoder exposing (decodeSyncData)
 import Backend.SyncData.Encoder exposing (encodeSyncData)
@@ -49,42 +51,44 @@ swEndpoint path decodeValue =
         |> withKeyEncoder fromEntityUuid
 
 
-childEndpoint : ReadWriteEndPoint Error ChildId Child Child ChildParams
-childEndpoint =
-    swEndpoint "nodes/child" decodeChild
-        |> withValueEncoder (object << encodeChild)
-        |> withParamsEncoder encodeChildParams
+personEndpoint : ReadWriteEndPoint Error PersonId Person Person PersonParams
+personEndpoint =
+    swEndpoint "nodes/person" decodePerson
+        |> withValueEncoder encodePerson
+        |> withParamsEncoder encodePersonParams
 
 
-type alias ChildParams =
-    { session : Maybe SessionId
+type alias PersonParams =
+    { nameContains : Maybe String
     }
 
 
-encodeChildParams : ChildParams -> List ( String, String )
-encodeChildParams params =
-    params.session
-        |> Maybe.map (\id -> ( "session", fromEntityUuid id ))
-        |> Maybe.Extra.toList
+encodePersonParams : PersonParams -> List ( String, String )
+encodePersonParams params =
+    List.filterMap identity
+        [ Maybe.map (\name -> ( "name_contains", name )) params.nameContains
+        ]
 
 
-motherEndpoint : ReadWriteEndPoint Error MotherId Mother Mother MotherParams
-motherEndpoint =
-    swEndpoint "nodes/mother" decodeMother
-        |> withValueEncoder (object << encodeMother)
-        |> withParamsEncoder encodeMotherParams
+relationshipEndpoint : ReadWriteEndPoint Error RelationshipId Relationship Relationship RelationshipParams
+relationshipEndpoint =
+    swEndpoint "nodes/relationship" decodeRelationship
+        |> withValueEncoder encodeRelationship
+        |> withParamsEncoder encodeRelationshipParams
 
 
-type alias MotherParams =
-    { session : Maybe SessionId
+type alias RelationshipParams =
+    { person : Maybe PersonId
+    , relatedTo : Maybe PersonId
     }
 
 
-encodeMotherParams : MotherParams -> List ( String, String )
-encodeMotherParams params =
-    params.session
-        |> Maybe.map (\id -> ( "session", fromEntityUuid id ))
-        |> Maybe.Extra.toList
+encodeRelationshipParams : RelationshipParams -> List ( String, String )
+encodeRelationshipParams params =
+    List.filterMap identity
+        [ Maybe.map (\person -> ( "person", fromEntityUuid person )) params.person
+        , Maybe.map (\relatedTo -> ( "related_to", fromEntityUuid relatedTo )) params.relatedTo
+        ]
 
 
 healthCenterEndpoint : ReadOnlyEndPoint Error HealthCenterId HealthCenter ()
@@ -194,12 +198,12 @@ encodeNurseParams params =
         |> Maybe.Extra.toList
 
 
-motherMeasurementListEndpoint : ReadOnlyEndPoint Error MotherId MotherMeasurementList ()
+motherMeasurementListEndpoint : ReadOnlyEndPoint Error PersonId MotherMeasurementList ()
 motherMeasurementListEndpoint =
     swEndpoint "nodes/mother-measurements" decodeMotherMeasurementList
 
 
-childMeasurementListEndpoint : ReadOnlyEndPoint Error ChildId ChildMeasurementList ()
+childMeasurementListEndpoint : ReadOnlyEndPoint Error PersonId ChildMeasurementList ()
 childMeasurementListEndpoint =
     swEndpoint "nodes/child-measurements" decodeChildMeasurementList
 
@@ -209,7 +213,7 @@ childMeasurementListEndpoint =
 type SessionParams
     = AllSessions
     | ForClinic ClinicId
-    | ForChild ChildId
+    | ForChild PersonId
 
 
 encodeSessionParams : SessionParams -> List ( String, String )
@@ -232,13 +236,19 @@ sessionEndpoint =
         |> withParamsEncoder encodeSessionParams
 
 
-trainingSessionsEndpoint : ReadWriteEndPoint Error () TrainingSessionRequest TrainingSessionRequest ()
-trainingSessionsEndpoint =
-    -- This one is a little different because we're not expecting a key. So, we
-    -- just decode the key successfully as `()`. We can't use `drupalEndpont`
-    -- directly, because it assumes the key is some kind of `EntityId` (which
-    -- is normally convenient). This could change in future if the backend
-    -- were to queue the request and give it an ID, instead of executing it
-    -- immediately.
-    endpoint "api/training_session_actions" (succeed ()) decodeTrainingSessionRequest drupalBackend
-        |> withValueEncoder encodeTrainingSessionRequest
+type alias PmtctParticipantParams =
+    { session : SessionId
+    }
+
+
+encodePmtctParticipantParams : PmtctParticipantParams -> List ( String, String )
+encodePmtctParticipantParams params =
+    [ ( "session", fromEntityUuid params.session )
+    ]
+
+
+pmtctParticipantEndpoint : ReadWriteEndPoint Error PmtctParticipantId PmtctParticipant PmtctParticipant PmtctParticipantParams
+pmtctParticipantEndpoint =
+    swEndpoint "nodes/pmtct_participant" decodePmtctParticipant
+        |> withValueEncoder encodePmtctParticipant
+        |> withParamsEncoder encodePmtctParticipantParams

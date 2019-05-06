@@ -40,6 +40,19 @@ abstract class HedleyRestfulEntityBaseNode extends \RestfulEntityBaseNode {
   }
 
   /**
+   * Convert Unix timestamp to YYYY-MM-DD.
+   *
+   * @param int $timestamp
+   *   The Unix timestamp.
+   *
+   * @return false|string
+   *   The converted timestamp.
+   */
+  protected function convertTimestampToYmd($timestamp) {
+    return date('Y-m-d', $timestamp);
+  }
+
+  /**
    * Process callback, Remove Drupal specific events from the image array.
    *
    * @param array $value

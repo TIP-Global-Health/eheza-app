@@ -9,7 +9,7 @@ at a session.
 
 import Activity.Utils exposing (motherIsCheckedIn)
 import Backend.Entities exposing (..)
-import Backend.Mother.Model exposing (Mother)
+import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildren, getMotherMeasurementData)
 import EveryDictList
@@ -42,7 +42,7 @@ view language ( sessionId, session ) model =
             if EveryDictList.isEmpty session.offlineSession.mothers then
                 [ div
                     [ class "ui message warning" ]
-                    [ text <| translate language Translate.ThisClinicHasNoMothers ]
+                    [ text <| translate language Translate.ThisGroupHasNoMothers ]
                 ]
 
             else
@@ -104,7 +104,7 @@ view language ( sessionId, session ) model =
         ]
 
 
-viewMother : EditableSession -> MotherId -> Mother -> Html Msg
+viewMother : EditableSession -> PersonId -> Person -> Html Msg
 viewMother session motherId mother =
     let
         attendanceId =

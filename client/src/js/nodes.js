@@ -77,7 +77,6 @@
     var tableForType = {
         attendance: 'shards',
         catchment_area: 'nodes',
-        child: 'nodes',
         clinic: 'nodes',
         counseling_schedule: 'nodes',
         counseling_session: 'shards',
@@ -85,13 +84,15 @@
         family_planning: 'shards',
         health_center: 'nodes',
         height: 'shards',
-        mother: 'nodes',
         muac: 'shards',
         nurse: 'nodes',
         nutrition: 'shards',
         participant_consent: 'shards',
         participant_form: 'nodes',
+        person: 'nodes',
         photo: 'shards',
+        pmtct_participant: 'nodes',
+        relationship: 'nodes',
         session: 'nodes',
         syncmetadata: 'syncMetadata',
         weight: 'shards'
@@ -101,6 +102,14 @@
         published: 1,
         unpublished: 0
     };
+
+    function expectedOnDate (participation, sessionDate) {
+        var joinedGroupBeforeSession = participation.expected.value <= sessionDate;
+        var notLeftGroup = !participation.expected.value2 || (participation.expected.value === participation.expected.value2);
+        var leftGroupAfterSession = participation.expected.value2 > sessionDate;
+
+        return joinedGroupBeforeSession && (notLeftGroup || leftGroupAfterSession);
+    }
 
     function getTableForType (type) {
         var table = tableForType[type];
@@ -332,9 +341,9 @@
     function view (url, type, uuid) {
         return dbSync.open().catch(databaseError).then(function () {
             if (type === 'child-measurements') {
-                return viewMeasurements('child', uuid);
+                return viewMeasurements('person', uuid);
             } else if (type === 'mother-measurements') {
-                return viewMeasurements('mother', uuid);
+                return viewMeasurements('person', uuid);
             } else {
                 return getTableForType(type).then(function (table) {
                     return table.get(uuid).catch(databaseError).then(function (node) {
@@ -368,9 +377,7 @@
     }
 
     // This is a kind of special-case for now, at least. We're wanting to get
-    // back all of a particular child's or mother's measurements. The key is
-    // either 'childId' or `motherId`, and the uuid is the uuid of the child or
-    // mother.  We also want the measurements in a record indexed by the type.
+    // back all of a particular child's or mother's measurements.
     //
     // Ultimately, it would be better to make this more generic here and do the
     // processing on the client side, but this mirrors the pre-existing
@@ -411,7 +418,9 @@
     // Fields which we index along with type, so we can search for them.
     var searchFields = [
         'pin_code',
-        'clinic'
+        'clinic',
+        'person',
+        'related_to'
     ];
 
     function index (url, type) {
@@ -446,64 +455,73 @@
 
                 var modifyQuery = Promise.resolve();
 
-                if (type === 'mother') {
+                var nameContains = params.get('name_contains');
+                if (nameContains) {
+                    var filter = nameContains.toLowerCase();
+
+                    var doFilter = function (participant) {
+                        var name = (participant.label || '').toLowerCase();
+                        return name.includes(filter);
+                    };
+
+                    modifyQuery = modifyQuery.then(function () {
+                        query = query.and(doFilter);
+                        countQuery = countQuery.and(doFilter);
+
+                        return Promise.resolve();
+                    });
+                }
+
+                // For PmtctParticipant, check the session param and (if
+                // provided) get only those expected at the specified
+                // session.
+                if (type === 'pmtct_participant') {
                     var sessionId = params.get('session');
-
                     if (sessionId) {
-                        // We want just the mothers who are expected at the session
-                        // with the given ID. Mothers have a `clinic` field, and
-                        // sessions have a `clinic` field. So, we'll get the
-                        // session, and then get mothers who have the same clinic
-                        // field.
-                        modifyQuery = dbSync.nodes.get(sessionId).then(function (session) {
-                            if (session) {
-                                criteria = {
-                                    type: 'mother',
-                                    clinic: session.clinic
-                                };
+                        modifyQuery = modifyQuery.then(function () {
+                            return table.get(sessionId).then(function (session) {
+                                if (session) {
+                                    criteria.clinic = session.clinic;
 
-                                query = table.where(criteria);
-                                countQuery = query.clone();
-
-                                return Promise.resolve();
-                            } else {
-                                return Promise.reject('Session not found: ' + sessionId);
-                            }
-                        });
-                    }
-                } else if (type === 'child') {
-                    var sessionId = params.get('session');
-
-                    if (sessionId) {
-                        // We want just the children expected at the session.
-                        // We have to get them via the mothers, because the
-                        // mothers have the clinic field. Oh, to have a query
-                        // planner!
-                        modifyQuery = dbSync.nodes.get(sessionId).then(function (session) {
-                            if (session) {
-                                var motherQuery = dbSync.nodes.where({
-                                    type: 'mother',
-                                    clinic: session.clinic
-                                });
-
-                                return motherQuery.primaryKeys().then(function (motherIds) {
-                                    // Construct a compound criteria for each mother
-                                    criteria = motherIds.map(function (motherId) {
-                                        return ['child', motherId];
+                                    query = table.where(criteria).and(function (participation) {
+                                        return expectedOnDate(participation, session.scheduled_date.value);
                                     });
 
-                                    // For some reason, query.clone() doesn't
-                                    // work properly to construct the query
-                                    // here. Possibly the `anyOf` ends up
-                                    // mutating something later?
-                                    query = dbSync.nodes.where('[type+mother]').anyOf(criteria);
-                                    countQuery = dbSync.nodes.where('[type+mother]').anyOf(criteria);
+                                    countQuery = query.clone();
 
                                     return Promise.resolve();
-                                });
-                            } else {
-                                return Promise.reject('Session not found: ' + sessionId);
-                            }
+                                } else {
+                                    return Promise.reject('Could not find session: ' + sessionId);
+                                }
+                            });
+                        });
+                    }
+                }
+
+                // For session endpoint, check child param and only return
+                // those sessions which the child was expected at.
+                if (type === 'session') {
+                    var childId = params.get('child');
+                    if (childId) {
+                        modifyQuery = modifyQuery.then(function () {
+                            return table.where({
+                                type: 'pmtct_participant',
+                                person: childId
+                            }).first().then(function (participation) {
+                                if (participation) {
+                                    criteria.clinic = participation.clinic;
+
+                                    query = table.where(criteria).and(function (session) {
+                                        return expectedOnDate(participation, session.scheduled_date.value)
+                                    });
+
+                                    countQuery = query.clone();
+
+                                    return Promise.resolve();
+                                } else {
+                                    return Promise.reject('Could not find participation for child: ' + childId);
+                                }
+                            });
                         });
                     }
                 }
@@ -543,41 +561,24 @@
 
     // It's not entirely clear whose job it ought to be to figure out what
     // shard a node should be assigned to. For now, it seems simplest to do it
-    // here, but we can revisit that. We'll also need to consider how to deal
-    // with nodes that change shard at some point -- it may be that they end up
-    // needing to be in more than one shard.
+    // here, but we can revisit that.
     function determineShard (node) {
-        if (node.mother) {
-            // For mother measurements, we look up the mother and get her health clinic,
-            // and then health center.
-            return dbSync.nodes.get(node.mother).then(function (mother) {
-                if (mother) {
-                    return dbSync.nodes.get(mother.clinic).then(function (clinic) {
-                        if (clinic) {
-                            if (clinic.health_center) {
-                                return Promise.resolve(clinic.health_center);
-                            } else {
-                                return Promise.reject('Clinic had no health_center: ' + clinic.uuid);
-                            }
+        if (node.session) {
+            return dbSync.nodes.get(node.session).then (function (session) {
+                return dbSync.nodes.get(session.clinic).then(function (clinic) {
+                    if (clinic) {
+                        if (clinic.health_center) {
+                            return Promise.resolve(clinic.health_center);
                         } else {
-                            return Promise.reject('Could not find clinic: ' + mother.clinic);
+                            return Promise.reject('Clinic had no health_center: ' + clinic.uuid);
                         }
-                    });
-                } else {
-                    return Promise.reject('Could not find mother: ' + node.mother);
-                }
-            });
-        } else if (node.child) {
-            // For children, look up the mother and recurse.
-            return dbSync.nodes.get(node.child).then(function (child) {
-                if (child) {
-                    return determineShard(child);
-                } else {
-                    return Promise.reject('Could not find child: ' + node.child);
-                }
+                    } else {
+                        return Promise.reject('Could not find clinic: ' + session.clinic);
+                    }
+                });
             });
         } else {
-            return Promise.reject('Node had no mother or child field: ' + node.uuid);
+            return Promise.reject('Node had no session field: ' + node.uuid);
         }
     }
 

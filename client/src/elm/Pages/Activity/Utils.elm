@@ -20,7 +20,7 @@ import ZScore.Model
 Ideally, we'd have smaller capabilities in `Participant` that
 this could be built on more generically, but this will do for now.
 -}
-viewChildMeasurements : Language -> NominalDate -> ZScore.Model.Model -> ChildId -> ChildActivity -> Pages.Session.Model.Model -> EditableSession -> Html (Msg ChildId Measurement.Model.MsgChild)
+viewChildMeasurements : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> ChildActivity -> Pages.Session.Model.Model -> EditableSession -> Html (Msg PersonId Measurement.Model.MsgChild)
 viewChildMeasurements language currentDate zscores childId activity pages session =
     let
         measurements =
@@ -38,7 +38,7 @@ viewChildMeasurements language currentDate zscores childId activity pages sessio
         |> Maybe.withDefault emptyNode
 
 
-viewMotherMeasurements : Language -> NominalDate -> MotherId -> MotherActivity -> Pages.Session.Model.Model -> EditableSession -> Html (Msg MotherId Measurement.Model.MsgMother)
+viewMotherMeasurements : Language -> NominalDate -> PersonId -> MotherActivity -> Pages.Session.Model.Model -> EditableSession -> Html (Msg PersonId Measurement.Model.MsgMother)
 viewMotherMeasurements language currentDate motherId activity pages session =
     let
         measurements =

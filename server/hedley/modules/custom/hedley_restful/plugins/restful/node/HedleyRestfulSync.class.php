@@ -63,14 +63,15 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
   public function entitiesForAllDevices() {
     return [
       'catchment_area' => 'catchment_areas',
-      'child' => 'children',
       'clinic' => 'clinics',
       'counseling_schedule' => 'counseling-schedule',
       'counseling_topic' => 'counseling-topics',
       'health_center' => 'health_centers',
-      'mother' => 'mothers',
       'nurse' => 'nurses',
       'participant_form' => 'participants-form',
+      'person' => 'people',
+      'pmtct_participant' => 'pmtct-participants',
+      'relationship' => 'relationships',
       'session' => 'sessions',
     ];
   }
@@ -252,62 +253,28 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     $base = $request['base_revision'];
 
+    // Start building up a query, which we'll use in a couple of ways.
     $query = db_select('node_revision', 'nr');
     $query->join('node', 'n', 'n.nid = nr.nid');
 
-    // To query for things relevant to a particular health center, we need to
-    // go through the mother. We've got two ways to do that ... either directly
-    // from mother measurements, or via the child. So, we'll start with the
-    // child ...
-    $query->leftJoin(
-      'field_revision_field_child',
-      'child',
-      'child.entity_id = n.nid AND child.revision_id = nr.vid'
+    // Join the table that tracks which shards the node should be sent to.
+    $query->join(
+      'field_revision_field_shards',
+      's',
+      's.entity_id = nr.nid AND s.revision_id = nr.vid'
     );
 
-    // Then, the OR below is getting the mother either directly from the
-    // mesaurement (for mother measurements), or from the child (for child
-    // measurements). Note that from this point on we're switching to
-    // `field_data_...` rather than `field_revision_...`. This means that we're
-    // looking at current data, rather than point in time, as we follow these
-    // relationships. The alternative would be very complex, because the Drupal
-    // tables have a `field_child_target_id` but no `field_child_revision_id`.
-    // So, we don't have an easy way to know exactly which revision of the
-    // child we're looking at. In principle, I suppose it's the highest
-    // revision for that child less that nr.vid. A query could be written to do
-    // that, but it probably would be overkill. This ought to be sufficient in
-    // practice.
-    $query->leftJoin(
-      'field_data_field_mother',
-      'm',
-      'm.entity_id = child.field_child_target_id OR m.entity_id = n.nid'
-    );
-
-    // From the mother, we can get the clinic.
-    $query->leftJoin(
-      'field_data_field_clinic',
-      'clinic',
-      'm.field_mother_target_id = clinic.entity_id'
-    );
-
-    // And, from the clinic, the health center.
-    $query->leftJoin(
-      'field_data_field_health_center',
-      'hc',
-      'hc.entity_id = clinic.field_clinic_target_id'
-    );
-
-    // And, then we need the UUID of the health center.
-    $query->leftJoin(
+    // And the table which will give us the UUID of the shard.
+    $query->join(
       'field_data_field_uuid',
-      'uuid',
-      'uuid.entity_id = hc.field_health_center_target_id'
+      'u',
+      'u.entity_id = s.field_shards_target_id'
     );
 
     $query
       ->fields('nr', ['nid', 'vid', 'timestamp'])
       ->fields('n', ['type'])
-      ->condition('uuid.field_uuid_value', $uuid)
+      ->condition('u.field_uuid_value', $uuid)
       ->condition('n.type', array_keys($handlersForTypes), 'IN');
 
     // Get the timestamp of the last revision. We'll also get a count of
@@ -431,6 +398,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           elseif ($key == 'date_measured' && !empty($value)) {
             // Restful seems to want date values as timestamps -- should
             // investigate if there are other possibilities.
+            $data[$key] = strtotime($value);
+          }
+          elseif ($key == 'birth_date' && !empty($value)) {
             $data[$key] = strtotime($value);
           }
           else {

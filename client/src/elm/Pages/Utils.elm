@@ -1,7 +1,7 @@
 module Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
 
-import Backend.Entities exposing (MotherId)
-import Backend.Mother.Model exposing (Mother)
+import Backend.Entities exposing (PersonId)
+import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
 import Html exposing (..)
@@ -30,7 +30,7 @@ matchFilter filter filteredValue =
             |> String.contains filter
 
 
-matchMotherAndHerChildren : String -> OfflineSession -> MotherId -> Mother -> Bool
+matchMotherAndHerChildren : String -> OfflineSession -> PersonId -> Person -> Bool
 matchMotherAndHerChildren filter offlineSession motherId mother =
     let
         motherContainsFilter =

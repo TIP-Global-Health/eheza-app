@@ -20,25 +20,57 @@ fetch sessionId sessionPage db =
                 _ ->
                     []
 
-        fetchMeasurements =
+        participantData =
             EveryDict.get sessionId db.expectedParticipants
                 |> Maybe.withDefault NotAsked
-                |> RemoteData.map
-                    (\participants ->
-                        List.concat
-                            [ EveryDictList.keys participants.children
-                                |> List.map FetchChildMeasurements
-                            , EveryDictList.keys participants.mothers
-                                |> List.map FetchMotherMeasurements
-                            ]
-                    )
+
+        childrenIdData =
+            RemoteData.map
+                (EveryDictList.values >> List.map .child)
+                participantData
+
+        motherIdData =
+            RemoteData.map
+                (EveryDictList.values >> List.map .adult)
+                participantData
+
+        -- It would be more efficient here to have messages that could fetch a
+        -- whole bunch of people at once. However, since we're talking to
+        -- IndexedDb, it's unlikely to make any noticeable difference in
+        -- practice. We could look at it if there is any perceptible delay.
+        fetchChildren =
+            childrenIdData
+                |> RemoteData.map (List.map FetchPerson)
                 |> RemoteData.withDefault []
+
+        fetchMothers =
+            motherIdData
+                |> RemoteData.map (List.map FetchPerson)
+                |> RemoteData.withDefault []
+
+        fetchChildMeasurements =
+            childrenIdData
+                |> RemoteData.map (List.map FetchChildMeasurements)
+                |> RemoteData.withDefault []
+
+        fetchMotherMeasurements =
+            motherIdData
+                |> RemoteData.map (List.map FetchMotherMeasurements)
+                |> RemoteData.withDefault []
+
+        alwaysFetch =
+            [ FetchSession sessionId
+            , FetchClinics
+            , FetchEveryCounselingSchedule
+            , FetchParticipantForms
+            , FetchExpectedParticipants sessionId
+            ]
     in
-    [ FetchSession sessionId
-    , FetchClinics
-    , FetchEveryCounselingSchedule
-    , FetchParticipantForms
-    , FetchExpectedParticipants sessionId
-    ]
-        |> List.append forSessionPage
-        |> List.append fetchMeasurements
+    List.concat
+        [ alwaysFetch
+        , fetchMotherMeasurements
+        , fetchChildMeasurements
+        , fetchMothers
+        , fetchChildren
+        , forSessionPage
+        ]

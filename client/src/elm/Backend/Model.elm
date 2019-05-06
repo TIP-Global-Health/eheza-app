@@ -1,4 +1,4 @@
-module Backend.Model exposing (ModelBackend, ModelIndexedDb, MsgBackend(..), MsgIndexedDb(..), Participants, Revision(..), TrainingSessionAction(..), TrainingSessionRequest, emptyModelBackend, emptyModelIndexedDb)
+module Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..), Revision(..), emptyModelIndexedDb)
 
 {-| The `Backend` hierarchy is for code that represents entities from the
 backend. It is reponsible for fetching them, saving them, etc.
@@ -17,60 +17,22 @@ in the UI.
 
 -}
 
-import Backend.Child.Model exposing (Child)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildNutrition, CounselingSession, FamilyPlanning, Height, MotherMeasurementList, Muac, ParticipantConsent, Photo, Weight)
-import Backend.Mother.Model exposing (Mother)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
+import Backend.Person.Model exposing (Person)
+import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
+import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
+import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import RemoteData exposing (RemoteData(..), WebData)
-
-
-{-| This model basically represents things we have locally which also belong
-on the backend. So, conceptually it is a kind of a local cache of some of the
-things on the backend.
--}
-type alias ModelBackend =
-    -- Tracks a request to create a new session.
-    { postSessionRequest : WebData ( SessionId, Session )
-
-    -- Tracks a request to handle training session actions. Note that the
-    -- backend currently doesn't supply a key, so we don't track one here.
-    -- (That might change if the backend actually queued these requests, rather
-    -- than processing them immediately).
-    , postTrainingSessionRequest : WebData TrainingSessionRequest
-    }
-
-
-emptyModelBackend : ModelBackend
-emptyModelBackend =
-    { postSessionRequest = NotAsked
-    , postTrainingSessionRequest = NotAsked
-    }
-
-
-{-| These are all the messages related to getting things from the backend and
-putting things back into the backend.
--}
-type MsgBackend
-    = PostSession Session
-    | PostTrainingSessionRequest TrainingSessionRequest
-    | HandlePostedSession (WebData ( SessionId, Session ))
-    | HandleTrainingSessionResponse (WebData TrainingSessionRequest)
-    | ResetSessionRequests
-
-
-type alias Participants =
-    { children : EveryDictList ChildId Child
-    , mothers : EveryDictList MotherId Mother
-    }
 
 
 {-| This tracks data we fetch from IndexedDB via the service worker. Gradually, we'll
@@ -99,7 +61,7 @@ type alias ModelIndexedDb =
     -- missed sessions.  Because a child could change clinics, it's easier to
     -- ask the service worker to figure out the expected sessions rather than
     -- deriving it from data we already have in memory.
-    , expectedSessions : EveryDict ChildId (WebData (EveryDictList SessionId Session))
+    , expectedSessions : EveryDict PersonId (WebData (EveryDictList SessionId Session))
     , sessionsByClinic : EveryDict ClinicId (WebData (EveryDictList SessionId Session))
     , sessions : EveryDict SessionId (WebData Session)
 
@@ -108,13 +70,27 @@ type alias ModelIndexedDb =
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
-    , expectedParticipants : EveryDict SessionId (WebData Participants)
+    , expectedParticipants : EveryDict SessionId (WebData (EveryDictList PmtctParticipantId PmtctParticipant))
 
     -- Measurement data for children and mothers. From this, we can construct
     -- the things we need for an `EditableSession` or for use on the progress
     -- report.
-    , childMeasurements : EveryDict ChildId (WebData ChildMeasurementList)
-    , motherMeasurements : EveryDict MotherId (WebData MotherMeasurementList)
+    , childMeasurements : EveryDict PersonId (WebData ChildMeasurementList)
+    , motherMeasurements : EveryDict PersonId (WebData MotherMeasurementList)
+
+    -- Tracks searchs for participants by name. The key is the phrase we are
+    -- searching for.
+    , personSearches : Dict String (WebData (EveryDictList PersonId Person))
+
+    -- A simple cache of people.
+    , people : EveryDict PersonId (WebData Person)
+
+    -- From the point of view of the specified person, all of their relationships.
+    , relationshipsByPerson : EveryDict PersonId (WebData (EveryDictList RelationshipId MyRelationship))
+
+    -- Track requests to mutate data
+    , postPerson : WebData PersonId
+    , postRelationship : EveryDict PersonId (WebData MyRelationship)
     }
 
 
@@ -129,6 +105,11 @@ emptyModelIndexedDb =
     , healthCenters = NotAsked
     , motherMeasurements = EveryDict.empty
     , participantForms = NotAsked
+    , people = EveryDict.empty
+    , personSearches = Dict.empty
+    , postPerson = NotAsked
+    , postRelationship = EveryDict.empty
+    , relationshipsByPerson = EveryDict.empty
     , saveSyncDataRequests = EveryDict.empty
     , sessionRequests = EveryDict.empty
     , sessions = EveryDict.empty
@@ -139,29 +120,41 @@ emptyModelIndexedDb =
 
 type MsgIndexedDb
     = -- Messages which fetch various kinds of data
-      FetchChildMeasurements ChildId
+      FetchChildMeasurements PersonId
     | FetchClinics
     | FetchEveryCounselingSchedule
     | FetchExpectedParticipants SessionId
-    | FetchExpectedSessions ChildId
+    | FetchExpectedSessions PersonId
     | FetchHealthCenters
-    | FetchMotherMeasurements MotherId
+    | FetchMotherMeasurements PersonId
     | FetchParticipantForms
+    | FetchPeopleByName String
+    | FetchPerson PersonId
+    | FetchRelationshipsForPerson PersonId
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
     | FetchSyncData
       -- Messages which handle responses to data
-    | HandleFetchedChildMeasurements ChildId (WebData ChildMeasurementList)
+    | HandleFetchedChildMeasurements PersonId (WebData ChildMeasurementList)
     | HandleFetchedEveryCounselingSchedule (WebData EveryCounselingSchedule)
-    | HandleFetchedMotherMeasurements MotherId (WebData MotherMeasurementList)
+    | HandleFetchedMotherMeasurements PersonId (WebData MotherMeasurementList)
     | HandleFetchedClinics (WebData (EveryDictList ClinicId Clinic))
-    | HandleFetchedExpectedParticipants SessionId (WebData Participants)
-    | HandleFetchedExpectedSessions ChildId (WebData (EveryDictList SessionId Session))
+    | HandleFetchedExpectedParticipants SessionId (WebData (EveryDictList PmtctParticipantId PmtctParticipant))
+    | HandleFetchedExpectedSessions PersonId (WebData (EveryDictList SessionId Session))
     | HandleFetchedHealthCenters (WebData (EveryDictList HealthCenterId HealthCenter))
     | HandleFetchedParticipantForms (WebData (EveryDictList ParticipantFormId ParticipantForm))
+    | HandleFetchedPeopleByName String (WebData (EveryDictList PersonId Person))
+    | HandleFetchedPerson PersonId (WebData Person)
+    | HandleFetchedRelationshipsForPerson PersonId (WebData (EveryDictList RelationshipId MyRelationship))
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (EveryDictList SessionId Session))
     | HandleFetchedSyncData (WebData (EveryDictList HealthCenterId SyncData))
+      -- Messages which mutate data
+    | PostPerson (Maybe PersonId) Person -- The first person is a person we ought to offer setting a relationship to.
+    | PostRelationship PersonId MyRelationship
+      -- Messages which handle responses to mutating data
+    | HandlePostedPerson (Maybe PersonId) (WebData PersonId)
+    | HandlePostedRelationship PersonId (WebData MyRelationship)
       -- Process some revisions we've received from the backend. In some cases,
       -- we can update our in-memory structures appropriately. In other cases, we
       -- can set them to `NotAsked` and let the "fetch" mechanism re-fetch them.
@@ -181,7 +174,6 @@ type Revision
     = AttendanceRevision AttendanceId Attendance
     | CatchmentAreaRevision CatchmentAreaId CatchmentArea
     | ChildNutritionRevision ChildNutritionId ChildNutrition
-    | ChildRevision ChildId Child
     | ClinicRevision ClinicId Clinic
     | CounselingScheduleRevision CounselingScheduleId CounselingSchedule
     | CounselingSessionRevision CounselingSessionId CounselingSession
@@ -189,45 +181,13 @@ type Revision
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
     | HealthCenterRevision HealthCenterId HealthCenter
     | HeightRevision HeightId Height
-    | MotherRevision MotherId Mother
     | MuacRevision MuacId Muac
     | NurseRevision NurseId Nurse
     | ParticipantConsentRevision ParticipantConsentId ParticipantConsent
     | ParticipantFormRevision ParticipantFormId ParticipantForm
+    | PersonRevision PersonId Person
     | PhotoRevision PhotoId Photo
+    | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
+    | RelationshipRevision RelationshipId Relationship
     | SessionRevision SessionId Session
     | WeightRevision WeightId Weight
-
-
-{-| This represents a request sent to `/api/training_sessions`, which is an
-endpoint that represents certain actions that can be taken with respect to
-training sessions as a whole. So, "creating" a request there is like queueing
-up an action for the backend to take.
-
-As a simplification, the backend currently executes the action immediately, but
-you might imagine it queuing it up, in which case we could have an ID field
-here, to use in future requests. (For instance, DELETE might cancel the
-request).
-
--}
-type alias TrainingSessionRequest =
-    { action : TrainingSessionAction
-    }
-
-
-{-| An action we can ask `/api/training_sessions` to perform.
-
-  - CreateAll will create a new training session, for today, for every clinic
-    that doesn't already have a training session starting today.
-
-  - DeleteAll will delete all training sessions.
-
-A training session is just like a regular session, except that you can delete
-it with `DeleteAll` here. So, it facilitates having some "permanent" sessions
-(for pre-existing data), and some sessions you create and delete as training
-occurs.
-
--}
-type TrainingSessionAction
-    = CreateAll
-    | DeleteAll

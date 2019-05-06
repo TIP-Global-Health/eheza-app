@@ -1,7 +1,6 @@
 module Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildA, exampleChildB, exampleMother, exampleUser)
 
-import Backend.Child.Model exposing (Child, Gender(..))
-import Backend.Mother.Model exposing (ChildrenRelationType(..), EducationLevel(..), Mother, Ubudehe(..))
+import Backend.Person.Model exposing (EducationLevel(..), Gender(..), Person, Ubudehe(..))
 import EverySet
 import Restful.Endpoint exposing (toEntityId)
 import Time.Date exposing (date)
@@ -36,36 +35,71 @@ exampleUser =
 
 {-| An example child.
 -}
-exampleChildA : Child
+exampleChildA : Person
 exampleChildA =
     { name = "Michelle Kelly"
+    , firstName = "Michelle"
+    , secondName = "Kelly"
+    , nationalIdNumber = Just "324324232"
     , avatarUrl = Just "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
-    , motherId = Nothing
-    , birthDate = date 2016 8 28
+    , birthDate = Just <| date 2016 8 28
+    , educationLevel = Nothing
+    , maritalStatus = Nothing
+    , isDateOfBirthEstimated = False
     , gender = Male
+    , ubudehe = Nothing
+    , province = Nothing
+    , district = Nothing
+    , sector = Nothing
+    , cell = Nothing
+    , village = Nothing
+    , telephoneNumber = Nothing
     }
 
 
 {-| Another example child.
 -}
-exampleChildB : Child
+exampleChildB : Person
 exampleChildB =
     { name = "Habimana Hakizimana"
+    , firstName = "Habimana"
+    , secondName = "Hakizimana"
+    , nationalIdNumber = Just "232324232"
     , avatarUrl = Just "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
-    , motherId = Nothing
-    , birthDate = date 2016 11 17
+    , birthDate = Just <| date 2016 11 17
+    , isDateOfBirthEstimated = True
+    , educationLevel = Nothing
+    , maritalStatus = Nothing
     , gender = Female
+    , ubudehe = Nothing
+    , province = Nothing
+    , district = Nothing
+    , sector = Nothing
+    , cell = Nothing
+    , village = Nothing
+    , telephoneNumber = Nothing
     }
 
 
 {-| An example mother.
 -}
-exampleMother : Mother
+exampleMother : Person
 exampleMother =
     { name = "Sebabive Gahiji"
+    , firstName = "Sebabive"
+    , secondName = "Gahiji"
+    , nationalIdNumber = Just "192324232"
     , avatarUrl = Just "http://lorempixel.com/output/people-q-c-640-480-8.jpg"
     , birthDate = Just <| date 2016 8 28
-    , relation = MotherRelation
+    , isDateOfBirthEstimated = False
+    , gender = Female
     , ubudehe = Just Ubudehe1
     , educationLevel = Just NoSchooling
+    , maritalStatus = Nothing
+    , province = Nothing
+    , district = Nothing
+    , sector = Nothing
+    , cell = Nothing
+    , village = Nothing
+    , telephoneNumber = Nothing
     }

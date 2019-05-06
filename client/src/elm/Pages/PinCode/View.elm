@@ -2,12 +2,11 @@ module Pages.PinCode.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.Nurse.Model exposing (Nurse, Role(..))
-import EverySet
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
-import Pages.Page exposing (Page(..))
+import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PinCode.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
@@ -16,11 +15,9 @@ import Utils.Html exposing (spinner, viewLogo)
 
 view : Language -> Page -> WebData ( NurseId, Nurse ) -> Model -> Html Msg
 view language activePage nurseData model =
-    div [ class "wrap wrap-alt-2" ]
-        [ div
-            [ class "ui basic login segment" ]
-            (viewLogo language :: viewContent language activePage nurseData model)
-        ]
+    div
+        [ class "ui basic segment page-pincode" ]
+        (viewLogo language :: viewContent language activePage nurseData model)
 
 
 viewContent : Language -> Page -> WebData ( NurseId, Nurse ) -> Model -> List (Html Msg)
@@ -120,21 +117,16 @@ viewWhenLoggedIn language nurse =
         selectClinicButton =
             button
                 [ class "ui primary button"
-                , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage <| Pages.Page.ClinicsPage Nothing
+                , onClick <| SendOutMsg <| SetActivePage <| UserPage <| ClinicsPage Nothing
                 ]
-                [ text <| translate language Translate.SelectYourClinic ]
+                [ text <| translate language Translate.SelectYourGroup ]
 
-        administrationButton =
-            if EverySet.member RoleAdministrator nurse.roles then
-                Just <|
-                    button
-                        [ class "ui primary button"
-                        , onClick <| SendOutMsg <| SetActivePage <| Pages.Page.UserPage Pages.Page.AdminPage
-                        ]
-                        [ text <| translate language Translate.Admin ]
-
-            else
-                Nothing
+        registerParticipantButton =
+            button
+                [ class "ui fluid primary button"
+                , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing Nothing
+                ]
+                [ text <| translate language Translate.RegisterAParticipant ]
 
         logoutButton =
             button
@@ -154,10 +146,9 @@ viewWhenLoggedIn language nurse =
                 , text <| ": " ++ nurse.name
                 ]
     in
-    [ Just loggedInAs
-    , Just deviceStatusButton
-    , Just selectClinicButton
-    , administrationButton
-    , Just logoutButton
+    [ loggedInAs
+    , deviceStatusButton
+    , selectClinicButton
+    , registerParticipantButton
+    , logoutButton
     ]
-        |> List.filterMap identity

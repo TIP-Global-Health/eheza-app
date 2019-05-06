@@ -22,7 +22,7 @@ function hedley_activity_node_info() {
     'attendance' => array(
       'name' => t('Attendance'),
       'base' => 'node_content',
-      'description' => t('Records whether a mother/caregiver has attended for a session.'),
+      'description' => t('Records whether a mother/caregiver has attended at an encounter.'),
       'has_title' => '1',
       'title_label' => t('Title'),
       'help' => '',
