@@ -46,7 +46,7 @@ function hedley_device_node_presave($node) {
  */
 function hedley_device_node_delete($node) {
   // Allow to manually skip this exception.
-  if (!empty($node->allow_delete)) {
+  if (!empty($node->allow_delete) || variable_get('hedley_device_allow_deletion', FALSE)) {
     return;
   }
 
