@@ -256,11 +256,24 @@ function hedley_recalculate_shards_for_person($nid) {
 
   // Join field_shards and field_person. So, we're getting all sharded nodes
   // that have a field_person.
-  $query->join('field_data_field_shards', 's', 's.entity_id = n.nid');
   $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
+  $query->leftJoin('field_data_field_shards', 's', 's.entity_id = n.nid');
 
   // Limit to the person we're interested in.
   $query->condition('p.field_person_target_id', $nid);
+
+  // Limit to sharded nodes.
+  $query->condition('n.type', [
+    'attendance',
+    'counseling_session',
+    'family_planning',
+    'height',
+    'muac',
+    'nutrition',
+    'participant_consent',
+    'photo',
+    'weight',
+  ]);
 
   $query->fields('n', ['nid']);
   $query->fields('s', ['field_shards_target_id']);
@@ -274,7 +287,9 @@ function hedley_recalculate_shards_for_person($nid) {
       $measurement[$record->nid] = [];
     }
 
-    $measurement[$record->nid][] = $record->field_shards_target_id;
+    if (!empty($record->field_shards_target_id)) {
+      $measurement[$record->nid][] = $record->field_shards_target_id;
+    }
   }
 
   // For each sharded node, check whether we need to update it.
