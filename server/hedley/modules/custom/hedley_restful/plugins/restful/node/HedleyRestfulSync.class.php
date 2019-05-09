@@ -139,7 +139,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     $base = $request['base_revision'];
 
-    // Check database version on client side ... refuse to send stuff until they upgrade.
+    // Check database version on client side ... refuse to send stuff until
+    // they upgrade.
     if (!isset($request['db_version'])) {
       throw new RestfulBadRequestException('Must provide db_version, indicating the version of your local IndexedDB.');
     }
@@ -264,7 +265,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     $base = $request['base_revision'];
 
-    // Check database version on client side ... refuse to send stuff until they upgrade.
+    // Check database version on client side ... refuse to send stuff until
+    // they upgrade.
     if (!isset($request['db_version'])) {
       throw new RestfulBadRequestException('Must provide db_version, indicating the version of your local IndexedDB.');
     }
