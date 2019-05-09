@@ -77,6 +77,17 @@ dbSync.version(1).stores({
 dbSync.version(2).stores({
     nodes: '&uuid,type,vid,status,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to]',
     shards: '&uuid,type,vid,status,person,[shard+vid]',
+}).upgrade(function (tx) {
+    // On upgrading to version 2, clear nodes and shards.
+    return tx.nodes.clear().then(function () {
+        return tx.shards.clear();
+    }).then(function () {
+        // And reset sync metadata.
+        return tx.syncMetadata.toCollection().modify(function (data) {
+            delete data.download;
+            delete data.upload;
+        });
+    });
 });
 
 // For when any sync metadata changes, send it all to the app
