@@ -86,6 +86,11 @@ dbSync.version(2).stores({
         return tx.syncMetadata.toCollection().modify(function (data) {
             delete data.download;
             delete data.upload;
+
+            data.attempt = {
+                tag: 'NotAsked',
+                timestamp: Date.now()
+            };
         });
     });
 });
