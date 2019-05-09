@@ -139,6 +139,18 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     $base = $request['base_revision'];
 
+    // Check database version on client side ... refuse to send stuff until
+    // they upgrade.
+    if (!isset($request['db_version'])) {
+      throw new RestfulBadRequestException('Must provide db_version, indicating the version of your local IndexedDB.');
+    }
+
+    $db_version = intval($request['db_version']);
+
+    if ($db_version < 2) {
+      throw new RestfulBadRequestException('Must update your client before syncing further.');
+    }
+
     // Start building up a query, which we'll use in a couple of ways.
     $query = db_select('node_revision', 'nr');
     $query->join('node', 'n', 'n.nid = nr.nid');
@@ -252,6 +264,18 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     }
 
     $base = $request['base_revision'];
+
+    // Check database version on client side ... refuse to send stuff until
+    // they upgrade.
+    if (!isset($request['db_version'])) {
+      throw new RestfulBadRequestException('Must provide db_version, indicating the version of your local IndexedDB.');
+    }
+
+    $db_version = intval($request['db_version']);
+
+    if ($db_version < 2) {
+      throw new RestfulBadRequestException('Must update your client before syncing further.');
+    }
 
     // Start building up a query, which we'll use in a couple of ways.
     $query = db_select('node_revision', 'nr');
