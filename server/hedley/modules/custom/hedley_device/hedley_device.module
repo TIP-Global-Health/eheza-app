@@ -20,8 +20,11 @@ define('HEDLEY_DEVICE_BACKEND_UUID', 'c700aec4-92c1-46b2-8894-8f4f82869c79');
  * Implements hook_node_presave().
  */
 function hedley_device_node_presave($node) {
-  // Create a revision for all nodes.
-  $node->revision = TRUE;
+  // Create a revision unless disabled.
+  $revisions_disabled = variable_get('hedley_device_disable_revisions', FALSE);
+  if (!$revisions_disabled) {
+    $node->revision = TRUE;
+  }
 
   $wrapper = entity_metadata_wrapper('node', $node);
 
