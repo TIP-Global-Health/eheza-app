@@ -64,9 +64,6 @@ class HedleyMigrateMothers2019052 extends HedleyMigrateBase {
       return FALSE;
     }
 
-    $health_center = strtoupper($row->health_center);
-    $cell = strtoupper($row->cell);
-
     // Calculate the mother's name.
     $row->title = implode(' ', array_filter([
       trim($row->second_name),
