@@ -76,7 +76,7 @@ gulp.task("styles", [], function () {
 // Compile the raw Z-Score files to something more useful.
 gulp.task("zscore", [], function () {
   var parseOptions = {
-    auto_parse: true,
+    cast: true,
     columns: true,
     delimiter: "\t",
     trim: true
