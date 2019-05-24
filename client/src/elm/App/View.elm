@@ -33,7 +33,7 @@ view : Model -> Html Msg
 view model =
     case model.configuration of
         Failure err ->
-            Config.View.view model.language
+            Config.View.view model.language err
 
         Success configuration ->
             div [ class "page container" ]
