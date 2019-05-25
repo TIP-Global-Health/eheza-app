@@ -108,9 +108,15 @@ viewConfiguredModel model configured =
 
     else if not (RemoteData.isSuccess configured.device) then
         -- If our device is not paired, then the only thing we allow is the pairing
-        -- of the device
-        Pages.Device.View.view model.language configured.device model configured.devicePage
-            |> Html.map MsgPageDevice
+        -- of the device, or deployment of a new version.
+        case model.activePage of
+            ServiceWorkerPage ->
+                ServiceWorker.View.view model.currentTime model.language model.serviceWorker
+                    |> Html.map MsgServiceWorker
+
+            _ ->
+                Pages.Device.View.view model.language configured.device model configured.devicePage
+                    |> Html.map MsgPageDevice
 
     else
         case model.activePage of
