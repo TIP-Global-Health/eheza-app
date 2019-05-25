@@ -80,6 +80,11 @@ viewLanguageSwitcherAndVersion model =
                 ]
             ]
         , span
+            [ onClick <| SetActivePage DevicePage
+            , class "sync-icon"
+            ]
+            [ i [ class "icon undo" ] [] ]
+        , span
             [ class "version"
             , onClick <| SetActivePage ServiceWorkerPage
             ]
