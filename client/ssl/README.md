@@ -63,4 +63,7 @@ And, that should do it. Just remember that from now on you have to start the
 emulator with the `-writable-system` option -- it just stalls otherwise.
 
 Oh, also remember to make an entry in `LocalConfig.elm` to cover
-`ihangane.dev`. 
+`ihangane.dev`. The `backendUrl` entry there is going to also have to be HTTPS.
+So, you'll need to use the same cert & key files to configure whatever HTTP
+server you're using for the backend as well. (Alternatively, perhaps we could
+set up a proxy via BrowserSync).
