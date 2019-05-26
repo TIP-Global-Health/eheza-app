@@ -7,6 +7,7 @@ import Form exposing (..)
 import Form.Init exposing (..)
 import Form.Validate exposing (..)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
+import Regex exposing (Regex)
 import Restful.Endpoint exposing (toEntityId)
 import Translate exposing (ValidationError(..))
 import Utils.Form exposing (fromDecoder, nullable)
@@ -29,7 +30,7 @@ validatePerson : Validation ValidationError Person
 validatePerson =
     let
         withFirstName firstNameValue =
-            andThen (withAllNames firstNameValue) (field secondName string)
+            andThen (withAllNames firstNameValue) (field secondName validateLettersOnly)
 
         combineNames first second =
             [ String.trim second
@@ -57,7 +58,7 @@ validatePerson =
                 |> andMap (field village validateVillage)
                 |> andMap (field phoneNumber <| nullable string)
     in
-    andThen withFirstName (field firstName string)
+    andThen withFirstName (field firstName validateLettersOnly)
 
 
 validateProvince : Validation ValidationError (Maybe String)
@@ -143,6 +144,21 @@ validateEducationLevel =
 validateMaritalStatus : Validation ValidationError (Maybe MaritalStatus)
 validateMaritalStatus =
     nullable (fromDecoder Translate.DecoderError decodeMaritalStatus)
+
+
+validateLettersOnly : Validation ValidationError String
+validateLettersOnly =
+    string
+        |> andThen
+            (\s ->
+                format lettersOnlyPattern s
+                    |> mapError (\_ -> customError UnknownSector)
+            )
+
+
+lettersOnlyPattern : Regex
+lettersOnlyPattern =
+    Regex.regex "^[a-zA-Z]*$"
 
 
 
