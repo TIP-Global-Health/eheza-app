@@ -80,86 +80,86 @@ validateNationalIdNumber =
 validateProvince : Validation ValidationError (Maybe String)
 validateProvince =
     int
+        |> mapError (\_ -> customError ReqiuredField)
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.provinces
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownProvince)
             )
-        |> mapError (\_ -> customError ReqiuredField)
 
 
 validateDistrict : Validation ValidationError (Maybe String)
 validateDistrict =
     int
+        |> mapError (\_ -> customError ReqiuredField)
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.districts
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownDistrict)
             )
-        |> mapError (\_ -> customError ReqiuredField)
 
 
 validateSector : Validation ValidationError (Maybe String)
 validateSector =
     int
+        |> mapError (\_ -> customError ReqiuredField)
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.sectors
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownSector)
             )
-        |> mapError (\_ -> customError ReqiuredField)
 
 
 validateCell : Validation ValidationError (Maybe String)
 validateCell =
     int
+        |> mapError (\_ -> customError ReqiuredField)
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.cells
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownCell)
             )
-        |> mapError (\_ -> customError ReqiuredField)
 
 
 validateVillage : Validation ValidationError (Maybe String)
 validateVillage =
     int
+        |> mapError (\_ -> customError ReqiuredField)
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.villages
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownVillage)
             )
-        |> mapError (\_ -> customError ReqiuredField)
 
 
 validateGender : Validation ValidationError Gender
 validateGender =
-    fromDecoder Translate.DecoderError decodeGender
+    fromDecoder DecoderError Nothing decodeGender
 
 
 validateUbudehe : Validation ValidationError (Maybe Ubudehe)
 validateUbudehe =
-    fromDecoder Translate.DecoderError (Json.Decode.nullable decodeUbudehe)
+    fromDecoder DecoderError (Just ReqiuredField) (Json.Decode.nullable decodeUbudehe)
 
 
 validateDate : Validation ValidationError (Maybe NominalDate)
 validateDate =
-    nullable (fromDecoder Translate.DecoderError decodeYYYYMMDD)
+    fromDecoder DecoderError (Just ReqiuredField) (Json.Decode.nullable decodeYYYYMMDD)
 
 
 validateEducationLevel : Validation ValidationError (Maybe EducationLevel)
 validateEducationLevel =
-    fromDecoder Translate.DecoderError (Json.Decode.nullable decodeEducationLevel)
+    fromDecoder DecoderError (Just ReqiuredField) (Json.Decode.nullable decodeEducationLevel)
 
 
 validateMaritalStatus : Validation ValidationError (Maybe MaritalStatus)
 validateMaritalStatus =
-    fromDecoder Translate.DecoderError (Json.Decode.nullable decodeMaritalStatus)
+    fromDecoder DecoderError (Just ReqiuredField) (Json.Decode.nullable decodeMaritalStatus)
 
 
 validateDigitsOnly : Validation ValidationError String

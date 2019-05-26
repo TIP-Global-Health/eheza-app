@@ -8,7 +8,7 @@ import Form.Input exposing (..)
 import Form.Validate exposing (..)
 import Html exposing (Html, li, text, ul)
 import Json.Decode exposing (Decoder)
-import Maybe.Extra exposing (isNothing)
+import Maybe.Extra exposing (isNothing, unwrap)
 import Translate exposing (Language, ValidationError, translate)
 
 
@@ -86,8 +86,8 @@ nullable validation field =
 the result of decoding. If the decoder fails, wraps the failure in the provided
 error tag.
 -}
-fromDecoder : (String -> e) -> Decoder a -> Validation e a
-fromDecoder errorTag decoder field =
+fromDecoder : (String -> e) -> Maybe e -> Decoder a -> Validation e a
+fromDecoder errorTag maybeRequiredTag decoder field =
     Result.andThen
         (\s ->
             let
@@ -98,9 +98,21 @@ fromDecoder errorTag decoder field =
                 -- getting a string or an object.
                 json =
                     "\"" ++ String.trim s ++ "\""
+
+                decoderResult =
+                    Json.Decode.decodeString decoder json
+                        |> Result.mapError (customError << errorTag)
             in
-            Json.Decode.decodeString decoder json
-                |> Result.mapError (customError << errorTag)
+            if String.isEmpty s then
+                maybeRequiredTag
+                    |> unwrap
+                        decoderResult
+                        (\requiredTag ->
+                            Result.Err <| customError requiredTag
+                        )
+
+            else
+                decoderResult
         )
         (string field)
 
