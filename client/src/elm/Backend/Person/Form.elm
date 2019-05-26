@@ -152,7 +152,7 @@ validateLettersOnly =
         |> andThen
             (\s ->
                 format lettersOnlyPattern s
-                    |> mapError (\_ -> customError UnknownSector)
+                    |> mapError (\_ -> customError LettersOnly)
             )
 
 

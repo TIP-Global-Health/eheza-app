@@ -100,7 +100,8 @@ type ChartPhrase
 
 
 type ValidationError
-    = UnknownGroup
+    = LettersOnly
+    | UnknownGroup
     | UnknownProvince
     | UnknownDistrict
     | UnknownSector
@@ -2489,6 +2490,11 @@ translateHttpError error =
 translateValidationError : ValidationError -> TranslationSet String
 translateValidationError id =
     case id of
+        LettersOnly ->
+            { english = "should contain letters only"
+            , kinyarwanda = Nothing
+            }
+
         UnknownGroup ->
             { english = "is not a known Group"
             , kinyarwanda = Nothing
