@@ -309,7 +309,7 @@ viewCreateForm language currentDate relation personForm request =
                         ]
                     ]
                 , div
-                    [ class "three wide column required" ]
+                    [ class "three wide column" ]
                     [ text <| translate language Translate.Estimated ++ ":"
                     , br [] []
                     , Form.Input.checkboxInput birthDateEstimatedField
