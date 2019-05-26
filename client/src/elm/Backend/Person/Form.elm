@@ -7,6 +7,7 @@ import Form exposing (..)
 import Form.Init exposing (..)
 import Form.Validate exposing (..)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
+import Json.Decode
 import Regex exposing (Regex)
 import Restful.Endpoint exposing (toEntityId)
 import Translate exposing (ValidationError(..))
@@ -82,10 +83,10 @@ validateProvince =
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.provinces
-                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownProvince)
             )
-        |> nullable
+        |> mapError (\_ -> customError ReqiuredField)
 
 
 validateDistrict : Validation ValidationError (Maybe String)
@@ -94,10 +95,10 @@ validateDistrict =
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.districts
-                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownDistrict)
             )
-        |> nullable
+        |> mapError (\_ -> customError ReqiuredField)
 
 
 validateSector : Validation ValidationError (Maybe String)
@@ -106,10 +107,10 @@ validateSector =
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.sectors
-                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownSector)
             )
-        |> nullable
+        |> mapError (\_ -> customError ReqiuredField)
 
 
 validateCell : Validation ValidationError (Maybe String)
@@ -118,10 +119,10 @@ validateCell =
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.cells
-                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownCell)
             )
-        |> nullable
+        |> mapError (\_ -> customError ReqiuredField)
 
 
 validateVillage : Validation ValidationError (Maybe String)
@@ -130,10 +131,10 @@ validateVillage =
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.villages
-                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownVillage)
             )
-        |> nullable
+        |> mapError (\_ -> customError ReqiuredField)
 
 
 validateGender : Validation ValidationError Gender
@@ -143,7 +144,7 @@ validateGender =
 
 validateUbudehe : Validation ValidationError (Maybe Ubudehe)
 validateUbudehe =
-    nullable (fromDecoder Translate.DecoderError decodeUbudehe)
+    fromDecoder Translate.DecoderError (Json.Decode.nullable decodeUbudehe)
 
 
 validateDate : Validation ValidationError (Maybe NominalDate)
@@ -153,12 +154,12 @@ validateDate =
 
 validateEducationLevel : Validation ValidationError (Maybe EducationLevel)
 validateEducationLevel =
-    nullable (fromDecoder Translate.DecoderError decodeEducationLevel)
+    fromDecoder Translate.DecoderError (Json.Decode.nullable decodeEducationLevel)
 
 
 validateMaritalStatus : Validation ValidationError (Maybe MaritalStatus)
 validateMaritalStatus =
-    nullable (fromDecoder Translate.DecoderError decodeMaritalStatus)
+    fromDecoder Translate.DecoderError (Json.Decode.nullable decodeMaritalStatus)
 
 
 validateDigitsOnly : Validation ValidationError String

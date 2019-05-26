@@ -103,6 +103,7 @@ type ValidationError
     = DigitsOnly
     | LengthError Int
     | LettersOnly
+    | ReqiuredField
     | UnknownGroup
     | UnknownProvince
     | UnknownDistrict
@@ -2504,6 +2505,11 @@ translateValidationError id =
 
         LettersOnly ->
             { english = "should contain only letter characters"
+            , kinyarwanda = Nothing
+            }
+
+        ReqiuredField ->
+            { english = "is a required field"
             , kinyarwanda = Nothing
             }
 
