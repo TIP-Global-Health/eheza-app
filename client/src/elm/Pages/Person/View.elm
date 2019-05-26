@@ -6,14 +6,15 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Encoder exposing (encodeEducationLevel, encodeMaritalStatus, encodeUbudehe)
 import Backend.Person.Form exposing (PersonForm)
 import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allMaritalStatuses, allUbudehes)
-import Backend.Person.Utils exposing (ageInYears)
+import Backend.Person.Utils exposing (ageInYears, diffInYears)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
+import Date
 import EveryDict
 import EveryDictList
 import Form exposing (Form)
 import Form.Input
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
+import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -24,6 +25,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
+import Result
 import Set
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (dateInput, getValueAsInt, isFormFieldSet, viewFormError)
@@ -286,6 +288,17 @@ viewCreateForm language currentDate relation personForm request =
         birthDateField =
             Form.getFieldAsString Backend.Person.Form.birthDate personForm
 
+        inputAge =
+            birthDateField.value
+                |> Maybe.andThen (Date.fromString >> Result.toMaybe)
+                |> Maybe.map fromLocalDateTime
+                |> diffInYears currentDate
+
+        isMother =
+            inputAge
+                |> Maybe.map ((<) 12)
+                |> Maybe.withDefault False
+
         birthDateEstimatedField =
             Form.getFieldAsBool Backend.Person.Form.birthDateEstimated personForm
 
@@ -398,15 +411,22 @@ viewCreateForm language currentDate relation personForm request =
 
         demographicFields =
             viewPhoto
-                :: List.map (Html.map (MsgForm relation))
-                    [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName True personForm
-                    , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
-                    , viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
-                    , birthDateInput
-                    , genderInput
-                    , viewSelectInput language Translate.LevelOfEducationLabel educationLevelOptions Backend.Person.Form.educationLevel "ten" "select-input" True personForm
-                    , viewSelectInput language Translate.MaritalStatusLabel maritalStatusOptions Backend.Person.Form.maritalStatus "ten" "select-input" True personForm
-                    ]
+                :: (List.map (Html.map (MsgForm relation)) <|
+                        [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName True personForm
+                        , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
+                        , viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
+                        , birthDateInput
+                        , genderInput
+                        ]
+                            ++ (if isMother then
+                                    [ viewSelectInput language Translate.LevelOfEducationLabel educationLevelOptions Backend.Person.Form.educationLevel "ten" "select-input" True personForm
+                                    , viewSelectInput language Translate.MaritalStatusLabel maritalStatusOptions Backend.Person.Form.maritalStatus "ten" "select-input" True personForm
+                                    ]
+
+                                else
+                                    []
+                               )
+                   )
 
         ubudeheOptions =
             allUbudehes
@@ -589,8 +609,11 @@ viewCreateForm language currentDate relation personForm request =
             ]
 
         contactInformationFields =
-            [ viewTextInput language Translate.TelephoneNumber Backend.Person.Form.phoneNumber False personForm
-            ]
+            if isMother then
+                [ viewTextInput language Translate.TelephoneNumber Backend.Person.Form.phoneNumber False personForm ]
+
+            else
+                []
 
         submitButton =
             button
@@ -625,6 +648,7 @@ viewCreateForm language currentDate relation personForm request =
             , h3
                 [ class "ui header" ]
                 [ text <| translate language Translate.ContactInformation ++ ":" ]
+                |> showIf isMother
             , contactInformationFields
                 |> fieldset [ class "registration-form address-info" ]
                 |> Html.map (MsgForm relation)
