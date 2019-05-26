@@ -43,7 +43,7 @@ validatePerson =
                 |> andMap (succeed (combineNames firstNameValue secondNameValue))
                 |> andMap (succeed <| String.trim firstNameValue)
                 |> andMap (succeed <| String.trim secondNameValue)
-                |> andMap (field nationalIdNumber <| nullable string)
+                |> andMap (field nationalIdNumber validateNationalIdNumber)
                 |> andMap (field photo <| nullable string)
                 |> andMap (field birthDate validateDate)
                 |> andMap (field birthDateEstimated bool)
@@ -56,9 +56,24 @@ validatePerson =
                 |> andMap (field sector validateSector)
                 |> andMap (field cell validateCell)
                 |> andMap (field village validateVillage)
-                |> andMap (field phoneNumber <| nullable string)
+                |> andMap (field phoneNumber <| nullable validateDigitsOnly)
     in
     andThen withFirstName (field firstName validateLettersOnly)
+
+
+validateNationalIdNumber : Validation ValidationError (Maybe String)
+validateNationalIdNumber =
+    string
+        |> andThen
+            (\s ->
+                if String.length s /= 18 then
+                    fail <| customError (LengthError 18)
+
+                else
+                    format allDigitsPattern s
+                        |> mapError (\_ -> customError DigitsOnly)
+            )
+        |> nullable
 
 
 validateProvince : Validation ValidationError (Maybe String)
@@ -146,19 +161,38 @@ validateMaritalStatus =
     nullable (fromDecoder Translate.DecoderError decodeMaritalStatus)
 
 
+validateDigitsOnly : Validation ValidationError String
+validateDigitsOnly =
+    string
+        |> andThen
+            (\s ->
+                format allDigitsPattern s
+                    |> mapError (\_ -> customError DigitsOnly)
+            )
+
+
 validateLettersOnly : Validation ValidationError String
 validateLettersOnly =
     string
         |> andThen
             (\s ->
-                format lettersOnlyPattern s
+                format allLettersPattern s
                     |> mapError (\_ -> customError LettersOnly)
             )
 
 
-lettersOnlyPattern : Regex
-lettersOnlyPattern =
+
+-- Regex patterns
+
+
+allLettersPattern : Regex
+allLettersPattern =
     Regex.regex "^[a-zA-Z]*$"
+
+
+allDigitsPattern : Regex
+allDigitsPattern =
+    Regex.regex "^[0-9]*$"
 
 
 

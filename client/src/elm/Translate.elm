@@ -100,7 +100,9 @@ type ChartPhrase
 
 
 type ValidationError
-    = LettersOnly
+    = DigitsOnly
+    | LengthError Int
+    | LettersOnly
     | UnknownGroup
     | UnknownProvince
     | UnknownDistrict
@@ -2490,8 +2492,18 @@ translateHttpError error =
 translateValidationError : ValidationError -> TranslationSet String
 translateValidationError id =
     case id of
+        DigitsOnly ->
+            { english = "should contain only digit characters"
+            , kinyarwanda = Nothing
+            }
+
+        LengthError correctLength ->
+            { english = "should contain " ++ toString correctLength ++ " characters"
+            , kinyarwanda = Nothing
+            }
+
         LettersOnly ->
-            { english = "should contain letters only"
+            { english = "should contain only letter characters"
             , kinyarwanda = Nothing
             }
 
