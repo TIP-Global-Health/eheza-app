@@ -19,14 +19,14 @@ class HedleyMigrateUsers extends HedleyMigrateBase {
    */
   public function __construct($arguments) {
     parent::__construct($arguments);
-    $this->description = t('Import users from the CSV.');
+    $this->description = 'Import users from the CSV.';
 
     $columns = array(
-      ['name', t('Username')],
-      ['pass', t('User password')],
-      ['email', t('User email')],
-      ['role', t('User role')],
-      ['clinics', t('Clinics')],
+      ['name', 'Username'],
+      ['pass', 'User password'],
+      ['email', 'User email'],
+      ['role', 'User role'],
+      ['clinics', 'Clinics'],
     );
 
     $source_file = $this->getMigrateDirectory() . '/csv/user.csv';

@@ -44,7 +44,7 @@ abstract class HedleyMigrateMissing extends Migration {
       return;
     }
 
-    $this->description = t('Import Missing @bundle.', ['@bundle' => $this->bundle]);
+    $this->description = "Import Missing {$this->bundle}";
 
     $source_file = $this->getMigrateDirectory() . '/csv/missing.csv';
 
