@@ -96,6 +96,8 @@ fromDecoder errorTag maybeRequiredTag decoder field =
             maybeRequiredTag
                 |> unwrap
                     decoded
+                    -- Decoder will fail when no value is provided, and
+                    -- this indicates that required field was not set.
                     (\requiredTag -> decoded |> Result.mapError (\_ -> customError requiredTag))
     in
     decoderResult
