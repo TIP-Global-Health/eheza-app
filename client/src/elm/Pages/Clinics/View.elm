@@ -92,7 +92,9 @@ viewLoadedClinicList language user ( clinics, sync ) =
                 ]
 
         synced =
-            EveryDictList.filter (\_ clinic -> EveryDictList.member clinic.healthCenterId sync) clinics
+            clinics
+                |> EveryDictList.filter (\_ clinic -> EveryDictList.member clinic.healthCenterId sync)
+                |> EveryDictList.sortBy .name
 
         clinicView =
             synced
