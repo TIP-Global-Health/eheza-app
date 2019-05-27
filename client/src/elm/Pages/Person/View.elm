@@ -226,9 +226,13 @@ viewPhotoThumb url =
         ]
 
 
-viewCreateForm : Language -> NominalDate -> Maybe PersonId -> PersonForm -> WebData PersonId -> Html Msg
-viewCreateForm language currentDate relation personForm request =
+viewCreateForm : Language -> NominalDate -> Maybe ( PersonId, Maybe (WebData Person) ) -> PersonForm -> WebData PersonId -> Html Msg
+viewCreateForm language currentDate relationData personForm request =
     let
+        relation =
+            relationData
+                |> Maybe.map Tuple.first
+
         emptyOption =
             ( "", "" )
 
@@ -280,7 +284,13 @@ viewCreateForm language currentDate relation personForm request =
             Form.getFieldAsString Backend.Person.Form.birthDate personForm
 
         isAdult =
-            isAdultRegistering currentDate birthDateField
+            relationData
+                |> Maybe.andThen Tuple.second
+                |> Maybe.andThen RemoteData.toMaybe
+                -- We register and adult if person we relate to is child.
+                |> Maybe.map (isPersonAnAdult currentDate >> not)
+                -- Or, by checking birth date field, if we don't have relation info.
+                |> Maybe.withDefault (isAdultRegistering currentDate birthDateField)
 
         birthDateEstimatedField =
             Form.getFieldAsBool Backend.Person.Form.birthDateEstimated personForm

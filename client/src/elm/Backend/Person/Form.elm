@@ -1,15 +1,18 @@
-module Backend.Person.Form exposing (PersonForm, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, firstName, gender, maritalStatus, nationalIdNumber, phoneNumber, photo, province, secondName, sector, ubudehe, validateCell, validateDate, validateDistrict, validateEducationLevel, validateGender, validateMaritalStatus, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village)
+module Backend.Person.Form exposing (PersonForm, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, firstName, gender, maritalStatus, nationalIdNumber, phoneNumber, photo, province, secondName, sector, ubudehe, validateBirthDate, validateCell, validateDistrict, validateEducationLevel, validateGender, validateMaritalStatus, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village)
 
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeMaritalStatus, decodeUbudehe)
 import Backend.Person.Model exposing (..)
+import Date
 import EveryDict
 import Form exposing (..)
 import Form.Init exposing (..)
 import Form.Validate exposing (..)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
+import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, fromLocalDateTime)
 import Json.Decode
+import Maybe.Extra exposing (unwrap)
 import Regex exposing (Regex)
 import Restful.Endpoint exposing (toEntityId)
+import Time.Date
 import Translate exposing (ValidationError(..))
 import Utils.Form exposing (fromDecoder, nullable)
 import Utils.GeoLocation exposing (geoInfo)
@@ -24,11 +27,11 @@ emptyForm =
     initial
         [ setBool birthDateEstimated False
         ]
-        (validatePerson False)
+        (validatePerson False Nothing)
 
 
-validatePerson : Bool -> Validation ValidationError Person
-validatePerson isAdult =
+validatePerson : Bool -> Maybe NominalDate -> Validation ValidationError Person
+validatePerson isAdult maybeCurrentDate =
     let
         withFirstName firstNameValue =
             andThen (withAllNames firstNameValue) (field secondName validateLettersOnly)
@@ -46,12 +49,12 @@ validatePerson isAdult =
                 |> andMap (succeed <| String.trim secondNameValue)
                 |> andMap (field nationalIdNumber validateNationalIdNumber)
                 |> andMap (field photo <| nullable string)
-                |> andMap (field birthDate validateDate)
+                |> andMap (field birthDate <| validateBirthDate isAdult maybeCurrentDate)
                 |> andMap (field birthDateEstimated bool)
                 |> andMap (field gender validateGender)
                 |> andMap (field ubudehe validateUbudehe)
-                |> andMap (field educationLevel (validateEducationLevel isAdult))
-                |> andMap (field maritalStatus (validateMaritalStatus isAdult))
+                |> andMap (field educationLevel <| validateEducationLevel isAdult)
+                |> andMap (field maritalStatus <| validateMaritalStatus isAdult)
                 |> andMap (field province validateProvince)
                 |> andMap (field district validateDistrict)
                 |> andMap (field sector validateSector)
@@ -147,9 +150,45 @@ validateUbudehe =
     fromDecoder DecoderError (Just ReqiuredField) (Json.Decode.nullable decodeUbudehe)
 
 
-validateDate : Validation ValidationError (Maybe NominalDate)
-validateDate =
-    fromDecoder DecoderError (Just ReqiuredField) (Json.Decode.nullable decodeYYYYMMDD)
+validateBirthDate : Bool -> Maybe NominalDate -> Validation ValidationError (Maybe NominalDate)
+validateBirthDate isAdult maybeCurrentDate =
+    string
+        |> mapError (\_ -> customError ReqiuredField)
+        |> andThen
+            (\s ->
+                maybeCurrentDate
+                    |> unwrap
+                        -- When we don't know current date, try to decode input value.
+                        (fromDecoder DecoderError Nothing (Json.Decode.nullable decodeYYYYMMDD))
+                        (\currentDate ->
+                            let
+                                -- Convert to NominalDate.
+                                maybeBirthDate =
+                                    Date.fromString s
+                                        |> Result.toMaybe
+                                        |> Maybe.map fromLocalDateTime
+                            in
+                            maybeBirthDate
+                                -- Calculate difference of years between input birt
+                                -- date and current date.
+                                |> Maybe.map (Time.Date.delta currentDate >> .years)
+                                |> unwrap
+                                    -- Conversion to NominalDate failed.
+                                    (fail <| customError InvalidBirtDate)
+                                    (\delta ->
+                                        if delta > 12 && not isAdult then
+                                            fail <| customError InvalidBirtDateForChild
+                                            -- Invalid age for child.
+
+                                        else if delta < 13 && isAdult then
+                                            fail <| customError InvalidBirtDateForAdult
+                                            -- Invalid age for adult.
+
+                                        else
+                                            succeed maybeBirthDate
+                                    )
+                        )
+            )
 
 
 validateEducationLevel : Bool -> Validation ValidationError (Maybe EducationLevel)

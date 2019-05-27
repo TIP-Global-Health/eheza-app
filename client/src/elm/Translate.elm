@@ -101,6 +101,9 @@ type ChartPhrase
 
 type ValidationError
     = DigitsOnly
+    | InvalidBirtDate
+    | InvalidBirtDateForAdult
+    | InvalidBirtDateForChild
     | LengthError Int
     | LettersOnly
     | ReqiuredField
@@ -2501,6 +2504,21 @@ translateValidationError id =
     case id of
         DigitsOnly ->
             { english = "should contain only digit characters"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidBirtDate ->
+            { english = "is invalid"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidBirtDateForAdult ->
+            { english = "is invalid - adult should at least 13 years old"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidBirtDateForChild ->
+            { english = "is invalid - child should be bellow the age of 13"
             , kinyarwanda = Nothing
             }
 

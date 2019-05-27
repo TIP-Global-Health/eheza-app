@@ -149,7 +149,11 @@ viewUserPage page model configured =
                     Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) clinicId model.indexedDb
 
                 CreatePersonPage relation ->
-                    Pages.Person.View.viewCreateForm model.language currentDate relation loggedInModel.createPersonPage model.indexedDb.postPerson
+                    let
+                        relation_ =
+                            relation |> Maybe.map (\personId -> ( personId, EveryDict.get personId model.indexedDb.people ))
+                    in
+                    Pages.Person.View.viewCreateForm model.language currentDate relation_ loggedInModel.createPersonPage model.indexedDb.postPerson
                         |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
 
                 PersonPage id ->
