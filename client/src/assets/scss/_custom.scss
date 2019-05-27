@@ -393,13 +393,10 @@ h3.ui.header {
 
 // Participants (Horizontal Scroll Area)
 
-.ui.participant.segment {
-  overflow-y: auto;
-}
-
 .ui.participant.cards {
   white-space: nowrap;
   flex-wrap: nowrap;
+  overflow-y: auto;
 }
 
 .ui.participant.cards>.card>.content {
