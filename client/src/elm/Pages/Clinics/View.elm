@@ -15,6 +15,7 @@ import Backend.Session.Model exposing (Session)
 import Backend.SyncData.Model exposing (SyncData)
 import EveryDict
 import EveryDictList exposing (EveryDictList)
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -90,15 +91,29 @@ viewLoadedClinicList language user ( clinics, sync ) =
                 , text ":"
                 ]
 
+        synced =
+            EveryDictList.filter (\_ clinic -> EveryDictList.member clinic.healthCenterId sync) clinics
+
         clinicView =
-            clinics
-                |> EveryDictList.filter (\_ clinic -> EveryDictList.member clinic.healthCenterId sync)
+            synced
                 |> EveryDictList.toList
                 |> List.map (viewClinicButton user)
+
+        message =
+            if EveryDictList.isEmpty synced then
+                div
+                    [ class "ui message warning" ]
+                    [ div [ class "header" ] [ text <| translate language Translate.NoGroupsFound ]
+                    , text <| translate language Translate.HaveYouSynced
+                    ]
+
+            else
+                emptyNode
     in
     div []
         [ title
         , div [] clinicView
+        , message
         ]
 
 
