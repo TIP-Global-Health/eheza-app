@@ -134,6 +134,7 @@ type TranslationId
     | AddFamilyMember
     | AddFamilyMemberFor String
     | AddMother
+    | AddMotherOrCaregiver
     | Admin
     | AddressInformation
     | Adherence Adherence
@@ -410,6 +411,11 @@ translationSet trans =
 
         AddMother ->
             { english = "Add Mother"
+            , kinyarwanda = Nothing
+            }
+
+        AddMotherOrCaregiver ->
+            { english = "Add Mother or Caregiver"
             , kinyarwanda = Nothing
             }
 

@@ -3,7 +3,7 @@ module Pages.Person.Update exposing (update)
 import App.Model
 import Backend.Model
 import Backend.Person.Form exposing (validatePerson)
-import Backend.Person.Utils exposing (isMotherRegistering)
+import Backend.Person.Utils exposing (isAdultRegistering)
 import Form
 import Form.Field
 import Gizra.NominalDate exposing (NominalDate)
@@ -20,7 +20,7 @@ update currentDate msg model =
                     Form.getFieldAsString Backend.Person.Form.birthDate model
 
                 newModel =
-                    Form.update (isMotherRegistering currentDate birthDateField |> validatePerson) subMsg model
+                    Form.update (isAdultRegistering currentDate birthDateField |> validatePerson) subMsg model
 
                 appMsgs =
                     case subMsg of

@@ -4,7 +4,7 @@ import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears)
+import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Dict
 import EveryDict
 import EveryDictList
@@ -188,16 +188,11 @@ viewParticipant : Language -> NominalDate -> Maybe PersonId -> ModelIndexedDb ->
 viewParticipant language currentDate relation db id person =
     let
         typeForThumbnail =
-            ageInYears currentDate person
-                |> Maybe.map
-                    (\age ->
-                        if age > 12 then
-                            "mother"
+            if isPersonAnAdult currentDate person then
+                "mother"
 
-                        else
-                            "child"
-                    )
-                |> Maybe.withDefault "mother"
+            else
+                "child"
 
         nextPage =
             case relation of

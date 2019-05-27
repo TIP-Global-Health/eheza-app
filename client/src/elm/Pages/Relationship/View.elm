@@ -3,7 +3,7 @@ module Pages.Relationship.View exposing (view)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears)
+import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, Relationship)
 import EveryDict
 import EveryDictList exposing (EveryDictList)
@@ -98,15 +98,12 @@ viewFetchedContent language currentDate id1 id2 model request data =
             model
                 |> Maybe.Extra.orElse savedRelationship
 
-        -- We could look at the birthdates of person1 and person2 to cut down
-        -- on these possibilities. (E.g. the older one can't be the child of
-        -- the younger one).
         possibleRelationships =
-            [ MyChild
-            , MyParent
-            , MyCaregiven
-            , MyCaregiver
-            ]
+            if isPersonAnAdult currentDate data.person1 then
+                [ MyChild, MyCaregiven ]
+
+            else
+                [ MyParent, MyCaregiver ]
 
         relationshipSelector =
             div
@@ -211,16 +208,11 @@ viewParticipant : Language -> NominalDate -> PersonId -> Person -> Html Msg
 viewParticipant language currentDate id person =
     let
         typeForThumbnail =
-            ageInYears currentDate person
-                |> Maybe.map
-                    (\age ->
-                        if age > 12 then
-                            "mother"
+            if isPersonAnAdult currentDate person then
+                "mother"
 
-                        else
-                            "child"
-                    )
-                |> Maybe.withDefault "mother"
+            else
+                "child"
 
         content =
             div [ class "content" ]

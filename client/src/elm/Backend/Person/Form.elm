@@ -28,7 +28,7 @@ emptyForm =
 
 
 validatePerson : Bool -> Validation ValidationError Person
-validatePerson isMother =
+validatePerson isAdult =
     let
         withFirstName firstNameValue =
             andThen (withAllNames firstNameValue) (field secondName validateLettersOnly)
@@ -50,8 +50,8 @@ validatePerson isMother =
                 |> andMap (field birthDateEstimated bool)
                 |> andMap (field gender validateGender)
                 |> andMap (field ubudehe validateUbudehe)
-                |> andMap (field educationLevel (validateEducationLevel isMother))
-                |> andMap (field maritalStatus (validateMaritalStatus isMother))
+                |> andMap (field educationLevel (validateEducationLevel isAdult))
+                |> andMap (field maritalStatus (validateMaritalStatus isAdult))
                 |> andMap (field province validateProvince)
                 |> andMap (field district validateDistrict)
                 |> andMap (field sector validateSector)
@@ -153,8 +153,8 @@ validateDate =
 
 
 validateEducationLevel : Bool -> Validation ValidationError (Maybe EducationLevel)
-validateEducationLevel isMother =
-    if not isMother then
+validateEducationLevel isAdult =
+    if not isAdult then
         succeed Nothing
 
     else
@@ -162,8 +162,8 @@ validateEducationLevel isMother =
 
 
 validateMaritalStatus : Bool -> Validation ValidationError (Maybe MaritalStatus)
-validateMaritalStatus isMother =
-    if not isMother then
+validateMaritalStatus isAdult =
+    if not isAdult then
         succeed Nothing
 
     else

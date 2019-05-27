@@ -1,4 +1,4 @@
-module Backend.Person.Utils exposing (ageInYears, diffInYears, isMotherRegistering)
+module Backend.Person.Utils exposing (ageInYears, diffInYears, isAdultRegistering, isPersonAnAdult)
 
 import Backend.Person.Model exposing (Person)
 import Date
@@ -18,11 +18,22 @@ diffInYears currentDate comparedDate =
     Maybe.map (Time.Date.delta currentDate >> .years) comparedDate
 
 
-isMotherRegistering : NominalDate -> FieldState e String -> Bool
-isMotherRegistering currentDate birthDateField =
+isAdultRegistering : NominalDate -> FieldState e String -> Bool
+isAdultRegistering currentDate birthDateField =
     birthDateField.value
         |> Maybe.andThen (Date.fromString >> Result.toMaybe)
         |> Maybe.map fromLocalDateTime
+        |> isAdult currentDate
+
+
+isAdult : NominalDate -> Maybe NominalDate -> Bool
+isAdult currentDate maybeBirthDate =
+    maybeBirthDate
         |> diffInYears currentDate
         |> Maybe.map ((<) 12)
-        |> Maybe.withDefault False
+        |> Maybe.withDefault True
+
+
+isPersonAnAdult : NominalDate -> Person -> Bool
+isPersonAnAdult currentDate person =
+    isAdult currentDate person.birthDate

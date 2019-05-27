@@ -6,7 +6,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Encoder exposing (encodeEducationLevel, encodeMaritalStatus, encodeUbudehe)
 import Backend.Person.Form exposing (PersonForm)
 import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allMaritalStatuses, allUbudehes)
-import Backend.Person.Utils exposing (ageInYears, isMotherRegistering)
+import Backend.Person.Utils exposing (ageInYears, isAdultRegistering, isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import EveryDict
 import EveryDictList
@@ -98,17 +98,15 @@ viewParticipantDetailsForm language currentDate db id person =
                 |> Maybe.withDefault NotAsked
                 |> viewWebData language viewFamilyMembers identity
 
-        typeForAddFamilyMember =
-            ageInYears currentDate person
-                |> Maybe.map
-                    (\age ->
-                        if age > 12 then
-                            "child"
+        isAdult =
+            isPersonAnAdult currentDate person
 
-                        else
-                            "mother"
-                    )
-                |> Maybe.withDefault "child"
+        ( typeForAddFamilyMember, labelForAddFamilyMember ) =
+            if not isAdult then
+                ( "child", Translate.AddMotherOrCaregiver )
+
+            else
+                ( "mother", Translate.AddChild )
 
         addFamilyMember =
             div [ class "ui unstackable items participants-list" ]
@@ -131,7 +129,7 @@ viewParticipantDetailsForm language currentDate db id person =
                             [ class "details" ]
                             [ h2
                                 [ class "ui header add-participant-label" ]
-                                [ text <| translate language Translate.AddFamilyMember ]
+                                [ text <| translate language labelForAddFamilyMember ]
                             ]
                         , div
                             [ class "action" ]
@@ -165,16 +163,11 @@ viewParticipant : Language -> NominalDate -> Maybe MyRelationship -> PersonId ->
 viewParticipant language currentDate myRelationship id person =
     let
         typeForThumbnail =
-            ageInYears currentDate person
-                |> Maybe.map
-                    (\age ->
-                        if age > 12 then
-                            "mother"
+            if isPersonAnAdult currentDate person then
+                "mother"
 
-                        else
-                            "child"
-                    )
-                |> Maybe.withDefault "mother"
+            else
+                "child"
 
         relationshipLabel =
             myRelationship
@@ -286,8 +279,8 @@ viewCreateForm language currentDate relation personForm request =
         birthDateField =
             Form.getFieldAsString Backend.Person.Form.birthDate personForm
 
-        isMother =
-            isMotherRegistering currentDate birthDateField
+        isAdult =
+            isAdultRegistering currentDate birthDateField
 
         birthDateEstimatedField =
             Form.getFieldAsBool Backend.Person.Form.birthDateEstimated personForm
@@ -408,7 +401,7 @@ viewCreateForm language currentDate relation personForm request =
                         , birthDateInput
                         , genderInput
                         ]
-                            ++ (if isMother then
+                            ++ (if isAdult then
                                     [ viewSelectInput language Translate.LevelOfEducationLabel educationLevelOptions Backend.Person.Form.educationLevel "ten" "select-input" True personForm
                                     , viewSelectInput language Translate.MaritalStatusLabel maritalStatusOptions Backend.Person.Form.maritalStatus "ten" "select-input" True personForm
                                     ]
@@ -599,7 +592,7 @@ viewCreateForm language currentDate relation personForm request =
             ]
 
         contactInformationSection =
-            if isMother then
+            if isAdult then
                 [ h3
                     [ class "ui header" ]
                     [ text <| translate language Translate.ContactInformation ++ ":" ]
