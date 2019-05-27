@@ -505,8 +505,8 @@ h3.ui.header {
 
 .icon-item {
   display: block;
-  width: 222px;
-  height: 222px;
+  width: 120px;
+  height: 120px;
   background-color: #fff;
   box-shadow: 0 0 10px rgba(0,0,0,0.35);
   background-repeat: no-repeat;
@@ -525,7 +525,7 @@ h3.ui.header {
 
 .icon-item-height {
   background-image: url(#{$img-path}icon-height-blue.svg);
-  background-size: 118px 131px;
+  background-size: 72px;
 }
 
 .icon-item-counseling {
