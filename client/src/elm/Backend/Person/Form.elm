@@ -24,11 +24,11 @@ emptyForm =
     initial
         [ setBool birthDateEstimated False
         ]
-        validatePerson
+        (validatePerson False)
 
 
-validatePerson : Validation ValidationError Person
-validatePerson =
+validatePerson : Bool -> Validation ValidationError Person
+validatePerson isMother =
     let
         withFirstName firstNameValue =
             andThen (withAllNames firstNameValue) (field secondName validateLettersOnly)
@@ -50,8 +50,8 @@ validatePerson =
                 |> andMap (field birthDateEstimated bool)
                 |> andMap (field gender validateGender)
                 |> andMap (field ubudehe validateUbudehe)
-                |> andMap (field educationLevel validateEducationLevel)
-                |> andMap (field maritalStatus validateMaritalStatus)
+                |> andMap (field educationLevel (validateEducationLevel isMother))
+                |> andMap (field maritalStatus (validateMaritalStatus isMother))
                 |> andMap (field province validateProvince)
                 |> andMap (field district validateDistrict)
                 |> andMap (field sector validateSector)
@@ -152,14 +152,22 @@ validateDate =
     fromDecoder DecoderError (Just ReqiuredField) (Json.Decode.nullable decodeYYYYMMDD)
 
 
-validateEducationLevel : Validation ValidationError (Maybe EducationLevel)
-validateEducationLevel =
-    fromDecoder DecoderError (Just ReqiuredField) (Json.Decode.nullable decodeEducationLevel)
+validateEducationLevel : Bool -> Validation ValidationError (Maybe EducationLevel)
+validateEducationLevel isMother =
+    if not isMother then
+        succeed Nothing
+
+    else
+        fromDecoder DecoderError (Just ReqiuredField) (Json.Decode.nullable decodeEducationLevel)
 
 
-validateMaritalStatus : Validation ValidationError (Maybe MaritalStatus)
-validateMaritalStatus =
-    fromDecoder DecoderError (Just ReqiuredField) (Json.Decode.nullable decodeMaritalStatus)
+validateMaritalStatus : Bool -> Validation ValidationError (Maybe MaritalStatus)
+validateMaritalStatus isMother =
+    if not isMother then
+        succeed Nothing
+
+    else
+        fromDecoder DecoderError (Just ReqiuredField) (Json.Decode.nullable decodeMaritalStatus)
 
 
 validateDigitsOnly : Validation ValidationError String

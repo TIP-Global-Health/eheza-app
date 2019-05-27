@@ -6,9 +6,8 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Encoder exposing (encodeEducationLevel, encodeMaritalStatus, encodeUbudehe)
 import Backend.Person.Form exposing (PersonForm)
 import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allMaritalStatuses, allUbudehes)
-import Backend.Person.Utils exposing (ageInYears, diffInYears)
+import Backend.Person.Utils exposing (ageInYears, isMotherRegistering)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
-import Date
 import EveryDict
 import EveryDictList
 import Form exposing (Form)
@@ -25,7 +24,6 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
-import Result
 import Set
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (dateInput, getValueAsInt, isFormFieldSet, viewFormError)
@@ -288,16 +286,8 @@ viewCreateForm language currentDate relation personForm request =
         birthDateField =
             Form.getFieldAsString Backend.Person.Form.birthDate personForm
 
-        inputAge =
-            birthDateField.value
-                |> Maybe.andThen (Date.fromString >> Result.toMaybe)
-                |> Maybe.map fromLocalDateTime
-                |> diffInYears currentDate
-
         isMother =
-            inputAge
-                |> Maybe.map ((<) 12)
-                |> Maybe.withDefault False
+            isMotherRegistering currentDate birthDateField
 
         birthDateEstimatedField =
             Form.getFieldAsBool Backend.Person.Form.birthDateEstimated personForm

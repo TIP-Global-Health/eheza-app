@@ -3,19 +3,24 @@ module Pages.Person.Update exposing (update)
 import App.Model
 import Backend.Model
 import Backend.Person.Form exposing (validatePerson)
+import Backend.Person.Utils exposing (isMotherRegistering)
 import Form
 import Form.Field
+import Gizra.NominalDate exposing (NominalDate)
 import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update msg model =
+update : NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate msg model =
     case msg of
         MsgForm relation subMsg ->
             let
+                birthDateField =
+                    Form.getFieldAsString Backend.Person.Form.birthDate model
+
                 newModel =
-                    Form.update validatePerson subMsg model
+                    Form.update (isMotherRegistering currentDate birthDateField |> validatePerson) subMsg model
 
                 appMsgs =
                     case subMsg of
@@ -50,7 +55,7 @@ update msg model =
                 subMsg =
                     Form.Input Backend.Person.Form.photo Form.Text (Form.Field.String result.url)
             in
-            update (MsgForm relation subMsg) model
+            update currentDate (MsgForm relation subMsg) model
 
         ResetCreateForm ->
             ( Backend.Person.Form.emptyForm
