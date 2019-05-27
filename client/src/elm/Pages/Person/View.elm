@@ -12,7 +12,7 @@ import EveryDict
 import EveryDictList
 import Form exposing (Form)
 import Form.Input
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -598,9 +598,15 @@ viewCreateForm language currentDate relation personForm request =
             , viewVillage
             ]
 
-        contactInformationFields =
+        contactInformationSection =
             if isMother then
-                [ viewTextInput language Translate.TelephoneNumber Backend.Person.Form.phoneNumber False personForm ]
+                [ h3
+                    [ class "ui header" ]
+                    [ text <| translate language Translate.ContactInformation ++ ":" ]
+                , [ viewTextInput language Translate.TelephoneNumber Backend.Person.Form.phoneNumber False personForm ]
+                    |> fieldset [ class "registration-form address-info" ]
+                    |> Html.map (MsgForm relation)
+                ]
 
             else
                 []
@@ -635,27 +641,22 @@ viewCreateForm language currentDate relation personForm request =
             , addressFields
                 |> fieldset [ class "registration-form address-info" ]
                 |> Html.map (MsgForm relation)
-            , h3
-                [ class "ui header" ]
-                [ text <| translate language Translate.ContactInformation ++ ":" ]
-                |> showIf isMother
-            , contactInformationFields
-                |> fieldset [ class "registration-form address-info" ]
-                |> Html.map (MsgForm relation)
-            , p [] []
-            , submitButton
-                |> Html.map (MsgForm relation)
-
-            -- Note that these are hidden by deafult by semantic-ui ... the
-            -- class of the "form" controls whether they are shown.
-            , requestStatus
-            , div
-                [ class "ui error message" ]
-                [ div [ class "header" ] [ text <| translate language Translate.ValidationErrors ]
-                , List.map (viewFormError language) errors
-                    |> ul []
-                ]
             ]
+                ++ contactInformationSection
+                ++ [ p [] []
+                   , submitButton
+                        |> Html.map (MsgForm relation)
+
+                   -- Note that these are hidden by deafult by semantic-ui ... the
+                   -- class of the "form" controls whether they are shown.
+                   , requestStatus
+                   , div
+                        [ class "ui error message" ]
+                        [ div [ class "header" ] [ text <| translate language Translate.ValidationErrors ]
+                        , List.map (viewFormError language) errors
+                            |> ul []
+                        ]
+                   ]
     in
     div
         [ class "page-person-create" ]

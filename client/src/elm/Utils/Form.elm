@@ -88,33 +88,31 @@ error tag.
 -}
 fromDecoder : (String -> e) -> Maybe e -> Decoder a -> Validation e a
 fromDecoder errorTag maybeRequiredTag decoder field =
-    Result.andThen
-        (\s ->
-            let
-                -- We assume we're getting a bare string, which we need to
-                -- wrap in quotes to get a valid JSON string.  If we ever
-                -- need to decode objects here, we'll need to provide a
-                -- different method, or a way to figure out whether we're
-                -- getting a string or an object.
-                json =
-                    "\"" ++ String.trim s ++ "\""
+    let
+        decoded =
+            string field
 
-                decoderResult =
-                    Json.Decode.decodeString decoder json
-                        |> Result.mapError (customError << errorTag)
-            in
-            if String.isEmpty s then
-                maybeRequiredTag
-                    |> unwrap
-                        decoderResult
-                        (\requiredTag ->
-                            Result.Err <| customError requiredTag
-                        )
-
-            else
-                decoderResult
-        )
-        (string field)
+        decoderResult =
+            maybeRequiredTag
+                |> unwrap
+                    decoded
+                    (\requiredTag -> decoded |> Result.mapError (\_ -> customError requiredTag))
+    in
+    decoderResult
+        |> Result.andThen
+            (\s ->
+                let
+                    -- We assume we're getting a bare string, which we need to
+                    -- wrap in quotes to get a valid JSON string.  If we ever
+                    -- need to decode objects here, we'll need to provide a
+                    -- different method, or a way to figure out whether we're
+                    -- getting a string or an object.
+                    json =
+                        "\"" ++ String.trim s ++ "\""
+                in
+                Json.Decode.decodeString decoder json
+                    |> Result.mapError (customError << errorTag)
+            )
 
 
 {-| An `<input>` with `type=date`. The value provided must be in YYYY-MM-DD

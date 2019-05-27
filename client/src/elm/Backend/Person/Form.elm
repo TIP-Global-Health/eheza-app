@@ -139,7 +139,7 @@ validateVillage =
 
 validateGender : Validation ValidationError Gender
 validateGender =
-    fromDecoder DecoderError Nothing decodeGender
+    fromDecoder DecoderError (Just ReqiuredField) decodeGender
 
 
 validateUbudehe : Validation ValidationError (Maybe Ubudehe)
