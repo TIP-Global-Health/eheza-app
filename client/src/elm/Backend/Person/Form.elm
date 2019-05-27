@@ -174,14 +174,14 @@ validateBirthDate isAdult maybeCurrentDate =
                                 |> Maybe.map (Time.Date.delta currentDate >> .years)
                                 |> unwrap
                                     -- Conversion to NominalDate failed.
-                                    (fail <| customError InvalidBirtDate)
+                                    (fail <| customError InvalidBirthDate)
                                     (\delta ->
                                         if delta > 12 && not isAdult then
-                                            fail <| customError InvalidBirtDateForChild
+                                            fail <| customError InvalidBirthDateForChild
                                             -- Invalid age for child.
 
                                         else if delta < 13 && isAdult then
-                                            fail <| customError InvalidBirtDateForAdult
+                                            fail <| customError InvalidBirthDateForAdult
                                             -- Invalid age for adult.
 
                                         else

@@ -101,9 +101,9 @@ type ChartPhrase
 
 type ValidationError
     = DigitsOnly
-    | InvalidBirtDate
-    | InvalidBirtDateForAdult
-    | InvalidBirtDateForChild
+    | InvalidBirthDate
+    | InvalidBirthDateForAdult
+    | InvalidBirthDateForChild
     | LengthError Int
     | LettersOnly
     | ReqiuredField
@@ -2507,17 +2507,17 @@ translateValidationError id =
             , kinyarwanda = Nothing
             }
 
-        InvalidBirtDate ->
+        InvalidBirthDate ->
             { english = "is invalid"
             , kinyarwanda = Nothing
             }
 
-        InvalidBirtDateForAdult ->
+        InvalidBirthDateForAdult ->
             { english = "is invalid - adult should at least 13 years old"
             , kinyarwanda = Nothing
             }
 
-        InvalidBirtDateForChild ->
+        InvalidBirthDateForChild ->
             { english = "is invalid - child should be bellow the age of 13"
             , kinyarwanda = Nothing
             }
