@@ -35,7 +35,7 @@ abstract class HedleyMigrateBase extends Migration {
       return;
     }
 
-    $this->description = t('Import @bundle.', ['@bundle' => $this->bundle]);
+    $this->description = "Import {$this->bundle}";
 
     $source_file = $this->getMigrateDirectory() . '/csv/' . $this->csvPrefix . $this->bundle . '.csv';
 
