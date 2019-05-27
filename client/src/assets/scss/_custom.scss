@@ -45,6 +45,16 @@ a {
   }
 }
 
+// This fixes the bottom margin on a specific page. Ideally, we would do the
+// CSS without negative margins.
+.page-participants {
+  .ui.full.segment {
+    > .full.content {
+      margin-bottom: 0.5rem;
+    }
+  }
+}
+
 .wrap-alt {
   .ui.full.segment {
     &:after {
