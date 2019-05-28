@@ -5,7 +5,6 @@ import App.Model exposing (..)
 import App.Utils exposing (getLoggedInModel)
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
-import Backend.Person.Utils exposing (isPersonAddressSet)
 import Backend.Update
 import Config
 import Date
@@ -13,18 +12,13 @@ import Device.Decoder
 import Device.Encoder
 import Dict
 import EveryDict
-import Form
-import Form.Field
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Http exposing (Error(..))
 import HttpBuilder
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
-import Maybe.Extra exposing (unwrap)
 import Pages.Device.Model
 import Pages.Device.Update
-import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Person.Model
 import Pages.Person.Update
 import Pages.PinCode.Model
 import Pages.PinCode.Update
@@ -42,7 +36,6 @@ import Time exposing (minute)
 import Translate.Model exposing (Language(..))
 import Translate.Utils exposing (languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
-import Utils.GeoLocation exposing (geoInfo)
 import Version
 import ZScore.Model
 import ZScore.Update
@@ -323,109 +316,9 @@ update msg model =
             )
 
         SetActivePage page ->
-            let
-                extraMsgs =
-                    case page of
-                        -- Destination page is 'register new patient' form.
-                        -- When relation person is provided, and his address fields
-                        -- are set, address fields should be copied automatically.
-                        -- to the form.
-                        UserPage (CreatePersonPage (Just relatedPersonId)) ->
-                            --Find relation person at people dictionary.
-                            EveryDict.get relatedPersonId model.indexedDb.people
-                                |> Maybe.andThen RemoteData.toMaybe
-                                |> Maybe.map
-                                    (\relatedPerson ->
-                                        if isPersonAddressSet relatedPerson then
-                                            -- Since all address fields are set,
-                                            -- extract their value and set them on form.
-                                            let
-                                                provinceName =
-                                                    relatedPerson.province |> Maybe.withDefault ""
-
-                                                districtName =
-                                                    relatedPerson.district |> Maybe.withDefault ""
-
-                                                sectorName =
-                                                    relatedPerson.sector |> Maybe.withDefault ""
-
-                                                cellName =
-                                                    relatedPerson.cell |> Maybe.withDefault ""
-
-                                                villageName =
-                                                    relatedPerson.village |> Maybe.withDefault ""
-
-                                                filterGeoLocationDictByParent parentId dict =
-                                                    dict
-                                                        |> EveryDict.filter
-                                                            (\_ geoLocation ->
-                                                                (Just <| toEntityId parentId) == geoLocation.parent
-                                                            )
-
-                                                getGeoLocationIdByName name maybeParentId dict =
-                                                    let
-                                                        filteredDict =
-                                                            maybeParentId
-                                                                |> unwrap
-                                                                    dict
-                                                                    (\parentId -> filterGeoLocationDictByParent parentId dict)
-                                                    in
-                                                    filteredDict
-                                                        |> EveryDict.toList
-                                                        |> List.filterMap
-                                                            (\( id, geoLocation ) ->
-                                                                if geoLocation.name == name then
-                                                                    fromEntityId id
-                                                                        |> toString
-                                                                        |> String.toInt
-                                                                        |> Result.toMaybe
-
-                                                                else
-                                                                    Nothing
-                                                            )
-                                                        |> List.head
-                                                        |> Maybe.withDefault 0
-
-                                                provinceId =
-                                                    getGeoLocationIdByName provinceName Nothing geoInfo.provinces
-
-                                                districtId =
-                                                    getGeoLocationIdByName districtName (Just provinceId) geoInfo.districts
-
-                                                sectorId =
-                                                    getGeoLocationIdByName sectorName (Just districtId) geoInfo.sectors
-
-                                                cellId =
-                                                    getGeoLocationIdByName cellName (Just sectorId) geoInfo.cells
-
-                                                villageId =
-                                                    getGeoLocationIdByName villageName (Just cellId) geoInfo.villages
-
-                                                setFormInputMsg name value =
-                                                    MsgLoggedIn <|
-                                                        MsgPageCreatePerson <|
-                                                            Pages.Person.Model.MsgForm (Just relatedPersonId)
-                                                                (Form.Input name Form.Select <| Form.Field.String (toString value))
-                                            in
-                                            [ setFormInputMsg "province" provinceId
-                                            , setFormInputMsg "district" districtId
-                                            , setFormInputMsg "sector" sectorId
-                                            , setFormInputMsg "cell" cellId
-                                            , setFormInputMsg "village" villageId
-                                            ]
-
-                                        else
-                                            []
-                                    )
-                                |> Maybe.withDefault []
-
-                        _ ->
-                            []
-            in
             ( { model | activePage = page }
             , Cmd.none
             )
-                |> sequence update extraMsgs
 
         SendRollbar level message data ->
             updateConfigured

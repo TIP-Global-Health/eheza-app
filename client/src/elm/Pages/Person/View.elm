@@ -6,7 +6,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Encoder exposing (encodeEducationLevel, encodeMaritalStatus, encodeUbudehe)
 import Backend.Person.Form exposing (ExpectedAge(..), PersonForm, expectedAgeFromForm)
 import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allMaritalStatuses, allUbudehes)
-import Backend.Person.Utils exposing (ageInYears, isPersonAddressSet, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import EveryDict
 import EveryDictList
@@ -481,20 +481,37 @@ viewCreateForm language currentDate relationId personForm db =
                         ""
                    )
 
+        withDefaultValue value field =
+            case field.value of
+                Just entered ->
+                    if String.isEmpty entered then
+                        { field | value = value }
+
+                    else
+                        field
+
+                Nothing ->
+                    { field | value = value }
+
         province =
             Form.getFieldAsString Backend.Person.Form.province personForm
+                |> withDefaultValue (Maybe.andThen .province maybeRelatedPerson)
 
         district =
             Form.getFieldAsString Backend.Person.Form.district personForm
+                |> withDefaultValue (Maybe.andThen .district maybeRelatedPerson)
 
         sector =
             Form.getFieldAsString Backend.Person.Form.sector personForm
+                |> withDefaultValue (Maybe.andThen .sector maybeRelatedPerson)
 
         cell =
             Form.getFieldAsString Backend.Person.Form.cell personForm
+                |> withDefaultValue (Maybe.andThen .cell maybeRelatedPerson)
 
         village =
             Form.getFieldAsString Backend.Person.Form.village personForm
+                |> withDefaultValue (Maybe.andThen .village maybeRelatedPerson)
 
         viewProvince =
             let
@@ -605,22 +622,13 @@ viewCreateForm language currentDate relationId personForm db =
                                         |> filterGeoLocationDictByParent cellId
                                         |> geoLocationDictToOptions
                            )
-
-                -- When relation person is provided, and his adreess fields are
-                -- set, address fields are copied automatically.
-                -- Therfore, we do not allow to change them.
-                disabled =
-                    maybeRelatedPerson
-                        |> unwrap
-                            False
-                            isPersonAddressSet
             in
             viewSelectInput language
                 Translate.Village
                 options
                 Backend.Person.Form.village
                 "ten"
-                (geoLocationInputClass disabled)
+                (geoLocationInputClass False)
                 True
                 personForm
 

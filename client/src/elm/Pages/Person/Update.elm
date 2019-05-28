@@ -19,28 +19,13 @@ update currentDate msg people model =
     case msg of
         MsgForm relation subMsg ->
             let
-                expectedAge =
+                related =
                     relation
                         |> Maybe.andThen (\personId -> EveryDict.get personId people)
                         |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.andThen
-                            (\related ->
-                                case isPersonAnAdult currentDate related of
-                                    Just True ->
-                                        Just ExpectChild
-
-                                    Just False ->
-                                        Just ExpectAdult
-
-                                    Nothing ->
-                                        Nothing
-                            )
-                        -- If we don't have a related person, then we are
-                        -- expecting either.
-                        |> Maybe.withDefault ExpectAdultOrChild
 
                 newModel =
-                    Form.update (validatePerson expectedAge (Just currentDate)) subMsg model
+                    Form.update (validatePerson related (Just currentDate)) subMsg model
 
                 appMsgs =
                     case subMsg of

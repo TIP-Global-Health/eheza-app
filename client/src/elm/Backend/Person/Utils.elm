@@ -1,4 +1,4 @@
-module Backend.Person.Utils exposing (ageInYears, diffInYears, isAdult, isPersonAddressSet, isPersonAnAdult)
+module Backend.Person.Utils exposing (ageInYears, diffInYears, isAdult, isPersonAnAdult)
 
 import Backend.Person.Model exposing (Person)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
@@ -26,9 +26,3 @@ isAdult currentDate maybeBirthDate =
 isPersonAnAdult : NominalDate -> Person -> Maybe Bool
 isPersonAnAdult currentDate person =
     isAdult currentDate person.birthDate
-
-
-isPersonAddressSet : Person -> Bool
-isPersonAddressSet person =
-    [ person.province, person.district, person.sector, person.cell, person.village ]
-        |> List.all isJust

@@ -2,7 +2,7 @@ module Backend.Person.Form exposing (ExpectedAge(..), PersonForm, birthDate, bir
 
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeMaritalStatus, decodeUbudehe)
 import Backend.Person.Model exposing (..)
-import Backend.Person.Utils exposing (isAdult)
+import Backend.Person.Utils exposing (isAdult, isPersonAnAdult)
 import Date
 import EveryDict
 import Form exposing (..)
@@ -10,7 +10,7 @@ import Form.Init exposing (..)
 import Form.Validate exposing (..)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, fromLocalDateTime)
 import Json.Decode
-import Maybe.Extra exposing (unwrap)
+import Maybe.Extra exposing (join, unwrap)
 import Regex exposing (Regex)
 import Restful.Endpoint exposing (toEntityId)
 import Time.Date
@@ -65,17 +65,35 @@ emptyForm =
     initial
         [ setBool birthDateEstimated False
         ]
-        (validatePerson ExpectAdultOrChild Nothing)
+        (validatePerson Nothing Nothing)
 
 
-{-| The `ExpectedAge` here is the external expectation ... that is, the
-external limit on what the age ought to be, so we can't set an unexpected birth
-date. Once the birth date is set in the form, we also apply internal logic
-based on the birth date actually entered.
+{-| The person supplied here is the related person, if we're constructing someone
+who is the child or parent of a person we know.
 -}
-validatePerson : ExpectedAge -> Maybe NominalDate -> Validation ValidationError Person
-validatePerson externalExpectedAge maybeCurrentDate =
+validatePerson : Maybe Person -> Maybe NominalDate -> Validation ValidationError Person
+validatePerson maybeRelated maybeCurrentDate =
     let
+        externalExpectedAge =
+            Maybe.map2
+                (\related currentDate ->
+                    case isPersonAnAdult currentDate related of
+                        Just True ->
+                            -- If the related person is an adult, we expect a child
+                            ExpectChild
+
+                        Just False ->
+                            -- If they are a child, we expect an adult
+                            ExpectAdult
+
+                        Nothing ->
+                            -- If we don't know, we expect either
+                            ExpectAdultOrChild
+                )
+                maybeRelated
+                maybeCurrentDate
+                |> Maybe.withDefault ExpectAdultOrChild
+
         withFirstName firstNameValue =
             andThen (withAllNames firstNameValue) (field secondName validateLettersOnly)
 
@@ -129,11 +147,11 @@ validatePerson externalExpectedAge maybeCurrentDate =
                 |> andMap (field ubudehe validateUbudehe)
                 |> andMap (field educationLevel <| validateEducationLevel expectedAge)
                 |> andMap (field maritalStatus <| validateMaritalStatus expectedAge)
-                |> andMap (field province validateProvince)
-                |> andMap (field district validateDistrict)
-                |> andMap (field sector validateSector)
-                |> andMap (field cell validateCell)
-                |> andMap (field village validateVillage)
+                |> andMap (field province (validateProvince maybeRelated))
+                |> andMap (field district (validateDistrict maybeRelated))
+                |> andMap (field sector (validateSector maybeRelated))
+                |> andMap (field cell (validateCell maybeRelated))
+                |> andMap (field village (validateVillage maybeRelated))
                 |> andMap (field phoneNumber <| nullable validateDigitsOnly)
     in
     andThen withFirstName (field firstName validateLettersOnly)
@@ -154,8 +172,18 @@ validateNationalIdNumber =
         |> nullable
 
 
-validateProvince : Validation ValidationError (Maybe String)
-validateProvince =
+withDefault : Maybe String -> Validation ValidationError (Maybe String) -> Validation ValidationError (Maybe String)
+withDefault related =
+    case related of
+        Just _ ->
+            defaultValue related
+
+        Nothing ->
+            identity
+
+
+validateProvince : Maybe Person -> Validation ValidationError (Maybe String)
+validateProvince related =
     int
         |> mapError (\_ -> customError RequiredField)
         |> andThen
@@ -164,10 +192,11 @@ validateProvince =
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownProvince)
             )
+        |> withDefault (Maybe.andThen .province related)
 
 
-validateDistrict : Validation ValidationError (Maybe String)
-validateDistrict =
+validateDistrict : Maybe Person -> Validation ValidationError (Maybe String)
+validateDistrict related =
     int
         |> mapError (\_ -> customError RequiredField)
         |> andThen
@@ -176,10 +205,11 @@ validateDistrict =
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownDistrict)
             )
+        |> withDefault (Maybe.andThen .district related)
 
 
-validateSector : Validation ValidationError (Maybe String)
-validateSector =
+validateSector : Maybe Person -> Validation ValidationError (Maybe String)
+validateSector related =
     int
         |> mapError (\_ -> customError RequiredField)
         |> andThen
@@ -188,10 +218,11 @@ validateSector =
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownSector)
             )
+        |> withDefault (Maybe.andThen .sector related)
 
 
-validateCell : Validation ValidationError (Maybe String)
-validateCell =
+validateCell : Maybe Person -> Validation ValidationError (Maybe String)
+validateCell related =
     int
         |> mapError (\_ -> customError RequiredField)
         |> andThen
@@ -200,10 +231,11 @@ validateCell =
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownCell)
             )
+        |> withDefault (Maybe.andThen .cell related)
 
 
-validateVillage : Validation ValidationError (Maybe String)
-validateVillage =
+validateVillage : Maybe Person -> Validation ValidationError (Maybe String)
+validateVillage related =
     int
         |> mapError (\_ -> customError RequiredField)
         |> andThen
@@ -212,6 +244,7 @@ validateVillage =
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownVillage)
             )
+        |> withDefault (Maybe.andThen .village related)
 
 
 validateGender : Validation ValidationError Gender
