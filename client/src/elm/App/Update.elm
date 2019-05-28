@@ -328,7 +328,7 @@ update msg model =
                     case page of
                         -- Destination page is 'register new patient' form.
                         -- When relation person is provided, and his address fields
-                        -- are set, addresse fields should be copied automatically.
+                        -- are set, address fields should be copied automatically.
                         -- to the form.
                         UserPage (CreatePersonPage (Just relatedPersonId)) ->
                             --Find relation person at people dictionary.
