@@ -1,4 +1,4 @@
-module Backend.Person.Form exposing (PersonForm, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, firstName, gender, maritalStatus, nationalIdNumber, phoneNumber, photo, province, secondName, sector, ubudehe, validateBirthDate, validateCell, validateDistrict, validateEducationLevel, validateGender, validateMaritalStatus, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village)
+module Backend.Person.Form exposing (ExpectedAge(..), PersonForm, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, firstName, gender, maritalStatus, nationalIdNumber, phoneNumber, photo, province, secondName, sector, ubudehe, validateBirthDate, validateCell, validateDistrict, validateEducationLevel, validateGender, validateMaritalStatus, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village)
 
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeMaritalStatus, decodeUbudehe)
 import Backend.Person.Model exposing (..)
@@ -22,16 +22,30 @@ type alias PersonForm =
     Form ValidationError Person
 
 
+{-| Sometimes, we are in a state where we are expecting the user to enter an
+adult or a child, and sometimes we don't care -- they could be entering either.
+
+This controls various aspects of validation. If set to `ExpectAdultOrChild`, we
+also check the birth date actually entered in the form, and validate the rest
+according that birth date.
+
+-}
+type ExpectedAge
+    = ExpectAdult
+    | ExpectChild
+    | ExpectAdultOrChild
+
+
 emptyForm : PersonForm
 emptyForm =
     initial
         [ setBool birthDateEstimated False
         ]
-        (validatePerson False Nothing)
+        (validatePerson ExpectAdultOrChild Nothing)
 
 
-validatePerson : Bool -> Maybe NominalDate -> Validation ValidationError Person
-validatePerson isAdult maybeCurrentDate =
+validatePerson : ExpectedAge -> Maybe NominalDate -> Validation ValidationError Person
+validatePerson expectedAge maybeCurrentDate =
     let
         withFirstName firstNameValue =
             andThen (withAllNames firstNameValue) (field secondName validateLettersOnly)
@@ -49,12 +63,12 @@ validatePerson isAdult maybeCurrentDate =
                 |> andMap (succeed <| String.trim secondNameValue)
                 |> andMap (field nationalIdNumber validateNationalIdNumber)
                 |> andMap (field photo <| nullable string)
-                |> andMap (field birthDate <| validateBirthDate isAdult maybeCurrentDate)
+                |> andMap (field birthDate <| validateBirthDate expectedAge maybeCurrentDate)
                 |> andMap (field birthDateEstimated bool)
                 |> andMap (field gender validateGender)
                 |> andMap (field ubudehe validateUbudehe)
-                |> andMap (field educationLevel <| validateEducationLevel isAdult)
-                |> andMap (field maritalStatus <| validateMaritalStatus isAdult)
+                |> andMap (field educationLevel <| validateEducationLevel expectedAge)
+                |> andMap (field maritalStatus <| validateMaritalStatus expectedAge)
                 |> andMap (field province validateProvince)
                 |> andMap (field district validateDistrict)
                 |> andMap (field sector validateSector)
@@ -150,8 +164,8 @@ validateUbudehe =
     fromDecoder DecoderError (Just ReqiuredField) (Json.Decode.nullable decodeUbudehe)
 
 
-validateBirthDate : Bool -> Maybe NominalDate -> Validation ValidationError (Maybe NominalDate)
-validateBirthDate isAdult maybeCurrentDate =
+validateBirthDate : ExpectedAge -> Maybe NominalDate -> Validation ValidationError (Maybe NominalDate)
+validateBirthDate expectedAge maybeCurrentDate =
     string
         |> mapError (\_ -> customError ReqiuredField)
         |> andThen
@@ -176,11 +190,11 @@ validateBirthDate isAdult maybeCurrentDate =
                                     -- Conversion to NominalDate failed.
                                     (fail <| customError InvalidBirthDate)
                                     (\delta ->
-                                        if delta > 12 && not isAdult then
+                                        if delta > 12 && expectedAge == ExpectChild then
                                             fail <| customError InvalidBirthDateForChild
                                             -- Invalid age for child.
 
-                                        else if delta < 13 && isAdult then
+                                        else if delta < 13 && expectedAge == ExpectAdult then
                                             fail <| customError InvalidBirthDateForAdult
                                             -- Invalid age for adult.
 
@@ -191,22 +205,24 @@ validateBirthDate isAdult maybeCurrentDate =
             )
 
 
-validateEducationLevel : Bool -> Validation ValidationError (Maybe EducationLevel)
-validateEducationLevel isAdult =
-    if not isAdult then
-        succeed Nothing
-
-    else
+validateEducationLevel : ExpectedAge -> Validation ValidationError (Maybe EducationLevel)
+validateEducationLevel expectedAge =
+    if expectedAge == ExpectAdult then
         fromDecoder DecoderError (Just ReqiuredField) (Json.Decode.nullable decodeEducationLevel)
 
+    else
+        -- It's not required for others, but we'll keep it if provided.
+        fromDecoder DecoderError Nothing (Json.Decode.nullable decodeEducationLevel)
 
-validateMaritalStatus : Bool -> Validation ValidationError (Maybe MaritalStatus)
-validateMaritalStatus isAdult =
-    if not isAdult then
-        succeed Nothing
+
+validateMaritalStatus : ExpectedAge -> Validation ValidationError (Maybe MaritalStatus)
+validateMaritalStatus expectedAge =
+    if expectedAge == ExpectAdult then
+        fromDecoder DecoderError (Just ReqiuredField) (Json.Decode.nullable decodeMaritalStatus)
 
     else
-        fromDecoder DecoderError (Just ReqiuredField) (Json.Decode.nullable decodeMaritalStatus)
+        -- Not required, but keep it if provided.
+        fromDecoder DecoderError Nothing (Json.Decode.nullable decodeMaritalStatus)
 
 
 validateDigitsOnly : Validation ValidationError String

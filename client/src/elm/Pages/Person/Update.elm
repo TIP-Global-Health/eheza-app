@@ -3,7 +3,7 @@ module Pages.Person.Update exposing (update)
 import App.Model
 import Backend.Entities exposing (PersonId)
 import Backend.Model
-import Backend.Person.Form exposing (validatePerson)
+import Backend.Person.Form exposing (ExpectedAge(..), validatePerson)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (isAdultRegistering, isPersonAnAdult)
 import EveryDict exposing (EveryDict)
@@ -19,20 +19,24 @@ update currentDate msg people model =
     case msg of
         MsgForm relation subMsg ->
             let
-                birthDateField =
-                    Form.getFieldAsString Backend.Person.Form.birthDate model
-
-                isAdult =
+                expectedAge =
                     relation
                         |> Maybe.andThen (\personId -> EveryDict.get personId people)
                         |> Maybe.andThen RemoteData.toMaybe
-                        -- We register an adul,t if person we relate to is a child.
-                        |> Maybe.map (isPersonAnAdult currentDate >> not)
-                        -- Or, by checking birth date field, if we don't have relation info.
-                        |> Maybe.withDefault (isAdultRegistering currentDate birthDateField)
+                        |> Maybe.map
+                            (\related ->
+                                if isPersonAnAdult currentDate related then
+                                    ExpectChild
+
+                                else
+                                    ExpectAdult
+                            )
+                        -- If we don't have a related person, then we are
+                        -- expecting either.
+                        |> Maybe.withDefault ExpectAdultOrChild
 
                 newModel =
-                    Form.update (validatePerson isAdult (Just currentDate)) subMsg model
+                    Form.update (validatePerson expectedAge (Just currentDate)) subMsg model
 
                 appMsgs =
                     case subMsg of
