@@ -292,7 +292,7 @@ viewCreateForm language currentDate relationData personForm request =
             maybeRelatedPerson
                 -- We register and adult if person we relate to, is a child.
                 |> Maybe.map (isPersonAnAdult currentDate >> not)
-                -- When there's no related person, by checking birth date field.
+                -- When there's no relation person, by checking birth date field.
                 |> Maybe.withDefault (isAdultRegistering currentDate birthDateField)
 
         birthDateEstimatedField =
@@ -587,7 +587,7 @@ viewCreateForm language currentDate relationData personForm request =
                                         |> geoLocationDictToOptions
                            )
 
-                -- When related person is provided, and his adreess fields are
+                -- When relation person is provided, and his adreess fields are
                 -- set, address fields are copied automatically.
                 -- Therfore, we do not allow to change them.
                 disabled =

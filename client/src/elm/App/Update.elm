@@ -327,11 +327,11 @@ update msg model =
                 extraMsgs =
                     case page of
                         -- Destination page is 'register new patient' form.
-                        -- When related person is provided, and his address fields
+                        -- When relation person is provided, and his address fields
                         -- are set, addresse fields should be copied automatically.
                         -- to the form.
                         UserPage (CreatePersonPage (Just relatedPersonId)) ->
-                            --Find related person at people dictionary.
+                            --Find relation person at people dictionary.
                             EveryDict.get relatedPersonId model.indexedDb.people
                                 |> Maybe.andThen RemoteData.toMaybe
                                 |> Maybe.map
