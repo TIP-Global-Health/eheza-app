@@ -106,7 +106,7 @@ type ValidationError
     | InvalidBirthDateForChild
     | LengthError Int
     | LettersOnly
-    | ReqiuredField
+    | RequiredField
     | UnknownGroup
     | UnknownProvince
     | UnknownDistrict
@@ -2532,7 +2532,7 @@ translateValidationError id =
             , kinyarwanda = Nothing
             }
 
-        ReqiuredField ->
+        RequiredField ->
             { english = "is a required field"
             , kinyarwanda = Nothing
             }

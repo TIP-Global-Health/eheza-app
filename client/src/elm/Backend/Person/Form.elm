@@ -157,7 +157,7 @@ validateNationalIdNumber =
 validateProvince : Validation ValidationError (Maybe String)
 validateProvince =
     int
-        |> mapError (\_ -> customError ReqiuredField)
+        |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.provinces
@@ -169,7 +169,7 @@ validateProvince =
 validateDistrict : Validation ValidationError (Maybe String)
 validateDistrict =
     int
-        |> mapError (\_ -> customError ReqiuredField)
+        |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.districts
@@ -181,7 +181,7 @@ validateDistrict =
 validateSector : Validation ValidationError (Maybe String)
 validateSector =
     int
-        |> mapError (\_ -> customError ReqiuredField)
+        |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.sectors
@@ -193,7 +193,7 @@ validateSector =
 validateCell : Validation ValidationError (Maybe String)
 validateCell =
     int
-        |> mapError (\_ -> customError ReqiuredField)
+        |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.cells
@@ -205,7 +205,7 @@ validateCell =
 validateVillage : Validation ValidationError (Maybe String)
 validateVillage =
     int
-        |> mapError (\_ -> customError ReqiuredField)
+        |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.villages
@@ -216,18 +216,18 @@ validateVillage =
 
 validateGender : Validation ValidationError Gender
 validateGender =
-    fromDecoder DecoderError (Just ReqiuredField) decodeGender
+    fromDecoder DecoderError (Just RequiredField) decodeGender
 
 
 validateUbudehe : Validation ValidationError (Maybe Ubudehe)
 validateUbudehe =
-    fromDecoder DecoderError (Just ReqiuredField) (Json.Decode.nullable decodeUbudehe)
+    fromDecoder DecoderError (Just RequiredField) (Json.Decode.nullable decodeUbudehe)
 
 
 validateBirthDate : ExpectedAge -> Maybe NominalDate -> Validation ValidationError (Maybe NominalDate)
 validateBirthDate expectedAge maybeCurrentDate =
     string
-        |> mapError (\_ -> customError ReqiuredField)
+        |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\s ->
                 maybeCurrentDate
@@ -268,7 +268,7 @@ validateBirthDate expectedAge maybeCurrentDate =
 validateEducationLevel : ExpectedAge -> Validation ValidationError (Maybe EducationLevel)
 validateEducationLevel expectedAge =
     if expectedAge == ExpectAdult then
-        fromDecoder DecoderError (Just ReqiuredField) (Json.Decode.nullable decodeEducationLevel)
+        fromDecoder DecoderError (Just RequiredField) (Json.Decode.nullable decodeEducationLevel)
 
     else
         -- It's not required for others, but we'll keep it if provided.
@@ -278,7 +278,7 @@ validateEducationLevel expectedAge =
 validateMaritalStatus : ExpectedAge -> Validation ValidationError (Maybe MaritalStatus)
 validateMaritalStatus expectedAge =
     if expectedAge == ExpectAdult then
-        fromDecoder DecoderError (Just ReqiuredField) (Json.Decode.nullable decodeMaritalStatus)
+        fromDecoder DecoderError (Just RequiredField) (Json.Decode.nullable decodeMaritalStatus)
 
     else
         -- Not required, but keep it if provided.
