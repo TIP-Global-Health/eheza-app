@@ -36,17 +36,34 @@ view model =
             Config.View.view model.language err
 
         Success configuration ->
-            div [ class "page container" ]
-                [ viewLanguageSwitcherAndVersion model
-                , div
-                    [ class "page-content" ]
-                    [ viewConfiguredModel model configuration ]
-                ]
+            viewConfiguredModel model configuration
 
         _ ->
             -- Don't show anything if config resolution is in process but
             -- hasn't failed yet.
             viewLoading
+
+
+{-| Given some HTML, wrap it in the new flex-box based structure.
+-}
+flexPageWrapper : Model -> Html Msg -> Html Msg
+flexPageWrapper model html =
+    div [ class "page container" ]
+        [ viewLanguageSwitcherAndVersion model
+        , div
+            [ class "page-content" ]
+            [ html ]
+        ]
+
+
+{-| Given some HTML, wrap it the old way.
+-}
+oldPageWrapper : Model -> Html Msg -> Html Msg
+oldPageWrapper model html =
+    div [ class "container" ]
+        [ viewLanguageSwitcherAndVersion model
+        , html
+        ]
 
 
 {-| The language switcher view which sets a preferred language for each user and
@@ -110,6 +127,7 @@ viewConfiguredModel model configured =
         -- service worker for the normal operation of the app).
         ServiceWorker.View.view model.currentTime model.language model.serviceWorker
             |> Html.map MsgServiceWorker
+            |> flexPageWrapper model
 
     else if not (RemoteData.isSuccess configured.device) then
         -- If our device is not paired, then the only thing we allow is the pairing
@@ -118,27 +136,33 @@ viewConfiguredModel model configured =
             ServiceWorkerPage ->
                 ServiceWorker.View.view model.currentTime model.language model.serviceWorker
                     |> Html.map MsgServiceWorker
+                    |> flexPageWrapper model
 
             _ ->
                 Pages.Device.View.view model.language configured.device model configured.devicePage
                     |> Html.map MsgPageDevice
+                    |> flexPageWrapper model
 
     else
         case model.activePage of
             DevicePage ->
                 Pages.Device.View.view model.language configured.device model configured.devicePage
                     |> Html.map MsgPageDevice
+                    |> flexPageWrapper model
 
             PinCodePage ->
                 Pages.PinCode.View.view model.language model.activePage (RemoteData.map .nurse configured.loggedIn) configured.pinCodePage
                     |> Html.map MsgPagePinCode
+                    |> flexPageWrapper model
 
             PageNotFound url ->
                 Pages.PageNotFound.View.view model.language url
+                    |> oldPageWrapper model
 
             ServiceWorkerPage ->
                 ServiceWorker.View.view model.currentTime model.language model.serviceWorker
                     |> Html.map MsgServiceWorker
+                    |> flexPageWrapper model
 
             UserPage userPage ->
                 viewUserPage userPage model configured
@@ -155,19 +179,24 @@ viewUserPage page model configured =
             case page of
                 MyAccountPage ->
                     Pages.MyAccount.View.view model.language loggedInModel.nurse
+                        |> oldPageWrapper model
 
                 ClinicsPage clinicId ->
                     Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) clinicId model.indexedDb
+                        |> flexPageWrapper model
 
                 CreatePersonPage relation ->
                     Pages.Person.View.viewCreateForm model.language currentDate relation loggedInModel.createPersonPage model.indexedDb.postPerson
                         |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
+                        |> flexPageWrapper model
 
                 PersonPage id ->
                     Pages.Person.View.view model.language currentDate id model.indexedDb
+                        |> flexPageWrapper model
 
                 PersonsPage search relation ->
                     Pages.People.View.view model.language currentDate search relation model.indexedDb
+                        |> flexPageWrapper model
 
                 RelationshipPage id1 id2 ->
                     let
@@ -177,6 +206,7 @@ viewUserPage page model configured =
                     in
                     Pages.Relationship.View.view model.language currentDate id1 id2 model.indexedDb page
                         |> Html.map (MsgLoggedIn << MsgPageRelationship id1 id2)
+                        |> flexPageWrapper model
 
                 SessionPage sessionId subPage ->
                     let
@@ -194,10 +224,12 @@ viewUserPage page model configured =
                         sessionPages
                         model.indexedDb
                         |> Html.map (MsgLoggedIn << MsgPageSession sessionId)
+                        |> oldPageWrapper model
 
         Nothing ->
             Pages.PinCode.View.view model.language model.activePage (RemoteData.map .nurse configured.loggedIn) configured.pinCodePage
                 |> Html.map MsgPagePinCode
+                |> flexPageWrapper model
 
 
 {-| Just show a generic loading indicator, for cases that will resolve soon,
