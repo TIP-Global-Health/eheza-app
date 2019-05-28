@@ -33,6 +33,9 @@ var bs;
 
 var wiredep = require('wiredep').stream;
 
+const {exec} = require('child_process');
+
+
 // Deletes the directory that is used to serve the site during development
 gulp.task("clean:dev", function(cb) {
   return del(["serve"], cb);
@@ -76,7 +79,7 @@ gulp.task("styles", [], function () {
 // Compile the raw Z-Score files to something more useful.
 gulp.task("zscore", [], function () {
   var parseOptions = {
-    auto_parse: true,
+    cast: true,
     columns: true,
     delimiter: "\t",
     trim: true
@@ -265,6 +268,40 @@ gulp.task("serve:dev", ["build"], function () {
   });
 });
 
+// Serves on HTTPS for the Android emulator.
+gulp.task("serve:emulator", ["build", "ssl-cert"], function () {
+  bs = browserSync({
+    notify: true,
+    // tunnel: "",
+    server: {
+      baseDir: "serve"
+    },
+    https: {
+      cert: "ssl/ssl.pem",
+      key: "ssl/ssl.key"
+    }
+  });
+});
+
+// Makes an SSL certificate for ihangane.dev for the Android emulator. Just
+// run this once, and then do what is necessary to trust it.
+gulp.task("ssl-cert", function (cb) {
+  fs.access("ssl/ssl.crt", fs.constants.F_OK, (err) => {
+    if (err) {
+      // Doesn't exist, so create cert.
+      const cmdGen = "openssl req -batch -config ssl/ihangane.dev.conf -new -sha256 -newkey rsa:2048 -nodes -x509 -days 1024 -keyout ssl/ssl.key -out ssl/ssl.pem";
+      exec(cmdGen, {}, function (err, stdout, stderr) {
+        console.log(stdout);
+        console.log(stderr);
+        const cmdConvert = "openssl x509 -in ssl/ssl.pem -inform pem -out ssl/ssl.crt -outform der";
+        exec(cmdConvert, {}, cb);
+      });
+    } else {
+      // exists, so do nothing.
+      cb();
+    }
+  });
+});
 
 // These tasks will look for files that change while serving and will auto-regenerate or
 // reload the website accordingly. Update or add other files you need to be watched.
@@ -366,6 +403,9 @@ gulp.task('pwa:prod', function (callback) {
     ]
   }, callback);
 });
+
+// Serve for the Android emulator, then watch.
+gulp.task("emulator", ["serve:emulator", "watch"]);
 
 // Default task, run when just writing "gulp" in the terminal
 gulp.task("default", ["serve:dev", "watch"]);

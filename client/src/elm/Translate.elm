@@ -223,6 +223,7 @@ type TranslationId
     | Gender Gender
     | GenderLabel
     | GoHome
+    | HaveYouSynced
     | HealthCenter
     | HIVStatusLabel
     | HouseholdSize
@@ -263,6 +264,7 @@ type TranslationId
     | NoActivitiesCompletedForThisParticipant
     | NoActivitiesPending
     | NoActivitiesPendingForThisParticipant
+    | NoGroupsFound
     | NoMatchesFound
     | NoParticipantsPending
     | NoParticipantsPendingForThisActivity
@@ -1146,6 +1148,11 @@ translationSet trans =
             , kinyarwanda = Just "Kujya ahabanza"
             }
 
+        HaveYouSynced ->
+            { english = "Have you synced data for the health center you are working with?"
+            , kinyarwanda = Nothing
+            }
+
         HealthCenter ->
             { english = "Health Center"
             , kinyarwanda = Nothing
@@ -1400,6 +1407,11 @@ translationSet trans =
         NoActivitiesPendingForThisParticipant ->
             { english = "All activities are completed for this participant."
             , kinyarwanda = Just "Ibikorwa byose byarangiye kubitabiriye."
+            }
+
+        NoGroupsFound ->
+            { english = "No groups found."
+            , kinyarwanda = Nothing
             }
 
         NoMatchesFound ->
