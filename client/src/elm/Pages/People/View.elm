@@ -113,37 +113,58 @@ viewSearchForm language currentDate searchString relation db =
                     ]
                 ]
 
-        -- When related person is provided, we need to:
-        -- 1. Make sure that we create a person of other type.
-        --    If related person is an adult, created person must be a children
-        --    and vice versa.
-        relatedPersonConditions filteredPerson =
-            case relation of
-                Nothing ->
-                    True
-
-                Just personId ->
-                    EveryDict.get personId db.people
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> unwrap
-                            True
-                            (\relatedPerson ->
-                                isPersonAnAdult currentDate filteredPerson == (not <| isPersonAnAdult currentDate relatedPerson)
-                            )
-
         results =
             if String.isEmpty searchValue then
                 Nothing
 
             else
-                -- If we're adding a family member, we filter out the person
-                -- we're adding the famnily member to.
+                let
+                    -- When relation person is provided, we need to make sure
+                    -- that at search result, we don't present:
+                    -- 1. Relation person himself.
+                    -- 2. People of same type as relation person. If relation person
+                    --    is an adult, related person must be a child, and vice versa.
+                    -- 3. People already related to relation person.
+                    personTypeCondition filteredPerson =
+                        case relation of
+                            Nothing ->
+                                True
+
+                            Just personId ->
+                                EveryDict.get personId db.people
+                                    |> Maybe.andThen RemoteData.toMaybe
+                                    |> unwrap
+                                        True
+                                        (\relatedPerson ->
+                                            isPersonAnAdult currentDate filteredPerson == (not <| isPersonAnAdult currentDate relatedPerson)
+                                        )
+
+                    personRelationCondition filteredPersonId =
+                        case relation of
+                            Nothing ->
+                                True
+
+                            Just personId ->
+                                EveryDict.get personId db.relationshipsByPerson
+                                    |> Maybe.andThen RemoteData.toMaybe
+                                    |> unwrap
+                                        True
+                                        (\relatedPersionRelationships ->
+                                            relatedPersionRelationships
+                                                |> EveryDictList.values
+                                                |> List.all
+                                                    (\relationship ->
+                                                        relationship.relatedTo /= filteredPersonId
+                                                    )
+                                        )
+                in
                 Dict.get searchValue db.personSearches
                     |> Maybe.withDefault NotAsked
                     |> RemoteData.map
                         (EveryDictList.filter
                             (\k v ->
-                                not (relation == Just k) && relatedPersonConditions v
+                                -- Applying 3 conditionms explained above
+                                not (relation == Just k) && personTypeCondition v && personRelationCondition k
                             )
                         )
                     |> Just
