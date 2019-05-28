@@ -99,11 +99,15 @@ viewFetchedContent language currentDate id1 id2 model request data =
                 |> Maybe.Extra.orElse savedRelationship
 
         possibleRelationships =
-            if isPersonAnAdult currentDate data.person1 then
-                [ MyChild, MyCaregiven ]
+            case isPersonAnAdult currentDate data.person1 of
+                Just True ->
+                    [ MyChild, MyCaregiven ]
 
-            else
-                [ MyParent, MyCaregiver ]
+                Just False ->
+                    [ MyParent, MyCaregiver ]
+
+                Nothing ->
+                    [ MyChild, MyCaregiven, MyParent, MyCaregiver ]
 
         relationshipSelector =
             div
@@ -208,11 +212,15 @@ viewParticipant : Language -> NominalDate -> PersonId -> Person -> Html Msg
 viewParticipant language currentDate id person =
     let
         typeForThumbnail =
-            if isPersonAnAdult currentDate person then
-                "mother"
+            case isPersonAnAdult currentDate person of
+                Just True ->
+                    "mother"
 
-            else
-                "child"
+                Just False ->
+                    "child"
+
+                Nothing ->
+                    "mother"
 
         content =
             div [ class "content" ]

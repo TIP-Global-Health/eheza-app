@@ -4,9 +4,9 @@ import App.Model
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Encoder exposing (encodeEducationLevel, encodeMaritalStatus, encodeUbudehe)
-import Backend.Person.Form exposing (PersonForm)
+import Backend.Person.Form exposing (ExpectedAge(..), PersonForm, expectedAgeFromForm)
 import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allMaritalStatuses, allUbudehes)
-import Backend.Person.Utils exposing (ageInYears, isAdultRegistering, isPersonAddressSet, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInYears, isPersonAddressSet, isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import EveryDict
 import EveryDictList
@@ -102,11 +102,15 @@ viewParticipantDetailsForm language currentDate db id person =
             isPersonAnAdult currentDate person
 
         ( typeForAddFamilyMember, labelForAddFamilyMember ) =
-            if not isAdult then
-                ( "child", Translate.AddMotherOrCaregiver )
+            case isAdult of
+                Just True ->
+                    ( "child", Translate.AddMotherOrCaregiver )
 
-            else
-                ( "mother", Translate.AddChild )
+                Just False ->
+                    ( "mother", Translate.AddChild )
+
+                Nothing ->
+                    ( "mother", Translate.AddFamilyMember )
 
         addFamilyMember =
             div [ class "ui unstackable items participants-list" ]
@@ -163,11 +167,15 @@ viewParticipant : Language -> NominalDate -> Maybe MyRelationship -> PersonId ->
 viewParticipant language currentDate myRelationship id person =
     let
         typeForThumbnail =
-            if isPersonAnAdult currentDate person then
-                "mother"
+            case isPersonAnAdult currentDate person of
+                Just True ->
+                    "mother"
 
-            else
-                "child"
+                Just False ->
+                    "child"
+
+                Nothing ->
+                    "mother"
 
         relationshipLabel =
             myRelationship
@@ -288,12 +296,24 @@ viewCreateForm language currentDate relationData personForm request =
                 |> Maybe.andThen Tuple.second
                 |> Maybe.andThen RemoteData.toMaybe
 
-        isAdult =
+        expectedAge =
             maybeRelatedPerson
-                -- We register and adult if person we relate to, is a child.
-                |> Maybe.map (isPersonAnAdult currentDate >> not)
-                -- When there's no relation person, by checking birth date field.
-                |> Maybe.withDefault (isAdultRegistering currentDate birthDateField)
+                |> Maybe.andThen
+                    (\related ->
+                        case isPersonAnAdult currentDate related of
+                            Just True ->
+                                Just ExpectChild
+
+                            Just False ->
+                                Just ExpectAdult
+
+                            Nothing ->
+                                Nothing
+                    )
+                -- If we don't have a related person, or don't know whether
+                -- that person is an adult, then we check whether a birthdate
+                -- has been entered into the form so far.
+                |> Maybe.withDefault (expectedAgeFromForm currentDate personForm)
 
         birthDateEstimatedField =
             Form.getFieldAsBool Backend.Person.Form.birthDateEstimated personForm
@@ -414,7 +434,7 @@ viewCreateForm language currentDate relationData personForm request =
                         , birthDateInput
                         , genderInput
                         ]
-                            ++ (if isAdult then
+                            ++ (if expectedAge /= ExpectChild then
                                     [ viewSelectInput language Translate.LevelOfEducationLabel educationLevelOptions Backend.Person.Form.educationLevel "ten" "select-input" True personForm
                                     , viewSelectInput language Translate.MaritalStatusLabel maritalStatusOptions Backend.Person.Form.maritalStatus "ten" "select-input" True personForm
                                     ]
@@ -614,7 +634,7 @@ viewCreateForm language currentDate relationData personForm request =
             ]
 
         contactInformationSection =
-            if isAdult then
+            if expectedAge /= ExpectChild then
                 [ h3
                     [ class "ui header" ]
                     [ text <| translate language Translate.ContactInformation ++ ":" ]

@@ -3,6 +3,7 @@ module Pages.People.View exposing (view)
 import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Person.Form exposing (ExpectedAge(..))
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Dict
@@ -113,6 +114,26 @@ viewSearchForm language currentDate searchString relation db =
                     ]
                 ]
 
+        relatedPerson =
+            relation
+                |> Maybe.andThen (\id -> EveryDict.get id db.people)
+                |> Maybe.andThen RemoteData.toMaybe
+
+        expectedAge =
+            relatedPerson
+                |> Maybe.andThen (isPersonAnAdult currentDate)
+                |> (\isAdult ->
+                        case isAdult of
+                            Just True ->
+                                ExpectChild
+
+                            Just False ->
+                                ExpectAdult
+
+                            Nothing ->
+                                ExpectAdultOrChild
+                   )
+
         results =
             if String.isEmpty searchValue then
                 Nothing
@@ -126,18 +147,18 @@ viewSearchForm language currentDate searchString relation db =
                     --    is an adult, related person must be a child, and vice versa.
                     -- 3. People already related to relation person.
                     personTypeCondition filteredPerson =
-                        case relation of
-                            Nothing ->
-                                True
+                        case isPersonAnAdult currentDate filteredPerson of
+                            Just True ->
+                                -- We'll show adults unless we're expecting children
+                                expectedAge /= ExpectChild
 
-                            Just personId ->
-                                EveryDict.get personId db.people
-                                    |> Maybe.andThen RemoteData.toMaybe
-                                    |> unwrap
-                                        True
-                                        (\relatedPerson ->
-                                            isPersonAnAdult currentDate filteredPerson == (not <| isPersonAnAdult currentDate relatedPerson)
-                                        )
+                            Just False ->
+                                -- We''ll show children unless we're expecting adults.
+                                expectedAge /= ExpectAdult
+
+                            Nothing ->
+                                -- If we don't know, then show it.
+                                True
 
                     personRelationCondition filteredPersonId =
                         case relation of
@@ -233,11 +254,15 @@ viewParticipant : Language -> NominalDate -> Maybe PersonId -> ModelIndexedDb ->
 viewParticipant language currentDate relation db id person =
     let
         typeForThumbnail =
-            if isPersonAnAdult currentDate person then
-                "mother"
+            case isPersonAnAdult currentDate person of
+                Just True ->
+                    "mother"
 
-            else
-                "child"
+                Just False ->
+                    "child"
+
+                Nothing ->
+                    "mother"
 
         nextPage =
             case relation of

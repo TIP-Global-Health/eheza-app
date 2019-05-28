@@ -5,7 +5,7 @@ import Backend.Entities exposing (PersonId)
 import Backend.Model
 import Backend.Person.Form exposing (ExpectedAge(..), validatePerson)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (isAdultRegistering, isPersonAnAdult)
+import Backend.Person.Utils exposing (isPersonAnAdult)
 import EveryDict exposing (EveryDict)
 import Form
 import Form.Field
@@ -23,13 +23,17 @@ update currentDate msg people model =
                     relation
                         |> Maybe.andThen (\personId -> EveryDict.get personId people)
                         |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map
+                        |> Maybe.andThen
                             (\related ->
-                                if isPersonAnAdult currentDate related then
-                                    ExpectChild
+                                case isPersonAnAdult currentDate related of
+                                    Just True ->
+                                        Just ExpectChild
 
-                                else
-                                    ExpectAdult
+                                    Just False ->
+                                        Just ExpectAdult
+
+                                    Nothing ->
+                                        Nothing
                             )
                         -- If we don't have a related person, then we are
                         -- expecting either.

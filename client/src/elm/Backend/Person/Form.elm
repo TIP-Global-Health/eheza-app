@@ -1,7 +1,8 @@
-module Backend.Person.Form exposing (ExpectedAge(..), PersonForm, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, firstName, gender, maritalStatus, nationalIdNumber, phoneNumber, photo, province, secondName, sector, ubudehe, validateBirthDate, validateCell, validateDistrict, validateEducationLevel, validateGender, validateMaritalStatus, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village)
+module Backend.Person.Form exposing (ExpectedAge(..), PersonForm, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, expectedAgeFromForm, firstName, gender, maritalStatus, nationalIdNumber, phoneNumber, photo, province, secondName, sector, ubudehe, validateBirthDate, validateCell, validateDistrict, validateEducationLevel, validateGender, validateMaritalStatus, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village)
 
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeMaritalStatus, decodeUbudehe)
 import Backend.Person.Model exposing (..)
+import Backend.Person.Utils exposing (isAdult)
 import Date
 import EveryDict
 import Form exposing (..)
@@ -36,6 +37,29 @@ type ExpectedAge
     | ExpectAdultOrChild
 
 
+{-| Given the birth date actually entered into the form, what age range are we
+looking at?
+-}
+expectedAgeFromForm : NominalDate -> PersonForm -> ExpectedAge
+expectedAgeFromForm currentDate form =
+    Form.getFieldAsString birthDate form
+        |> .value
+        |> Maybe.andThen (Date.fromString >> Result.toMaybe)
+        |> Maybe.map fromLocalDateTime
+        |> isAdult currentDate
+        |> (\adult ->
+                case adult of
+                    Just True ->
+                        ExpectAdult
+
+                    Just False ->
+                        ExpectChild
+
+                    Nothing ->
+                        ExpectAdultOrChild
+           )
+
+
 emptyForm : PersonForm
 emptyForm =
     initial
@@ -44,8 +68,13 @@ emptyForm =
         (validatePerson ExpectAdultOrChild Nothing)
 
 
+{-| The `ExpectedAge` here is the external expectation ... that is, the
+external limit on what the age ought to be, so we can't set an unexpected birth
+date. Once the birth date is set in the form, we also apply internal logic
+based on the birth date actually entered.
+-}
 validatePerson : ExpectedAge -> Maybe NominalDate -> Validation ValidationError Person
-validatePerson expectedAge maybeCurrentDate =
+validatePerson externalExpectedAge maybeCurrentDate =
     let
         withFirstName firstNameValue =
             andThen (withAllNames firstNameValue) (field secondName validateLettersOnly)
@@ -57,13 +86,44 @@ validatePerson expectedAge maybeCurrentDate =
                 |> String.join " "
 
         withAllNames firstNameValue secondNameValue =
+            validateBirthDate externalExpectedAge maybeCurrentDate
+                |> field birthDate
+                |> andThen (withNamesAndBirthDate firstNameValue secondNameValue)
+
+        withNamesAndBirthDate firstNameValue secondNameValue birthDate =
+            let
+                expectedAge =
+                    case externalExpectedAge of
+                        ExpectChild ->
+                            ExpectChild
+
+                        ExpectAdult ->
+                            ExpectAdult
+
+                        ExpectAdultOrChild ->
+                            -- If we could accept either, then see what birthdate
+                            -- has actually been entered, if any.
+                            maybeCurrentDate
+                                |> Maybe.andThen (\currentDate -> isAdult currentDate birthDate)
+                                |> (\isAdult ->
+                                        case isAdult of
+                                            Just True ->
+                                                ExpectAdult
+
+                                            Just False ->
+                                                ExpectChild
+
+                                            Nothing ->
+                                                ExpectAdultOrChild
+                                   )
+            in
             succeed Person
                 |> andMap (succeed (combineNames firstNameValue secondNameValue))
                 |> andMap (succeed <| String.trim firstNameValue)
                 |> andMap (succeed <| String.trim secondNameValue)
                 |> andMap (field nationalIdNumber validateNationalIdNumber)
                 |> andMap (field photo <| nullable string)
-                |> andMap (field birthDate <| validateBirthDate expectedAge maybeCurrentDate)
+                |> andMap (succeed birthDate)
                 |> andMap (field birthDateEstimated bool)
                 |> andMap (field gender validateGender)
                 |> andMap (field ubudehe validateUbudehe)
