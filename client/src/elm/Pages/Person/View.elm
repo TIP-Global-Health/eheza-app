@@ -234,12 +234,16 @@ viewPhotoThumb url =
         ]
 
 
-viewCreateForm : Language -> NominalDate -> Maybe ( PersonId, Maybe (WebData Person) ) -> PersonForm -> WebData PersonId -> Html Msg
-viewCreateForm language currentDate relationData personForm request =
+viewCreateForm : Language -> NominalDate -> Maybe PersonId -> PersonForm -> ModelIndexedDb -> Html Msg
+viewCreateForm language currentDate relationId personForm db =
     let
-        relation =
-            relationData
-                |> Maybe.map Tuple.first
+        request =
+            db.postPerson
+
+        maybeRelatedPerson =
+            relationId
+                |> Maybe.andThen (\id -> EveryDict.get id db.people)
+                |> Maybe.andThen RemoteData.toMaybe
 
         emptyOption =
             ( "", "" )
@@ -290,11 +294,6 @@ viewCreateForm language currentDate relationData personForm request =
 
         birthDateField =
             Form.getFieldAsString Backend.Person.Form.birthDate personForm
-
-        maybeRelatedPerson =
-            relationData
-                |> Maybe.andThen Tuple.second
-                |> Maybe.andThen RemoteData.toMaybe
 
         expectedAge =
             maybeRelatedPerson
@@ -406,7 +405,7 @@ viewCreateForm language currentDate relationData personForm request =
                 , div
                     [ id "dropzone"
                     , class "eight wide column dropzone"
-                    , on "dropzonecomplete" (Json.Decode.map (DropZoneComplete relation) decodeDropZoneFile)
+                    , on "dropzonecomplete" (Json.Decode.map (DropZoneComplete relationId) decodeDropZoneFile)
                     ]
                     [ div
                         [ class "dz-message"
@@ -427,7 +426,7 @@ viewCreateForm language currentDate relationData personForm request =
 
         demographicFields =
             viewPhoto
-                :: (List.map (Html.map (MsgForm relation)) <|
+                :: (List.map (Html.map (MsgForm relationId)) <|
                         [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName True personForm
                         , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
                         , viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
@@ -640,7 +639,7 @@ viewCreateForm language currentDate relationData personForm request =
                     [ text <| translate language Translate.ContactInformation ++ ":" ]
                 , [ viewTextInput language Translate.TelephoneNumber Backend.Person.Form.phoneNumber False personForm ]
                     |> fieldset [ class "registration-form address-info" ]
-                    |> Html.map (MsgForm relation)
+                    |> Html.map (MsgForm relationId)
                 ]
 
             else
@@ -669,18 +668,18 @@ viewCreateForm language currentDate relationData personForm request =
                 [ text <| translate language Translate.FamilyInformation ++ ":" ]
             , familyInformationFields
                 |> fieldset [ class "registration-form family-info" ]
-                |> Html.map (MsgForm relation)
+                |> Html.map (MsgForm relationId)
             , h3
                 [ class "ui header" ]
                 [ text <| translate language Translate.AddressInformation ++ ":" ]
             , addressFields
                 |> fieldset [ class "registration-form address-info" ]
-                |> Html.map (MsgForm relation)
+                |> Html.map (MsgForm relationId)
             ]
                 ++ contactInformationSection
                 ++ [ p [] []
                    , submitButton
-                        |> Html.map (MsgForm relation)
+                        |> Html.map (MsgForm relationId)
 
                    -- Note that these are hidden by deafult by semantic-ui ... the
                    -- class of the "form" controls whether they are shown.
