@@ -13,6 +13,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Maybe.Extra exposing (unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -112,6 +113,24 @@ viewSearchForm language currentDate searchString relation db =
                     ]
                 ]
 
+        -- When related person is provided, we need to:
+        -- 1. Make sure that we create a person of other type.
+        --    If related person is an adult, created person must be a children
+        --    and vice versa.
+        relatedPersonConditions filteredPerson =
+            case relation of
+                Nothing ->
+                    True
+
+                Just personId ->
+                    EveryDict.get personId db.people
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> unwrap
+                            True
+                            (\relatedPerson ->
+                                isPersonAnAdult currentDate filteredPerson == (not <| isPersonAnAdult currentDate relatedPerson)
+                            )
+
         results =
             if String.isEmpty searchValue then
                 Nothing
@@ -121,7 +140,12 @@ viewSearchForm language currentDate searchString relation db =
                 -- we're adding the famnily member to.
                 Dict.get searchValue db.personSearches
                     |> Maybe.withDefault NotAsked
-                    |> RemoteData.map (EveryDictList.filter (\k v -> not (relation == Just k)))
+                    |> RemoteData.map
+                        (EveryDictList.filter
+                            (\k v ->
+                                not (relation == Just k) && relatedPersonConditions v
+                            )
+                        )
                     |> Just
 
         summary =
