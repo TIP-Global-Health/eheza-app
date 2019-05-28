@@ -99,15 +99,30 @@ viewFetchedContent language currentDate id1 id2 model request data =
                 |> Maybe.Extra.orElse savedRelationship
 
         possibleRelationships =
-            case isPersonAnAdult currentDate data.person1 of
-                Just True ->
-                    [ MyChild, MyCaregiven ]
+            let
+                expected =
+                    case isPersonAnAdult currentDate data.person1 of
+                        Just True ->
+                            [ MyChild, MyCaregiven ]
 
-                Just False ->
-                    [ MyParent, MyCaregiver ]
+                        Just False ->
+                            [ MyParent, MyCaregiver ]
+
+                        Nothing ->
+                            [ MyChild, MyCaregiven, MyParent, MyCaregiver ]
+            in
+            -- Always add the currently set relationship, if there is one, even
+            -- if it's not expected.
+            case viewedRelationship of
+                Just viewed ->
+                    if List.member viewed expected then
+                        expected
+
+                    else
+                        viewed :: expected
 
                 Nothing ->
-                    [ MyChild, MyCaregiven, MyParent, MyCaregiver ]
+                    expected
 
         relationshipSelector =
             div
