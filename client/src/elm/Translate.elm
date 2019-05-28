@@ -2518,7 +2518,7 @@ translateValidationError id =
             }
 
         InvalidBirthDateForChild ->
-            { english = "is invalid - child should be bellow the age of 13"
+            { english = "is invalid - child should be below the age of 13"
             , kinyarwanda = Nothing
             }
 
