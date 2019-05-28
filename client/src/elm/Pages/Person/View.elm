@@ -6,7 +6,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Encoder exposing (encodeEducationLevel, encodeMaritalStatus, encodeUbudehe)
 import Backend.Person.Form exposing (PersonForm)
 import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allMaritalStatuses, allUbudehes)
-import Backend.Person.Utils exposing (ageInYears, isAdultRegistering, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInYears, isAdultRegistering, isPersonAddressSet, isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import EveryDict
 import EveryDictList
@@ -18,7 +18,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra exposing (isJust, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model exposing (..)
@@ -283,13 +283,16 @@ viewCreateForm language currentDate relationData personForm request =
         birthDateField =
             Form.getFieldAsString Backend.Person.Form.birthDate personForm
 
-        isAdult =
+        maybeRelatedPerson =
             relationData
                 |> Maybe.andThen Tuple.second
                 |> Maybe.andThen RemoteData.toMaybe
-                -- We register and adult if person we relate to is child.
+
+        isAdult =
+            maybeRelatedPerson
+                -- We register and adult if person we relate to, is a child.
                 |> Maybe.map (isPersonAnAdult currentDate >> not)
-                -- Or, by checking birth date field, if we don't have relation info.
+                -- When there's no related person, by checking birth date field.
                 |> Maybe.withDefault (isAdultRegistering currentDate birthDateField)
 
         birthDateEstimatedField =
@@ -583,13 +586,22 @@ viewCreateForm language currentDate relationData personForm request =
                                         |> filterGeoLocationDictByParent cellId
                                         |> geoLocationDictToOptions
                            )
+
+                -- When related person is provided, and his adreess fields are
+                -- set, address fields are copied automatically.
+                -- Therfore, we do not allow to change them.
+                disabled =
+                    maybeRelatedPerson
+                        |> unwrap
+                            False
+                            isPersonAddressSet
             in
             viewSelectInput language
                 Translate.Village
                 options
                 Backend.Person.Form.village
                 "ten"
-                (geoLocationInputClass False)
+                (geoLocationInputClass disabled)
                 True
                 personForm
 

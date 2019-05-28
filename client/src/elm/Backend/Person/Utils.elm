@@ -1,9 +1,10 @@
-module Backend.Person.Utils exposing (ageInYears, diffInYears, isAdultRegistering, isPersonAnAdult)
+module Backend.Person.Utils exposing (ageInYears, diffInYears, isAdultRegistering, isPersonAddressSet, isPersonAnAdult)
 
 import Backend.Person.Model exposing (Person)
 import Date
 import Form exposing (FieldState)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
+import Maybe.Extra exposing (isJust)
 import Result
 import Time.Date
 
@@ -37,3 +38,9 @@ isAdult currentDate maybeBirthDate =
 isPersonAnAdult : NominalDate -> Person -> Bool
 isPersonAnAdult currentDate person =
     isAdult currentDate person.birthDate
+
+
+isPersonAddressSet : Person -> Bool
+isPersonAddressSet person =
+    [ person.province, person.district, person.sector, person.cell, person.village ]
+        |> List.all isJust
