@@ -176,7 +176,9 @@
 
                         if (type === 'syncmetadata') {
                             // If our syncmetadata changes, kick off a sync
-                            self.registration.sync.register('sync');
+                            self.registration.sync.register('sync').catch(() => {
+                                self.registration.active.postMessage('sync');
+                            });
 
                             return sendSyncData().then(function () {
                                 return Promise.resolve(response);
@@ -213,7 +215,9 @@
 
                                 if (type === 'syncmetadata') {
                                     // If our syncmetadata changes, kick off a sync
-                                    self.registration.sync.register('sync');
+                                    self.registration.sync.register('sync').catch(() => {
+                                        self.registration.active.postMessage('sync');
+                                    });
 
                                     return sendSyncData().then(function () {
                                         return Promise.resolve(response);
@@ -245,7 +249,9 @@
                                     return addShard.then(function () {
                                         return changeTable.add(change).then(function (localId) {
                                             // Kick off a sync
-                                            self.registration.sync.register('sync');
+                                            self.registration.sync.register('sync').catch(() => {
+                                                self.registration.active.postMessage('sync');
+                                            });
 
                                             return sendRevisedNode(table, uuid).then(function () {
                                                 return Promise.resolve(response);
@@ -300,7 +306,9 @@
 
                                 if (type === 'syncmetadata') {
                                     // If our syncmetadata changes, kick off a sync
-                                    self.registration.sync.register('sync');
+                                    self.registration.sync.register('sync').catch(() => {
+                                        self.registration.active.postMessage('sync');
+                                    });
 
                                     return sendSyncData().then(function () {
                                         return Promise.resolve(response);
@@ -323,7 +331,9 @@
 
                                     return changeTable.add(change).then(function (localId) {
                                         // Kick off a sync
-                                        self.registration.sync.register('sync');
+                                        self.registration.sync.register('sync').catch(() => {
+                                            self.registration.active.postMessage('sync');
+                                        });
 
                                         return sendRevisedNode(table, uuid).then(function () {
                                             return Promise.resolve(response);

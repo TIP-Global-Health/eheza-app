@@ -8,6 +8,9 @@ errorShots
 elm.js
 index.html
 src/generated
+/ssl/ssl.crt
+/ssl/ssl.key
+/ssl/ssl.pem
 
 # Ignore the local config file.
 wdio.local.conf.js

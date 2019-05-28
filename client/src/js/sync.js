@@ -69,6 +69,18 @@
         }
     });
 
+    // This is a variant of the above which listens for a message instead.
+    // It's triggered via a message rather than the background sync mechanism,
+    // so it by-passes the browser's notion of whether we're online or not.
+    self.addEventListener('message', function(event) {
+        if (event.data === syncTag) {
+            var action = syncAllShards();
+
+            // Consider how to handle errors?
+            return event.waitUntil(action);
+        }
+    });
+
     // Checks our `syncMetadata` table for shards that we ought to sync.  Also
     // creates the metadata for our `nodesUuid` shard if it doesn't exist yet.
     function shardsToSync () {
