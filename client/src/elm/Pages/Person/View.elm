@@ -336,7 +336,7 @@ viewCreateForm language currentDate relationData personForm request =
         genderInput =
             div [ class "ui grid" ]
                 [ div
-                    [ class "six wide column" ]
+                    [ class "six wide column required" ]
                     [ text <| translate language Translate.GenderLabel ++ ":" ]
                 , Form.Input.radioInput "male"
                     genderField
