@@ -27,7 +27,7 @@ import Pages.Relationship.Update
 import Pages.Session.Model
 import Pages.Session.Update
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, select, toCmd, toEntityId)
+import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, fromEntityId, select, toCmd, toEntityId)
 import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
@@ -176,7 +176,7 @@ update msg model =
                         MsgPageCreatePerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Person.Update.update subMsg data.createPersonPage
+                                    Pages.Person.Update.update currentDate subMsg model.indexedDb.people data.createPersonPage
                             in
                             ( { data | createPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageCreatePerson) subCmd

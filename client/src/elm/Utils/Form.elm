@@ -8,7 +8,7 @@ import Form.Input exposing (..)
 import Form.Validate exposing (..)
 import Html exposing (Html, li, text, ul)
 import Json.Decode exposing (Decoder)
-import Maybe.Extra exposing (isNothing)
+import Maybe.Extra exposing (isNothing, unwrap)
 import Translate exposing (Language, ValidationError, translate)
 
 
@@ -86,23 +86,35 @@ nullable validation field =
 the result of decoding. If the decoder fails, wraps the failure in the provided
 error tag.
 -}
-fromDecoder : (String -> e) -> Decoder a -> Validation e a
-fromDecoder errorTag decoder field =
-    Result.andThen
-        (\s ->
-            let
-                -- We assume we're getting a bare string, which we need to
-                -- wrap in quotes to get a valid JSON string.  If we ever
-                -- need to decode objects here, we'll need to provide a
-                -- different method, or a way to figure out whether we're
-                -- getting a string or an object.
-                json =
-                    "\"" ++ String.trim s ++ "\""
-            in
-            Json.Decode.decodeString decoder json
-                |> Result.mapError (customError << errorTag)
-        )
-        (string field)
+fromDecoder : (String -> e) -> Maybe e -> Decoder a -> Validation e a
+fromDecoder errorTag maybeRequiredTag decoder field =
+    let
+        decoded =
+            string field
+
+        decoderResult =
+            maybeRequiredTag
+                |> unwrap
+                    decoded
+                    -- Decoder will fail when no value is provided, and
+                    -- this indicates that required field was not set.
+                    (\requiredTag -> decoded |> Result.mapError (\_ -> customError requiredTag))
+    in
+    decoderResult
+        |> Result.andThen
+            (\s ->
+                let
+                    -- We assume we're getting a bare string, which we need to
+                    -- wrap in quotes to get a valid JSON string.  If we ever
+                    -- need to decode objects here, we'll need to provide a
+                    -- different method, or a way to figure out whether we're
+                    -- getting a string or an object.
+                    json =
+                        "\"" ++ String.trim s ++ "\""
+                in
+                Json.Decode.decodeString decoder json
+                    |> Result.mapError (customError << errorTag)
+            )
 
 
 {-| An `<input>` with `type=date`. The value provided must be in YYYY-MM-DD

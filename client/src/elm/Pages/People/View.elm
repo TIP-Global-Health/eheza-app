@@ -3,8 +3,9 @@ module Pages.People.View exposing (view)
 import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Person.Form exposing (ExpectedAge(..))
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears)
+import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Dict
 import EveryDict
 import EveryDictList
@@ -13,6 +14,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Maybe.Extra exposing (unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -112,16 +114,80 @@ viewSearchForm language currentDate searchString relation db =
                     ]
                 ]
 
+        relatedPerson =
+            relation
+                |> Maybe.andThen (\id -> EveryDict.get id db.people)
+                |> Maybe.andThen RemoteData.toMaybe
+
+        expectedAge =
+            relatedPerson
+                |> Maybe.andThen (isPersonAnAdult currentDate)
+                |> (\isAdult ->
+                        case isAdult of
+                            Just True ->
+                                ExpectChild
+
+                            Just False ->
+                                ExpectAdult
+
+                            Nothing ->
+                                ExpectAdultOrChild
+                   )
+
         results =
             if String.isEmpty searchValue then
                 Nothing
 
             else
-                -- If we're adding a family member, we filter out the person
-                -- we're adding the famnily member to.
+                let
+                    -- When relation person is provided, we need to make sure
+                    -- that at search result, we don't present:
+                    -- 1. Relation person himself.
+                    -- 2. People of same type as relation person. If relation person
+                    --    is an adult, related person must be a child, and vice versa.
+                    -- 3. People already related to relation person.
+                    personTypeCondition filteredPerson =
+                        case isPersonAnAdult currentDate filteredPerson of
+                            Just True ->
+                                -- We'll show adults unless we're expecting children
+                                expectedAge /= ExpectChild
+
+                            Just False ->
+                                -- We''ll show children unless we're expecting adults.
+                                expectedAge /= ExpectAdult
+
+                            Nothing ->
+                                -- If we don't know, then show it.
+                                True
+
+                    personRelationCondition filteredPersonId =
+                        case relation of
+                            Nothing ->
+                                True
+
+                            Just personId ->
+                                EveryDict.get personId db.relationshipsByPerson
+                                    |> Maybe.andThen RemoteData.toMaybe
+                                    |> unwrap
+                                        True
+                                        (\relatedPersionRelationships ->
+                                            relatedPersionRelationships
+                                                |> EveryDictList.values
+                                                |> List.all
+                                                    (\relationship ->
+                                                        relationship.relatedTo /= filteredPersonId
+                                                    )
+                                        )
+                in
                 Dict.get searchValue db.personSearches
                     |> Maybe.withDefault NotAsked
-                    |> RemoteData.map (EveryDictList.filter (\k v -> not (relation == Just k)))
+                    |> RemoteData.map
+                        (EveryDictList.filter
+                            (\k v ->
+                                -- Applying 3 conditionms explained above
+                                not (relation == Just k) && personTypeCondition v && personRelationCondition k
+                            )
+                        )
                     |> Just
 
         summary =
@@ -188,16 +254,15 @@ viewParticipant : Language -> NominalDate -> Maybe PersonId -> ModelIndexedDb ->
 viewParticipant language currentDate relation db id person =
     let
         typeForThumbnail =
-            ageInYears currentDate person
-                |> Maybe.map
-                    (\age ->
-                        if age > 12 then
-                            "mother"
+            case isPersonAnAdult currentDate person of
+                Just True ->
+                    "mother"
 
-                        else
-                            "child"
-                    )
-                |> Maybe.withDefault "mother"
+                Just False ->
+                    "child"
+
+                Nothing ->
+                    "mother"
 
         nextPage =
             case relation of

@@ -1,13 +1,19 @@
-module Backend.Person.Form exposing (PersonForm, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, firstName, gender, maritalStatus, nationalIdNumber, phoneNumber, photo, province, secondName, sector, ubudehe, validateCell, validateDate, validateDistrict, validateEducationLevel, validateGender, validateMaritalStatus, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village)
+module Backend.Person.Form exposing (ExpectedAge(..), PersonForm, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, expectedAgeFromForm, firstName, gender, maritalStatus, nationalIdNumber, phoneNumber, photo, province, secondName, sector, ubudehe, validateBirthDate, validateCell, validateDistrict, validateEducationLevel, validateGender, validateMaritalStatus, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village)
 
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeMaritalStatus, decodeUbudehe)
 import Backend.Person.Model exposing (..)
+import Backend.Person.Utils exposing (isAdult, isPersonAnAdult)
+import Date
 import EveryDict
 import Form exposing (..)
 import Form.Init exposing (..)
 import Form.Validate exposing (..)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
+import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, fromLocalDateTime)
+import Json.Decode
+import Maybe.Extra exposing (join, unwrap)
+import Regex exposing (Regex)
 import Restful.Endpoint exposing (toEntityId)
+import Time.Date
 import Translate exposing (ValidationError(..))
 import Utils.Form exposing (fromDecoder, nullable)
 import Utils.GeoLocation exposing (geoInfo)
@@ -17,19 +23,79 @@ type alias PersonForm =
     Form ValidationError Person
 
 
+{-| Sometimes, we are in a state where we are expecting the user to enter an
+adult or a child, and sometimes we don't care -- they could be entering either.
+
+This controls various aspects of validation. If set to `ExpectAdultOrChild`, we
+also check the birth date actually entered in the form, and validate the rest
+according that birth date.
+
+-}
+type ExpectedAge
+    = ExpectAdult
+    | ExpectChild
+    | ExpectAdultOrChild
+
+
+{-| Given the birth date actually entered into the form, what age range are we
+looking at?
+-}
+expectedAgeFromForm : NominalDate -> PersonForm -> ExpectedAge
+expectedAgeFromForm currentDate form =
+    Form.getFieldAsString birthDate form
+        |> .value
+        |> Maybe.andThen (Date.fromString >> Result.toMaybe)
+        |> Maybe.map fromLocalDateTime
+        |> isAdult currentDate
+        |> (\adult ->
+                case adult of
+                    Just True ->
+                        ExpectAdult
+
+                    Just False ->
+                        ExpectChild
+
+                    Nothing ->
+                        ExpectAdultOrChild
+           )
+
+
 emptyForm : PersonForm
 emptyForm =
     initial
         [ setBool birthDateEstimated False
         ]
-        validatePerson
+        (validatePerson Nothing Nothing)
 
 
-validatePerson : Validation ValidationError Person
-validatePerson =
+{-| The person supplied here is the related person, if we're constructing someone
+who is the child or parent of a person we know.
+-}
+validatePerson : Maybe Person -> Maybe NominalDate -> Validation ValidationError Person
+validatePerson maybeRelated maybeCurrentDate =
     let
+        externalExpectedAge =
+            Maybe.map2
+                (\related currentDate ->
+                    case isPersonAnAdult currentDate related of
+                        Just True ->
+                            -- If the related person is an adult, we expect a child
+                            ExpectChild
+
+                        Just False ->
+                            -- If they are a child, we expect an adult
+                            ExpectAdult
+
+                        Nothing ->
+                            -- If we don't know, we expect either
+                            ExpectAdultOrChild
+                )
+                maybeRelated
+                maybeCurrentDate
+                |> Maybe.withDefault ExpectAdultOrChild
+
         withFirstName firstNameValue =
-            andThen (withAllNames firstNameValue) (field secondName string)
+            andThen (withAllNames firstNameValue) (field secondName validateLettersOnly)
 
         combineNames first second =
             [ String.trim second
@@ -38,111 +104,252 @@ validatePerson =
                 |> String.join " "
 
         withAllNames firstNameValue secondNameValue =
+            validateBirthDate externalExpectedAge maybeCurrentDate
+                |> field birthDate
+                |> andThen (withNamesAndBirthDate firstNameValue secondNameValue)
+
+        withNamesAndBirthDate firstNameValue secondNameValue birthDate =
+            let
+                expectedAge =
+                    case externalExpectedAge of
+                        ExpectChild ->
+                            ExpectChild
+
+                        ExpectAdult ->
+                            ExpectAdult
+
+                        ExpectAdultOrChild ->
+                            -- If we could accept either, then see what birthdate
+                            -- has actually been entered, if any.
+                            maybeCurrentDate
+                                |> Maybe.andThen (\currentDate -> isAdult currentDate birthDate)
+                                |> (\isAdult ->
+                                        case isAdult of
+                                            Just True ->
+                                                ExpectAdult
+
+                                            Just False ->
+                                                ExpectChild
+
+                                            Nothing ->
+                                                ExpectAdultOrChild
+                                   )
+            in
             succeed Person
                 |> andMap (succeed (combineNames firstNameValue secondNameValue))
                 |> andMap (succeed <| String.trim firstNameValue)
                 |> andMap (succeed <| String.trim secondNameValue)
-                |> andMap (field nationalIdNumber <| nullable string)
+                |> andMap (field nationalIdNumber validateNationalIdNumber)
                 |> andMap (field photo <| nullable string)
-                |> andMap (field birthDate validateDate)
+                |> andMap (succeed birthDate)
                 |> andMap (field birthDateEstimated bool)
                 |> andMap (field gender validateGender)
                 |> andMap (field ubudehe validateUbudehe)
-                |> andMap (field educationLevel validateEducationLevel)
-                |> andMap (field maritalStatus validateMaritalStatus)
-                |> andMap (field province validateProvince)
-                |> andMap (field district validateDistrict)
-                |> andMap (field sector validateSector)
-                |> andMap (field cell validateCell)
-                |> andMap (field village validateVillage)
-                |> andMap (field phoneNumber <| nullable string)
+                |> andMap (field educationLevel <| validateEducationLevel expectedAge)
+                |> andMap (field maritalStatus <| validateMaritalStatus expectedAge)
+                |> andMap (field province (validateProvince maybeRelated))
+                |> andMap (field district (validateDistrict maybeRelated))
+                |> andMap (field sector (validateSector maybeRelated))
+                |> andMap (field cell (validateCell maybeRelated))
+                |> andMap (field village (validateVillage maybeRelated))
+                |> andMap (field phoneNumber <| nullable validateDigitsOnly)
     in
-    andThen withFirstName (field firstName string)
+    andThen withFirstName (field firstName validateLettersOnly)
 
 
-validateProvince : Validation ValidationError (Maybe String)
-validateProvince =
+validateNationalIdNumber : Validation ValidationError (Maybe String)
+validateNationalIdNumber =
+    string
+        |> andThen
+            (\s ->
+                if String.length s /= 18 then
+                    fail <| customError (LengthError 18)
+
+                else
+                    format allDigitsPattern s
+                        |> mapError (\_ -> customError DigitsOnly)
+            )
+        |> nullable
+
+
+withDefault : Maybe String -> Validation ValidationError (Maybe String) -> Validation ValidationError (Maybe String)
+withDefault related =
+    case related of
+        Just _ ->
+            defaultValue related
+
+        Nothing ->
+            identity
+
+
+validateProvince : Maybe Person -> Validation ValidationError (Maybe String)
+validateProvince related =
     int
+        |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.provinces
-                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownProvince)
             )
-        |> nullable
+        |> withDefault (Maybe.andThen .province related)
 
 
-validateDistrict : Validation ValidationError (Maybe String)
-validateDistrict =
+validateDistrict : Maybe Person -> Validation ValidationError (Maybe String)
+validateDistrict related =
     int
+        |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.districts
-                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownDistrict)
             )
-        |> nullable
+        |> withDefault (Maybe.andThen .district related)
 
 
-validateSector : Validation ValidationError (Maybe String)
-validateSector =
+validateSector : Maybe Person -> Validation ValidationError (Maybe String)
+validateSector related =
     int
+        |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.sectors
-                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownSector)
             )
-        |> nullable
+        |> withDefault (Maybe.andThen .sector related)
 
 
-validateCell : Validation ValidationError (Maybe String)
-validateCell =
+validateCell : Maybe Person -> Validation ValidationError (Maybe String)
+validateCell related =
     int
+        |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.cells
-                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownCell)
             )
-        |> nullable
+        |> withDefault (Maybe.andThen .cell related)
 
 
-validateVillage : Validation ValidationError (Maybe String)
-validateVillage =
+validateVillage : Maybe Person -> Validation ValidationError (Maybe String)
+validateVillage related =
     int
+        |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
                 EveryDict.get (toEntityId id) geoInfo.villages
-                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownVillage)
             )
-        |> nullable
+        |> withDefault (Maybe.andThen .village related)
 
 
 validateGender : Validation ValidationError Gender
 validateGender =
-    fromDecoder Translate.DecoderError decodeGender
+    fromDecoder DecoderError (Just RequiredField) decodeGender
 
 
 validateUbudehe : Validation ValidationError (Maybe Ubudehe)
 validateUbudehe =
-    nullable (fromDecoder Translate.DecoderError decodeUbudehe)
+    fromDecoder DecoderError (Just RequiredField) (Json.Decode.nullable decodeUbudehe)
 
 
-validateDate : Validation ValidationError (Maybe NominalDate)
-validateDate =
-    nullable (fromDecoder Translate.DecoderError decodeYYYYMMDD)
+validateBirthDate : ExpectedAge -> Maybe NominalDate -> Validation ValidationError (Maybe NominalDate)
+validateBirthDate expectedAge maybeCurrentDate =
+    string
+        |> mapError (\_ -> customError RequiredField)
+        |> andThen
+            (\s ->
+                maybeCurrentDate
+                    |> unwrap
+                        -- When we don't know current date, try to decode input value.
+                        (fromDecoder DecoderError Nothing (Json.Decode.nullable decodeYYYYMMDD))
+                        (\currentDate ->
+                            let
+                                -- Convert to NominalDate.
+                                maybeBirthDate =
+                                    Date.fromString s
+                                        |> Result.toMaybe
+                                        |> Maybe.map fromLocalDateTime
+                            in
+                            maybeBirthDate
+                                -- Calculate difference of years between input birt
+                                -- date and current date.
+                                |> Maybe.map (Time.Date.delta currentDate >> .years)
+                                |> unwrap
+                                    -- Conversion to NominalDate failed.
+                                    (fail <| customError InvalidBirthDate)
+                                    (\delta ->
+                                        if delta > 12 && expectedAge == ExpectChild then
+                                            fail <| customError InvalidBirthDateForChild
+                                            -- Invalid age for child.
+
+                                        else if delta < 13 && expectedAge == ExpectAdult then
+                                            fail <| customError InvalidBirthDateForAdult
+                                            -- Invalid age for adult.
+
+                                        else
+                                            succeed maybeBirthDate
+                                    )
+                        )
+            )
 
 
-validateEducationLevel : Validation ValidationError (Maybe EducationLevel)
-validateEducationLevel =
-    nullable (fromDecoder Translate.DecoderError decodeEducationLevel)
+validateEducationLevel : ExpectedAge -> Validation ValidationError (Maybe EducationLevel)
+validateEducationLevel expectedAge =
+    if expectedAge == ExpectAdult then
+        fromDecoder DecoderError (Just RequiredField) (Json.Decode.nullable decodeEducationLevel)
+
+    else
+        -- It's not required for others, but we'll keep it if provided.
+        nullable <| fromDecoder DecoderError Nothing decodeEducationLevel
 
 
-validateMaritalStatus : Validation ValidationError (Maybe MaritalStatus)
-validateMaritalStatus =
-    nullable (fromDecoder Translate.DecoderError decodeMaritalStatus)
+validateMaritalStatus : ExpectedAge -> Validation ValidationError (Maybe MaritalStatus)
+validateMaritalStatus expectedAge =
+    if expectedAge == ExpectAdult then
+        fromDecoder DecoderError (Just RequiredField) (Json.Decode.nullable decodeMaritalStatus)
+
+    else
+        -- Not required, but keep it if provided.
+        nullable <| fromDecoder DecoderError Nothing decodeMaritalStatus
+
+
+validateDigitsOnly : Validation ValidationError String
+validateDigitsOnly =
+    string
+        |> andThen
+            (\s ->
+                format allDigitsPattern s
+                    |> mapError (\_ -> customError DigitsOnly)
+            )
+
+
+validateLettersOnly : Validation ValidationError String
+validateLettersOnly =
+    string
+        |> andThen
+            (\s ->
+                format allLettersPattern s
+                    |> mapError (\_ -> customError LettersOnly)
+            )
+
+
+
+-- Regex patterns
+
+
+allLettersPattern : Regex
+allLettersPattern =
+    Regex.regex "^[a-zA-Z]*$"
+
+
+allDigitsPattern : Regex
+allDigitsPattern =
+    Regex.regex "^[0-9]*$"
 
 
 

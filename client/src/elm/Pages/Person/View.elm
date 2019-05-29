@@ -4,21 +4,22 @@ import App.Model
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Encoder exposing (encodeEducationLevel, encodeMaritalStatus, encodeUbudehe)
-import Backend.Person.Form exposing (PersonForm)
+import Backend.Person.Form exposing (ExpectedAge(..), PersonForm, expectedAgeFromForm, validatePerson)
 import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allMaritalStatuses, allUbudehes)
-import Backend.Person.Utils exposing (ageInYears)
+import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import EveryDict
 import EveryDictList
 import Form exposing (Form)
+import Form.Field
 import Form.Input
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra exposing (isJust, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model exposing (..)
@@ -27,7 +28,7 @@ import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Set
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (dateInput, getValueAsInt, isFormFieldSet, viewFormError)
-import Utils.GeoLocation exposing (GeoInfo, geoInfo)
+import Utils.GeoLocation exposing (GeoInfo, geoInfo, getGeoLocation)
 import Utils.Html exposing (script, thumbnailImage, viewLoading)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
@@ -98,17 +99,19 @@ viewParticipantDetailsForm language currentDate db id person =
                 |> Maybe.withDefault NotAsked
                 |> viewWebData language viewFamilyMembers identity
 
-        typeForAddFamilyMember =
-            ageInYears currentDate person
-                |> Maybe.map
-                    (\age ->
-                        if age > 12 then
-                            "child"
+        isAdult =
+            isPersonAnAdult currentDate person
 
-                        else
-                            "mother"
-                    )
-                |> Maybe.withDefault "child"
+        ( typeForAddFamilyMember, labelForAddFamilyMember ) =
+            case isAdult of
+                Just True ->
+                    ( "child", Translate.AddChild )
+
+                Just False ->
+                    ( "mother", Translate.AddParentOrCaregiver )
+
+                Nothing ->
+                    ( "mother", Translate.AddFamilyMember )
 
         addFamilyMember =
             div [ class "ui unstackable items participants-list" ]
@@ -131,7 +134,7 @@ viewParticipantDetailsForm language currentDate db id person =
                             [ class "details" ]
                             [ h2
                                 [ class "ui header add-participant-label" ]
-                                [ text <| translate language Translate.AddFamilyMember ]
+                                [ text <| translate language labelForAddFamilyMember ]
                             ]
                         , div
                             [ class "action" ]
@@ -165,16 +168,15 @@ viewParticipant : Language -> NominalDate -> Maybe MyRelationship -> PersonId ->
 viewParticipant language currentDate myRelationship id person =
     let
         typeForThumbnail =
-            ageInYears currentDate person
-                |> Maybe.map
-                    (\age ->
-                        if age > 12 then
-                            "mother"
+            case isPersonAnAdult currentDate person of
+                Just True ->
+                    "mother"
 
-                        else
-                            "child"
-                    )
-                |> Maybe.withDefault "mother"
+                Just False ->
+                    "child"
+
+                Nothing ->
+                    "mother"
 
         relationshipLabel =
             myRelationship
@@ -233,9 +235,82 @@ viewPhotoThumb url =
         ]
 
 
-viewCreateForm : Language -> NominalDate -> Maybe PersonId -> PersonForm -> WebData PersonId -> Html Msg
-viewCreateForm language currentDate relation personForm request =
+applyDefaultValues : Maybe Person -> NominalDate -> PersonForm -> PersonForm
+applyDefaultValues maybeRelatedPerson currentDate form =
     let
+        defaultProvinceId =
+            maybeRelatedPerson
+                |> Maybe.andThen .province
+                |> Maybe.andThen (getGeoLocation Nothing)
+                |> Maybe.map Tuple.first
+
+        defaultDistrictId =
+            maybeRelatedPerson
+                |> Maybe.andThen .district
+                |> Maybe.andThen (getGeoLocation defaultProvinceId)
+                |> Maybe.map Tuple.first
+
+        defaultSectorId =
+            maybeRelatedPerson
+                |> Maybe.andThen .sector
+                |> Maybe.andThen (getGeoLocation defaultDistrictId)
+                |> Maybe.map Tuple.first
+
+        defaultCellId =
+            maybeRelatedPerson
+                |> Maybe.andThen .cell
+                |> Maybe.andThen (getGeoLocation defaultSectorId)
+                |> Maybe.map Tuple.first
+
+        defaultVillageId =
+            maybeRelatedPerson
+                |> Maybe.andThen .village
+                |> Maybe.andThen (getGeoLocation defaultCellId)
+                |> Maybe.map Tuple.first
+
+        applyDefaultLocation fieldName maybeDefault form =
+            case maybeDefault of
+                Just defaultId ->
+                    Form.getFieldAsString fieldName form
+                        |> .value
+                        |> Maybe.map String.isEmpty
+                        |> Maybe.withDefault True
+                        |> (\useDefault ->
+                                if useDefault then
+                                    Form.update
+                                        (validatePerson maybeRelatedPerson (Just currentDate))
+                                        (Form.Input fieldName Form.Select (Form.Field.String (toString <| fromEntityId defaultId)))
+                                        form
+
+                                else
+                                    form
+                           )
+
+                Nothing ->
+                    form
+    in
+    form
+        |> applyDefaultLocation Backend.Person.Form.province defaultProvinceId
+        |> applyDefaultLocation Backend.Person.Form.district defaultDistrictId
+        |> applyDefaultLocation Backend.Person.Form.sector defaultSectorId
+        |> applyDefaultLocation Backend.Person.Form.cell defaultCellId
+        |> applyDefaultLocation Backend.Person.Form.village defaultVillageId
+
+
+viewCreateForm : Language -> NominalDate -> Maybe PersonId -> PersonForm -> ModelIndexedDb -> Html Msg
+viewCreateForm language currentDate relationId formBeforeDefaults db =
+    let
+        personForm =
+            applyDefaultValues maybeRelatedPerson currentDate formBeforeDefaults
+
+        request =
+            db.postPerson
+
+        maybeRelatedPerson =
+            relationId
+                |> Maybe.andThen (\id -> EveryDict.get id db.people)
+                |> Maybe.andThen RemoteData.toMaybe
+
         emptyOption =
             ( "", "" )
 
@@ -286,6 +361,25 @@ viewCreateForm language currentDate relation personForm request =
         birthDateField =
             Form.getFieldAsString Backend.Person.Form.birthDate personForm
 
+        expectedAge =
+            maybeRelatedPerson
+                |> Maybe.andThen
+                    (\related ->
+                        case isPersonAnAdult currentDate related of
+                            Just True ->
+                                Just ExpectChild
+
+                            Just False ->
+                                Just ExpectAdult
+
+                            Nothing ->
+                                Nothing
+                    )
+                -- If we don't have a related person, or don't know whether
+                -- that person is an adult, then we check whether a birthdate
+                -- has been entered into the form so far.
+                |> Maybe.withDefault (expectedAgeFromForm currentDate personForm)
+
         birthDateEstimatedField =
             Form.getFieldAsBool Backend.Person.Form.birthDateEstimated personForm
 
@@ -309,7 +403,7 @@ viewCreateForm language currentDate relation personForm request =
                         ]
                     ]
                 , div
-                    [ class "three wide column required" ]
+                    [ class "three wide column" ]
                     [ text <| translate language Translate.Estimated ++ ":"
                     , br [] []
                     , Form.Input.checkboxInput birthDateEstimatedField
@@ -327,7 +421,7 @@ viewCreateForm language currentDate relation personForm request =
         genderInput =
             div [ class "ui grid" ]
                 [ div
-                    [ class "six wide column" ]
+                    [ class "six wide column required" ]
                     [ text <| translate language Translate.GenderLabel ++ ":" ]
                 , Form.Input.radioInput "male"
                     genderField
@@ -377,7 +471,7 @@ viewCreateForm language currentDate relation personForm request =
                 , div
                     [ id "dropzone"
                     , class "eight wide column dropzone"
-                    , on "dropzonecomplete" (Json.Decode.map (DropZoneComplete relation) decodeDropZoneFile)
+                    , on "dropzonecomplete" (Json.Decode.map (DropZoneComplete relationId) decodeDropZoneFile)
                     ]
                     [ div
                         [ class "dz-message"
@@ -398,15 +492,22 @@ viewCreateForm language currentDate relation personForm request =
 
         demographicFields =
             viewPhoto
-                :: List.map (Html.map (MsgForm relation))
-                    [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName True personForm
-                    , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
-                    , viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
-                    , birthDateInput
-                    , genderInput
-                    , viewSelectInput language Translate.LevelOfEducationLabel educationLevelOptions Backend.Person.Form.educationLevel "ten" "select-input" True personForm
-                    , viewSelectInput language Translate.MaritalStatusLabel maritalStatusOptions Backend.Person.Form.maritalStatus "ten" "select-input" True personForm
-                    ]
+                :: (List.map (Html.map (MsgForm relationId)) <|
+                        [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName True personForm
+                        , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
+                        , viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
+                        , birthDateInput
+                        , genderInput
+                        ]
+                            ++ (if expectedAge /= ExpectChild then
+                                    [ viewSelectInput language Translate.LevelOfEducationLabel educationLevelOptions Backend.Person.Form.educationLevel "ten" "select-input" True personForm
+                                    , viewSelectInput language Translate.MaritalStatusLabel maritalStatusOptions Backend.Person.Form.maritalStatus "ten" "select-input" True personForm
+                                    ]
+
+                                else
+                                    []
+                               )
+                   )
 
         ubudeheOptions =
             allUbudehes
@@ -588,9 +689,18 @@ viewCreateForm language currentDate relation personForm request =
             , viewVillage
             ]
 
-        contactInformationFields =
-            [ viewTextInput language Translate.TelephoneNumber Backend.Person.Form.phoneNumber False personForm
-            ]
+        contactInformationSection =
+            if expectedAge /= ExpectChild then
+                [ h3
+                    [ class "ui header" ]
+                    [ text <| translate language Translate.ContactInformation ++ ":" ]
+                , [ viewTextInput language Translate.TelephoneNumber Backend.Person.Form.phoneNumber False personForm ]
+                    |> fieldset [ class "registration-form address-info" ]
+                    |> Html.map (MsgForm relationId)
+                ]
+
+            else
+                []
 
         submitButton =
             button
@@ -615,33 +725,29 @@ viewCreateForm language currentDate relation personForm request =
                 [ text <| translate language Translate.FamilyInformation ++ ":" ]
             , familyInformationFields
                 |> fieldset [ class "registration-form family-info" ]
-                |> Html.map (MsgForm relation)
+                |> Html.map (MsgForm relationId)
             , h3
                 [ class "ui header" ]
                 [ text <| translate language Translate.AddressInformation ++ ":" ]
             , addressFields
                 |> fieldset [ class "registration-form address-info" ]
-                |> Html.map (MsgForm relation)
-            , h3
-                [ class "ui header" ]
-                [ text <| translate language Translate.ContactInformation ++ ":" ]
-            , contactInformationFields
-                |> fieldset [ class "registration-form address-info" ]
-                |> Html.map (MsgForm relation)
-            , p [] []
-            , submitButton
-                |> Html.map (MsgForm relation)
-
-            -- Note that these are hidden by deafult by semantic-ui ... the
-            -- class of the "form" controls whether they are shown.
-            , requestStatus
-            , div
-                [ class "ui error message" ]
-                [ div [ class "header" ] [ text <| translate language Translate.ValidationErrors ]
-                , List.map (viewFormError language) errors
-                    |> ul []
-                ]
+                |> Html.map (MsgForm relationId)
             ]
+                ++ contactInformationSection
+                ++ [ p [] []
+                   , submitButton
+                        |> Html.map (MsgForm relationId)
+
+                   -- Note that these are hidden by deafult by semantic-ui ... the
+                   -- class of the "form" controls whether they are shown.
+                   , requestStatus
+                   , div
+                        [ class "ui error message" ]
+                        [ div [ class "header" ] [ text <| translate language Translate.ValidationErrors ]
+                        , List.map (viewFormError language) errors
+                            |> ul []
+                        ]
+                   ]
     in
     div
         [ class "page-person-create" ]

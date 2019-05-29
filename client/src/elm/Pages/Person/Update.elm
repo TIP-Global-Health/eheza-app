@@ -1,21 +1,30 @@
 module Pages.Person.Update exposing (update)
 
 import App.Model
+import Backend.Entities exposing (PersonId)
 import Backend.Model
-import Backend.Person.Form exposing (validatePerson)
+import Backend.Person.Form exposing (ExpectedAge(..), validatePerson)
+import Backend.Person.Model exposing (Person)
+import EveryDict exposing (EveryDict)
 import Form
 import Form.Field
+import Gizra.NominalDate exposing (NominalDate)
 import Pages.Person.Model exposing (..)
-import RemoteData exposing (RemoteData(..))
+import RemoteData exposing (RemoteData(..), WebData)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update msg model =
+update : NominalDate -> Msg -> EveryDict PersonId (WebData Person) -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate msg people model =
     case msg of
         MsgForm relation subMsg ->
             let
+                related =
+                    relation
+                        |> Maybe.andThen (\personId -> EveryDict.get personId people)
+                        |> Maybe.andThen RemoteData.toMaybe
+
                 newModel =
-                    Form.update validatePerson subMsg model
+                    Form.update (validatePerson related (Just currentDate)) subMsg model
 
                 appMsgs =
                     case subMsg of
@@ -50,7 +59,7 @@ update msg model =
                 subMsg =
                     Form.Input Backend.Person.Form.photo Form.Text (Form.Field.String result.url)
             in
-            update (MsgForm relation subMsg) model
+            update currentDate (MsgForm relation subMsg) people model
 
         ResetCreateForm ->
             ( Backend.Person.Form.emptyForm

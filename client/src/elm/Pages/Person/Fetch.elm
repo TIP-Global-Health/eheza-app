@@ -1,4 +1,4 @@
-module Pages.Person.Fetch exposing (fetch)
+module Pages.Person.Fetch exposing (fetch, fetchForCreateForm)
 
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
@@ -20,3 +20,9 @@ fetch id db =
         ++ [ FetchPerson id
            , FetchRelationshipsForPerson id
            ]
+
+
+fetchForCreateForm : Maybe PersonId -> List MsgIndexedDb
+fetchForCreateForm related =
+    List.filterMap identity
+        [ Maybe.map FetchPerson related ]
