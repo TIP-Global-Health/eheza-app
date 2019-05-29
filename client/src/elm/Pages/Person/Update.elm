@@ -23,13 +23,13 @@ update currentDate msg people model =
                         |> Maybe.andThen (\personId -> EveryDict.get personId people)
                         |> Maybe.andThen RemoteData.toMaybe
 
-                newModel =
-                    Form.update (validatePerson related (Just currentDate)) subMsg model
+                newForm =
+                    Form.update (validatePerson related (Just currentDate)) subMsg model.form
 
                 appMsgs =
                     case subMsg of
                         Form.Submit ->
-                            Form.getOutput model
+                            Form.getOutput model.form
                                 |> Maybe.map
                                     (\person ->
                                         [ person
@@ -49,7 +49,7 @@ update currentDate msg people model =
                         _ ->
                             []
             in
-            ( newModel
+            ( { model | form = newForm }
             , Cmd.none
             , appMsgs
             )
@@ -62,7 +62,7 @@ update currentDate msg people model =
             update currentDate (MsgForm relation subMsg) people model
 
         ResetCreateForm ->
-            ( Backend.Person.Form.emptyForm
+            ( Pages.Person.Model.emptyModel
             , Cmd.none
             , []
             )

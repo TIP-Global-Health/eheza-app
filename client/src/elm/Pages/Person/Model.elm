@@ -8,7 +8,9 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    PersonForm
+    { form : PersonForm
+    , isDateSelectorOpen : Bool
+    }
 
 
 type Msg
@@ -22,4 +24,6 @@ type Msg
 
 emptyModel : Model
 emptyModel =
-    Backend.Person.Form.emptyForm
+    { form = Backend.Person.Form.emptyForm
+    , isDateSelectorOpen = False
+    }

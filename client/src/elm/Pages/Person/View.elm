@@ -8,6 +8,7 @@ import Backend.Person.Form exposing (ExpectedAge(..), PersonForm, expectedAgeFro
 import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allMaritalStatuses, allUbudehes)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
+import DateSelector.SelectorDropdown
 import EveryDict
 import EveryDictList
 import Form exposing (Form)
@@ -297,9 +298,12 @@ applyDefaultValues maybeRelatedPerson currentDate form =
         |> applyDefaultLocation Backend.Person.Form.village defaultVillageId
 
 
-viewCreateForm : Language -> NominalDate -> Maybe PersonId -> PersonForm -> ModelIndexedDb -> Html Msg
-viewCreateForm language currentDate relationId formBeforeDefaults db =
+viewCreateForm : Language -> NominalDate -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
+viewCreateForm language currentDate relationId model db =
     let
+        formBeforeDefaults =
+            model.form
+
         personForm =
             applyDefaultValues maybeRelatedPerson currentDate formBeforeDefaults
 
