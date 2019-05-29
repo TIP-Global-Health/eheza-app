@@ -139,7 +139,7 @@ while (TRUE) {
           'value2' => NULL,
         ]);
 
-        $participation->field_clinic->set($mother->field_clinic->value());
+        $participation->field_clinic->set($mother->field_clinic->getIdentifier());
 
         $participation->save();
       }
