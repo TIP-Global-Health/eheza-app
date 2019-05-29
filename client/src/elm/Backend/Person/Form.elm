@@ -305,7 +305,7 @@ validateEducationLevel expectedAge =
 
     else
         -- It's not required for others, but we'll keep it if provided.
-        fromDecoder DecoderError Nothing (Json.Decode.nullable decodeEducationLevel)
+        nullable <| fromDecoder DecoderError Nothing decodeEducationLevel
 
 
 validateMaritalStatus : ExpectedAge -> Validation ValidationError (Maybe MaritalStatus)
@@ -315,7 +315,7 @@ validateMaritalStatus expectedAge =
 
     else
         -- Not required, but keep it if provided.
-        fromDecoder DecoderError Nothing (Json.Decode.nullable decodeMaritalStatus)
+        nullable <| fromDecoder DecoderError Nothing decodeMaritalStatus
 
 
 validateDigitsOnly : Validation ValidationError String
