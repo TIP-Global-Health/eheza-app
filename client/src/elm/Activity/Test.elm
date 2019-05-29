@@ -250,4 +250,5 @@ makeChild test =
     , telephoneNumber = Nothing
     , ubudehe = Nothing
     , village = Nothing
+    , healthCenterId = Nothing
     }
