@@ -753,10 +753,7 @@ getCheckedIn session =
         -- activites.
         mothers =
             EveryDictList.filter
-                (\motherId _ ->
-                    motherIsCheckedIn motherId session
-                        || motherOrAnyChildHasAnyCompletedActivity motherId session
-                )
+                (\motherId _ -> motherIsCheckedIn motherId session)
                 session.offlineSession.mothers
 
         -- A child is checked in if the mother is checked in.
