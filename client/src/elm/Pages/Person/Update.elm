@@ -5,7 +5,6 @@ import Backend.Entities exposing (PersonId)
 import Backend.Model
 import Backend.Person.Form exposing (ExpectedAge(..), validatePerson)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (isPersonAnAdult)
 import EveryDict exposing (EveryDict)
 import Form
 import Form.Field
