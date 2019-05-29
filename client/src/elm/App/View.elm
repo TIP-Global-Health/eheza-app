@@ -186,7 +186,7 @@ viewUserPage page model configured =
                         |> flexPageWrapper model
 
                 CreatePersonPage relation ->
-                    Pages.Person.View.viewCreateForm model.language currentDate relation loggedInModel.createPersonPage model.indexedDb.postPerson
+                    Pages.Person.View.viewCreateForm model.language currentDate relation loggedInModel.createPersonPage model.indexedDb
                         |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
                         |> flexPageWrapper model
 

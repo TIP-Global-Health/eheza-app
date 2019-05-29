@@ -100,7 +100,14 @@ type ChartPhrase
 
 
 type ValidationError
-    = UnknownGroup
+    = DigitsOnly
+    | InvalidBirthDate
+    | InvalidBirthDateForAdult
+    | InvalidBirthDateForChild
+    | LengthError Int
+    | LettersOnly
+    | RequiredField
+    | UnknownGroup
     | UnknownProvince
     | UnknownDistrict
     | UnknownSector
@@ -129,7 +136,7 @@ type TranslationId
     | AddChild
     | AddFamilyMember
     | AddFamilyMemberFor String
-    | AddMother
+    | AddParentOrCaregiver
     | Admin
     | AddressInformation
     | Adherence Adherence
@@ -406,8 +413,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        AddMother ->
-            { english = "Add Mother"
+        AddParentOrCaregiver ->
+            { english = "Add Parent or Caregiver"
             , kinyarwanda = Nothing
             }
 
@@ -2501,6 +2508,41 @@ translateHttpError error =
 translateValidationError : ValidationError -> TranslationSet String
 translateValidationError id =
     case id of
+        DigitsOnly ->
+            { english = "should contain only digit characters"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidBirthDate ->
+            { english = "is invalid"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidBirthDateForAdult ->
+            { english = "is invalid - adult should at least 13 years old"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidBirthDateForChild ->
+            { english = "is invalid - child should be below the age of 13"
+            , kinyarwanda = Nothing
+            }
+
+        LengthError correctLength ->
+            { english = "should contain " ++ toString correctLength ++ " characters"
+            , kinyarwanda = Nothing
+            }
+
+        LettersOnly ->
+            { english = "should contain only letter characters"
+            , kinyarwanda = Nothing
+            }
+
+        RequiredField ->
+            { english = "is a required field"
+            , kinyarwanda = Nothing
+            }
+
         UnknownGroup ->
             { english = "is not a known Group"
             , kinyarwanda = Nothing

@@ -1,5 +1,6 @@
-module Utils.GeoLocation exposing (GeoInfo, geoInfo)
+module Utils.GeoLocation exposing (GeoInfo, ReverseGeoInfo, geoInfo, getGeoLocation, reverseGeoInfo)
 
+import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
 import Restful.Endpoint exposing (EntityId, toEntityId)
 
@@ -39,6 +40,49 @@ type alias GeoLocation =
     { name : String
     , parent : Maybe GeoLocationId
     }
+
+
+type alias ParentId =
+    GeoLocationId
+
+
+type alias Name =
+    String
+
+
+type alias ReverseGeoInfo =
+    EveryDict (Maybe ParentId) (Dict Name ( GeoLocationId, GeoLocation ))
+
+
+reverseGeoInfo : ReverseGeoInfo
+reverseGeoInfo =
+    let
+        merge id loc accum =
+            accum
+                |> Maybe.withDefault Dict.empty
+                |> Dict.insert loc.name ( id, loc )
+                |> Just
+
+        addGeo id loc accum =
+            EveryDict.update loc.parent (merge id loc) accum
+
+        handleSource source accum =
+            EveryDict.foldl addGeo accum source
+    in
+    List.foldl handleSource
+        EveryDict.empty
+        [ geoInfo.provinces
+        , geoInfo.districts
+        , geoInfo.sectors
+        , geoInfo.cells
+        , geoInfo.villages
+        ]
+
+
+getGeoLocation : Maybe ParentId -> Name -> Maybe ( GeoLocationId, GeoLocation )
+getGeoLocation parent name =
+    EveryDict.get parent reverseGeoInfo
+        |> Maybe.andThen (Dict.get name)
 
 
 getGeoProvinces : EveryDict GeoLocationId GeoLocation
