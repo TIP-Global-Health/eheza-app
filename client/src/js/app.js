@@ -47,7 +47,10 @@ setInterval(reportQuota, minutesToMillis(1));
 // until we're online.
 function trySyncing() {
     navigator.serviceWorker.ready.then(function (reg) {
-        reg.sync.register('sync');
+        return reg.sync.register('sync').catch(function () {
+            // Try a message instead.
+            reg.active.postMessage('sync');
+        });
     });
 }
 
