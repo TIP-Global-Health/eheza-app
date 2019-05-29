@@ -8,7 +8,7 @@ import Backend.Person.Model exposing (Person)
 import EveryDict exposing (EveryDict)
 import Form
 import Form.Field
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 
@@ -82,7 +82,7 @@ update currentDate msg people model =
         DateSelected date ->
             let
                 log =
-                    Debug.log "DateSelected" date
+                    Debug.log "DateSelected" <| fromLocalDateTime date
             in
             ( { model | selectedDate = Just date }
             , Cmd.none
