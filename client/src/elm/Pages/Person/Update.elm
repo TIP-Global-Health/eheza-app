@@ -3,12 +3,12 @@ module Pages.Person.Update exposing (update)
 import App.Model
 import Backend.Entities exposing (PersonId)
 import Backend.Model
-import Backend.Person.Form exposing (ExpectedAge(..), validatePerson)
+import Backend.Person.Form exposing (ExpectedAge(..), birthDate, validatePerson)
 import Backend.Person.Model exposing (Person)
 import EveryDict exposing (EveryDict)
 import Form
 import Form.Field
-import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD, fromLocalDateTime)
 import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 
@@ -79,12 +79,13 @@ update currentDate msg people model =
             , []
             )
 
-        DateSelected date ->
+        DateSelected relation date ->
             let
-                log =
-                    Debug.log "DateSelected" <| fromLocalDateTime date
+                dateAsString =
+                    fromLocalDateTime date |> formatYYYYMMDD
+
+                setFieldMsg =
+                    Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm relation
             in
-            ( { model | selectedDate = Just date }
-            , Cmd.none
-            , []
-            )
+            { model | selectedDate = Just date }
+                |> update currentDate setFieldMsg people

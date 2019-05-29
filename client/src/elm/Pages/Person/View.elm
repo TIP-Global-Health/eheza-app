@@ -403,7 +403,7 @@ viewCreateForm language currentDate relationId model db =
                     , br [] []
                     , DateSelector.SelectorDropdown.view
                         ToggleDateSelector
-                        DateSelected
+                        (DateSelected relationId)
                         model.isDateSelectorOpen
                         (Date.add Year -60 today)
                         today

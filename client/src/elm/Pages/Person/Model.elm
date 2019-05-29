@@ -23,7 +23,7 @@ type Msg
     | SetActivePage Page
     | DropZoneComplete (Maybe PersonId) DropZoneFile
     | ToggleDateSelector
-    | DateSelected Date
+    | DateSelected (Maybe PersonId) Date
 
 
 emptyModel : Model
