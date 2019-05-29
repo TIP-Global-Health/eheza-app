@@ -104,10 +104,10 @@ viewParticipantDetailsForm language currentDate db id person =
         ( typeForAddFamilyMember, labelForAddFamilyMember ) =
             case isAdult of
                 Just True ->
-                    ( "child", Translate.AddMotherOrCaregiver )
+                    ( "child", Translate.AddChild )
 
                 Just False ->
-                    ( "mother", Translate.AddChild )
+                    ( "mother", Translate.AddMotherOrCaregiver )
 
                 Nothing ->
                     ( "mother", Translate.AddFamilyMember )
