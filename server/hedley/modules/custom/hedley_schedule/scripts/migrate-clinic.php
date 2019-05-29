@@ -60,7 +60,7 @@ while (TRUE) {
     $mother = entity_metadata_wrapper('node', $node);
     $mother_id = $node->nid;
 
-    // Set health center for mother according to setting at her clinic.
+    // Set health center for mother according to setting at it's clinic.
     $mother->field_health_center->set($mother->field_clinic->field_health_center->getIdentifier());
     $mother->save();
 
