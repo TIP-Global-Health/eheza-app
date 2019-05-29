@@ -107,7 +107,7 @@ viewParticipantDetailsForm language currentDate db id person =
                     ( "child", Translate.AddChild )
 
                 Just False ->
-                    ( "mother", Translate.AddMotherOrCaregiver )
+                    ( "mother", Translate.AddParentOrCaregiver )
 
                 Nothing ->
                     ( "mother", Translate.AddFamilyMember )
