@@ -24,5 +24,7 @@ fetch id db =
 
 fetchForCreateForm : Maybe PersonId -> List MsgIndexedDb
 fetchForCreateForm related =
-    List.filterMap identity
-        [ Maybe.map FetchPerson related ]
+    FetchHealthCenters
+        :: List.filterMap identity
+            [ Maybe.map FetchPerson related
+            ]

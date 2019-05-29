@@ -1,4 +1,4 @@
-module Backend.Person.Form exposing (ExpectedAge(..), PersonForm, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, expectedAgeFromForm, firstName, gender, maritalStatus, nationalIdNumber, phoneNumber, photo, province, secondName, sector, ubudehe, validateBirthDate, validateCell, validateDistrict, validateEducationLevel, validateGender, validateMaritalStatus, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village)
+module Backend.Person.Form exposing (ExpectedAge(..), PersonForm, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, expectedAgeFromForm, firstName, gender, healthCenter, maritalStatus, nationalIdNumber, phoneNumber, photo, province, secondName, sector, ubudehe, validateBirthDate, validateCell, validateDistrict, validateEducationLevel, validateGender, validateMaritalStatus, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village)
 
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeMaritalStatus, decodeUbudehe)
 import Backend.Person.Model exposing (..)
@@ -434,3 +434,8 @@ village =
 phoneNumber : String
 phoneNumber =
     "phone_number"
+
+
+healthCenter : String
+healthCenter =
+    "health_center"

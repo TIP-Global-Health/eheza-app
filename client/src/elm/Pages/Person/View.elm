@@ -702,6 +702,33 @@ viewCreateForm language currentDate relationId formBeforeDefaults db =
             else
                 []
 
+        healthCenterSection =
+            let
+                options =
+                    emptyOption
+                        :: (db.healthCenters
+                                |> RemoteData.map
+                                    (\dict ->
+                                        dict
+                                            |> EveryDictList.toList
+                                            |> List.map
+                                                (\( id, healthCenter ) ->
+                                                    ( fromEntityUuid id
+                                                    , healthCenter.name
+                                                    )
+                                                )
+                                    )
+                                |> RemoteData.withDefault []
+                           )
+            in
+            [ h3
+                [ class "ui header" ]
+                [ text <| translate language Translate.RegistratingHealthCenter ++ ":" ]
+            , [ viewSelectInput language Translate.HealthCenter options Backend.Person.Form.healthCenter "ten" "select-input" True personForm ]
+                |> fieldset [ class "registration-form health-center" ]
+                |> Html.map (MsgForm relationId)
+            ]
+
         submitButton =
             button
                 [ classList
@@ -734,6 +761,7 @@ viewCreateForm language currentDate relationId formBeforeDefaults db =
                 |> Html.map (MsgForm relationId)
             ]
                 ++ contactInformationSection
+                ++ healthCenterSection
                 ++ [ p [] []
                    , submitButton
                         |> Html.map (MsgForm relationId)
