@@ -8,6 +8,7 @@ import Backend.Person.Form exposing (ExpectedAge(..), PersonForm, expectedAgeFro
 import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allMaritalStatuses, allUbudehes)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
+import Date.Extra as Date exposing (Interval(Year))
 import DateSelector.SelectorDropdown
 import EveryDict
 import EveryDictList
@@ -15,7 +16,7 @@ import Form exposing (Form)
 import Form.Field
 import Form.Input
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime, toLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -388,6 +389,10 @@ viewCreateForm language currentDate relationId model db =
             Form.getFieldAsBool Backend.Person.Form.birthDateEstimated personForm
 
         birthDateInput =
+            let
+                today =
+                    toLocalDateTime currentDate 0 0 0 0
+            in
             div [ class "ui grid" ]
                 [ div
                     [ class "six wide column" ]
@@ -396,15 +401,13 @@ viewCreateForm language currentDate relationId model db =
                     [ class "seven wide column required" ]
                     [ text <| translate language Translate.DateOfBirth ++ ":"
                     , br [] []
-                    , dateInput birthDateField
-                        [ classList
-                            [ ( "error", isJust birthDateField.liveError )
-                            , ( "field", True )
-                            ]
-                        , birthDateField.value
-                            |> Maybe.withDefault ""
-                            |> value
-                        ]
+                    , DateSelector.SelectorDropdown.view
+                        ToggleDateSelector
+                        DateSelected
+                        model.isDateSelectorOpen
+                        (Date.add Year -60 today)
+                        today
+                        model.selectedDate
                     ]
                 , div
                     [ class "three wide column" ]
@@ -416,6 +419,7 @@ viewCreateForm language currentDate relationId model db =
                             , ( "field", True )
                             ]
                         ]
+                        |> Html.map (MsgForm relationId)
                     ]
                 ]
 
@@ -500,10 +504,12 @@ viewCreateForm language currentDate relationId model db =
                         [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName True personForm
                         , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
                         , viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
-                        , birthDateInput
-                        , genderInput
                         ]
-                            ++ (if expectedAge /= ExpectChild then
+                   )
+                ++ [ birthDateInput ]
+                ++ (List.map (Html.map (MsgForm relationId)) <|
+                        (genderInput
+                            :: (if expectedAge /= ExpectChild then
                                     [ viewSelectInput language Translate.LevelOfEducationLabel educationLevelOptions Backend.Person.Form.educationLevel "ten" "select-input" True personForm
                                     , viewSelectInput language Translate.MaritalStatusLabel maritalStatusOptions Backend.Person.Form.maritalStatus "ten" "select-input" True personForm
                                     ]
@@ -511,6 +517,7 @@ viewCreateForm language currentDate relationId model db =
                                 else
                                     []
                                )
+                        )
                    )
 
         ubudeheOptions =

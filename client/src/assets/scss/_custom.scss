@@ -1482,3 +1482,13 @@ input::placeholder {
     padding-left: 1rem;
   }
 }
+
+// Date Selector
+
+.date-selector {
+   font-size: 0.7em;
+
+   > div {
+     height: 19em;
+   }
+ }

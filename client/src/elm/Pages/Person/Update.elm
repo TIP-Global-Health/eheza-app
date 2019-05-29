@@ -72,3 +72,19 @@ update currentDate msg people model =
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
+
+        ToggleDateSelector ->
+            ( { model | isDateSelectorOpen = not model.isDateSelectorOpen }
+            , Cmd.none
+            , []
+            )
+
+        DateSelected date ->
+            let
+                log =
+                    Debug.log "DateSelected" date
+            in
+            ( { model | selectedDate = Just date }
+            , Cmd.none
+            , []
+            )
