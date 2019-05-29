@@ -54,6 +54,7 @@ exampleChildA =
     , cell = Nothing
     , village = Nothing
     , telephoneNumber = Nothing
+    , healthCenterId = Nothing
     }
 
 
@@ -78,6 +79,7 @@ exampleChildB =
     , cell = Nothing
     , village = Nothing
     , telephoneNumber = Nothing
+    , healthCenterId = Nothing
     }
 
 
@@ -102,4 +104,5 @@ exampleMother =
     , cell = Nothing
     , village = Nothing
     , telephoneNumber = Nothing
+    , healthCenterId = Nothing
     }

@@ -1,5 +1,6 @@
 module Backend.Person.Model exposing (EducationLevel(..), Gender(..), MaritalStatus(..), Person, Ubudehe(..), allEducationLevels, allMaritalStatuses, allUbudehes)
 
+import Backend.Entities exposing (HealthCenterId)
 import Gizra.NominalDate exposing (NominalDate)
 
 
@@ -21,6 +22,7 @@ type alias Person =
     , cell : Maybe String
     , village : Maybe String
     , telephoneNumber : Maybe String
+    , healthCenterId : Maybe HealthCenterId
     }
 
 

@@ -5,6 +5,7 @@ import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
+import Restful.Endpoint exposing (decodeEntityUuid)
 
 
 decodePerson : Decoder Person
@@ -27,6 +28,7 @@ decodePerson =
         |> optional "cell" (nullable string) Nothing
         |> optional "village" (nullable string) Nothing
         |> optional "phone_number" (nullable string) Nothing
+        |> optional "health_center" (nullable decodeEntityUuid) Nothing
 
 
 decodeGender : Decoder Gender
