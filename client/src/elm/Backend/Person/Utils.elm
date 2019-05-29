@@ -1,10 +1,8 @@
-module Backend.Person.Utils exposing (ageInYears, diffInYears, isMotherRegistering)
+module Backend.Person.Utils exposing (ageInYears, diffInYears, isAdult, isPersonAnAdult)
 
 import Backend.Person.Model exposing (Person)
-import Date
-import Form exposing (FieldState)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
-import Result
+import Maybe.Extra exposing (isJust)
 import Time.Date
 
 
@@ -18,11 +16,13 @@ diffInYears currentDate comparedDate =
     Maybe.map (Time.Date.delta currentDate >> .years) comparedDate
 
 
-isMotherRegistering : NominalDate -> FieldState e String -> Bool
-isMotherRegistering currentDate birthDateField =
-    birthDateField.value
-        |> Maybe.andThen (Date.fromString >> Result.toMaybe)
-        |> Maybe.map fromLocalDateTime
+isAdult : NominalDate -> Maybe NominalDate -> Maybe Bool
+isAdult currentDate maybeBirthDate =
+    maybeBirthDate
         |> diffInYears currentDate
         |> Maybe.map ((<) 12)
-        |> Maybe.withDefault False
+
+
+isPersonAnAdult : NominalDate -> Person -> Maybe Bool
+isPersonAnAdult currentDate person =
+    isAdult currentDate person.birthDate

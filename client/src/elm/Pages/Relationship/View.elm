@@ -3,7 +3,7 @@ module Pages.Relationship.View exposing (view)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears)
+import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, Relationship)
 import EveryDict
 import EveryDictList exposing (EveryDictList)
@@ -98,15 +98,31 @@ viewFetchedContent language currentDate id1 id2 model request data =
             model
                 |> Maybe.Extra.orElse savedRelationship
 
-        -- We could look at the birthdates of person1 and person2 to cut down
-        -- on these possibilities. (E.g. the older one can't be the child of
-        -- the younger one).
         possibleRelationships =
-            [ MyChild
-            , MyParent
-            , MyCaregiven
-            , MyCaregiver
-            ]
+            let
+                expected =
+                    case isPersonAnAdult currentDate data.person1 of
+                        Just True ->
+                            [ MyChild, MyCaregiven ]
+
+                        Just False ->
+                            [ MyParent, MyCaregiver ]
+
+                        Nothing ->
+                            [ MyChild, MyCaregiven, MyParent, MyCaregiver ]
+            in
+            -- Always add the currently set relationship, if there is one, even
+            -- if it's not expected.
+            case viewedRelationship of
+                Just viewed ->
+                    if List.member viewed expected then
+                        expected
+
+                    else
+                        viewed :: expected
+
+                Nothing ->
+                    expected
 
         relationshipSelector =
             div
@@ -211,16 +227,15 @@ viewParticipant : Language -> NominalDate -> PersonId -> Person -> Html Msg
 viewParticipant language currentDate id person =
     let
         typeForThumbnail =
-            ageInYears currentDate person
-                |> Maybe.map
-                    (\age ->
-                        if age > 12 then
-                            "mother"
+            case isPersonAnAdult currentDate person of
+                Just True ->
+                    "mother"
 
-                        else
-                            "child"
-                    )
-                |> Maybe.withDefault "mother"
+                Just False ->
+                    "child"
+
+                Nothing ->
+                    "mother"
 
         content =
             div [ class "content" ]

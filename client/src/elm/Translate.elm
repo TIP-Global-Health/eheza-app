@@ -101,9 +101,12 @@ type ChartPhrase
 
 type ValidationError
     = DigitsOnly
+    | InvalidBirthDate
+    | InvalidBirthDateForAdult
+    | InvalidBirthDateForChild
     | LengthError Int
     | LettersOnly
-    | ReqiuredField
+    | RequiredField
     | UnknownGroup
     | UnknownProvince
     | UnknownDistrict
@@ -133,7 +136,7 @@ type TranslationId
     | AddChild
     | AddFamilyMember
     | AddFamilyMemberFor String
-    | AddMother
+    | AddParentOrCaregiver
     | Admin
     | AddressInformation
     | Adherence Adherence
@@ -410,8 +413,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        AddMother ->
-            { english = "Add Mother"
+        AddParentOrCaregiver ->
+            { english = "Add Parent or Caregiver"
             , kinyarwanda = Nothing
             }
 
@@ -2510,6 +2513,21 @@ translateValidationError id =
             , kinyarwanda = Nothing
             }
 
+        InvalidBirthDate ->
+            { english = "is invalid"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidBirthDateForAdult ->
+            { english = "is invalid - adult should at least 13 years old"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidBirthDateForChild ->
+            { english = "is invalid - child should be below the age of 13"
+            , kinyarwanda = Nothing
+            }
+
         LengthError correctLength ->
             { english = "should contain " ++ toString correctLength ++ " characters"
             , kinyarwanda = Nothing
@@ -2520,7 +2538,7 @@ translateValidationError id =
             , kinyarwanda = Nothing
             }
 
-        ReqiuredField ->
+        RequiredField ->
             { english = "is a required field"
             , kinyarwanda = Nothing
             }
