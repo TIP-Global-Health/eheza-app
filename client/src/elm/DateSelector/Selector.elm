@@ -212,6 +212,7 @@ viewYearList minimum maximum maybeSelected =
                 (Json.Decode.at [ "target", "year" ] Json.Decode.int)
         ]
         (years
+            |> List.reverse
             |> List.map
                 (\y ->
                     let
