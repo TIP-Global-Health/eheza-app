@@ -4,13 +4,14 @@ import App.Model
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Encoder exposing (encodeEducationLevel, encodeMaritalStatus, encodeUbudehe)
-import Backend.Person.Form exposing (ExpectedAge(..), PersonForm, expectedAgeFromForm)
+import Backend.Person.Form exposing (ExpectedAge(..), PersonForm, expectedAgeFromForm, validatePerson)
 import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allMaritalStatuses, allUbudehes)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import EveryDict
 import EveryDictList
 import Form exposing (Form)
+import Form.Field
 import Form.Input
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
@@ -27,7 +28,7 @@ import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Set
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (dateInput, getValueAsInt, isFormFieldSet, viewFormError)
-import Utils.GeoLocation exposing (GeoInfo, geoInfo)
+import Utils.GeoLocation exposing (GeoInfo, geoInfo, getGeoLocation)
 import Utils.Html exposing (script, thumbnailImage, viewLoading)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
@@ -234,9 +235,74 @@ viewPhotoThumb url =
         ]
 
 
-viewCreateForm : Language -> NominalDate -> Maybe PersonId -> PersonForm -> ModelIndexedDb -> Html Msg
-viewCreateForm language currentDate relationId personForm db =
+applyDefaultValues : Maybe Person -> NominalDate -> PersonForm -> PersonForm
+applyDefaultValues maybeRelatedPerson currentDate form =
     let
+        defaultProvinceId =
+            maybeRelatedPerson
+                |> Maybe.andThen .province
+                |> Maybe.andThen (getGeoLocation Nothing)
+                |> Maybe.map Tuple.first
+
+        defaultDistrictId =
+            maybeRelatedPerson
+                |> Maybe.andThen .district
+                |> Maybe.andThen (getGeoLocation defaultProvinceId)
+                |> Maybe.map Tuple.first
+
+        defaultSectorId =
+            maybeRelatedPerson
+                |> Maybe.andThen .sector
+                |> Maybe.andThen (getGeoLocation defaultDistrictId)
+                |> Maybe.map Tuple.first
+
+        defaultCellId =
+            maybeRelatedPerson
+                |> Maybe.andThen .cell
+                |> Maybe.andThen (getGeoLocation defaultSectorId)
+                |> Maybe.map Tuple.first
+
+        defaultVillageId =
+            maybeRelatedPerson
+                |> Maybe.andThen .village
+                |> Maybe.andThen (getGeoLocation defaultCellId)
+                |> Maybe.map Tuple.first
+
+        applyDefaultLocation fieldName maybeDefault form =
+            case maybeDefault of
+                Just defaultId ->
+                    Form.getFieldAsString fieldName form
+                        |> .value
+                        |> Maybe.map String.isEmpty
+                        |> Maybe.withDefault True
+                        |> (\useDefault ->
+                                if useDefault then
+                                    Form.update
+                                        (validatePerson maybeRelatedPerson (Just currentDate))
+                                        (Form.Input fieldName Form.Select (Form.Field.String (toString <| fromEntityId defaultId)))
+                                        form
+
+                                else
+                                    form
+                           )
+
+                Nothing ->
+                    form
+    in
+    form
+        |> applyDefaultLocation Backend.Person.Form.province defaultProvinceId
+        |> applyDefaultLocation Backend.Person.Form.district defaultDistrictId
+        |> applyDefaultLocation Backend.Person.Form.sector defaultSectorId
+        |> applyDefaultLocation Backend.Person.Form.cell defaultCellId
+        |> applyDefaultLocation Backend.Person.Form.village defaultVillageId
+
+
+viewCreateForm : Language -> NominalDate -> Maybe PersonId -> PersonForm -> ModelIndexedDb -> Html Msg
+viewCreateForm language currentDate relationId formBeforeDefaults db =
+    let
+        personForm =
+            applyDefaultValues maybeRelatedPerson currentDate formBeforeDefaults
+
         request =
             db.postPerson
 
@@ -481,37 +547,20 @@ viewCreateForm language currentDate relationId personForm db =
                         ""
                    )
 
-        withDefaultValue value field =
-            case field.value of
-                Just entered ->
-                    if String.isEmpty entered then
-                        { field | value = value }
-
-                    else
-                        field
-
-                Nothing ->
-                    { field | value = value }
-
         province =
             Form.getFieldAsString Backend.Person.Form.province personForm
-                |> withDefaultValue (Maybe.andThen .province maybeRelatedPerson)
 
         district =
             Form.getFieldAsString Backend.Person.Form.district personForm
-                |> withDefaultValue (Maybe.andThen .district maybeRelatedPerson)
 
         sector =
             Form.getFieldAsString Backend.Person.Form.sector personForm
-                |> withDefaultValue (Maybe.andThen .sector maybeRelatedPerson)
 
         cell =
             Form.getFieldAsString Backend.Person.Form.cell personForm
-                |> withDefaultValue (Maybe.andThen .cell maybeRelatedPerson)
 
         village =
             Form.getFieldAsString Backend.Person.Form.village personForm
-                |> withDefaultValue (Maybe.andThen .village maybeRelatedPerson)
 
         viewProvince =
             let
