@@ -4,6 +4,7 @@ import Backend.Person.Model exposing (..)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
+import Restful.Endpoint exposing (encodeEntityUuid)
 
 
 encodePerson : Person -> Value
@@ -26,6 +27,8 @@ encodePerson person =
         , ( "cell", maybe string person.cell )
         , ( "village", maybe string person.village )
         , ( "phone_number", maybe string person.telephoneNumber )
+
+        -- , ( "health_center", maybe encodeEntityUuid person.healthCenterId )
         ]
 
 

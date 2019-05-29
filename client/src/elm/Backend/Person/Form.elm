@@ -1,5 +1,6 @@
 module Backend.Person.Form exposing (ExpectedAge(..), PersonForm, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, expectedAgeFromForm, firstName, gender, healthCenter, maritalStatus, nationalIdNumber, phoneNumber, photo, province, secondName, sector, ubudehe, validateBirthDate, validateCell, validateDistrict, validateEducationLevel, validateGender, validateMaritalStatus, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village)
 
+import Backend.Entities exposing (HealthCenterId)
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeMaritalStatus, decodeUbudehe)
 import Backend.Person.Model exposing (..)
 import Backend.Person.Utils exposing (isAdult, isPersonAnAdult)
@@ -12,7 +13,7 @@ import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, fromLocalDateTim
 import Json.Decode
 import Maybe.Extra exposing (join, unwrap)
 import Regex exposing (Regex)
-import Restful.Endpoint exposing (toEntityId)
+import Restful.Endpoint exposing (decodeEntityUuid, toEntityId)
 import Time.Date
 import Translate exposing (ValidationError(..))
 import Utils.Form exposing (fromDecoder, nullable)
@@ -153,6 +154,7 @@ validatePerson maybeRelated maybeCurrentDate =
                 |> andMap (field cell (validateCell maybeRelated))
                 |> andMap (field village (validateVillage maybeRelated))
                 |> andMap (field phoneNumber <| nullable validateDigitsOnly)
+                |> andMap (field healthCenter validateHealthCenterId)
     in
     andThen withFirstName (field firstName validateLettersOnly)
 
@@ -336,6 +338,11 @@ validateLettersOnly =
                 format allLettersPattern s
                     |> mapError (\_ -> customError LettersOnly)
             )
+
+
+validateHealthCenterId : Validation ValidationError (Maybe HealthCenterId)
+validateHealthCenterId =
+    fromDecoder DecoderError (Just RequiredField) (Json.Decode.nullable decodeEntityUuid)
 
 
 
