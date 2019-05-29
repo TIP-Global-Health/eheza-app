@@ -60,6 +60,10 @@ while (TRUE) {
     $mother = entity_metadata_wrapper('node', $node);
     $mother_id = $node->nid;
 
+    // Set health center for mother according to setting at her clinic.
+    $mother->field_health_center->set($mother->field_clinic->field_health_center->getIdentifier());
+    $mother->save();
+
     $params = [
       '@id' => $node->nid,
     ];
@@ -83,6 +87,11 @@ while (TRUE) {
 
     foreach ($relationship_nodes as $relationship_node) {
       $relationship = entity_metadata_wrapper('node', $relationship_node);
+
+      // Set health center for child according to setting at mother's clinic.
+      $child = entity_metadata_wrapper('node', $relationship->field_person->value());
+      $child->field_health_center->set($mother->field_clinic->field_health_center->getIdentifier());
+      $child->save();
 
       $participation_query = new EntityFieldQuery();
       $participation_query
