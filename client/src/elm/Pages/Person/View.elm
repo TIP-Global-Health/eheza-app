@@ -8,13 +8,15 @@ import Backend.Person.Form exposing (ExpectedAge(..), PersonForm, expectedAgeFro
 import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allMaritalStatuses, allUbudehes)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
+import Date.Extra as Date exposing (Interval(Year))
+import DateSelector.SelectorDropdown
 import EveryDict
 import EveryDictList
 import Form exposing (Form)
 import Form.Field
 import Form.Input
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime, toLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -26,6 +28,7 @@ import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Set
+import Time.Iso8601
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (dateInput, getValueAsInt, isFormFieldSet, viewFormError)
 import Utils.GeoLocation exposing (GeoInfo, geoInfo, getGeoLocation)
@@ -297,9 +300,12 @@ applyDefaultValues maybeRelatedPerson currentDate form =
         |> applyDefaultLocation Backend.Person.Form.village defaultVillageId
 
 
-viewCreateForm : Language -> NominalDate -> Maybe PersonId -> PersonForm -> ModelIndexedDb -> Html Msg
-viewCreateForm language currentDate relationId formBeforeDefaults db =
+viewCreateForm : Language -> NominalDate -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
+viewCreateForm language currentDate relationId model db =
     let
+        formBeforeDefaults =
+            model.form
+
         personForm =
             applyDefaultValues maybeRelatedPerson currentDate formBeforeDefaults
 
@@ -384,6 +390,16 @@ viewCreateForm language currentDate relationId formBeforeDefaults db =
             Form.getFieldAsBool Backend.Person.Form.birthDateEstimated personForm
 
         birthDateInput =
+            let
+                today =
+                    toLocalDateTime currentDate 0 0 0 0
+
+                selectedDate =
+                    Form.getFieldAsString Backend.Person.Form.birthDate personForm
+                        |> .value
+                        |> Maybe.andThen (Time.Iso8601.toDate >> Result.toMaybe)
+                        |> Maybe.map (\date -> toLocalDateTime date 12 0 0 0)
+            in
             div [ class "ui grid" ]
                 [ div
                     [ class "six wide column" ]
@@ -392,15 +408,13 @@ viewCreateForm language currentDate relationId formBeforeDefaults db =
                     [ class "seven wide column required" ]
                     [ text <| translate language Translate.DateOfBirth ++ ":"
                     , br [] []
-                    , dateInput birthDateField
-                        [ classList
-                            [ ( "error", isJust birthDateField.liveError )
-                            , ( "field", True )
-                            ]
-                        , birthDateField.value
-                            |> Maybe.withDefault ""
-                            |> value
-                        ]
+                    , DateSelector.SelectorDropdown.view
+                        ToggleDateSelector
+                        (DateSelected relationId)
+                        model.isDateSelectorOpen
+                        (Date.add Year -60 today)
+                        today
+                        selectedDate
                     ]
                 , div
                     [ class "three wide column" ]
@@ -412,6 +426,7 @@ viewCreateForm language currentDate relationId formBeforeDefaults db =
                             , ( "field", True )
                             ]
                         ]
+                        |> Html.map (MsgForm relationId)
                     ]
                 ]
 
@@ -496,10 +511,12 @@ viewCreateForm language currentDate relationId formBeforeDefaults db =
                         [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName True personForm
                         , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
                         , viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
-                        , birthDateInput
-                        , genderInput
                         ]
-                            ++ (if expectedAge /= ExpectChild then
+                   )
+                ++ [ birthDateInput ]
+                ++ (List.map (Html.map (MsgForm relationId)) <|
+                        (genderInput
+                            :: (if expectedAge /= ExpectChild then
                                     [ viewSelectInput language Translate.LevelOfEducationLabel educationLevelOptions Backend.Person.Form.educationLevel "ten" "select-input" True personForm
                                     , viewSelectInput language Translate.MaritalStatusLabel maritalStatusOptions Backend.Person.Form.maritalStatus "ten" "select-input" True personForm
                                     ]
@@ -507,6 +524,7 @@ viewCreateForm language currentDate relationId formBeforeDefaults db =
                                 else
                                     []
                                )
+                        )
                    )
 
         ubudeheOptions =

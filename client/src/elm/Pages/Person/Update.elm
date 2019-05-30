@@ -3,12 +3,12 @@ module Pages.Person.Update exposing (update)
 import App.Model
 import Backend.Entities exposing (PersonId)
 import Backend.Model
-import Backend.Person.Form exposing (ExpectedAge(..), validatePerson)
+import Backend.Person.Form exposing (ExpectedAge(..), birthDate, validatePerson)
 import Backend.Person.Model exposing (Person)
 import EveryDict exposing (EveryDict)
 import Form
 import Form.Field
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD, fromLocalDateTime)
 import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 
@@ -23,13 +23,13 @@ update currentDate msg people model =
                         |> Maybe.andThen (\personId -> EveryDict.get personId people)
                         |> Maybe.andThen RemoteData.toMaybe
 
-                newModel =
-                    Form.update (validatePerson related (Just currentDate)) subMsg model
+                newForm =
+                    Form.update (validatePerson related (Just currentDate)) subMsg model.form
 
                 appMsgs =
                     case subMsg of
                         Form.Submit ->
-                            Form.getOutput model
+                            Form.getOutput model.form
                                 |> Maybe.map
                                     (\person ->
                                         [ person
@@ -49,7 +49,7 @@ update currentDate msg people model =
                         _ ->
                             []
             in
-            ( newModel
+            ( { model | form = newForm }
             , Cmd.none
             , appMsgs
             )
@@ -62,7 +62,7 @@ update currentDate msg people model =
             update currentDate (MsgForm relation subMsg) people model
 
         ResetCreateForm ->
-            ( Backend.Person.Form.emptyForm
+            ( Pages.Person.Model.emptyModel
             , Cmd.none
             , []
             )
@@ -72,3 +72,19 @@ update currentDate msg people model =
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
+
+        ToggleDateSelector ->
+            ( { model | isDateSelectorOpen = not model.isDateSelectorOpen }
+            , Cmd.none
+            , []
+            )
+
+        DateSelected relation date ->
+            let
+                dateAsString =
+                    fromLocalDateTime date |> formatYYYYMMDD
+
+                setFieldMsg =
+                    Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm relation
+            in
+            update currentDate setFieldMsg people model
