@@ -4,7 +4,6 @@ import Backend.Entities exposing (HealthCenterId)
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeMaritalStatus, decodeUbudehe)
 import Backend.Person.Model exposing (..)
 import Backend.Person.Utils exposing (isAdult, isPersonAnAdult)
-import Date
 import EveryDict
 import Form exposing (..)
 import Form.Init exposing (..)
@@ -15,6 +14,7 @@ import Maybe.Extra exposing (join, unwrap)
 import Regex exposing (Regex)
 import Restful.Endpoint exposing (decodeEntityUuid, toEntityId)
 import Time.Date
+import Time.Iso8601
 import Translate exposing (ValidationError(..))
 import Utils.Form exposing (fromDecoder, nullable)
 import Utils.GeoLocation exposing (geoInfo)
@@ -43,10 +43,11 @@ looking at?
 -}
 expectedAgeFromForm : NominalDate -> PersonForm -> ExpectedAge
 expectedAgeFromForm currentDate form =
+    -- Our dates are formatted as 2019-07-02, which, strangely, Date.fromString
+    -- doesn't handle correctly. So, we use Time.Iso8601 instead.
     Form.getFieldAsString birthDate form
         |> .value
-        |> Maybe.andThen (Date.fromString >> Result.toMaybe)
-        |> Maybe.map fromLocalDateTime
+        |> Maybe.andThen (Time.Iso8601.toDate >> Result.toMaybe)
         |> isAdult currentDate
         |> (\adult ->
                 case adult of
@@ -273,9 +274,8 @@ validateBirthDate expectedAge maybeCurrentDate =
                             let
                                 -- Convert to NominalDate.
                                 maybeBirthDate =
-                                    Date.fromString s
+                                    Time.Iso8601.toDate s
                                         |> Result.toMaybe
-                                        |> Maybe.map fromLocalDateTime
                             in
                             maybeBirthDate
                                 -- Calculate difference of years between input birt
