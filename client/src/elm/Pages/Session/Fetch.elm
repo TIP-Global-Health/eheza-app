@@ -3,7 +3,6 @@ module Pages.Session.Fetch exposing (fetch)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import EveryDict
-import EveryDictList
 import Pages.Page exposing (SessionPage(..))
 import Pages.ProgressReport.Fetch
 import RemoteData exposing (RemoteData(..))
@@ -26,12 +25,12 @@ fetch sessionId sessionPage db =
 
         childrenIdData =
             RemoteData.map
-                (EveryDictList.values >> List.map .child)
+                (.byChildId >> EveryDict.keys)
                 participantData
 
         motherIdData =
             RemoteData.map
-                (EveryDictList.values >> List.map .adult)
+                (.byMotherId >> EveryDict.keys)
                 participantData
 
         -- It would be more efficient here to have messages that could fetch a

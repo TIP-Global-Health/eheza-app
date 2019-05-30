@@ -18,9 +18,8 @@ import Time.Date
 -}
 getChildren : PersonId -> OfflineSession -> List ( PersonId, Person )
 getChildren motherId session =
-    session.participants
-        |> EveryDictList.filter (\_ participant -> participant.adult == motherId)
-        |> EveryDictList.values
+    EveryDict.get motherId session.participants.byMotherId
+        |> Maybe.withDefault []
         |> List.filterMap
             (\participant ->
                 EveryDictList.get participant.child session.children
@@ -40,9 +39,8 @@ getMother motherId session =
 
 getMyMother : PersonId -> OfflineSession -> Maybe ( PersonId, Person )
 getMyMother childId session =
-    session.participants
-        |> EveryDictList.values
-        |> List.filter (\value -> value.child == childId)
+    EveryDict.get childId session.participants.byChildId
+        |> Maybe.withDefault []
         |> List.head
         |> Maybe.andThen
             (\participant ->
@@ -128,12 +126,12 @@ makeEditableSession sessionId db =
         mothersData =
             RemoteData.andThen
                 (\participants ->
-                    EveryDictList.values participants
+                    EveryDict.keys participants.byMotherId
                         |> List.map
-                            (\participant ->
-                                EveryDict.get participant.adult db.people
+                            (\id ->
+                                EveryDict.get id db.people
                                     |> Maybe.withDefault NotAsked
-                                    |> RemoteData.map (\data -> ( participant.adult, data ))
+                                    |> RemoteData.map (\data -> ( id, data ))
                             )
                         |> RemoteData.fromList
                         |> RemoteData.map (EveryDictList.fromList >> EveryDictList.sortBy .name)
@@ -143,12 +141,12 @@ makeEditableSession sessionId db =
         childrenData =
             RemoteData.andThen
                 (\participants ->
-                    EveryDictList.values participants
+                    EveryDict.keys participants.byChildId
                         |> List.map
-                            (\participant ->
-                                EveryDict.get participant.child db.people
+                            (\id ->
+                                EveryDict.get id db.people
                                     |> Maybe.withDefault NotAsked
-                                    |> RemoteData.map (\data -> ( participant.child, data ))
+                                    |> RemoteData.map (\data -> ( id, data ))
                             )
                         |> RemoteData.fromList
                         |> RemoteData.map EveryDictList.fromList

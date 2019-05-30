@@ -105,11 +105,11 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                 |> Maybe.map Tuple.second
 
         relationText =
-            session.offlineSession.participants
-                |> EveryDictList.filter (\_ participant -> participant.child == childId)
-                |> EveryDictList.head
+            EveryDict.get childId session.offlineSession.participants.byChildId
+                |> Maybe.withDefault []
+                |> List.head
                 |> Maybe.map
-                    (\( _, participant ) ->
+                    (\participant ->
                         case participant.adultActivities of
                             MotherActivities ->
                                 Translate.ChildOf
