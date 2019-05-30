@@ -87,5 +87,4 @@ update currentDate msg people model =
                 setFieldMsg =
                     Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm relation
             in
-            { model | selectedDate = Just date }
-                |> update currentDate setFieldMsg people
+            update currentDate setFieldMsg people model

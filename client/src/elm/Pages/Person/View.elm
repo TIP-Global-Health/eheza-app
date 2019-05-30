@@ -28,6 +28,7 @@ import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Set
+import Time.Iso8601
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (dateInput, getValueAsInt, isFormFieldSet, viewFormError)
 import Utils.GeoLocation exposing (GeoInfo, geoInfo, getGeoLocation)
@@ -392,6 +393,12 @@ viewCreateForm language currentDate relationId model db =
             let
                 today =
                     toLocalDateTime currentDate 0 0 0 0
+
+                selectedDate =
+                    Form.getFieldAsString Backend.Person.Form.birthDate personForm
+                        |> .value
+                        |> Maybe.andThen (Time.Iso8601.toDate >> Result.toMaybe)
+                        |> Maybe.map (\date -> toLocalDateTime date 12 0 0 0)
             in
             div [ class "ui grid" ]
                 [ div
@@ -407,7 +414,7 @@ viewCreateForm language currentDate relationId model db =
                         model.isDateSelectorOpen
                         (Date.add Year -60 today)
                         today
-                        model.selectedDate
+                        selectedDate
                     ]
                 , div
                     [ class "three wide column" ]

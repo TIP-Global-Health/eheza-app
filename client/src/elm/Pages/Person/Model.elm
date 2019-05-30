@@ -10,7 +10,6 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { form : PersonForm
-    , selectedDate : Maybe Date
     , isDateSelectorOpen : Bool
     }
 
@@ -29,6 +28,5 @@ type Msg
 emptyModel : Model
 emptyModel =
     { form = Backend.Person.Form.emptyForm
-    , selectedDate = Nothing
     , isDateSelectorOpen = False
     }
