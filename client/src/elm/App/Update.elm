@@ -1,5 +1,6 @@
 port module App.Update exposing (init, subscriptions, updateAndThenFetch)
 
+import AnimationFrame
 import App.Fetch
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInModel)
@@ -134,8 +135,9 @@ init flags =
 
 updateAndThenFetch : Msg -> Model -> ( Model, Cmd Msg )
 updateAndThenFetch msg model =
-    update msg model
-        |> App.Fetch.andThenFetch update
+    -- If it's a CheckData message, then `update` will turn this off.
+    update msg
+        { model | scheduleDataWantedCheck = True }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -427,6 +429,51 @@ update msg model =
                 )
                 model
 
+        CheckDataWanted ->
+            -- Note that we will be called repeatedly. So, it's vitally important that
+            -- the `fetch` implementations use a `WebData`-like strategy to indicate
+            -- that a request is in progress, and doesn't need to be triggered again.
+            -- Otherwise, we'll keep issuing the same requests, over and over.
+            let
+                -- These are messages to fetch the data we want now, without
+                -- considering whether we already have it.
+                dataNowWanted =
+                    App.Fetch.fetch model
+
+                -- These are the messages we should actually issue to fetch data now.
+                -- As an improvement, we could compare with `model.dataWanted` to see
+                -- whether the msg is **newly** desired ... that is, whether its status
+                -- just flipped. We could treat newly desired data differently. For
+                -- instance, we might try to re-fetch it even in a `Failure` state.
+                -- (Since that wouldn't infinitely repeat).
+                dataToFetch =
+                    List.filter (App.Fetch.shouldFetch model) dataNowWanted
+
+                -- Update our existing dataWanted to indicate that the data now wanted
+                -- was last wanted now.
+                dataWanted =
+                    List.foldl (\msg -> EveryDict.insert msg model.currentTime) model.dataWanted dataNowWanted
+
+                fiveMinutes =
+                    5 * 1000 * 60
+
+                -- Figure out what to remember and what to forget.
+                ( dataToForget, dataToRemember ) =
+                    EveryDict.partition (\_ lastWanted -> model.currentTime - lastWanted > fiveMinutes) dataWanted
+
+                -- Our new base model, remembering the desired data, and forgetting
+                -- the data to forget.
+                newModel =
+                    dataToForget
+                        |> EveryDict.keys
+                        |> List.foldl App.Fetch.forget
+                            { model
+                                | dataWanted = dataToRemember
+                                , scheduleDataWantedCheck = False
+                            }
+            in
+            sequence update dataToFetch ( newModel, Cmd.none )
+
 
 {-| Updates our `nurse` user if the uuid matches the logged-in user.
 -}
@@ -497,13 +544,23 @@ updateLoggedIn func model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
+    let
+        checkDataWanted =
+            if model.scheduleDataWantedCheck then
+                [ AnimationFrame.times (always CheckDataWanted) ]
+
+            else
+                []
+    in
     Sub.batch
-        [ Time.every minute Tick
-        , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
-        , persistentStorage SetPersistentStorage
-        , storageQuota SetStorageQuota
-        , memoryQuota SetMemoryQuota
-        ]
+        ([ Time.every minute Tick
+         , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
+         , persistentStorage SetPersistentStorage
+         , storageQuota SetStorageQuota
+         , memoryQuota SetMemoryQuota
+         ]
+            ++ checkDataWanted
+        )
 
 
 {-| Saves PIN code entered by user, so that we can use it again if
