@@ -1910,7 +1910,7 @@ translationSet trans =
             }
 
         SyncGeneral ->
-            { english = "Sync status (general)"
+            { english = "Sync Status (General)"
             , kinyarwanda = Nothing
             }
 
