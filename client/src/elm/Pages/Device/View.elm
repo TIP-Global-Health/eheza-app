@@ -134,6 +134,7 @@ viewHealthCenters language db =
         |> RemoteData.map
             (\data ->
                 data
+                    |> EveryDictList.sortBy .name
                     |> EveryDictList.map (viewHealthCenter language db)
                     |> EveryDictList.values
                     |> div [ class "health-centers" ]
