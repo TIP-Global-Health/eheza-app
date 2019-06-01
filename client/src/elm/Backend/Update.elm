@@ -84,7 +84,7 @@ updateIndexedDb currentDate nurseId msg model =
 
         FetchExpectedParticipants sessionId ->
             ( { model | expectedParticipants = EveryDict.insert sessionId Loading model.expectedParticipants }
-            , sw.select pmtctParticipantEndpoint { session = sessionId }
+            , sw.select pmtctParticipantEndpoint (ParticipantsForSession sessionId)
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedExpectedParticipants sessionId)
             , []
             )
@@ -110,6 +110,32 @@ updateIndexedDb currentDate nurseId msg model =
 
         HandleFetchedPeopleByName name data ->
             ( { model | personSearches = Dict.insert (String.trim name) data model.personSearches }
+            , Cmd.none
+            , []
+            )
+
+        FetchParticipantsForPerson personId ->
+            let
+                query1 =
+                    sw.select pmtctParticipantEndpoint (ParticipantsForChild personId)
+                        |> toTask
+                        |> Task.map (.items >> EveryDict.fromList)
+                        |> RemoteData.fromTask
+
+                query2 =
+                    sw.select pmtctParticipantEndpoint (ParticipantsForAdult personId)
+                        |> toTask
+                        |> Task.map (.items >> EveryDict.fromList)
+                        |> RemoteData.fromTask
+            in
+            ( { model | participantsByPerson = EveryDict.insert personId Loading model.participantsByPerson }
+            , Task.map2 (RemoteData.map2 EveryDict.union) query1 query2
+                |> Task.perform (HandleFetchedParticipantsForPerson personId)
+            , []
+            )
+
+        HandleFetchedParticipantsForPerson personId data ->
+            ( { model | participantsByPerson = EveryDict.insert personId data model.participantsByPerson }
             , Cmd.none
             , []
             )
@@ -292,6 +318,19 @@ updateIndexedDb currentDate nurseId msg model =
             in
             ( { model | sessionRequests = EveryDict.insert sessionId subModel model.sessionRequests }
             , Cmd.map (MsgSession sessionId) subCmd
+            , []
+            )
+
+        PostPmtctParticipant data ->
+            ( { model | postPmtctParticipant = EveryDict.insert data.child Loading model.postPmtctParticipant }
+            , sw.post pmtctParticipantEndpoint data
+                |> toCmd (RemoteData.fromResult >> HandlePostedPmtctParticipant data.child)
+            , []
+            )
+
+        HandlePostedPmtctParticipant id data ->
+            ( { model | postPmtctParticipant = EveryDict.insert id data model.postPmtctParticipant }
+            , Cmd.none
             , []
             )
 
@@ -513,6 +552,10 @@ handleRevision revision model =
                         |> EveryDict.remove data.adult
                 , expectedParticipants =
                     EveryDict.empty
+                , participantsByPerson =
+                    model.participantsByPerson
+                        |> EveryDict.remove data.child
+                        |> EveryDict.remove data.adult
             }
 
         RelationshipRevision uuid data ->

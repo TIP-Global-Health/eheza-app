@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams, RelationshipParams, SessionParams(..), attendanceEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, relationshipEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, weightEndpoint)
+module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, relationshipEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, weightEndpoint)
 
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
@@ -236,15 +236,23 @@ sessionEndpoint =
         |> withParamsEncoder encodeSessionParams
 
 
-type alias PmtctParticipantParams =
-    { session : SessionId
-    }
+type PmtctParticipantParams
+    = ParticipantsForSession SessionId
+    | ParticipantsForChild PersonId
+    | ParticipantsForAdult PersonId
 
 
 encodePmtctParticipantParams : PmtctParticipantParams -> List ( String, String )
 encodePmtctParticipantParams params =
-    [ ( "session", fromEntityUuid params.session )
-    ]
+    case params of
+        ParticipantsForSession id ->
+            [ ( "session", fromEntityUuid id ) ]
+
+        ParticipantsForChild id ->
+            [ ( "person", fromEntityUuid id ) ]
+
+        ParticipantsForAdult id ->
+            [ ( "adult", fromEntityUuid id ) ]
 
 
 pmtctParticipantEndpoint : ReadWriteEndPoint Error PmtctParticipantId PmtctParticipant PmtctParticipant PmtctParticipantParams

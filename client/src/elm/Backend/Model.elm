@@ -88,8 +88,13 @@ type alias ModelIndexedDb =
     -- From the point of view of the specified person, all of their relationships.
     , relationshipsByPerson : EveryDict PersonId (WebData (EveryDictList RelationshipId MyRelationship))
 
+    -- Track what PMTCT groups a participant is in. (Inside a session, we can use
+    -- `expectedParticipants`, but for registration etc. this is useful.
+    , participantsByPerson : EveryDict PersonId (WebData (EveryDict PmtctParticipantId PmtctParticipant))
+
     -- Track requests to mutate data
     , postPerson : WebData PersonId
+    , postPmtctParticipant : EveryDict PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
     , postRelationship : EveryDict PersonId (WebData MyRelationship)
     }
 
@@ -105,9 +110,11 @@ emptyModelIndexedDb =
     , healthCenters = NotAsked
     , motherMeasurements = EveryDict.empty
     , participantForms = NotAsked
+    , participantsByPerson = EveryDict.empty
     , people = EveryDict.empty
     , personSearches = Dict.empty
     , postPerson = NotAsked
+    , postPmtctParticipant = EveryDict.empty
     , postRelationship = EveryDict.empty
     , relationshipsByPerson = EveryDict.empty
     , saveSyncDataRequests = EveryDict.empty
@@ -128,6 +135,7 @@ type MsgIndexedDb
     | FetchHealthCenters
     | FetchMotherMeasurements PersonId
     | FetchParticipantForms
+    | FetchParticipantsForPerson PersonId
     | FetchPeopleByName String
     | FetchPerson PersonId
     | FetchRelationshipsForPerson PersonId
@@ -143,6 +151,7 @@ type MsgIndexedDb
     | HandleFetchedExpectedSessions PersonId (WebData (EveryDictList SessionId Session))
     | HandleFetchedHealthCenters (WebData (EveryDictList HealthCenterId HealthCenter))
     | HandleFetchedParticipantForms (WebData (EveryDictList ParticipantFormId ParticipantForm))
+    | HandleFetchedParticipantsForPerson PersonId (WebData (EveryDict PmtctParticipantId PmtctParticipant))
     | HandleFetchedPeopleByName String (WebData (EveryDictList PersonId Person))
     | HandleFetchedPerson PersonId (WebData Person)
     | HandleFetchedRelationshipsForPerson PersonId (WebData (EveryDictList RelationshipId MyRelationship))
@@ -152,9 +161,11 @@ type MsgIndexedDb
       -- Messages which mutate data
     | PostPerson (Maybe PersonId) Person -- The first person is a person we ought to offer setting a relationship to.
     | PostRelationship PersonId MyRelationship
+    | PostPmtctParticipant PmtctParticipant
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) (WebData PersonId)
     | HandlePostedRelationship PersonId (WebData MyRelationship)
+    | HandlePostedPmtctParticipant PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
       -- Process some revisions we've received from the backend. In some cases,
       -- we can update our in-memory structures appropriately. In other cases, we
       -- can set them to `NotAsked` and let the "fetch" mechanism re-fetch them.
