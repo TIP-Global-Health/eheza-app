@@ -1,4 +1,4 @@
-module Backend.Session.Model exposing (EditableSession, Model, Msg(..), OfflineSession, Session, emptyModel)
+module Backend.Session.Model exposing (EditableSession, ExpectedParticipants, Model, Msg(..), OfflineSession, Session, emptyModel)
 
 {-| A "session" refers to a group session with mothers and babies ... that is,
 an occasion on which measurements are taken in a group setting.
@@ -41,6 +41,21 @@ type alias Session =
     }
 
 
+{-| We index in several ways.
+
+Ideally this would be an opaque type in a separate module, so we can enforce
+invariants (e.g. that when we add something to one list, we modify the others
+appropriately). However, we only create this in one place, so it would be
+overkill for now.
+
+-}
+type alias ExpectedParticipants =
+    { byId : EveryDict PmtctParticipantId PmtctParticipant
+    , byChildId : EveryDict PersonId (List PmtctParticipant)
+    , byMotherId : EveryDict PersonId (List PmtctParticipant)
+    }
+
+
 {-| Originally, this represented the additional information we obtained when
 downloading a session for "offline" use. Now, we populate this on the fly
 from `Backend.Model`. Eventually, we could consider cutting out the middle-man,
@@ -57,7 +72,7 @@ type alias OfflineSession =
 
     -- This reflects everyone who is expected at the session, given the
     -- session's date and group.
-    , participants : EveryDictList PmtctParticipantId PmtctParticipant
+    , participants : ExpectedParticipants
 
     -- These reflect the `Person` record for each person included in
     -- `participants`.

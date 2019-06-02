@@ -83,9 +83,25 @@ updateIndexedDb currentDate nurseId msg model =
             )
 
         FetchExpectedParticipants sessionId ->
+            let
+                merge value accum =
+                    accum
+                        |> Maybe.withDefault []
+                        |> (::) value
+                        |> Just
+
+                indexBy accessor _ value accum =
+                    EveryDict.update (accessor value) (merge value) accum
+
+                processIndex byId =
+                    { byId = byId
+                    , byChildId = EveryDict.foldl (indexBy .child) EveryDict.empty byId
+                    , byMotherId = EveryDict.foldl (indexBy .adult) EveryDict.empty byId
+                    }
+            in
             ( { model | expectedParticipants = EveryDict.insert sessionId Loading model.expectedParticipants }
             , sw.select pmtctParticipantEndpoint { session = sessionId }
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedExpectedParticipants sessionId)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDict.fromList >> processIndex) >> HandleFetchedExpectedParticipants sessionId)
             , []
             )
 

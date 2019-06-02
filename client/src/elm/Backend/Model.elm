@@ -27,7 +27,7 @@ import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
-import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
+import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
 import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
@@ -70,7 +70,7 @@ type alias ModelIndexedDb =
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
-    , expectedParticipants : EveryDict SessionId (WebData (EveryDictList PmtctParticipantId PmtctParticipant))
+    , expectedParticipants : EveryDict SessionId (WebData ExpectedParticipants)
 
     -- Measurement data for children and mothers. From this, we can construct
     -- the things we need for an `EditableSession` or for use on the progress
@@ -139,7 +139,7 @@ type MsgIndexedDb
     | HandleFetchedEveryCounselingSchedule (WebData EveryCounselingSchedule)
     | HandleFetchedMotherMeasurements PersonId (WebData MotherMeasurementList)
     | HandleFetchedClinics (WebData (EveryDictList ClinicId Clinic))
-    | HandleFetchedExpectedParticipants SessionId (WebData (EveryDictList PmtctParticipantId PmtctParticipant))
+    | HandleFetchedExpectedParticipants SessionId (WebData ExpectedParticipants)
     | HandleFetchedExpectedSessions PersonId (WebData (EveryDictList SessionId Session))
     | HandleFetchedHealthCenters (WebData (EveryDictList HealthCenterId HealthCenter))
     | HandleFetchedParticipantForms (WebData (EveryDictList ParticipantFormId ParticipantForm))
