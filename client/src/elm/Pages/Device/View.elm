@@ -60,7 +60,7 @@ viewDeviceStatus : Language -> WebData Device -> App.Model.Model -> Model -> Htm
 viewDeviceStatus language device app model =
     case device of
         Success device ->
-            div []
+            div [ class "device-status" ]
                 [ button
                     [ class "ui fluid primary button"
                     , onClick TrySyncing
@@ -79,15 +79,15 @@ viewStorageStatus : Language -> App.Model.Model -> Html Msg
 viewStorageStatus language app =
     let
         viewPersistent persistent =
-            div []
+            li [ class "persistence" ]
                 [ text <| translate language <| Translate.PersistentStorage persistent ]
 
         viewMemoryQuota quota =
-            div []
+            li [ class "memory" ]
                 [ text <| translate language <| Translate.MemoryQuota quota ]
 
         viewStorageQuota quota =
-            div []
+            li [ class "storage" ]
                 [ text <| translate language <| Translate.StorageQuota quota ]
     in
     [ Maybe.map viewStorageQuota app.storageQuota
@@ -95,7 +95,7 @@ viewStorageStatus language app =
     , Maybe.map viewMemoryQuota app.memoryQuota
     ]
         |> List.filterMap identity
-        |> div []
+        |> ul [ class "storage-dashboard" ]
 
 
 viewNodes : Language -> ModelIndexedDb -> Html Msg
@@ -106,8 +106,8 @@ viewNodes language db =
                 |> EveryDictList.get nodesUuid
                 |> Maybe.map
                     (\data ->
-                        div []
-                            [ h3 [] [ text <| translate language Translate.SyncGeneral ]
+                        div [ class "general-sync" ]
+                            [ h2 [] [ text <| translate language Translate.SyncGeneral ]
                             , viewSyncData language data
                             ]
                     )
@@ -125,7 +125,7 @@ viewNodes language db =
 
 viewSyncData : Language -> SyncData -> Html Msg
 viewSyncData language data =
-    div [] [ text <| toString data ]
+    div [ class "general-status" ] [ text <| toString data ]
 
 
 viewHealthCenters : Language -> ModelIndexedDb -> Html Msg
@@ -134,9 +134,10 @@ viewHealthCenters language db =
         |> RemoteData.map
             (\data ->
                 data
+                    |> EveryDictList.sortBy .name
                     |> EveryDictList.map (viewHealthCenter language db)
                     |> EveryDictList.values
-                    |> div []
+                    |> div [ class "health-centers" ]
             )
         |> RemoteData.withDefault spinner
 
@@ -150,7 +151,7 @@ viewHealthCenter language db uuid model =
                     (\syncData ->
                         case EveryDictList.get uuid syncData of
                             Just data ->
-                                div []
+                                div [ class "health-center-info" ]
                                     [ text <| toString data
                                     , button
                                         [ class "ui button"
@@ -169,8 +170,8 @@ viewHealthCenter language db uuid model =
                 |> RemoteData.toMaybe
                 |> showMaybe
     in
-    div []
-        [ h3 [] [ text <| model.name ]
+    div [ class "health-center" ]
+        [ h2 [] [ text <| model.name ]
         , sync
         ]
 

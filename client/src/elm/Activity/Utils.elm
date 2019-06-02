@@ -397,11 +397,9 @@ whether we would expect to perform this action if checked in.
 -}
 expectMotherActivity : EditableSession -> PersonId -> MotherActivity -> Bool
 expectMotherActivity session motherId activity =
-    session.offlineSession.participants
-        |> EveryDictList.values
-        |> List.filter (\value -> value.adult == motherId)
-        |> List.head
-        |> Maybe.map
+    EveryDict.get motherId session.offlineSession.participants.byMotherId
+        |> Maybe.withDefault []
+        |> List.any
             (\participant ->
                 case activity of
                     FamilyPlanning ->
@@ -417,7 +415,6 @@ expectMotherActivity session motherId activity =
                     |> not
              -}
             )
-        |> Maybe.withDefault False
 
 
 {-| Which participant forms would we expect this mother to consent to in this session?
@@ -753,10 +750,7 @@ getCheckedIn session =
         -- activites.
         mothers =
             EveryDictList.filter
-                (\motherId _ ->
-                    motherIsCheckedIn motherId session
-                        || motherOrAnyChildHasAnyCompletedActivity motherId session
-                )
+                (\motherId _ -> motherIsCheckedIn motherId session)
                 session.offlineSession.mothers
 
         -- A child is checked in if the mother is checked in.

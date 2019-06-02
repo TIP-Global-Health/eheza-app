@@ -67,6 +67,12 @@ type alias Model =
     -- permitting us to keep recently wanted data around for a little while
     -- after it is not wanted. (Often, it may be wanted again soon).
     , dataWanted : EveryDict Msg Time
+
+    -- Should we check what data is needed? We set this at the end of every
+    -- update, and clear it when we do the checking. Our subscriptions turn on
+    -- animation frame events when this is on. So, as long as we keep getting
+    -- updates, we'll keep checking at animation frame intervals.
+    , scheduleDataWantedCheck : Bool
     }
 
 
@@ -169,6 +175,7 @@ type Msg
     | SetStorageQuota StorageQuota
     | SetMemoryQuota MemoryQuota
     | Tick Time
+    | CheckDataWanted
 
 
 {-| Messages we can only handle if we're logged in.
@@ -197,6 +204,7 @@ emptyModel flags =
     , language = English
     , memoryQuota = Nothing
     , persistentStorage = Nothing
+    , scheduleDataWantedCheck = True
     , serviceWorker = ServiceWorker.Model.emptyModel flags.activeServiceWorker
     , storageQuota = Nothing
     , zscores = ZScore.Model.emptyModel

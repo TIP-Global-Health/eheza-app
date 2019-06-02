@@ -1,9 +1,8 @@
-module App.Fetch exposing (andThenFetch)
+module App.Fetch exposing (fetch, forget, shouldFetch)
 
 import App.Model exposing (..)
 import Backend.Fetch
 import Date
-import EveryDict
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Pages.Clinics.Fetch
 import Pages.Device.Fetch
@@ -12,7 +11,6 @@ import Pages.People.Fetch
 import Pages.Person.Fetch
 import Pages.Relationship.Fetch
 import Pages.Session.Fetch
-import Update.Extra exposing (sequence)
 
 
 {-| Basically, we're following down the `view` hierarchy to determine, given
@@ -100,54 +98,3 @@ forget msg model =
 
         _ ->
             model
-
-
-andThenFetch : (Msg -> Model -> ( Model, Cmd Msg )) -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
-andThenFetch update ( model, cmd ) =
-    -- Note that we call ourselves recursively. So, it's vitally important that
-    -- the `fetch` implementations use a `WebData`-like strategy to indicate
-    -- that a request is in progress, and doesn't need to be triggered again.
-    -- Otherwise, we'll immediately be in an infinite loop.
-    --
-    -- We initially sequence through the app's `update`, and only recurse once
-    -- all the messages have been processed.
-    let
-        -- These are messages to fetch the data we want now, without
-        -- considering whether we already have it.
-        dataNowWanted =
-            fetch model
-
-        -- These are the messages we should actually issue to fetch data now.
-        -- As an improvement, we could compare with `model.dataWanted` to see
-        -- whether the msg is **newly** desired ... that is, whether its status
-        -- just flipped. We could treat newly desired data differently. For
-        -- instance, we might try to re-fetch it even in a `Failure` state.
-        -- (Since that wouldn't infinitely repeat).
-        dataToFetch =
-            List.filter (shouldFetch model) dataNowWanted
-
-        -- Update our existing dataWanted to indicate that the data now wanted
-        -- was last wanted now.
-        dataWanted =
-            List.foldl (\msg -> EveryDict.insert msg model.currentTime) model.dataWanted dataNowWanted
-
-        fiveMinutes =
-            5 * 1000 * 60
-
-        -- Figure out what to remember and what to forget.
-        ( dataToForget, dataToRemember ) =
-            EveryDict.partition (\_ lastWanted -> model.currentTime - lastWanted > fiveMinutes) dataWanted
-
-        -- Our new base model, remembering the desired data, and forgetting
-        -- the data to forget.
-        newModel =
-            dataToForget
-                |> EveryDict.keys
-                |> List.foldl forget { model | dataWanted = dataToRemember }
-    in
-    if List.isEmpty dataToFetch then
-        ( newModel, cmd )
-
-    else
-        sequence update dataToFetch ( newModel, cmd )
-            |> andThenFetch update
