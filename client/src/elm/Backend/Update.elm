@@ -5,7 +5,9 @@ import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (..)
+import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
+import Backend.Relationship.Model exposing (RelatedBy(..))
 import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.Session.Update
@@ -14,7 +16,9 @@ import Dict
 import EveryDict
 import EveryDictList
 import Gizra.NominalDate exposing (NominalDate)
+import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
+import Maybe.Extra
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model
 import Pages.Relationship.Model
@@ -46,7 +50,7 @@ updateIndexedDb currentDate nurseId msg model =
         FetchClinics ->
             ( { model | clinics = Loading }
             , sw.select clinicEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedClinics)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList >> EveryDictList.sortBy .name) >> HandleFetchedClinics)
             , []
             )
 
@@ -350,8 +354,33 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
-        PostRelationship personId myRelationship ->
+        PostRelationship personId myRelationship addGroup ->
             let
+                -- If we'd also like to add these people to a group, construct
+                -- a Msg to do that.
+                extraMsgs =
+                    addGroup
+                        |> Maybe.map
+                            (\clinicId ->
+                                PostPmtctParticipant
+                                    { adult = normalized.person
+                                    , child = normalized.relatedTo
+                                    , adultActivities = defaultAdultActivities
+                                    , start = currentDate
+                                    , end = Nothing
+                                    , clinic = clinicId
+                                    }
+                            )
+                        |> Maybe.Extra.toList
+
+                defaultAdultActivities =
+                    case normalized.relatedBy of
+                        ParentOf ->
+                            MotherActivities
+
+                        CaregiverFor ->
+                            CaregiverActivities
+
                 normalized =
                     toRelationship personId myRelationship
 
@@ -377,7 +406,7 @@ updateIndexedDb currentDate nurseId msg model =
                     Task.map2 EveryDictList.union query1 query2
                         |> Task.map EveryDictList.head
 
-                cmd =
+                relationshipCmd =
                     existingRelationship
                         |> Task.andThen
                             (\existing ->
@@ -406,9 +435,10 @@ updateIndexedDb currentDate nurseId msg model =
                         |> Task.perform (HandlePostedRelationship personId)
             in
             ( { model | postRelationship = EveryDict.insert personId Loading model.postRelationship }
-            , cmd
+            , relationshipCmd
             , []
             )
+                |> sequenceExtra (updateIndexedDb currentDate nurseId) extraMsgs
 
         HandlePostedRelationship personId data ->
             let

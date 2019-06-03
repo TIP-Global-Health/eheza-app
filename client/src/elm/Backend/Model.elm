@@ -160,7 +160,7 @@ type MsgIndexedDb
     | HandleFetchedSyncData (WebData (EveryDictList HealthCenterId SyncData))
       -- Messages which mutate data
     | PostPerson (Maybe PersonId) Person -- The first person is a person we ought to offer setting a relationship to.
-    | PostRelationship PersonId MyRelationship
+    | PostRelationship PersonId MyRelationship (Maybe ClinicId)
     | PostPmtctParticipant PmtctParticipant
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) (WebData PersonId)
