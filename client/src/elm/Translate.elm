@@ -137,6 +137,7 @@ type TranslationId
     | AddFamilyMember
     | AddFamilyMemberFor String
     | AddParentOrCaregiver
+    | AddToGroup
     | Admin
     | AddressInformation
     | Adherence Adherence
@@ -415,6 +416,11 @@ translationSet trans =
 
         AddParentOrCaregiver ->
             { english = "Add Parent or Caregiver"
+            , kinyarwanda = Nothing
+            }
+
+        AddToGroup ->
+            { english = "Add to Group..."
             , kinyarwanda = Nothing
             }
 

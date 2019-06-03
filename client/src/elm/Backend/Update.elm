@@ -5,7 +5,9 @@ import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (..)
+import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
+import Backend.Relationship.Model exposing (RelatedBy(..))
 import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.Session.Update
@@ -14,7 +16,9 @@ import Dict
 import EveryDict
 import EveryDictList
 import Gizra.NominalDate exposing (NominalDate)
+import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
+import Maybe.Extra
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model
 import Pages.Relationship.Model
@@ -46,7 +50,7 @@ updateIndexedDb currentDate nurseId msg model =
         FetchClinics ->
             ( { model | clinics = Loading }
             , sw.select clinicEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedClinics)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList >> EveryDictList.sortBy .name) >> HandleFetchedClinics)
             , []
             )
 
@@ -100,7 +104,7 @@ updateIndexedDb currentDate nurseId msg model =
                     }
             in
             ( { model | expectedParticipants = EveryDict.insert sessionId Loading model.expectedParticipants }
-            , sw.select pmtctParticipantEndpoint { session = sessionId }
+            , sw.select pmtctParticipantEndpoint (ParticipantsForSession sessionId)
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDict.fromList >> processIndex) >> HandleFetchedExpectedParticipants sessionId)
             , []
             )
@@ -126,6 +130,32 @@ updateIndexedDb currentDate nurseId msg model =
 
         HandleFetchedPeopleByName name data ->
             ( { model | personSearches = Dict.insert (String.trim name) data model.personSearches }
+            , Cmd.none
+            , []
+            )
+
+        FetchParticipantsForPerson personId ->
+            let
+                query1 =
+                    sw.select pmtctParticipantEndpoint (ParticipantsForChild personId)
+                        |> toTask
+                        |> Task.map (.items >> EveryDict.fromList)
+                        |> RemoteData.fromTask
+
+                query2 =
+                    sw.select pmtctParticipantEndpoint (ParticipantsForAdult personId)
+                        |> toTask
+                        |> Task.map (.items >> EveryDict.fromList)
+                        |> RemoteData.fromTask
+            in
+            ( { model | participantsByPerson = EveryDict.insert personId Loading model.participantsByPerson }
+            , Task.map2 (RemoteData.map2 EveryDict.union) query1 query2
+                |> Task.perform (HandleFetchedParticipantsForPerson personId)
+            , []
+            )
+
+        HandleFetchedParticipantsForPerson personId data ->
+            ( { model | participantsByPerson = EveryDict.insert personId data model.participantsByPerson }
             , Cmd.none
             , []
             )
@@ -311,8 +341,46 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
-        PostRelationship personId myRelationship ->
+        PostPmtctParticipant data ->
+            ( { model | postPmtctParticipant = EveryDict.insert data.child Loading model.postPmtctParticipant }
+            , sw.post pmtctParticipantEndpoint data
+                |> toCmd (RemoteData.fromResult >> HandlePostedPmtctParticipant data.child)
+            , []
+            )
+
+        HandlePostedPmtctParticipant id data ->
+            ( { model | postPmtctParticipant = EveryDict.insert id data model.postPmtctParticipant }
+            , Cmd.none
+            , []
+            )
+
+        PostRelationship personId myRelationship addGroup ->
             let
+                -- If we'd also like to add these people to a group, construct
+                -- a Msg to do that.
+                extraMsgs =
+                    addGroup
+                        |> Maybe.map
+                            (\clinicId ->
+                                PostPmtctParticipant
+                                    { adult = normalized.person
+                                    , child = normalized.relatedTo
+                                    , adultActivities = defaultAdultActivities
+                                    , start = currentDate
+                                    , end = Nothing
+                                    , clinic = clinicId
+                                    }
+                            )
+                        |> Maybe.Extra.toList
+
+                defaultAdultActivities =
+                    case normalized.relatedBy of
+                        ParentOf ->
+                            MotherActivities
+
+                        CaregiverFor ->
+                            CaregiverActivities
+
                 normalized =
                     toRelationship personId myRelationship
 
@@ -338,7 +406,7 @@ updateIndexedDb currentDate nurseId msg model =
                     Task.map2 EveryDictList.union query1 query2
                         |> Task.map EveryDictList.head
 
-                cmd =
+                relationshipCmd =
                     existingRelationship
                         |> Task.andThen
                             (\existing ->
@@ -367,9 +435,10 @@ updateIndexedDb currentDate nurseId msg model =
                         |> Task.perform (HandlePostedRelationship personId)
             in
             ( { model | postRelationship = EveryDict.insert personId Loading model.postRelationship }
-            , cmd
+            , relationshipCmd
             , []
             )
+                |> sequenceExtra (updateIndexedDb currentDate nurseId) extraMsgs
 
         HandlePostedRelationship personId data ->
             let
@@ -529,6 +598,10 @@ handleRevision revision model =
                         |> EveryDict.remove data.adult
                 , expectedParticipants =
                     EveryDict.empty
+                , participantsByPerson =
+                    model.participantsByPerson
+                        |> EveryDict.remove data.child
+                        |> EveryDict.remove data.adult
             }
 
         RelationshipRevision uuid data ->

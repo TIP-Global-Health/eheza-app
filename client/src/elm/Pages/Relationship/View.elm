@@ -1,11 +1,13 @@
 module Pages.Relationship.View exposing (view)
 
+import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
+import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, Relationship)
-import EveryDict
+import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -16,6 +18,7 @@ import Maybe.Extra
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Relationship.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
+import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderDate)
@@ -72,8 +75,19 @@ viewContent language currentDate id1 id2 db model =
             EveryDict.get id1 db.postRelationship
                 |> Maybe.withDefault NotAsked
 
+        participants =
+            EveryDict.get id1 db.participantsByPerson
+                |> Maybe.withDefault NotAsked
+
+        clinics =
+            db.clinics
+
         fetched =
-            RemoteData.map3 FetchedData person1 person2 relationships
+            RemoteData.map FetchedData person1
+                |> RemoteData.andMap person2
+                |> RemoteData.andMap relationships
+                |> RemoteData.andMap participants
+                |> RemoteData.andMap clinics
     in
     viewWebData language (viewFetchedContent language currentDate id1 id2 model request) identity fetched
 
@@ -82,12 +96,71 @@ type alias FetchedData =
     { person1 : Person
     , person2 : Person
     , relationships : EveryDictList RelationshipId MyRelationship
+    , participants : EveryDict PmtctParticipantId PmtctParticipant
+    , clinics : EveryDictList ClinicId Clinic
     }
 
 
 viewFetchedContent : Language -> NominalDate -> PersonId -> PersonId -> Model -> WebData MyRelationship -> FetchedData -> Html Msg
 viewFetchedContent language currentDate id1 id2 model request data =
     let
+        participants =
+            data.participants
+                |> EveryDict.filter
+                    (\_ participant ->
+                        (participant.child == id1 && participant.adult == id2)
+                            || (participant.adult == id1 && participant.child == id2)
+                    )
+
+        viewCurrentGroups =
+            participants
+                |> EveryDict.values
+                |> List.map
+                    (\participant ->
+                        EveryDictList.get participant.clinic data.clinics
+                            |> Maybe.map
+                                (\clinic ->
+                                    p [] [ text <| clinic.name ]
+                                )
+                            |> Maybe.withDefault (div [] [])
+                    )
+                |> div []
+
+        viewGroupSelector =
+            if EveryDict.isEmpty participants then
+                let
+                    emptyOption =
+                        option
+                            [ value ""
+                            , selected (model.assignToGroup == Nothing)
+                            ]
+                            [ text "" ]
+
+                    selector =
+                        data.clinics
+                            |> EveryDictList.map
+                                (\clinicId clinic ->
+                                    option
+                                        [ value (fromEntityUuid clinicId)
+                                        , selected (model.assignToGroup == Just clinicId)
+                                        ]
+                                        [ text clinic.name ]
+                                )
+                            |> EveryDictList.values
+                            |> (::) emptyOption
+                            |> select [ onInput AssignToClinicId ]
+                in
+                div [ class "ui form" ]
+                    [ div
+                        [ class "inline field" ]
+                        [ label [] [ text <| translate language Translate.AddToGroup ]
+                        , selector
+                        ]
+                    ]
+
+            else
+                emptyNode
+
         savedRelationship =
             data.relationships
                 |> EveryDictList.filter (\_ relationship -> relationship.relatedTo == id2)
@@ -95,7 +168,7 @@ viewFetchedContent language currentDate id1 id2 model request data =
                 |> Maybe.map (Tuple.second >> .relatedBy)
 
         viewedRelationship =
-            model
+            model.relatedBy
                 |> Maybe.Extra.orElse savedRelationship
 
         possibleRelationships =
@@ -218,6 +291,14 @@ viewFetchedContent language currentDate id1 id2 model request data =
         , div
             [ class "ui unstackable items participants-list" ]
             [ viewParticipant language currentDate id2 data.person2 ]
+        , div
+            [ class "ui unstackable items participants-list" ]
+            [ div
+                [ class "ui header" ]
+                [ text <| translate language Translate.Groups ++ ": " ]
+            , viewCurrentGroups
+            , viewGroupSelector
+            ]
         , requestStatus
         , buttons
         ]

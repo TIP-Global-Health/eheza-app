@@ -1,17 +1,19 @@
 module Pages.Person.View exposing (view, viewCreateForm)
 
 import App.Model
+import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Encoder exposing (encodeEducationLevel, encodeMaritalStatus, encodeUbudehe)
 import Backend.Person.Form exposing (ExpectedAge(..), PersonForm, expectedAgeFromForm, validatePerson)
 import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allMaritalStatuses, allUbudehes)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
+import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Date.Extra as Date exposing (Interval(Year))
 import DateSelector.SelectorDropdown
 import EveryDict
-import EveryDictList
+import EveryDictList exposing (EveryDictList)
 import Form exposing (Form)
 import Form.Field
 import Form.Input
@@ -88,6 +90,26 @@ viewRelationship language currentDate db relationship =
         [ viewWebData language (viewParticipant language currentDate (Just relationship) relationship.relatedTo) identity relatedTo ]
 
 
+viewPmtctParticipant : Language -> EveryDictList ClinicId Clinic -> PmtctParticipant -> Html App.Model.Msg
+viewPmtctParticipant language clinics participant =
+    let
+        content =
+            EveryDictList.get participant.clinic clinics
+                |> Maybe.map
+                    (\clinic ->
+                        p [] [ text <| clinic.name ]
+                    )
+                |> Maybe.withDefault (div [] [])
+    in
+    div
+        [ class "item participant-view" ]
+        [ div
+            [ class "ui image" ]
+            [ div [] [] ]
+        , content
+        ]
+
+
 viewParticipantDetailsForm : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
 viewParticipantDetailsForm language currentDate db id person =
     let
@@ -101,6 +123,18 @@ viewParticipantDetailsForm language currentDate db id person =
             EveryDict.get id db.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
                 |> viewWebData language viewFamilyMembers identity
+
+        viewGroups ( clinics, groups ) =
+            groups
+                |> EveryDict.map (always (viewPmtctParticipant language clinics))
+                |> EveryDict.values
+                |> div [ class "ui unstackable items participants-list" ]
+
+        groups =
+            EveryDict.get id db.participantsByPerson
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.append db.clinics
+                |> viewWebData language viewGroups identity
 
         isAdult =
             isPersonAnAdult currentDate person
@@ -164,6 +198,10 @@ viewParticipantDetailsForm language currentDate db id person =
         , familyMembers
         , p [] []
         , addFamilyMember
+        , h3
+            [ class "ui header" ]
+            [ text <| translate language Translate.Groups ++ ": " ]
+        , groups
         ]
 
 

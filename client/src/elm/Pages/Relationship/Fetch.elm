@@ -9,6 +9,8 @@ fetch id1 id2 db =
     -- FetchRelationshipsForPerson gets both sides, so we don't
     -- need to do it twice.
     [ FetchRelationshipsForPerson id1
+    , FetchParticipantsForPerson id1
     , FetchPerson id1
     , FetchPerson id2
+    , FetchClinics
     ]
