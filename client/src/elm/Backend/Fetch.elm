@@ -60,6 +60,11 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchParticipantsForPerson id ->
+            EveryDict.get id model.participantsByPerson
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchRelationshipsForPerson id ->
             EveryDict.get id model.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
@@ -117,6 +122,9 @@ forget msg model =
 
         FetchPerson id ->
             { model | people = EveryDict.remove id model.people }
+
+        FetchParticipantsForPerson id ->
+            { model | participantsByPerson = EveryDict.remove id model.participantsByPerson }
 
         FetchRelationshipsForPerson id ->
             { model | relationshipsByPerson = EveryDict.remove id model.relationshipsByPerson }

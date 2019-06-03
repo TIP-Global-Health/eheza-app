@@ -19,6 +19,8 @@ fetch id db =
     familyMembers
         ++ [ FetchPerson id
            , FetchRelationshipsForPerson id
+           , FetchParticipantsForPerson id
+           , FetchClinics
            ]
 
 

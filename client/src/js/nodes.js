@@ -427,6 +427,7 @@
 
     // Fields which we index along with type, so we can search for them.
     var searchFields = [
+        'adult',
         'pin_code',
         'clinic',
         'person',
