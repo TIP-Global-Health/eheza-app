@@ -1,11 +1,13 @@
 module Pages.Relationship.View exposing (view)
 
+import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
+import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, Relationship)
-import EveryDict
+import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -72,8 +74,19 @@ viewContent language currentDate id1 id2 db model =
             EveryDict.get id1 db.postRelationship
                 |> Maybe.withDefault NotAsked
 
+        participants =
+            EveryDict.get id1 db.participantsByPerson
+                |> Maybe.withDefault NotAsked
+
+        clinics =
+            db.clinics
+
         fetched =
-            RemoteData.map3 FetchedData person1 person2 relationships
+            RemoteData.map FetchedData person1
+                |> RemoteData.andMap person2
+                |> RemoteData.andMap relationships
+                |> RemoteData.andMap participants
+                |> RemoteData.andMap clinics
     in
     viewWebData language (viewFetchedContent language currentDate id1 id2 model request) identity fetched
 
@@ -82,6 +95,8 @@ type alias FetchedData =
     { person1 : Person
     , person2 : Person
     , relationships : EveryDictList RelationshipId MyRelationship
+    , participants : EveryDict PmtctParticipantId PmtctParticipant
+    , clinics : EveryDictList ClinicId Clinic
     }
 
 
