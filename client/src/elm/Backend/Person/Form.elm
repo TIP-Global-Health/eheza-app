@@ -165,11 +165,15 @@ validateNationalIdNumber =
     string
         |> andThen
             (\s ->
-                if String.length s /= 18 then
+                let
+                    trimmed =
+                        String.trim s
+                in
+                if String.length trimmed /= 18 then
                     fail <| customError (LengthError 18)
 
                 else
-                    format allDigitsPattern s
+                    format allDigitsPattern trimmed
                         |> mapError (\_ -> customError DigitsOnly)
             )
         |> nullable
@@ -325,7 +329,8 @@ validateDigitsOnly =
     string
         |> andThen
             (\s ->
-                format allDigitsPattern s
+                String.trim s
+                    |> format allDigitsPattern
                     |> mapError (\_ -> customError DigitsOnly)
             )
 
@@ -335,7 +340,8 @@ validateLettersOnly =
     string
         |> andThen
             (\s ->
-                format allLettersPattern s
+                String.trim s
+                    |> format allLettersPattern
                     |> mapError (\_ -> customError LettersOnly)
             )
 
