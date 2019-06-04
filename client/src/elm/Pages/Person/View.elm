@@ -329,6 +329,30 @@ applyDefaultValues maybeRelatedPerson currentDate form =
 
                 Nothing ->
                     form
+
+        applyDefaultUbudehe form =
+            maybeRelatedPerson
+                |> Maybe.andThen .ubudehe
+                |> unwrap
+                    form
+                    (\ubudehe ->
+                        Form.update
+                            (validatePerson maybeRelatedPerson (Just currentDate))
+                            (Form.Input Backend.Person.Form.ubudehe Form.Select (Form.Field.String (toString <| encodeUbudehe ubudehe)))
+                            form
+                    )
+
+        applyDefaultHealthCenter form =
+            maybeRelatedPerson
+                |> Maybe.andThen .healthCenterId
+                |> unwrap
+                    form
+                    (\healthCenterId ->
+                        Form.update
+                            (validatePerson maybeRelatedPerson (Just currentDate))
+                            (Form.Input Backend.Person.Form.healthCenter Form.Select (Form.Field.String (fromEntityUuid healthCenterId)))
+                            form
+                    )
     in
     form
         |> applyDefaultLocation Backend.Person.Form.province defaultProvinceId
@@ -336,6 +360,8 @@ applyDefaultValues maybeRelatedPerson currentDate form =
         |> applyDefaultLocation Backend.Person.Form.sector defaultSectorId
         |> applyDefaultLocation Backend.Person.Form.cell defaultCellId
         |> applyDefaultLocation Backend.Person.Form.village defaultVillageId
+        |> applyDefaultUbudehe
+        |> applyDefaultHealthCenter
 
 
 viewCreateForm : Language -> NominalDate -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
