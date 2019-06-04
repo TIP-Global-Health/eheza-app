@@ -773,6 +773,7 @@ viewCreateForm language currentDate relationId model db =
                                                     , healthCenter.name
                                                     )
                                                 )
+                                            |> List.sortBy (\( id, name ) -> name)
                                     )
                                 |> RemoteData.withDefault []
                            )
