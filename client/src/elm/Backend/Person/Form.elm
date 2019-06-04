@@ -146,7 +146,7 @@ validatePerson maybeRelated maybeCurrentDate =
                 |> andMap (succeed birthDate)
                 |> andMap (field birthDateEstimated bool)
                 |> andMap (field gender validateGender)
-                |> andMap (field ubudehe validateUbudehe)
+                |> andMap (field ubudehe (validateUbudehe maybeRelated))
                 |> andMap (field educationLevel <| validateEducationLevel expectedAge)
                 |> andMap (field maritalStatus <| validateMaritalStatus expectedAge)
                 |> andMap (field province (validateProvince maybeRelated))
@@ -155,7 +155,7 @@ validatePerson maybeRelated maybeCurrentDate =
                 |> andMap (field cell (validateCell maybeRelated))
                 |> andMap (field village (validateVillage maybeRelated))
                 |> andMap (field phoneNumber <| nullable validateDigitsOnly)
-                |> andMap (field healthCenter validateHealthCenterId)
+                |> andMap (field healthCenter (validateHealthCenterId maybeRelated))
     in
     andThen withFirstName (field firstName validateLettersOnly)
 
@@ -179,7 +179,7 @@ validateNationalIdNumber =
         |> nullable
 
 
-withDefault : Maybe String -> Validation ValidationError (Maybe String) -> Validation ValidationError (Maybe String)
+withDefault : Maybe a -> Validation ValidationError (Maybe a) -> Validation ValidationError (Maybe a)
 withDefault related =
     case related of
         Just _ ->
@@ -259,9 +259,10 @@ validateGender =
     fromDecoder DecoderError (Just RequiredField) decodeGender
 
 
-validateUbudehe : Validation ValidationError (Maybe Ubudehe)
-validateUbudehe =
+validateUbudehe : Maybe Person -> Validation ValidationError (Maybe Ubudehe)
+validateUbudehe related =
     fromDecoder DecoderError (Just RequiredField) (Json.Decode.nullable decodeUbudehe)
+        |> withDefault (Maybe.andThen .ubudehe related)
 
 
 validateBirthDate : ExpectedAge -> Maybe NominalDate -> Validation ValidationError (Maybe NominalDate)
@@ -346,9 +347,10 @@ validateLettersOnly =
             )
 
 
-validateHealthCenterId : Validation ValidationError (Maybe HealthCenterId)
-validateHealthCenterId =
+validateHealthCenterId : Maybe Person -> Validation ValidationError (Maybe HealthCenterId)
+validateHealthCenterId related =
     fromDecoder DecoderError (Just RequiredField) (Json.Decode.nullable decodeEntityUuid)
+        |> withDefault (Maybe.andThen .healthCenterId related)
 
 
 
