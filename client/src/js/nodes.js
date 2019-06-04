@@ -176,7 +176,7 @@
 
                         if (type === 'syncmetadata') {
                             // If our syncmetadata changes, kick off a sync
-                            self.registration.sync.register('sync').catch(() => {
+                            self.registration.sync.register('sync').catch(function () {
                                 self.registration.active.postMessage('sync');
                             });
 
@@ -215,7 +215,7 @@
 
                                 if (type === 'syncmetadata') {
                                     // If our syncmetadata changes, kick off a sync
-                                    self.registration.sync.register('sync').catch(() => {
+                                    self.registration.sync.register('sync').catch(function () {
                                         self.registration.active.postMessage('sync');
                                     });
 
@@ -249,7 +249,7 @@
                                     return addShard.then(function () {
                                         return changeTable.add(change).then(function (localId) {
                                             // Kick off a sync
-                                            self.registration.sync.register('sync').catch(() => {
+                                            self.registration.sync.register('sync').catch(function () {
                                                 self.registration.active.postMessage('sync');
                                             });
 
@@ -306,7 +306,7 @@
 
                                 if (type === 'syncmetadata') {
                                     // If our syncmetadata changes, kick off a sync
-                                    self.registration.sync.register('sync').catch(() => {
+                                    self.registration.sync.register('sync').catch(function () {
                                         self.registration.active.postMessage('sync');
                                     });
 
@@ -331,7 +331,7 @@
 
                                     return changeTable.add(change).then(function (localId) {
                                         // Kick off a sync
-                                        self.registration.sync.register('sync').catch(() => {
+                                        self.registration.sync.register('sync').catch(function () {
                                             self.registration.active.postMessage('sync');
                                         });
 
