@@ -1,6 +1,7 @@
 module App.Fetch exposing (fetch, forget, shouldFetch)
 
 import App.Model exposing (..)
+import App.Utils exposing (getLoggedInModel)
 import Backend.Fetch
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
@@ -50,9 +51,14 @@ fetch model =
             Pages.Person.Fetch.fetch id model.indexedDb
                 |> List.map MsgIndexedDb
 
-        UserPage (PersonsPage search relation) ->
-            Pages.People.Fetch.fetch search relation
-                |> List.map MsgIndexedDb
+        UserPage (PersonsPage relation) ->
+            getLoggedInModel model
+                |> Maybe.map
+                    (\data ->
+                        Pages.People.Fetch.fetch relation data.personsPage
+                            |> List.map MsgIndexedDb
+                    )
+                |> Maybe.withDefault []
 
         UserPage (RelationshipPage id1 id2) ->
             Pages.Relationship.Fetch.fetch id1 id2 model.indexedDb

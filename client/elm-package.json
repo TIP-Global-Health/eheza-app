@@ -10,6 +10,7 @@
     "exposed-modules": [],
     "dependencies": {
         "Gizra/elm-all-set": "1.0.0 <= v < 2.0.0",
+        "Gizra/elm-debouncer": "1.0.0 <= v < 2.0.0",
         "Gizra/elm-dictlist": "2.1.2 <= v < 3.0.0",
         "Gizra/elm-essentials": "1.6.0 <= v < 2.0.0",
         "Gizra/elm-restful": "2.0.0 <= v < 3.0.0",

@@ -194,8 +194,9 @@ viewUserPage page model configured =
                     Pages.Person.View.view model.language currentDate id model.indexedDb
                         |> flexPageWrapper model
 
-                PersonsPage search relation ->
-                    Pages.People.View.view model.language currentDate search relation model.indexedDb
+                PersonsPage relation ->
+                    Pages.People.View.view model.language currentDate relation loggedInModel.personsPage model.indexedDb
+                        |> Html.map (MsgLoggedIn << MsgPagePersons)
                         |> flexPageWrapper model
 
                 RelationshipPage id1 id2 ->

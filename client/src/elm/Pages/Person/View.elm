@@ -177,7 +177,7 @@ viewParticipantDetailsForm language currentDate db id person =
                             [ class "action" ]
                             [ div
                                 [ class "add-participant-icon-wrapper"
-                                , onClick <| App.Model.SetActivePage <| UserPage <| PersonsPage Nothing (Just id)
+                                , onClick <| App.Model.SetActivePage <| UserPage <| PersonsPage (Just id)
                                 ]
                                 [ span [ class "add-participant-icon" ] [] ]
                             ]

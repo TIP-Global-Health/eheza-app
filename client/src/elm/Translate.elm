@@ -2144,7 +2144,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                PersonsPage _ _ ->
+                PersonsPage _ ->
                     { english = "Participant Directory"
                     , kinyarwanda = Nothing
                     }

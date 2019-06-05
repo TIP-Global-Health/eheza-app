@@ -11,6 +11,7 @@ import Http
 import Json.Encode exposing (Value)
 import Pages.Device.Model
 import Pages.Page exposing (Page(..))
+import Pages.People.Model
 import Pages.Person.Model
 import Pages.PinCode.Model
 import Pages.Relationship.Model
@@ -130,6 +131,7 @@ it at the appropriate moment.
 type alias LoggedInModel =
     { createPersonPage : Pages.Person.Model.Model
     , relationshipPages : EveryDict ( PersonId, PersonId ) Pages.Relationship.Model.Model
+    , personsPage : Pages.People.Model.Model
 
     -- The nurse who has logged in.
     , nurse : ( NurseId, Nurse )
@@ -142,6 +144,7 @@ type alias LoggedInModel =
 emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel nurse =
     { createPersonPage = Pages.Person.Model.emptyModel
+    , personsPage = Pages.People.Model.emptyModel
     , relationshipPages = EveryDict.empty
     , nurse = nurse
     , sessionPages = EveryDict.empty
@@ -182,6 +185,7 @@ type Msg
 -}
 type MsgLoggedIn
     = MsgPageCreatePerson Pages.Person.Model.Msg
+    | MsgPagePersons Pages.People.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
 

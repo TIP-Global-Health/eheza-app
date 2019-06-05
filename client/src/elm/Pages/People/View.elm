@@ -1,6 +1,5 @@
 module Pages.People.View exposing (view)
 
-import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form exposing (ExpectedAge(..))
@@ -16,6 +15,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.People.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, translate)
@@ -33,8 +33,8 @@ import Utils.WebData exposing (viewWebData)
     family member for that person, either child, parent, etc.
 
 -}
-view : Language -> NominalDate -> Maybe String -> Maybe PersonId -> ModelIndexedDb -> Html Msg
-view language currentDate searchString relation db =
+view : Language -> NominalDate -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
+view language currentDate relation model db =
     let
         title =
             case relation of
@@ -55,7 +55,7 @@ view language currentDate searchString relation db =
             [ class "search-wrapper" ]
             [ div
                 [ class "ui full segment blue" ]
-                [ viewSearchForm language currentDate searchString relation db ]
+                [ viewSearchForm language currentDate relation model db ]
             ]
         ]
 
@@ -77,26 +77,9 @@ viewHeader title =
         ]
 
 
-viewSearchForm : Language -> NominalDate -> Maybe String -> Maybe PersonId -> ModelIndexedDb -> Html Msg
-viewSearchForm language currentDate searchString relation db =
+viewSearchForm : Language -> NominalDate -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
+viewSearchForm language currentDate relation model db =
     let
-        searchValue =
-            searchString
-                |> Maybe.map String.trim
-                |> Maybe.withDefault ""
-
-        -- Calculates the page which corresponds to what the user types.
-        getPage typing =
-            let
-                trimmed =
-                    String.trim typing
-            in
-            if String.isEmpty trimmed then
-                UserPage <| PersonsPage Nothing relation
-
-            else
-                UserPage <| PersonsPage (Just trimmed) relation
-
         searchForm =
             Html.form []
                 [ div
@@ -105,8 +88,8 @@ viewSearchForm language currentDate searchString relation db =
                         [ input
                             [ placeholder <| translate language Translate.PlaceholderEnterParticipantName
                             , type_ "text"
-                            , onInput <| SetActivePage << getPage
-                            , value searchValue
+                            , onInput SetInput
+                            , value model.input
                             , autofocus True
                             ]
                             []
@@ -133,6 +116,10 @@ viewSearchForm language currentDate searchString relation db =
                             Nothing ->
                                 ExpectAdultOrChild
                    )
+
+        searchValue =
+            model.search
+                |> Maybe.withDefault ""
 
         results =
             if String.isEmpty searchValue then

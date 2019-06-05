@@ -20,6 +20,7 @@ import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
 import Pages.Device.Model
 import Pages.Device.Update
+import Pages.People.Update
 import Pages.Person.Update
 import Pages.PinCode.Model
 import Pages.PinCode.Update
@@ -182,6 +183,16 @@ update msg model =
                             in
                             ( { data | createPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageCreatePerson) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPagePersons subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.People.Update.update subMsg data.personsPage
+                            in
+                            ( { data | personsPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPagePersons) subCmd
                             , appMsgs
                             )
 
