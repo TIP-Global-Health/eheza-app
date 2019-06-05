@@ -299,6 +299,7 @@ type TranslationId
     | PlaceholderEnterParticipantName
     | PlaceholderEnterWeight
     | PleaseSelectGroup
+    | PrenatalEncounter
     | PreviousFloatMeasurement Float
     | Profession
     | ProgressReport
@@ -1631,6 +1632,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PrenatalEncounter ->
+            { english = "Prenatal Encounter"
+            , kinyarwanda = Nothing
+            }
+
         PreviousFloatMeasurement value ->
             { english = "Previous measurement: " ++ toString value
             , kinyarwanda = Just <| "Ibipimo by'ubushize: " ++ toString value
@@ -2242,7 +2248,7 @@ translateActivePage page =
                             , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
                             }
 
-                PrenatalEncounter _ ->
+                Pages.Page.PrenatalEncounter _ ->
                     { english = "Prenatal Encounter"
                     , kinyarwanda = Nothing
                     }

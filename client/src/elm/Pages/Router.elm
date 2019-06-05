@@ -106,7 +106,7 @@ delta2url previous current =
                     Just <| UrlChange NewEntry url
 
                 PrenatalEncounter id ->
-                    Just <| UrlChange NewEntry <| "#prenata-encounter/" ++ fromEntityUuid id
+                    Just <| UrlChange NewEntry <| "#prenatal-encounter/" ++ fromEntityUuid id
 
 
 {-| For now, the only messages we're generating from the URL are messages

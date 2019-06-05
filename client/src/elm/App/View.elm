@@ -18,6 +18,7 @@ import Pages.PageNotFound.View
 import Pages.People.View
 import Pages.Person.View
 import Pages.PinCode.View
+import Pages.PrenatalEncounter.View
 import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Session.Model
@@ -227,6 +228,10 @@ viewUserPage page model configured =
                         model.indexedDb
                         |> Html.map (MsgLoggedIn << MsgPageSession sessionId)
                         |> oldPageWrapper model
+
+                Pages.Page.PrenatalEncounter motherId ->
+                    Pages.PrenatalEncounter.View.view model.language currentDate motherId model.indexedDb
+                        |> flexPageWrapper model
 
         Nothing ->
             Pages.PinCode.View.view model.language model.activePage (RemoteData.map .nurse configured.loggedIn) configured.pinCodePage

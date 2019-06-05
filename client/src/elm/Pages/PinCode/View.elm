@@ -9,6 +9,7 @@ import Html.Events exposing (onClick, onInput, onSubmit)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PinCode.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
+import Restful.Endpoint exposing (toEntityUuid)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner, viewLogo)
 
@@ -128,6 +129,17 @@ viewWhenLoggedIn language nurse =
                 ]
                 [ text <| translate language Translate.RegisterAParticipant ]
 
+        prenatalEncounterButton =
+            let
+                uuid =
+                    toEntityUuid "614d3636-4b75-5b74-9d7d-d8e02e2969bf"
+            in
+            button
+                [ class "ui fluid primary button"
+                , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PrenatalEncounter uuid
+                ]
+                [ text <| translate language Translate.PrenatalEncounter ]
+
         logoutButton =
             button
                 [ class "ui button logout"
@@ -150,5 +162,6 @@ viewWhenLoggedIn language nurse =
     , deviceStatusButton
     , selectClinicButton
     , registerParticipantButton
+    , prenatalEncounterButton
     , logoutButton
     ]
