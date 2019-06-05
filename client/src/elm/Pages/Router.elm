@@ -105,6 +105,9 @@ delta2url previous current =
                     in
                     Just <| UrlChange NewEntry url
 
+                PrenatalEncounter id ->
+                    Just <| UrlChange NewEntry <| "#prenata-encounter/" ++ fromEntityUuid id
+
 
 {-| For now, the only messages we're generating from the URL are messages
 to set the active page. So, we just return a `Page`, and the caller can

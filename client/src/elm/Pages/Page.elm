@@ -127,6 +127,7 @@ type UserPage
       -- then we're in a context in which we're looking to add a family member.
     | PersonsPage (Maybe PersonId)
     | RelationshipPage PersonId PersonId -- create or edit a relationship between these persons.
+    | PrenatalEncounter PersonId -- record prenatal activities
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it

@@ -2242,6 +2242,11 @@ translateActivePage page =
                             , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
                             }
 
+                PrenatalEncounter _ ->
+                    { english = "Prenatal Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
 
 translateAdherence : Adherence -> TranslationSet String
 translateAdherence adherence =
