@@ -18,6 +18,7 @@ import Pages.PageNotFound.View
 import Pages.People.View
 import Pages.Person.View
 import Pages.PinCode.View
+import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.View
 import Pages.Relationship.Model
 import Pages.Relationship.View
@@ -229,8 +230,14 @@ viewUserPage page model configured =
                         |> Html.map (MsgLoggedIn << MsgPageSession sessionId)
                         |> oldPageWrapper model
 
-                Pages.Page.PrenatalEncounterPage motherId ->
-                    Pages.PrenatalEncounter.View.view model.language currentDate motherId model.indexedDb
+                PrenatalEncounterPage motherId ->
+                    let
+                        page =
+                            EveryDict.get motherId loggedInModel.prenatalEncounterPages
+                                |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
+                    in
+                    Pages.PrenatalEncounter.View.view model.language currentDate motherId model.indexedDb page
+                        |> Html.map (MsgLoggedIn << MsgPagePrenatalEncounter motherId)
                         |> flexPageWrapper model
 
         Nothing ->

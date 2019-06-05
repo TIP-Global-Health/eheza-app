@@ -25,6 +25,8 @@ import Pages.People.Update
 import Pages.Person.Update
 import Pages.PinCode.Model
 import Pages.PinCode.Update
+import Pages.PrenatalEncounter.Model
+import Pages.PrenatalEncounter.Update
 import Pages.Relationship.Model
 import Pages.Relationship.Update
 import Pages.Session.Model
@@ -220,6 +222,19 @@ update msg model =
                             in
                             ( { data | sessionPages = AllDict.insert sessionId subModel data.sessionPages }
                             , Cmd.map (MsgLoggedIn << MsgPageSession sessionId) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPagePrenatalEncounter motherId subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.prenatalEncounterPages
+                                        |> EveryDict.get motherId
+                                        |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
+                                        |> Pages.PrenatalEncounter.Update.update motherId model.indexedDb subMsg
+                            in
+                            ( { data | prenatalEncounterPages = EveryDict.insert motherId subModel data.prenatalEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalEncounter motherId) subCmd
                             , extraMsgs
                             )
                 )

@@ -1,42 +1,26 @@
 module Pages.PrenatalEncounter.View exposing (view)
 
+import AllDict
 import App.Model
-import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Encoder exposing (encodeEducationLevel, encodeMaritalStatus, encodeUbudehe)
-import Backend.Person.Form exposing (ExpectedAge(..), PersonForm, expectedAgeFromForm, validatePerson)
-import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allMaritalStatuses, allUbudehes)
+import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
-import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
-import Backend.Relationship.Model exposing (MyRelationship, Relationship)
-import Date.Extra as Date exposing (Interval(Year))
-import DateSelector.SelectorDropdown
 import EveryDict
 import EveryDictList exposing (EveryDictList)
-import Form exposing (Form)
-import Form.Field
-import Form.Input
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode
 import Maybe.Extra exposing (isJust, unwrap)
-import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Person.Model exposing (..)
+import Pages.PrenatalEncounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
-import Set
 import Time.Date exposing (date)
-import Time.Iso8601
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Form exposing (dateInput, getValueAsInt, isFormFieldSet, viewFormError)
-import Utils.GeoLocation exposing (GeoInfo, geoInfo, getGeoLocation)
 import Utils.Html exposing (script, tabItem, thumbnailImage, viewLoading)
-import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
 
 
@@ -47,20 +31,21 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate id db =
+view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id db model =
     let
         content =
-            EveryDict.get id db.people
+            AllDict.get id db.people
                 |> unwrap
                     []
                     (RemoteData.toMaybe
                         >> unwrap
                             []
                             (\mother ->
-                                [ div [ class "ui unstackable items participant-page mother" ]
+                                [ div [ class "ui unstackable items" ]
                                     [ viewMotherDetails language currentDate mother
                                     , viewMeasurements language currentDate
+                                    , viewMainPageContent language currentDate model
                                     ]
                                 ]
                             )
@@ -73,7 +58,7 @@ view language currentDate id db =
             :: content
 
 
-viewHeader : Language -> Html App.Model.Msg
+viewHeader : Language -> Html Msg
 viewHeader language =
     div
         [ class "ui basic segment head" ]
@@ -82,7 +67,7 @@ viewHeader language =
             [ text <| translate language Translate.PrenatalEncounter ]
         , a
             [ class "link-back"
-            , onClick <| App.Model.SetActivePage PinCodePage
+            , onClick <| SetActivePage PinCodePage
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -90,7 +75,7 @@ viewHeader language =
         ]
 
 
-viewMotherDetails : Language -> NominalDate -> Person -> Html App.Model.Msg
+viewMotherDetails : Language -> NominalDate -> Person -> Html Msg
 viewMotherDetails language currentDate mother =
     div [ class "item" ]
         [ div [ class "ui image" ]
@@ -111,7 +96,7 @@ viewMotherDetails language currentDate mother =
         ]
 
 
-viewMeasurements : Language -> NominalDate -> Html App.Model.Msg
+viewMeasurements : Language -> NominalDate -> Html Msg
 viewMeasurements language currentDate =
     let
         dummyDate =
@@ -153,3 +138,28 @@ viewMeasurements language currentDate =
             , div [ class "value" ] [ text dummyPara ]
             ]
         ]
+
+
+viewMainPageContent : Language -> NominalDate -> Model -> Html Msg
+viewMainPageContent language currentDate model =
+    let
+        ( pendingActivities, completedActivities ) =
+            ( [], [] )
+
+        pendingTabTitle =
+            translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
+
+        completedTabTitle =
+            translate language <| Translate.ActivitiesCompleted <| List.length completedActivities
+
+        reportsTabTitle =
+            translate language Translate.Reports
+
+        tabs =
+            div [ class "ui tabular menu" ]
+                [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
+                , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
+                , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetSelectedTab Reports)
+                ]
+    in
+    tabs

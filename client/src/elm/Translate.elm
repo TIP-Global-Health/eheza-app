@@ -325,6 +325,7 @@ type TranslationId
     | ReportDOB String
     | ReportRemaining Int
     | ReportResultsOfSearch Int
+    | Reports
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
     | ResolveMonth Month
@@ -1781,6 +1782,11 @@ translationSet trans =
                     { english = "There are " ++ toString total ++ " participants that match your search."
                     , kinyarwanda = Nothing
                     }
+
+        Reports ->
+            { english = "Reports"
+            , kinyarwanda = Nothing
+            }
 
         RecentAndUpcomingGroupEncounters ->
             { english = "Recent and upcoming Group Encounters"
