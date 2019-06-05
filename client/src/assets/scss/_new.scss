@@ -218,4 +218,27 @@ div.page-prenatal-encounter {
     overflow-y: hidden;
     display: flex;
     flex-direction: column;
+
+    .item .content {
+      padding-top: 1em !important;
+
+      .label {
+        font-weight: bold;
+        padding-right: 10px;
+      }
+    }
+
+    .item.measurements {
+      display: grid;
+      grid-template-columns: 25% 30% 20% 20%;
+      grid-gap: 1em;
+
+      .label {
+        font-weight: bold;
+      }
+
+      .ui:not(:last-child) {
+        border-right: 1px solid aquamarine;
+      }
+    }
 }

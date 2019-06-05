@@ -136,7 +136,7 @@ viewWhenLoggedIn language nurse =
             in
             button
                 [ class "ui fluid primary button"
-                , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PrenatalEncounter uuid
+                , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PrenatalEncounterPage uuid
                 ]
                 [ text <| translate language Translate.PrenatalEncounter ]
 

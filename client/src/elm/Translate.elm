@@ -193,6 +193,7 @@ type TranslationId
     | Dashboard
     | DateOfLastAssessment
     | Day
+    | DaySinglePlural Int
     | DateOfBirth
     | Days
     | Delete
@@ -203,7 +204,9 @@ type TranslationId
     | District
     | DOB
     | DropzoneDefaultMessage
+    | Edd
     | EditRelationship
+    | Ega
     | EndGroupEncounter
     | EnterPairingCode
     | ErrorCheckLocalConfig
@@ -223,6 +226,7 @@ type TranslationId
     | Gender Gender
     | GenderLabel
     | GoHome
+    | Gravida
     | HaveYouSynced
     | HealthCenter
     | HIVStatus HIVStatus
@@ -283,6 +287,7 @@ type TranslationId
     | Page
     | Page404
     | PageNotFoundMsg
+    | Para
     | ParticipantDirectory
     | Participants
     | ParticipantReviewed
@@ -383,8 +388,10 @@ type TranslationId
     | Version
     | ViewProgressReport
     | Village
+    | WeekSinglePlural Int
     | WelcomeUser String
     | Year
+    | YearsOld Int
     | Yes
     | YouAreNotAnAdmin
     | YourGroupEncounterHasBeenSaved
@@ -946,6 +953,17 @@ translationSet trans =
             , kinyarwanda = Just "Umunsi"
             }
 
+        DaySinglePlural value ->
+            if value == 1 then
+                { english = "1 Day"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = toString value ++ " Days"
+                , kinyarwanda = Nothing
+                }
+
         DateOfBirth ->
             { english = "Date of Birth"
             , kinyarwanda = Nothing
@@ -1001,8 +1019,18 @@ translationSet trans =
             , kinyarwanda = Just "Kanda hano niba ushaka gufotora cg ukure ifoto mu bubiko hano."
             }
 
+        Edd ->
+            { english = "EDD"
+            , kinyarwanda = Nothing
+            }
+
         EditRelationship ->
             { english = "Edit Relationship"
+            , kinyarwanda = Nothing
+            }
+
+        Ega ->
+            { english = "EGA"
             , kinyarwanda = Nothing
             }
 
@@ -1149,6 +1177,11 @@ translationSet trans =
         GoHome ->
             { english = "Go to main page"
             , kinyarwanda = Just "Kujya ahabanza"
+            }
+
+        Gravida ->
+            { english = "Gravida"
+            , kinyarwanda = Nothing
             }
 
         HaveYouSynced ->
@@ -1544,6 +1577,11 @@ translationSet trans =
         PageNotFoundMsg ->
             { english = "Sorry, nothing found in this URL."
             , kinyarwanda = Just "Mutwihanganire ntabwo ubufasha mwasabye mubashije kuboneka."
+            }
+
+        Para ->
+            { english = "Para"
+            , kinyarwanda = Nothing
             }
 
         ParticipantDirectory ->
@@ -2058,6 +2096,17 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        WeekSinglePlural value ->
+            if value == 1 then
+                { english = "1 Week"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = toString value ++ " Weeks"
+                , kinyarwanda = Nothing
+                }
+
         WelcomeUser name ->
             { english = "Welcome " ++ name
             , kinyarwanda = Just <| "Murakaza neza " ++ name
@@ -2065,6 +2114,11 @@ translationSet trans =
 
         Year ->
             { english = "Year"
+            , kinyarwanda = Nothing
+            }
+
+        YearsOld int ->
+            { english = toString int ++ " years old"
             , kinyarwanda = Nothing
             }
 
@@ -2248,7 +2302,7 @@ translateActivePage page =
                             , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
                             }
 
-                Pages.Page.PrenatalEncounter _ ->
+                PrenatalEncounterPage _ ->
                     { english = "Prenatal Encounter"
                     , kinyarwanda = Nothing
                     }

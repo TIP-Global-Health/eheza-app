@@ -105,7 +105,7 @@ delta2url previous current =
                     in
                     Just <| UrlChange NewEntry url
 
-                PrenatalEncounter id ->
+                PrenatalEncounterPage id ->
                     Just <| UrlChange NewEntry <| "#prenatal-encounter/" ++ fromEntityUuid id
 
 

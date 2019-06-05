@@ -229,7 +229,7 @@ viewUserPage page model configured =
                         |> Html.map (MsgLoggedIn << MsgPageSession sessionId)
                         |> oldPageWrapper model
 
-                Pages.Page.PrenatalEncounter motherId ->
+                Pages.Page.PrenatalEncounterPage motherId ->
                     Pages.PrenatalEncounter.View.view model.language currentDate motherId model.indexedDb
                         |> flexPageWrapper model
 

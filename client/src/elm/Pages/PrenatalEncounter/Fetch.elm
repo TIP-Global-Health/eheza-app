@@ -1,4 +1,4 @@
-module Pages.PrenatalEncounter.Fetch exposing (fetch, fetchForCreateForm)
+module Pages.PrenatalEncounter.Fetch exposing (fetch)
 
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
@@ -7,6 +7,6 @@ import EveryDictList
 import RemoteData exposing (RemoteData(..))
 
 
-fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
-fetch id db =
-    []
+fetch : PersonId -> List MsgIndexedDb
+fetch id =
+    [ FetchPerson id ]
