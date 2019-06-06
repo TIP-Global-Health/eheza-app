@@ -7,8 +7,7 @@ import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model exposing (Gender(..), Person)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
-import EveryDict exposing (EveryDict)
-import EveryDictList exposing (EveryDictList)
+import EveryDict
 import EverySet
 import Expect
 import Fixtures exposing (..)
@@ -17,6 +16,8 @@ import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
 import Time.Date exposing (addDays, date)
+import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 all : Test
@@ -164,14 +165,14 @@ makeCounselingSession when timing =
 makeOfflineSession : TestCase -> OfflineSession
 makeOfflineSession test =
     { session = session sessionDate
-    , allParticipantForms = EveryDictList.empty -- not relevant
+    , allParticipantForms = EntityUuidDictList.empty -- not relevant
     , everyCounselingSchedule = EveryDict.empty -- not relevant
     , participants =
-        { byId = EveryDict.empty
-        , byChildId = EveryDict.empty
-        , byMotherId = EveryDict.empty
+        { byId = EntityUuidDict.empty
+        , byChildId = EntityUuidDict.empty
+        , byMotherId = EntityUuidDict.empty
         }
-    , mothers = EveryDictList.empty -- not relevant
+    , mothers = EntityUuidDictList.empty -- not relevant
     , children = makeChildren test
     , historicalMeasurements = makeHistoricalMeasurements test
     , currentMeasurements = emptyMeasurements -- not needed
@@ -181,8 +182,8 @@ makeOfflineSession test =
 
 makeHistoricalMeasurements : TestCase -> HistoricalMeasurements
 makeHistoricalMeasurements test =
-    { mothers = EveryDict.empty
-    , children = EveryDict.fromList [ ( childId, makeChildMeasurementList test ) ]
+    { mothers = EntityUuidDict.empty
+    , children = EntityUuidDict.fromList [ ( childId, makeChildMeasurementList test ) ]
     }
 
 
@@ -191,7 +192,7 @@ makeChildMeasurementList test =
     let
         counselingSessions =
             List.map makeCounselingSessionWithId test.completed
-                |> EveryDictList.fromList
+                |> EntityUuidDictList.fromList
 
         makeCounselingSessionWithId ( daysOld, timing ) =
             -- We need a locally unique ID, but it doesn't need to be real.
@@ -228,9 +229,9 @@ childId =
     toEntityUuid "1"
 
 
-makeChildren : TestCase -> EveryDictList PersonId Person
+makeChildren : TestCase -> EntityUuidDictList PersonId Person
 makeChildren test =
-    EveryDictList.fromList
+    EntityUuidDictList.fromList
         [ ( childId, makeChild test )
         ]
 

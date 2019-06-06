@@ -18,11 +18,11 @@ import Backend.Measurement.Model exposing (..)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
-import EveryDict exposing (EveryDict)
-import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDateRange)
 import Measurement.Model
 import RemoteData exposing (RemoteData(..), WebData)
+import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 {-| This is the basic `Session` data ... essentially, for scheduling purposes.
@@ -50,9 +50,9 @@ overkill for now.
 
 -}
 type alias ExpectedParticipants =
-    { byId : EveryDict PmtctParticipantId PmtctParticipant
-    , byChildId : EveryDict PersonId (List PmtctParticipant)
-    , byMotherId : EveryDict PersonId (List PmtctParticipant)
+    { byId : EntityUuidDict PmtctParticipantId PmtctParticipant
+    , byChildId : EntityUuidDict PersonId (List PmtctParticipant)
+    , byMotherId : EntityUuidDict PersonId (List PmtctParticipant)
     }
 
 
@@ -67,7 +67,7 @@ type alias OfflineSession =
     { session : Session
 
     -- Some configuration data.
-    , allParticipantForms : EveryDictList ParticipantFormId ParticipantForm
+    , allParticipantForms : EntityUuidDictList ParticipantFormId ParticipantForm
     , everyCounselingSchedule : EveryCounselingSchedule
 
     -- This reflects everyone who is expected at the session, given the
@@ -76,8 +76,8 @@ type alias OfflineSession =
 
     -- These reflect the `Person` record for each person included in
     -- `participants`.
-    , mothers : EveryDictList PersonId Person
-    , children : EveryDictList PersonId Person
+    , mothers : EntityUuidDictList PersonId Person
+    , children : EntityUuidDictList PersonId Person
 
     -- These are all the measurements which have been saved. (Not necessarily
     -- synced to the backend yet).
@@ -108,30 +108,30 @@ to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
     { closeSessionRequest : WebData ()
-    , saveAttendanceRequest : EveryDict PersonId (WebData ())
-    , saveCounselingSessionRequest : EveryDict PersonId (WebData ())
-    , saveFamilyPlanningRequest : EveryDict PersonId (WebData ())
-    , saveHeightRequest : EveryDict PersonId (WebData ())
-    , saveMuacRequest : EveryDict PersonId (WebData ())
-    , saveNutritionRequest : EveryDict PersonId (WebData ())
-    , saveParticipantConsentRequest : EveryDict PersonId (WebData ())
-    , savePhotoRequest : EveryDict PersonId (WebData ())
-    , saveWeightRequest : EveryDict PersonId (WebData ())
+    , saveAttendanceRequest : EntityUuidDict PersonId (WebData ())
+    , saveCounselingSessionRequest : EntityUuidDict PersonId (WebData ())
+    , saveFamilyPlanningRequest : EntityUuidDict PersonId (WebData ())
+    , saveHeightRequest : EntityUuidDict PersonId (WebData ())
+    , saveMuacRequest : EntityUuidDict PersonId (WebData ())
+    , saveNutritionRequest : EntityUuidDict PersonId (WebData ())
+    , saveParticipantConsentRequest : EntityUuidDict PersonId (WebData ())
+    , savePhotoRequest : EntityUuidDict PersonId (WebData ())
+    , saveWeightRequest : EntityUuidDict PersonId (WebData ())
     }
 
 
 emptyModel : Model
 emptyModel =
     { closeSessionRequest = NotAsked
-    , saveAttendanceRequest = EveryDict.empty
-    , saveCounselingSessionRequest = EveryDict.empty
-    , saveFamilyPlanningRequest = EveryDict.empty
-    , saveHeightRequest = EveryDict.empty
-    , saveMuacRequest = EveryDict.empty
-    , saveNutritionRequest = EveryDict.empty
-    , saveParticipantConsentRequest = EveryDict.empty
-    , savePhotoRequest = EveryDict.empty
-    , saveWeightRequest = EveryDict.empty
+    , saveAttendanceRequest = EntityUuidDict.empty
+    , saveCounselingSessionRequest = EntityUuidDict.empty
+    , saveFamilyPlanningRequest = EntityUuidDict.empty
+    , saveHeightRequest = EntityUuidDict.empty
+    , saveMuacRequest = EntityUuidDict.empty
+    , saveNutritionRequest = EntityUuidDict.empty
+    , saveParticipantConsentRequest = EntityUuidDict.empty
+    , savePhotoRequest = EntityUuidDict.empty
+    , saveWeightRequest = EntityUuidDict.empty
     }
 
 

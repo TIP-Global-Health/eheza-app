@@ -1,5 +1,7 @@
 module Pages.Person.View exposing (view, viewCreateForm)
 
+import AllDict
+import AllDictList
 import App.Model
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
@@ -12,8 +14,6 @@ import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Date.Extra as Date exposing (Interval(Year))
 import DateSelector.SelectorDropdown
-import EveryDict
-import EveryDictList exposing (EveryDictList)
 import Form exposing (Form)
 import Form.Field
 import Form.Input
@@ -32,6 +32,7 @@ import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Set
 import Time.Iso8601
 import Translate exposing (Language, TranslationId, translate)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import Utils.Form exposing (dateInput, getValueAsInt, isFormFieldSet, viewFormError)
 import Utils.GeoLocation exposing (GeoInfo, geoInfo, getGeoLocation)
 import Utils.Html exposing (script, thumbnailImage, viewLoading)
@@ -43,7 +44,7 @@ view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html App.Model.M
 view language currentDate id db =
     let
         person =
-            EveryDict.get id db.people
+            AllDict.get id db.people
                 |> Maybe.withDefault NotAsked
 
         headerName =
@@ -82,7 +83,7 @@ viewRelationship : Language -> NominalDate -> ModelIndexedDb -> MyRelationship -
 viewRelationship language currentDate db relationship =
     let
         relatedTo =
-            EveryDict.get relationship.relatedTo db.people
+            AllDict.get relationship.relatedTo db.people
                 |> Maybe.withDefault NotAsked
     in
     div
@@ -90,11 +91,11 @@ viewRelationship language currentDate db relationship =
         [ viewWebData language (viewParticipant language currentDate (Just relationship) relationship.relatedTo) identity relatedTo ]
 
 
-viewPmtctParticipant : Language -> EveryDictList ClinicId Clinic -> PmtctParticipant -> Html App.Model.Msg
+viewPmtctParticipant : Language -> EntityUuidDictList ClinicId Clinic -> PmtctParticipant -> Html App.Model.Msg
 viewPmtctParticipant language clinics participant =
     let
         content =
-            EveryDictList.get participant.clinic clinics
+            AllDictList.get participant.clinic clinics
                 |> Maybe.map
                     (\clinic ->
                         p [] [ text <| clinic.name ]
@@ -115,23 +116,23 @@ viewParticipantDetailsForm language currentDate db id person =
     let
         viewFamilyMembers relationships =
             relationships
-                |> EveryDictList.map (always (viewRelationship language currentDate db))
-                |> EveryDictList.values
+                |> AllDictList.map (always (viewRelationship language currentDate db))
+                |> AllDictList.values
                 |> div []
 
         familyMembers =
-            EveryDict.get id db.relationshipsByPerson
+            AllDict.get id db.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
                 |> viewWebData language viewFamilyMembers identity
 
         viewGroups ( clinics, groups ) =
             groups
-                |> EveryDict.map (always (viewPmtctParticipant language clinics))
-                |> EveryDict.values
+                |> AllDict.map (always (viewPmtctParticipant language clinics))
+                |> AllDict.values
                 |> div [ class "ui unstackable items participants-list" ]
 
         groups =
-            EveryDict.get id db.participantsByPerson
+            AllDict.get id db.participantsByPerson
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.append db.clinics
                 |> viewWebData language viewGroups identity
@@ -378,7 +379,7 @@ viewCreateForm language currentDate relationId model db =
 
         maybeRelatedPerson =
             relationId
-                |> Maybe.andThen (\id -> EveryDict.get id db.people)
+                |> Maybe.andThen (\id -> AllDict.get id db.people)
                 |> Maybe.andThen RemoteData.toMaybe
 
         emptyOption =
@@ -607,7 +608,7 @@ viewCreateForm language currentDate relationId model db =
 
         geoLocationDictToOptions dict =
             dict
-                |> EveryDict.toList
+                |> AllDict.toList
                 |> List.map
                     (\( id, geoLocation ) ->
                         ( toString <| fromEntityId id, geoLocation.name )
@@ -615,7 +616,7 @@ viewCreateForm language currentDate relationId model db =
 
         filterGeoLocationDictByParent parentId dict =
             dict
-                |> EveryDict.filter
+                |> AllDict.filter
                     (\_ geoLocation ->
                         (Just <| toEntityId parentId) == geoLocation.parent
                     )
@@ -792,7 +793,7 @@ viewCreateForm language currentDate relationId model db =
                                 |> RemoteData.map
                                     (\dict ->
                                         dict
-                                            |> EveryDictList.toList
+                                            |> AllDictList.toList
                                             |> List.map
                                                 (\( id, healthCenter ) ->
                                                     ( fromEntityUuid id

@@ -1,5 +1,7 @@
 module Backend.Update exposing (updateIndexedDb)
 
+import AllDict
+import AllDictList
 import App.Model
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
@@ -13,8 +15,6 @@ import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements)
 import Dict
-import EveryDict
-import EveryDictList
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
@@ -25,6 +25,8 @@ import Pages.Relationship.Model
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityUuid, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityUuid, endpoint, fromEntityUuid, toCmd, toEntityUuid, toTask, withKeyEncoder, withParamsEncoder, withValueEncoder, withoutDecoder)
 import Task
+import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 updateIndexedDb : NominalDate -> Maybe NurseId -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
@@ -35,14 +37,14 @@ updateIndexedDb currentDate nurseId msg model =
     in
     case msg of
         FetchChildMeasurements childId ->
-            ( { model | childMeasurements = EveryDict.insert childId Loading model.childMeasurements }
+            ( { model | childMeasurements = AllDict.insert childId Loading model.childMeasurements }
             , sw.get childMeasurementListEndpoint childId
                 |> toCmd (RemoteData.fromResult >> HandleFetchedChildMeasurements childId)
             , []
             )
 
         HandleFetchedChildMeasurements childId data ->
-            ( { model | childMeasurements = EveryDict.insert childId data model.childMeasurements }
+            ( { model | childMeasurements = AllDict.insert childId data model.childMeasurements }
             , Cmd.none
             , []
             )
@@ -50,7 +52,7 @@ updateIndexedDb currentDate nurseId msg model =
         FetchClinics ->
             ( { model | clinics = Loading }
             , sw.select clinicEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList >> EveryDictList.sortBy .name) >> HandleFetchedClinics)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList >> AllDictList.sortBy .name) >> HandleFetchedClinics)
             , []
             )
 
@@ -65,7 +67,7 @@ updateIndexedDb currentDate nurseId msg model =
                 topicTask =
                     sw.select counselingTopicEndpoint ()
                         |> toTask
-                        |> Task.map (.items >> EveryDict.fromList)
+                        |> Task.map (.items >> EntityUuidDict.fromList)
                         |> RemoteData.fromTask
 
                 scheduleTask =
@@ -95,22 +97,22 @@ updateIndexedDb currentDate nurseId msg model =
                         |> Just
 
                 indexBy accessor _ value accum =
-                    EveryDict.update (accessor value) (merge value) accum
+                    AllDict.update (accessor value) (merge value) accum
 
                 processIndex byId =
                     { byId = byId
-                    , byChildId = EveryDict.foldl (indexBy .child) EveryDict.empty byId
-                    , byMotherId = EveryDict.foldl (indexBy .adult) EveryDict.empty byId
+                    , byChildId = AllDict.foldl (indexBy .child) EntityUuidDict.empty byId
+                    , byMotherId = AllDict.foldl (indexBy .adult) EntityUuidDict.empty byId
                     }
             in
-            ( { model | expectedParticipants = EveryDict.insert sessionId Loading model.expectedParticipants }
+            ( { model | expectedParticipants = AllDict.insert sessionId Loading model.expectedParticipants }
             , sw.select pmtctParticipantEndpoint (ParticipantsForSession sessionId)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDict.fromList >> processIndex) >> HandleFetchedExpectedParticipants sessionId)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDict.fromList >> processIndex) >> HandleFetchedExpectedParticipants sessionId)
             , []
             )
 
         HandleFetchedExpectedParticipants sessionId data ->
-            ( { model | expectedParticipants = EveryDict.insert sessionId data model.expectedParticipants }
+            ( { model | expectedParticipants = AllDict.insert sessionId data model.expectedParticipants }
             , Cmd.none
             , []
             )
@@ -124,7 +126,7 @@ updateIndexedDb currentDate nurseId msg model =
             -- just to avoid truly pathological cases.
             ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
             , sw.selectRange personEndpoint { nameContains = Just trimmed } 0 (Just 100)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedPeopleByName trimmed)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedPeopleByName trimmed)
             , []
             )
 
@@ -139,23 +141,23 @@ updateIndexedDb currentDate nurseId msg model =
                 query1 =
                     sw.select pmtctParticipantEndpoint (ParticipantsForChild personId)
                         |> toTask
-                        |> Task.map (.items >> EveryDict.fromList)
+                        |> Task.map (.items >> EntityUuidDict.fromList)
                         |> RemoteData.fromTask
 
                 query2 =
                     sw.select pmtctParticipantEndpoint (ParticipantsForAdult personId)
                         |> toTask
-                        |> Task.map (.items >> EveryDict.fromList)
+                        |> Task.map (.items >> EntityUuidDict.fromList)
                         |> RemoteData.fromTask
             in
-            ( { model | participantsByPerson = EveryDict.insert personId Loading model.participantsByPerson }
-            , Task.map2 (RemoteData.map2 EveryDict.union) query1 query2
+            ( { model | participantsByPerson = AllDict.insert personId Loading model.participantsByPerson }
+            , Task.map2 (RemoteData.map2 AllDict.union) query1 query2
                 |> Task.perform (HandleFetchedParticipantsForPerson personId)
             , []
             )
 
         HandleFetchedParticipantsForPerson personId data ->
-            ( { model | participantsByPerson = EveryDict.insert personId data model.participantsByPerson }
+            ( { model | participantsByPerson = AllDict.insert personId data model.participantsByPerson }
             , Cmd.none
             , []
             )
@@ -169,36 +171,36 @@ updateIndexedDb currentDate nurseId msg model =
                 query1 =
                     sw.select relationshipEndpoint { person = Just personId, relatedTo = Nothing }
                         |> toTask
-                        |> Task.map (.items >> EveryDictList.fromList >> EveryDictList.filterMap (always (toMyRelationship personId)))
+                        |> Task.map (.items >> EntityUuidDictList.fromList >> AllDictList.filterMap (always (toMyRelationship personId)))
                         |> RemoteData.fromTask
 
                 query2 =
                     sw.select relationshipEndpoint { person = Nothing, relatedTo = Just personId }
                         |> toTask
-                        |> Task.map (.items >> EveryDictList.fromList >> EveryDictList.filterMap (always (toMyRelationship personId)))
+                        |> Task.map (.items >> EntityUuidDictList.fromList >> AllDictList.filterMap (always (toMyRelationship personId)))
                         |> RemoteData.fromTask
             in
-            ( { model | relationshipsByPerson = EveryDict.insert personId Loading model.relationshipsByPerson }
-            , Task.map2 (RemoteData.map2 EveryDictList.union) query1 query2
+            ( { model | relationshipsByPerson = AllDict.insert personId Loading model.relationshipsByPerson }
+            , Task.map2 (RemoteData.map2 AllDictList.union) query1 query2
                 |> Task.perform (HandleFetchedRelationshipsForPerson personId)
             , []
             )
 
         HandleFetchedRelationshipsForPerson personId data ->
-            ( { model | relationshipsByPerson = EveryDict.insert personId data model.relationshipsByPerson }
+            ( { model | relationshipsByPerson = AllDict.insert personId data model.relationshipsByPerson }
             , Cmd.none
             , []
             )
 
         FetchExpectedSessions childId ->
-            ( { model | expectedSessions = EveryDict.insert childId Loading model.expectedSessions }
+            ( { model | expectedSessions = AllDict.insert childId Loading model.expectedSessions }
             , sw.select sessionEndpoint (ForChild childId)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedExpectedSessions childId)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedExpectedSessions childId)
             , []
             )
 
         HandleFetchedExpectedSessions childId data ->
-            ( { model | expectedSessions = EveryDict.insert childId data model.expectedSessions }
+            ( { model | expectedSessions = AllDict.insert childId data model.expectedSessions }
             , Cmd.none
             , []
             )
@@ -206,7 +208,7 @@ updateIndexedDb currentDate nurseId msg model =
         FetchHealthCenters ->
             ( { model | healthCenters = Loading }
             , sw.select healthCenterEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedHealthCenters)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedHealthCenters)
             , []
             )
 
@@ -217,14 +219,14 @@ updateIndexedDb currentDate nurseId msg model =
             )
 
         FetchMotherMeasurements motherId ->
-            ( { model | motherMeasurements = EveryDict.insert motherId Loading model.motherMeasurements }
+            ( { model | motherMeasurements = AllDict.insert motherId Loading model.motherMeasurements }
             , sw.get motherMeasurementListEndpoint motherId
                 |> toCmd (RemoteData.fromResult >> HandleFetchedMotherMeasurements motherId)
             , []
             )
 
         HandleFetchedMotherMeasurements motherId data ->
-            ( { model | motherMeasurements = EveryDict.insert motherId data model.motherMeasurements }
+            ( { model | motherMeasurements = AllDict.insert motherId data model.motherMeasurements }
             , Cmd.none
             , []
             )
@@ -232,7 +234,7 @@ updateIndexedDb currentDate nurseId msg model =
         FetchParticipantForms ->
             ( { model | participantForms = Loading }
             , sw.select participantFormEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedParticipantForms)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedParticipantForms)
             , []
             )
 
@@ -243,40 +245,40 @@ updateIndexedDb currentDate nurseId msg model =
             )
 
         FetchPerson id ->
-            ( { model | people = EveryDict.insert id Loading model.people }
+            ( { model | people = AllDict.insert id Loading model.people }
             , sw.get personEndpoint id
                 |> toCmd (RemoteData.fromResult >> HandleFetchedPerson id)
             , []
             )
 
         HandleFetchedPerson id data ->
-            ( { model | people = EveryDict.insert id data model.people }
+            ( { model | people = AllDict.insert id data model.people }
             , Cmd.none
             , []
             )
 
         FetchSession sessionId ->
-            ( { model | sessions = EveryDict.insert sessionId Loading model.sessions }
+            ( { model | sessions = AllDict.insert sessionId Loading model.sessions }
             , sw.get sessionEndpoint sessionId
                 |> toCmd (RemoteData.fromResult >> HandleFetchedSession sessionId)
             , []
             )
 
         HandleFetchedSession sessionId data ->
-            ( { model | sessions = EveryDict.insert sessionId data model.sessions }
+            ( { model | sessions = AllDict.insert sessionId data model.sessions }
             , Cmd.none
             , []
             )
 
         FetchSessionsByClinic clinicId ->
-            ( { model | sessionsByClinic = EveryDict.insert clinicId Loading model.sessionsByClinic }
+            ( { model | sessionsByClinic = AllDict.insert clinicId Loading model.sessionsByClinic }
             , sw.select sessionEndpoint (ForClinic clinicId)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedSessionsByClinic clinicId)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedSessionsByClinic clinicId)
             , []
             )
 
         HandleFetchedSessionsByClinic clinicId data ->
-            ( { model | sessionsByClinic = EveryDict.insert clinicId data model.sessionsByClinic }
+            ( { model | sessionsByClinic = AllDict.insert clinicId data model.sessionsByClinic }
             , Cmd.none
             , []
             )
@@ -284,7 +286,7 @@ updateIndexedDb currentDate nurseId msg model =
         FetchSyncData ->
             ( { model | syncData = Loading }
             , sw.select syncDataEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedSyncData)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedSyncData)
             , []
             )
 
@@ -301,7 +303,7 @@ updateIndexedDb currentDate nurseId msg model =
             )
 
         SaveSyncData uuid data ->
-            ( { model | saveSyncDataRequests = EveryDict.insert uuid Loading model.saveSyncDataRequests }
+            ( { model | saveSyncDataRequests = AllDict.insert uuid Loading model.saveSyncDataRequests }
             , sw.put syncDataEndpoint uuid data
                 |> withoutDecoder
                 |> toCmd (RemoteData.fromResult >> HandleSavedSyncData uuid)
@@ -309,20 +311,20 @@ updateIndexedDb currentDate nurseId msg model =
             )
 
         HandleSavedSyncData uuid data ->
-            ( { model | saveSyncDataRequests = EveryDict.insert uuid data model.saveSyncDataRequests }
+            ( { model | saveSyncDataRequests = AllDict.insert uuid data model.saveSyncDataRequests }
             , Cmd.none
             , []
             )
 
         DeleteSyncData uuid ->
-            ( { model | deleteSyncDataRequests = EveryDict.insert uuid Loading model.deleteSyncDataRequests }
+            ( { model | deleteSyncDataRequests = AllDict.insert uuid Loading model.deleteSyncDataRequests }
             , sw.delete syncDataEndpoint uuid
                 |> toCmd (RemoteData.fromResult >> HandleDeletedSyncData uuid)
             , []
             )
 
         HandleDeletedSyncData uuid data ->
-            ( { model | deleteSyncDataRequests = EveryDict.insert uuid data model.deleteSyncDataRequests }
+            ( { model | deleteSyncDataRequests = AllDict.insert uuid data model.deleteSyncDataRequests }
             , Cmd.none
             , []
             )
@@ -330,26 +332,26 @@ updateIndexedDb currentDate nurseId msg model =
         MsgSession sessionId subMsg ->
             let
                 requests =
-                    EveryDict.get sessionId model.sessionRequests
+                    AllDict.get sessionId model.sessionRequests
                         |> Maybe.withDefault Backend.Session.Model.emptyModel
 
                 ( subModel, subCmd ) =
                     Backend.Session.Update.update nurseId sessionId currentDate subMsg requests
             in
-            ( { model | sessionRequests = EveryDict.insert sessionId subModel model.sessionRequests }
+            ( { model | sessionRequests = AllDict.insert sessionId subModel model.sessionRequests }
             , Cmd.map (MsgSession sessionId) subCmd
             , []
             )
 
         PostPmtctParticipant data ->
-            ( { model | postPmtctParticipant = EveryDict.insert data.child Loading model.postPmtctParticipant }
+            ( { model | postPmtctParticipant = AllDict.insert data.child Loading model.postPmtctParticipant }
             , sw.post pmtctParticipantEndpoint data
                 |> toCmd (RemoteData.fromResult >> HandlePostedPmtctParticipant data.child)
             , []
             )
 
         HandlePostedPmtctParticipant id data ->
-            ( { model | postPmtctParticipant = EveryDict.insert id data model.postPmtctParticipant }
+            ( { model | postPmtctParticipant = AllDict.insert id data model.postPmtctParticipant }
             , Cmd.none
             , []
             )
@@ -392,7 +394,7 @@ updateIndexedDb currentDate nurseId msg model =
                         , relatedTo = Just normalized.relatedTo
                         }
                         |> toTask
-                        |> Task.map (.items >> EveryDictList.fromList)
+                        |> Task.map (.items >> EntityUuidDictList.fromList)
 
                 query2 =
                     sw.select relationshipEndpoint
@@ -400,11 +402,11 @@ updateIndexedDb currentDate nurseId msg model =
                         , relatedTo = Just normalized.person
                         }
                         |> toTask
-                        |> Task.map (.items >> EveryDictList.fromList)
+                        |> Task.map (.items >> EntityUuidDictList.fromList)
 
                 existingRelationship =
-                    Task.map2 EveryDictList.union query1 query2
-                        |> Task.map EveryDictList.head
+                    Task.map2 AllDictList.union query1 query2
+                        |> Task.map AllDictList.head
 
                 relationshipCmd =
                     existingRelationship
@@ -434,7 +436,7 @@ updateIndexedDb currentDate nurseId msg model =
                         |> RemoteData.fromTask
                         |> Task.perform (HandlePostedRelationship personId)
             in
-            ( { model | postRelationship = EveryDict.insert personId Loading model.postRelationship }
+            ( { model | postRelationship = AllDict.insert personId Loading model.postRelationship }
             , relationshipCmd
             , []
             )
@@ -453,7 +455,7 @@ updateIndexedDb currentDate nurseId msg model =
                             )
                         |> RemoteData.withDefault []
             in
-            ( { model | postRelationship = EveryDict.insert personId data model.postRelationship }
+            ( { model | postRelationship = AllDict.insert personId data model.postRelationship }
             , Cmd.none
             , appMsgs
             )
@@ -504,7 +506,7 @@ handleRevision revision model =
         AttendanceRevision uuid data ->
             mapMotherMeasurements
                 data.participantId
-                (\measurements -> { measurements | attendances = EveryDictList.insert uuid data measurements.attendances })
+                (\measurements -> { measurements | attendances = AllDictList.insert uuid data measurements.attendances })
                 model
 
         CatchmentAreaRevision uuid data ->
@@ -513,13 +515,13 @@ handleRevision revision model =
         ChildNutritionRevision uuid data ->
             mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | nutritions = EveryDictList.insert uuid data measurements.nutritions })
+                (\measurements -> { measurements | nutritions = AllDictList.insert uuid data measurements.nutritions })
                 model
 
         ClinicRevision uuid data ->
             let
                 clinics =
-                    RemoteData.map (EveryDictList.insert uuid data) model.clinics
+                    RemoteData.map (AllDictList.insert uuid data) model.clinics
             in
             { model | clinics = clinics }
 
@@ -530,7 +532,7 @@ handleRevision revision model =
         CounselingSessionRevision uuid data ->
             mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | counselingSessions = EveryDictList.insert uuid data measurements.counselingSessions })
+                (\measurements -> { measurements | counselingSessions = AllDictList.insert uuid data measurements.counselingSessions })
                 model
 
         CounselingTopicRevision uuid data ->
@@ -539,26 +541,26 @@ handleRevision revision model =
         FamilyPlanningRevision uuid data ->
             mapMotherMeasurements
                 data.participantId
-                (\measurements -> { measurements | familyPlannings = EveryDictList.insert uuid data measurements.familyPlannings })
+                (\measurements -> { measurements | familyPlannings = AllDictList.insert uuid data measurements.familyPlannings })
                 model
 
         HealthCenterRevision uuid data ->
             let
                 healthCenters =
-                    RemoteData.map (EveryDictList.insert uuid data) model.healthCenters
+                    RemoteData.map (AllDictList.insert uuid data) model.healthCenters
             in
             { model | healthCenters = healthCenters }
 
         HeightRevision uuid data ->
             mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | heights = EveryDictList.insert uuid data measurements.heights })
+                (\measurements -> { measurements | heights = AllDictList.insert uuid data measurements.heights })
                 model
 
         MuacRevision uuid data ->
             mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | muacs = EveryDictList.insert uuid data measurements.muacs })
+                (\measurements -> { measurements | muacs = AllDictList.insert uuid data measurements.muacs })
                 model
 
         NurseRevision uuid data ->
@@ -568,16 +570,16 @@ handleRevision revision model =
         ParticipantConsentRevision uuid data ->
             mapMotherMeasurements
                 data.participantId
-                (\measurements -> { measurements | consents = EveryDictList.insert uuid data measurements.consents })
+                (\measurements -> { measurements | consents = AllDictList.insert uuid data measurements.consents })
                 model
 
         ParticipantFormRevision uuid data ->
-            { model | participantForms = RemoteData.map (EveryDictList.insert uuid data) model.participantForms }
+            { model | participantForms = RemoteData.map (AllDictList.insert uuid data) model.participantForms }
 
         PersonRevision uuid data ->
             let
                 people =
-                    EveryDict.update uuid (Maybe.map (always (Success data))) model.people
+                    AllDict.update uuid (Maybe.map (always (Success data))) model.people
             in
             { model
                 | personSearches = Dict.empty
@@ -587,25 +589,25 @@ handleRevision revision model =
         PhotoRevision uuid data ->
             mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | photos = EveryDictList.insert uuid data measurements.photos })
+                (\measurements -> { measurements | photos = AllDictList.insert uuid data measurements.photos })
                 model
 
         PmtctParticipantRevision uuid data ->
             { model
                 | expectedSessions =
                     model.expectedSessions
-                        |> EveryDict.remove data.child
-                        |> EveryDict.remove data.adult
+                        |> AllDict.remove data.child
+                        |> AllDict.remove data.adult
                 , expectedParticipants =
-                    EveryDict.empty
+                    EntityUuidDict.empty
                 , participantsByPerson =
                     model.participantsByPerson
-                        |> EveryDict.remove data.child
-                        |> EveryDict.remove data.adult
+                        |> AllDict.remove data.child
+                        |> AllDict.remove data.adult
             }
 
         RelationshipRevision uuid data ->
-            { model | relationshipsByPerson = EveryDict.empty }
+            { model | relationshipsByPerson = EntityUuidDict.empty }
 
         SessionRevision uuid data ->
             let
@@ -614,18 +616,18 @@ handleRevision revision model =
                 -- place.
                 sessionsByClinic =
                     model.sessionsByClinic
-                        |> EveryDict.map (always (RemoteData.map (EveryDictList.remove uuid)))
-                        |> EveryDict.update data.clinicId (Maybe.map (RemoteData.map (EveryDictList.insert uuid data)))
+                        |> AllDict.map (always (RemoteData.map (AllDictList.remove uuid)))
+                        |> AllDict.update data.clinicId (Maybe.map (RemoteData.map (AllDictList.insert uuid data)))
             in
             { model
                 | sessionsByClinic = sessionsByClinic
-                , expectedParticipants = EveryDict.remove uuid model.expectedParticipants
-                , expectedSessions = EveryDict.empty
-                , sessions = EveryDict.insert uuid (Success data) model.sessions
+                , expectedParticipants = AllDict.remove uuid model.expectedParticipants
+                , expectedSessions = EntityUuidDict.empty
+                , sessions = AllDict.insert uuid (Success data) model.sessions
             }
 
         WeightRevision uuid data ->
             mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | weights = EveryDictList.insert uuid data measurements.weights })
+                (\measurements -> { measurements | weights = AllDictList.insert uuid data measurements.weights })
                 model

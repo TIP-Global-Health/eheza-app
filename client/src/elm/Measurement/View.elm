@@ -4,6 +4,7 @@ module Measurement.View exposing (viewChild, viewMother, viewMuacIndication)
 -}
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
+import AllDictList
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
@@ -11,15 +12,12 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData, muacIndication)
 import Backend.Person.Model exposing (Gender, Person)
 import Backend.Session.Model exposing (EditableSession)
-import EveryDict exposing (EveryDict)
-import EveryDictList exposing (EveryDictList)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
-import HtmlParser.Util exposing (toVirtualDom)
 import Json.Decode
 import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
@@ -29,7 +27,7 @@ import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
 import Translate as Trans exposing (Language, TranslationId, translate)
-import Translate.Utils exposing (selectLanguage)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import Utils.Html exposing (script, viewModal)
 import Utils.NominalDate exposing (Days(..), diffDays)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
@@ -657,7 +655,7 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
                        ChildActivity Counseling
 
                    allTopicsChecked =
-                       EveryDictList.all
+                       AllDictList.all
                            (\id _ -> EverySet.member id topics)
                            expected
 
@@ -679,8 +677,8 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
 
                    expected =
                        session.offlineSession.everyCounselingSchedule
-                           |> EveryDict.get timing
-                           |> Maybe.withDefault EveryDictList.empty
+                           |> AllDict.get timing
+                           |> Maybe.withDefault EntityUuidDictList.empty
                in
                div
                    [ class "ui full segment counseling"
@@ -707,10 +705,10 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
 -}
 
 
-viewCounselingTopics : Language -> Bool -> EveryDictList CounselingTopicId CounselingTopic -> EverySet CounselingTopicId -> List (Html MsgChild)
+viewCounselingTopics : Language -> Bool -> EntityUuidDictList CounselingTopicId CounselingTopic -> EverySet CounselingTopicId -> List (Html MsgChild)
 viewCounselingTopics language completed expectedTopics selectedTopics =
     expectedTopics
-        |> EveryDictList.map
+        |> AllDictList.map
             (\topicId topic ->
                 let
                     inputId =
@@ -736,7 +734,7 @@ viewCounselingTopics language completed expectedTopics selectedTopics =
                         [ text <| translate language (Trans.CounselingTopic topic) ]
                     ]
             )
-        |> EveryDictList.values
+        |> AllDictList.values
 
 
 type alias MotherMeasurementData =
@@ -757,7 +755,7 @@ viewMother language activity measurements model =
 -- ParticipantConsent ->
 --    viewParticipantConsent language (mapMeasurementData .consent measurements) model.participantConsent
 {-
-   viewParticipantConsent : Language -> MeasurementData (EveryDictList ParticipantConsentId ParticipantConsent) -> ParticipantFormUI -> Html MsgMother
+   viewParticipantConsent : Language -> MeasurementData (EntityUuidDictList ParticipantConsentId ParticipantConsent) -> ParticipantFormUI -> Html MsgMother
    viewParticipantConsent language measurement ui =
        let
            activity =
@@ -804,8 +802,8 @@ viewMother language activity measurements model =
                let
                    completedLast =
                        expected
-                           |> EveryDictList.partition (\id _ -> EverySet.member id completedFormIds)
-                           |> (\( completed, todo ) -> EveryDictList.union todo completed)
+                           |> AllDictList.partition (\id _ -> EverySet.member id completedFormIds)
+                           |> (\( completed, todo ) -> AllDictList.union todo completed)
                in
                div
                    [ class "ui full segment participant-consent"
@@ -818,8 +816,8 @@ viewMother language activity measurements model =
                            ]
                        , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
                        , completedLast
-                           |> EveryDictList.map viewParticipantForm
-                           |> EveryDictList.values
+                           |> AllDictList.map viewParticipantForm
+                           |> AllDictList.values
                            |> div [ class "ui items" ]
                        ]
                    ]
@@ -842,10 +840,10 @@ viewMother language activity measurements model =
                        EverySet.member formId completedFormIds
 
                    form =
-                       EveryDictList.get formId expected
+                       AllDictList.get formId expected
 
                    progress =
-                       EveryDict.get formId ui.progress
+                       AllDict.get formId ui.progress
                            |> Maybe.withDefault emptyParticipantFormProgress
 
                    progressCompleted =

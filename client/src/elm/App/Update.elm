@@ -1,5 +1,6 @@
 port module App.Update exposing (init, subscriptions, updateAndThenFetch)
 
+import AllDict
 import AnimationFrame
 import App.Fetch
 import App.Model exposing (..)
@@ -213,11 +214,11 @@ update msg model =
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.sessionPages
-                                        |> EveryDict.get sessionId
+                                        |> AllDict.get sessionId
                                         |> Maybe.withDefault Pages.Session.Model.emptyModel
                                         |> Pages.Session.Update.update sessionId model.indexedDb subMsg
                             in
-                            ( { data | sessionPages = EveryDict.insert sessionId subModel data.sessionPages }
+                            ( { data | sessionPages = AllDict.insert sessionId subModel data.sessionPages }
                             , Cmd.map (MsgLoggedIn << MsgPageSession sessionId) subCmd
                             , extraMsgs
                             )

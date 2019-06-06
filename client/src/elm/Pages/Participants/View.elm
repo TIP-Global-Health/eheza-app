@@ -1,10 +1,10 @@
 module Pages.Participants.View exposing (view)
 
 import Activity.Utils exposing (getActivityCountForMother, getCheckedIn, summarizeByParticipant)
+import AllDictList
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
-import EveryDictList
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -31,13 +31,13 @@ view language ( sessionId, session ) model =
         mothersInAttendance =
             getCheckedIn session
                 |> .mothers
-                |> EveryDictList.filter (matchMotherAndHerChildren filter session.offlineSession)
+                |> AllDictList.filter (matchMotherAndHerChildren filter session.offlineSession)
 
         summary =
             summarizeByParticipant session
 
         ( mothersWithPendingActivity, mothersWithoutPendingActivity ) =
-            EveryDictList.partition
+            AllDictList.partition
                 (\motherId mother ->
                     getActivityCountForMother session motherId mother summary
                         |> (\count -> count.pending > 0)
@@ -47,12 +47,12 @@ view language ( sessionId, session ) model =
         tabs =
             let
                 pendingTabTitle =
-                    EveryDictList.size mothersWithPendingActivity
+                    AllDictList.size mothersWithPendingActivity
                         |> Trans.ActivitiesToComplete
                         |> translate language
 
                 completedTabTitle =
-                    EveryDictList.size mothersWithoutPendingActivity
+                    AllDictList.size mothersWithoutPendingActivity
                         |> Trans.ActivitiesCompleted
                         |> translate language
             in
@@ -93,12 +93,12 @@ view language ( sessionId, session ) model =
                         ]
 
                 mothersCards =
-                    if EveryDictList.size selectedMothers == 0 then
+                    if AllDictList.size selectedMothers == 0 then
                         [ span [] [ text emptySectionMessage ] ]
 
                     else
                         selectedMothers
-                            |> EveryDictList.toList
+                            |> AllDictList.toList
                             |> List.sortBy (\( _, mother ) -> mother.name)
                             |> List.map viewMotherCard
             in

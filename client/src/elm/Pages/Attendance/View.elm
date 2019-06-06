@@ -8,11 +8,11 @@ at a session.
 -}
 
 import Activity.Utils exposing (motherIsCheckedIn)
+import AllDictList
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildren, getMotherMeasurementData)
-import EveryDictList
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
@@ -39,7 +39,7 @@ view language ( sessionId, session ) model =
                 matchMotherAndHerChildren filter session.offlineSession
 
         mothers =
-            if EveryDictList.isEmpty session.offlineSession.mothers then
+            if AllDictList.isEmpty session.offlineSession.mothers then
                 [ div
                     [ class "ui message warning" ]
                     [ text <| translate language Translate.ThisGroupHasNoMothers ]
@@ -48,15 +48,15 @@ view language ( sessionId, session ) model =
             else
                 let
                     matching =
-                        EveryDictList.filter matches session.offlineSession.mothers
+                        AllDictList.filter matches session.offlineSession.mothers
                 in
-                if EveryDictList.isEmpty matching then
+                if AllDictList.isEmpty matching then
                     [ span [] [ text <| translate language Translate.NoMatchesFound ] ]
 
                 else
                     matching
-                        |> EveryDictList.map (viewMother session)
-                        |> EveryDictList.values
+                        |> AllDictList.map (viewMother session)
+                        |> AllDictList.values
     in
     div [ class "wrap wrap-alt-2 page-attendance" ]
         [ div

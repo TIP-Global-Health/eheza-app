@@ -1,16 +1,17 @@
 module Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getMotherForm)
 
 import Activity.Utils exposing (expectCounselingActivity, expectParticipantConsent)
+import AllDict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData)
-import EveryDict
-import EveryDictList
 import EverySet
 import Measurement.Model exposing (..)
 import Pages.Session.Model
+import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 getInputConstraintsHeight : FloatInputConstraints
@@ -89,7 +90,7 @@ fromMotherMeasurementData data =
                 |> currentValues
                 |> List.map (Tuple.second >> .value >> .formId)
                 |> List.map (\formId -> ( formId, completedParticipantFormProgress ))
-                |> EveryDict.fromList
+                |> EntityUuidDict.fromList
     in
     { familyPlanningSigns =
         data
@@ -98,7 +99,7 @@ fromMotherMeasurementData data =
             |> Maybe.map .value
             |> Maybe.withDefault EverySet.empty
     , participantConsent =
-        { expected = EveryDictList.empty
+        { expected = EntityUuidDictList.empty
         , view = Nothing
         , progress = progress
         }
@@ -109,7 +110,7 @@ getMotherForm : PersonId -> Pages.Session.Model.Model -> EditableSession -> Mode
 getMotherForm motherId pages session =
     -- Could use `Maybe.withDefault` here instead, but then
     -- `fromMotherMeasurementData` would get calculated every time
-    case EveryDict.get motherId pages.motherForms of
+    case AllDict.get motherId pages.motherForms of
         Just motherForm ->
             motherForm
 
@@ -131,7 +132,7 @@ getChildForm : PersonId -> Pages.Session.Model.Model -> EditableSession -> Model
 getChildForm childId pages session =
     -- Could use `Maybe.withDefault` here instead, but then
     -- `fromChildMeasurementData` would get calculated every time
-    case EveryDict.get childId pages.childForms of
+    case AllDict.get childId pages.childForms of
         Just childForm ->
             childForm
 

@@ -1,5 +1,6 @@
 module App.View exposing (view)
 
+import AllDict
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInModel)
 import Config.View
@@ -212,7 +213,7 @@ viewUserPage page model configured =
                 SessionPage sessionId subPage ->
                     let
                         sessionPages =
-                            EveryDict.get sessionId loggedInModel.sessionPages
+                            AllDict.get sessionId loggedInModel.sessionPages
                                 |> Maybe.withDefault Pages.Session.Model.emptyModel
                     in
                     Pages.Session.View.view

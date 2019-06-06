@@ -1,5 +1,7 @@
 module Backend.Session.Utils exposing (emptyMotherMeasurementData, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMyMother, isAuthorized, isClosed, makeEditableSession)
 
+import AllDict
+import AllDictList
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
@@ -7,57 +9,57 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (..)
-import EveryDict
-import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date
+import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 {-| Given a mother's id, get all her children from the offline session.
 -}
 getChildren : PersonId -> OfflineSession -> List ( PersonId, Person )
 getChildren motherId session =
-    EveryDict.get motherId session.participants.byMotherId
+    AllDict.get motherId session.participants.byMotherId
         |> Maybe.withDefault []
         |> List.filterMap
             (\participant ->
-                EveryDictList.get participant.child session.children
+                AllDictList.get participant.child session.children
                     |> Maybe.map (\child -> ( participant.child, child ))
             )
 
 
 getChild : PersonId -> OfflineSession -> Maybe Person
 getChild childId session =
-    EveryDictList.get childId session.children
+    AllDictList.get childId session.children
 
 
 getMother : PersonId -> OfflineSession -> Maybe Person
 getMother motherId session =
-    EveryDictList.get motherId session.mothers
+    AllDictList.get motherId session.mothers
 
 
 getMyMother : PersonId -> OfflineSession -> Maybe ( PersonId, Person )
 getMyMother childId session =
-    EveryDict.get childId session.participants.byChildId
+    AllDict.get childId session.participants.byChildId
         |> Maybe.withDefault []
         |> List.head
         |> Maybe.andThen
             (\participant ->
-                EveryDictList.get participant.adult session.mothers
+                AllDictList.get participant.adult session.mothers
                     |> Maybe.map (\person -> ( participant.adult, person ))
             )
 
 
 getChildHistoricalMeasurements : PersonId -> OfflineSession -> ChildMeasurementList
 getChildHistoricalMeasurements childId session =
-    EveryDict.get childId session.historicalMeasurements.children
+    AllDict.get childId session.historicalMeasurements.children
         |> Maybe.withDefault emptyChildMeasurementList
 
 
 getMotherHistoricalMeasurements : PersonId -> OfflineSession -> MotherMeasurementList
 getMotherHistoricalMeasurements motherId session =
-    EveryDict.get motherId session.historicalMeasurements.mothers
+    AllDict.get motherId session.historicalMeasurements.mothers
         |> Maybe.withDefault emptyMotherMeasurementList
 
 
@@ -66,10 +68,10 @@ getMotherHistoricalMeasurements motherId session =
 getChildMeasurementData : PersonId -> EditableSession -> MeasurementData ChildMeasurements
 getChildMeasurementData childId session =
     { current =
-        EveryDict.get childId session.offlineSession.currentMeasurements.children
+        AllDict.get childId session.offlineSession.currentMeasurements.children
             |> Maybe.withDefault emptyChildMeasurements
     , previous =
-        EveryDict.get childId session.offlineSession.previousMeasurements.children
+        AllDict.get childId session.offlineSession.previousMeasurements.children
             |> Maybe.withDefault emptyChildMeasurements
     , update = session.update
     }
@@ -80,10 +82,10 @@ getChildMeasurementData childId session =
 getMotherMeasurementData : PersonId -> EditableSession -> MeasurementData MotherMeasurements
 getMotherMeasurementData motherId session =
     { current =
-        EveryDict.get motherId session.offlineSession.currentMeasurements.mothers
+        AllDict.get motherId session.offlineSession.currentMeasurements.mothers
             |> Maybe.withDefault emptyMotherMeasurements
     , previous =
-        EveryDict.get motherId session.offlineSession.previousMeasurements.mothers
+        AllDict.get motherId session.offlineSession.previousMeasurements.mothers
             |> Maybe.withDefault emptyMotherMeasurements
     , update = session.update
     }
@@ -110,7 +112,7 @@ makeEditableSession : SessionId -> ModelIndexedDb -> WebData EditableSession
 makeEditableSession sessionId db =
     let
         sessionData =
-            EveryDict.get sessionId db.sessions
+            AllDict.get sessionId db.sessions
                 |> Maybe.withDefault NotAsked
 
         allParticipantFormsData =
@@ -120,66 +122,66 @@ makeEditableSession sessionId db =
             db.everyCounselingSchedule
 
         participantsData =
-            EveryDict.get sessionId db.expectedParticipants
+            AllDict.get sessionId db.expectedParticipants
                 |> Maybe.withDefault NotAsked
 
         mothersData =
             RemoteData.andThen
                 (\participants ->
-                    EveryDict.keys participants.byMotherId
+                    AllDict.keys participants.byMotherId
                         |> List.map
                             (\id ->
-                                EveryDict.get id db.people
+                                AllDict.get id db.people
                                     |> Maybe.withDefault NotAsked
                                     |> RemoteData.map (\data -> ( id, data ))
                             )
                         |> RemoteData.fromList
-                        |> RemoteData.map (EveryDictList.fromList >> EveryDictList.sortBy .name)
+                        |> RemoteData.map (EntityUuidDictList.fromList >> AllDictList.sortBy .name)
                 )
                 participantsData
 
         childrenData =
             RemoteData.andThen
                 (\participants ->
-                    EveryDict.keys participants.byChildId
+                    AllDict.keys participants.byChildId
                         |> List.map
                             (\id ->
-                                EveryDict.get id db.people
+                                AllDict.get id db.people
                                     |> Maybe.withDefault NotAsked
                                     |> RemoteData.map (\data -> ( id, data ))
                             )
                         |> RemoteData.fromList
-                        |> RemoteData.map EveryDictList.fromList
+                        |> RemoteData.map EntityUuidDictList.fromList
                 )
                 participantsData
 
         childMeasurementListData =
             RemoteData.andThen
                 (\children ->
-                    EveryDictList.keys children
+                    AllDictList.keys children
                         |> List.map
                             (\childId ->
-                                EveryDict.get childId db.childMeasurements
+                                AllDict.get childId db.childMeasurements
                                     |> Maybe.withDefault NotAsked
                                     |> RemoteData.map (\data -> ( childId, data ))
                             )
                         |> RemoteData.fromList
-                        |> RemoteData.map EveryDict.fromList
+                        |> RemoteData.map EntityUuidDict.fromList
                 )
                 childrenData
 
         adultMeasurementListData =
             RemoteData.andThen
                 (\mothers ->
-                    EveryDictList.keys mothers
+                    AllDictList.keys mothers
                         |> List.map
                             (\motherId ->
-                                EveryDict.get motherId db.motherMeasurements
+                                AllDict.get motherId db.motherMeasurements
                                     |> Maybe.withDefault NotAsked
                                     |> RemoteData.map (\data -> ( motherId, data ))
                             )
                         |> RemoteData.fromList
-                        |> RemoteData.map EveryDict.fromList
+                        |> RemoteData.map EntityUuidDict.fromList
                 )
                 mothersData
 
@@ -196,12 +198,12 @@ makeEditableSession sessionId db =
             RemoteData.map2
                 (\childData motherData ->
                     { current =
-                        { mothers = EveryDict.map (always .current) motherData
-                        , children = EveryDict.map (always .current) childData
+                        { mothers = AllDict.map (always .current) motherData
+                        , children = AllDict.map (always .current) childData
                         }
                     , previous =
-                        { mothers = EveryDict.map (always .previous) motherData
-                        , children = EveryDict.map (always .previous) childData
+                        { mothers = AllDict.map (always .previous) motherData
+                        , children = AllDict.map (always .previous) childData
                         }
                     }
                 )

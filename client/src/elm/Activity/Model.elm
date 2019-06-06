@@ -14,7 +14,7 @@ in a way that is suitable for the UI we want to present.
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import EveryDict exposing (EveryDict)
-import EveryDictList exposing (EveryDictList)
+import Utils.EntityUuidDictList exposing (EntityUuidDictList)
 
 
 type Activity
@@ -64,8 +64,8 @@ this converts from our "basic" facts to facts that are organized in
 a way that is more useful for the UI we present.
 -}
 type alias SummaryByActivity =
-    { children : EveryDict ChildActivity (CompletedAndPending (EveryDictList PersonId Person))
-    , mothers : EveryDict MotherActivity (CompletedAndPending (EveryDictList PersonId Person))
+    { children : EveryDict ChildActivity (CompletedAndPending (EntityUuidDictList PersonId Person))
+    , mothers : EveryDict MotherActivity (CompletedAndPending (EntityUuidDictList PersonId Person))
     }
 
 
@@ -74,6 +74,6 @@ So, for each participant, what activities have been completed,
 and what activities are still pending?
 -}
 type alias SummaryByParticipant =
-    { children : EveryDictList PersonId (CompletedAndPending (List ChildActivity))
-    , mothers : EveryDictList PersonId (CompletedAndPending (List MotherActivity))
+    { children : EntityUuidDictList PersonId (CompletedAndPending (List ChildActivity))
+    , mothers : EntityUuidDictList PersonId (CompletedAndPending (List MotherActivity))
     }

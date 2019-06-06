@@ -1,8 +1,8 @@
 module Pages.Session.Fetch exposing (fetch)
 
+import AllDict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import EveryDict
 import Pages.Page exposing (SessionPage(..))
 import Pages.ProgressReport.Fetch
 import RemoteData exposing (RemoteData(..))
@@ -20,17 +20,17 @@ fetch sessionId sessionPage db =
                     []
 
         participantData =
-            EveryDict.get sessionId db.expectedParticipants
+            AllDict.get sessionId db.expectedParticipants
                 |> Maybe.withDefault NotAsked
 
         childrenIdData =
             RemoteData.map
-                (.byChildId >> EveryDict.keys)
+                (.byChildId >> AllDict.keys)
                 participantData
 
         motherIdData =
             RemoteData.map
-                (.byMotherId >> EveryDict.keys)
+                (.byMotherId >> AllDict.keys)
                 participantData
 
         -- It would be more efficient here to have messages that could fetch a

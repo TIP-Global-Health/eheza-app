@@ -29,6 +29,8 @@ expected (and not completed).
 -}
 
 import Activity.Model exposing (..)
+import AllDict
+import AllDictList
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -38,11 +40,11 @@ import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (..)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMyMother)
-import EveryDict exposing (EveryDict)
-import EveryDictList exposing (EveryDictList)
+import EveryDict
 import EverySet
 import Gizra.NominalDate exposing (diffDays)
 import Maybe.Extra exposing (isJust, isNothing)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 {-| Used for URL etc., not for display in the normal UI (since we'd translate
@@ -227,15 +229,15 @@ expectCounselingActivity session childId =
 
         -- Have we ever completed a counseling session of the specified type?
         completed timing =
-            EveryDictList.any
+            AllDictList.any
                 (\_ counseling -> Tuple.first counseling.value == timing)
                 historical
 
         -- How long ago did we complete a session of the specified type?
         completedDaysAgo timing =
             historical
-                |> EveryDictList.filter (\_ counseling -> Tuple.first counseling.value == timing)
-                |> EveryDictList.head
+                |> AllDictList.filter (\_ counseling -> Tuple.first counseling.value == timing)
+                |> AllDictList.head
                 |> Maybe.map (\( _, counseling ) -> diffDays counseling.dateMeasured session.offlineSession.session.scheduledDate.start)
 
         -- How old will the child be as of the scheduled date of the session?
@@ -397,7 +399,7 @@ whether we would expect to perform this action if checked in.
 -}
 expectMotherActivity : EditableSession -> PersonId -> MotherActivity -> Bool
 expectMotherActivity session motherId activity =
-    EveryDict.get motherId session.offlineSession.participants.byMotherId
+    AllDict.get motherId session.offlineSession.participants.byMotherId
         |> Maybe.withDefault []
         |> List.any
             (\participant ->
@@ -411,7 +413,7 @@ expectMotherActivity session motherId activity =
                                 False
              {- ParticipantConsent ->
                 expectParticipantConsent session motherId
-                    |> EveryDictList.isEmpty
+                    |> AllDictList.isEmpty
                     |> not
              -}
             )
@@ -419,18 +421,18 @@ expectMotherActivity session motherId activity =
 
 {-| Which participant forms would we expect this mother to consent to in this session?
 -}
-expectParticipantConsent : EditableSession -> PersonId -> EveryDictList ParticipantFormId ParticipantForm
+expectParticipantConsent : EditableSession -> PersonId -> EntityUuidDictList ParticipantFormId ParticipantForm
 expectParticipantConsent session motherId =
     let
         previouslyConsented =
             getMotherHistoricalMeasurements motherId session.offlineSession
                 |> .consents
-                |> EveryDictList.map (\_ consent -> consent.value.formId)
-                |> EveryDictList.values
+                |> AllDictList.map (\_ consent -> consent.value.formId)
+                |> AllDictList.values
                 |> EverySet.fromList
     in
     session.offlineSession.allParticipantForms
-        |> EveryDictList.filter (\id _ -> not (EverySet.member id previouslyConsented))
+        |> AllDictList.filter (\id _ -> not (EverySet.member id previouslyConsented))
 
 
 {-| For a particular child activity, figure out which children have completed
@@ -438,12 +440,12 @@ the activity and have the activity pending. (This may not add up to all the
 children, because we only consider a child "pending" if they are checked in and
 the activity is expected.
 -}
-summarizeChildActivity : ChildActivity -> EditableSession -> CompletedAndPending (EveryDictList PersonId Person)
+summarizeChildActivity : ChildActivity -> EditableSession -> CompletedAndPending (EntityUuidDictList PersonId Person)
 summarizeChildActivity activity session =
     getCheckedIn session
         |> .children
-        |> EveryDictList.filter (\childId _ -> expectChildActivity session childId activity)
-        |> EveryDictList.partition (\childId _ -> childHasCompletedActivity childId activity session)
+        |> AllDictList.filter (\childId _ -> expectChildActivity session childId activity)
+        |> AllDictList.partition (\childId _ -> childHasCompletedActivity childId activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
 
@@ -452,14 +454,14 @@ the activity and have the activity pending. (This may not add up to all the
 mothers, because we only consider a mother "pending" if they are checked in and
 the activity is expected.
 -}
-summarizeMotherActivity : MotherActivity -> EditableSession -> CompletedAndPending (EveryDictList PersonId Person)
+summarizeMotherActivity : MotherActivity -> EditableSession -> CompletedAndPending (EntityUuidDictList PersonId Person)
 summarizeMotherActivity activity session =
     -- For participant consent, we only consider the activity to be completed once
     -- all expected consents have been saved.
     getCheckedIn session
         |> .mothers
-        |> EveryDictList.filter (\motherId _ -> expectMotherActivity session motherId activity)
-        |> EveryDictList.partition (\motherId _ -> motherHasCompletedActivity motherId activity session)
+        |> AllDictList.filter (\motherId _ -> expectMotherActivity session motherId activity)
+        |> AllDictList.partition (\motherId _ -> motherHasCompletedActivity motherId activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
 
@@ -506,8 +508,8 @@ getParticipantCountForActivity summary activity =
                 |> EveryDict.get childActivity
                 |> Maybe.map
                     (\{ completed, pending } ->
-                        { completed = EveryDictList.size completed
-                        , pending = EveryDictList.size pending
+                        { completed = AllDictList.size completed
+                        , pending = AllDictList.size pending
                         }
                     )
                 |> Maybe.withDefault
@@ -520,8 +522,8 @@ getParticipantCountForActivity summary activity =
                 |> EveryDict.get motherActivity
                 |> Maybe.map
                     (\{ completed, pending } ->
-                        { completed = EveryDictList.size completed
-                        , pending = EveryDictList.size pending
+                        { completed = AllDictList.size completed
+                        , pending = AllDictList.size pending
                         }
                     )
                 |> Maybe.withDefault
@@ -565,12 +567,12 @@ summarizeByParticipant session =
             getCheckedIn session
 
         children =
-            EveryDictList.map
+            AllDictList.map
                 (\childId _ -> summarizeChildParticipant childId session)
                 checkedIn.children
 
         mothers =
-            EveryDictList.map
+            AllDictList.map
                 (\motherId _ -> summarizeMotherParticipant motherId session)
                 checkedIn.mothers
     in
@@ -590,7 +592,7 @@ getActivityCountForMother : EditableSession -> PersonId -> Person -> SummaryByPa
 getActivityCountForMother session id mother summary =
     let
         motherCount =
-            EveryDictList.get id summary.mothers
+            AllDictList.get id summary.mothers
                 |> Maybe.map
                     (\activities ->
                         { pending = List.length activities.pending
@@ -604,7 +606,7 @@ getActivityCountForMother session id mother summary =
     in
     List.foldl
         (\( childId, _ ) accum ->
-            EveryDictList.get childId summary.children
+            AllDictList.get childId summary.children
                 |> Maybe.map
                     (\activities ->
                         { pending = accum.pending + List.length activities.pending
@@ -664,7 +666,7 @@ hasCompletedMotherActivity session motherId activityType measurements =
                    |> EverySet.fromList
        in
        expectParticipantConsent session motherId
-           |> EveryDictList.all (\id _ -> EverySet.member id current)
+           |> AllDictList.all (\id _ -> EverySet.member id current)
 -}
 
 
@@ -743,22 +745,22 @@ childIsCheckedIn childId session =
 {-| Who is checked in, considering both explicit check in and anyone who has
 any completed activity?
 -}
-getCheckedIn : EditableSession -> { mothers : EveryDictList PersonId Person, children : EveryDictList PersonId Person }
+getCheckedIn : EditableSession -> { mothers : EntityUuidDictList PersonId Person, children : EntityUuidDictList PersonId Person }
 getCheckedIn session =
     let
         -- A mother is checked in if explicitly checked in or has any completed
         -- activites.
         mothers =
-            EveryDictList.filter
+            AllDictList.filter
                 (\motherId _ -> motherIsCheckedIn motherId session)
                 session.offlineSession.mothers
 
         -- A child is checked in if the mother is checked in.
         children =
-            EveryDictList.filter
+            AllDictList.filter
                 (\childId _ ->
                     getMyMother childId session.offlineSession
-                        |> Maybe.map (\( motherId, _ ) -> EveryDictList.member motherId mothers)
+                        |> Maybe.map (\( motherId, _ ) -> AllDictList.member motherId mothers)
                         |> Maybe.withDefault False
                 )
                 session.offlineSession.children
@@ -791,12 +793,12 @@ hasAnyCompletedActivity session =
     let
         forChildren =
             session.offlineSession.children
-                |> EveryDictList.toList
+                |> AllDictList.toList
                 |> List.any (\( id, _ ) -> childHasAnyCompletedActivity id session)
 
         forMothers =
             session.offlineSession.mothers
-                |> EveryDictList.toList
+                |> AllDictList.toList
                 |> List.any (\( id, _ ) -> motherHasAnyCompletedActivity id session)
     in
     forChildren || forMothers

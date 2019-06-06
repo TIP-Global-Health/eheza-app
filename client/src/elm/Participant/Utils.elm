@@ -2,10 +2,10 @@ module Participant.Utils exposing (childParticipant, motherParticipant)
 
 import Activity.Model exposing (Activity(..), ChildActivity, MotherActivity)
 import Activity.Utils exposing (summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
+import AllDict
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Utils exposing (getMyMother)
-import EveryDict
 import Measurement.Model
 import Pages.Activity.Utils exposing (viewChildMeasurements, viewMotherMeasurements)
 import Participant.Model exposing (Participant, ParticipantId(..))
@@ -19,7 +19,7 @@ childParticipant =
     , getMotherId = \childId session -> getMyMother childId session.offlineSession |> Maybe.map Tuple.first
     , getName = .name
     , getParticipants = \session -> session.offlineSession.children
-    , getValue = \id db -> EveryDict.get id db.people |> Maybe.withDefault NotAsked
+    , getValue = \id db -> AllDict.get id db.people |> Maybe.withDefault NotAsked
     , getVillage = .village
     , iconClass = "child"
     , showProgressReportTab = True
@@ -40,7 +40,7 @@ motherParticipant =
     , getMotherId = \motherId session -> Just motherId
     , getName = .name
     , getParticipants = \session -> session.offlineSession.mothers
-    , getValue = \id db -> EveryDict.get id db.people |> Maybe.withDefault NotAsked
+    , getValue = \id db -> AllDict.get id db.people |> Maybe.withDefault NotAsked
     , getVillage = .village
     , iconClass = "mother"
     , showProgressReportTab = False
