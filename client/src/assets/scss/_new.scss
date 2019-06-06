@@ -245,9 +245,12 @@ div.page-prenatal-encounter {
     .ui.full.segment {
       color: $color-text;
 
-      .card .content p {
-        white-space: unset;
+      .full.content {
+        min-height: 430px;
+
+        .card .content p {
+          white-space: unset;
+        }
       }
     }
-
 }
