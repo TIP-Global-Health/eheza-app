@@ -208,6 +208,7 @@ type TranslationId
     | Edd
     | EditRelationship
     | Ega
+    | EndEncounter
     | EndGroupEncounter
     | EnterPairingCode
     | ErrorCheckLocalConfig
@@ -1034,6 +1035,11 @@ translationSet trans =
 
         Ega ->
             { english = "EGA"
+            , kinyarwanda = Nothing
+            }
+
+        EndEncounter ->
+            { english = "End Encounter"
             , kinyarwanda = Nothing
             }
 

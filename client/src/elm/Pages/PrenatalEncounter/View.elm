@@ -205,6 +205,13 @@ viewMainPageContent language currentDate model =
                                 List.map viewCard selectedActivities
                         ]
                     ]
+                , div [ class "actions" ]
+                    [ button
+                        [ class "ui fluid primary button"
+                        , onClick <| SetActivePage PinCodePage
+                        ]
+                        [ text <| translate language Translate.EndEncounter ]
+                    ]
                 ]
     in
     [ tabs
