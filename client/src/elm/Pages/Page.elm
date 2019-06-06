@@ -42,6 +42,7 @@ choices about what to show the user, rather than the details).
 
 import Activity.Model exposing (Activity(..))
 import Backend.Entities exposing (..)
+import PrenatalActivity.Model exposing (PrenatalActivity(..))
 
 
 {-| What does the user want to see?
@@ -127,7 +128,8 @@ type UserPage
       -- then we're in a context in which we're looking to add a family member.
     | PersonsPage (Maybe PersonId)
     | RelationshipPage PersonId PersonId -- create or edit a relationship between these persons.
-    | PrenatalEncounterPage PersonId -- record prenatal activities
+    | PrenatalEncounterPage PersonId -- prenatal activities index
+    | PrenatalActivityPage PersonId PrenatalActivity -- record prenatal activity
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it

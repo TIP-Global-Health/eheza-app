@@ -31,32 +31,6 @@ for that).
 encodeActivityAsString : PrenatalActivity -> String
 encodeActivityAsString activity =
     case activity of
-        _ ->
-            ""
-
-
-{-| The inverse of encodeActivityTypeAsString
--}
-decodeActivityFromString : String -> Maybe PrenatalActivity
-decodeActivityFromString s =
-    case s of
-        _ ->
-            Nothing
-
-
-{-| An activity type to use if we need to start somewhere.
--}
-defaultActivity : PrenatalActivity
-defaultActivity =
-    PregnancyDating
-
-
-{-| Returns a string representing an icon for the activity, for use in a
-"class" attribute.
--}
-getActivityIcon : PrenatalActivity -> String
-getActivityIcon activity =
-    case activity of
         DangerSigns ->
             "danger-signs"
 
@@ -74,6 +48,48 @@ getActivityIcon activity =
 
         PregnancyDating ->
             "pregnancy-dating"
+
+
+{-| The inverse of encodeActivityTypeAsString
+-}
+decodeActivityFromString : String -> Maybe PrenatalActivity
+decodeActivityFromString s =
+    case s of
+        "danger-signs" ->
+            Just DangerSigns
+
+        "examination" ->
+            Just Examination
+
+        "planning" ->
+            Just FamilyPlanning
+
+        "history" ->
+            Just History
+
+        "patient-provisions" ->
+            Just PatientProvisions
+
+        "pregnancy-dating" ->
+            Just PregnancyDating
+
+        _ ->
+            Nothing
+
+
+{-| An activity type to use if we need to start somewhere.
+-}
+defaultActivity : PrenatalActivity
+defaultActivity =
+    PregnancyDating
+
+
+{-| Returns a string representing an icon for the activity, for use in a
+"class" attribute.
+-}
+getActivityIcon : PrenatalActivity -> String
+getActivityIcon activity =
+    encodeActivityAsString activity
 
 
 getAllActivities : List PrenatalActivity

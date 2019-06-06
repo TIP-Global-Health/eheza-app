@@ -1,8 +1,10 @@
 module Pages.Router exposing (delta2url, parseUrl)
 
 import Activity.Model exposing (Activity)
-import Activity.Utils exposing (decodeActivityFromString, defaultActivity, encodeActivityAsString)
+import Activity.Utils
 import Pages.Page exposing (..)
+import PrenatalActivity.Model exposing (PrenatalActivity)
+import PrenatalActivity.Utils
 import Restful.Endpoint exposing (EntityUuid, fromEntityUuid, toEntityUuid)
 import RouteUrl exposing (HistoryEntry(..), UrlChange)
 import UrlParser exposing ((</>), Parser, custom, int, map, oneOf, parseHash, s, string, top)
@@ -83,7 +85,7 @@ delta2url previous current =
                                     "/activities"
 
                                 ActivityPage activity ->
-                                    "/activity/" ++ encodeActivityAsString activity
+                                    "/activity/" ++ Activity.Utils.encodeActivityAsString activity
 
                                 AttendancePage ->
                                     ""
@@ -108,6 +110,9 @@ delta2url previous current =
                 PrenatalEncounterPage id ->
                     Just <| UrlChange NewEntry <| "#prenatal-encounter/" ++ fromEntityUuid id
 
+                PrenatalActivityPage id activity ->
+                    Just <| UrlChange NewEntry <| "#prenatal-activity/" ++ fromEntityUuid id ++ PrenatalActivity.Utils.encodeActivityAsString activity
+
 
 {-| For now, the only messages we're generating from the URL are messages
 to set the active page. So, we just return a `Page`, and the caller can
@@ -131,6 +136,7 @@ parseUrl =
         , map (\id -> UserPage <| PersonPage id) (s "person" </> parseUuid)
         , map (\id1 id2 -> UserPage <| RelationshipPage id1 id2) (s "relationship" </> parseUuid </> parseUuid)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
+        , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-encounter" </> parseUuid </> parsePrenatalActivity)
 
         -- `top` represents the page without any segements ... i.e. the
         -- root page.
@@ -160,9 +166,21 @@ parseActivity : Parser (Activity -> c) c
 parseActivity =
     custom "Activity" <|
         \part ->
-            case decodeActivityFromString part of
+            case Activity.Utils.decodeActivityFromString part of
                 Just activity ->
                     Ok activity
 
                 Nothing ->
                     Err <| part ++ " is not an Activity"
+
+
+parsePrenatalActivity : Parser (PrenatalActivity -> c) c
+parsePrenatalActivity =
+    custom "PrenatalActivity" <|
+        \part ->
+            case PrenatalActivity.Utils.decodeActivityFromString part of
+                Just activity ->
+                    Ok activity
+
+                Nothing ->
+                    Err <| part ++ " is not an PrenatalActivity"

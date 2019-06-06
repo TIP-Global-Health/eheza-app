@@ -1,4 +1,4 @@
-module Pages.PrenatalEncounter.View exposing (view)
+module Pages.PrenatalEncounter.View exposing (view, viewMotherAndMeasurements)
 
 import AllDict
 import App.Model
@@ -44,17 +44,13 @@ view language currentDate id db model =
                             []
                             (\mother ->
                                 [ div [ class "ui unstackable items" ] <|
-                                    [ viewMotherDetails language currentDate mother
-                                    , viewMeasurements language currentDate
-                                    ]
-                                        ++ viewMainPageContent language currentDate model
+                                    viewMotherAndMeasurements language currentDate mother
+                                        ++ viewMainPageContent language currentDate id model
                                 ]
                             )
                     )
     in
-    div
-        [ class "page-prenatal-encounter" ]
-    <|
+    div [ class "page-prenatal-encounter" ] <|
         viewHeader language
             :: content
 
@@ -76,7 +72,14 @@ viewHeader language =
         ]
 
 
-viewMotherDetails : Language -> NominalDate -> Person -> Html Msg
+viewMotherAndMeasurements : Language -> NominalDate -> Person -> List (Html any)
+viewMotherAndMeasurements language currentDate mother =
+    [ viewMotherDetails language currentDate mother
+    , viewMeasurements language currentDate
+    ]
+
+
+viewMotherDetails : Language -> NominalDate -> Person -> Html any
 viewMotherDetails language currentDate mother =
     div [ class "item" ]
         [ div [ class "ui image" ]
@@ -97,7 +100,7 @@ viewMotherDetails language currentDate mother =
         ]
 
 
-viewMeasurements : Language -> NominalDate -> Html Msg
+viewMeasurements : Language -> NominalDate -> Html any
 viewMeasurements language currentDate =
     let
         dummyDate =
@@ -141,8 +144,8 @@ viewMeasurements language currentDate =
         ]
 
 
-viewMainPageContent : Language -> NominalDate -> Model -> List (Html Msg)
-viewMainPageContent language currentDate model =
+viewMainPageContent : Language -> NominalDate -> PersonId -> Model -> List (Html Msg)
+viewMainPageContent language currentDate motherId model =
     let
         ( pendingActivities, completedActivities ) =
             ( getAllActivities, [] )
@@ -167,8 +170,7 @@ viewMainPageContent language currentDate model =
             div [ class "card" ]
                 [ div
                     [ class "image"
-
-                    -- , onClick <| SetRedirectPage <| UserPage <| SessionPage sessionId <| ActivityPage activity
+                    , onClick <| SetActivePage <| UserPage <| PrenatalActivityPage motherId activity
                     ]
                     [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
                 , div [ class "content" ]

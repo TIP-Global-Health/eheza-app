@@ -2353,6 +2353,11 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
+                PrenatalActivityPage _ _ ->
+                    { english = "Prenatal Activity"
+                    , kinyarwanda = Nothing
+                    }
+
 
 translateAdherence : Adherence -> TranslationSet String
 translateAdherence adherence =
