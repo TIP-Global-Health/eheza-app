@@ -350,6 +350,7 @@ h3.ui.header {
   background-image: url(#{$img-path}icon-photo-active.svg);
   background-size: 76px 54px;
 }
+
 .icon-task-weight {
   background-image: url(#{$img-path}icon-weight-active.svg);
   background-size: 68px 88px;
@@ -379,6 +380,31 @@ h3.ui.header {
 }
 
 .icon-task-planning {
+  background-image: url(#{$img-path}icon-planning-active.svg);
+  background-size: 88px 80px;
+}
+
+.icon-task-danger-signs {
+  background-image: url(#{$img-path}icon-planning-active.svg);
+  background-size: 88px 80px;
+}
+
+.icon-task-examination {
+  background-image: url(#{$img-path}icon-planning-active.svg);
+  background-size: 88px 80px;
+}
+
+.icon-task-history {
+  background-image: url(#{$img-path}icon-planning-active.svg);
+  background-size: 88px 80px;
+}
+
+.icon-task-patient-provisions {
+  background-image: url(#{$img-path}icon-planning-active.svg);
+  background-size: 88px 80px;
+}
+
+.icon-task-pregnancy-dating {
   background-image: url(#{$img-path}icon-planning-active.svg);
   background-size: 88px 80px;
 }

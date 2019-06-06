@@ -33,6 +33,7 @@ import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
 import Pages.Page exposing (..)
+import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Translate.Model exposing (TranslationSet)
@@ -304,6 +305,7 @@ type TranslationId
     | PlaceholderEnterParticipantName
     | PlaceholderEnterWeight
     | PleaseSelectGroup
+    | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounter
     | PreviousFloatMeasurement Float
     | Profession
@@ -462,7 +464,7 @@ translationSet trans =
 
         ActivitiesHelp activity ->
             case activity of
-                MotherActivity FamilyPlanning ->
+                MotherActivity Activity.Model.FamilyPlanning ->
                     { english = "Every mother should be asked about her family planning method(s) each month. If a mother needs family planning, refer her to a clinic."
                     , kinyarwanda = Just "Buri mubyeyi agomba kubazwa uburyo bwo kuboneza urubyaro akoresha buri kwezi. Niba umubyeyi akeneye kuboneza urubyaro mwohereze ku kigo nderabuzima k'ubishinzwe"
                     }
@@ -504,7 +506,7 @@ translationSet trans =
 
         ActivitiesLabel activity ->
             case activity of
-                MotherActivity FamilyPlanning ->
+                MotherActivity Activity.Model.FamilyPlanning ->
                     { english = "Which, if any, of the following methods do you use?"
                     , kinyarwanda = Just "Ni ubuhe buryo, niba hari ubuhari, mu buryo bukurikira bwo kuboneza urubyaro ukoresha? Muri ubu buryo bukurikira bwo kuboneza urubyaro, ni ubuhe buryo mukoresha?"
                     }
@@ -546,7 +548,7 @@ translationSet trans =
 
         ActivitiesTitle activity ->
             case activity of
-                MotherActivity FamilyPlanning ->
+                MotherActivity Activity.Model.FamilyPlanning ->
                     { english = "Family Planning"
                     , kinyarwanda = Just "Kuboneza Urubyaro? nticyaza muri raporo yimikurire yumwana"
                     }
@@ -588,7 +590,7 @@ translationSet trans =
 
         ActivityProgressReport activity ->
             case activity of
-                MotherActivity FamilyPlanning ->
+                MotherActivity Activity.Model.FamilyPlanning ->
                     { english = "Family Planning"
                     , kinyarwanda = Just "Kuboneza Urubyaro? nticyaza muri raporo yimikurire yumwana"
                     }
@@ -1670,6 +1672,38 @@ translationSet trans =
             { english = "Please select the relevant Group for the new encounter"
             , kinyarwanda = Nothing
             }
+
+        PrenatalActivitiesTitle activity ->
+            case activity of
+                DangerSigns ->
+                    { english = "Danger Signs"
+                    , kinyarwanda = Nothing
+                    }
+
+                Examination ->
+                    { english = "Examination"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalActivity.Model.FamilyPlanning ->
+                    { english = "Family Planning"
+                    , kinyarwanda = Nothing
+                    }
+
+                History ->
+                    { english = "History"
+                    , kinyarwanda = Nothing
+                    }
+
+                PatientProvisions ->
+                    { english = "Patient Provisions"
+                    , kinyarwanda = Nothing
+                    }
+
+                PregnancyDating ->
+                    { english = "Pregnancy Dating"
+                    , kinyarwanda = Nothing
+                    }
 
         PrenatalEncounter ->
             { english = "Prenatal Encounter"

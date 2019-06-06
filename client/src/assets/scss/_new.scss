@@ -241,4 +241,13 @@ div.page-prenatal-encounter {
         border-right: 1px solid aquamarine;
       }
     }
+
+    .ui.full.segment {
+      color: $color-text;
+
+      .card .content p {
+        white-space: unset;
+      }
+    }
+
 }

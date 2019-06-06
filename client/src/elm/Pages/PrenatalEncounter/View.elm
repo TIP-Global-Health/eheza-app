@@ -16,6 +16,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Model exposing (..)
+import PrenatalActivity.Utils exposing (getActivityIcon, getAllActivities)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Time.Date exposing (date)
@@ -42,11 +43,11 @@ view language currentDate id db model =
                         >> unwrap
                             []
                             (\mother ->
-                                [ div [ class "ui unstackable items" ]
+                                [ div [ class "ui unstackable items" ] <|
                                     [ viewMotherDetails language currentDate mother
                                     , viewMeasurements language currentDate
-                                    , viewMainPageContent language currentDate model
                                     ]
+                                        ++ viewMainPageContent language currentDate model
                                 ]
                             )
                     )
@@ -140,11 +141,11 @@ viewMeasurements language currentDate =
         ]
 
 
-viewMainPageContent : Language -> NominalDate -> Model -> Html Msg
+viewMainPageContent : Language -> NominalDate -> Model -> List (Html Msg)
 viewMainPageContent language currentDate model =
     let
         ( pendingActivities, completedActivities ) =
-            ( [], [] )
+            ( getAllActivities, [] )
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -161,5 +162,51 @@ viewMainPageContent language currentDate model =
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
                 , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetSelectedTab Reports)
                 ]
+
+        viewCard activity =
+            div [ class "card" ]
+                [ div
+                    [ class "image"
+
+                    -- , onClick <| SetRedirectPage <| UserPage <| SessionPage sessionId <| ActivityPage activity
+                    ]
+                    [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
+                , div [ class "content" ]
+                    [ p []
+                        [ Translate.PrenatalActivitiesTitle activity
+                            |> translate language
+                            |> String.toUpper
+                            |> text
+                        ]
+                    ]
+                ]
+
+        ( selectedActivities, emptySectionMessage ) =
+            case model.selectedTab of
+                Pending ->
+                    ( pendingActivities, translate language Translate.NoActivitiesPending )
+
+                Completed ->
+                    ( completedActivities, translate language Translate.NoActivitiesCompleted )
+
+                Reports ->
+                    ( [], "Under construction..." )
+
+        activities =
+            div [ class "ui full segment" ]
+                [ div
+                    [ class "full content" ]
+                    [ div [ class "wrap-cards" ]
+                        [ div [ class "ui four cards" ] <|
+                            if List.isEmpty selectedActivities then
+                                [ span [] [ text emptySectionMessage ] ]
+
+                            else
+                                List.map viewCard selectedActivities
+                        ]
+                    ]
+                ]
     in
-    tabs
+    [ tabs
+    , activities
+    ]
