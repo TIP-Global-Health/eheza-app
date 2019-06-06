@@ -145,7 +145,6 @@ a {
 .ui.tabular.menu .item {
   font-size: 0.85em;
   background: #fff;
-  border: 0;
   padding: 0.6em 0.6em 0.6em 1.2em;
   width: 225px;
   height: 48px;
@@ -178,8 +177,7 @@ a {
 .ui.tabular.menu .active.item {
   background: #FFF;
   color: rgba(0,0,0,.95);
-  border-top-width: 1px;
-  border-color: #D4D4D5;
+  border-color: $color-primary;
   font-weight: 700;
   margin-bottom: -1px;
   box-shadow: none;
