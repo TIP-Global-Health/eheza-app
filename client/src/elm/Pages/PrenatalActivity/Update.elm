@@ -18,3 +18,47 @@ update motherId activity db msg model =
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
+
+        ToggleDateSelector ->
+            let
+                updatedForm =
+                    model.pregnancyDatingForm
+                        |> (\form -> { form | isDateSelectorOpen = not form.isDateSelectorOpen })
+            in
+            ( { model | pregnancyDatingForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetLmpDate value ->
+            let
+                updatedForm =
+                    model.pregnancyDatingForm
+                        |> (\form -> { form | lmpDate = Just value })
+            in
+            ( { model | pregnancyDatingForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetLmpDateConfident value ->
+            let
+                updatedForm =
+                    model.pregnancyDatingForm
+                        |> (\form -> { form | lmpDateConfident = Just value })
+            in
+            ( { model | pregnancyDatingForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetLmpRange s ->
+            let
+                updatedForm =
+                    model.pregnancyDatingForm
+                        |> (\form -> { form | lmpRange = decodeLmpRange s })
+            in
+            ( { model | pregnancyDatingForm = updatedForm }
+            , Cmd.none
+            , []
+            )

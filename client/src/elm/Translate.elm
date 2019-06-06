@@ -33,6 +33,7 @@ import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
 import Pages.Page exposing (..)
+import Pages.PrenatalActivity.Model exposing (LmpRange(..))
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
@@ -206,8 +207,10 @@ type TranslationId
     | DOB
     | DropzoneDefaultMessage
     | Edd
+    | EddHeader
     | EditRelationship
     | Ega
+    | EgaHeader
     | EndEncounter
     | EndGroupEncounter
     | EnterPairingCode
@@ -240,6 +243,10 @@ type TranslationId
     | LevelOfEducationLabel
     | LevelOfEducation EducationLevel
     | LinkToMother
+    | LmpDateConfidentHeader
+    | LmpDateHeader
+    | LmpRangeHeader
+    | LmpRange LmpRange
     | LoginPhrase LoginPhrase
     | MakeSureYouAreConnected
     | MaritalStatusLabel
@@ -378,6 +385,7 @@ type TranslationId
     | SyncGeneral
     | TelephoneNumber
     | TakenCareOfBy
+    | TasksCompleted Int Int
     | ThisActionCannotBeUndone
     | ThisGroupHasNoMothers
     | Training
@@ -1028,6 +1036,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        EddHeader ->
+            { english = "Estimated Date of Delivery:"
+            , kinyarwanda = Nothing
+            }
+
         EditRelationship ->
             { english = "Edit Relationship"
             , kinyarwanda = Nothing
@@ -1035,6 +1048,11 @@ translationSet trans =
 
         Ega ->
             { english = "EGA"
+            , kinyarwanda = Nothing
+            }
+
+        EgaHeader ->
+            { english = "Estimated Gestational Age:"
             , kinyarwanda = Nothing
             }
 
@@ -1299,6 +1317,38 @@ translationSet trans =
             { english = "Link to mother"
             , kinyarwanda = Just "Guhuza n'amakuru y'umubyeyi"
             }
+
+        LmpDateConfidentHeader ->
+            { english = "Is the Patient confident of LMP Date?"
+            , kinyarwanda = Nothing
+            }
+
+        LmpDateHeader ->
+            { english = "Last Menstrual Period Date:"
+            , kinyarwanda = Nothing
+            }
+
+        LmpRangeHeader ->
+            { english = "When was the Patient's Last Menstrual Period?"
+            , kinyarwanda = Nothing
+            }
+
+        LmpRange range ->
+            case range of
+                OneMonth ->
+                    { english = "Within 1 month"
+                    , kinyarwanda = Nothing
+                    }
+
+                ThreeMonth ->
+                    { english = "Within 3 months"
+                    , kinyarwanda = Nothing
+                    }
+
+                SixMonth ->
+                    { english = "Within 6 months"
+                    , kinyarwanda = Nothing
+                    }
 
         LoginPhrase phrase ->
             translateLoginPhrase phrase
@@ -2063,6 +2113,11 @@ translationSet trans =
 
         TakenCareOfBy ->
             { english = "Taken care of by"
+            , kinyarwanda = Nothing
+            }
+
+        TasksCompleted completed total ->
+            { english = toString completed ++ "/" ++ toString total ++ " Tasks Completed"
             , kinyarwanda = Nothing
             }
 

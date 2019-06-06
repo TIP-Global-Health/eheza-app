@@ -211,7 +211,8 @@ div.page-person {
   }
 }
 
-// Prenatal Encounter Page
+//Common for Prenatal Encounter and Prenatal Activity pages
+div.page-prenatal-activity,
 div.page-prenatal-encounter {
     padding: 0 35px 35px 35px;
     height: 100%;
@@ -247,10 +248,39 @@ div.page-prenatal-encounter {
 
       .full.content {
         min-height: 430px;
+      }
+    }
+
+}
+
+// Prenatal Encounter page
+div.page-prenatal-encounter {
+
+    .ui.full.segment {
+
+      .full.content {
 
         .card .content p {
           white-space: unset;
         }
+      }
+    }
+}
+
+// Prenatal Activity page
+div.page-prenatal-activity {
+
+    .tasks-count {
+      background: $color-primary;
+      padding: 5px 15px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .ui.full.segment {
+
+      .header {
+        font-weight: bold;
       }
     }
 }
