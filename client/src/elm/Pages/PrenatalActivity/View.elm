@@ -31,6 +31,9 @@ import Utils.WebData exposing (viewError, viewWebData)
 view : Language -> NominalDate -> PersonId -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id activity db model =
     let
+        log =
+            Debug.log "" model
+
         content =
             AllDict.get id db.people
                 |> unwrap
@@ -110,6 +113,32 @@ viewPregnancyDatingContent language currentDate motherId form =
                 (Date.add Year -1 today)
                 today
                 form.lmpDate
+
+        confidentInput =
+            let
+                isChecked =
+                    form.lmpDateConfident == Just True
+            in
+            input
+                [ type_ "radio"
+                , checked isChecked
+                , classList [ ( "checked", isChecked ) ]
+                , onCheck (always (SetLmpDateConfident True))
+                ]
+                []
+
+        notConfidentInput =
+            let
+                isChecked =
+                    form.lmpDateConfident == Just False
+            in
+            input
+                [ type_ "radio"
+                , checked isChecked
+                , classList [ ( "checked", isChecked ) ]
+                , onCheck (always (SetLmpDateConfident False))
+                ]
+                []
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted 0 0 ]
     , div [ class "ui full segment" ]
@@ -120,6 +149,12 @@ viewPregnancyDatingContent language currentDate motherId form =
                 , div [ class "header" ] [ text <| translate language Translate.LmpDateHeader ]
                 , lmpDateInput
                 , div [ class "header" ] [ text <| translate language Translate.LmpDateConfidentHeader ]
+                , div []
+                    [ confidentInput
+                    , label [] [ text <| translate language Translate.Yes ]
+                    , notConfidentInput
+                    , label [] [ text <| translate language Translate.No ]
+                    ]
                 ]
             ]
         ]
