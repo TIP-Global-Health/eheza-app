@@ -111,7 +111,7 @@ delta2url previous current =
                     Just <| UrlChange NewEntry <| "#prenatal-encounter/" ++ fromEntityUuid id
 
                 PrenatalActivityPage id activity ->
-                    Just <| UrlChange NewEntry <| "#prenatal-activity/" ++ fromEntityUuid id ++ PrenatalActivity.Utils.encodeActivityAsString activity
+                    Just <| UrlChange NewEntry <| "#prenatal-activity/" ++ fromEntityUuid id ++ "/" ++ PrenatalActivity.Utils.encodeActivityAsString activity
 
 
 {-| For now, the only messages we're generating from the URL are messages
@@ -136,7 +136,7 @@ parseUrl =
         , map (\id -> UserPage <| PersonPage id) (s "person" </> parseUuid)
         , map (\id1 id2 -> UserPage <| RelationshipPage id1 id2) (s "relationship" </> parseUuid </> parseUuid)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
-        , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-encounter" </> parseUuid </> parsePrenatalActivity)
+        , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
 
         -- `top` represents the page without any segements ... i.e. the
         -- root page.
