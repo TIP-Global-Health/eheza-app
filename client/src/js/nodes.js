@@ -248,11 +248,6 @@
 
                                     return addShard.then(function () {
                                         return changeTable.add(change).then(function (localId) {
-                                            // Kick off a sync
-                                            self.registration.sync.register('sync').catch(function () {
-                                                self.registration.active.postMessage('sync');
-                                            });
-
                                             return sendRevisedNode(table, uuid).then(function () {
                                                 return Promise.resolve(response);
                                             });
@@ -330,11 +325,6 @@
                                     }
 
                                     return changeTable.add(change).then(function (localId) {
-                                        // Kick off a sync
-                                        self.registration.sync.register('sync').catch(function () {
-                                            self.registration.active.postMessage('sync');
-                                        });
-
                                         return sendRevisedNode(table, uuid).then(function () {
                                             return Promise.resolve(response);
                                         });
