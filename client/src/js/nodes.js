@@ -456,21 +456,16 @@
 
                 var modifyQuery = Promise.resolve();
 
-                var nameContains = params.get('name_contains');
-                if (nameContains) {
-                    var filter = nameContains.toLowerCase();
+                if (type === 'person') {
+                    var nameContains = params.get('name_contains');
+                    if (nameContains) {
+                        modifyQuery = modifyQuery.then(function () {
+                            query = table.where('name_search').startsWith(nameContains.toLowerCase());
+                            countQuery = query.clone();
 
-                    var doFilter = function (participant) {
-                        var name = (participant.label || '').toLowerCase();
-                        return name.includes(filter);
-                    };
-
-                    modifyQuery = modifyQuery.then(function () {
-                        query = query.and(doFilter);
-                        countQuery = countQuery.and(doFilter);
-
-                        return Promise.resolve();
-                    });
+                            return Promise.resolve();
+                        });
+                    }
                 }
 
                 // For PmtctParticipant, check the session param and (if
