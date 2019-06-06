@@ -429,6 +429,7 @@
 
         var offset = parseInt(params.get('offset') || '0');
         var range = parseInt(params.get('range') || '0');
+        var sortBy = '';
 
         return dbSync.open().catch(databaseError).then(function () {
             var criteria = {type: type};
@@ -460,8 +461,12 @@
                     var nameContains = params.get('name_contains');
                     if (nameContains) {
                         modifyQuery = modifyQuery.then(function () {
-                            query = table.where('name_search').startsWith(nameContains.toLowerCase());
-                            countQuery = query.clone();
+                            query = table.where('name_search').startsWith(nameContains.toLowerCase()).distinct();
+
+                            // Cloning doesn't seem to work for this one.
+                            countQuery = table.where('name_search').startsWith(nameContains.toLowerCase()).distinct();
+
+                            sortBy = 'label';
 
                             return Promise.resolve();
                         });
@@ -532,7 +537,9 @@
                             query.limit(range);
                         }
 
-                        return query.toArray().catch(databaseError).then(function (nodes) {
+                        var getNodes = sortBy ? query.sortBy(sortBy) : query.toArray();
+
+                        return getNodes.catch(databaseError).then(function (nodes) {
                             var body = JSON.stringify({
                                 offset: offset,
                                 count: count,
