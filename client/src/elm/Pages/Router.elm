@@ -130,6 +130,7 @@ parseUrl =
         , map (UserPage <| CreatePersonPage Nothing) (s "person" </> s "new")
         , map (\id -> UserPage <| PersonPage id) (s "person" </> parseUuid)
         , map (\id1 id2 -> UserPage <| RelationshipPage id1 id2) (s "relationship" </> parseUuid </> parseUuid)
+        , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
 
         -- `top` represents the page without any segements ... i.e. the
         -- root page.
