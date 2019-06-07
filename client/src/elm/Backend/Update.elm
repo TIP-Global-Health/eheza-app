@@ -307,7 +307,31 @@ updateIndexedDb currentDate nurseId msg model =
             )
 
         HandleRevisions revisions ->
-            ( List.foldl handleRevision model revisions
+            let
+                ( newModel, recalculateEditableSessions ) =
+                    List.foldl handleRevision ( model, False ) revisions
+
+                withRecalc =
+                    -- If needed, we recalculate all editable sessions that we
+                    -- actually have.
+                    if recalculateEditableSessions then
+                        let
+                            editableSessions =
+                                -- The `andThen` is so that we only recalculate
+                                -- the editable session if we already have a
+                                -- success.
+                                AllDict.map
+                                    (\id session ->
+                                        RemoteData.andThen (\_ -> makeEditableSession id newModel) session
+                                    )
+                                    newModel.editableSessions
+                        in
+                        { newModel | editableSessions = editableSessions }
+
+                    else
+                        newModel
+            in
+            ( withRecalc
             , Cmd.none
             , []
             )
@@ -510,100 +534,136 @@ updateIndexedDb currentDate nurseId msg model =
             )
 
 
-handleRevision : Revision -> ModelIndexedDb -> ModelIndexedDb
-handleRevision revision model =
+{-| The extra return value indicates whether we need to recalculate our
+successful EditableSessions. Ideally, we would handle this in a more
+nuanced way.
+-}
+handleRevision : Revision -> ( ModelIndexedDb, Bool ) -> ( ModelIndexedDb, Bool )
+handleRevision revision ( model, recalc ) =
     case revision of
         AttendanceRevision uuid data ->
-            mapMotherMeasurements
+            ( mapMotherMeasurements
                 data.participantId
                 (\measurements -> { measurements | attendances = AllDictList.insert uuid data measurements.attendances })
                 model
+            , True
+            )
 
         CatchmentAreaRevision uuid data ->
-            model
+            ( model
+            , recalc
+            )
 
         ChildNutritionRevision uuid data ->
-            mapChildMeasurements
+            ( mapChildMeasurements
                 data.participantId
                 (\measurements -> { measurements | nutritions = AllDictList.insert uuid data measurements.nutritions })
                 model
+            , True
+            )
 
         ClinicRevision uuid data ->
             let
                 clinics =
                     RemoteData.map (AllDictList.insert uuid data) model.clinics
             in
-            { model | clinics = clinics }
+            ( { model | clinics = clinics }
+            , recalc
+            )
 
         CounselingScheduleRevision uuid data ->
             -- Just invalidate our value ... if someone wants it, we'll refetch it.
-            { model | everyCounselingSchedule = NotAsked }
+            ( { model | everyCounselingSchedule = NotAsked }
+            , True
+            )
 
         CounselingSessionRevision uuid data ->
-            mapChildMeasurements
+            ( mapChildMeasurements
                 data.participantId
                 (\measurements -> { measurements | counselingSessions = AllDictList.insert uuid data measurements.counselingSessions })
                 model
+            , True
+            )
 
         CounselingTopicRevision uuid data ->
-            { model | everyCounselingSchedule = NotAsked }
+            ( { model | everyCounselingSchedule = NotAsked }
+            , True
+            )
 
         FamilyPlanningRevision uuid data ->
-            mapMotherMeasurements
+            ( mapMotherMeasurements
                 data.participantId
                 (\measurements -> { measurements | familyPlannings = AllDictList.insert uuid data measurements.familyPlannings })
                 model
+            , True
+            )
 
         HealthCenterRevision uuid data ->
             let
                 healthCenters =
                     RemoteData.map (AllDictList.insert uuid data) model.healthCenters
             in
-            { model | healthCenters = healthCenters }
+            ( { model | healthCenters = healthCenters }
+            , recalc
+            )
 
         HeightRevision uuid data ->
-            mapChildMeasurements
+            ( mapChildMeasurements
                 data.participantId
                 (\measurements -> { measurements | heights = AllDictList.insert uuid data measurements.heights })
                 model
+            , True
+            )
 
         MuacRevision uuid data ->
-            mapChildMeasurements
+            ( mapChildMeasurements
                 data.participantId
                 (\measurements -> { measurements | muacs = AllDictList.insert uuid data measurements.muacs })
                 model
+            , True
+            )
 
         NurseRevision uuid data ->
             -- Nothing to do in ModelIndexedDb yet. App.Update does do something with this one.
-            model
+            ( model
+            , recalc
+            )
 
         ParticipantConsentRevision uuid data ->
-            mapMotherMeasurements
+            ( mapMotherMeasurements
                 data.participantId
                 (\measurements -> { measurements | consents = AllDictList.insert uuid data measurements.consents })
                 model
+            , True
+            )
 
         ParticipantFormRevision uuid data ->
-            { model | participantForms = RemoteData.map (AllDictList.insert uuid data) model.participantForms }
+            ( { model | participantForms = RemoteData.map (AllDictList.insert uuid data) model.participantForms }
+            , True
+            )
 
         PersonRevision uuid data ->
             let
                 people =
                     AllDict.update uuid (Maybe.map (always (Success data))) model.people
             in
-            { model
+            ( { model
                 | personSearches = Dict.empty
                 , people = people
-            }
+              }
+            , True
+            )
 
         PhotoRevision uuid data ->
-            mapChildMeasurements
+            ( mapChildMeasurements
                 data.participantId
                 (\measurements -> { measurements | photos = AllDictList.insert uuid data measurements.photos })
                 model
+            , True
+            )
 
         PmtctParticipantRevision uuid data ->
-            { model
+            ( { model
                 | expectedSessions =
                     model.expectedSessions
                         |> AllDict.remove data.child
@@ -614,10 +674,14 @@ handleRevision revision model =
                     model.participantsByPerson
                         |> AllDict.remove data.child
                         |> AllDict.remove data.adult
-            }
+              }
+            , True
+            )
 
         RelationshipRevision uuid data ->
-            { model | relationshipsByPerson = EntityUuidDict.empty }
+            ( { model | relationshipsByPerson = EntityUuidDict.empty }
+            , True
+            )
 
         SessionRevision uuid data ->
             let
@@ -629,15 +693,19 @@ handleRevision revision model =
                         |> AllDict.map (always (RemoteData.map (AllDictList.remove uuid)))
                         |> AllDict.update data.clinicId (Maybe.map (RemoteData.map (AllDictList.insert uuid data)))
             in
-            { model
+            ( { model
                 | sessionsByClinic = sessionsByClinic
                 , expectedParticipants = AllDict.remove uuid model.expectedParticipants
                 , expectedSessions = EntityUuidDict.empty
                 , sessions = AllDict.insert uuid (Success data) model.sessions
-            }
+              }
+            , True
+            )
 
         WeightRevision uuid data ->
-            mapChildMeasurements
+            ( mapChildMeasurements
                 data.participantId
                 (\measurements -> { measurements | weights = AllDictList.insert uuid data measurements.weights })
                 model
+            , True
+            )
