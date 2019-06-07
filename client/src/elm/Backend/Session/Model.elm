@@ -19,6 +19,7 @@ import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Gizra.NominalDate exposing (NominalDateRange)
+import Lazy exposing (Lazy)
 import Measurement.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
@@ -79,19 +80,24 @@ type alias OfflineSession =
     , mothers : EntityUuidDictList PersonId Person
     , children : EntityUuidDictList PersonId Person
 
-    -- These are all the measurements which have been saved. (Not necessarily
-    -- synced to the backend yet).
-    , historicalMeasurements : HistoricalMeasurements
+    -- This is lazy because it requires some significant calculation, and we
+    -- don't always need it.
+    , measurements :
+        Lazy
+            -- These are all the measurements which have been saved. (Not necessarily
+            -- synced to the backend yet).
+            { historical : HistoricalMeasurements
 
-    -- These are the measurements we're currently working on, that is, the ones
-    -- for this very session, that have been saved (at least locally).
-    , currentMeasurements : Measurements
+            -- These are the measurements we're currently working on, that is, the ones
+            -- for this very session, that have been saved (at least locally).
+            , current : Measurements
 
-    -- These represent the most recent measurement of each kind in
-    -- `historicalMeasurements` that is not in `currentMeasurements`. That is,
-    -- it is the most recent measurement we have before the current session, to
-    -- be used to compare the current session with.
-    , previousMeasurements : Measurements
+            -- These represent the most recent measurement of each kind in
+            -- `historicalMeasurements` that is not in `currentMeasurements`. That is,
+            -- it is the most recent measurement we have before the current session, to
+            -- be used to compare the current session with.
+            , previous : Measurements
+            }
     }
 
 

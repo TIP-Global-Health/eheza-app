@@ -8,6 +8,7 @@ import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasu
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData)
 import EverySet
+import Lazy exposing (force)
 import Measurement.Model exposing (..)
 import Pages.Session.Model
 import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
@@ -116,6 +117,7 @@ getMotherForm motherId pages session =
 
         Nothing ->
             getMotherMeasurementData motherId session
+                |> force
                 |> fromMotherMeasurementData
                 |> (\form ->
                         { form
@@ -138,6 +140,7 @@ getChildForm childId pages session =
 
         Nothing ->
             getChildMeasurementData childId session
+                |> force
                 |> fromChildMeasurementData
                 |> (\form ->
                         -- We need some special logic for the counseling

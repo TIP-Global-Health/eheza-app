@@ -7,6 +7,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (emptyMotherMeasurementData, getMotherMeasurementData, makeEditableSession)
 import EveryDict
+import Lazy exposing (force)
 import Maybe.Extra
 import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Pages.Activities.Update
@@ -121,7 +122,7 @@ updateFoundSession sessionId session msg model =
 
                 measurements =
                     maybeMotherId
-                        |> Maybe.map (\motherId -> getMotherMeasurementData motherId session)
+                        |> Maybe.map (\motherId -> force <| getMotherMeasurementData motherId session)
                         |> Maybe.withDefault (emptyMotherMeasurementData session)
 
                 ( subModel, subCmd, subForm, outMsg, page ) =
@@ -215,7 +216,7 @@ updateFoundSession sessionId session msg model =
                     getMotherMeasurementData motherId session
 
                 ( subModel, subCmd, subForm, outMsg, page ) =
-                    Pages.Participant.Update.updateMother subMsg motherPage motherForm measurements
+                    Pages.Participant.Update.updateMother subMsg motherPage motherForm (force measurements)
 
                 sessionMsgs =
                     List.map (App.Model.MsgIndexedDb << Backend.Model.MsgSession sessionId)

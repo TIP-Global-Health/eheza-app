@@ -16,6 +16,7 @@ import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Lazy exposing (force)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
@@ -206,6 +207,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                 |> text
                             ]
                         , current
+                            |> force
                             |> mapMeasurementData .nutrition
                             |> currentValue
                             |> Maybe.map .value

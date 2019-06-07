@@ -16,6 +16,7 @@ import Backend.Session.Utils exposing (getChildren, getMotherMeasurementData)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import Lazy exposing (force)
 import Pages.Attendance.Model exposing (..)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
@@ -109,7 +110,7 @@ viewMother session motherId mother =
     let
         attendanceId =
             getMotherMeasurementData motherId session
-                |> (.current >> .attendance)
+                |> (force >> .current >> .attendance)
                 |> Maybe.map Tuple.first
 
         checkIn =

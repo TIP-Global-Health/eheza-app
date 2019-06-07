@@ -10,6 +10,7 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
+import Lazy exposing (Lazy, lazy)
 import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date
 import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
@@ -51,44 +52,54 @@ getMyMother childId session =
             )
 
 
-getChildHistoricalMeasurements : PersonId -> OfflineSession -> ChildMeasurementList
+getChildHistoricalMeasurements : PersonId -> OfflineSession -> Lazy ChildMeasurementList
 getChildHistoricalMeasurements childId session =
-    AllDict.get childId session.historicalMeasurements.children
-        |> Maybe.withDefault emptyChildMeasurementList
+    Lazy.map
+        (.historical >> .children >> AllDict.get childId >> Maybe.withDefault emptyChildMeasurementList)
+        session.measurements
 
 
-getMotherHistoricalMeasurements : PersonId -> OfflineSession -> MotherMeasurementList
+getMotherHistoricalMeasurements : PersonId -> OfflineSession -> Lazy MotherMeasurementList
 getMotherHistoricalMeasurements motherId session =
-    AllDict.get motherId session.historicalMeasurements.mothers
-        |> Maybe.withDefault emptyMotherMeasurementList
+    Lazy.map
+        (.historical >> .mothers >> AllDict.get motherId >> Maybe.withDefault emptyMotherMeasurementList)
+        session.measurements
 
 
 {-| Gets the data in the form that `Measurement.View` (and others) will want.
 -}
-getChildMeasurementData : PersonId -> EditableSession -> MeasurementData ChildMeasurements
+getChildMeasurementData : PersonId -> EditableSession -> Lazy (MeasurementData ChildMeasurements)
 getChildMeasurementData childId session =
-    { current =
-        AllDict.get childId session.offlineSession.currentMeasurements.children
-            |> Maybe.withDefault emptyChildMeasurements
-    , previous =
-        AllDict.get childId session.offlineSession.previousMeasurements.children
-            |> Maybe.withDefault emptyChildMeasurements
-    , update = session.update
-    }
+    Lazy.map
+        (\measurements ->
+            { current =
+                AllDict.get childId measurements.current.children
+                    |> Maybe.withDefault emptyChildMeasurements
+            , previous =
+                AllDict.get childId measurements.previous.children
+                    |> Maybe.withDefault emptyChildMeasurements
+            , update = session.update
+            }
+        )
+        session.offlineSession.measurements
 
 
 {-| Gets the data in the form that `Measurement.View` (and others) will want.
 -}
-getMotherMeasurementData : PersonId -> EditableSession -> MeasurementData MotherMeasurements
+getMotherMeasurementData : PersonId -> EditableSession -> Lazy (MeasurementData MotherMeasurements)
 getMotherMeasurementData motherId session =
-    { current =
-        AllDict.get motherId session.offlineSession.currentMeasurements.mothers
-            |> Maybe.withDefault emptyMotherMeasurements
-    , previous =
-        AllDict.get motherId session.offlineSession.previousMeasurements.mothers
-            |> Maybe.withDefault emptyMotherMeasurements
-    , update = session.update
-    }
+    Lazy.map
+        (\measurements ->
+            { current =
+                AllDict.get motherId measurements.current.mothers
+                    |> Maybe.withDefault emptyMotherMeasurements
+            , previous =
+                AllDict.get motherId measurements.previous.mothers
+                    |> Maybe.withDefault emptyMotherMeasurements
+            , update = session.update
+            }
+        )
+        session.offlineSession.measurements
 
 
 emptyMotherMeasurementData : EditableSession -> MeasurementData MotherMeasurements
@@ -186,35 +197,52 @@ makeEditableSession sessionId db =
                 mothersData
 
         childMeasurementsSplitData =
-            RemoteData.map (splitChildMeasurements sessionId) childMeasurementListData
+            RemoteData.map (\list -> lazy <| \_ -> splitChildMeasurements sessionId list) childMeasurementListData
 
         adultMeasurementsSplitData =
-            RemoteData.map (splitMotherMeasurements sessionId) adultMeasurementListData
+            RemoteData.map (\list -> lazy <| \_ -> splitMotherMeasurements sessionId list) adultMeasurementListData
 
         historicalMeasurementData =
             RemoteData.map2 HistoricalMeasurements adultMeasurementListData childMeasurementListData
 
         currentAndPrevious =
             RemoteData.map2
-                (\childData motherData ->
-                    { current =
-                        { mothers = AllDict.map (always .current) motherData
-                        , children = AllDict.map (always .current) childData
+                (Lazy.map2
+                    (\childData motherData ->
+                        { current =
+                            { mothers = AllDict.map (always .current) motherData
+                            , children = AllDict.map (always .current) childData
+                            }
+                        , previous =
+                            { mothers = AllDict.map (always .previous) motherData
+                            , children = AllDict.map (always .previous) childData
+                            }
                         }
-                    , previous =
-                        { mothers = AllDict.map (always .previous) motherData
-                        , children = AllDict.map (always .previous) childData
-                        }
-                    }
+                    )
                 )
                 childMeasurementsSplitData
                 adultMeasurementsSplitData
 
         currentMeasurementData =
-            RemoteData.map .current currentAndPrevious
+            RemoteData.map (Lazy.map .current) currentAndPrevious
 
         previousMeasurementData =
-            RemoteData.map .previous currentAndPrevious
+            RemoteData.map (Lazy.map .previous) currentAndPrevious
+
+        measurementData =
+            RemoteData.map3
+                (\historical ->
+                    Lazy.map2
+                        (\current previous ->
+                            { historical = historical
+                            , current = current
+                            , previous = previous
+                            }
+                        )
+                )
+                historicalMeasurementData
+                currentMeasurementData
+                previousMeasurementData
 
         offlineSession =
             RemoteData.map OfflineSession sessionData
@@ -223,9 +251,7 @@ makeEditableSession sessionId db =
                 |> RemoteData.andMap participantsData
                 |> RemoteData.andMap mothersData
                 |> RemoteData.andMap childrenData
-                |> RemoteData.andMap historicalMeasurementData
-                |> RemoteData.andMap currentMeasurementData
-                |> RemoteData.andMap previousMeasurementData
+                |> RemoteData.andMap measurementData
     in
     RemoteData.map
         (\offline ->
