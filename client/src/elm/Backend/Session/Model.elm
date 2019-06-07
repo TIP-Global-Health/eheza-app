@@ -106,6 +106,8 @@ type alias OfflineSession =
 type alias EditableSession =
     { offlineSession : OfflineSession
     , update : WebData ()
+    , checkedIn :
+        Lazy { mothers : EntityUuidDictList PersonId Person, children : EntityUuidDictList PersonId Person }
     }
 
 

@@ -1,29 +1,34 @@
 module Backend.Update exposing (updateIndexedDb)
 
+import Activity.Utils exposing (motherIsCheckedIn)
 import AllDict
 import AllDictList
 import App.Model
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (HistoricalMeasurements)
+import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (..)
+import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
 import Backend.Relationship.Model exposing (RelatedBy(..))
 import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.Session.Update
-import Backend.Session.Utils exposing (makeEditableSession)
+import Backend.Session.Utils exposing (getMyMother)
 import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements)
 import Dict
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
+import Lazy exposing (lazy)
 import Maybe.Extra
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model
 import Pages.Relationship.Model
-import RemoteData exposing (RemoteData(..))
+import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityUuid, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityUuid, endpoint, fromEntityUuid, toCmd, toEntityUuid, toTask, withKeyEncoder, withParamsEncoder, withValueEncoder, withoutDecoder)
 import Task
 import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
@@ -709,3 +714,189 @@ handleRevision revision ( model, recalc ) =
                 model
             , True
             )
+
+
+{-| Construct an EditableSession from our data, if we have all the needed data.
+
+This is a convenience, because so many functions work in terms of an
+EditableSession. In future, we might refactor that, or it might prove to
+continue to be convenient. (It's probably not efficient to calculate all of
+this on the fly every time, but it's much easier for now to work within
+existing types).
+
+-}
+makeEditableSession : SessionId -> ModelIndexedDb -> WebData EditableSession
+makeEditableSession sessionId db =
+    let
+        sessionData =
+            AllDict.get sessionId db.sessions
+                |> Maybe.withDefault NotAsked
+
+        allParticipantFormsData =
+            db.participantForms
+
+        everyCounselingScheduleData =
+            db.everyCounselingSchedule
+
+        participantsData =
+            AllDict.get sessionId db.expectedParticipants
+                |> Maybe.withDefault NotAsked
+
+        mothersData =
+            RemoteData.andThen
+                (\participants ->
+                    AllDict.keys participants.byMotherId
+                        |> List.map
+                            (\id ->
+                                AllDict.get id db.people
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.map (\data -> ( id, data ))
+                            )
+                        |> RemoteData.fromList
+                        |> RemoteData.map (EntityUuidDictList.fromList >> AllDictList.sortBy .name)
+                )
+                participantsData
+
+        childrenData =
+            RemoteData.andThen
+                (\participants ->
+                    AllDict.keys participants.byChildId
+                        |> List.map
+                            (\id ->
+                                AllDict.get id db.people
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.map (\data -> ( id, data ))
+                            )
+                        |> RemoteData.fromList
+                        |> RemoteData.map EntityUuidDictList.fromList
+                )
+                participantsData
+
+        childMeasurementListData =
+            RemoteData.andThen
+                (\children ->
+                    AllDictList.keys children
+                        |> List.map
+                            (\childId ->
+                                AllDict.get childId db.childMeasurements
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.map (\data -> ( childId, data ))
+                            )
+                        |> RemoteData.fromList
+                        |> RemoteData.map EntityUuidDict.fromList
+                )
+                childrenData
+
+        adultMeasurementListData =
+            RemoteData.andThen
+                (\mothers ->
+                    AllDictList.keys mothers
+                        |> List.map
+                            (\motherId ->
+                                AllDict.get motherId db.motherMeasurements
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.map (\data -> ( motherId, data ))
+                            )
+                        |> RemoteData.fromList
+                        |> RemoteData.map EntityUuidDict.fromList
+                )
+                mothersData
+
+        childMeasurementsSplitData =
+            RemoteData.map (\list -> lazy <| \_ -> splitChildMeasurements sessionId list) childMeasurementListData
+
+        adultMeasurementsSplitData =
+            RemoteData.map (\list -> lazy <| \_ -> splitMotherMeasurements sessionId list) adultMeasurementListData
+
+        historicalMeasurementData =
+            RemoteData.map2 HistoricalMeasurements adultMeasurementListData childMeasurementListData
+
+        currentAndPrevious =
+            RemoteData.map2
+                (Lazy.map2
+                    (\childData motherData ->
+                        { current =
+                            { mothers = AllDict.map (always .current) motherData
+                            , children = AllDict.map (always .current) childData
+                            }
+                        , previous =
+                            { mothers = AllDict.map (always .previous) motherData
+                            , children = AllDict.map (always .previous) childData
+                            }
+                        }
+                    )
+                )
+                childMeasurementsSplitData
+                adultMeasurementsSplitData
+
+        currentMeasurementData =
+            RemoteData.map (Lazy.map .current) currentAndPrevious
+
+        previousMeasurementData =
+            RemoteData.map (Lazy.map .previous) currentAndPrevious
+
+        measurementData =
+            RemoteData.map3
+                (\historical ->
+                    Lazy.map2
+                        (\current previous ->
+                            { historical = historical
+                            , current = current
+                            , previous = previous
+                            }
+                        )
+                )
+                historicalMeasurementData
+                currentMeasurementData
+                previousMeasurementData
+
+        offlineSession =
+            RemoteData.map OfflineSession sessionData
+                |> RemoteData.andMap allParticipantFormsData
+                |> RemoteData.andMap everyCounselingScheduleData
+                |> RemoteData.andMap participantsData
+                |> RemoteData.andMap mothersData
+                |> RemoteData.andMap childrenData
+                |> RemoteData.andMap measurementData
+    in
+    RemoteData.map
+        (\offline ->
+            { offlineSession = offline
+            , update = NotAsked
+            , checkedIn = lazy <| \_ -> cacheCheckedIn offline
+            }
+        )
+        offlineSession
+
+
+{-| Who is checked in, considering both explicit check in and anyone who has
+any completed activity?
+
+Don't call this directly ... we store it lazily on EditableSession.checkedIn.
+Ideally, we'd move it there and not expose it, but we'd have to rearrange a
+bunch of stuff to avoid circular imports.
+
+-}
+cacheCheckedIn : OfflineSession -> { mothers : EntityUuidDictList PersonId Person, children : EntityUuidDictList PersonId Person }
+cacheCheckedIn session =
+    let
+        -- A mother is checked in if explicitly checked in or has any completed
+        -- activites.
+        mothers =
+            AllDictList.filter
+                (\motherId _ -> motherIsCheckedIn motherId session)
+                session.mothers
+
+        -- A child is checked in if the mother is checked in.
+        children =
+            AllDictList.filter
+                (\childId _ ->
+                    getMyMother childId session
+                        |> Maybe.map (\( motherId, _ ) -> AllDictList.member motherId mothers)
+                        |> Maybe.withDefault False
+                )
+                session.children
+    in
+    { mothers = mothers
+    , children = children
+    }

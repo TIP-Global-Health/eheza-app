@@ -7,7 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Session.Model exposing (EditableSession, Session)
-import Backend.Session.Utils exposing (isAuthorized, isClosed, makeEditableSession)
+import Backend.Session.Utils exposing (isAuthorized, isClosed)
 import EveryDict
 import Gizra.Html exposing (showMaybe)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)

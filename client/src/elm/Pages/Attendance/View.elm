@@ -7,7 +7,6 @@ at a session.
 
 -}
 
-import Activity.Utils exposing (motherIsCheckedIn)
 import AllDictList
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
@@ -113,8 +112,14 @@ viewMother session motherId mother =
                 |> (force >> .current >> .attendance)
                 |> Maybe.map Tuple.first
 
+        checkedIn =
+            force session.checkedIn
+
+        isCheckedIn =
+            AllDictList.member motherId checkedIn.mothers
+
         checkIn =
-            if motherIsCheckedIn motherId session then
+            if isCheckedIn then
                 a
                     [ class "link-checked-in"
                     , onClick <| SetCheckedIn attendanceId motherId False

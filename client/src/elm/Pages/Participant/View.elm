@@ -1,7 +1,7 @@
 module Pages.Participant.View exposing (viewChild, viewMother)
 
 import Activity.Model exposing (Activity(..), ChildActivity, CompletedAndPending, MotherActivity(..))
-import Activity.Utils exposing (getActivityIcon, getCheckedIn, summarizeChildParticipant, summarizeMotherParticipant)
+import Activity.Utils exposing (getActivityIcon, summarizeChildParticipant, summarizeMotherParticipant)
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Gender(..), Person, Ubudehe(..))
 import Backend.Session.Model exposing (EditableSession)

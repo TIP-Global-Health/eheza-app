@@ -5,7 +5,7 @@ import App.Model
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (EditableSession)
-import Backend.Session.Utils exposing (emptyMotherMeasurementData, getMotherMeasurementData, makeEditableSession)
+import Backend.Session.Utils exposing (emptyMotherMeasurementData, getMotherMeasurementData)
 import EveryDict
 import Lazy exposing (force)
 import Maybe.Extra

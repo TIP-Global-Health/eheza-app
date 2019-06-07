@@ -1,6 +1,6 @@
 module Pages.Participants.View exposing (view)
 
-import Activity.Utils exposing (getActivityCountForMother, getCheckedIn, summarizeByParticipant)
+import Activity.Utils exposing (getActivityCountForMother, summarizeByParticipant)
 import AllDictList
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
@@ -8,6 +8,7 @@ import Backend.Session.Utils exposing (getChildren)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
+import Lazy exposing (force)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participants.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Utils exposing (filterDependentNoResultsMessage, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
@@ -29,7 +30,7 @@ view language ( sessionId, session ) model =
             normalizeFilter model.filter
 
         mothersInAttendance =
-            getCheckedIn session
+            force session.checkedIn
                 |> .mothers
                 |> AllDictList.filter (matchMotherAndHerChildren filter session.offlineSession)
 
