@@ -282,5 +282,25 @@ div.page-prenatal-activity {
       .header {
         font-weight: bold;
       }
+
+      .separator {
+        margin: 30px 0;
+        width: 100%;
+        border: 1px solid;
+      }
+
+      .results {
+        width: 100%;
+
+        .edd-result {
+          width: 45%;
+          float: left;
+        }
+
+        .ega-result {
+          width: 42%;
+          float: right;
+        }
+      }
     }
 }

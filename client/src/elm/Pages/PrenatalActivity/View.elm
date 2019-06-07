@@ -5,12 +5,12 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
-import Date.Extra as Date exposing (Interval(Year))
+import Date.Extra as Date exposing (Interval(Month, Year))
 import DateSelector.SelectorDropdown
 import EveryDict
 import EveryDictList exposing (EveryDictList)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, toLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime, toLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -139,10 +139,37 @@ viewPregnancyDatingContent language currentDate motherId form =
                 , onCheck (always (SetLmpDateConfident False))
                 ]
                 []
+
+        ( eddResult, egaResult ) =
+            form.lmpDate
+                |> unwrap
+                    ( emptyNode, emptyNode )
+                    (\date ->
+                        let
+                            estimatedDate =
+                                Date.add Month 9 date
+                                    |> fromLocalDateTime
+
+                            diffInDays =
+                                diffDays currentDate estimatedDate
+
+                            diffInWeeks =
+                                diffInDays // 7
+
+                            egaWeeks =
+                                translate language <| Translate.WeekSinglePlural diffInWeeks
+
+                            egaDays =
+                                translate language <| Translate.DaySinglePlural (diffInDays - 7 * diffInWeeks)
+                        in
+                        ( div [] [ text <| formatMMDDYYYY estimatedDate ]
+                        , div [] [ text <| egaWeeks ++ ", " ++ egaDays ]
+                        )
+                    )
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted 0 0 ]
     , div [ class "ui full segment" ]
-        [ div [ class "content" ]
+        [ div [ class "full content" ]
             [ div [ class "form pregnancy-dating" ]
                 [ div [ class "header" ] [ text <| translate language Translate.LmpRangeHeader ]
                 , lmpRangeInput
@@ -155,7 +182,26 @@ viewPregnancyDatingContent language currentDate motherId form =
                     , notConfidentInput
                     , label [] [ text <| translate language Translate.No ]
                     ]
+                , div [ class "separator" ] []
+                , div [ class "results" ]
+                    [ div [ class "edd-result" ]
+                        [ div [] [ text <| translate language Translate.EddHeader ]
+                        , eddResult
+                        ]
+                    , div [ class "ega-result" ]
+                        [ div [] [ text <| translate language Translate.EgaHeader ]
+                        , egaResult
+                        ]
+                    ]
                 ]
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ class "ui fluid primary button"
+
+                -- , onClick <| SetActivePage PinCodePage
+                ]
+                [ text <| translate language Translate.Save ]
             ]
         ]
     ]
