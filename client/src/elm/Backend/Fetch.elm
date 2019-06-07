@@ -3,7 +3,7 @@ module Backend.Fetch exposing (forget, shouldFetch)
 import AllDict
 import Backend.Model exposing (..)
 import Dict
-import RemoteData exposing (RemoteData(..), isNotAsked)
+import RemoteData exposing (RemoteData(..), isNotAsked, isSuccess)
 
 
 {-| Given a `MsgIndexedDb`, do we need to fetch the data it would fetch?
@@ -25,6 +25,20 @@ shouldFetch model msg =
 
         FetchClinics ->
             isNotAsked model.clinics
+
+        FetchEditableSession id ->
+            -- This one is a bit special because it is synthetic ...  what
+            -- we're asking for here is not the fetch itself, but a certain
+            -- organization of the fetched data. We want to re-run the
+            -- organiztion in every case unless we have a success here.
+            -- Which means, once we have a success, it's important to
+            -- invalidate or modify our successful data if underlying data
+            -- changes. (That is, our `handleRevisions` needs to keep the
+            -- editable sessions in mind).
+            AllDict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> isSuccess
+                |> not
 
         FetchEveryCounselingSchedule ->
             isNotAsked model.everyCounselingSchedule
@@ -98,6 +112,9 @@ forget msg model =
 
         FetchClinics ->
             { model | clinics = NotAsked }
+
+        FetchEditableSession id ->
+            { model | editableSessions = AllDict.remove id model.editableSessions }
 
         FetchEveryCounselingSchedule ->
             { model | everyCounselingSchedule = NotAsked }

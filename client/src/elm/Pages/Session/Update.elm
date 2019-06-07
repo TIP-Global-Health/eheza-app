@@ -23,17 +23,18 @@ import RemoteData exposing (RemoteData(..))
 update : SessionId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update sessionId db msg model =
     let
-        -- TODO: Ideally, we shouldn't rely on an `EditableSession` here, because
-        -- we'll throw away messages if we can't make one. This can probably be
-        -- avoided, but would require more restructuring.
         sessionData =
-            makeEditableSession sessionId db
+            AllDict.get sessionId db.editableSessions
+                |> Maybe.withDefault NotAsked
     in
     case sessionData of
         Success session ->
             updateFoundSession sessionId session msg model
 
         _ ->
+            -- We're handling UI messages here, and the UI should only be shown if
+            -- we have an editable session, so this shouldn't really happen. But
+            -- perhaps we should log some kind of error if it does?
             ( model, Cmd.none, [] )
 
 

@@ -74,10 +74,15 @@ viewFoundSession language currentDate zscores nurse ( sessionId, session ) page 
         viewUnauthorizedSession language sessionId session db
 
     else
+        let
+            editableSession =
+                AllDict.get sessionId db.editableSessions
+                    |> Maybe.withDefault NotAsked
+        in
         viewWebData language
             (viewEditableSession language currentDate zscores nurse sessionId page model db)
             (wrapError language sessionId)
-            (makeEditableSession sessionId db)
+            editableSession
 
 
 viewEditableSession : Language -> NominalDate -> ZScore.Model.Model -> Nurse -> SessionId -> SessionPage -> Model -> ModelIndexedDb -> EditableSession -> Html Msg

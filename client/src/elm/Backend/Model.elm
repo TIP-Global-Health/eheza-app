@@ -65,6 +65,13 @@ type alias ModelIndexedDb =
     , sessionsByClinic : EntityUuidDict ClinicId (WebData (EntityUuidDictList SessionId Session))
     , sessions : EntityUuidDict SessionId (WebData Session)
 
+    -- Then, we also have a "synthetic" type `EditableSession`, which organizes
+    -- the session data in a way that is congenial for our views. Ideally, we would
+    -- redesign the views to use more "basic" data, but there is a fair bit of logic
+    -- involved, so it require substantial work. For now, at least we remember the
+    -- organized data here, and recalculate it when necessary.
+    , editableSessions : EntityUuidDict SessionId (WebData EditableSession)
+
     -- Tracks requests in progress to update sessions
     , sessionRequests : EntityUuidDict SessionId Backend.Session.Model.Model
 
@@ -104,6 +111,7 @@ emptyModelIndexedDb =
     { childMeasurements = EntityUuidDict.empty
     , clinics = NotAsked
     , deleteSyncDataRequests = EntityUuidDict.empty
+    , editableSessions = EntityUuidDict.empty
     , everyCounselingSchedule = NotAsked
     , expectedParticipants = EntityUuidDict.empty
     , expectedSessions = EntityUuidDict.empty
@@ -126,9 +134,12 @@ emptyModelIndexedDb =
 
 
 type MsgIndexedDb
-    = -- Messages which fetch various kinds of data
+    = -- Messages which fetch various kinds of data.
       FetchChildMeasurements PersonId
     | FetchClinics
+      -- For `FetchEditableSession`, you'll also need to send the messages
+      -- you get from `Backend.Session.Fetch.fetchEditableSession`
+    | FetchEditableSession SessionId
     | FetchEveryCounselingSchedule
     | FetchExpectedParticipants SessionId
     | FetchExpectedSessions PersonId

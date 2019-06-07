@@ -13,6 +13,7 @@ import Backend.Relationship.Model exposing (RelatedBy(..))
 import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.Session.Update
+import Backend.Session.Utils exposing (makeEditableSession)
 import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements)
 import Dict
 import Gizra.NominalDate exposing (NominalDate)
@@ -58,6 +59,15 @@ updateIndexedDb currentDate nurseId msg model =
 
         HandleFetchedClinics clinics ->
             ( { model | clinics = clinics }
+            , Cmd.none
+            , []
+            )
+
+        FetchEditableSession id ->
+            -- This one is a bit special. What we're asking for is not a fetch
+            -- from IndexedDB as such, but a certain kind of organization of
+            -- the data.
+            ( { model | editableSessions = AllDict.insert id (makeEditableSession id model) model.editableSessions }
             , Cmd.none
             , []
             )
