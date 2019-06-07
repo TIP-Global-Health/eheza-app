@@ -7,9 +7,10 @@ module Activity.Utils exposing
     , getActivityCountForMother
     , getActivityIcon
     , getAllActivities
+    , getAllChildActivities
+    , getAllMotherActivities
     , getParticipantCountForActivity
     , motherIsCheckedIn
-    , summarizeByActivity
     , summarizeChildActivity
     , summarizeChildParticipant
     , summarizeMotherActivity
@@ -442,12 +443,11 @@ the activity and have the activity pending. (This may not add up to all the
 children, because we only consider a child "pending" if they are checked in and
 the activity is expected.
 -}
-summarizeChildActivity : ChildActivity -> EditableSession -> CompletedAndPending (EntityUuidDictList PersonId Person)
-summarizeChildActivity activity session =
-    force session.checkedIn
-        |> .children
-        |> AllDictList.filter (\childId _ -> expectChildActivity session.offlineSession childId activity)
-        |> AllDictList.partition (\childId _ -> childHasCompletedActivity childId activity session.offlineSession)
+summarizeChildActivity : ChildActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (EntityUuidDictList PersonId Person)
+summarizeChildActivity activity session checkedIn =
+    checkedIn.children
+        |> AllDictList.filter (\childId _ -> expectChildActivity session childId activity)
+        |> AllDictList.partition (\childId _ -> childHasCompletedActivity childId activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
 
@@ -456,47 +456,14 @@ the activity and have the activity pending. (This may not add up to all the
 mothers, because we only consider a mother "pending" if they are checked in and
 the activity is expected.
 -}
-summarizeMotherActivity : MotherActivity -> EditableSession -> CompletedAndPending (EntityUuidDictList PersonId Person)
-summarizeMotherActivity activity session =
+summarizeMotherActivity : MotherActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (EntityUuidDictList PersonId Person)
+summarizeMotherActivity activity session checkedIn =
     -- For participant consent, we only consider the activity to be completed once
     -- all expected consents have been saved.
-    force session.checkedIn
-        |> .mothers
-        |> AllDictList.filter (\motherId _ -> expectMotherActivity session.offlineSession motherId activity)
-        |> AllDictList.partition (\motherId _ -> motherHasCompletedActivity motherId activity session.offlineSession)
+    checkedIn.mothers
+        |> AllDictList.filter (\motherId _ -> expectMotherActivity session motherId activity)
+        |> AllDictList.partition (\motherId _ -> motherHasCompletedActivity motherId activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
-
-
-{-| Summarize our data for the editable session in a way that is useful
-for our UI, when we're focused on activities. This only considers children &
-mothers who are checked in to the session.
--}
-summarizeByActivity : EditableSession -> SummaryByActivity
-summarizeByActivity session =
-    let
-        children =
-            getAllChildActivities
-                |> List.map
-                    (\activity ->
-                        ( activity
-                        , summarizeChildActivity activity session
-                        )
-                    )
-                |> EveryDict.fromList
-
-        mothers =
-            getAllMotherActivities
-                |> List.map
-                    (\activity ->
-                        ( activity
-                        , summarizeMotherActivity activity session
-                        )
-                    )
-                |> EveryDict.fromList
-    in
-    { children = children
-    , mothers = mothers
-    }
 
 
 {-| This summarizes our summary, by counting, for the given activity, how many

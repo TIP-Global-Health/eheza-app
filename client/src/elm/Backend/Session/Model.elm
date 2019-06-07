@@ -1,4 +1,4 @@
-module Backend.Session.Model exposing (EditableSession, ExpectedParticipants, Model, Msg(..), OfflineSession, Session, emptyModel)
+module Backend.Session.Model exposing (CheckedIn, EditableSession, ExpectedParticipants, Model, Msg(..), OfflineSession, Session, emptyModel)
 
 {-| A "session" refers to a group session with mothers and babies ... that is,
 an occasion on which measurements are taken in a group setting.
@@ -12,7 +12,7 @@ because there was so much code written in terms of an `EditableSession`.
 
 -}
 
-import Activity.Model exposing (SummaryByParticipant)
+import Activity.Model exposing (SummaryByActivity, SummaryByParticipant)
 import Backend.Counseling.Model exposing (EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -55,6 +55,12 @@ type alias ExpectedParticipants =
     { byId : EntityUuidDict PmtctParticipantId PmtctParticipant
     , byChildId : EntityUuidDict PersonId (List PmtctParticipant)
     , byMotherId : EntityUuidDict PersonId (List PmtctParticipant)
+    }
+
+
+type alias CheckedIn =
+    { mothers : EntityUuidDictList PersonId Person
+    , children : EntityUuidDictList PersonId Person
     }
 
 
@@ -110,6 +116,7 @@ type alias EditableSession =
     , checkedIn :
         Lazy { mothers : EntityUuidDictList PersonId Person, children : EntityUuidDictList PersonId Person }
     , summaryByParticipant : Lazy SummaryByParticipant
+    , summaryByActivity : Lazy SummaryByActivity
     }
 
 

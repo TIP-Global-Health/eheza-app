@@ -9,6 +9,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
+import Lazy exposing (force)
 import List as List
 import Maybe.Extra
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
@@ -40,7 +41,7 @@ view : Participant id value activity msg -> Language -> NominalDate -> ZScore.Mo
 view config language currentDate zscores selectedActivity ( sessionId, session ) pages model =
     let
         participants =
-            config.summarizeParticipantsForActivity selectedActivity session
+            config.summarizeParticipantsForActivity selectedActivity session.offlineSession (force session.checkedIn)
                 |> applyNameFilter
 
         applyNameFilter { pending, completed } =

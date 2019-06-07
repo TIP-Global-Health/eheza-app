@@ -1,7 +1,7 @@
 module Backend.Update exposing (updateIndexedDb)
 
 import Activity.Model exposing (SummaryByActivity, SummaryByParticipant)
-import Activity.Utils exposing (motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
+import Activity.Utils exposing (getAllChildActivities, getAllMotherActivities, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
 import AllDict
 import AllDictList
 import App.Model
@@ -11,16 +11,16 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (HistoricalMeasurements)
 import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (..)
-import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
 import Backend.Relationship.Model exposing (RelatedBy(..))
 import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
-import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
+import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getMyMother)
 import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements)
 import Dict
+import EveryDict
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
@@ -869,11 +869,15 @@ makeEditableSession sessionId db =
 
                 summaryByParticipant =
                     Lazy.map (summarizeByParticipant offline) checkedIn
+
+                summaryByActivity =
+                    Lazy.map (summarizeByActivity offline) checkedIn
             in
             { offlineSession = offline
             , update = NotAsked
             , checkedIn = checkedIn
             , summaryByParticipant = summaryByParticipant
+            , summaryByActivity = summaryByActivity
             }
         )
         offlineSession
@@ -901,9 +905,35 @@ summarizeByParticipant session checkedIn =
     }
 
 
-type alias CheckedIn =
-    { mothers : EntityUuidDictList PersonId Person
-    , children : EntityUuidDictList PersonId Person
+{-| Summarize our data for the editable session in a way that is useful
+for our UI, when we're focused on activities. This only considers children &
+mothers who are checked in to the session.
+-}
+summarizeByActivity : OfflineSession -> CheckedIn -> SummaryByActivity
+summarizeByActivity session checkedIn =
+    let
+        children =
+            getAllChildActivities
+                |> List.map
+                    (\activity ->
+                        ( activity
+                        , summarizeChildActivity activity session checkedIn
+                        )
+                    )
+                |> EveryDict.fromList
+
+        mothers =
+            getAllMotherActivities
+                |> List.map
+                    (\activity ->
+                        ( activity
+                        , summarizeMotherActivity activity session checkedIn
+                        )
+                    )
+                |> EveryDict.fromList
+    in
+    { children = children
+    , mothers = mothers
     }
 
 
