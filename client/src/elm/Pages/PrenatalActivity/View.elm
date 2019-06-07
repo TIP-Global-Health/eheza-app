@@ -100,19 +100,21 @@ viewPregnancyDatingContent language currentDate motherId form =
                                     [ text <| translate language <| Translate.LmpRange range ]
                             )
                    )
-                |> select [ onInput SetLmpRange ]
+                |> select [ onInput SetLmpRange, class "form-input range" ]
 
         today =
             toLocalDateTime currentDate 0 0 0 0
 
         lmpDateInput =
-            DateSelector.SelectorDropdown.view
+            [ DateSelector.SelectorDropdown.view
                 ToggleDateSelector
                 SetLmpDate
                 form.isDateSelectorOpen
-                (Date.add Year -1 today)
+                (Date.add Month -10 today)
                 today
                 form.lmpDate
+            ]
+                |> div [ class "form-input date" ]
 
         confidentInput =
             let
@@ -122,7 +124,7 @@ viewPregnancyDatingContent language currentDate motherId form =
             input
                 [ type_ "radio"
                 , checked isChecked
-                , classList [ ( "checked", isChecked ) ]
+                , classList [ ( "checked", isChecked ), ( "confident", True ) ]
                 , onCheck (always (SetLmpDateConfident True))
                 ]
                 []
@@ -135,7 +137,7 @@ viewPregnancyDatingContent language currentDate motherId form =
             input
                 [ type_ "radio"
                 , checked isChecked
-                , classList [ ( "checked", isChecked ) ]
+                , classList [ ( "checked", isChecked ), ( "not-confident", True ) ]
                 , onCheck (always (SetLmpDateConfident False))
                 ]
                 []
@@ -146,12 +148,15 @@ viewPregnancyDatingContent language currentDate motherId form =
                     ( emptyNode, emptyNode )
                     (\date ->
                         let
-                            estimatedDate =
+                            eddDate =
                                 Date.add Month 9 date
                                     |> fromLocalDateTime
 
+                            lmpDate =
+                                fromLocalDateTime date
+
                             diffInDays =
-                                diffDays currentDate estimatedDate
+                                diffDays lmpDate currentDate
 
                             diffInWeeks =
                                 diffInDays // 7
@@ -162,21 +167,31 @@ viewPregnancyDatingContent language currentDate motherId form =
                             egaDays =
                                 translate language <| Translate.DaySinglePlural (diffInDays - 7 * diffInWeeks)
                         in
-                        ( div [] [ text <| formatMMDDYYYY estimatedDate ]
-                        , div [] [ text <| egaWeeks ++ ", " ++ egaDays ]
+                        ( div [ class "value" ] [ text <| formatMMDDYYYY eddDate ]
+                        , div [ class "value" ] [ text <| egaWeeks ++ ", " ++ egaDays ]
                         )
                     )
+
+        taskCompleted maybe =
+            if isJust maybe then
+                1
+
+            else
+                0
+
+        tasksCompleted =
+            taskCompleted form.lmpRange + taskCompleted form.lmpDate + taskCompleted form.lmpDateConfident
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted 0 0 ]
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted 3 ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "form pregnancy-dating" ]
-                [ div [ class "header" ] [ text <| translate language Translate.LmpRangeHeader ]
+                [ div [ class "label" ] [ text <| translate language Translate.LmpRangeHeader ]
                 , lmpRangeInput
-                , div [ class "header" ] [ text <| translate language Translate.LmpDateHeader ]
+                , div [ class "label" ] [ text <| translate language Translate.LmpDateHeader ]
                 , lmpDateInput
-                , div [ class "header" ] [ text <| translate language Translate.LmpDateConfidentHeader ]
-                , div []
+                , div [ class "label" ] [ text <| translate language Translate.LmpDateConfidentHeader ]
+                , div [ class "form-input is-confident" ]
                     [ confidentInput
                     , label [] [ text <| translate language Translate.Yes ]
                     , notConfidentInput
@@ -185,11 +200,11 @@ viewPregnancyDatingContent language currentDate motherId form =
                 , div [ class "separator" ] []
                 , div [ class "results" ]
                     [ div [ class "edd-result" ]
-                        [ div [] [ text <| translate language Translate.EddHeader ]
+                        [ div [ class "label" ] [ text <| translate language Translate.EddHeader ]
                         , eddResult
                         ]
                     , div [ class "ega-result" ]
-                        [ div [] [ text <| translate language Translate.EgaHeader ]
+                        [ div [ class "label" ] [ text <| translate language Translate.EgaHeader ]
                         , egaResult
                         ]
                     ]
@@ -197,9 +212,8 @@ viewPregnancyDatingContent language currentDate motherId form =
             ]
         , div [ class "actions" ]
             [ button
-                [ class "ui fluid primary button"
-
-                -- , onClick <| SetActivePage PinCodePage
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= 3 ) ]
+                , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage motherId
                 ]
                 [ text <| translate language Translate.Save ]
             ]

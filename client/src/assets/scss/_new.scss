@@ -279,11 +279,59 @@ div.page-prenatal-activity {
 
     .ui.full.segment {
 
-      .header {
+      .label {
         font-weight: bold;
+        margin-bottom: 10px;
+      }
+
+      .form-input {
+        margin-bottom: 30px;
+
+        &.range {
+          background: white;
+          border: 2px solid $color-light-gray;
+          padding: 5px;
+          width: 50%;
+        }
+
+        &.date {
+
+          .dropdown {
+            width: 50%;
+
+            .dropdown--button-container {
+              border: 2px solid $color-light-gray;
+
+              input {
+                border: none;
+                padding: 5px;
+              }
+            }
+
+          }
+        }
+
+        &.is-confident {
+
+          label {
+            font-size: 23px;
+            margin-left: 7px;
+          }
+
+          .not-confident {
+            margin-left: 40px;
+          }
+
+          input {
+            height: 20px;
+            margin-left: 30px;
+            width: 20px;
+          }
+        }
       }
 
       .separator {
+        color: $color-light-gray;
         margin: 30px 0;
         width: 100%;
         border: 1px solid;
@@ -292,13 +340,20 @@ div.page-prenatal-activity {
       .results {
         width: 100%;
 
-        .edd-result {
+        .edd-result,
+        .ega-result {
           width: 45%;
+
+          .value {
+            font-size: 25px;
+          }
+        }
+
+        .edd-result {
           float: left;
         }
 
         .ega-result {
-          width: 42%;
           float: right;
         }
       }
