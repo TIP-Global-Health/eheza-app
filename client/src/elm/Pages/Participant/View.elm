@@ -97,7 +97,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
             childParticipant
 
         activities =
-            summarizeChildParticipant childId session
+            summarizeChildParticipant childId session.offlineSession
 
         selectedActivity =
             case model.selectedTab of
@@ -230,7 +230,7 @@ viewFoundMother language ( motherId, mother ) ( sessionId, session ) pages model
                 |> List.intersperse break
 
         activities =
-            summarizeMotherParticipant motherId session
+            summarizeMotherParticipant motherId session.offlineSession
 
         selectedActivity =
             case model.selectedTab of

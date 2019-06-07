@@ -12,6 +12,7 @@ because there was so much code written in terms of an `EditableSession`.
 
 -}
 
+import Activity.Model exposing (SummaryByParticipant)
 import Backend.Counseling.Model exposing (EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -108,6 +109,7 @@ type alias EditableSession =
     , update : WebData ()
     , checkedIn :
         Lazy { mothers : EntityUuidDictList PersonId Person, children : EntityUuidDictList PersonId Person }
+    , summaryByParticipant : Lazy SummaryByParticipant
     }
 
 

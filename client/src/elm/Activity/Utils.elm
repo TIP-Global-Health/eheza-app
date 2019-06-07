@@ -10,7 +10,6 @@ module Activity.Utils exposing
     , getParticipantCountForActivity
     , motherIsCheckedIn
     , summarizeByActivity
-    , summarizeByParticipant
     , summarizeChildActivity
     , summarizeChildParticipant
     , summarizeMotherActivity
@@ -182,7 +181,7 @@ getAllMotherActivities =
 Note that we don't consider whether the child is checked in here -- just
 whether we would expect to perform this action if checked in.
 -}
-expectChildActivity : EditableSession -> PersonId -> ChildActivity -> Bool
+expectChildActivity : OfflineSession -> PersonId -> ChildActivity -> Bool
 expectChildActivity session childId activity =
     case activity of
         {- Counseling ->
@@ -399,9 +398,9 @@ expectCounselingActivity session childId =
 Note that we don't consider whether the mother is checked in here -- just
 whether we would expect to perform this action if checked in.
 -}
-expectMotherActivity : EditableSession -> PersonId -> MotherActivity -> Bool
+expectMotherActivity : OfflineSession -> PersonId -> MotherActivity -> Bool
 expectMotherActivity session motherId activity =
-    AllDict.get motherId session.offlineSession.participants.byMotherId
+    AllDict.get motherId session.participants.byMotherId
         |> Maybe.withDefault []
         |> List.any
             (\participant ->
@@ -447,7 +446,7 @@ summarizeChildActivity : ChildActivity -> EditableSession -> CompletedAndPending
 summarizeChildActivity activity session =
     force session.checkedIn
         |> .children
-        |> AllDictList.filter (\childId _ -> expectChildActivity session childId activity)
+        |> AllDictList.filter (\childId _ -> expectChildActivity session.offlineSession childId activity)
         |> AllDictList.partition (\childId _ -> childHasCompletedActivity childId activity session.offlineSession)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
@@ -463,7 +462,7 @@ summarizeMotherActivity activity session =
     -- all expected consents have been saved.
     force session.checkedIn
         |> .mothers
-        |> AllDictList.filter (\motherId _ -> expectMotherActivity session motherId activity)
+        |> AllDictList.filter (\motherId _ -> expectMotherActivity session.offlineSession motherId activity)
         |> AllDictList.partition (\motherId _ -> motherHasCompletedActivity motherId activity session.offlineSession)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
@@ -539,11 +538,11 @@ getParticipantCountForActivity summary activity =
 and which are pending. (This may not add up to all the activities, because some
 activities may not be expected for this child).
 -}
-summarizeChildParticipant : PersonId -> EditableSession -> CompletedAndPending (List ChildActivity)
+summarizeChildParticipant : PersonId -> OfflineSession -> CompletedAndPending (List ChildActivity)
 summarizeChildParticipant id session =
     getAllChildActivities
         |> List.filter (expectChildActivity session id)
-        |> List.partition (\activity -> childHasCompletedActivity id activity session.offlineSession)
+        |> List.partition (\activity -> childHasCompletedActivity id activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
 
@@ -551,37 +550,12 @@ summarizeChildParticipant id session =
 and which are pending. (This may not add up to all the activities, because some
 activities may not be expected for this mother).
 -}
-summarizeMotherParticipant : PersonId -> EditableSession -> CompletedAndPending (List MotherActivity)
+summarizeMotherParticipant : PersonId -> OfflineSession -> CompletedAndPending (List MotherActivity)
 summarizeMotherParticipant id session =
     getAllMotherActivities
         |> List.filter (expectMotherActivity session id)
-        |> List.partition (\activity -> motherHasCompletedActivity id activity session.offlineSession)
+        |> List.partition (\activity -> motherHasCompletedActivity id activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
-
-
-{-| Summarize our data for the editable session in a way that is useful
-for our UI, when we're focused on participants. This only considers children &
-mothers who are checked in to the session.
--}
-summarizeByParticipant : EditableSession -> SummaryByParticipant
-summarizeByParticipant session =
-    let
-        checkedIn =
-            force session.checkedIn
-
-        children =
-            AllDictList.map
-                (\childId _ -> summarizeChildParticipant childId session)
-                checkedIn.children
-
-        mothers =
-            AllDictList.map
-                (\motherId _ -> summarizeMotherParticipant motherId session)
-                checkedIn.mothers
-    in
-    { children = children
-    , mothers = mothers
-    }
 
 
 {-| This summarizes our summary, by counting how many activities have been

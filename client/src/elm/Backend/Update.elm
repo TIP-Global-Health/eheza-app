@@ -1,6 +1,7 @@
 module Backend.Update exposing (updateIndexedDb)
 
-import Activity.Utils exposing (motherIsCheckedIn)
+import Activity.Model exposing (SummaryByActivity, SummaryByParticipant)
+import Activity.Utils exposing (motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
 import AllDict
 import AllDictList
 import App.Model
@@ -861,12 +862,49 @@ makeEditableSession sessionId db =
     in
     RemoteData.map
         (\offline ->
+            let
+                checkedIn =
+                    lazy <|
+                        \_ -> cacheCheckedIn offline
+
+                summaryByParticipant =
+                    Lazy.map (summarizeByParticipant offline) checkedIn
+            in
             { offlineSession = offline
             , update = NotAsked
-            , checkedIn = lazy <| \_ -> cacheCheckedIn offline
+            , checkedIn = checkedIn
+            , summaryByParticipant = summaryByParticipant
             }
         )
         offlineSession
+
+
+{-| Summarize our data for the editable session in a way that is useful
+for our UI, when we're focused on participants. This only considers children &
+mothers who are checked in to the session.
+-}
+summarizeByParticipant : OfflineSession -> CheckedIn -> SummaryByParticipant
+summarizeByParticipant session checkedIn =
+    let
+        children =
+            AllDictList.map
+                (\childId _ -> summarizeChildParticipant childId session)
+                checkedIn.children
+
+        mothers =
+            AllDictList.map
+                (\motherId _ -> summarizeMotherParticipant motherId session)
+                checkedIn.mothers
+    in
+    { children = children
+    , mothers = mothers
+    }
+
+
+type alias CheckedIn =
+    { mothers : EntityUuidDictList PersonId Person
+    , children : EntityUuidDictList PersonId Person
+    }
 
 
 {-| Who is checked in, considering both explicit check in and anyone who has
@@ -877,7 +915,7 @@ Ideally, we'd move it there and not expose it, but we'd have to rearrange a
 bunch of stuff to avoid circular imports.
 
 -}
-cacheCheckedIn : OfflineSession -> { mothers : EntityUuidDictList PersonId Person, children : EntityUuidDictList PersonId Person }
+cacheCheckedIn : OfflineSession -> CheckedIn
 cacheCheckedIn session =
     let
         -- A mother is checked in if explicitly checked in or has any completed

@@ -13,7 +13,7 @@ with Child and ChildActivity.
 import Activity.Model exposing (Activity, CompletedAndPending)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Session.Model exposing (EditableSession)
+import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html)
 import Pages.Activity.Model
@@ -40,7 +40,7 @@ type alias Participant id value activity msg =
     , getVillage : value -> Maybe String
     , iconClass : String
     , showProgressReportTab : Bool
-    , summarizeActivitiesForParticipant : id -> EditableSession -> CompletedAndPending (List activity)
+    , summarizeActivitiesForParticipant : id -> OfflineSession -> CompletedAndPending (List activity)
     , summarizeParticipantsForActivity : activity -> EditableSession -> CompletedAndPending (EntityUuidDictList id value)
     , tagActivity : activity -> Activity
     , toChildId : id -> Maybe PersonId

@@ -1,6 +1,6 @@
 module Pages.Participants.View exposing (view)
 
-import Activity.Utils exposing (getActivityCountForMother, summarizeByParticipant)
+import Activity.Utils exposing (getActivityCountForMother)
 import AllDictList
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
@@ -35,7 +35,7 @@ view language ( sessionId, session ) model =
                 |> AllDictList.filter (matchMotherAndHerChildren filter session.offlineSession)
 
         summary =
-            summarizeByParticipant session
+            force session.summaryByParticipant
 
         ( mothersWithPendingActivity, mothersWithoutPendingActivity ) =
             AllDictList.partition
