@@ -571,13 +571,17 @@
 
         integerFields.forEach(function (field) {
             if (node.hasOwnProperty(field)) {
-                node[field] = parseInt(node[field]);
+                if (typeof node[field] == 'string') {
+                    node[field] = parseInt(node[field]);
+                }
             }
         });
 
         floatFields.forEach(function (field) {
             if (node.hasOwnProperty(field)) {
-                node[field] = parseFloat(node[field]);
+                if (typeof node[field] == 'string') {
+                    node[field] = parseFloat(node[field]);
+                }
             }
         });
 
