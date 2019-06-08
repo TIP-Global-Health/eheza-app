@@ -37,6 +37,10 @@
     // Transaction constants
     var rw = 'rw';
 
+    var batchSize = 50;
+    var dataTimeout = 15000; // 15 seconds
+    var imageTimeout = 120000; // 2 minutes
+
     // Listen for background sync requests. We can get here in one of several
     // ways:
     //
@@ -299,8 +303,6 @@
         });
     }
 
-    var batchSize = 50;
-
     function sendToBackend (shardUuid, url, uploadUrl) {
         if (shardUuid === nodesUuid) {
             var table = dbSync.nodeChanges;
@@ -339,12 +341,12 @@
                         upload: status
                     }).catch(formatDatabaseError).then(sendSyncData).then(function () {
                         return uploadImages(table, changes, uploadUrl).then(function () {
-                            return fetch(url, {
+                            return fetchWithTimeout(url, {
                                 method: 'POST',
                                 body: JSON.stringify({
                                     changes: changes
                                 })
-                            }).catch(function (err) {
+                            }, dataTimeout).catch(function (err) {
                                 return Promise.reject({
                                     tag: NetworkError,
                                     message: err.message,
@@ -414,7 +416,7 @@
                                     body: formData
                                 });
 
-                                return fetch(request).catch(function (err) {
+                                return fetchWithTimeout(request, {}, imageTimeout).catch(function (err) {
                                     return Promise.reject({
                                         tag: NetworkError,
                                         message: err.message,
@@ -465,7 +467,7 @@
     }
 
     function fetchFromBackend (shardUuid, url) {
-        return fetch(url).catch(function (err) {
+        return fetchWithTimeout(url, {}, dataTimeout).catch(function (err) {
             return Promise.reject({
                 tag: NetworkError,
                 message: err.message,
@@ -658,7 +660,7 @@
                             mode: 'cors'
                         });
 
-                        return fetch(req).then(function(response) {
+                        return fetchWithTimeout(req, {}, imageTimeout).then(function(response) {
                             if (!response.ok) {
                                 throw new TypeError('Response status ' + response.status + ' fetching ' + url);
                             }
@@ -684,7 +686,7 @@
     function tryRefreshToken (credentials) {
         var refreshUrl = credentials.backend_url + '/api/refresh-token/' + credentials.refresh_token;
 
-        return fetch(refreshUrl).catch (function (err) {
+        return fetchWithTimeout(refreshUrl, {}, dataTimeout).catch (function (err) {
             return Promise.reject({
                 tag: NetworkError,
                 message: err.message,
@@ -733,6 +735,23 @@
 
             return cache.put(cachedRequest, cachedResponse);
         });
+    }
+
+    function fetchWithTimeout (url, options, timeout) {
+        var fetcher = fetch(url, options);
+
+        if (timeout) {
+            var canceler = new Promise(function (resolve, reject) {
+                setTimeout(function () {
+                    var error = new Error('Request timed out');
+                    reject(error);
+                }, timeout);
+            });
+
+            return Promise.race([fetcher, canceler]);
+        } else {
+            return fetcher;
+        }
     }
 
 })();
