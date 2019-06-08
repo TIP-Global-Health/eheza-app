@@ -389,6 +389,43 @@ function hedley_person_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-person-field_hiv_status'.
+  $field_instances['node-person-field_hiv_status'] = array(
+    'bundle' => 'person',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 21,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_hiv_status',
+    'label' => 'HIV status',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 19,
+    ),
+  );
+
   // Exported field_instance: 'node-person-field_marital_status'.
   $field_instances['node-person-field_marital_status'] = array(
     'bundle' => 'person',
@@ -423,6 +460,43 @@ function hedley_person_field_default_field_instances() {
       'settings' => array(),
       'type' => 'options_select',
       'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance: 'node-person-field_mode_of_delivery'.
+  $field_instances['node-person-field_mode_of_delivery'] = array(
+    'bundle' => 'person',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 22,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_mode_of_delivery',
+    'label' => 'Mode of delivery',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 20,
     ),
   );
 
@@ -463,6 +537,52 @@ function hedley_person_field_default_field_instances() {
       ),
       'type' => 'text_textfield',
       'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance: 'node-person-field_number_of_children'.
+  $field_instances['node-person-field_number_of_children'] = array(
+    'bundle' => 'person',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Number of children under 5 years old',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 23,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_number_of_children',
+    'label' => 'Number of children',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 21,
     ),
   );
 
@@ -749,7 +869,7 @@ function hedley_person_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 19,
+      'weight' => 22,
     ),
   );
 
@@ -968,10 +1088,14 @@ function hedley_person_field_default_field_instances() {
   t('First name');
   t('Gender');
   t('Group');
+  t('HIV status');
   t('Health Center');
   t('How are these persons related?');
   t('Marital status');
+  t('Mode of delivery');
   t('National ID number');
+  t('Number of children');
+  t('Number of children under 5 years old');
   t('Person');
   t('Phone number');
   t('Photo');

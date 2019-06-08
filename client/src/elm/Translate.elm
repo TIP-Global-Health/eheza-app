@@ -27,7 +27,7 @@ import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
-import Backend.Person.Model exposing (EducationLevel(..), Gender(..), MaritalStatus(..))
+import Backend.Person.Model exposing (EducationLevel(..), Gender(..), HIVStatus(..), MaritalStatus(..), ModeOfDelivery(..), VaginalDelivery(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
@@ -225,6 +225,7 @@ type TranslationId
     | GoHome
     | HaveYouSynced
     | HealthCenter
+    | HIVStatus HIVStatus
     | HIVStatusLabel
     | HouseholdSize
     | HttpError Http.Error
@@ -243,6 +244,7 @@ type TranslationId
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MiddleName
     | MinutesAgo Int
+    | ModeOfDelivery ModeOfDelivery
     | ModeOfDeliveryLabel
     | Month
     | MonthAbbrev
@@ -274,7 +276,7 @@ type TranslationId
     | NoParticipantsFound
     | NotAvailable
     | NotConnected
-    | NumberOfChildren
+    | NumberOfChildrenUnder5
     | OK
     | Old
     | OnceYouEndYourGroupEncounter
@@ -1158,6 +1160,33 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        HIVStatus status ->
+            case status of
+                HIVExposedInfant ->
+                    { english = "HIV-exposed Infant"
+                    , kinyarwanda = Nothing
+                    }
+
+                Negative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                NegativeDiscordantCouple ->
+                    { english = "Negative - discordant couple"
+                    , kinyarwanda = Nothing
+                    }
+
+                Positive ->
+                    { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.Person.Model.Unknown ->
+                    { english = "Unknown"
+                    , kinyarwanda = Nothing
+                    }
+
         HIVStatusLabel ->
             { english = "HIV Status"
             , kinyarwanda = Nothing
@@ -1295,6 +1324,28 @@ translationSet trans =
                     toString minutes ++ " minutes ago"
             , kinyarwanda = Nothing
             }
+
+        ModeOfDelivery mode ->
+            case mode of
+                VaginalDelivery (Spontaneous True) ->
+                    { english = "Spontaneous vaginal delivery with episiotomy"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaginalDelivery (Spontaneous False) ->
+                    { english = "Spontaneous vaginal delivery without episiotomy"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaginalDelivery WithVacuumExtraction ->
+                    { english = "Vaginal delivery with vacuum extraction"
+                    , kinyarwanda = Nothing
+                    }
+
+                CesareanDelivery ->
+                    { english = "Cesarean delivery"
+                    , kinyarwanda = Nothing
+                    }
 
         ModeOfDeliveryLabel ->
             { english = "Mode of delivery"
@@ -1459,8 +1510,8 @@ translationSet trans =
             , kinyarwanda = Just "Ntamurandasi"
             }
 
-        NumberOfChildren ->
-            { english = "Number of Children"
+        NumberOfChildrenUnder5 ->
+            { english = "Number of Children under 5"
             , kinyarwanda = Nothing
             }
 

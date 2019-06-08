@@ -31,6 +31,9 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
       'field_sector',
       'field_ubudehe',
       'field_village',
+      'field_hiv_status',
+      'field_number_of_children',
+      'field_mode_of_delivery',
     ];
 
     foreach ($standard_fields_names as $field_name) {

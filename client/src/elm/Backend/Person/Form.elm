@@ -1,8 +1,8 @@
-module Backend.Person.Form exposing (ExpectedAge(..), PersonForm, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, expectedAgeFromForm, firstName, gender, healthCenter, maritalStatus, nationalIdNumber, phoneNumber, photo, province, secondName, sector, ubudehe, validateBirthDate, validateCell, validateDistrict, validateEducationLevel, validateGender, validateMaritalStatus, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village)
+module Backend.Person.Form exposing (ExpectedAge(..), PersonForm, allDigitsPattern, allLettersPattern, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, expectedAgeFromForm, firstName, gender, healthCenter, hivStatus, maritalStatus, modeOfDelivery, nationalIdNumber, numberOfChildren, phoneNumber, photo, province, secondName, sector, ubudehe, validateBirthDate, validateCell, validateDigitsOnly, validateDistrict, validateEducationLevel, validateGender, validateHealthCenterId, validateHivStatus, validateLettersOnly, validateMaritalStatus, validateModeOfDelivery, validateNationalIdNumber, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village, withDefault)
 
 import AllDict
 import Backend.Entities exposing (HealthCenterId)
-import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeMaritalStatus, decodeUbudehe)
+import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeHivStatus, decodeMaritalStatus, decodeModeOfDelivery, decodeUbudehe)
 import Backend.Person.Model exposing (..)
 import Backend.Person.Utils exposing (isAdult, isPersonAnAdult)
 import Form exposing (..)
@@ -146,6 +146,9 @@ validatePerson maybeRelated maybeCurrentDate =
                 |> andMap (succeed birthDate)
                 |> andMap (field birthDateEstimated bool)
                 |> andMap (field gender validateGender)
+                |> andMap (field hivStatus validateHivStatus)
+                |> andMap (field numberOfChildren <| nullable int)
+                |> andMap (field modeOfDelivery <| validateModeOfDelivery expectedAge)
                 |> andMap (field ubudehe (validateUbudehe maybeRelated))
                 |> andMap (field educationLevel <| validateEducationLevel expectedAge)
                 |> andMap (field maritalStatus <| validateMaritalStatus expectedAge)
@@ -305,6 +308,21 @@ validateBirthDate expectedAge maybeCurrentDate =
             )
 
 
+validateHivStatus : Validation ValidationError (Maybe HIVStatus)
+validateHivStatus =
+    fromDecoder DecoderError (Just RequiredField) (Json.Decode.nullable decodeHivStatus)
+
+
+validateModeOfDelivery : ExpectedAge -> Validation ValidationError (Maybe ModeOfDelivery)
+validateModeOfDelivery expectedAge =
+    if expectedAge == ExpectChild then
+        fromDecoder DecoderError (Just RequiredField) (Json.Decode.nullable decodeModeOfDelivery)
+
+    else
+        -- It's not required for others, but we'll keep it if provided.
+        nullable <| fromDecoder DecoderError Nothing decodeModeOfDelivery
+
+
 validateEducationLevel : ExpectedAge -> Validation ValidationError (Maybe EducationLevel)
 validateEducationLevel expectedAge =
     if expectedAge == ExpectAdult then
@@ -454,3 +472,18 @@ phoneNumber =
 healthCenter : String
 healthCenter =
     "health_center"
+
+
+numberOfChildren : String
+numberOfChildren =
+    "number_of_children"
+
+
+modeOfDelivery : String
+modeOfDelivery =
+    "mode_of_delivery"
+
+
+hivStatus : String
+hivStatus =
+    "hiv_status"
