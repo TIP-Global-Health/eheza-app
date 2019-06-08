@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
-import Date.Extra as Date exposing (Interval(Month, Year))
+import Date.Extra as Date exposing (Interval(Day, Month))
 import DateSelector.SelectorDropdown
 import EveryDict
 import EveryDictList exposing (EveryDictList)
@@ -106,14 +106,31 @@ viewPregnancyDatingContent language currentDate motherId form =
             toLocalDateTime currentDate 0 0 0 0
 
         lmpDateInput =
-            [ DateSelector.SelectorDropdown.view
-                ToggleDateSelector
-                SetLmpDate
-                form.isDateSelectorOpen
-                (Date.add Month -10 today)
-                today
-                form.lmpDate
-            ]
+            form.lmpRange
+                |> unwrap
+                    []
+                    (\range ->
+                        let
+                            daysBack =
+                                case range of
+                                    OneMonth ->
+                                        -31
+
+                                    ThreeMonth ->
+                                        -92
+
+                                    SixMonth ->
+                                        -184
+                        in
+                        [ DateSelector.SelectorDropdown.view
+                            ToggleDateSelector
+                            SetLmpDate
+                            form.isDateSelectorOpen
+                            (Date.add Day daysBack today)
+                            today
+                            form.lmpDate
+                        ]
+                    )
                 |> div [ class "form-input date" ]
 
         confidentInput =
@@ -179,10 +196,13 @@ viewPregnancyDatingContent language currentDate motherId form =
             else
                 0
 
+        totalTasks =
+            2
+
         tasksCompleted =
-            taskCompleted form.lmpRange + taskCompleted form.lmpDate + taskCompleted form.lmpDateConfident
+            taskCompleted form.lmpDate + taskCompleted form.lmpDateConfident
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted 3 ]
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "form pregnancy-dating" ]
@@ -212,7 +232,7 @@ viewPregnancyDatingContent language currentDate motherId form =
             ]
         , div [ class "actions" ]
             [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= 3 ) ]
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
                 , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage motherId
                 ]
                 [ text <| translate language Translate.Save ]

@@ -5,6 +5,7 @@ import Backend.Entities exposing (PersonId)
 import Backend.Model exposing (ModelIndexedDb)
 import EveryDict exposing (EveryDict)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD, fromLocalDateTime)
+import Maybe.Extra exposing (isJust)
 import Pages.PrenatalActivity.Model exposing (..)
 import PrenatalActivity.Model exposing (PrenatalActivity)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -54,9 +55,19 @@ update motherId activity db msg model =
 
         SetLmpRange s ->
             let
+                range =
+                    decodeLmpRange s
+
+                ( lmpDate, isDateSelectorOpen ) =
+                    if isJust range then
+                        ( model.pregnancyDatingForm.lmpDate, True )
+
+                    else
+                        ( Nothing, False )
+
                 updatedForm =
                     model.pregnancyDatingForm
-                        |> (\form -> { form | lmpRange = decodeLmpRange s })
+                        |> (\form -> { form | lmpRange = range, lmpDate = lmpDate, isDateSelectorOpen = isDateSelectorOpen })
             in
             ( { model | pregnancyDatingForm = updatedForm }
             , Cmd.none

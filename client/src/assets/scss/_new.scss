@@ -295,19 +295,22 @@ div.page-prenatal-activity {
         }
 
         &.date {
+          height: 2em;
+          width: 50%;
 
-          .dropdown {
-            width: 50%;
+          .dropdown,
+          .dropdown-open {
+            width: 100%;
+          }
 
-            .dropdown--button-container {
-              border: 2px solid $color-light-gray;
+          .dropdown--button-container {
+            background: white;
+            border: 2px solid $color-light-gray;
 
-              input {
-                border: none;
-                padding: 5px;
-              }
+            input {
+              border: 0;
+              padding: 5px;
             }
-
           }
         }
 
