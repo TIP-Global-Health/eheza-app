@@ -140,6 +140,24 @@ viewFetchedContent language currentDate id1 id2 model request data =
 
                     selector =
                         data.clinics
+                            |> AllDictList.filter
+                                (\_ clinic ->
+                                    -- If both persons are assigned to a health
+                                    -- center, show the clinic if it is
+                                    -- assigned to one or the other.  If one of
+                                    -- the persons has no health center, show
+                                    -- all clinics.
+                                    Maybe.map2
+                                        (\hc1 hc2 ->
+                                            clinic.healthCenterId
+                                                == hc1
+                                                || clinic.healthCenterId
+                                                == hc2
+                                        )
+                                        data.person1.healthCenterId
+                                        data.person2.healthCenterId
+                                        |> Maybe.withDefault True
+                                )
                             |> AllDictList.map
                                 (\clinicId clinic ->
                                     option
