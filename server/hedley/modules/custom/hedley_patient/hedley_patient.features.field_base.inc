@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * hedley_patient.features.field_base.inc
@@ -74,34 +75,6 @@ function hedley_patient_field_default_field_bases() {
     'type' => 'datestamp',
   );
 
-  // Exported field_base: 'field_hiv_status'.
-  $field_bases['field_hiv_status'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_hiv_status',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(
-        'hiv-exposed-infant' => 'HIV-exposed infant',
-        'negative' => 'Negative',
-        'negative-dc' => 'Negative - discordant couple',
-        'positive' => 'Positive',
-        'unknown' => 'Unknown',
-      ),
-      'allowed_values_function' => '',
-    ),
-    'translatable' => 0,
-    'type' => 'list_text',
-  );
-
   // Exported field_base: 'field_household_size'.
   $field_bases['field_household_size'] = array(
     'active' => 1,
@@ -115,33 +88,6 @@ function hedley_patient_field_default_field_bases() {
     'settings' => array(),
     'translatable' => 0,
     'type' => 'number_integer',
-  );
-
-  // Exported field_base: 'field_mode_of_delivery'.
-  $field_bases['field_mode_of_delivery'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_mode_of_delivery',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(
-        'svd-episiotomy' => 'Spontaneous vaginal delivery with episiotomy',
-        'svd-no-episiotomy' => 'Spontaneous vaginal delivery without episiotomy',
-        'vd-vacuum' => 'Vaginal delivery with vacuum extraction',
-        'cesarean-delivery' => 'Cesarean delivery',
-      ),
-      'allowed_values_function' => '',
-    ),
-    'translatable' => 0,
-    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_mother'.
@@ -179,21 +125,6 @@ function hedley_patient_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'entityreference',
-  );
-
-  // Exported field_base: 'field_number_of_children'.
-  $field_bases['field_number_of_children'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_number_of_children',
-    'indexes' => array(),
-    'locked' => 0,
-    'module' => 'number',
-    'settings' => array(),
-    'translatable' => 0,
-    'type' => 'number_integer',
   );
 
   return $field_bases;
