@@ -32,6 +32,7 @@ import Pages.Relationship.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityUuid, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityUuid, endpoint, fromEntityUuid, toCmd, toEntityUuid, toTask, withKeyEncoder, withParamsEncoder, withValueEncoder, withoutDecoder)
 import Task
+import Time.Date
 import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
 import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
@@ -408,12 +409,29 @@ updateIndexedDb currentDate nurseId msg model =
                                     { adult = normalized.person
                                     , child = normalized.relatedTo
                                     , adultActivities = defaultAdultActivities
-                                    , start = currentDate
+                                    , start = defaultStartDate
                                     , end = Nothing
                                     , clinic = clinicId
                                     }
                             )
                         |> Maybe.Extra.toList
+
+                -- The start date determines when we start expecting this pair
+                -- to be attending a group encounter. We'll look to see if we
+                -- know the child's birth date. Normally, we will, because
+                -- we've probably just entered it, or we've loaded the child
+                -- for some other reason. We won't try to fetch the child here
+                -- if we don't have the child, at least for now, because it
+                -- would add complexity.  If we don't know the child's
+                -- birthdate, we'll default to 28 days ago. That should be
+                -- enough so that, if we're in the middle of a group encounter,
+                -- the child will be expected at that group encounter.
+                defaultStartDate =
+                    AllDict.get normalized.relatedTo model.people
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.andThen .birthDate
+                        |> Maybe.withDefault (Time.Date.addDays -28 currentDate)
 
                 defaultAdultActivities =
                     case normalized.relatedBy of
