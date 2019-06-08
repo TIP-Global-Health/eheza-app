@@ -2,7 +2,6 @@ module Backend.Person.Utils exposing (ageInYears, diffInYears, isAdult, isPerson
 
 import Backend.Person.Model exposing (Person)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
-import Maybe.Extra exposing (isJust)
 import Time.Date
 
 

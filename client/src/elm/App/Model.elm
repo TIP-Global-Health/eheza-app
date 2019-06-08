@@ -11,6 +11,7 @@ import Http
 import Json.Encode exposing (Value)
 import Pages.Device.Model
 import Pages.Page exposing (Page(..))
+import Pages.People.Model
 import Pages.Person.Model
 import Pages.PinCode.Model
 import Pages.Relationship.Model
@@ -20,6 +21,7 @@ import Rollbar
 import ServiceWorker.Model
 import Time exposing (Time)
 import Translate.Model exposing (Language(..))
+import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
 import Uuid exposing (Uuid)
 import ZScore.Model
 
@@ -61,7 +63,7 @@ type alias Model =
     , zscores : ZScore.Model.Model
 
     -- What data did we want last time we checked? We track this so we can
-    -- forget data we don't want any longer. Using an EveryDict relies on the
+    -- forget data we don't want any longer. Using an EntityUuidDict relies on the
     -- relevant `Msg` values behaving well for `toString`, which should
     -- typically be fine. The time reflects the last time the data was wanted,
     -- permitting us to keep recently wanted data around for a little while
@@ -130,21 +132,23 @@ it at the appropriate moment.
 type alias LoggedInModel =
     { createPersonPage : Pages.Person.Model.Model
     , relationshipPages : EveryDict ( PersonId, PersonId ) Pages.Relationship.Model.Model
+    , personsPage : Pages.People.Model.Model
 
     -- The nurse who has logged in.
     , nurse : ( NurseId, Nurse )
 
     -- A set of pages for every "open" editable session.
-    , sessionPages : EveryDict SessionId Pages.Session.Model.Model
+    , sessionPages : EntityUuidDict SessionId Pages.Session.Model.Model
     }
 
 
 emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel nurse =
     { createPersonPage = Pages.Person.Model.emptyModel
+    , personsPage = Pages.People.Model.emptyModel
     , relationshipPages = EveryDict.empty
     , nurse = nurse
-    , sessionPages = EveryDict.empty
+    , sessionPages = EntityUuidDict.empty
     }
 
 
@@ -182,6 +186,7 @@ type Msg
 -}
 type MsgLoggedIn
     = MsgPageCreatePerson Pages.Person.Model.Msg
+    | MsgPagePersons Pages.People.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
 

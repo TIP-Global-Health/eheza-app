@@ -1,7 +1,7 @@
 module Pages.Participant.View exposing (viewChild, viewMother)
 
 import Activity.Model exposing (Activity(..), ChildActivity, CompletedAndPending, MotherActivity(..))
-import Activity.Utils exposing (getActivityIcon, getCheckedIn, summarizeChildParticipant, summarizeMotherParticipant)
+import Activity.Utils exposing (getActivityIcon, summarizeChildParticipant, summarizeMotherParticipant)
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Gender(..), Person, Ubudehe(..))
 import Backend.Session.Model exposing (EditableSession)
@@ -11,6 +11,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
+import Lazy exposing (force)
 import Maybe.Extra
 import Measurement.Model
 import Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getMotherForm)
@@ -96,7 +97,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
             childParticipant
 
         activities =
-            summarizeChildParticipant childId session
+            summarizeChildParticipant childId session.offlineSession
 
         selectedActivity =
             case model.selectedTab of
@@ -158,7 +159,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                             form =
                                 getChildForm childId pages session
                         in
-                        [ Measurement.View.viewChild language currentDate child activity measurements zscores session form
+                        [ Measurement.View.viewChild language currentDate child activity (force measurements) zscores session form
                             |> Html.map MsgMeasurement
                             |> keyed "content"
                         ]
@@ -229,7 +230,7 @@ viewFoundMother language ( motherId, mother ) ( sessionId, session ) pages model
                 |> List.intersperse break
 
         activities =
-            summarizeMotherParticipant motherId session
+            summarizeMotherParticipant motherId session.offlineSession
 
         selectedActivity =
             case model.selectedTab of
@@ -272,7 +273,7 @@ viewFoundMother language ( motherId, mother ) ( sessionId, session ) pages model
                         form =
                             getMotherForm motherId pages session
                     in
-                    [ Measurement.View.viewMother language activity measurements form
+                    [ Measurement.View.viewMother language activity (force measurements) form
                         |> Html.map MsgMeasurement
                         |> keyed "content"
                     ]

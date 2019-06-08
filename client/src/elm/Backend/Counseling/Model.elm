@@ -12,8 +12,8 @@ with the other measurements.
 
 import Backend.Entities exposing (..)
 import EveryDict exposing (EveryDict)
-import EveryDictList exposing (EveryDictList)
 import Translate.Model exposing (TranslationSet)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 {-| For the moment, the only information we track about the topic itself
@@ -62,4 +62,4 @@ them on the client.
 
 -}
 type alias EveryCounselingSchedule =
-    EveryDict CounselingTiming (EveryDictList CounselingTopicId CounselingTopic)
+    EveryDict CounselingTiming (EntityUuidDictList CounselingTopicId CounselingTopic)

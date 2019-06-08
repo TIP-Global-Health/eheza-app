@@ -248,11 +248,6 @@
 
                                     return addShard.then(function () {
                                         return changeTable.add(change).then(function (localId) {
-                                            // Kick off a sync
-                                            self.registration.sync.register('sync').catch(function () {
-                                                self.registration.active.postMessage('sync');
-                                            });
-
                                             return sendRevisedNode(table, uuid).then(function () {
                                                 return Promise.resolve(response);
                                             });
@@ -330,11 +325,6 @@
                                     }
 
                                     return changeTable.add(change).then(function (localId) {
-                                        // Kick off a sync
-                                        self.registration.sync.register('sync').catch(function () {
-                                            self.registration.active.postMessage('sync');
-                                        });
-
                                         return sendRevisedNode(table, uuid).then(function () {
                                             return Promise.resolve(response);
                                         });
@@ -439,6 +429,7 @@
 
         var offset = parseInt(params.get('offset') || '0');
         var range = parseInt(params.get('range') || '0');
+        var sortBy = '';
 
         return dbSync.open().catch(databaseError).then(function () {
             var criteria = {type: type};
@@ -466,21 +457,20 @@
 
                 var modifyQuery = Promise.resolve();
 
-                var nameContains = params.get('name_contains');
-                if (nameContains) {
-                    var filter = nameContains.toLowerCase();
+                if (type === 'person') {
+                    var nameContains = params.get('name_contains');
+                    if (nameContains) {
+                        modifyQuery = modifyQuery.then(function () {
+                            query = table.where('name_search').startsWith(nameContains.toLowerCase()).distinct();
 
-                    var doFilter = function (participant) {
-                        var name = (participant.label || '').toLowerCase();
-                        return name.includes(filter);
-                    };
+                            // Cloning doesn't seem to work for this one.
+                            countQuery = table.where('name_search').startsWith(nameContains.toLowerCase()).distinct();
 
-                    modifyQuery = modifyQuery.then(function () {
-                        query = query.and(doFilter);
-                        countQuery = countQuery.and(doFilter);
+                            sortBy = 'label';
 
-                        return Promise.resolve();
-                    });
+                            return Promise.resolve();
+                        });
+                    }
                 }
 
                 // For PmtctParticipant, check the session param and (if
@@ -547,7 +537,9 @@
                             query.limit(range);
                         }
 
-                        return query.toArray().catch(databaseError).then(function (nodes) {
+                        var getNodes = sortBy ? query.sortBy(sortBy) : query.toArray();
+
+                        return getNodes.catch(databaseError).then(function (nodes) {
                             var body = JSON.stringify({
                                 offset: offset,
                                 count: count,

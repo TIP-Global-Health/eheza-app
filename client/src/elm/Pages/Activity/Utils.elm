@@ -7,6 +7,7 @@ import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getMot
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html)
+import Lazy exposing (force)
 import Measurement.Model
 import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Measurement.View
@@ -32,7 +33,7 @@ viewChildMeasurements language currentDate zscores childId activity pages sessio
     getChild childId session.offlineSession
         |> Maybe.map
             (\child ->
-                Measurement.View.viewChild language currentDate child activity measurements zscores session form
+                Measurement.View.viewChild language currentDate child activity (force measurements) zscores session form
                     |> Html.map MsgMeasurement
             )
         |> Maybe.withDefault emptyNode
@@ -47,5 +48,5 @@ viewMotherMeasurements language currentDate motherId activity pages session =
         form =
             getMotherForm motherId pages session
     in
-    Measurement.View.viewMother language activity measurements form
+    Measurement.View.viewMother language activity (force measurements) form
         |> Html.map MsgMeasurement

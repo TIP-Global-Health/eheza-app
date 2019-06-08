@@ -1,5 +1,6 @@
 module App.View exposing (view)
 
+import AllDict
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInModel)
 import Config.View
@@ -194,8 +195,9 @@ viewUserPage page model configured =
                     Pages.Person.View.view model.language currentDate id model.indexedDb
                         |> flexPageWrapper model
 
-                PersonsPage search relation ->
-                    Pages.People.View.view model.language currentDate search relation model.indexedDb
+                PersonsPage relation ->
+                    Pages.People.View.view model.language currentDate relation loggedInModel.personsPage model.indexedDb
+                        |> Html.map (MsgLoggedIn << MsgPagePersons)
                         |> flexPageWrapper model
 
                 RelationshipPage id1 id2 ->
@@ -211,7 +213,7 @@ viewUserPage page model configured =
                 SessionPage sessionId subPage ->
                     let
                         sessionPages =
-                            EveryDict.get sessionId loggedInModel.sessionPages
+                            AllDict.get sessionId loggedInModel.sessionPages
                                 |> Maybe.withDefault Pages.Session.Model.emptyModel
                     in
                     Pages.Session.View.view

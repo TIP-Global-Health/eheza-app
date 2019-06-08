@@ -2,7 +2,6 @@ module Pages.Router exposing (delta2url, parseUrl)
 
 import Activity.Model exposing (Activity)
 import Activity.Utils exposing (decodeActivityFromString, defaultActivity, encodeActivityAsString)
-import Http exposing (encodeUri)
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (EntityUuid, fromEntityUuid, toEntityUuid)
 import RouteUrl exposing (HistoryEntry(..), UrlChange)
@@ -56,36 +55,17 @@ delta2url previous current =
                 PersonPage id ->
                     Just <| UrlChange NewEntry <| "#person/" ++ fromEntityUuid id
 
-                PersonsPage search related ->
+                PersonsPage related ->
                     let
-                        change =
-                            -- If we're typing the search string, we just
-                            -- modify the entry.
-                            case previous of
-                                UserPage (PersonsPage _ previousRelated) ->
-                                    if related == previousRelated then
-                                        ModifyEntry
-
-                                    else
-                                        NewEntry
-
-                                _ ->
-                                    NewEntry
-
-                        encodedSearch =
-                            search
-                                |> Maybe.map (\s -> "/" ++ encodeUri s)
-                                |> Maybe.withDefault ""
-
                         url =
                             case related of
                                 Nothing ->
-                                    "#persons" ++ encodedSearch
+                                    "#persons"
 
                                 Just relatedId ->
-                                    "#relations/" ++ fromEntityUuid relatedId ++ encodedSearch
+                                    "#relations/" ++ fromEntityUuid relatedId
                     in
-                    Just <| UrlChange change url
+                    Just <| UrlChange NewEntry url
 
                 RelationshipPage id1 id2 ->
                     Just <|
@@ -141,10 +121,8 @@ parseUrl =
         , map ServiceWorkerPage (s "deployment")
         , map (UserPage MyAccountPage) (s "my-account")
         , map (\id page -> UserPage <| SessionPage id page) (s "session" </> parseUuid </> parseSessionPage)
-        , map (UserPage <| PersonsPage Nothing Nothing) (s "persons")
-        , map (\search -> UserPage <| PersonsPage (Just search) Nothing) (s "persons" </> string)
-        , map (\id -> UserPage <| PersonsPage Nothing (Just id)) (s "relations" </> parseUuid)
-        , map (\id search -> UserPage <| PersonsPage (Just search) (Just id)) (s "relations" </> parseUuid </> string)
+        , map (UserPage <| PersonsPage Nothing) (s "persons")
+        , map (\id -> UserPage <| PersonsPage (Just id)) (s "relations" </> parseUuid)
         , map (\id -> UserPage <| CreatePersonPage (Just id)) (s "person" </> s "new" </> parseUuid)
         , map (UserPage <| CreatePersonPage Nothing) (s "person" </> s "new")
         , map (\id -> UserPage <| PersonPage id) (s "person" </> parseUuid)

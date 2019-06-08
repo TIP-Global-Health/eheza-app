@@ -1,10 +1,10 @@
 module Backend.Person.Form exposing (ExpectedAge(..), PersonForm, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, expectedAgeFromForm, firstName, gender, healthCenter, maritalStatus, nationalIdNumber, phoneNumber, photo, province, secondName, sector, ubudehe, validateBirthDate, validateCell, validateDistrict, validateEducationLevel, validateGender, validateMaritalStatus, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village)
 
+import AllDict
 import Backend.Entities exposing (HealthCenterId)
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeMaritalStatus, decodeUbudehe)
 import Backend.Person.Model exposing (..)
 import Backend.Person.Utils exposing (isAdult, isPersonAnAdult)
-import EveryDict
 import Form exposing (..)
 import Form.Init exposing (..)
 import Form.Validate exposing (..)
@@ -195,7 +195,7 @@ validateProvince related =
         |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
-                EveryDict.get (toEntityId id) geoInfo.provinces
+                AllDict.get (toEntityId id) geoInfo.provinces
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownProvince)
             )
@@ -208,7 +208,7 @@ validateDistrict related =
         |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
-                EveryDict.get (toEntityId id) geoInfo.districts
+                AllDict.get (toEntityId id) geoInfo.districts
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownDistrict)
             )
@@ -221,7 +221,7 @@ validateSector related =
         |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
-                EveryDict.get (toEntityId id) geoInfo.sectors
+                AllDict.get (toEntityId id) geoInfo.sectors
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownSector)
             )
@@ -234,7 +234,7 @@ validateCell related =
         |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
-                EveryDict.get (toEntityId id) geoInfo.cells
+                AllDict.get (toEntityId id) geoInfo.cells
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownCell)
             )
@@ -247,7 +247,7 @@ validateVillage related =
         |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
-                EveryDict.get (toEntityId id) geoInfo.villages
+                AllDict.get (toEntityId id) geoInfo.villages
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownVillage)
             )

@@ -11,6 +11,7 @@ import Pages.Attendance.Model
 import Pages.Page exposing (Page)
 import Pages.Participant.Model
 import Pages.Participants.Model
+import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
 
 
 {-| This is where we track all the UI state that relates to an EditableSession
@@ -38,13 +39,13 @@ type alias Model =
     -- ... we could just keep a single state here if we wanted the selectedTab
     -- and selectedActivity to stay the same when you switch from one
     -- participant to another.
-    , childPages : EveryDict PersonId (Pages.Participant.Model.Model ChildActivity)
-    , motherPages : EveryDict PersonId (Pages.Participant.Model.Model MotherActivity)
+    , childPages : EntityUuidDict PersonId (Pages.Participant.Model.Model ChildActivity)
+    , motherPages : EntityUuidDict PersonId (Pages.Participant.Model.Model MotherActivity)
 
     -- These forms appear on multiple pages, and we want to show the same state
     -- on each page. So, we keep them out here, and supply them as arguments.
-    , childForms : EveryDict PersonId Measurement.Model.ModelChild
-    , motherForms : EveryDict PersonId Measurement.Model.ModelMother
+    , childForms : EntityUuidDict PersonId Measurement.Model.ModelChild
+    , motherForms : EntityUuidDict PersonId Measurement.Model.ModelMother
     }
 
 
@@ -54,10 +55,10 @@ emptyModel =
     , attendancePage = Pages.Attendance.Model.emptyModel
     , childActivityPages = EveryDict.empty
     , motherActivityPages = EveryDict.empty
-    , childPages = EveryDict.empty
-    , motherPages = EveryDict.empty
-    , childForms = EveryDict.empty
-    , motherForms = EveryDict.empty
+    , childPages = EntityUuidDict.empty
+    , motherPages = EntityUuidDict.empty
+    , childForms = EntityUuidDict.empty
+    , motherForms = EntityUuidDict.empty
     , participantsPage = Pages.Participants.Model.emptyModel
     }
 

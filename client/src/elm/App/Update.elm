@@ -1,5 +1,6 @@
 port module App.Update exposing (init, subscriptions, updateAndThenFetch)
 
+import AllDict
 import AnimationFrame
 import App.Fetch
 import App.Model exposing (..)
@@ -20,6 +21,7 @@ import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
 import Pages.Device.Model
 import Pages.Device.Update
+import Pages.People.Update
 import Pages.Person.Update
 import Pages.PinCode.Model
 import Pages.PinCode.Update
@@ -185,6 +187,16 @@ update msg model =
                             , appMsgs
                             )
 
+                        MsgPagePersons subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.People.Update.update subMsg data.personsPage
+                            in
+                            ( { data | personsPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPagePersons) subCmd
+                            , appMsgs
+                            )
+
                         MsgPageRelationship id1 id2 subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
@@ -202,11 +214,11 @@ update msg model =
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.sessionPages
-                                        |> EveryDict.get sessionId
+                                        |> AllDict.get sessionId
                                         |> Maybe.withDefault Pages.Session.Model.emptyModel
                                         |> Pages.Session.Update.update sessionId model.indexedDb subMsg
                             in
-                            ( { data | sessionPages = EveryDict.insert sessionId subModel data.sessionPages }
+                            ( { data | sessionPages = AllDict.insert sessionId subModel data.sessionPages }
                             , Cmd.map (MsgLoggedIn << MsgPageSession sessionId) subCmd
                             , extraMsgs
                             )
