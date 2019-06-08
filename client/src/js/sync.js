@@ -56,17 +56,12 @@
     self.addEventListener('sync', function (event) {
         if (event.tag === syncTag) {
             var action = syncAllShards().catch(function (attempt) {
-                // Decide whether to indicate to background sync that we want
-                // an automatic retry.
-                if (attempt.tag === NetworkError) {
-                    // A `NetworkError` could benefit from automatic retry, so
-                    // we reject.
-                    return Promise.reject();
-                } else {
-                    // Other error will not benefit from automatic retry, so we
-                    // resolve. We'll still try again in the polling interval.
-                    return Promise.resolve();
-                }
+                // Always indicate to the browser's sync mechanism that we
+                // succeeded. Otherwise, it seems that retries are disabled
+                // for a while, which isn't really suitable. And we'll retry
+                // in a few minutes anyway, or manually, so we don't really
+                // need the automatic retries.
+                return Promise.resolve();
             });
 
             return event.waitUntil(action);
