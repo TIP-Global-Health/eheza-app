@@ -141,6 +141,10 @@ dbSync.nodes.hook("updating", function (mods, primKey, obj, trans) {
                     name_search: []
                 };
             }
+        } else {
+            return {
+                name_search: gatherWords(obj.label)
+            };
         }
     }
 });
