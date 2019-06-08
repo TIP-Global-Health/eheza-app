@@ -1,4 +1,4 @@
-module Backend.Person.Encoder exposing (encodeEducationLevel, encodeGender, encodeMaritalStatus, encodeModeOfDelivery, encodePerson, encodeUbudehe)
+module Backend.Person.Encoder exposing (encodeEducationLevel, encodeGender, encodeHivStatus, encodeMaritalStatus, encodeModeOfDelivery, encodePerson, encodeUbudehe)
 
 import Backend.Person.Model exposing (..)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)

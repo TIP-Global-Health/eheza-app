@@ -6,9 +6,9 @@ import App.Model
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Encoder exposing (encodeEducationLevel, encodeMaritalStatus, encodeUbudehe)
+import Backend.Person.Encoder exposing (encodeEducationLevel, encodeHivStatus, encodeMaritalStatus, encodeModeOfDelivery, encodeUbudehe)
 import Backend.Person.Form exposing (ExpectedAge(..), PersonForm, expectedAgeFromForm, validatePerson)
-import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allMaritalStatuses, allUbudehes)
+import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allHivStatuses, allMaritalStatuses, allModesOfDelivery, allUbudehes)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
@@ -537,6 +537,26 @@ viewCreateForm language currentDate relationId model db =
                     )
                 |> (::) emptyOption
 
+        modeOfDeliveryOptions =
+            allModesOfDelivery
+                |> List.map
+                    (\mode ->
+                        ( encodeModeOfDelivery mode
+                        , translate language <| Translate.ModeOfDelivery mode
+                        )
+                    )
+                |> (::) emptyOption
+
+        hivStatusOptions =
+            allHivStatuses
+                |> List.map
+                    (\status ->
+                        ( encodeHivStatus status
+                        , translate language <| Translate.HIVStatus status
+                        )
+                    )
+                |> (::) emptyOption
+
         photoUrl =
             Form.getFieldAsString Backend.Person.Form.photo personForm
                 |> .value
@@ -570,6 +590,28 @@ viewCreateForm language currentDate relationId model db =
                     |> keyed "script"
                 ]
 
+        levelOfEducationInput =
+            viewSelectInput language Translate.LevelOfEducationLabel educationLevelOptions Backend.Person.Form.educationLevel "ten" "select-input" True personForm
+
+        maritalStatusInput =
+            viewSelectInput language Translate.MaritalStatusLabel maritalStatusOptions Backend.Person.Form.maritalStatus "ten" "select-input" True personForm
+
+        modeOfDeliveryInput =
+            viewSelectInput language Translate.ModeOfDeliveryLabel modeOfDeliveryOptions Backend.Person.Form.modeOfDelivery "ten" "select-input" True personForm
+
+        hivStatusInput =
+            viewSelectInput language Translate.HIVStatusLabel hivStatusOptions Backend.Person.Form.hivStatus "ten" "select-input" True personForm
+
+        numberOfChildrenUnder5Input =
+            let
+                options =
+                    emptyOption
+                        :: (List.repeat 5 "."
+                                |> List.indexedMap (\index _ -> ( toString index, toString index ))
+                           )
+            in
+            viewSelectInput language Translate.NumberOfChildrenUnder5 options Backend.Person.Form.numberOfChildren "ten" "select-input" False personForm
+
         demographicFields =
             viewPhoto
                 :: (List.map (Html.map (MsgForm relationId)) <|
@@ -580,16 +622,29 @@ viewCreateForm language currentDate relationId model db =
                    )
                 ++ [ birthDateInput ]
                 ++ (List.map (Html.map (MsgForm relationId)) <|
-                        (genderInput
-                            :: (if expectedAge /= ExpectChild then
-                                    [ viewSelectInput language Translate.LevelOfEducationLabel educationLevelOptions Backend.Person.Form.educationLevel "ten" "select-input" True personForm
-                                    , viewSelectInput language Translate.MaritalStatusLabel maritalStatusOptions Backend.Person.Form.maritalStatus "ten" "select-input" True personForm
-                                    ]
+                        case expectedAge of
+                            ExpectAdult ->
+                                [ genderInput
+                                , hivStatusInput
+                                , levelOfEducationInput
+                                , maritalStatusInput
+                                , numberOfChildrenUnder5Input
+                                ]
 
-                                else
-                                    []
-                               )
-                        )
+                            ExpectChild ->
+                                [ genderInput
+                                , hivStatusInput
+                                , modeOfDeliveryInput
+                                ]
+
+                            ExpectAdultOrChild ->
+                                [ genderInput
+                                , hivStatusInput
+                                , levelOfEducationInput
+                                , maritalStatusInput
+                                , modeOfDeliveryInput
+                                , numberOfChildrenUnder5Input
+                                ]
                    )
 
         ubudeheOptions =
