@@ -99,14 +99,12 @@
                     });
                 }
             }).then(function () {
-                // Then, get all the metadata entries that are not currently in
-                // a `Loading` state. (So, `Loading` is a kind of a lock, but
-                // we break it after 10 minutes).
-               var tenMinutesAgo = Date.now() - (10 * 60 * 1000);
-
-                return dbSync.syncMetadata.filter(function (item) {
-                    return ((item.attempt.tag !== Loading) && (item.attempt.tag !== Uploading)) || (item.attempt.timestamp < tenMinutesAgo);
-                }).toArray();
+                // We return all the shards. We used to "lock" shards for whom
+                // a sync was already in progress. However, it turns out that
+                // this is not necessary. Because we're initiating this through
+                // the backround sync mechanism, the browser won't handle two
+                // of these events at once anyway.
+                return dbSync.syncMetadata.toArray();
             })
         }).catch(formatDatabaseError).catch(function (attempt) {
             // If we get an error at this level, record it against the
