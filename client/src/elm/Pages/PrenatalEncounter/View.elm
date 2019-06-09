@@ -21,7 +21,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Time.Date exposing (date)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.EntityUuidDict as EntityUuidDict
+import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
 import Utils.Html exposing (script, tabItem, thumbnailImage, viewLoading)
 import Utils.WebData exposing (viewError, viewWebData)
 

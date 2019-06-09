@@ -1,4 +1,4 @@
-module Utils.EntityUuidDict exposing (EntityUuidDict, empty, fromList, singleton)
+module Utils.EntityUuidDict exposing (EntityUuidDict, empty, fromList, get, singleton)
 
 import AllDict exposing (AllDict)
 import Restful.Endpoint exposing (EntityUuid, fromEntityUuid)
@@ -27,3 +27,8 @@ singleton =
 fromList : List ( EntityUuid k, v ) -> EntityUuidDict (EntityUuid k) v
 fromList =
     AllDict.fromList fromEntityUuid
+
+
+get : EntityUuid k -> EntityUuidDict (EntityUuid k) v -> Maybe v
+get k dict =
+    AllDict.get k dict
