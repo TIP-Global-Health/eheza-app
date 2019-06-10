@@ -1,13 +1,10 @@
 module Pages.PrenatalEncounter.View exposing (view, viewMotherAndMeasurements)
 
 import AllDict
-import App.Model
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
-import EveryDict
-import EveryDictList exposing (EveryDictList)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
 import Html exposing (..)
@@ -18,12 +15,9 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Model exposing (..)
 import PrenatalActivity.Utils exposing (getActivityIcon, getAllActivities)
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Time.Date exposing (date)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
 import Utils.Html exposing (script, tabItem, thumbnailImage, viewLoading)
-import Utils.WebData exposing (viewError, viewWebData)
 
 
 thumbnailDimensions : { width : Int, height : Int }

@@ -8,9 +8,7 @@ module Pages.PrenatalActivity.Model exposing
     , encodeLmpRange
     )
 
-import Backend.Entities exposing (..)
 import Date exposing (Date)
-import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
 
 

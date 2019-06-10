@@ -16,12 +16,6 @@ expected (and not completed).
 
 -}
 
-import Backend.Entities exposing (..)
-import EveryDict exposing (EveryDict)
-import EveryDictList exposing (EveryDictList)
-import EverySet
-import Gizra.NominalDate exposing (diffDays)
-import Maybe.Extra exposing (isJust, isNothing)
 import PrenatalActivity.Model exposing (..)
 
 

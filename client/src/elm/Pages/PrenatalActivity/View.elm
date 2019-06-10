@@ -3,12 +3,8 @@ module Pages.PrenatalActivity.View exposing (view)
 import AllDict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears)
 import Date.Extra as Date exposing (Interval(Day, Month))
 import DateSelector.SelectorDropdown
-import EveryDict
-import EveryDictList exposing (EveryDictList)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime, toLocalDateTime)
 import Html exposing (..)
@@ -19,14 +15,9 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
-import PrenatalActivity.Utils exposing (getActivityIcon, getAllActivities)
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
-import Time.Date exposing (date)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.Html exposing (script, tabItem, thumbnailImage, viewLoading)
-import Utils.WebData exposing (viewError, viewWebData)
 
 
 view : Language -> NominalDate -> PersonId -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
