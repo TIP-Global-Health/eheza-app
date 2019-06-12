@@ -37,6 +37,10 @@
     // Transaction constants
     var rw = 'rw';
 
+    var batchSize = 50;
+    var dataTimeout = 15000; // 15 seconds
+    var imageTimeout = 120000; // 2 minutes
+
     // Listen for background sync requests. We can get here in one of several
     // ways:
     //
@@ -52,19 +56,26 @@
     self.addEventListener('sync', function (event) {
         if (event.tag === syncTag) {
             var action = syncAllShards().catch(function (attempt) {
-                // Decide whether to indicate to background sync that we want
-                // an automatic retry.
-                if (attempt.tag === NetworkError) {
-                    // A `NetworkError` could benefit from automatic retry, so
-                    // we reject.
-                    return Promise.reject();
-                } else {
-                    // Other error will not benefit from automatic retry, so we
-                    // resolve. We'll still try again in the polling interval.
-                    return Promise.resolve();
-                }
+                // Always indicate to the browser's sync mechanism that we
+                // succeeded. Otherwise, it seems that retries are disabled
+                // for a while, which isn't really suitable. And we'll retry
+                // in a few minutes anyway, or manually, so we don't really
+                // need the automatic retries.
+                return Promise.resolve();
             });
 
+            return event.waitUntil(action);
+        }
+    });
+
+    // This is a variant of the above which listens for a message instead.
+    // It's triggered via a message rather than the background sync mechanism,
+    // so it by-passes the browser's notion of whether we're online or not.
+    self.addEventListener('message', function(event) {
+        if (event.data === syncTag) {
+            var action = syncAllShards();
+
+            // Consider how to handle errors?
             return event.waitUntil(action);
         }
     });
@@ -87,14 +98,12 @@
                     });
                 }
             }).then(function () {
-                // Then, get all the metadata entries that are not currently in
-                // a `Loading` state. (So, `Loading` is a kind of a lock, but
-                // we break it after 10 minutes).
-               var tenMinutesAgo = Date.now() - (10 * 60 * 1000);
-
-                return dbSync.syncMetadata.filter(function (item) {
-                    return ((item.attempt.tag !== Loading) && (item.attempt.tag !== Uploading)) || (item.attempt.timestamp < tenMinutesAgo);
-                }).toArray();
+                // We return all the shards. We used to "lock" shards for whom
+                // a sync was already in progress. However, it turns out that
+                // this is not necessary. Because we're initiating this through
+                // the backround sync mechanism, the browser won't handle two
+                // of these events at once anyway.
+                return dbSync.syncMetadata.toArray();
             })
         }).catch(formatDatabaseError).catch(function (attempt) {
             // If we get an error at this level, record it against the
@@ -289,8 +298,6 @@
         });
     }
 
-    var batchSize = 50;
-
     function sendToBackend (shardUuid, url, uploadUrl) {
         if (shardUuid === nodesUuid) {
             var table = dbSync.nodeChanges;
@@ -329,12 +336,12 @@
                         upload: status
                     }).catch(formatDatabaseError).then(sendSyncData).then(function () {
                         return uploadImages(table, changes, uploadUrl).then(function () {
-                            return fetch(url, {
+                            return fetchWithTimeout(url, {
                                 method: 'POST',
                                 body: JSON.stringify({
                                     changes: changes
                                 })
-                            }).catch(function (err) {
+                            }, dataTimeout).catch(function (err) {
                                 return Promise.reject({
                                     tag: NetworkError,
                                     message: err.message,
@@ -404,7 +411,7 @@
                                     body: formData
                                 });
 
-                                return fetch(request).catch(function (err) {
+                                return fetchWithTimeout(request, {}, imageTimeout).catch(function (err) {
                                     return Promise.reject({
                                         tag: NetworkError,
                                         message: err.message,
@@ -455,7 +462,7 @@
     }
 
     function fetchFromBackend (shardUuid, url) {
-        return fetch(url).catch(function (err) {
+        return fetchWithTimeout(url, {}, dataTimeout).catch(function (err) {
             return Promise.reject({
                 tag: NetworkError,
                 message: err.message,
@@ -559,13 +566,17 @@
 
         integerFields.forEach(function (field) {
             if (node.hasOwnProperty(field)) {
-                node[field] = parseInt(node[field]);
+                if (typeof node[field] == 'string') {
+                    node[field] = parseInt(node[field]);
+                }
             }
         });
 
         floatFields.forEach(function (field) {
             if (node.hasOwnProperty(field)) {
-                node[field] = parseFloat(node[field]);
+                if (typeof node[field] == 'string') {
+                    node[field] = parseFloat(node[field]);
+                }
             }
         });
 
@@ -644,7 +655,7 @@
                             mode: 'cors'
                         });
 
-                        return fetch(req).then(function(response) {
+                        return fetchWithTimeout(req, {}, imageTimeout).then(function(response) {
                             if (!response.ok) {
                                 throw new TypeError('Response status ' + response.status + ' fetching ' + url);
                             }
@@ -670,7 +681,7 @@
     function tryRefreshToken (credentials) {
         var refreshUrl = credentials.backend_url + '/api/refresh-token/' + credentials.refresh_token;
 
-        return fetch(refreshUrl).catch (function (err) {
+        return fetchWithTimeout(refreshUrl, {}, dataTimeout).catch (function (err) {
             return Promise.reject({
                 tag: NetworkError,
                 message: err.message,
@@ -719,6 +730,23 @@
 
             return cache.put(cachedRequest, cachedResponse);
         });
+    }
+
+    function fetchWithTimeout (url, options, timeout) {
+        var fetcher = fetch(url, options);
+
+        if (timeout) {
+            var canceler = new Promise(function (resolve, reject) {
+                setTimeout(function () {
+                    var error = new Error('Request timed out');
+                    reject(error);
+                }, timeout);
+            });
+
+            return Promise.race([fetcher, canceler]);
+        } else {
+            return fetcher;
+        }
     }
 
 })();

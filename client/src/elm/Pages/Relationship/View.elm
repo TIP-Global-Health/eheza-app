@@ -1,12 +1,14 @@
 module Pages.Relationship.View exposing (view)
 
+import AllDict
+import AllDictList
+import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears)
+import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
+import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, Relationship)
-import EveryDict
-import EveryDictList exposing (EveryDictList)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -16,7 +18,10 @@ import Maybe.Extra
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Relationship.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
+import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate)
+import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
@@ -57,23 +62,34 @@ viewContent : Language -> NominalDate -> PersonId -> PersonId -> ModelIndexedDb 
 viewContent language currentDate id1 id2 db model =
     let
         person1 =
-            EveryDict.get id1 db.people
+            AllDict.get id1 db.people
                 |> Maybe.withDefault NotAsked
 
         relationships =
-            EveryDict.get id1 db.relationshipsByPerson
+            AllDict.get id1 db.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
 
         person2 =
-            EveryDict.get id2 db.people
+            AllDict.get id2 db.people
                 |> Maybe.withDefault NotAsked
 
         request =
-            EveryDict.get id1 db.postRelationship
+            AllDict.get id1 db.postRelationship
                 |> Maybe.withDefault NotAsked
 
+        participants =
+            AllDict.get id1 db.participantsByPerson
+                |> Maybe.withDefault NotAsked
+
+        clinics =
+            db.clinics
+
         fetched =
-            RemoteData.map3 FetchedData person1 person2 relationships
+            RemoteData.map FetchedData person1
+                |> RemoteData.andMap person2
+                |> RemoteData.andMap relationships
+                |> RemoteData.andMap participants
+                |> RemoteData.andMap clinics
     in
     viewWebData language (viewFetchedContent language currentDate id1 id2 model request) identity fetched
 
@@ -81,32 +97,125 @@ viewContent language currentDate id1 id2 db model =
 type alias FetchedData =
     { person1 : Person
     , person2 : Person
-    , relationships : EveryDictList RelationshipId MyRelationship
+    , relationships : EntityUuidDictList RelationshipId MyRelationship
+    , participants : EntityUuidDict PmtctParticipantId PmtctParticipant
+    , clinics : EntityUuidDictList ClinicId Clinic
     }
 
 
 viewFetchedContent : Language -> NominalDate -> PersonId -> PersonId -> Model -> WebData MyRelationship -> FetchedData -> Html Msg
 viewFetchedContent language currentDate id1 id2 model request data =
     let
+        participants =
+            data.participants
+                |> AllDict.filter
+                    (\_ participant ->
+                        (participant.child == id1 && participant.adult == id2)
+                            || (participant.adult == id1 && participant.child == id2)
+                    )
+
+        viewCurrentGroups =
+            participants
+                |> AllDict.values
+                |> List.map
+                    (\participant ->
+                        AllDictList.get participant.clinic data.clinics
+                            |> Maybe.map
+                                (\clinic ->
+                                    p [] [ text <| clinic.name ]
+                                )
+                            |> Maybe.withDefault (div [] [])
+                    )
+                |> div []
+
+        viewGroupSelector =
+            if AllDict.isEmpty participants then
+                let
+                    emptyOption =
+                        option
+                            [ value ""
+                            , selected (model.assignToGroup == Nothing)
+                            ]
+                            [ text "" ]
+
+                    selector =
+                        data.clinics
+                            |> AllDictList.filter
+                                (\_ clinic ->
+                                    -- If both persons are assigned to a health
+                                    -- center, show the clinic if it is
+                                    -- assigned to one or the other.  If one of
+                                    -- the persons has no health center, show
+                                    -- all clinics.
+                                    Maybe.map2
+                                        (\hc1 hc2 ->
+                                            clinic.healthCenterId
+                                                == hc1
+                                                || clinic.healthCenterId
+                                                == hc2
+                                        )
+                                        data.person1.healthCenterId
+                                        data.person2.healthCenterId
+                                        |> Maybe.withDefault True
+                                )
+                            |> AllDictList.map
+                                (\clinicId clinic ->
+                                    option
+                                        [ value (fromEntityUuid clinicId)
+                                        , selected (model.assignToGroup == Just clinicId)
+                                        ]
+                                        [ text clinic.name ]
+                                )
+                            |> AllDictList.values
+                            |> (::) emptyOption
+                            |> select [ onInput AssignToClinicId ]
+                in
+                div [ class "ui form" ]
+                    [ div
+                        [ class "inline field" ]
+                        [ label [] [ text <| translate language Translate.AddToGroup ]
+                        , selector
+                        ]
+                    ]
+
+            else
+                emptyNode
+
         savedRelationship =
             data.relationships
-                |> EveryDictList.filter (\_ relationship -> relationship.relatedTo == id2)
-                |> EveryDictList.head
+                |> AllDictList.filter (\_ relationship -> relationship.relatedTo == id2)
+                |> AllDictList.head
                 |> Maybe.map (Tuple.second >> .relatedBy)
 
         viewedRelationship =
-            model
+            model.relatedBy
                 |> Maybe.Extra.orElse savedRelationship
 
-        -- We could look at the birthdates of person1 and person2 to cut down
-        -- on these possibilities. (E.g. the older one can't be the child of
-        -- the younger one).
         possibleRelationships =
-            [ MyChild
-            , MyParent
-            , MyCaregiven
-            , MyCaregiver
-            ]
+            let
+                expected =
+                    case isPersonAnAdult currentDate data.person1 of
+                        Just True ->
+                            [ MyChild, MyCaregiven ]
+
+                        Just False ->
+                            [ MyParent, MyCaregiver ]
+
+                        Nothing ->
+                            [ MyChild, MyCaregiven, MyParent, MyCaregiver ]
+            in
+            -- Always add the currently set relationship, if there is one, even
+            -- if it's not expected.
+            case viewedRelationship of
+                Just viewed ->
+                    if List.member viewed expected then
+                        expected
+
+                    else
+                        viewed :: expected
+
+                Nothing ->
+                    expected
 
         relationshipSelector =
             div
@@ -202,6 +311,14 @@ viewFetchedContent language currentDate id1 id2 model request data =
         , div
             [ class "ui unstackable items participants-list" ]
             [ viewParticipant language currentDate id2 data.person2 ]
+        , div
+            [ class "ui unstackable items participants-list" ]
+            [ div
+                [ class "ui header" ]
+                [ text <| translate language Translate.Groups ++ ": " ]
+            , viewCurrentGroups
+            , viewGroupSelector
+            ]
         , requestStatus
         , buttons
         ]
@@ -211,16 +328,15 @@ viewParticipant : Language -> NominalDate -> PersonId -> Person -> Html Msg
 viewParticipant language currentDate id person =
     let
         typeForThumbnail =
-            ageInYears currentDate person
-                |> Maybe.map
-                    (\age ->
-                        if age > 12 then
-                            "mother"
+            case isPersonAnAdult currentDate person of
+                Just True ->
+                    "mother"
 
-                        else
-                            "child"
-                    )
-                |> Maybe.withDefault "mother"
+                Just False ->
+                    "child"
+
+                Nothing ->
+                    "mother"
 
         content =
             div [ class "content" ]

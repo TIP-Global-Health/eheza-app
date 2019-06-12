@@ -77,6 +77,76 @@ dbSync.version(1).stores({
 dbSync.version(2).stores({
     nodes: '&uuid,type,vid,status,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to]',
     shards: '&uuid,type,vid,status,person,[shard+vid]',
+}).upgrade(function (tx) {
+    // On upgrading to version 2, clear nodes and shards.
+    return tx.nodes.clear().then(function () {
+        return tx.shards.clear();
+    }).then(function () {
+        // And reset sync metadata.
+        return tx.syncMetadata.toCollection().modify(function (data) {
+            delete data.download;
+            delete data.upload;
+
+            data.attempt = {
+                tag: 'NotAsked',
+                timestamp: Date.now()
+            };
+        });
+    });
+});
+
+dbSync.version(3).stores({
+    nodes: '&uuid,type,vid,status,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+adult]',
+});
+
+dbSync.version(4).stores({
+    nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+adult]',
+}).upgrade(function (tx) {
+    return tx.nodes.where({
+        type: 'person'
+    }).modify(function (person) {
+        person.name_search = gatherWords(person.label);
+    });
+});
+
+function gatherWords (text) {
+    // Split on spaces, and remove blanks from result.
+    return (text || '').split(/\s+/).flatMap(function (word) {
+        if (word) {
+            return [word.toLowerCase()];
+        } else {
+            return [];
+        }
+    });
+}
+
+// Hooks that index persons for searching name.
+dbSync.nodes.hook("creating", function (primKey, obj, trans) {
+    if (obj.type === 'person') {
+        if (typeof obj.label == 'string') {
+            obj.name_search = gatherWords(obj.label);
+        }
+    }
+});
+
+dbSync.nodes.hook("updating", function (mods, primKey, obj, trans) {
+    if (obj.type === 'person') {
+        if (mods.hasOwnProperty("label")) {
+            if (typeof mods.label == 'string') {
+                return {
+                    name_search: gatherWords(mods.label)
+                };
+            } else {
+                return {
+                    name_search: []
+                };
+            }
+        } else {
+            return {
+                name_search: gatherWords(obj.label)
+            };
+        }
+    }
 });
 
 // For when any sync metadata changes, send it all to the app

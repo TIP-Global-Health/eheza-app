@@ -1,7 +1,10 @@
-module Utils.GeoLocation exposing (GeoInfo, geoInfo)
+module Utils.GeoLocation exposing (GeoInfo, ReverseGeoInfo, geoInfo, getGeoLocation, reverseGeoInfo)
 
+import AllDict
+import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
 import Restful.Endpoint exposing (EntityId, toEntityId)
+import Utils.EntityIdDict as EntityIdDict exposing (EntityIdDict)
 
 
 {-| This is here to have a partially type-safe key for the EveryDict.
@@ -17,11 +20,11 @@ type GeoLocationIdType
 
 
 type alias GeoInfo =
-    { provinces : EveryDict GeoLocationId GeoLocation
-    , districts : EveryDict GeoLocationId GeoLocation
-    , sectors : EveryDict GeoLocationId GeoLocation
-    , cells : EveryDict GeoLocationId GeoLocation
-    , villages : EveryDict GeoLocationId GeoLocation
+    { provinces : EntityIdDict GeoLocationId GeoLocation
+    , districts : EntityIdDict GeoLocationId GeoLocation
+    , sectors : EntityIdDict GeoLocationId GeoLocation
+    , cells : EntityIdDict GeoLocationId GeoLocation
+    , villages : EntityIdDict GeoLocationId GeoLocation
     }
 
 
@@ -41,23 +44,66 @@ type alias GeoLocation =
     }
 
 
-getGeoProvinces : EveryDict GeoLocationId GeoLocation
+type alias ParentId =
+    GeoLocationId
+
+
+type alias Name =
+    String
+
+
+type alias ReverseGeoInfo =
+    EveryDict (Maybe ParentId) (Dict Name ( GeoLocationId, GeoLocation ))
+
+
+reverseGeoInfo : ReverseGeoInfo
+reverseGeoInfo =
+    let
+        merge id loc accum =
+            accum
+                |> Maybe.withDefault Dict.empty
+                |> Dict.insert loc.name ( id, loc )
+                |> Just
+
+        addGeo id loc accum =
+            EveryDict.update loc.parent (merge id loc) accum
+
+        handleSource source accum =
+            AllDict.foldl addGeo accum source
+    in
+    List.foldl handleSource
+        EveryDict.empty
+        [ geoInfo.provinces
+        , geoInfo.districts
+        , geoInfo.sectors
+        , geoInfo.cells
+        , geoInfo.villages
+        ]
+
+
+getGeoLocation : Maybe ParentId -> Name -> Maybe ( GeoLocationId, GeoLocation )
+getGeoLocation parent name =
+    EveryDict.get parent reverseGeoInfo
+        |> Maybe.andThen (Dict.get name)
+
+
+getGeoProvinces : EntityIdDict GeoLocationId GeoLocation
 getGeoProvinces =
-    EveryDict.fromList
+    EntityIdDict.fromList
         [ ( toEntityId 1, GeoLocation "Amajyaruguru" Nothing ) ]
 
 
-getGeoDistricts : EveryDict GeoLocationId GeoLocation
+getGeoDistricts : EntityIdDict GeoLocationId GeoLocation
 getGeoDistricts =
-    EveryDict.fromList
+    EntityIdDict.fromList
         [ ( toEntityId 2, GeoLocation "Gakenke" (Just <| toEntityId 1) )
         , ( toEntityId 736, GeoLocation "Rulindo" (Just <| toEntityId 1) )
         ]
 
 
-getGeoSectors : EveryDict GeoLocationId GeoLocation
+getGeoSectors : EntityIdDict GeoLocationId GeoLocation
 getGeoSectors =
-    EveryDict.fromList
+    EntityIdDict.fromList
         [ ( toEntityId 3, GeoLocation "Busengo" (Just <| toEntityId 2) )
         , ( toEntityId 49, GeoLocation "Coko" (Just <| toEntityId 2) )
         , ( toEntityId 82, GeoLocation "Cyabingo" (Just <| toEntityId 2) )
@@ -98,9 +144,9 @@ getGeoSectors =
         ]
 
 
-getGeoCells : EveryDict GeoLocationId GeoLocation
+getGeoCells : EntityIdDict GeoLocationId GeoLocation
 getGeoCells =
-    EveryDict.fromList
+    EntityIdDict.fromList
         [ ( toEntityId 4, GeoLocation "Birambo" (Just <| toEntityId 3) )
         , ( toEntityId 9, GeoLocation "Butereri" (Just <| toEntityId 3) )
         , ( toEntityId 17, GeoLocation "Byibuhiro" (Just <| toEntityId 3) )
@@ -273,9 +319,9 @@ getGeoCells =
         ]
 
 
-getGeoVillages : EveryDict GeoLocationId GeoLocation
+getGeoVillages : EntityIdDict GeoLocationId GeoLocation
 getGeoVillages =
-    EveryDict.fromList <|
+    EntityIdDict.fromList <|
         [ ( toEntityId 5, GeoLocation "Birambo" (Just <| toEntityId 4) )
         , ( toEntityId 6, GeoLocation "Gitwa" (Just <| toEntityId 4) )
         , ( toEntityId 7, GeoLocation "Kirwa" (Just <| toEntityId 4) )

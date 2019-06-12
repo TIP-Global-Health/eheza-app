@@ -45,6 +45,16 @@ a {
   }
 }
 
+// This fixes the bottom margin on a specific page. Ideally, we would do the
+// CSS without negative margins.
+.page-participants {
+  .ui.full.segment {
+    > .full.content {
+      margin-bottom: 0.5rem;
+    }
+  }
+}
+
 .wrap-alt {
   .ui.full.segment {
     &:after {
@@ -383,13 +393,10 @@ h3.ui.header {
 
 // Participants (Horizontal Scroll Area)
 
-.ui.participant.segment {
-  overflow-y: auto;
-}
-
 .ui.participant.cards {
   white-space: nowrap;
   flex-wrap: nowrap;
+  overflow-y: auto;
 }
 
 .ui.participant.cards>.card>.content {
@@ -498,8 +505,8 @@ h3.ui.header {
 
 .icon-item {
   display: block;
-  width: 222px;
-  height: 222px;
+  width: 120px;
+  height: 120px;
   background-color: #fff;
   box-shadow: 0 0 10px rgba(0,0,0,0.35);
   background-repeat: no-repeat;
@@ -518,7 +525,7 @@ h3.ui.header {
 
 .icon-item-height {
   background-image: url(#{$img-path}icon-height-blue.svg);
-  background-size: 118px 131px;
+  background-size: 72px;
 }
 
 .icon-item-counseling {
@@ -1465,7 +1472,7 @@ input::placeholder {
 
 .page-activity {
   .ui.action.input {
-    padding: 0.5rem 1rem 3rem;
+    padding: 0.5rem 1rem 1.75rem;
   }
 }
 
@@ -1475,3 +1482,13 @@ input::placeholder {
     padding-left: 1rem;
   }
 }
+
+// Date Selector
+
+.date-selector {
+   font-size: 0.7em;
+
+   > div {
+     height: 19em;
+   }
+ }

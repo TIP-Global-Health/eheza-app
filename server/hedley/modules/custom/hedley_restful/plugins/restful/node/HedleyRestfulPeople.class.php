@@ -31,6 +31,9 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
       'field_sector',
       'field_ubudehe',
       'field_village',
+      'field_hiv_status',
+      'field_number_of_children',
+      'field_mode_of_delivery',
     ];
 
     foreach ($standard_fields_names as $field_name) {
@@ -53,6 +56,11 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
       'process_callbacks' => [
         [$this, 'convertTimestampToYmd'],
       ],
+    ];
+
+    $public_fields['health_center'] = [
+      'property' => 'field_health_center',
+      'sub_property' => 'field_uuid',
     ];
 
     return $public_fields;

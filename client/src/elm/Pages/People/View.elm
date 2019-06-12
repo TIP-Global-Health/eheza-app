@@ -1,22 +1,25 @@
 module Pages.People.View exposing (view)
 
-import App.Model exposing (Msg(..))
+import AllDict
+import AllDictList
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Person.Form exposing (ExpectedAge(..))
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears)
+import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Dict
-import EveryDict
-import EveryDictList
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Maybe.Extra exposing (unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.People.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, translate)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewWebData)
@@ -31,13 +34,13 @@ import Utils.WebData exposing (viewWebData)
     family member for that person, either child, parent, etc.
 
 -}
-view : Language -> NominalDate -> Maybe String -> Maybe PersonId -> ModelIndexedDb -> Html Msg
-view language currentDate searchString relation db =
+view : Language -> NominalDate -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
+view language currentDate relation model db =
     let
         title =
             case relation of
                 Just relationId ->
-                    EveryDict.get relationId db.people
+                    AllDict.get relationId db.people
                         |> Maybe.withDefault NotAsked
                         |> RemoteData.map .name
                         |> RemoteData.withDefault (fromEntityUuid relationId)
@@ -53,7 +56,7 @@ view language currentDate searchString relation db =
             [ class "search-wrapper" ]
             [ div
                 [ class "ui full segment blue" ]
-                [ viewSearchForm language currentDate searchString relation db ]
+                [ viewSearchForm language currentDate relation model db ]
             ]
         ]
 
@@ -75,26 +78,9 @@ viewHeader title =
         ]
 
 
-viewSearchForm : Language -> NominalDate -> Maybe String -> Maybe PersonId -> ModelIndexedDb -> Html Msg
-viewSearchForm language currentDate searchString relation db =
+viewSearchForm : Language -> NominalDate -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
+viewSearchForm language currentDate relation model db =
     let
-        searchValue =
-            searchString
-                |> Maybe.map String.trim
-                |> Maybe.withDefault ""
-
-        -- Calculates the page which corresponds to what the user types.
-        getPage typing =
-            let
-                trimmed =
-                    String.trim typing
-            in
-            if String.isEmpty trimmed then
-                UserPage <| PersonsPage Nothing relation
-
-            else
-                UserPage <| PersonsPage (Just trimmed) relation
-
         searchForm =
             Html.form []
                 [ div
@@ -103,8 +89,8 @@ viewSearchForm language currentDate searchString relation db =
                         [ input
                             [ placeholder <| translate language Translate.PlaceholderEnterParticipantName
                             , type_ "text"
-                            , onInput <| SetActivePage << getPage
-                            , value searchValue
+                            , onInput SetInput
+                            , value model.input
                             , autofocus True
                             ]
                             []
@@ -112,16 +98,84 @@ viewSearchForm language currentDate searchString relation db =
                     ]
                 ]
 
+        relatedPerson =
+            relation
+                |> Maybe.andThen (\id -> AllDict.get id db.people)
+                |> Maybe.andThen RemoteData.toMaybe
+
+        expectedAge =
+            relatedPerson
+                |> Maybe.andThen (isPersonAnAdult currentDate)
+                |> (\isAdult ->
+                        case isAdult of
+                            Just True ->
+                                ExpectChild
+
+                            Just False ->
+                                ExpectAdult
+
+                            Nothing ->
+                                ExpectAdultOrChild
+                   )
+
+        searchValue =
+            model.search
+                |> Maybe.withDefault ""
+
         results =
             if String.isEmpty searchValue then
                 Nothing
 
             else
-                -- If we're adding a family member, we filter out the person
-                -- we're adding the famnily member to.
+                let
+                    -- When relation person is provided, we need to make sure
+                    -- that at search result, we don't present:
+                    -- 1. Relation person himself.
+                    -- 2. People of same type as relation person. If relation person
+                    --    is an adult, related person must be a child, and vice versa.
+                    -- 3. People already related to relation person.
+                    personTypeCondition filteredPerson =
+                        case isPersonAnAdult currentDate filteredPerson of
+                            Just True ->
+                                -- We'll show adults unless we're expecting children
+                                expectedAge /= ExpectChild
+
+                            Just False ->
+                                -- We''ll show children unless we're expecting adults.
+                                expectedAge /= ExpectAdult
+
+                            Nothing ->
+                                -- If we don't know, then show it.
+                                True
+
+                    personRelationCondition filteredPersonId =
+                        case relation of
+                            Nothing ->
+                                True
+
+                            Just personId ->
+                                AllDict.get personId db.relationshipsByPerson
+                                    |> Maybe.andThen RemoteData.toMaybe
+                                    |> unwrap
+                                        True
+                                        (\relatedPersionRelationships ->
+                                            relatedPersionRelationships
+                                                |> AllDictList.values
+                                                |> List.all
+                                                    (\relationship ->
+                                                        relationship.relatedTo /= filteredPersonId
+                                                    )
+                                        )
+                in
                 Dict.get searchValue db.personSearches
                     |> Maybe.withDefault NotAsked
-                    |> RemoteData.map (EveryDictList.filter (\k v -> not (relation == Just k)))
+                    |> RemoteData.map
+                        (AllDictList.filter
+                            (\k v ->
+                                -- Applying 3 conditionms explained above
+                                not (relation == Just k) && personTypeCondition v && personRelationCondition k
+                            )
+                        )
                     |> Just
 
         summary =
@@ -130,17 +184,17 @@ viewSearchForm language currentDate searchString relation db =
                 |> Maybe.withDefault emptyNode
 
         viewSummary data =
-            EveryDictList.length data
+            AllDictList.length data
                 |> Translate.ReportResultsOfSearch
                 |> translate language
                 |> text
 
         searchResultsParticipants =
             results
-                |> Maybe.withDefault (Success EveryDictList.empty)
-                |> RemoteData.withDefault EveryDictList.empty
-                |> EveryDictList.map (viewParticipant language currentDate relation db)
-                |> EveryDictList.values
+                |> Maybe.withDefault (Success EntityUuidDictList.empty)
+                |> RemoteData.withDefault EntityUuidDictList.empty
+                |> AllDictList.map (viewParticipant language currentDate relation db)
+                |> AllDictList.values
 
         searchHelper =
             case relation of
@@ -188,16 +242,15 @@ viewParticipant : Language -> NominalDate -> Maybe PersonId -> ModelIndexedDb ->
 viewParticipant language currentDate relation db id person =
     let
         typeForThumbnail =
-            ageInYears currentDate person
-                |> Maybe.map
-                    (\age ->
-                        if age > 12 then
-                            "mother"
+            case isPersonAnAdult currentDate person of
+                Just True ->
+                    "mother"
 
-                        else
-                            "child"
-                    )
-                |> Maybe.withDefault "mother"
+                Just False ->
+                    "child"
+
+                Nothing ->
+                    "mother"
 
         nextPage =
             case relation of

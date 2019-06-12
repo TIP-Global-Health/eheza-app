@@ -53,6 +53,11 @@ div.language-switcher {
         cursor: pointer;
     }
 
+    .sync-icon {
+        color: white;
+        cursor: pointer;
+    }
+
     .links-translate {
         margin: 0;
         padding: 6px 25px;
@@ -183,4 +188,25 @@ div.page-person {
     .particiants-list {
         margin-top: 50px;
     }
+}
+
+//Device Status Page
+.device-status {
+  button {
+    margin-bottom: 20px;
+  }
+
+  .general-sync {
+    margin-bottom: 40px;
+  }
+
+  .health-centers .health-center {
+    padding-bottom: 20px;
+    margin-bottom: 40px;
+    border-bottom: 1px solid;
+
+    .health-center-info button {
+      margin-top: 20px;
+    }
+  }
 }

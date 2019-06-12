@@ -16,13 +16,13 @@ class HedleyMigrateParticipantForms extends XMLMigration {
   public function __construct($arguments) {
     parent::__construct($arguments);
 
-    $this->description = t('Migrate participant form entities.');
+    $this->description = 'Migrate participant form entities.';
 
     $fields = array(
-      'title' => t('Title'),
-      'kinyarwanda_title' => t('Kinyarwanda title'),
-      'body' => t('Body'),
-      'kinyarwanda_body' => t('Kinyarwanda body'),
+      'title' => 'Title',
+      'kinyarwanda_title' => 'Kinyarwanda title',
+      'body' => 'Body',
+      'kinyarwanda_body' => 'Kinyarwanda body',
     );
 
     $source_file = $this->getMigrateDirectory() . '/xml/' . 'participant_form.xml';

@@ -1,26 +1,36 @@
 module Pages.Person.Update exposing (update)
 
+import AllDict
 import App.Model
+import Backend.Entities exposing (PersonId)
 import Backend.Model
-import Backend.Person.Form exposing (validatePerson)
+import Backend.Person.Form exposing (ExpectedAge(..), birthDate, validatePerson)
+import Backend.Person.Model exposing (Person)
 import Form
 import Form.Field
+import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD, fromLocalDateTime)
 import Pages.Person.Model exposing (..)
-import RemoteData exposing (RemoteData(..))
+import RemoteData exposing (RemoteData(..), WebData)
+import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update msg model =
+update : NominalDate -> Msg -> EntityUuidDict PersonId (WebData Person) -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate msg people model =
     case msg of
         MsgForm relation subMsg ->
             let
-                newModel =
-                    Form.update validatePerson subMsg model
+                related =
+                    relation
+                        |> Maybe.andThen (\personId -> AllDict.get personId people)
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                newForm =
+                    Form.update (validatePerson related (Just currentDate)) subMsg model.form
 
                 appMsgs =
                     case subMsg of
                         Form.Submit ->
-                            Form.getOutput model
+                            Form.getOutput model.form
                                 |> Maybe.map
                                     (\person ->
                                         [ person
@@ -40,7 +50,7 @@ update msg model =
                         _ ->
                             []
             in
-            ( newModel
+            ( { model | form = newForm }
             , Cmd.none
             , appMsgs
             )
@@ -50,10 +60,10 @@ update msg model =
                 subMsg =
                     Form.Input Backend.Person.Form.photo Form.Text (Form.Field.String result.url)
             in
-            update (MsgForm relation subMsg) model
+            update currentDate (MsgForm relation subMsg) people model
 
         ResetCreateForm ->
-            ( Backend.Person.Form.emptyForm
+            ( Pages.Person.Model.emptyModel
             , Cmd.none
             , []
             )
@@ -63,3 +73,19 @@ update msg model =
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
+
+        ToggleDateSelector ->
+            ( { model | isDateSelectorOpen = not model.isDateSelectorOpen }
+            , Cmd.none
+            , []
+            )
+
+        DateSelected relation date ->
+            let
+                dateAsString =
+                    fromLocalDateTime date |> formatYYYYMMDD
+
+                setFieldMsg =
+                    Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm relation
+            in
+            update currentDate setFieldMsg people model

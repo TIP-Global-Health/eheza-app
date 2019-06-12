@@ -1,11 +1,13 @@
 module Pages.Session.Update exposing (update)
 
+import AllDict
 import App.Model
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (EditableSession)
-import Backend.Session.Utils exposing (emptyMotherMeasurementData, getMotherMeasurementData, makeEditableSession)
+import Backend.Session.Utils exposing (emptyMotherMeasurementData, getMotherMeasurementData)
 import EveryDict
+import Lazy exposing (force)
 import Maybe.Extra
 import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Pages.Activities.Update
@@ -22,17 +24,18 @@ import RemoteData exposing (RemoteData(..))
 update : SessionId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update sessionId db msg model =
     let
-        -- TODO: Ideally, we shouldn't rely on an `EditableSession` here, because
-        -- we'll throw away messages if we can't make one. This can probably be
-        -- avoided, but would require more restructuring.
         sessionData =
-            makeEditableSession sessionId db
+            AllDict.get sessionId db.editableSessions
+                |> Maybe.withDefault NotAsked
     in
     case sessionData of
         Success session ->
             updateFoundSession sessionId session msg model
 
         _ ->
+            -- We're handling UI messages here, and the UI should only be shown if
+            -- we have an editable session, so this shouldn't really happen. But
+            -- perhaps we should log some kind of error if it does?
             ( model, Cmd.none, [] )
 
 
@@ -87,7 +90,7 @@ updateFoundSession sessionId session msg model =
                         |> Maybe.withDefault []
 
                 childForms =
-                    Maybe.map2 (\childId form -> EveryDict.insert childId form model.childForms) maybeChildId subForm
+                    Maybe.map2 (\childId form -> AllDict.insert childId form model.childForms) maybeChildId subForm
                         |> Maybe.withDefault model.childForms
 
                 redirectMsgs =
@@ -119,7 +122,7 @@ updateFoundSession sessionId session msg model =
 
                 measurements =
                     maybeMotherId
-                        |> Maybe.map (\motherId -> getMotherMeasurementData motherId session)
+                        |> Maybe.map (\motherId -> force <| getMotherMeasurementData motherId session)
                         |> Maybe.withDefault (emptyMotherMeasurementData session)
 
                 ( subModel, subCmd, subForm, outMsg, page ) =
@@ -137,7 +140,7 @@ updateFoundSession sessionId session msg model =
                         |> Maybe.withDefault []
 
                 motherForms =
-                    Maybe.map2 (\motherId form -> EveryDict.insert motherId form model.motherForms) maybeMotherId subForm
+                    Maybe.map2 (\motherId form -> AllDict.insert motherId form model.motherForms) maybeMotherId subForm
                         |> Maybe.withDefault model.motherForms
 
                 redirectMsgs =
@@ -164,7 +167,7 @@ updateFoundSession sessionId session msg model =
                     getChildForm childId model session
 
                 childPage =
-                    EveryDict.get childId model.childPages
+                    AllDict.get childId model.childPages
                         |> Maybe.withDefault Pages.Participant.Model.emptyModel
 
                 ( subModel, subCmd, subForm, outMsg, page ) =
@@ -184,8 +187,8 @@ updateFoundSession sessionId session msg model =
             -- - we turn the redirect page into a message, if provided
             -- - we send a message to implement the OutMsg, if provided
             ( { model
-                | childPages = EveryDict.insert childId subModel model.childPages
-                , childForms = EveryDict.insert childId subForm model.childForms
+                | childPages = AllDict.insert childId subModel model.childPages
+                , childForms = AllDict.insert childId subForm model.childForms
               }
             , Cmd.map (MsgChild childId) subCmd
             , redirectMsgs ++ sessionMsgs
@@ -206,14 +209,14 @@ updateFoundSession sessionId session msg model =
                     getMotherForm motherId model session
 
                 motherPage =
-                    EveryDict.get motherId model.motherPages
+                    AllDict.get motherId model.motherPages
                         |> Maybe.withDefault Pages.Participant.Model.emptyModel
 
                 measurements =
                     getMotherMeasurementData motherId session
 
                 ( subModel, subCmd, subForm, outMsg, page ) =
-                    Pages.Participant.Update.updateMother subMsg motherPage motherForm measurements
+                    Pages.Participant.Update.updateMother subMsg motherPage motherForm (force measurements)
 
                 sessionMsgs =
                     List.map (App.Model.MsgIndexedDb << Backend.Model.MsgSession sessionId)
@@ -229,8 +232,8 @@ updateFoundSession sessionId session msg model =
             -- - we turn the redirect page into a message, if provided
             -- - we send a message to implement the OutMsg, if provided
             ( { model
-                | motherPages = EveryDict.insert motherId subModel model.motherPages
-                , motherForms = EveryDict.insert motherId subForm model.motherForms
+                | motherPages = AllDict.insert motherId subModel model.motherPages
+                , motherForms = AllDict.insert motherId subForm model.motherForms
               }
             , Cmd.map (MsgMother motherId) subCmd
             , redirectMsgs ++ sessionMsgs

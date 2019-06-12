@@ -1,5 +1,6 @@
-module Backend.Person.Model exposing (EducationLevel(..), Gender(..), MaritalStatus(..), Person, Ubudehe(..), allEducationLevels, allMaritalStatuses, allUbudehes)
+module Backend.Person.Model exposing (EducationLevel(..), Gender(..), HIVStatus(..), MaritalStatus(..), ModeOfDelivery(..), Person, Ubudehe(..), VaginalDelivery(..), allEducationLevels, allHivStatuses, allMaritalStatuses, allModesOfDelivery, allUbudehes)
 
+import Backend.Entities exposing (HealthCenterId)
 import Gizra.NominalDate exposing (NominalDate)
 
 
@@ -12,6 +13,9 @@ type alias Person =
     , birthDate : Maybe NominalDate
     , isDateOfBirthEstimated : Bool
     , gender : Gender
+    , hivStatus : Maybe HIVStatus
+    , numberOfChildren : Maybe Int
+    , modeOfDelivery : Maybe ModeOfDelivery
     , ubudehe : Maybe Ubudehe
     , educationLevel : Maybe EducationLevel
     , maritalStatus : Maybe MaritalStatus
@@ -21,7 +25,47 @@ type alias Person =
     , cell : Maybe String
     , village : Maybe String
     , telephoneNumber : Maybe String
+    , healthCenterId : Maybe HealthCenterId
     }
+
+
+type HIVStatus
+    = HIVExposedInfant
+    | Negative
+    | NegativeDiscordantCouple
+    | Positive
+    | Unknown
+
+
+allHivStatuses : List HIVStatus
+allHivStatuses =
+    [ HIVExposedInfant
+    , Negative
+    , NegativeDiscordantCouple
+    , Positive
+    , Unknown
+    ]
+
+
+type ModeOfDelivery
+    = VaginalDelivery VaginalDelivery
+    | CesareanDelivery
+
+
+{-| The bool indicates whether an episiotomy was performed
+-}
+type VaginalDelivery
+    = Spontaneous Bool
+    | WithVacuumExtraction
+
+
+allModesOfDelivery : List ModeOfDelivery
+allModesOfDelivery =
+    [ VaginalDelivery (Spontaneous True)
+    , VaginalDelivery (Spontaneous False)
+    , VaginalDelivery WithVacuumExtraction
+    , CesareanDelivery
+    ]
 
 
 type Gender

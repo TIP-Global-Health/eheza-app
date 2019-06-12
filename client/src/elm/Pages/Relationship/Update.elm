@@ -5,11 +5,26 @@ import Backend.Entities exposing (..)
 import Backend.Model
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Relationship.Model exposing (..)
+import Restful.Endpoint exposing (toEntityUuid)
 
 
 update : PersonId -> PersonId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update id1 id2 msg model =
     case msg of
+        AssignToClinicId id ->
+            let
+                clinicId =
+                    if String.isEmpty id then
+                        Nothing
+
+                    else
+                        Just (toEntityUuid id)
+            in
+            ( { model | assignToGroup = clinicId }
+            , Cmd.none
+            , []
+            )
+
         SetActivePage page ->
             ( model
             , Cmd.none
@@ -17,7 +32,7 @@ update id1 id2 msg model =
             )
 
         Reset ->
-            ( Nothing
+            ( emptyModel
             , Cmd.none
             , [ PersonPage id1
                     |> UserPage
@@ -28,12 +43,13 @@ update id1 id2 msg model =
         Save ->
             let
                 extraMsg =
-                    case model of
+                    case model.relatedBy of
                         Just relatedBy ->
                             [ Backend.Model.PostRelationship id1
                                 { relatedBy = relatedBy
                                 , relatedTo = id2
                                 }
+                                model.assignToGroup
                                 |> App.Model.MsgIndexedDb
                             ]
 
@@ -46,7 +62,7 @@ update id1 id2 msg model =
             )
 
         RelationshipSelected data ->
-            ( Just data
+            ( { model | relatedBy = Just data }
             , Cmd.none
             , []
             )

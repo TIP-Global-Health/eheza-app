@@ -13,14 +13,14 @@ class HedleyActivityEndpoints extends HedleyWebTestBase {
   /**
    * A user object.
    *
-   * @var \stdClass
+   * @var object
    */
   protected $user;
 
   /**
    * Anonymous user object.
    *
-   * @var \stdClass
+   * @var object
    */
   protected $anonymousUser;
 

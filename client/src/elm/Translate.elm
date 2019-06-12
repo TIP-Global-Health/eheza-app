@@ -27,7 +27,7 @@ import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
-import Backend.Person.Model exposing (EducationLevel(..), Gender(..), MaritalStatus(..))
+import Backend.Person.Model exposing (EducationLevel(..), Gender(..), HIVStatus(..), MaritalStatus(..), ModeOfDelivery(..), VaginalDelivery(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
@@ -100,7 +100,14 @@ type ChartPhrase
 
 
 type ValidationError
-    = UnknownGroup
+    = DigitsOnly
+    | InvalidBirthDate
+    | InvalidBirthDateForAdult
+    | InvalidBirthDateForChild
+    | LengthError Int
+    | LettersOnly
+    | RequiredField
+    | UnknownGroup
     | UnknownProvince
     | UnknownDistrict
     | UnknownSector
@@ -129,7 +136,8 @@ type TranslationId
     | AddChild
     | AddFamilyMember
     | AddFamilyMemberFor String
-    | AddMother
+    | AddParentOrCaregiver
+    | AddToGroup
     | Admin
     | AddressInformation
     | Adherence Adherence
@@ -215,7 +223,9 @@ type TranslationId
     | Gender Gender
     | GenderLabel
     | GoHome
+    | HaveYouSynced
     | HealthCenter
+    | HIVStatus HIVStatus
     | HIVStatusLabel
     | HouseholdSize
     | HttpError Http.Error
@@ -234,6 +244,7 @@ type TranslationId
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MiddleName
     | MinutesAgo Int
+    | ModeOfDelivery ModeOfDelivery
     | ModeOfDeliveryLabel
     | Month
     | MonthAbbrev
@@ -255,6 +266,7 @@ type TranslationId
     | NoActivitiesCompletedForThisParticipant
     | NoActivitiesPending
     | NoActivitiesPendingForThisParticipant
+    | NoGroupsFound
     | NoMatchesFound
     | NoParticipantsPending
     | NoParticipantsPendingForThisActivity
@@ -264,7 +276,7 @@ type TranslationId
     | NoParticipantsFound
     | NotAvailable
     | NotConnected
-    | NumberOfChildren
+    | NumberOfChildrenUnder5
     | OK
     | Old
     | OnceYouEndYourGroupEncounter
@@ -404,8 +416,13 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        AddMother ->
-            { english = "Add Mother"
+        AddParentOrCaregiver ->
+            { english = "Add Parent or Caregiver"
+            , kinyarwanda = Nothing
+            }
+
+        AddToGroup ->
+            { english = "Add to Group..."
             , kinyarwanda = Nothing
             }
 
@@ -1133,10 +1150,42 @@ translationSet trans =
             , kinyarwanda = Just "Kujya ahabanza"
             }
 
+        HaveYouSynced ->
+            { english = "Have you synced data for the health center you are working with?"
+            , kinyarwanda = Nothing
+            }
+
         HealthCenter ->
             { english = "Health Center"
             , kinyarwanda = Nothing
             }
+
+        HIVStatus status ->
+            case status of
+                HIVExposedInfant ->
+                    { english = "HIV-exposed Infant"
+                    , kinyarwanda = Nothing
+                    }
+
+                Negative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                NegativeDiscordantCouple ->
+                    { english = "Negative - discordant couple"
+                    , kinyarwanda = Nothing
+                    }
+
+                Positive ->
+                    { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.Person.Model.Unknown ->
+                    { english = "Unknown"
+                    , kinyarwanda = Nothing
+                    }
 
         HIVStatusLabel ->
             { english = "HIV Status"
@@ -1276,6 +1325,28 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        ModeOfDelivery mode ->
+            case mode of
+                VaginalDelivery (Spontaneous True) ->
+                    { english = "Spontaneous vaginal delivery with episiotomy"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaginalDelivery (Spontaneous False) ->
+                    { english = "Spontaneous vaginal delivery without episiotomy"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaginalDelivery WithVacuumExtraction ->
+                    { english = "Vaginal delivery with vacuum extraction"
+                    , kinyarwanda = Nothing
+                    }
+
+                CesareanDelivery ->
+                    { english = "Cesarean delivery"
+                    , kinyarwanda = Nothing
+                    }
+
         ModeOfDeliveryLabel ->
             { english = "Mode of delivery"
             , kinyarwanda = Nothing
@@ -1389,6 +1460,11 @@ translationSet trans =
             , kinyarwanda = Just "Ibikorwa byose byarangiye kubitabiriye."
             }
 
+        NoGroupsFound ->
+            { english = "No groups found."
+            , kinyarwanda = Nothing
+            }
+
         NoMatchesFound ->
             { english = "No matches found"
             , kinyarwanda = Nothing
@@ -1434,8 +1510,8 @@ translationSet trans =
             , kinyarwanda = Just "Ntamurandasi"
             }
 
-        NumberOfChildren ->
-            { english = "Number of Children"
+        NumberOfChildrenUnder5 ->
+            { english = "Number of Children under 5"
             , kinyarwanda = Nothing
             }
 
@@ -1891,7 +1967,7 @@ translationSet trans =
             }
 
         SyncGeneral ->
-            { english = "Sync status (general)"
+            { english = "Sync Status (General)"
             , kinyarwanda = Nothing
             }
 
@@ -2119,7 +2195,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                PersonsPage _ _ ->
+                PersonsPage _ ->
                     { english = "Participant Directory"
                     , kinyarwanda = Nothing
                     }
@@ -2489,6 +2565,41 @@ translateHttpError error =
 translateValidationError : ValidationError -> TranslationSet String
 translateValidationError id =
     case id of
+        DigitsOnly ->
+            { english = "should contain only digit characters"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidBirthDate ->
+            { english = "is invalid"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidBirthDateForAdult ->
+            { english = "is invalid - adult should at least 13 years old"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidBirthDateForChild ->
+            { english = "is invalid - child should be below the age of 13"
+            , kinyarwanda = Nothing
+            }
+
+        LengthError correctLength ->
+            { english = "should contain " ++ toString correctLength ++ " characters"
+            , kinyarwanda = Nothing
+            }
+
+        LettersOnly ->
+            { english = "should contain only letter characters"
+            , kinyarwanda = Nothing
+            }
+
+        RequiredField ->
+            { english = "is a required field"
+            , kinyarwanda = Nothing
+            }
+
         UnknownGroup ->
             { english = "is not a known Group"
             , kinyarwanda = Nothing

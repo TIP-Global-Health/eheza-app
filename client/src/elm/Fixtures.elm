@@ -2,7 +2,6 @@ module Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildA, 
 
 import Backend.Person.Model exposing (EducationLevel(..), Gender(..), Person, Ubudehe(..))
 import EverySet
-import Restful.Endpoint exposing (toEntityId)
 import Time.Date exposing (date)
 import User.Model exposing (User)
 
@@ -45,6 +44,9 @@ exampleChildA =
     , birthDate = Just <| date 2016 8 28
     , educationLevel = Nothing
     , maritalStatus = Nothing
+    , hivStatus = Nothing
+    , numberOfChildren = Nothing
+    , modeOfDelivery = Nothing
     , isDateOfBirthEstimated = False
     , gender = Male
     , ubudehe = Nothing
@@ -54,6 +56,7 @@ exampleChildA =
     , cell = Nothing
     , village = Nothing
     , telephoneNumber = Nothing
+    , healthCenterId = Nothing
     }
 
 
@@ -70,6 +73,9 @@ exampleChildB =
     , isDateOfBirthEstimated = True
     , educationLevel = Nothing
     , maritalStatus = Nothing
+    , hivStatus = Nothing
+    , numberOfChildren = Nothing
+    , modeOfDelivery = Nothing
     , gender = Female
     , ubudehe = Nothing
     , province = Nothing
@@ -78,6 +84,7 @@ exampleChildB =
     , cell = Nothing
     , village = Nothing
     , telephoneNumber = Nothing
+    , healthCenterId = Nothing
     }
 
 
@@ -93,6 +100,9 @@ exampleMother =
     , birthDate = Just <| date 2016 8 28
     , isDateOfBirthEstimated = False
     , gender = Female
+    , hivStatus = Nothing
+    , numberOfChildren = Nothing
+    , modeOfDelivery = Nothing
     , ubudehe = Just Ubudehe1
     , educationLevel = Just NoSchooling
     , maritalStatus = Nothing
@@ -102,4 +112,5 @@ exampleMother =
     , cell = Nothing
     , village = Nothing
     , telephoneNumber = Nothing
+    , healthCenterId = Nothing
     }

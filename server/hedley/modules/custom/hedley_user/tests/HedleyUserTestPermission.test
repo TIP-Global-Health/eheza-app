@@ -20,14 +20,14 @@ class HedleyUserTestPermission extends HedleyWebTestBase {
   /**
    * The nurse user account.
    *
-   * @var \stdClass
+   * @var object
    */
   protected $nurse;
 
   /**
    * A dummy user object.
    *
-   * @var \stdClass
+   * @var object
    */
   protected $member;
 

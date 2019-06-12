@@ -1,5 +1,7 @@
 port module App.Update exposing (init, subscriptions, updateAndThenFetch)
 
+import AllDict
+import AnimationFrame
 import App.Fetch
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInModel)
@@ -19,6 +21,7 @@ import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
 import Pages.Device.Model
 import Pages.Device.Update
+import Pages.People.Update
 import Pages.Person.Update
 import Pages.PinCode.Model
 import Pages.PinCode.Update
@@ -27,7 +30,7 @@ import Pages.Relationship.Update
 import Pages.Session.Model
 import Pages.Session.Update
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, select, toCmd, toEntityId)
+import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, fromEntityId, select, toCmd, toEntityId)
 import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
@@ -134,8 +137,9 @@ init flags =
 
 updateAndThenFetch : Msg -> Model -> ( Model, Cmd Msg )
 updateAndThenFetch msg model =
-    update msg model
-        |> App.Fetch.andThenFetch update
+    -- If it's a CheckData message, then `update` will turn this off.
+    update msg
+        { model | scheduleDataWantedCheck = True }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -176,10 +180,20 @@ update msg model =
                         MsgPageCreatePerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Person.Update.update subMsg data.createPersonPage
+                                    Pages.Person.Update.update currentDate subMsg model.indexedDb.people data.createPersonPage
                             in
                             ( { data | createPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageCreatePerson) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPagePersons subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.People.Update.update subMsg data.personsPage
+                            in
+                            ( { data | personsPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPagePersons) subCmd
                             , appMsgs
                             )
 
@@ -200,11 +214,11 @@ update msg model =
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.sessionPages
-                                        |> EveryDict.get sessionId
+                                        |> AllDict.get sessionId
                                         |> Maybe.withDefault Pages.Session.Model.emptyModel
                                         |> Pages.Session.Update.update sessionId model.indexedDb subMsg
                             in
-                            ( { data | sessionPages = EveryDict.insert sessionId subModel data.sessionPages }
+                            ( { data | sessionPages = AllDict.insert sessionId subModel data.sessionPages }
                             , Cmd.map (MsgLoggedIn << MsgPageSession sessionId) subCmd
                             , extraMsgs
                             )
@@ -427,6 +441,51 @@ update msg model =
                 )
                 model
 
+        CheckDataWanted ->
+            -- Note that we will be called repeatedly. So, it's vitally important that
+            -- the `fetch` implementations use a `WebData`-like strategy to indicate
+            -- that a request is in progress, and doesn't need to be triggered again.
+            -- Otherwise, we'll keep issuing the same requests, over and over.
+            let
+                -- These are messages to fetch the data we want now, without
+                -- considering whether we already have it.
+                dataNowWanted =
+                    App.Fetch.fetch model
+
+                -- These are the messages we should actually issue to fetch data now.
+                -- As an improvement, we could compare with `model.dataWanted` to see
+                -- whether the msg is **newly** desired ... that is, whether its status
+                -- just flipped. We could treat newly desired data differently. For
+                -- instance, we might try to re-fetch it even in a `Failure` state.
+                -- (Since that wouldn't infinitely repeat).
+                dataToFetch =
+                    List.filter (App.Fetch.shouldFetch model) dataNowWanted
+
+                -- Update our existing dataWanted to indicate that the data now wanted
+                -- was last wanted now.
+                dataWanted =
+                    List.foldl (\msg -> EveryDict.insert msg model.currentTime) model.dataWanted dataNowWanted
+
+                fiveMinutes =
+                    5 * 1000 * 60
+
+                -- Figure out what to remember and what to forget.
+                ( dataToForget, dataToRemember ) =
+                    EveryDict.partition (\_ lastWanted -> model.currentTime - lastWanted > fiveMinutes) dataWanted
+
+                -- Our new base model, remembering the desired data, and forgetting
+                -- the data to forget.
+                newModel =
+                    dataToForget
+                        |> EveryDict.keys
+                        |> List.foldl App.Fetch.forget
+                            { model
+                                | dataWanted = dataToRemember
+                                , scheduleDataWantedCheck = False
+                            }
+            in
+            sequence update dataToFetch ( newModel, Cmd.none )
+
 
 {-| Updates our `nurse` user if the uuid matches the logged-in user.
 -}
@@ -497,13 +556,23 @@ updateLoggedIn func model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
+    let
+        checkDataWanted =
+            if model.scheduleDataWantedCheck then
+                [ AnimationFrame.times (always CheckDataWanted) ]
+
+            else
+                []
+    in
     Sub.batch
-        [ Time.every minute Tick
-        , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
-        , persistentStorage SetPersistentStorage
-        , storageQuota SetStorageQuota
-        , memoryQuota SetMemoryQuota
-        ]
+        ([ Time.every minute Tick
+         , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
+         , persistentStorage SetPersistentStorage
+         , storageQuota SetStorageQuota
+         , memoryQuota SetMemoryQuota
+         ]
+            ++ checkDataWanted
+        )
 
 
 {-| Saves PIN code entered by user, so that we can use it again if

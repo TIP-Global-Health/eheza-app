@@ -6,10 +6,10 @@ module ServiceWorker.Model exposing (IncomingMsg(..), Model, Msg(..), NewWorker(
 import Backend.Entities exposing (..)
 import Backend.Model exposing (Revision)
 import Backend.SyncData.Model exposing (SyncData)
-import EveryDictList exposing (EveryDictList)
 import Json.Encode exposing (Value)
 import RemoteData exposing (RemoteData(..))
 import Time exposing (Time)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 {-| The state of the service worker system.
@@ -62,7 +62,7 @@ type IncomingMsg
     = RegistrationSucceeded
     | RegistrationFailed String
     | SetNewWorker NewWorker
-    | SetSyncData (EveryDictList HealthCenterId SyncData)
+    | SetSyncData (EntityUuidDictList HealthCenterId SyncData)
     | NewRevisions (List Revision)
 
 
