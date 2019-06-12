@@ -1,16 +1,13 @@
 module Backend.Counseling.Decoder exposing (combineCounselingSchedules, decodeCounselingSchedule, decodeCounselingTiming, decodeCounselingTopic)
 
-import AllDict
-import AllDictList
 import Backend.Counseling.Model exposing (..)
 import Backend.Entities exposing (..)
-import EveryDict
+import EveryDict exposing (EveryDict)
+import EveryDictList
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Restful.Endpoint exposing (decodeEntityUuid)
 import Translate.Model exposing (TranslationSet)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 decodeCounselingTopic : Decoder CounselingTopic
@@ -58,7 +55,7 @@ decodeCounselingSchedule =
 {-| Combines multiple counseling schedule entities into a dictionary keyed by
 the timing. Multiple entities with the same timing are combined.
 -}
-combineCounselingSchedules : EntityUuidDict CounselingTopicId CounselingTopic -> List CounselingSchedule -> EveryCounselingSchedule
+combineCounselingSchedules : EveryDict CounselingTopicId CounselingTopic -> List CounselingSchedule -> EveryCounselingSchedule
 combineCounselingSchedules allTopics =
     let
         go schedule =
@@ -68,10 +65,10 @@ combineCounselingSchedules allTopics =
                     schedule.topics
                         |> List.filterMap
                             (\id ->
-                                AllDict.get id allTopics
+                                EveryDict.get id allTopics
                                     |> Maybe.map (\value -> ( id, value ))
                             )
-                        |> EntityUuidDictList.fromList
+                        |> EveryDictList.fromList
             in
             EveryDict.update schedule.timing
                 (\existingTopics ->
@@ -81,7 +78,7 @@ combineCounselingSchedules allTopics =
                             -- where we have more than one schedule for a
                             -- timing.
                             Just <|
-                                AllDictList.union existing newTopics
+                                EveryDictList.union existing newTopics
 
                         Nothing ->
                             Just newTopics

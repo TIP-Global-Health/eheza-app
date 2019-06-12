@@ -1,9 +1,9 @@
 module Pages.Person.Fetch exposing (fetch, fetchForCreateForm)
 
-import AllDict
-import AllDictList
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import EveryDict
+import EveryDictList
 import RemoteData exposing (RemoteData(..))
 
 
@@ -11,9 +11,9 @@ fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
     let
         familyMembers =
-            AllDict.get id db.relationshipsByPerson
+            EveryDict.get id db.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
-                |> RemoteData.map (AllDictList.values >> List.map (.relatedTo >> FetchPerson))
+                |> RemoteData.map (EveryDictList.values >> List.map (.relatedTo >> FetchPerson))
                 |> RemoteData.withDefault []
     in
     familyMembers
