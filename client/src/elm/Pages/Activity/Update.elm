@@ -1,10 +1,11 @@
 module Pages.Activity.Update exposing (updateChild, updateMother)
 
 import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (MeasurementData, MotherMeasurements)
 import Measurement.Model
 import Measurement.Update
 import Pages.Activity.Model exposing (Model, Msg(..))
-import Pages.Page exposing (Page(..), SessionPage(..))
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 
 
 {-| Ideally, these would be more generic, but it's easier to have
@@ -12,18 +13,18 @@ a separate `updateChild` and `updateMother` for the moment. This
 is similar to the code in `Pages.Participant.Update`.
 -}
 updateChild :
-    Msg ChildId Measurement.Model.MsgChild
-    -> Model ChildId
+    Msg PersonId Measurement.Model.MsgChild
+    -> Model PersonId
     -> Maybe Measurement.Model.ModelChild
-    -> ( Model ChildId, Cmd (Msg ChildId Measurement.Model.MsgChild), Maybe Measurement.Model.ModelChild, Maybe Measurement.Model.OutMsgChild, Maybe Page )
+    -> ( Model PersonId, Cmd (Msg PersonId Measurement.Model.MsgChild), Maybe Measurement.Model.ModelChild, Maybe Measurement.Model.OutMsgChild, Maybe Page )
 updateChild msg model childForm =
     case msg of
-        GoBackToActivitiesPage ->
+        GoBackToActivitiesPage sessionId ->
             ( { model | filter = "" }
             , Cmd.none
             , childForm
             , Nothing
-            , Just <| SessionPage ActivitiesPage
+            , Just <| UserPage <| SessionPage sessionId ActivitiesPage
             )
 
         MsgMeasurement subMsg ->
@@ -69,14 +70,15 @@ updateChild msg model childForm =
 
 
 updateMother :
-    Msg MotherId Measurement.Model.MsgMother
-    -> Model MotherId
+    Msg PersonId Measurement.Model.MsgMother
+    -> Model PersonId
     -> Maybe Measurement.Model.ModelMother
-    -> ( Model MotherId, Cmd (Msg MotherId Measurement.Model.MsgMother), Maybe Measurement.Model.ModelMother, Maybe Measurement.Model.OutMsgMother, Maybe Page )
-updateMother msg model motherForm =
+    -> MeasurementData MotherMeasurements
+    -> ( Model PersonId, Cmd (Msg PersonId Measurement.Model.MsgMother), Maybe Measurement.Model.ModelMother, Maybe Measurement.Model.OutMsgMother, Maybe Page )
+updateMother msg model motherForm measurements =
     case msg of
-        GoBackToActivitiesPage ->
-            ( model, Cmd.none, Nothing, Nothing, Just <| SessionPage ActivitiesPage )
+        GoBackToActivitiesPage sessionId ->
+            ( model, Cmd.none, Nothing, Nothing, Just <| UserPage <| SessionPage sessionId ActivitiesPage )
 
         MsgMeasurement subMsg ->
             motherForm
@@ -84,7 +86,7 @@ updateMother msg model motherForm =
                     (\form ->
                         let
                             ( subModel, subCmd, outMsg ) =
-                                Measurement.Update.updateMother subMsg form
+                                Measurement.Update.updateMother measurements subMsg form
                         in
                         ( model
                         , Cmd.map MsgMeasurement subCmd

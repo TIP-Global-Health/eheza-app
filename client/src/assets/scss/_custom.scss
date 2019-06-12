@@ -1,85 +1,7 @@
 // Base
 
-html,
-body {
-  min-height: 100vh;
-}
-
-body {
-  font-family: $font;
-  font-size: 22px;
-  color: $color-text;
-  background: #0393db url(#{$img-path}bg.svg) no-repeat center 12px;
-  background-size: 1193px 818px;
-
-  &.no-bg {
-    background-image: none;
-  }
-}
-
 a {
   color: $color-primary;
-}
-
-.language-switcher {
-  width: 800px;
-  text-align: right;
-  margin: 10px auto;
-  display: flex;
-  justify-content: space-between;
-
-  .version {
-    margin-right: 16px;
-    height: 24px;
-    color: white;
-    font-size: .6em;
-    cursor: pointer;
-  }
-
-  .links-translate {
-    margin: 0;
-    padding: 6px 25px;
-    list-style: none;
-    display: flex;
-    justify-content: flex-start;
-
-    li {
-      display: inline-block;
-      margin-right: 15px;
-      position: relative;
-      display: flex;
-      height: 27px;
-      color: white;
-      font-size: .8em;
-      cursor: pointer;
-
-      &.active {
-        color: $color-dark-blue;
-      }
-
-      a {
-        display: block;
-        width: 27 px;
-        height: 27 px;
-        background: #fff;
-        border-radius: 50%;
-        position: relative;
-        margin-left: 10px;
-      }
-    }
-
-    li.active a:before {
-      width: 35px;
-      height: 35px;
-      border: 2px solid $color-dark-blue;
-      content: " ";
-      display: block;
-      border-radius: 50%;
-      position: absolute;
-      top: -4px;
-      left: -4px;
-    }
-  }
 }
 
 // Page Wraps
@@ -119,6 +41,16 @@ a {
       margin: -2.5rem -3rem;
       padding: 0;
       overflow: auto !important;
+    }
+  }
+}
+
+// This fixes the bottom margin on a specific page. Ideally, we would do the
+// CSS without negative margins.
+.page-participants {
+  .ui.full.segment {
+    > .full.content {
+      margin-bottom: 0.5rem;
     }
   }
 }
@@ -174,10 +106,6 @@ a {
     min-height: 215px;
   }
 
-  .actions {
-    margin: 2.5rem -3rem -2.5rem -3rem;
-  }
-
   &.blue:not(.inverted) {
     border-top: 9px solid $color-primary;
   }
@@ -186,12 +114,6 @@ a {
     color: #fff;
     font-weight: 500;
     font-size: 2.15rem; // 30px
-  }
-
-  &.basic.login {
-    padding-top: 140px;
-    font-size: 1.72rem; //24px;
-    text-align: center;
   }
 
   &.wide {
@@ -435,6 +357,14 @@ h3.ui.header {
   background-size: 66px 73px;
 }
 
+.icon-task-counseling {
+  background-image: url(#{$img-path}icon-counseling-active.svg);
+}
+
+.icon-task-forms {
+  background-image: url(#{$img-path}icon-forms-active.svg);
+}
+
 .icon-task-muac {
   background-image: url(#{$img-path}icon-muac-active.svg);
   background-size: 80px 73px;
@@ -450,16 +380,23 @@ h3.ui.header {
   background-size: 88px 80px;
 }
 
+// Tasks horizontal scroll
+
+.ui.task.segment {
+  overflow-y: auto;
+
+  .grid {
+    white-space: nowrap;
+    flex-wrap: nowrap;
+  }
+}
 
 // Participants (Horizontal Scroll Area)
-
-.ui.participant.segment {
-  overflow-y: auto;
-}
 
 .ui.participant.cards {
   white-space: nowrap;
   flex-wrap: nowrap;
+  overflow-y: auto;
 }
 
 .ui.participant.cards>.card>.content {
@@ -568,8 +505,8 @@ h3.ui.header {
 
 .icon-item {
   display: block;
-  width: 222px;
-  height: 222px;
+  width: 120px;
+  height: 120px;
   background-color: #fff;
   box-shadow: 0 0 10px rgba(0,0,0,0.35);
   background-repeat: no-repeat;
@@ -588,7 +525,15 @@ h3.ui.header {
 
 .icon-item-height {
   background-image: url(#{$img-path}icon-height-blue.svg);
-  background-size: 118px 131px;
+  background-size: 72px;
+}
+
+.icon-item-counseling {
+  background-image: url(#{$img-path}icon-counseling-blue.svg);
+}
+
+.icon-item-forms {
+  background-image: url(#{$img-path}icon-forms-blue.svg);
 }
 
 .icon-item-muac {
@@ -668,6 +613,232 @@ h3.ui.header {
   height: 50px;
   background: #e6e6e6;
   color: $color-text;
+}
+
+.registration-page {
+
+  &.search {
+
+    .ui.form.search input,
+    .ui.form.search input:focus {
+      height: 60px;
+      margin-bottom: 30px;
+      text-align: left;
+      width: 100%;
+    }
+
+    .results-summary {
+      margin-top: 15px;
+      margin-bottom: 15px;
+    }
+
+    .register-helper {
+      margin-bottom: 10px;
+    }
+  }
+
+  &.view {
+
+    .items.participants-list {
+
+      .icon-participant.add {
+        background-color: white;
+        border: 2px dashed $color-gray;
+        height: 120px;
+        width: 120px;
+      }
+
+      .add-participant-label {
+        font-weight: bold;
+        padding-top: 35px;
+      }
+
+      .add-participant-icon-wrapper {
+        height: 50px;
+        border: 2px solid gray;
+        border-radius: 28px;
+        width: 50px;
+        margin-top: 30px;
+        margin-left: 25px;
+
+        .add-participant-icon {
+          background: url(#{$img-path}icon-add.svg) no-repeat center;
+          background-size: 62% 62%;
+          cursor: pointer;
+          display: block;
+          height: 40px;
+          width: 40px;
+          margin-left: 2px;
+          margin-top: 2px;
+        }
+      }
+    }
+
+    .separator-line {
+      border-top: 2px solid $color-gray;
+      width: 620px;
+      margin-top: 70px;
+      margin-bottom: 70px;
+    }
+  }
+
+  &.view,
+  &.search {
+
+    .items {
+      color: $color-gray;
+      margin-bottom: 50px;
+
+      .item .content {
+
+        .details {
+          float:left;
+          width: 70%;
+
+          .ui.header {
+            color: $color-gray;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 3px;
+            margin-bottom: 7px;
+          }
+
+          p {
+            margin-bottom: 0;
+            font-size: 20px;
+
+            label {
+              font-weight: bold;
+            }
+          }
+        }
+
+        .action {
+          float:left;
+          margin-top: -20px;
+          width: 20%;
+
+          .action-icon-wrapper {
+            height: 50px;
+            border: 2px solid gray;
+            border-radius: 28px;
+            width: 50px;
+            margin-top: 60px;
+            margin-left: 50px;
+
+            .action-icon {
+              background-size: 62% 62%;
+              cursor: pointer;
+              display: block;
+              height: 40px;
+              width: 40px;
+              margin-left: 2px;
+              margin-top: 2px;
+
+              &.forward {
+                background: url(#{$img-path}icon-forward.svg) no-repeat center;
+              }
+
+              &.link {
+                background: url(#{$img-path}icon-link.svg) no-repeat center;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .actions button {
+      width: 100%;
+    }
+  }
+
+  &.form {
+
+    .ui.form.registration {
+
+      fieldset {
+        border:none;
+        margin-top: 35px;
+      }
+
+      input,
+      input:focus,
+      .select-input {
+        background: none;
+        font-size: 2rem;
+        border: 2px solid $color-gray;
+        padding: 0 0.5em;
+        line-height: 0.5;
+        text-align: left;
+        height: 50px;
+        width: 100%;
+        color: $color-text;
+
+        &.error {
+          border-color: $color-red;
+        }
+      }
+
+      .birtdate-label {
+        margin-top: 45px;
+      }
+
+      .day-input,
+      .month-input {
+        text-align: center;
+
+        span {
+          font-size: 15px;
+        }
+
+        select {
+          width: 100px;
+        }
+      }
+
+      .year-input {
+        text-align: center;
+
+        span {
+          font-size: 15px;
+        }
+
+        select {
+          width: 120px;
+        }
+      }
+
+      .gender-input {
+        margin-left: 15px;
+      }
+
+      .estimated-input {
+        span {
+          font-size: 15px;
+          margin-left: 30px;
+        }
+
+        input {
+          width: 35px;
+          margin-left: 45px;
+          margin-top: 5px;
+        }
+      }
+
+      .required:before {
+        content: " *";
+        margin-left: -20px;
+        padding-right: 10px;
+      }
+    }
+
+    .actions button {
+      float: left;
+      margin: 0;
+      width: 50%;
+    }
+  }
 }
 
 input::placeholder {
@@ -998,6 +1169,7 @@ input::placeholder {
   display: block;
   text-align: center;
   color: $color-text;
+  white-space: normal;
 
   &:hover {
     color: inherit;
@@ -1060,6 +1232,26 @@ input::placeholder {
   &:after {
     background-image: url(#{$img-path}icon-height.svg);
     background-size: 49px 54px;
+  }
+}
+
+.icon-counseling {
+  .active &:after {
+    background-image: url(#{$img-path}icon-counseling-active.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-counseling.svg);
+  }
+}
+
+.icon-forms {
+  .active &:after {
+    background-image: url(#{$img-path}icon-forms-active.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-forms.svg);
   }
 }
 
@@ -1280,7 +1472,7 @@ input::placeholder {
 
 .page-activity {
   .ui.action.input {
-    padding: 0.5rem 1rem 3rem;
+    padding: 0.5rem 1rem 1.75rem;
   }
 }
 
@@ -1290,3 +1482,13 @@ input::placeholder {
     padding-left: 1rem;
   }
 }
+
+// Date Selector
+
+.date-selector {
+   font-size: 0.7em;
+
+   > div {
+     height: 19em;
+   }
+ }

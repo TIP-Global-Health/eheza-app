@@ -18,37 +18,53 @@ function hedley_schedule_ctools_plugin_api($module = NULL, $api = NULL) {
  */
 function hedley_schedule_node_info() {
   $items = array(
-    'catchment_area' => array(
-      'name' => t('Catchment Area'),
-      'base' => 'node_content',
-      'description' => t('A catchment area represents a group of health centers.'),
-      'has_title' => '1',
-      'title_label' => t('Title'),
-      'help' => '',
-    ),
     'clinic' => array(
-      'name' => t('Clinic'),
+      'name' => t('Group'),
       'base' => 'node_content',
-      'description' => t('A Clinic represents a group of mothers and babies for which group post-natal sessions are scheduled.'),
+      'description' => t('A Group is a group of mothers and babies who are seen together for group health assessments.'),
       'has_title' => '1',
       'title_label' => t('Title'),
       'help' => '',
     ),
-    'health_center' => array(
-      'name' => t('Health Center'),
+    'counseling_schedule' => array(
+      'name' => t('Counseling Schedule'),
       'base' => 'node_content',
-      'description' => t('A location at which health services are provided. Each health centre has multiple "clinics" (groups of mothers and babies for post-natal care). Each health centre falls within a "catchment area" (a group of health centers).'),
+      'description' => t('Groups together, in order, several "Counseling Topics" which ought to be addressed at a certain point.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'counseling_session' => array(
+      'name' => t('Counseling Session'),
+      'base' => 'node_content',
+      'description' => t('This new entity will analogue to the other "measurement"/examination entities (muac, photo, height, weight etc.)'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'counseling_topic' => array(
+      'name' => t('Counseling Topic'),
+      'base' => 'node_content',
+      'description' => t('Counseling topics for the Counseling session'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'pmtct_participant' => array(
+      'name' => t('PMTCT Participant'),
+      'base' => 'node_content',
+      'description' => t('Identifies a child participating in a PMTCT Group, along with an adult participating in mother activities or caregiver activities.'),
       'has_title' => '1',
       'title_label' => t('Title'),
       'help' => '',
     ),
     'session' => array(
-      'name' => t('Session'),
+      'name' => t('Group Encounter'),
       'base' => 'node_content',
-      'description' => t('A Session represents a date on which data-entry is scheduled for a clinic.'),
+      'description' => t('A Group Encounter represents a date on which a health assessment is scheduled for a Group. It ties together the various measurements taken at that group encounter.'),
       'has_title' => '1',
       'title_label' => t('Title'),
-      'help' => t('In order to schedule data entry for a clinic,  create a new <em>Session</em>, assign the relevant <em>Clinic</em>, and specify the <em>Scheduled Date</em> for the measurements. This needs to be done in advance, using the Drupal admin UI. It will then show up in the client app as being available for data entry, until the <em>Close On</em> date.'),
+      'help' => t('In order to schedule a group encounter,  create a new <em>Group Encounter</em>, assign the relevant <em>Group</em>, and specify the <em>Scheduled Date</em> for the measurements. This needs to be done in advance, using the Drupal admin UI. It will then show up in the client app as being available for data entry, until the <em>Close On</em> date.'),
     ),
   );
   drupal_alter('node_info', $items);

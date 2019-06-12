@@ -5,15 +5,18 @@ module Utils.Html exposing
     , spinner
     , tabItem
     , thumbnailImage
+    , viewLoading
+    , viewLogo
     , viewModal
     , wrapPage
     )
 
 import Config.Model exposing (Model)
 import Gizra.Html exposing (showIf, showMaybe)
-import Html exposing (Html, a, div, h5, i, img, node, span, text)
-import Html.Attributes exposing (attribute, class, classList, id, src, style)
-import Html.Events exposing (onClick)
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
+import Translate exposing (Language, translate)
 
 
 {-| Displays a debugging segment if debugging is enabled, otherwise renders
@@ -106,6 +109,16 @@ thumbnailImage subClass maybeAvatarUrl label height width =
                 []
 
 
+{-| Just show a generic loading indicator, for cases that will resolve soon,
+where we don't need to show any progress.
+-}
+viewLoading : Html any
+viewLoading =
+    div
+        [ class "ui basic segment" ]
+        [ spinner ]
+
+
 {-| Takes some HTML with a "modal" class, and puts it in an overlay
 which dims the background and centers the modal vertically in the
 viewport.
@@ -128,4 +141,25 @@ wrapPage html =
         [ div
             [ class "ui basic segment" ]
             html
+        ]
+
+
+viewLogo : Language -> Html any
+viewLogo language =
+    let
+        appName =
+            translate language Translate.AppName
+    in
+    div
+        [ class "logo" ]
+        [ img
+            [ alt appName
+            , class "img-logo"
+            , height 245
+            , width 245
+            , src "assets/images/logo-app.svg"
+            ]
+            []
+        , br [] []
+        , text appName
         ]

@@ -1,0 +1,304 @@
+<?php
+
+/**
+ * @file
+ * Code for the Hedley Device feature.
+ */
+
+use Ramsey\Uuid\Uuid;
+
+include_once 'hedley_device.features.inc';
+
+// A UUIDv4 (randomly generated) which we'll use for generating a UUIDv5 for
+// nodes created on the backend. Nodes created on devices and synced to the
+// backend will be given UUIDs by the devices themselves (based on device UUIDs
+// assigned when they pair). We could generate this dynamically on install, but
+// there doesn't seem to be any disadvantage to just making it a constant.
+define('HEDLEY_DEVICE_BACKEND_UUID', 'c700aec4-92c1-46b2-8894-8f4f82869c79');
+
+/**
+ * Implements hook_node_presave().
+ */
+function hedley_device_node_presave($node) {
+  // Create a revision unless disabled.
+  $revisions_disabled = variable_get('hedley_device_disable_revisions', FALSE);
+  if (!$revisions_disabled) {
+    $node->revision = TRUE;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  if ($wrapper->__isset('field_uuid')) {
+    hedley_device_assign_uuid($node, $wrapper);
+  }
+
+  if ($node->type == 'device') {
+    hedley_device_assign_pairing_code($node, $wrapper);
+  }
+
+  if ($wrapper->__isset('field_shards')) {
+    hedley_device_assign_shards($node, $wrapper);
+  }
+}
+
+/**
+ * Implements hook_node_delete().
+ */
+function hedley_device_node_delete($node) {
+  // Allow to manually skip this exception.
+  if (!empty($node->allow_delete) || variable_get('hedley_device_allow_deletion', FALSE)) {
+    return;
+  }
+
+  throw new Exception('Cannot delete this node. Consider unpublishing it instead.');
+}
+
+/**
+ * Implements hook_node_insert().
+ */
+function hedley_device_node_insert($node) {
+  if ($node->type == 'pmtct_participant') {
+    $wrapper = entity_metadata_wrapper('node', $node);
+
+    hedley_recalculate_shards_for_person($wrapper->field_person->getIdentifier());
+    hedley_recalculate_shards_for_person($wrapper->field_adult->getIdentifier());
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ */
+function hedley_device_node_update($node) {
+  if ($node->type == 'pmtct_participant') {
+    $wrapper = entity_metadata_wrapper('node', $node);
+
+    hedley_recalculate_shards_for_person($wrapper->field_person->getIdentifier());
+    hedley_recalculate_shards_for_person($wrapper->field_adult->getIdentifier());
+  }
+}
+
+/**
+ * Assign or check a pairing code.
+ */
+function hedley_device_assign_pairing_code($node, $wrapper) {
+  if (empty($node->nid)) {
+    // New device, so we generate a pairing code if not set manually.
+    if (empty($wrapper->field_pairing_code->value())) {
+      $wrapper->field_pairing_code->set(hedley_device_get_unique_pairing_code());
+    }
+    elseif (!hedley_device_check_unique_pairing_code($wrapper->field_pairing_code->value())) {
+      throw new Exception('The provided pairing code was not unique.');
+    }
+
+    // And we make a robot user to authenticate for syncing.
+    $role = user_role_load_by_name('sync');
+
+    $account = entity_create('user', [
+      'name' => $node->title . ' Robot',
+      'mail' => 'robot@no-reply.com',
+      'roles' => [$role->rid => $role->name],
+      'status' => TRUE,
+    ]);
+
+    $wrapper = entity_metadata_wrapper('user', $account);
+    $wrapper->save();
+
+    // Set the author.
+    $node->uid = $account->uid;
+  }
+  elseif (!hedley_device_check_unique_pairing_code($wrapper->field_pairing_code->value(), $wrapper->getIdentifier())) {
+    // Existing device, so throw error if it's not unique.
+    throw new Exception('The provided pairing code was not unique.');
+  }
+}
+
+/**
+ * Return an 8-digit unique pairing code.
+ *
+ * @return int
+ *   The pincode.
+ */
+function hedley_device_get_unique_pairing_code() {
+  $rand = rand(10000000, 99999999);
+
+  if (hedley_device_check_unique_pairing_code($rand)) {
+    // Pairing code is unique.
+    return $rand;
+  }
+
+  // Try again.
+  return hedley_device_get_unique_pairing_code();
+}
+
+/**
+ * Check whether the supplied pairing code is already used.
+ *
+ * @param string $code
+ *   The pairing code to check.
+ * @param null|int $nid
+ *   Optional; A node ID to ignore.
+ *
+ * @return bool
+ *   TRUE if the supplied pairing code is unique
+ */
+function hedley_device_check_unique_pairing_code($code, $nid = NULL) {
+  if (empty($code)) {
+    // An empty pairing code is permissible.
+    return TRUE;
+  }
+
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'device')
+    ->fieldCondition('field_pairing_code', 'value', $code)
+    // Enough to know if there is one more.
+    ->range(0, 1);
+
+  if ($nid) {
+    $query->propertyCondition('nid', $nid, '<>');
+  }
+
+  $count = $query
+    ->count()
+    ->execute();
+
+  return $count == 0;
+}
+
+/**
+ * Assign a UUID to the node.
+ */
+function hedley_device_assign_uuid($node, $wrapper) {
+  $uuid = $wrapper->field_uuid->value();
+
+  if (empty($uuid)) {
+    // If we don't have a UUID, then make one.
+    $uuid = Uuid::uuid5(HEDLEY_DEVICE_BACKEND_UUID, uniqid('', TRUE));
+    $wrapper->field_uuid->set($uuid->toString());
+  }
+  elseif (!Uuid::isValid($uuid)) {
+    // If we do have a UUID, then validate it.
+    $message = "The supplied UUID '$uuid' is not a valid UUID. Leave it blank to auto-generate.";
+    throw new Exception($message);
+  }
+  elseif (!empty($node->original)) {
+    // If we had a UUID, prevent modifying it.
+    $original_wrapper = entity_metadata_wrapper('node', $node->original);
+    $original_uuid = $original_wrapper->field_uuid->value();
+
+    if (!empty($original_uuid) && $uuid != $original_uuid) {
+      throw new Exception('You cannot modify a UUID once it is assigned.');
+    }
+  }
+}
+
+/**
+ * Fill in field_shards with the shards this node should be sent to.
+ */
+function hedley_device_assign_shards($node, $wrapper) {
+  $shards = hedley_device_shards_for_person($wrapper->field_person->getIdentifier());
+  $wrapper->field_shards->set($shards);
+}
+
+/**
+ * Which shards should a person's measurements be sent to?
+ *
+ * @param int $nid
+ *   The nid of the person.
+ *
+ * @return array
+ *   An array of shard ID's.
+ */
+function hedley_device_shards_for_person($nid) {
+  // For now, we just look at their pmtct_participant records.  If they have
+  // one, we send their measurements to the associated health center.
+  //
+  // We do this as a db_select because we need an `OR`, and we can
+  // do it all at once with several joins, which is pleasant.
+  $query = db_select('node', 'n');
+
+  $query->condition('n.type', 'pmtct_participant');
+
+  $query->join('field_data_field_adult', 'adult', 'adult.entity_id = n.nid');
+  $query->join('field_data_field_person', 'child', 'child.entity_id = n.nid');
+
+  $adult_or_child = db_or();
+  $adult_or_child->condition('adult.field_adult_target_id', $nid);
+  $adult_or_child->condition('child.field_person_target_id', $nid);
+
+  $query->condition($adult_or_child);
+
+  $query->join('field_data_field_clinic', 'clinic', 'clinic.entity_id = n.nid');
+  $query->join('field_data_field_health_center', 'hc', 'hc.entity_id = clinic.field_clinic_target_id');
+
+  $query->fields('hc', ['field_health_center_target_id']);
+  $query->distinct();
+
+  return $query->execute()->fetchCol();
+}
+
+/**
+ * Recalculate and potentially update shard assignments.
+ *
+ * @param int $nid
+ *   The node ID of a person to recalculate for.
+ */
+function hedley_recalculate_shards_for_person($nid) {
+  // Figure out what the shards for this person ought to be.
+  $shards = hedley_device_shards_for_person($nid);
+  sort($shards);
+
+  // Now, we need to cycle through the sharded entities for the person and
+  // update those that do not match, so that they will get sent to the right
+  // devices.
+  $query = db_select('node', 'n');
+
+  // Join field_shards and field_person. So, we're getting all sharded nodes
+  // that have a field_person.
+  $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
+  $query->leftJoin('field_data_field_shards', 's', 's.entity_id = n.nid');
+
+  // Limit to the person we're interested in.
+  $query->condition('p.field_person_target_id', $nid);
+
+  // Limit to sharded nodes.
+  $query->condition('n.type', [
+    'attendance',
+    'counseling_session',
+    'family_planning',
+    'height',
+    'muac',
+    'nutrition',
+    'participant_consent',
+    'photo',
+    'weight',
+  ]);
+
+  $query->fields('n', ['nid']);
+  $query->fields('s', ['field_shards_target_id']);
+
+  $result = $query->execute();
+  $measurement = [];
+
+  // Group the resulting shards by the nid of the sharded node.
+  foreach ($result as $record) {
+    if (empty($measurement[$record->nid])) {
+      $measurement[$record->nid] = [];
+    }
+
+    if (!empty($record->field_shards_target_id)) {
+      $measurement[$record->nid][] = $record->field_shards_target_id;
+    }
+  }
+
+  // For each sharded node, check whether we need to update it.
+  foreach ($measurement as $key => $value) {
+    sort($value);
+    if ($value != $shards) {
+      $wrapper = entity_metadata_wrapper('node', $key);
+      $wrapper->field_shards->set($shards);
+      $wrapper->save();
+    }
+  }
+}

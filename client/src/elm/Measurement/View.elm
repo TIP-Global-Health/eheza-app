@@ -3,11 +3,15 @@ module Measurement.View exposing (viewChild, viewMother, viewMuacIndication)
 {-| This module provides a form for entering measurements.
 -}
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
-import Backend.Child.Model exposing (Child, Gender)
+import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
+import AllDictList
+import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
+import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (applyEdit, mapMeasurementData, muacIndication)
+import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData, muacIndication)
+import Backend.Person.Model exposing (Gender, Person)
+import Backend.Session.Model exposing (EditableSession)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
@@ -20,9 +24,11 @@ import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
 import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
+import Restful.Endpoint exposing (fromEntityUuid)
 import Round
-import Translate as Trans exposing (Language(..), TranslationId, translate)
-import Utils.Html exposing (script)
+import Translate as Trans exposing (Language, TranslationId, translate)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
+import Utils.Html exposing (script, viewModal)
 import Utils.NominalDate exposing (Days(..), diffDays)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
 import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
@@ -31,36 +37,33 @@ import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeight
 {-| We need the current date in order to immediately construct a ZScore for the
 child when we enter something.
 -}
-viewChild : Language -> NominalDate -> Child -> ChildActivityType -> MeasurementData ChildMeasurements ChildEdits -> ZScore.Model.Model -> ModelChild -> Html MsgChild
-viewChild language currentDate child activity measurements zscores model =
+viewChild : Language -> NominalDate -> Person -> ChildActivity -> MeasurementData ChildMeasurements -> ZScore.Model.Model -> EditableSession -> ModelChild -> Html MsgChild
+viewChild language currentDate child activity measurements zscores session model =
     case activity of
         ChildPicture ->
-            viewPhoto language (mapMeasurementData (Maybe.map Tuple.second << .photo) .photo measurements) model.photo
+            viewPhoto language (mapMeasurementData .photo measurements) model.photo
 
         Height ->
-            viewHeight language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .height) .height measurements) zscores model
+            viewHeight language currentDate child (mapMeasurementData .height measurements) zscores model
 
         Muac ->
-            viewMuac language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .muac) .muac measurements) zscores model
+            viewMuac language currentDate child (mapMeasurementData .muac measurements) zscores model
 
         NutritionSigns ->
-            viewNutritionSigns language (mapMeasurementData (Maybe.map Tuple.second << .nutrition) .nutrition measurements) model.nutritionSigns
+            viewNutritionSigns language (mapMeasurementData .nutrition measurements) model.nutritionSigns
 
+        -- Counseling ->
+        --    viewCounselingSession language (mapMeasurementData .counselingSession measurements) session model.counseling
         Weight ->
-            viewWeight language currentDate child (mapMeasurementData (Maybe.map Tuple.second << .weight) .weight measurements) zscores model
-
-        ProgressReport ->
-            -- TODO: Show something here? Possibly with a button to indicate that we've completed the "activity"
-            -- of showing the mother the progress report?
-            emptyNode
+            viewWeight language currentDate child (mapMeasurementData .weight measurements) zscores model
 
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
 different types of `Float` inputs.
 -}
-type alias FloatFormConfig value =
+type alias FloatFormConfig id value =
     { blockName : String
-    , activity : ActivityType
+    , activity : Activity
     , placeholderText : TranslationId
     , zScoreLabelForAge : TranslationId
     , zScoreForAge : Maybe (ZScore.Model.Model -> Days -> Gender -> Float -> Maybe ZScore)
@@ -72,11 +75,11 @@ type alias FloatFormConfig value =
     , dateMeasured : value -> NominalDate
     , viewIndication : Maybe (Language -> Float -> Html MsgChild)
     , updateMsg : String -> MsgChild
-    , saveMsg : Float -> MsgChild
+    , saveMsg : Maybe id -> Float -> MsgChild
     }
 
 
-heightFormConfig : FloatFormConfig Height
+heightFormConfig : FloatFormConfig HeightId Height
 heightFormConfig =
     { blockName = "height"
     , activity = ChildActivity Height
@@ -91,11 +94,11 @@ heightFormConfig =
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateHeight
-    , saveMsg = SendOutMsgChild << SaveHeight << HeightInCm
+    , saveMsg = \id value -> SendOutMsgChild <| SaveHeight id (HeightInCm value)
     }
 
 
-muacFormConfig : FloatFormConfig Muac
+muacFormConfig : FloatFormConfig MuacId Muac
 muacFormConfig =
     { blockName = "muac"
     , activity = ChildActivity Muac
@@ -110,11 +113,11 @@ muacFormConfig =
     , dateMeasured = .dateMeasured
     , viewIndication = Just <| \language val -> viewMuacIndication language (muacIndication (MuacInCm val))
     , updateMsg = UpdateMuac
-    , saveMsg = SendOutMsgChild << SaveMuac << MuacInCm
+    , saveMsg = \id value -> SendOutMsgChild <| SaveMuac id (MuacInCm value)
     }
 
 
-weightFormConfig : FloatFormConfig Weight
+weightFormConfig : FloatFormConfig WeightId Weight
 weightFormConfig =
     { blockName = "weight"
     , activity = ChildActivity Weight
@@ -129,7 +132,7 @@ weightFormConfig =
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateWeight
-    , saveMsg = SendOutMsgChild << SaveWeight << WeightInKg
+    , saveMsg = \id value -> SendOutMsgChild <| SaveWeight id (WeightInKg value)
     }
 
 
@@ -142,22 +145,22 @@ zScoreForHeightOrLength model (Days days) (Centimetres cm) gender weight =
         zScoreWeightForHeight model (ZScore.Model.Height cm) gender (Kilograms weight)
 
 
-viewHeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Height) (Edit Height) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewHeight : Language -> NominalDate -> Person -> MeasurementData (Maybe ( HeightId, Height )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewHeight =
     viewFloatForm heightFormConfig
 
 
-viewWeight : Language -> NominalDate -> Child -> MeasurementData (Maybe Weight) (Edit Weight) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewWeight : Language -> NominalDate -> Person -> MeasurementData (Maybe ( WeightId, Weight )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewWeight =
     viewFloatForm weightFormConfig
 
 
-viewMuac : Language -> NominalDate -> Child -> MeasurementData (Maybe Muac) (Edit Muac) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewMuac : Language -> NominalDate -> Person -> MeasurementData (Maybe ( MuacId, Muac )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewMuac =
     viewFloatForm muacFormConfig
 
 
-viewFloatForm : FloatFormConfig value -> Language -> NominalDate -> Child -> MeasurementData (Maybe value) (Edit value) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewFloatForm : FloatFormConfig id value -> Language -> NominalDate -> Person -> MeasurementData (Maybe ( id, value )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewFloatForm config language currentDate child measurements zscores model =
     let
         -- What is the string input value from the form?
@@ -191,7 +194,6 @@ viewFloatForm config language currentDate child measurements zscores model =
         -- measurement we haven't saved yet, this will be Nothing.
         savedMeasurement =
             measurements.current
-                |> applyEdit measurements.edits
 
         -- What measurement should we be comparing to? That is, what's the most
         -- recent measurement of this kind that we're **not** editing?
@@ -210,12 +212,14 @@ viewFloatForm config language currentDate child measurements zscores model =
         -- to change that if necessary.
         dateMeasured =
             savedMeasurement
-                |> Maybe.map config.dateMeasured
+                |> Maybe.map (Tuple.second >> config.dateMeasured)
                 |> Maybe.withDefault currentDate
 
         -- And, we'll need the child's age.
-        ageInDays =
-            diffDays child.birthDate dateMeasured
+        maybeAgeInDays =
+            Maybe.map
+                (\birthDate -> diffDays birthDate dateMeasured)
+                child.birthDate
 
         renderedZScoreForAge =
             config.zScoreForAge
@@ -224,7 +228,14 @@ viewFloatForm config language currentDate child measurements zscores model =
                         let
                             zScoreText =
                                 floatValue
-                                    |> Maybe.andThen (\val -> zScoreForAge zscores ageInDays child.gender val)
+                                    |> Maybe.andThen
+                                        (\val ->
+                                            Maybe.andThen
+                                                (\ageInDays ->
+                                                    zScoreForAge zscores ageInDays child.gender val
+                                                )
+                                                maybeAgeInDays
+                                        )
                                     |> Maybe.map viewZScore
                                     |> Maybe.withDefault (translate language Trans.NotAvailable)
                         in
@@ -257,7 +268,13 @@ viewFloatForm config language currentDate child measurements zscores model =
                                     |> Maybe.andThen
                                         (\height ->
                                             Maybe.andThen
-                                                (\weight -> func zscores ageInDays (Centimetres height) child.gender weight)
+                                                (\weight ->
+                                                    Maybe.andThen
+                                                        (\ageInDays ->
+                                                            func zscores ageInDays (Centimetres height) child.gender weight
+                                                        )
+                                                        maybeAgeInDays
+                                                )
                                                 floatValue
                                         )
                                     |> Maybe.map viewZScore
@@ -299,7 +316,7 @@ viewFloatForm config language currentDate child measurements zscores model =
                         [ class "five wide column" ]
                         [ showMaybe <|
                             Maybe.map2 (viewFloatDiff config language)
-                                measurements.previous
+                                (Maybe.map Tuple.second measurements.previous)
                                 floatValue
                         , showMaybe <|
                             Maybe.map2 (\func value -> func language value)
@@ -308,7 +325,7 @@ viewFloatForm config language currentDate child measurements zscores model =
                         ]
                     ]
                 , previousMeasurement
-                    |> Maybe.map (viewPreviousMeasurement config language)
+                    |> Maybe.map (Tuple.second >> viewPreviousMeasurement config language)
                     |> showMaybe
                 ]
             , showMaybe renderedZScoreForAge
@@ -316,7 +333,7 @@ viewFloatForm config language currentDate child measurements zscores model =
             ]
         , div [ class "actions" ] <|
             saveButton language
-                (Maybe.map config.saveMsg floatValue)
+                (Maybe.map (config.saveMsg (Maybe.map Tuple.first measurements.current)) floatValue)
                 measurements
                 Nothing
         ]
@@ -350,18 +367,18 @@ viewMuacIndication language muac =
 
 {-| Show a photo thumbnail.
 -}
-viewPhotoThumb : PhotoValue -> Html any
-viewPhotoThumb photo =
+viewPhotoThumb : PhotoUrl -> Html any
+viewPhotoThumb (PhotoUrl url) =
     div []
         [ img
-            [ src photo.url
+            [ src url
             , class "ui small image"
             ]
             []
         ]
 
 
-viewPreviousMeasurement : FloatFormConfig value -> Language -> value -> Html any
+viewPreviousMeasurement : FloatFormConfig id value -> Language -> value -> Html any
 viewPreviousMeasurement config language previousValue =
     [ previousValue
         |> config.storedValue
@@ -376,7 +393,7 @@ viewPreviousMeasurement config language previousValue =
 
 {-| Show a diff of values, if they were gained or lost.
 -}
-viewFloatDiff : FloatFormConfig value -> Language -> value -> Float -> Html any
+viewFloatDiff : FloatFormConfig id value -> Language -> value -> Float -> Html any
 viewFloatDiff config language previousValue currentValue =
     let
         previousFloatValue =
@@ -412,11 +429,26 @@ viewFloatDiff config language previousValue currentValue =
         viewMessage False
 
 
-viewPhoto : Language -> MeasurementData (Maybe Photo) (Edit Photo) -> Maybe PhotoValue -> Html MsgChild
+viewPhoto : Language -> MeasurementData (Maybe ( PhotoId, Photo )) -> Maybe PhotoUrl -> Html MsgChild
 viewPhoto language measurement photo =
     let
         activity =
             ChildActivity ChildPicture
+
+        photoId =
+            Maybe.map Tuple.first measurement.current
+
+        -- If we have a photo that we've just taken, but not saved, that is in
+        -- `photo`. We show that if we have it. Otherwise, we'll show the saved
+        -- measurement, if we have that.
+        displayPhoto =
+            case photo of
+                Just url ->
+                    Just url
+
+                Nothing ->
+                    Maybe.map (Tuple.second >> .value)
+                        measurement.current
     in
     divKeyed
         [ class "ui full segment photo" ]
@@ -430,7 +462,7 @@ viewPhoto language measurement photo =
                 |> keyed "help"
             , keyedDivKeyed "grid"
                 [ class "ui grid" ]
-                [ Maybe.map viewPhotoThumb photo
+                [ Maybe.map viewPhotoThumb displayPhoto
                     |> showMaybe
                     |> List.singleton
                     |> div [ class "eight wide column" ]
@@ -460,7 +492,7 @@ viewPhoto language measurement photo =
         , keyed "button" <|
             div [ class "actions" ] <|
                 saveButton language
-                    (Maybe.map (SendOutMsgChild << SavePhoto) photo)
+                    (Maybe.map (SendOutMsgChild << SavePhoto photoId) photo)
                     measurement
                     (Just "column")
         ]
@@ -472,7 +504,7 @@ Button will also take care of preventing double submission,
 and showing success and error indications.
 
 -}
-saveButton : Language -> Maybe msg -> MeasurementData (Maybe a) (Edit a) -> Maybe String -> List (Html msg)
+saveButton : Language -> Maybe msg -> MeasurementData (Maybe a) -> Maybe String -> List (Html msg)
 saveButton language msg measurement maybeDivClass =
     let
         isLoading =
@@ -482,7 +514,7 @@ saveButton language msg measurement maybeDivClass =
             RemoteData.isFailure measurement.update
 
         ( updateText, errorText ) =
-            if isJust <| applyEdit measurement.edits measurement.current then
+            if isJust measurement.current then
                 ( Trans.Update, Trans.UpdateError )
 
             else
@@ -515,18 +547,21 @@ saveButton language msg measurement maybeDivClass =
     ]
 
 
-viewNutritionSigns : Language -> MeasurementData (Maybe ChildNutrition) (Edit ChildNutrition) -> EverySet ChildNutritionSign -> Html MsgChild
+viewNutritionSigns : Language -> MeasurementData (Maybe ( ChildNutritionId, ChildNutrition )) -> EverySet ChildNutritionSign -> Html MsgChild
 viewNutritionSigns language measurement signs =
     let
         activity =
             ChildActivity NutritionSigns
+
+        existingId =
+            Maybe.map Tuple.first measurement.current
 
         saveMsg =
             if EverySet.isEmpty signs then
                 Nothing
 
             else
-                Just <| SendOutMsgChild <| SaveChildNutritionSigns signs
+                Just <| SendOutMsgChild <| SaveChildNutritionSigns existingId signs
     in
     div
         [ class "ui full segment nutrition"
@@ -589,52 +624,388 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
     in
     div [ class "ui checkbox activity" ]
         [ input
-            ([ type_ "checkbox"
-             , id inputId
-             , name inputId
-             , onClick <| SelectNutritionSign (not isChecked) sign
-             , checked isChecked
-             ]
-                ++ (if isChecked then
-                        [ class "checked" ]
-
-                    else
-                        []
-                   )
-            )
+            [ type_ "checkbox"
+            , id inputId
+            , name inputId
+            , onClick <| SelectNutritionSign (not isChecked) sign
+            , checked isChecked
+            , classList [ ( "checked", isChecked ) ]
+            ]
             []
         , label [ for inputId ]
             [ text <| translate language (Trans.ChildNutritionSignLabel sign) ]
         ]
 
 
+
+{-
+   viewCounselingSession : Language -> MeasurementData (Maybe ( CounselingSessionId, CounselingSession )) -> EditableSession -> Maybe ( CounselingTiming, EverySet CounselingTopicId ) -> Html MsgChild
+   viewCounselingSession language measurement session value =
+       let
+           existingId =
+               Maybe.map Tuple.first measurement.current
+       in
+       case value of
+           Nothing ->
+               emptyNode
+
+           Just ( timing, topics ) ->
+               let
+                   activity =
+                       ChildActivity Counseling
+
+                   allTopicsChecked =
+                       AllDictList.all
+                           (\id _ -> EverySet.member id topics)
+                           expected
+
+                   completed =
+                       isJust measurement.current
+
+                   -- For counseling sessions, we don't allow saves unless all the
+                   -- topics are checked. Also, we don't allow an update if the
+                   -- activity has been completed. That is, once the nurse says the
+                   -- counseling session is done, the nurse cannot correct that.
+                   saveMsg =
+                       if allTopicsChecked && not completed then
+                           SaveCounselingSession existingId timing topics
+                               |> SendOutMsgChild
+                               |> Just
+
+                       else
+                           Nothing
+
+                   expected =
+                       session.offlineSession.everyCounselingSchedule
+                           |> AllDict.get timing
+                           |> Maybe.withDefault EntityUuidDictList.empty
+               in
+               div
+                   [ class "ui full segment counseling"
+                   , id "counselingSessionEntryForm"
+                   ]
+                   [ div [ class "content" ]
+                       [ h3 [ class "ui header" ]
+                           [ text <| translate language (Trans.ActivitiesTitle activity)
+                           ]
+                       , h3 [ class "ui header" ]
+                           [ text <| translate language (Trans.CounselingTimingHeading timing)
+                           ]
+                       , div [ class "ui form" ] <|
+                           p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
+                               :: viewCounselingTopics language completed expected topics
+                       ]
+                   , div [ class "actions" ] <|
+                       saveButton
+                           language
+                           saveMsg
+                           measurement
+                           Nothing
+                   ]
+-}
+
+
+viewCounselingTopics : Language -> Bool -> EntityUuidDictList CounselingTopicId CounselingTopic -> EverySet CounselingTopicId -> List (Html MsgChild)
+viewCounselingTopics language completed expectedTopics selectedTopics =
+    expectedTopics
+        |> AllDictList.map
+            (\topicId topic ->
+                let
+                    inputId =
+                        "counseling-checkbox-" ++ fromEntityUuid topicId
+
+                    isChecked =
+                        EverySet.member topicId selectedTopics
+                in
+                div
+                    [ class "ui checkbox activity" ]
+                    [ input
+                        [ type_ "checkbox"
+                        , id inputId
+                        , name inputId
+                        , onClick <| SelectCounselingTopic (not isChecked) topicId
+                        , checked isChecked
+                        , classList [ ( "checked", isChecked ) ]
+                        , disabled completed
+                        ]
+                        []
+                    , label
+                        [ for inputId ]
+                        [ text <| translate language (Trans.CounselingTopic topic) ]
+                    ]
+            )
+        |> AllDictList.values
+
+
 type alias MotherMeasurementData =
     { previous : MotherMeasurements
     , current : MotherMeasurements
-    , edits : MotherEdits
     , status : WebData ()
     }
 
 
-viewMother : Language -> MotherActivityType -> MeasurementData MotherMeasurements MotherEdits -> ModelMother -> Html MsgMother
+viewMother : Language -> MotherActivity -> MeasurementData MotherMeasurements -> ModelMother -> Html MsgMother
 viewMother language activity measurements model =
     case activity of
         FamilyPlanning ->
-            viewFamilyPlanning language (mapMeasurementData (Maybe.map Tuple.second << .familyPlanning) .familyPlanning measurements) model.familyPlanningSigns
+            viewFamilyPlanning language (mapMeasurementData .familyPlanning measurements) model.familyPlanningSigns
 
 
-viewFamilyPlanning : Language -> MeasurementData (Maybe FamilyPlanning) (Edit FamilyPlanning) -> EverySet FamilyPlanningSign -> Html MsgMother
+
+-- ParticipantConsent ->
+--    viewParticipantConsent language (mapMeasurementData .consent measurements) model.participantConsent
+{-
+   viewParticipantConsent : Language -> MeasurementData (EntityUuidDictList ParticipantConsentId ParticipantConsent) -> ParticipantFormUI -> Html MsgMother
+   viewParticipantConsent language measurement ui =
+       let
+           activity =
+               MotherActivity ParticipantConsent
+
+           viewParticipantForm formId form =
+               let
+                   completed =
+                       EverySet.member formId completedFormIds
+
+                   iconVisibility =
+                       if completed then
+                           "visible"
+
+                       else
+                           "hidden"
+               in
+               div
+                   [ class "item"
+                   , onClick <| ViewParticipantForm <| Just formId
+                   ]
+                   [ div
+                       [ class "ui image icon-item icon-item-forms"
+                       , style [ ( "height", "140px" ), ( "width", "140px" ) ]
+                       ]
+                       []
+                   , div
+                       [ class "middle aligned content" ]
+                       [ div
+                           [ style [ ( "float", "right" ) ] ]
+                           [ i
+                               [ class "icon check circle outline green large"
+                               , style [ ( "visibility", iconVisibility ) ]
+                               ]
+                               []
+                           ]
+                       , div
+                           [ class "consent-form-list" ]
+                           [ text <| selectLanguage language form.title ]
+                       ]
+                   ]
+
+           viewFormList expected =
+               let
+                   completedLast =
+                       expected
+                           |> AllDictList.partition (\id _ -> EverySet.member id completedFormIds)
+                           |> (\( completed, todo ) -> AllDictList.union todo completed)
+               in
+               div
+                   [ class "ui full segment participant-consent"
+                   , id "participantConsentForm"
+                   ]
+                   [ div [ class "content" ]
+                       [ h3
+                           [ class "ui header" ]
+                           [ text <| translate language (Trans.ActivitiesTitle activity)
+                           ]
+                       , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+                       , completedLast
+                           |> AllDictList.map viewParticipantForm
+                           |> AllDictList.values
+                           |> div [ class "ui items" ]
+                       ]
+                   ]
+
+           completedFormIds =
+               currentValues measurement
+                   |> List.map (Tuple.second >> .value >> .formId)
+                   |> EverySet.fromList
+
+           viewForm formId expected =
+               let
+                   backIcon =
+                       a
+                           [ class "icon-back"
+                           , onClick <| ViewParticipantForm Nothing
+                           ]
+                           []
+
+                   completed =
+                       EverySet.member formId completedFormIds
+
+                   form =
+                       AllDictList.get formId expected
+
+                   progress =
+                       AllDict.get formId ui.progress
+                           |> Maybe.withDefault emptyParticipantFormProgress
+
+                   progressCompleted =
+                       progress.participantSigned && progress.counselorSigned
+
+                   titleText =
+                       Maybe.map (selectLanguage language << .title) form
+                           |> Maybe.withDefault ""
+
+                   title =
+                       h1
+                           [ class "ui report header"
+                           , style
+                               [ ( "padding-left", "60px" )
+                               , ( "padding-right", "60px" )
+                               ]
+                           ]
+                           [ text titleText ]
+
+                   body =
+                       Maybe.map (toVirtualDom << .parsed << selectLanguage language << .body) form
+                           |> Maybe.withDefault []
+                           |> div []
+
+                   counselorReviewed =
+                       div [ class "ui checkbox activity" ]
+                           [ input
+                               [ type_ "checkbox"
+                               , id "counselor-reviewed"
+                               , name "counselor-reviewed"
+                               , onClick <| SetCounselorSigned formId (not progress.counselorSigned)
+                               , checked progress.counselorSigned
+                               , classList [ ( "checked", progress.counselorSigned ) ]
+                               , disabled completed
+                               ]
+                               []
+                           , label
+                               [ for "counselor-reviewed" ]
+                               [ text <| translate language Trans.CounselorReviewed ]
+                           ]
+
+                   participantReviewed =
+                       div [ class "ui checkbox activity" ]
+                           [ input
+                               [ type_ "checkbox"
+                               , id "participant-reviewed"
+                               , name "participant-reviewed"
+                               , onClick <| SetParticipantSigned formId (not progress.participantSigned)
+                               , checked progress.participantSigned
+                               , classList [ ( "checked", progress.participantSigned ) ]
+                               , disabled completed
+                               ]
+                               []
+                           , label
+                               [ for "participant-reviewed" ]
+                               [ text <| translate language Trans.ParticipantReviewed ]
+                           ]
+
+                   msg =
+                       if completed || not progressCompleted then
+                           Nothing
+
+                       else
+                           -- If the form has already been consented to (i.e.
+                           -- completed), we don't allow any edits. So, if we get
+                           -- here, we don't have a current ParticipantConsentId
+                           -- to supply -- it's always new.
+                           SaveCompletedForm Nothing formId language
+                               |> SendOutMsgMother
+                               |> Just
+
+                   isLoading =
+                       measurement.update == Loading
+
+                   isFailure =
+                       RemoteData.isFailure measurement.update
+
+                   ( updateText, errorText ) =
+                       if EverySet.member formId completedFormIds then
+                           ( Trans.Update, Trans.UpdateError )
+
+                       else
+                           ( Trans.Save, Trans.SaveError )
+
+                   saveAttr =
+                       if isLoading then
+                           []
+
+                       else
+                           Maybe.map onClick msg
+                               |> Maybe.Extra.toList
+
+                   saveButton =
+                       [ button
+                           ([ classList
+                               [ ( "ui fluid primary button", True )
+                               , ( "loading", isLoading )
+                               , ( "negative", isFailure )
+                               , ( "disabled", Maybe.Extra.isNothing msg )
+                               ]
+                            , id "save-form"
+                            ]
+                               ++ saveAttr
+                           )
+                           [ text <| translate language updateText
+                           ]
+                       , [ text <| translate language errorText ]
+                           |> div []
+                           |> showIf isFailure
+                       ]
+               in
+               viewModal <|
+                   Just <|
+                       divKeyed
+                           [ class "page-form" ]
+                           [ div
+                               [ class "wrap-form"
+                               ]
+                               [ div
+                                   [ class "form-title" ]
+                                   [ backIcon
+                                   , title
+                                   ]
+                               , div
+                                   [ class "form-body" ]
+                                   [ body
+                                   , hr [] []
+                                   , h2 [] [ text <| translate language Trans.ParticipantSignature ]
+                                   , participantReviewed
+                                   , h2 [] [ text <| translate language Trans.CounselorSignature ]
+                                   , counselorReviewed
+                                   ]
+                               , div [ class "actions" ] saveButton
+                               ]
+                               -- Use keys to force the browser to re-scroll when we switch forms.
+                               |> keyed ("consent-form-" ++ fromEntityUuid formId)
+                           ]
+       in
+       case ui.view of
+           Nothing ->
+               viewFormList ui.expected
+
+           Just formId ->
+               viewForm formId ui.expected
+-}
+
+
+viewFamilyPlanning : Language -> MeasurementData (Maybe ( FamilyPlanningId, FamilyPlanning )) -> EverySet FamilyPlanningSign -> Html MsgMother
 viewFamilyPlanning language measurement signs =
     let
         activity =
             MotherActivity FamilyPlanning
+
+        existingId =
+            Maybe.map Tuple.first measurement.current
 
         saveMsg =
             if EverySet.isEmpty signs then
                 Nothing
 
             else
-                Just <| SendOutMsgMother <| SaveFamilyPlanningSigns signs
+                Just <| SendOutMsgMother <| SaveFamilyPlanningSigns existingId signs
     in
     div
         [ class "ui full segment family-planning"

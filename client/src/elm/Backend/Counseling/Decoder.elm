@@ -1,0 +1,90 @@
+module Backend.Counseling.Decoder exposing (combineCounselingSchedules, decodeCounselingSchedule, decodeCounselingTiming, decodeCounselingTopic)
+
+import AllDict
+import AllDictList
+import Backend.Counseling.Model exposing (..)
+import Backend.Entities exposing (..)
+import EveryDict
+import Json.Decode exposing (..)
+import Json.Decode.Pipeline exposing (..)
+import Restful.Endpoint exposing (decodeEntityUuid)
+import Translate.Model exposing (TranslationSet)
+import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
+
+
+decodeCounselingTopic : Decoder CounselingTopic
+decodeCounselingTopic =
+    decode TranslationSet
+        |> required "label" string
+        |> required "kinyarwanda_title" (maybe string)
+
+
+decodeCounselingTiming : Decoder CounselingTiming
+decodeCounselingTiming =
+    andThen
+        (\s ->
+            case s of
+                "entry" ->
+                    succeed Entry
+
+                "before-midpoint" ->
+                    succeed BeforeMidpoint
+
+                "midpoint" ->
+                    succeed MidPoint
+
+                "before-exit" ->
+                    succeed BeforeExit
+
+                "exit" ->
+                    succeed Exit
+
+                _ ->
+                    fail <|
+                        s
+                            ++ " is not a recognized CounselingTiming"
+        )
+        string
+
+
+decodeCounselingSchedule : Decoder CounselingSchedule
+decodeCounselingSchedule =
+    decode CounselingSchedule
+        |> required "timing" decodeCounselingTiming
+        |> required "topics" (list decodeEntityUuid)
+
+
+{-| Combines multiple counseling schedule entities into a dictionary keyed by
+the timing. Multiple entities with the same timing are combined.
+-}
+combineCounselingSchedules : EntityUuidDict CounselingTopicId CounselingTopic -> List CounselingSchedule -> EveryCounselingSchedule
+combineCounselingSchedules allTopics =
+    let
+        go schedule =
+            let
+                -- Add the values to the ids, from our master list of all topics
+                newTopics =
+                    schedule.topics
+                        |> List.filterMap
+                            (\id ->
+                                AllDict.get id allTopics
+                                    |> Maybe.map (\value -> ( id, value ))
+                            )
+                        |> EntityUuidDictList.fromList
+            in
+            EveryDict.update schedule.timing
+                (\existingTopics ->
+                    case existingTopics of
+                        Just existing ->
+                            -- This combines topics in the (unexpected) case
+                            -- where we have more than one schedule for a
+                            -- timing.
+                            Just <|
+                                AllDictList.union existing newTopics
+
+                        Nothing ->
+                            Just newTopics
+                )
+    in
+    List.foldl go EveryDict.empty

@@ -8,17 +8,13 @@
 /**
  * Class HedleyRestfulActivityBase.
  */
-abstract class HedleyRestfulActivityBase extends HedleyRestfulEntityBaseNode {
+abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
 
   /**
    * {@inheritdoc}
    */
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
-
-    $public_fields['type'] = [
-      'callback' => 'static::getType',
-    ];
 
     $public_fields['date_measured'] = [
       'property' => 'field_date_measured',
@@ -27,15 +23,18 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulEntityBaseNode {
       ],
     ];
 
+    $public_fields['nurse'] = [
+      'property' => 'field_nurse',
+      'sub_property' => 'field_uuid',
+    ];
+
     $public_fields['session'] = [
       'property' => 'field_session',
-      'resource' => [
-        'session' => [
-          'name' => 'sessions',
-          'full_view' => FALSE,
-        ],
-      ],
+      'sub_property' => 'field_uuid',
     ];
+
+    // The label is purely decorative.
+    unset($public_fields['label']);
 
     return $public_fields;
   }

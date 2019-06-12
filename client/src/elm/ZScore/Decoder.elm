@@ -1,7 +1,7 @@
 module ZScore.Decoder exposing (decodeForAge, decodeForCentimetres)
 
 import AllDict exposing (AllDict)
-import Backend.Child.Model exposing (Gender(..))
+import Backend.Person.Model exposing (Gender(..))
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import ZScore.Model exposing (..)

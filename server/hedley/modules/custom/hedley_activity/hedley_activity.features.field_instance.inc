@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * hedley_activity.features.field_instance.inc
@@ -9,6 +10,314 @@
  */
 function hedley_activity_field_default_field_instances() {
   $field_instances = array();
+
+  // Exported field_instance: 'node-attendance-field_attended'.
+  $field_instances['node-attendance-field_attended'] = array(
+    'bundle' => 'attendance',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Has the mother attended for this session?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_attended',
+    'label' => 'Attended',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance: 'node-attendance-field_date_measured'.
+  $field_instances['node-attendance-field_date_measured'] = array(
+    'bundle' => 'attendance',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 2,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_date_measured',
+    'label' => 'Date Measured',
+    'required' => 1,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 4,
+    ),
+  );
+
+  // Exported field_instance: 'node-attendance-field_nurse'.
+  $field_instances['node-attendance-field_nurse'] = array(
+    'bundle' => 'attendance',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 3,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance: 'node-attendance-field_person'.
+  $field_instances['node-attendance-field_person'] = array(
+    'bundle' => 'attendance',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_person',
+    'label' => 'Person',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance: 'node-attendance-field_session'.
+  $field_instances['node-attendance-field_session'] = array(
+    'bundle' => 'attendance',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 4,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_session',
+    'label' => 'Group Encounter',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance: 'node-attendance-field_shards'.
+  $field_instances['node-attendance-field_shards'] = array(
+    'bundle' => 'attendance',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'This field will be calculated -- you can leave it blank.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_shards',
+    'label' => 'Shards',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance: 'node-attendance-field_uuid'.
+  $field_instances['node-attendance-field_uuid'] = array(
+    'bundle' => 'attendance',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 5,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 7,
+    ),
+  );
 
   // Exported field_instance: 'node-family_planning-field_date_measured'.
   $field_instances['node-family_planning-field_date_measured'] = array(
@@ -61,7 +370,7 @@ function hedley_activity_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 2,
+      'weight' => 4,
     ),
   );
 
@@ -99,7 +408,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => -1,
+      'weight' => 1,
     ),
   );
 
@@ -130,6 +439,94 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_mother',
     'label' => 'Mother',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-family_planning-field_nurse'.
+  $field_instances['node-family_planning-field_nurse'] = array(
+    'bundle' => 'family_planning',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance: 'node-family_planning-field_person'.
+  $field_instances['node-family_planning-field_person'] = array(
+    'bundle' => 'family_planning',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_person',
+    'label' => 'Person',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -143,7 +540,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 3,
     ),
   );
 
@@ -173,7 +570,7 @@ function hedley_activity_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_session',
-    'label' => 'Session',
+    'label' => 'Group Encounter',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -187,7 +584,90 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance: 'node-family_planning-field_shards'.
+  $field_instances['node-family_planning-field_shards'] = array(
+    'bundle' => 'family_planning',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'This field will be calculated -- you can leave it blank.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_shards',
+    'label' => 'Shards',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 9,
+    ),
+  );
+
+  // Exported field_instance: 'node-family_planning-field_uuid'.
+  $field_instances['node-family_planning-field_uuid'] = array(
+    'bundle' => 'family_planning',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => FALSE,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 7,
     ),
   );
 
@@ -218,7 +698,7 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_child',
     'label' => 'Child',
-    'required' => 1,
+    'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
     ),
@@ -231,7 +711,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -321,7 +801,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Height',
     'required' => 1,
     'settings' => array(
-      'max' => '',
+      'max' => 300,
       'min' => 0,
       'prefix' => '',
       'suffix' => 'cm',
@@ -332,6 +812,94 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
+      'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance: 'node-height-field_nurse'.
+  $field_instances['node-height-field_nurse'] = array(
+    'bundle' => 'height',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance: 'node-height-field_person'.
+  $field_instances['node-height-field_person'] = array(
+    'bundle' => 'height',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_person',
+    'label' => 'Person',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
       'weight' => 2,
     ),
   );
@@ -362,7 +930,7 @@ function hedley_activity_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_session',
-    'label' => 'Session',
+    'label' => 'Group Encounter',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -377,6 +945,90 @@ function hedley_activity_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance: 'node-height-field_shards'.
+  $field_instances['node-height-field_shards'] = array(
+    'bundle' => 'height',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'This field will be calculated -- you can leave it blank.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_shards',
+    'label' => 'Shards',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 10,
+    ),
+  );
+
+  // Exported field_instance: 'node-height-field_uuid'.
+  $field_instances['node-height-field_uuid'] = array(
+    'bundle' => 'height',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 8,
     ),
   );
 
@@ -421,7 +1073,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 8,
+      'weight' => 7,
     ),
   );
 
@@ -452,7 +1104,7 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_child',
     'label' => 'Child',
-    'required' => 1,
+    'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
     ),
@@ -520,7 +1172,7 @@ function hedley_activity_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 8,
+      'weight' => 4,
     ),
   );
 
@@ -555,8 +1207,8 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'MUAC',
     'required' => 1,
     'settings' => array(
-      'max' => '',
-      'min' => '',
+      'max' => 200,
+      'min' => 0,
       'prefix' => '',
       'suffix' => '',
       'user_register_form' => FALSE,
@@ -566,7 +1218,95 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 6,
+      'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance: 'node-muac-field_nurse'.
+  $field_instances['node-muac-field_nurse'] = array(
+    'bundle' => 'muac',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance: 'node-muac-field_person'.
+  $field_instances['node-muac-field_person'] = array(
+    'bundle' => 'muac',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_person',
+    'label' => 'Person',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 2,
     ),
   );
 
@@ -596,7 +1336,7 @@ function hedley_activity_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_session',
-    'label' => 'Session',
+    'label' => 'Group Encounter',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -610,7 +1350,90 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 10,
+      'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance: 'node-muac-field_shards'.
+  $field_instances['node-muac-field_shards'] = array(
+    'bundle' => 'muac',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'This field will be calculated -- you can leave it blank.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_shards',
+    'label' => 'Shards',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 9,
+    ),
+  );
+
+  // Exported field_instance: 'node-muac-field_uuid'.
+  $field_instances['node-muac-field_uuid'] = array(
+    'bundle' => 'muac',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => FALSE,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 7,
     ),
   );
 
@@ -641,7 +1464,7 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_child',
     'label' => 'Child',
-    'required' => 1,
+    'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
     ),
@@ -654,7 +1477,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -709,6 +1532,50 @@ function hedley_activity_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
+      'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance: 'node-nutrition-field_nurse'.
+  $field_instances['node-nutrition-field_nurse'] = array(
+    'bundle' => 'nutrition',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
       'weight' => 4,
     ),
   );
@@ -750,6 +1617,50 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-nutrition-field_person'.
+  $field_instances['node-nutrition-field_person'] = array(
+    'bundle' => 'nutrition',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_person',
+    'label' => 'Person',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 9,
+    ),
+  );
+
   // Exported field_instance: 'node-nutrition-field_session'.
   $field_instances['node-nutrition-field_session'] = array(
     'bundle' => 'nutrition',
@@ -776,7 +1687,7 @@ function hedley_activity_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_session',
-    'label' => 'Session',
+    'label' => 'Group Encounter',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -790,7 +1701,91 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 6,
+      'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance: 'node-nutrition-field_shards'.
+  $field_instances['node-nutrition-field_shards'] = array(
+    'bundle' => 'nutrition',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'This field will be calculated -- you can leave it blank.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_shards',
+    'label' => 'Shards',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 11,
+    ),
+  );
+
+  // Exported field_instance: 'node-nutrition-field_uuid'.
+  $field_instances['node-nutrition-field_uuid'] = array(
+    'bundle' => 'nutrition',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 7,
     ),
   );
 
@@ -821,7 +1816,7 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_child',
     'label' => 'Child',
-    'required' => 1,
+    'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
     ),
@@ -834,7 +1829,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -889,7 +1884,95 @@ function hedley_activity_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 3,
+      'weight' => 4,
+    ),
+  );
+
+  // Exported field_instance: 'node-photo-field_nurse'.
+  $field_instances['node-photo-field_nurse'] = array(
+    'bundle' => 'photo',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance: 'node-photo-field_person'.
+  $field_instances['node-photo-field_person'] = array(
+    'bundle' => 'photo',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_person',
+    'label' => 'Person',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 2,
     ),
   );
 
@@ -939,7 +2022,7 @@ function hedley_activity_field_default_field_instances() {
         'progress_indicator' => 'throbber',
       ),
       'type' => 'image_image',
-      'weight' => 1,
+      'weight' => 3,
     ),
   );
 
@@ -969,7 +2052,7 @@ function hedley_activity_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_session',
-    'label' => 'Session',
+    'label' => 'Group Encounter',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -983,7 +2066,91 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 5,
+      'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance: 'node-photo-field_shards'.
+  $field_instances['node-photo-field_shards'] = array(
+    'bundle' => 'photo',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'This field will be calculated -- you can leave it blank.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_shards',
+    'label' => 'Shards',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 9,
+    ),
+  );
+
+  // Exported field_instance: 'node-photo-field_uuid'.
+  $field_instances['node-photo-field_uuid'] = array(
+    'bundle' => 'photo',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 7,
     ),
   );
 
@@ -1028,7 +2195,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 5,
+      'weight' => 7,
     ),
   );
 
@@ -1059,7 +2226,7 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_child',
     'label' => 'Child',
-    'required' => 1,
+    'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
     ),
@@ -1127,7 +2294,95 @@ function hedley_activity_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 3,
+      'weight' => 4,
+    ),
+  );
+
+  // Exported field_instance: 'node-weight-field_nurse'.
+  $field_instances['node-weight-field_nurse'] = array(
+    'bundle' => 'weight',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 14,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance: 'node-weight-field_person'.
+  $field_instances['node-weight-field_person'] = array(
+    'bundle' => 'weight',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 16,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_person',
+    'label' => 'Person',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 2,
     ),
   );
 
@@ -1157,7 +2412,7 @@ function hedley_activity_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_session',
-    'label' => 'Session',
+    'label' => 'Group Encounter',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -1171,7 +2426,91 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 4,
+      'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance: 'node-weight-field_shards'.
+  $field_instances['node-weight-field_shards'] = array(
+    'bundle' => 'weight',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'This field will be calculated -- you can leave it blank.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 17,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_shards',
+    'label' => 'Shards',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 13,
+    ),
+  );
+
+  // Exported field_instance: 'node-weight-field_uuid'.
+  $field_instances['node-weight-field_uuid'] = array(
+    'bundle' => 'weight',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 15,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 11,
     ),
   );
 
@@ -1206,7 +2545,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Weight',
     'required' => 1,
     'settings' => array(
-      'max' => '',
+      'max' => 500,
       'min' => 0,
       'prefix' => '',
       'suffix' => 'kg',
@@ -1217,7 +2556,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 2,
+      'weight' => 3,
     ),
   );
 
@@ -1263,7 +2602,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 10,
+      'weight' => 8,
     ),
   );
 
@@ -1309,7 +2648,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 12,
+      'weight' => 10,
     ),
   );
 
@@ -1355,26 +2694,34 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 11,
+      'weight' => 9,
     ),
   );
 
   // Translatables
   // Included for use with string extractors like potx.
+  t('Attended');
   t('BMI');
   t('Child');
   t('Date Measured');
   t('Family Planning');
+  t('Group Encounter');
+  t('Has the mother attended for this session?');
   t('Height');
   t('MUAC');
   t('Mother');
+  t('Nurse');
   t('Nutrition Signs');
+  t('Person');
   t('Photo');
   t('Refers to the date-entry session which this measurement was taken in.');
   t('Represents the date which on which the measurement took place. This is distinct from the date which data entry was scheduled (though that would be the default). It is also distinct from the creation date of the node, since that could be different from the date the measurement took place.');
-  t('Session');
+  t('Shards');
+  t('This field will be calculated -- you can leave it blank.');
+  t('UUID');
   t('Weight');
   t('When was this measurement actually made (as opposed to scheduled, or entered)?');
+  t('You can leave the UUID blank -- it will be automatically generated.');
   t('ZScore Age');
   t('ZScore BMI');
   t('ZScore Length');

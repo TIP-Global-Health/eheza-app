@@ -33,6 +33,9 @@ var bs;
 
 var wiredep = require('wiredep').stream;
 
+const {exec} = require('child_process');
+
+
 // Deletes the directory that is used to serve the site during development
 gulp.task("clean:dev", function(cb) {
   return del(["serve"], cb);
@@ -265,6 +268,40 @@ gulp.task("serve:dev", ["build"], function () {
   });
 });
 
+// Serves on HTTPS for the Android emulator.
+gulp.task("serve:emulator", ["build", "ssl-cert"], function () {
+  bs = browserSync({
+    notify: true,
+    // tunnel: "",
+    server: {
+      baseDir: "serve"
+    },
+    https: {
+      cert: "ssl/ssl.pem",
+      key: "ssl/ssl.key"
+    }
+  });
+});
+
+// Makes an SSL certificate for ihangane.dev for the Android emulator. Just
+// run this once, and then do what is necessary to trust it.
+gulp.task("ssl-cert", function (cb) {
+  fs.access("ssl/ssl.crt", fs.constants.F_OK, (err) => {
+    if (err) {
+      // Doesn't exist, so create cert.
+      const cmdGen = "openssl req -batch -config ssl/ihangane.dev.conf -new -sha256 -newkey rsa:2048 -nodes -x509 -days 1024 -keyout ssl/ssl.key -out ssl/ssl.pem";
+      exec(cmdGen, {}, function (err, stdout, stderr) {
+        console.log(stdout);
+        console.log(stderr);
+        const cmdConvert = "openssl x509 -in ssl/ssl.pem -inform pem -out ssl/ssl.crt -outform der";
+        exec(cmdConvert, {}, cb);
+      });
+    } else {
+      // exists, so do nothing.
+      cb();
+    }
+  });
+});
 
 // These tasks will look for files that change while serving and will auto-regenerate or
 // reload the website accordingly. Update or add other files you need to be watched.
@@ -298,8 +335,8 @@ var precacheLocalDev = [
   'serve/bower_components/dropzone/dist/min/dropzone.min.css',
   'serve/bower_components/dropzone/dist/min/dropzone.min.js',
   'serve/bower_components/dexie/dist/dexie.min.js',
-  'serve/bower_components/semantic/dist/semantic.min.css',
-  'serve/bower_components/offline/offline.min.js'
+  'serve/bower_components/semantic/dist/themes/**/' + precacheFileGlob,
+  'serve/bower_components/semantic/dist/semantic.min.css'
 ];
 
 // There may be a better way to do this, but for the moment we have some
@@ -311,8 +348,8 @@ var precacheProd = [
   'dist/bower_components/dropzone/dist/min/dropzone.min.*.css',
   'dist/bower_components/dropzone/dist/min/dropzone.min.*.js',
   'dist/bower_components/dexie/dist/dexie.min.*.js',
-  'dist/bower_components/semantic/dist/semantic.min.*.css',
-  'dist/bower_components/offline/offline.min.*.js'
+  'dist/bower_components/semantic/dist/themes/**/' + precacheFileGlob,
+  'dist/bower_components/semantic/dist/semantic.min.*.css'
 ];
 
 // For offline use while developing
@@ -329,9 +366,14 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function(callback)
     skipWaiting: false,
     importScripts: [
         'bower_components/dexie/dist/dexie.min.js',
+        'uuid.js',
+        'sw.js',
+        'config.js',
         'lifecycle.js',
+        'nodes.js',
         'photos.js',
-        'rollbar.js'
+        'rollbar.js',
+        'sync.js'
     ]
   }, callback);
 });
@@ -346,14 +388,24 @@ gulp.task('pwa:prod', function (callback) {
     staticFileGlobs: precacheProd,
     stripPrefix: rootDir,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
+    clientsClaim: true,
+    skipWaiting: false,
     importScripts: [
         'bower_components/dexie/dist/dexie.min.js',
+        'uuid.js',
+        'sw.js',
+        'config.js',
         'lifecycle.js',
+        'nodes.js',
         'photos.js',
-        'rollbar.js'
+        'rollbar.js',
+        'sync.js'
     ]
   }, callback);
 });
+
+// Serve for the Android emulator, then watch.
+gulp.task("emulator", ["serve:emulator", "watch"]);
 
 // Default task, run when just writing "gulp" in the terminal
 gulp.task("default", ["serve:dev", "watch"]);

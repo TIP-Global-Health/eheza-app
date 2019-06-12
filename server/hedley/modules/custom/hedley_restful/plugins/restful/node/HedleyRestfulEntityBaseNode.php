@@ -40,6 +40,19 @@ abstract class HedleyRestfulEntityBaseNode extends \RestfulEntityBaseNode {
   }
 
   /**
+   * Convert Unix timestamp to YYYY-MM-DD.
+   *
+   * @param int $timestamp
+   *   The Unix timestamp.
+   *
+   * @return false|string
+   *   The converted timestamp.
+   */
+  protected function convertTimestampToYmd($timestamp) {
+    return date('Y-m-d', $timestamp);
+  }
+
+  /**
    * Process callback, Remove Drupal specific events from the image array.
    *
    * @param array $value
@@ -65,6 +78,33 @@ abstract class HedleyRestfulEntityBaseNode extends \RestfulEntityBaseNode {
       'height' => $value['height'],
       'styles' => $value['image_styles'],
     );
+  }
+
+  /**
+   * Process callback, Render the counseling schedule.
+   *
+   * @return mixed
+   *   The counseling schedule entities from the endpoint.
+   */
+  protected function renderCounselingSchedule() {
+    $handler = restful_get_restful_handler('counseling-schedule');
+    $handler->setAccount($this->getAccount());
+
+    return $handler->get();
+  }
+
+  /**
+   * Process callback, Render the participant forms.
+   *
+   * @return mixed
+   *   The participant form entities from the endpoint.
+   */
+  protected function renderParticipantForms() {
+    $handler = restful_get_restful_handler('participants-form');
+    $account = $this->getAccount();
+    $handler->setAccount($account);
+
+    return $handler->get();
   }
 
 }

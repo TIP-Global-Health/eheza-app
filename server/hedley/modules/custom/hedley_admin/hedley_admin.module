@@ -50,3 +50,47 @@ function hedley_admin_vbo_export_csv($variables) {
   fclose($handle);
   return $csv_output;
 }
+
+/**
+ * Implements hook_block_info().
+ */
+function hedley_admin_block_info() {
+  $blocks['ihangane_sidebar_menu'] = [
+    'info' => t('E-Heza Admin Menu'),
+    'cache' => DRUPAL_CACHE_GLOBAL,
+  ];
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function hedley_admin_block_view($delta) {
+  if ($delta != 'ihangane_sidebar_menu') {
+    return;
+  }
+
+  $query = db_select('menu_links', 'm');
+  $query->fields('m', ['link_path', 'link_title', 'options']);
+  $query->condition('menu_name', 'menu-ihangane-admin-menu');
+  $query->orderBy('weight');
+
+  $results = $query->execute()->fetchAll();
+
+  $links = [];
+  foreach ($results as $result) {
+    $links[] = l($result->link_title, $result->link_path, unserialize($result->options));
+  }
+
+  $block = [
+    'subject' => t('E-Heza Admin Menu'),
+    'content' => [
+      '#theme' => 'item_list',
+      '#items' => $links,
+      '#type' => 'ul',
+    ],
+  ];
+
+  return $block;
+}

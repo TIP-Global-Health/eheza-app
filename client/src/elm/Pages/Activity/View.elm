@@ -1,16 +1,19 @@
 module Pages.Activity.View exposing (view)
 
-import Activity.Utils exposing (childHasPendingActivity, getActivityIcon, motherHasPendingActivity, onlyCheckedIn)
+import Activity.Utils exposing (getActivityIcon)
+import AllDictList
+import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
-import EveryDict exposing (EveryDict)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
+import Lazy exposing (force)
 import List as List
+import Maybe.Extra
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
-import Pages.Activity.Utils exposing (selectParticipantForTab)
+import Pages.Session.Model
 import Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, normalizeFilter, viewNameFilter)
 import Participant.Model exposing (Participant)
 import Translate exposing (Language, translate)
@@ -25,40 +28,55 @@ thumbnailDimensions =
     }
 
 
-view : Participant id value activity msg -> Language -> NominalDate -> ZScore.Model.Model -> activity -> EditableSession -> Model id -> Html (Msg id msg)
-view config language currentDate zscores selectedActivity fullSession model =
+{-| We return the `Maybe id` because we need to indicate which participant we
+actually are generating messages for -- that is, which one did we actually
+show. It's possible that it would be better to structure this a little
+differently, by having the caller determine exactly which participant will
+be viewed. However, we "own" part of that data, so that would be a bit awkward.
+Another option would be to return the caller's `Html msg` type ... then we
+could do our own mapping. The caller would have to pass in a tag for us to
+map with, which wouldn't be a problem.
+-}
+view : Participant id value activity msg -> Language -> NominalDate -> ZScore.Model.Model -> activity -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model id -> ( Html (Msg id msg), Maybe id )
+view config language currentDate zscores selectedActivity ( sessionId, session ) pages model =
     let
-        checkedIn =
-            onlyCheckedIn fullSession
+        participants =
+            config.summarizeParticipantsForActivity selectedActivity session.offlineSession (force session.checkedIn)
+                |> applyNameFilter
+
+        applyNameFilter { pending, completed } =
+            { pending = AllDictList.filter filterParticipantNames pending
+            , completed = AllDictList.filter filterParticipantNames completed
+            }
+
+        filterParticipantNames _ participant =
+            participant
+                |> config.getName
+                |> matchFilter filter
 
         filter =
             normalizeFilter model.filter
-
-        ( pendingParticipants, completedParticipants ) =
-            config.getParticipants checkedIn
-                |> EveryDict.filter (\_ participant -> participant |> config.getName |> matchFilter filter)
-                |> EveryDict.partition (\id _ -> config.hasPendingActivity id selectedActivity checkedIn)
 
         activityDescription =
             div
                 [ class "ui unstackable items" ]
                 [ div [ class "item" ]
                     [ div [ class "ui image" ]
-                        [ span [ class <| "icon-item icon-item-" ++ getActivityIcon (config.tagActivityType selectedActivity) ] [] ]
+                        [ span [ class <| "icon-item icon-item-" ++ getActivityIcon (config.tagActivity selectedActivity) ] [] ]
                     , div [ class "content" ]
-                        [ p [] [ text <| translate language <| Translate.ActivitiesHelp <| config.tagActivityType selectedActivity ] ]
+                        [ p [] [ text <| translate language <| Translate.ActivitiesHelp <| config.tagActivity selectedActivity ] ]
                     ]
                 ]
 
         tabs =
             let
                 pendingTabTitle =
-                    EveryDict.size pendingParticipants
+                    AllDictList.size participants.pending
                         |> Translate.ActivitiesToComplete
                         |> translate language
 
                 completedTabTitle =
-                    EveryDict.size completedParticipants
+                    AllDictList.size participants.completed
                         |> Translate.ActivitiesCompleted
                         |> translate language
             in
@@ -69,17 +87,40 @@ view config language currentDate zscores selectedActivity fullSession model =
 
         -- We compute this so that it's consistent with the tab
         selectedParticipant =
-            selectParticipantForTab config model.selectedTab selectedActivity fullSession model.selectedParticipant
+            case model.selectedTab of
+                Completed ->
+                    model.selectedParticipant
+                        |> Maybe.andThen
+                            (\participant ->
+                                if AllDictList.member participant participants.completed then
+                                    Just participant
 
-        participants =
+                                else
+                                    Nothing
+                            )
+                        |> Maybe.Extra.orElse (Maybe.map Tuple.first (AllDictList.head participants.completed))
+
+                Pending ->
+                    model.selectedParticipant
+                        |> Maybe.andThen
+                            (\participant ->
+                                if AllDictList.member participant participants.pending then
+                                    Just participant
+
+                                else
+                                    Nothing
+                            )
+                        |> Maybe.Extra.orElse (Maybe.map Tuple.first (AllDictList.head participants.pending))
+
+        participantsHtml =
             let
                 ( selectedParticipants, emptySectionMessage ) =
                     case model.selectedTab of
                         Pending ->
-                            ( pendingParticipants, filterDependentNoResultsMessage language filter Translate.NoParticipantsPendingForThisActivity )
+                            ( participants.pending, filterDependentNoResultsMessage language filter Translate.NoParticipantsPendingForThisActivity )
 
                         Completed ->
-                            ( completedParticipants, filterDependentNoResultsMessage language filter Translate.NoParticipantsCompletedForThisActivity )
+                            ( participants.completed, filterDependentNoResultsMessage language filter Translate.NoParticipantsCompletedForThisActivity )
 
                 viewParticipantCard ( participantId, participant ) =
                     let
@@ -109,13 +150,12 @@ view config language currentDate zscores selectedActivity fullSession model =
                         ]
 
                 participantsCards =
-                    if EveryDict.size selectedParticipants == 0 then
+                    if AllDictList.size selectedParticipants == 0 then
                         [ span [] [ text emptySectionMessage ] ]
 
                     else
                         selectedParticipants
-                            |> EveryDict.toList
-                            |> List.sortBy (Tuple.second >> config.getName)
+                            |> AllDictList.toList
                             |> List.map viewParticipantCard
             in
             div
@@ -131,7 +171,7 @@ view config language currentDate zscores selectedActivity fullSession model =
                     -- This is a convenience for the way the code was structured ... ideally,
                     -- we'd build a `viewMeasurements` on top of smaller capabilities of the
                     -- `Participant` config, but this is faster for now.
-                    config.viewMeasurements language currentDate zscores id selectedActivity checkedIn
+                    config.viewMeasurements language currentDate zscores id selectedActivity pages session
 
                 Nothing ->
                     emptyNode
@@ -140,23 +180,25 @@ view config language currentDate zscores selectedActivity fullSession model =
             div
                 [ class "ui basic head segment" ]
                 [ h1 [ class "ui header" ]
-                    [ config.tagActivityType selectedActivity
+                    [ config.tagActivity selectedActivity
                         |> Translate.ActivitiesTitle
                         |> translate language
                         |> text
                     ]
                 , a
                     [ class "link-back"
-                    , onClick GoBackToActivitiesPage
+                    , onClick <| GoBackToActivitiesPage sessionId
                     ]
                     [ span [ class "icon-back" ] [] ]
                 ]
     in
-    divKeyed
+    ( divKeyed
         [ class "wrap page-activity" ]
         [ header |> keyed "header"
         , activityDescription |> keyed "activity-description"
         , tabs |> keyed "tabs"
-        , participants |> keyed "participants"
+        , participantsHtml |> keyed "participants"
         , measurementsForm |> keyed "measurements-form"
         ]
+    , selectedParticipant
+    )

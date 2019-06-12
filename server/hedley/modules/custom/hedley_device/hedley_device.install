@@ -1,0 +1,32 @@
+<?php
+
+/**
+ * @file
+ * Install and update functions.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function hedley_device_install() {
+  hedley_device_create_sync_role();
+}
+
+/**
+ * Create sync role.
+ */
+function hedley_device_update_7001() {
+  hedley_device_create_sync_role();
+}
+
+/**
+ * Add a role for devices that will allow syncing.
+ */
+function hedley_device_create_sync_role() {
+  $sync_role = new stdClass();
+  $sync_role->name = 'sync';
+  user_role_save($sync_role);
+
+  $permissions = ['view revisions'];
+  user_role_grant_permissions($sync_role->rid, $permissions);
+}

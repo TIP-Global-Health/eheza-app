@@ -10,6 +10,203 @@
 function hedley_user_field_default_field_instances() {
   $field_instances = array();
 
+  // Exported field_instance: 'node-nurse-field_clinics'.
+  $field_instances['node-nurse-field_clinics'] = array(
+    'bundle' => 'nurse',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Which clinics is this user authorized to work with?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 2,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_clinics',
+    'label' => 'Groups',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 0,
+    ),
+  );
+
+  // Exported field_instance: 'node-nurse-field_email'.
+  $field_instances['node-nurse-field_email'] = array(
+    'bundle' => 'nurse',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 4,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_email',
+    'label' => 'Email',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-nurse-field_pin_code'.
+  $field_instances['node-nurse-field_pin_code'] = array(
+    'bundle' => 'nurse',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Code which this nurse can use to login on the frontend, whether online or offline. When creating a new nurse, you can leave this blank -- a PIN code will be randomly generated.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 1,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_pin_code',
+    'label' => 'PIN code',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => -2,
+    ),
+  );
+
+  // Exported field_instance: 'node-nurse-field_role'.
+  $field_instances['node-nurse-field_role'] = array(
+    'bundle' => 'nurse',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 3,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_role',
+    'label' => 'Role',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance: 'node-nurse-field_uuid'.
+  $field_instances['node-nurse-field_uuid'] = array(
+    'bundle' => 'nurse',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 5,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 4,
+    ),
+  );
+
   // Exported field_instance: 'user-user-field_avatar'.
   $field_instances['user-user-field_avatar'] = array(
     'bundle' => 'user',
@@ -74,7 +271,7 @@ function hedley_user_field_default_field_instances() {
     ),
     'entity_type' => 'user',
     'field_name' => 'field_clinics',
-    'label' => 'Clinics',
+    'label' => 'Groups',
     'required' => 0,
     'settings' => array(
       'user_register_form' => 1,
@@ -159,11 +356,17 @@ function hedley_user_field_default_field_instances() {
   // Translatables
   // Included for use with string extractors like potx.
   t('A code which users can provide on devices to identify themselves.');
-  t('Clinics');
+  t('Code which this nurse can use to login on the frontend, whether online or offline. When creating a new nurse, you can leave this blank -- a PIN code will be randomly generated.');
+  t('Email');
+  t('Groups');
   t('PIN code');
   t('Phone');
   t('Profile photo');
+  t('Role');
+  t('UUID');
   t('Which clinics is this user allowed to participate in?');
+  t('Which clinics is this user authorized to work with?');
+  t('You can leave the UUID blank -- it will be automatically generated.');
 
   return $field_instances;
 }

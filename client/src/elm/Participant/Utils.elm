@@ -1,52 +1,54 @@
 module Participant.Utils exposing (childParticipant, motherParticipant)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType, MotherActivityType)
-import Activity.Utils exposing (childHasAnyPendingActivity, childHasPendingActivity, getAllChildActivities, getAllMotherActivities, motherHasAnyPendingActivity, motherHasPendingActivity)
-import Backend.Child.Model exposing (Child)
+import Activity.Model exposing (Activity(..), ChildActivity, MotherActivity)
+import Activity.Utils exposing (summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
+import AllDict
 import Backend.Entities exposing (..)
-import Backend.Mother.Model exposing (Mother)
+import Backend.Person.Model exposing (Person)
 import Backend.Session.Utils exposing (getMyMother)
-import EveryDict exposing (EveryDict)
-import EveryDictList
 import Measurement.Model
 import Pages.Activity.Utils exposing (viewChildMeasurements, viewMotherMeasurements)
-import Participant.Model exposing (Participant)
+import Participant.Model exposing (Participant, ParticipantId(..))
+import RemoteData exposing (RemoteData(..))
 
 
-childParticipant : Participant ChildId Child ChildActivityType Measurement.Model.MsgChild
+childParticipant : Participant PersonId Person ChildActivity Measurement.Model.MsgChild
 childParticipant =
-    { activities = getAllChildActivities
-    , getAvatarUrl = .avatarUrl
-    , getBirthDate = .birthDate >> Just
+    { getAvatarUrl = .avatarUrl
+    , getBirthDate = .birthDate
     , getMotherId = \childId session -> getMyMother childId session.offlineSession |> Maybe.map Tuple.first
     , getName = .name
     , getParticipants = \session -> session.offlineSession.children
-    , hasPendingActivity = childHasPendingActivity
+    , getValue = \id db -> AllDict.get id db.people |> Maybe.withDefault NotAsked
+    , getVillage = .village
     , iconClass = "child"
     , showProgressReportTab = True
-    , tagActivityType = ChildActivity
+    , summarizeActivitiesForParticipant = summarizeChildParticipant
+    , summarizeParticipantsForActivity = summarizeChildActivity
+    , tagActivity = ChildActivity
     , toChildId = Just
     , toMotherId = always Nothing
+    , toParticipantId = ParticipantChild
     , viewMeasurements = viewChildMeasurements
     }
 
 
-motherParticipant : Participant MotherId Mother MotherActivityType Measurement.Model.MsgMother
+motherParticipant : Participant PersonId Person MotherActivity Measurement.Model.MsgMother
 motherParticipant =
-    -- TODO: getParticipants is inefficient ... should make the children and
-    -- mothers match, and either pre-sort in EveryDictList or sort each time in
-    -- EveryDict
-    { activities = getAllMotherActivities
-    , getAvatarUrl = .avatarUrl
+    { getAvatarUrl = .avatarUrl
     , getBirthDate = .birthDate
     , getMotherId = \motherId session -> Just motherId
     , getName = .name
-    , getParticipants = \session -> session.offlineSession.mothers |> EveryDictList.toList |> EveryDict.fromList
-    , hasPendingActivity = motherHasPendingActivity
+    , getParticipants = \session -> session.offlineSession.mothers
+    , getValue = \id db -> AllDict.get id db.people |> Maybe.withDefault NotAsked
+    , getVillage = .village
     , iconClass = "mother"
     , showProgressReportTab = False
-    , tagActivityType = MotherActivity
+    , summarizeActivitiesForParticipant = summarizeMotherParticipant
+    , summarizeParticipantsForActivity = summarizeMotherActivity
+    , tagActivity = MotherActivity
     , toChildId = always Nothing
     , toMotherId = Just
+    , toParticipantId = ParticipantMother
     , viewMeasurements = \language date zscores -> viewMotherMeasurements language date
     }

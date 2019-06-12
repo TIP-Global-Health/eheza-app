@@ -48,6 +48,10 @@ class HedleyMigrateMothers201902 extends HedleyMigrateBase {
     $this->addFieldMapping('field_ubudehe', 'ubudehe');
 
     $this
+      ->addFieldMapping('field_relationship', 'relationship')
+      ->defaultValue('mother');
+
+    $this
       ->addFieldMapping('field_date_birth', 'birth_date')
       ->callbacks([$this, 'dateProcess']);
 

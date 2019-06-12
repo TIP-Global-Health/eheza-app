@@ -1,8 +1,10 @@
-port module Measurement.Update exposing (updateChild, updateMother)
+module Measurement.Update exposing (updateChild, updateMother)
 
-import Backend.Entities exposing (ChildId, MotherId)
-import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), PhotoValue)
-import Config.Model exposing (BackendUrl)
+import AllDict
+import AllDictList
+import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MeasurementData, MotherMeasurements, PhotoUrl(..))
+import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
 
@@ -25,6 +27,20 @@ updateChild msg model =
 
         UpdateMuac val ->
             ( { model | muac = val }
+            , Cmd.none
+            , Nothing
+            )
+
+        SelectCounselingTopic selected topicId ->
+            let
+                counseling =
+                    if selected then
+                        Maybe.map (Tuple.mapSecond (EverySet.insert topicId)) model.counseling
+
+                    else
+                        Maybe.map (Tuple.mapSecond (EverySet.remove topicId)) model.counseling
+            in
+            ( { model | counseling = counseling }
             , Cmd.none
             , Nothing
             )
@@ -62,7 +78,20 @@ updateChild msg model =
             )
 
         SendOutMsgChild outMsg ->
-            ( model
+            let
+                newModel =
+                    case outMsg of
+                        SavePhoto id photo ->
+                            -- When we save a photo, we blank our local record
+                            -- of the unsaved photo URL. We're saving the photo
+                            -- locally, and when we succeed, we'll see it in
+                            -- the view at the URL it gets.
+                            { model | photo = Nothing }
+
+                        _ ->
+                            model
+            in
+            ( newModel
             , Cmd.none
             , Just outMsg
             )
@@ -74,23 +103,14 @@ updateChild msg model =
             )
 
         DropZoneComplete result ->
-            -- The `fid` being Nothing signifies that we haven't uploaded this to
-            -- the backend yet, so we don't know what file ID the backend will
-            -- ultimately give it.
-            ( { model
-                | photo =
-                    Just
-                        { url = result.url
-                        , fid = Nothing
-                        }
-              }
+            ( { model | photo = Just (PhotoUrl result.url) }
             , Cmd.none
             , Nothing
             )
 
 
-updateMother : MsgMother -> ModelMother -> ( ModelMother, Cmd MsgMother, Maybe OutMsgMother )
-updateMother msg model =
+updateMother : MeasurementData MotherMeasurements -> MsgMother -> ModelMother -> ( ModelMother, Cmd MsgMother, Maybe OutMsgMother )
+updateMother measurements msg model =
     case msg of
         SelectFamilyPlanningSign selected sign ->
             let
@@ -125,39 +145,111 @@ updateMother msg model =
             , Nothing
             )
 
+        SetCounselorSigned formId signed ->
+            let
+                updated =
+                    AllDict.get formId model.participantConsent.progress
+                        |> Maybe.withDefault emptyParticipantFormProgress
+                        |> (\progress -> AllDict.insert formId { progress | counselorSigned = signed } model.participantConsent.progress)
+            in
+            (\consent ->
+                ( { model | participantConsent = { consent | progress = updated } }
+                , Cmd.none
+                , Nothing
+                )
+            )
+                model.participantConsent
+
+        SetParticipantSigned formId signed ->
+            let
+                updated =
+                    AllDict.get formId model.participantConsent.progress
+                        |> Maybe.withDefault emptyParticipantFormProgress
+                        |> (\progress -> AllDict.insert formId { progress | participantSigned = signed } model.participantConsent.progress)
+            in
+            (\consent ->
+                ( { model | participantConsent = { consent | progress = updated } }
+                , Cmd.none
+                , Nothing
+                )
+            )
+                model.participantConsent
+
+        ViewParticipantForm formId ->
+            (\consent ->
+                ( { model | participantConsent = { consent | view = formId } }
+                , Cmd.none
+                , Nothing
+                )
+            )
+                model.participantConsent
+
         SendOutMsgMother outMsg ->
-            ( model
+            let
+                -- TODO: For the moment, we're just assuming that the save into
+                -- the local cache succeeds ... we don't do any error checking.
+                -- Once we do, this mechanism would transition to the handling
+                -- for the RemoteData that represents the state of the save &
+                -- the possible error message.
+                updated =
+                    case outMsg of
+                        SaveCompletedForm _ formId _ ->
+                            case model.participantConsent.view of
+                                Just currentFormId ->
+                                    if formId == currentFormId then
+                                        -- If we're looking at this form, then
+                                        -- either look at the next form, or
+                                        -- nothing, if all completed already.
+                                        selectNextForm measurements formId model
+
+                                    else
+                                        -- If we're already looking at a
+                                        -- different form, stay there.
+                                        model
+
+                                Nothing ->
+                                    -- If we weren't looking at a specific
+                                    -- form, then no change needed.
+                                    model
+
+                        _ ->
+                            model
+            in
+            ( updated
             , Cmd.none
             , Just outMsg
             )
 
 
-{-| Send new photo of a child to the backend.
--}
-postPhoto : BackendUrl -> String -> ChildId -> ModelChild -> ( ModelChild, Cmd MsgChild )
-postPhoto backendUrl accessToken childId model =
-    -- TODO: Re-implement
-    ( model, Cmd.none )
+selectNextForm : MeasurementData MotherMeasurements -> ParticipantFormId -> ModelMother -> ModelMother
+selectNextForm measurements formId model =
+    let
+        completedFormIds =
+            -- TODO: Note in the last step we treat the current formId as
+            -- completed ...  once we're actually doing error checking on the
+            -- save to the cache, we will need to adjust that (to take into
+            -- account whether the save succeeded or not).
+            measurements
+                |> mapMeasurementData .consent
+                |> currentValues
+                |> List.map (Tuple.second >> .value >> .formId)
+                |> EverySet.fromList
+                |> EverySet.insert formId
 
+        expectedFormIds =
+            model.participantConsent.expected
+                |> AllDictList.keys
+                |> EverySet.fromList
 
-
-{-
-   case model.photo of
-       ( Nothing, _ ) ->
-           -- This shouldn't happen, but in case we don't have a file ID, we won't issue
-           -- a POST request.
-           ( model, Cmd.none )
-
-       ( Just fileId, _ ) ->
-           let
-               command =
-                   HttpBuilder.post (backendUrl ++ "/api/photos")
-                       |> withQueryParams [ ( "access_token", accessToken ) ]
-                       -- TODO: Fix up types to avoid `toEntityId`
-                       |> withJsonBody (encodePhoto (toEntityId childId) fileId)
-                       |> sendWithHandler decodePhotoFromResponse HandlePhotoSave
-           in
-               ( { model | status = Loading }
-               , command
-               )
--}
+        remaining =
+            EverySet.diff expectedFormIds completedFormIds
+                |> EverySet.toList
+                |> List.head
+    in
+    model.participantConsent
+        |> (\consent ->
+                { model
+                    | participantConsent =
+                        { consent | view = remaining }
+                }
+           )

@@ -1,0 +1,22 @@
+<?php
+
+/**
+ * @file
+ * Code for the Hedley Person feature.
+ */
+
+include_once 'hedley_person.features.inc';
+
+define('HEDLEY_PERSON_EDUCATION_NONE', 0);
+define('HEDLEY_PERSON_EDUCATION_PRIMARY', 1);
+define('HEDLEY_PERSON_EDUCATION_VOCATIONAL', 2);
+define('HEDLEY_PERSON_EDUCATION_SECONDARY', 3);
+define('HEDLEY_PERSON_EDUCATION_DIPLOMA', 4);
+define('HEDLEY_PERSON_EDUCATION_UNIVERSITY', 5);
+define('HEDLEY_PERSON_EDUCATION_ADVANCED', 6);
+
+define('HEDLEY_PERSON_GENDER_MALE', 'male');
+define('HEDLEY_PERSON_GENDER_FEMALE', 'female');
+
+define('HEDLEY_PERSON_RELATED_BY_PARENT_OF', 'parent');
+define('HEDLEY_PERSON_RELATED_BY_CAREGIVER_FOR', 'caregiver');

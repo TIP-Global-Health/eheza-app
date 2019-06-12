@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulClinics.
  */
-class HedleyRestfulClinics extends HedleyRestfulEntityBaseNode {
+class HedleyRestfulClinics extends HedleyRestfulSyncBase {
 
   /**
    * {@inheritdoc}
@@ -16,21 +16,12 @@ class HedleyRestfulClinics extends HedleyRestfulEntityBaseNode {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $public_fields['type'] = [
-      'callback' => 'static::getType',
+    $public_fields['health_center'] = [
+      'property' => 'field_health_center',
+      'sub_property' => 'field_uuid',
     ];
 
     return $public_fields;
-  }
-
-  /**
-   * Return the type of the entity.
-   *
-   * @return string
-   *   The type name.
-   */
-  protected static function getType() {
-    return 'clinic';
   }
 
 }

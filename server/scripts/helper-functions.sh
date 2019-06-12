@@ -214,6 +214,7 @@ function create_sites_default_files_directory {
   if [ ! -d "$ROOT"/www/sites/default/files ]; then
     echo -e "${LBLUE}> Create the files directory (sites/default/files directory)${RESTORE}"
     mkdir -p "$ROOT"/www/sites/default/files
+    mkdir -p "$ROOT"/www/sites/default/files/private
   fi
 
   echo -e "${LBLUE}> Set the file permissions on the sites/default/files directory${RESTORE}"
@@ -249,6 +250,8 @@ function import_demo_content {
     drush en -y hedley_migrate
     drush en -y migrate migrate_ui migrate_extras
     drush mi --group=default --user=1
+    drush mi --group=counseling --user=1
+    drush mi --group=forms --user=1
   else
     echo -e  "${BGYELLOW}                                                                 ${RESTORE}"
     echo -e "${BGLYELLOW}  Migrate and or Migrate Extras module(s) are not available!     ${RESTORE}"
@@ -274,15 +277,12 @@ function import_demo_content {
 # the 'taxonomy_vocabulary' table.
 ##
 function generate_demo_content {
+  # @todo: Replace this with CSV generated data.
   echo -e "${LBLUE}> Starting the process of generating demo content using the devel_generate module.${RESTORE}"
   cd "$ROOT"/www
 
   # Make sure devel-generate is enabled.
   drush en devel_generate -y
-
-  # Generate users.
-  echo -e "${LBLUE}Generating users.${RESTORE}"
-  drush generate-users 50
 
   # Generating taxonomy terms for all defined vocabularies.
   # Taxonomy terms has no dependencies, hence we can automate the list.
@@ -293,11 +293,12 @@ function generate_demo_content {
     drush generate-terms "$VOCAB"
   done
 
+  # Add some sessions for today
+  drush create-sessions-today
+
   # Generating all types of nodes.
   # Hardcoding the list because of the dependencies between them.
   TYPES=(
-    mother
-    child
     height
     muac
     nutrition
@@ -308,11 +309,8 @@ function generate_demo_content {
   for TYPE in "${TYPES[@]}"
   do
     echo -e "${LBLUE}Generating nodes of type: $TYPE ${RESTORE}"
-    drush generate-content 20 0 --types="$TYPE"
+    drush generate-content 20 0 --types="$TYPE" --skip-fields=field_uuid,field_shards,field_bmi,field_zscore_age,field_zscore_bmi,field_zscore_length
   done
-
-  # Add some sessions for today
-  drush create-sessions-today
 
   cd "$ROOT"
   echo

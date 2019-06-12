@@ -1,6 +1,7 @@
 module Pages.Participant.Update exposing (updateChild, updateMother)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
+import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
+import Backend.Measurement.Model exposing (MeasurementData, MotherMeasurements)
 import Measurement.Model
 import Measurement.Update
 import Pages.Page exposing (Page)
@@ -28,10 +29,10 @@ construct a list of messages for the caller to handle?
 
 -}
 updateChild :
-    Msg ChildActivityType Measurement.Model.MsgChild
-    -> Model ChildActivityType
+    Msg ChildActivity Measurement.Model.MsgChild
+    -> Model ChildActivity
     -> Measurement.Model.ModelChild
-    -> ( Model ChildActivityType, Cmd (Msg ChildActivityType Measurement.Model.MsgChild), Measurement.Model.ModelChild, Maybe Measurement.Model.OutMsgChild, Maybe Page )
+    -> ( Model ChildActivity, Cmd (Msg ChildActivity Measurement.Model.MsgChild), Measurement.Model.ModelChild, Maybe Measurement.Model.OutMsgChild, Maybe Page )
 updateChild msg model childForm =
     case msg of
         MsgMeasurement subMsg ->
@@ -72,16 +73,17 @@ updateChild msg model childForm =
 {-| See comments on `updateChild` ... this has a similar structure.
 -}
 updateMother :
-    Msg MotherActivityType Measurement.Model.MsgMother
-    -> Model MotherActivityType
+    Msg MotherActivity Measurement.Model.MsgMother
+    -> Model MotherActivity
     -> Measurement.Model.ModelMother
-    -> ( Model MotherActivityType, Cmd (Msg MotherActivityType Measurement.Model.MsgMother), Measurement.Model.ModelMother, Maybe Measurement.Model.OutMsgMother, Maybe Page )
-updateMother msg model motherForm =
+    -> MeasurementData MotherMeasurements
+    -> ( Model MotherActivity, Cmd (Msg MotherActivity Measurement.Model.MsgMother), Measurement.Model.ModelMother, Maybe Measurement.Model.OutMsgMother, Maybe Page )
+updateMother msg model motherForm measurements =
     case msg of
         MsgMeasurement subMsg ->
             let
                 ( subModel, subCmd, outMsg ) =
-                    Measurement.Update.updateMother subMsg motherForm
+                    Measurement.Update.updateMother measurements subMsg motherForm
             in
             ( model
             , Cmd.map MsgMeasurement subCmd

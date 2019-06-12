@@ -11,16 +11,6 @@
 class HedleyRestfulPhotos extends HedleyRestfulChildActivityBase {
 
   /**
-   * Return the type of the activity.
-   *
-   * @return string
-   *   The type name.
-   */
-  protected static function getType() {
-    return 'photo';
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function publicFieldsInfo() {

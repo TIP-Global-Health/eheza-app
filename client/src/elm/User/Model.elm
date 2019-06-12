@@ -1,15 +1,15 @@
-module User.Model exposing (Role(..), User, UserId)
+module User.Model exposing (Role(..), User)
 
 import Backend.Entities exposing (..)
 import EverySet exposing (EverySet)
 
 
 type alias UserId =
-    String
+    Int
 
 
 type alias User =
-    { id : Int
+    { id : UserId
     , name : String
     , avatarUrl : String
 

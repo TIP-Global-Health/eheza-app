@@ -1,6 +1,6 @@
 module Measurement.Test exposing (all)
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
+import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import Backend.Measurement.Model exposing (MuacIndication(..))
 import Date
 import Expect
@@ -9,11 +9,11 @@ import Html
 import Html.Attributes as Attr
 import Measurement.Model exposing (..)
 import Measurement.View exposing (..)
-import Restful.Endpoint exposing (toEntityId)
+import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
 import Test.Html.Selector as Selector exposing (class, classes, id, tag, text)
-import Translate exposing (..)
+import Translate.Model exposing (Language(..))
 
 
 viewChildFormsTest : Test
@@ -27,7 +27,7 @@ viewChildFormsTest =
    let
        viewChildWithActivity selectedActivity model =
            Html.div [ Attr.class "test-container" ]
-               [ viewChild English (Date.fromTime 1504858608000) ( toEntityId 5, exampleChildA ) Nothing selectedActivity model
+               [ viewChild English (Date.fromTime 1504858608000) ( toEntityUuid 5, exampleChildA ) Nothing selectedActivity model
                ]
    in
        describe "A nurse visits the assesment of a Child" <|

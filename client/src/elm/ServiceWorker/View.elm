@@ -10,7 +10,7 @@ import Html.Events exposing (..)
 import RemoteData exposing (RemoteData(..))
 import ServiceWorker.Model exposing (..)
 import Time exposing (Time)
-import Translate exposing (Language(..), translate)
+import Translate exposing (Language, translate)
 
 
 view : Time -> Language -> Model -> Html Msg
@@ -23,7 +23,7 @@ view currentTime language model =
                 [ text <| translate language Translate.ServiceWorkerStatus ]
             , a
                 [ class "link-back"
-                , onClick BackToLoginPage
+                , onClick BackToPinCodePage
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []

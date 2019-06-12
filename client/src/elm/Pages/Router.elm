@@ -1,10 +1,11 @@
 module Pages.Router exposing (delta2url, parseUrl)
 
-import Activity.Utils exposing (decodeActivityTypeFromString, defaultActivityType, encodeActivityTypeAsString)
+import Activity.Model exposing (Activity)
+import Activity.Utils exposing (decodeActivityFromString, defaultActivity, encodeActivityAsString)
 import Pages.Page exposing (..)
-import Restful.Endpoint exposing (fromEntityId, toEntityId)
+import Restful.Endpoint exposing (EntityUuid, fromEntityUuid, toEntityUuid)
 import RouteUrl exposing (HistoryEntry(..), UrlChange)
-import UrlParser exposing ((</>), Parser, int, map, oneOf, parseHash, s, string, top)
+import UrlParser exposing ((</>), Parser, custom, int, map, oneOf, parseHash, s, string, top)
 
 
 {-| For now, we're given just the previous and current page ...if
@@ -14,8 +15,11 @@ caller could provide it.
 delta2url : Page -> Page -> Maybe UrlChange
 delta2url previous current =
     case current of
-        LoginPage ->
-            Just <| UrlChange NewEntry "#login"
+        DevicePage ->
+            Just <| UrlChange NewEntry "#device"
+
+        PinCodePage ->
+            Just <| UrlChange NewEntry "#pincode"
 
         PageNotFound url ->
             -- If we couldn't interpret the URL, we don't try to change it.
@@ -24,47 +28,82 @@ delta2url previous current =
         ServiceWorkerPage ->
             Just <| UrlChange NewEntry "#deployment"
 
-        -- These are pages which depend on having a downloaded session
-        SessionPage sessionPage ->
-            case sessionPage of
-                ActivitiesPage ->
-                    Just <| UrlChange NewEntry "#activities"
-
-                ActivityPage activityType ->
-                    Just <| UrlChange NewEntry ("#activity/" ++ encodeActivityTypeAsString activityType)
-
-                AttendancePage ->
-                    Just <| UrlChange NewEntry "#attendance"
-
-                ChildPage id ->
-                    Just <| UrlChange NewEntry ("#child/" ++ toString (fromEntityId id))
-
-                MotherPage id ->
-                    Just <| UrlChange NewEntry ("#mother/" ++ toString (fromEntityId id))
-
-                ParticipantsPage ->
-                    Just <| UrlChange NewEntry "#participants"
-
-                ProgressReportPage id ->
-                    Just <| UrlChange NewEntry ("#progress/" ++ toString (fromEntityId id))
-
         -- These are pages that required a logged-in user
         UserPage userPage ->
             case userPage of
-                AdminPage ->
-                    Just <| UrlChange NewEntry "#admin"
-
                 ClinicsPage clinicId ->
                     let
                         clinic =
                             clinicId
-                                |> Maybe.map (\id -> "/" ++ toString (fromEntityId id))
+                                |> Maybe.map (\id -> "/" ++ fromEntityUuid id)
                                 |> Maybe.withDefault ""
                     in
                     Just <| UrlChange NewEntry ("#clinics" ++ clinic)
 
                 MyAccountPage ->
                     Just <| UrlChange NewEntry "#my-account"
+
+                CreatePersonPage relationId ->
+                    let
+                        relation =
+                            relationId
+                                |> Maybe.map (\id -> "/" ++ fromEntityUuid id)
+                                |> Maybe.withDefault ""
+                    in
+                    Just <| UrlChange NewEntry ("#person/new" ++ relation)
+
+                PersonPage id ->
+                    Just <| UrlChange NewEntry <| "#person/" ++ fromEntityUuid id
+
+                PersonsPage related ->
+                    let
+                        url =
+                            case related of
+                                Nothing ->
+                                    "#persons"
+
+                                Just relatedId ->
+                                    "#relations/" ++ fromEntityUuid relatedId
+                    in
+                    Just <| UrlChange NewEntry url
+
+                RelationshipPage id1 id2 ->
+                    Just <|
+                        UrlChange NewEntry <|
+                            "#relationship/"
+                                ++ fromEntityUuid id1
+                                ++ "/"
+                                ++ fromEntityUuid id2
+
+                SessionPage sessionId sessionPage ->
+                    let
+                        subUrl =
+                            case sessionPage of
+                                ActivitiesPage ->
+                                    "/activities"
+
+                                ActivityPage activity ->
+                                    "/activity/" ++ encodeActivityAsString activity
+
+                                AttendancePage ->
+                                    ""
+
+                                ChildPage id ->
+                                    "/child/" ++ fromEntityUuid id
+
+                                MotherPage id ->
+                                    "/mother/" ++ fromEntityUuid id
+
+                                ParticipantsPage ->
+                                    "/participants"
+
+                                ProgressReportPage id ->
+                                    "/progress/" ++ fromEntityUuid id
+
+                        url =
+                            "#session/" ++ fromEntityUuid sessionId ++ subUrl
+                    in
+                    Just <| UrlChange NewEntry url
 
 
 {-| For now, the only messages we're generating from the URL are messages
@@ -75,29 +114,51 @@ we could change that here.
 parseUrl : Parser (Page -> c) c
 parseUrl =
     oneOf
-        [ map (SessionPage ActivitiesPage) (s "activities")
-
-        -- TODO: Should probably fail with an unrecongized activity type,
-        -- rather than use the default
-        , map
-            (SessionPage << ActivityPage << Maybe.withDefault defaultActivityType << decodeActivityTypeFromString)
-            (s "activity" </> string)
-        , map (SessionPage AttendancePage) (s "attendance")
-        , map (SessionPage << ChildPage << toEntityId) (s "child" </> int)
-        , map (SessionPage << ProgressReportPage << toEntityId) (s "progress" </> int)
-        , map (UserPage << ClinicsPage << Just << toEntityId) (s "clinics" </> int)
+        [ map (UserPage << ClinicsPage << Just) (s "clinics" </> parseUuid)
         , map (UserPage (ClinicsPage Nothing)) (s "clinics")
-        , map (UserPage AdminPage) (s "admin")
-        , map LoginPage (s "login")
+        , map DevicePage (s "device")
+        , map PinCodePage (s "pincode")
         , map ServiceWorkerPage (s "deployment")
         , map (UserPage MyAccountPage) (s "my-account")
-        , map (SessionPage << MotherPage << toEntityId) (s "mother" </> int)
-        , map (SessionPage ParticipantsPage) (s "participants")
+        , map (\id page -> UserPage <| SessionPage id page) (s "session" </> parseUuid </> parseSessionPage)
+        , map (UserPage <| PersonsPage Nothing) (s "persons")
+        , map (\id -> UserPage <| PersonsPage (Just id)) (s "relations" </> parseUuid)
+        , map (\id -> UserPage <| CreatePersonPage (Just id)) (s "person" </> s "new" </> parseUuid)
+        , map (UserPage <| CreatePersonPage Nothing) (s "person" </> s "new")
+        , map (\id -> UserPage <| PersonPage id) (s "person" </> parseUuid)
+        , map (\id1 id2 -> UserPage <| RelationshipPage id1 id2) (s "relationship" </> parseUuid </> parseUuid)
 
-        -- TODO: `top` represents the page without any segements ... i.e. the
-        -- root page.  Should figure out how to handle this best. Possibly a
-        -- special Page called `Root`?  Or, we could eventually redirect to an
-        -- appropriate page. But it might be simpler to record the user's
-        -- intention to be at the "root" page.
-        , map LoginPage top
+        -- `top` represents the page without any segements ... i.e. the
+        -- root page.
+        , map PinCodePage top
         ]
+
+
+parseSessionPage : Parser (SessionPage -> c) c
+parseSessionPage =
+    oneOf
+        [ map ActivitiesPage (s "activities")
+        , map ActivityPage (s "activity" </> parseActivity)
+        , map ChildPage (s "child" </> parseUuid)
+        , map ProgressReportPage (s "progress" </> parseUuid)
+        , map MotherPage (s "mother" </> parseUuid)
+        , map ParticipantsPage (s "participants")
+        , map AttendancePage top
+        ]
+
+
+parseUuid : Parser (EntityUuid a -> c) c
+parseUuid =
+    map toEntityUuid string
+
+
+parseActivity : Parser (Activity -> c) c
+parseActivity =
+    custom "Activity" <|
+        \part ->
+            case decodeActivityFromString part of
+                Just activity ->
+                    Ok activity
+
+                Nothing ->
+                    Err <| part ++ " is not an Activity"

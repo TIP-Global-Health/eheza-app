@@ -12,6 +12,39 @@ if (!drupal_is_cli()) {
 }
 
 /**
+ * Implements hook_file_download_access().
+ */
+function hedley_restful_file_download_access($file_item, $entity_type, $entity) {
+  // If we were given an access token, then use it.
+  $request = $_GET;
+
+  if (substr($request['q'], 0, 4) == 'api/') {
+    // Don't check requests to /api.
+    return FALSE;
+  }
+
+  if (empty($request['access_token'])) {
+    // No access token provided.
+    return FALSE;
+  }
+
+  $auth_handler = restful_get_authentication_handler('token');
+  if (!$auth_handler->applies($request)) {
+    // Auth doesn't apply.
+    return FALSE;
+  }
+
+  $account = $auth_handler->authenticate($request);
+  if (!$account) {
+    // Did not authenticate.
+    return FALSE;
+  }
+
+  // Anyone who can view published content can download.
+  return user_access('access content', $account);
+}
+
+/**
  * Implements hook_ctools_plugin_directory().
  */
 function hedley_restful_ctools_plugin_directory($module, $plugin) {
@@ -82,6 +115,31 @@ function hedley_restful_output_for_bundles($bundleHandlers, array $nids, $accoun
   }
 
   return $output;
+}
+
+/**
+ * Convert a UUID to a nodeId.
+ *
+ * @param string $uuid
+ *   The UUID.
+ *
+ * @return int
+ *   The Node ID.
+ *
+ * @throws \RestfulBadRequestException
+ */
+function hedley_restful_uuid_to_nid($uuid) {
+  $result = db_select('field_data_field_uuid', 'uuid')
+    ->fields('uuid', ['entity_id'])
+    ->condition('uuid.field_uuid_value', $uuid)
+    ->execute()
+    ->fetchField();
+
+  if (empty($result)) {
+    throw new RestfulBadRequestException("Could not find UUID: $uuid");
+  }
+
+  return $result;
 }
 
 /**

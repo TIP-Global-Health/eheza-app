@@ -1,38 +1,97 @@
-module Backend.Measurement.Decoder exposing (decodeChildEdits, decodeChildMeasurement, decodeChildMeasurementList, decodeChildNutritionSign, decodeEdit, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMeasurementEdits, decodeMotherEdits, decodeMotherMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodePhoto, decodeWeight, decodeWithEntityId, toEveryDict)
+module Backend.Measurement.Decoder exposing (decodeAttendance, decodeChildMeasurement, decodeChildMeasurementList, decodeChildNutritionSign, decodeCounselingSession, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMotherMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodeSavedMeasurement, decodeWeight, decodeWithEntityUuid, toEntityUuidDict)
 
+import AllDict
+import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Dict exposing (Dict)
-import EveryDict exposing (EveryDict)
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict)
 import Gizra.NominalDate
-import Json.Decode exposing (Decoder, andThen, at, bool, decodeValue, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed, value)
+import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
-import Restful.Endpoint exposing (EntityId, decodeEntityId, toEntityId)
+import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid, toEntityUuid)
+import Translate.Utils exposing (decodeLanguage)
+import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import Utils.Json exposing (decodeEverySet)
 
 
 {-| Given a decoder for a value, produces a decoder for our `Measurement` type.
 -}
-decodeChildMeasurement : Decoder value -> Decoder (Measurement ChildId value)
+decodeChildMeasurement : Decoder value -> Decoder (Measurement PersonId value)
 decodeChildMeasurement =
-    decodeMeasurement (field "child" decodeEntityId)
+    decodeMeasurement (field "person" decodeEntityUuid)
 
 
 {-| Given a decoder for a value, produces a decoder for our `Measurement` type.
 -}
-decodeMotherMeasurement : Decoder value -> Decoder (Measurement MotherId value)
+decodeMotherMeasurement : Decoder value -> Decoder (Measurement PersonId value)
 decodeMotherMeasurement =
-    decodeMeasurement (field "mother" decodeEntityId)
+    decodeMeasurement (field "person" decodeEntityUuid)
 
 
 decodeMeasurement : Decoder participantId -> Decoder value -> Decoder (Measurement participantId value)
 decodeMeasurement participantDecoder valueDecoder =
     decode Measurement
-        |> custom participantDecoder
-        |> required "session" (nullable decodeEntityId)
         |> required "date_measured" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "nurse" (nullable decodeEntityUuid)
+        |> custom participantDecoder
+        |> required "session" (nullable decodeEntityUuid)
         |> custom valueDecoder
+
+
+{-| Decodes a measurement that has an ID ... that is, a saved measurement.
+
+Tye `type` field controls which decoder we apply.
+
+-}
+decodeSavedMeasurement : Decoder SavedMeasurement
+decodeSavedMeasurement =
+    field "type" string
+        |> andThen
+            (\s ->
+                case s of
+                    "attendance" ->
+                        decodeWithEntityUuid decodeAttendance
+                            |> map (uncurry SavedAttendance)
+
+                    "family_planning" ->
+                        decodeWithEntityUuid decodeFamilyPlanning
+                            |> map (uncurry SavedFamilyPlanning)
+
+                    "participant_consent" ->
+                        decodeWithEntityUuid decodeParticipantConsent
+                            |> map (uncurry SavedParticipantConsent)
+
+                    "height" ->
+                        decodeWithEntityUuid decodeHeight
+                            |> map (uncurry SavedHeight)
+
+                    "muac" ->
+                        decodeWithEntityUuid decodeMuac
+                            |> map (uncurry SavedMuac)
+
+                    "nutrition" ->
+                        decodeWithEntityUuid decodeNutrition
+                            |> map (uncurry SavedChildNutrition)
+
+                    "photo" ->
+                        decodeWithEntityUuid decodePhoto
+                            |> map (uncurry SavedPhoto)
+
+                    "weight" ->
+                        decodeWithEntityUuid decodeWeight
+                            |> map (uncurry SavedWeight)
+
+                    "counseling_session" ->
+                        decodeWithEntityUuid decodeCounselingSession
+                            |> map (uncurry SavedCounselingSession)
+
+                    _ ->
+                        fail <|
+                            s
+                                ++ " is not a recognized measurement type"
+            )
 
 
 {-| Decodes `HistoricalMeasurements` as sent by `/api/offline_sessions/`
@@ -42,60 +101,55 @@ decodeHistoricalMeasurements =
     decode HistoricalMeasurements
         |> requiredAt [ "participants", "mother_activity" ]
             (oneOf
-                [ decodeEmptyArrayAs EveryDict.empty
-                , map (toEveryDict toEntityId) (decodeIntDict decodeMotherMeasurementList)
+                [ decodeEmptyArrayAs EntityUuidDict.empty
+                , map toEntityUuidDict (dict decodeMotherMeasurementList)
                 ]
             )
         |> requiredAt [ "participants", "child_activity" ]
             (oneOf
-                [ decodeEmptyArrayAs EveryDict.empty
-                , map (toEveryDict toEntityId) (decodeIntDict decodeChildMeasurementList)
+                [ decodeEmptyArrayAs EntityUuidDict.empty
+                , map toEntityUuidDict (dict decodeChildMeasurementList)
                 ]
             )
 
 
 {-| TODO: Put in elm-essentials.
 -}
-toEveryDict : (comparable -> a) -> Dict comparable b -> EveryDict a b
-toEveryDict func =
-    Dict.foldl (\key value acc -> EveryDict.insert (func key) value acc) EveryDict.empty
+toEntityUuidDict : Dict String v -> EntityUuidDict (EntityUuid k) v
+toEntityUuidDict =
+    Dict.foldl (\key value acc -> AllDict.insert (toEntityUuid key) value acc) EntityUuidDict.empty
 
 
-decodeWithEntityId : Decoder a -> Decoder ( EntityId b, a )
-decodeWithEntityId decoder =
+decodeWithEntityUuid : Decoder a -> Decoder ( EntityUuid b, a )
+decodeWithEntityUuid decoder =
     map2 (,)
-        (field "id" decodeEntityId)
+        (field "uuid" decodeEntityUuid)
         decoder
 
 
 decodeMotherMeasurementList : Decoder MotherMeasurementList
 decodeMotherMeasurementList =
     decode MotherMeasurementList
-        |> optional "family_planning" (list (decodeWithEntityId decodeFamilyPlanning)) []
+        |> optional "attendance" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeAttendance)) EntityUuidDictList.empty
+        |> optional "family_planning" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeFamilyPlanning)) EntityUuidDictList.empty
+        |> optional "participant_consent" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeParticipantConsent)) EntityUuidDictList.empty
 
 
 decodeChildMeasurementList : Decoder ChildMeasurementList
 decodeChildMeasurementList =
     decode ChildMeasurementList
-        |> optional "height" (list (decodeWithEntityId decodeHeight)) []
-        |> optional "muac" (list (decodeWithEntityId decodeMuac)) []
-        |> optional "nutrition" (list (decodeWithEntityId decodeNutrition)) []
-        |> optional "photo" (list (decodeWithEntityId decodePhoto)) []
-        |> optional "weight" (list (decodeWithEntityId decodeWeight)) []
+        |> optional "height" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeHeight)) EntityUuidDictList.empty
+        |> optional "muac" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeMuac)) EntityUuidDictList.empty
+        |> optional "nutrition" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeNutrition)) EntityUuidDictList.empty
+        |> optional "photo" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodePhoto)) EntityUuidDictList.empty
+        |> optional "weight" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeWeight)) EntityUuidDictList.empty
+        |> optional "counseling_session" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeCounselingSession)) EntityUuidDictList.empty
 
 
-{-| The `oneOf` provides some back-compat for locally stored values.
--}
 decodePhoto : Decoder Photo
 decodePhoto =
-    decode PhotoValue
-        |> custom
-            (oneOf
-                [ at [ "photo", "styles", "patient-photo" ] string
-                , at [ "photo", "styles", "thumbnail" ] string
-                ]
-            )
-        |> optionalAt [ "photo", "id" ] (map Just decodeInt) Nothing
+    field "photo" string
+        |> map PhotoUrl
         |> decodeChildMeasurement
 
 
@@ -127,11 +181,37 @@ decodeFamilyPlanning =
         |> decodeMotherMeasurement
 
 
+decodeAttendance : Decoder Attendance
+decodeAttendance =
+    field "attended" bool
+        |> decodeMotherMeasurement
+
+
+decodeParticipantConsent : Decoder ParticipantConsent
+decodeParticipantConsent =
+    decodeMotherMeasurement decodeParticipantConsentValue
+
+
+decodeParticipantConsentValue : Decoder ParticipantConsentValue
+decodeParticipantConsentValue =
+    decode ParticipantConsentValue
+        |> required "language" decodeLanguage
+        |> required "participant_form" decodeEntityUuid
+
+
 decodeNutrition : Decoder ChildNutrition
 decodeNutrition =
     decodeEverySet decodeChildNutritionSign
         |> field "nutrition_signs"
         |> decodeChildMeasurement
+
+
+decodeCounselingSession : Decoder CounselingSession
+decodeCounselingSession =
+    decodeChildMeasurement <|
+        map2 (,)
+            (field "timing" decodeCounselingTiming)
+            (field "topics" (decodeEverySet decodeEntityUuid))
 
 
 decodeChildNutritionSign : Decoder ChildNutritionSign
@@ -211,73 +291,4 @@ decodeFamilyPlanningSign =
                         fail <|
                             sign
                                 ++ " is not a recognized FamilyPlanningSign"
-            )
-
-
-{-| Decodes what `encodeMeasurementEdits` produces.
--}
-decodeMeasurementEdits : Decoder MeasurementEdits
-decodeMeasurementEdits =
-    decode MeasurementEdits
-        |> optional "closed" bool False
-        |> required "mothers" (map (toEveryDict toEntityId) (decodeIntDict decodeMotherEdits))
-        |> required "children" (map (toEveryDict toEntityId) (decodeIntDict decodeChildEdits))
-
-
-{-| Decodes what `encodeChildEdits` produces.
--}
-decodeChildEdits : Decoder ChildEdits
-decodeChildEdits =
-    decode ChildEdits
-        |> required "height" (decodeEdit decodeHeight)
-        |> required "muac" (decodeEdit decodeMuac)
-        |> required "nutrition" (decodeEdit decodeNutrition)
-        |> required "photo" (decodeEdit decodePhoto)
-        |> required "weight" (decodeEdit decodeWeight)
-
-
-{-| Decodes what `encodeChildEdits` produces.
--}
-decodeMotherEdits : Decoder MotherEdits
-decodeMotherEdits =
-    decode MotherEdits
-        |> required "family_planning" (decodeEdit decodeFamilyPlanning)
-        |> optional "checked_in" bool False
-
-
-{-| The opposite of `encodeEdit`
--}
-decodeEdit : Decoder value -> Decoder (Edit value)
-decodeEdit valueDecoder =
-    field "tag" string
-        |> andThen
-            (\tag ->
-                case tag of
-                    "unedited" ->
-                        succeed Unedited
-
-                    "created" ->
-                        field "value" valueDecoder
-                            |> map Created
-
-                    "edited" ->
-                        map2
-                            (\backend edited ->
-                                Edited
-                                    { backend = backend
-                                    , edited = edited
-                                    }
-                            )
-                            (field "backend" valueDecoder)
-                            (field "edited" valueDecoder)
-
-                    "deleted" ->
-                        field "value" valueDecoder
-                            |> map Deleted
-
-                    _ ->
-                        fail <|
-                            "tag '"
-                                ++ tag
-                                ++ "' is not a valid tag for an Edit"
             )

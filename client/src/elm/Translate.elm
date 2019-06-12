@@ -1,90 +1,64 @@
-module Translate exposing (ChartPhrase(..), Language(..), LoginPhrase(..), TranslationId(..), TranslationSet, ValidationError(..), allLanguages, languageFromCode, languageFromString, languageToCode, selectLanguage, translate, translateActivePage, translateChartPhrase, translateFormError, translateFormField, translateHttpError, translateLoginPhrase, translateMonth, translateValidationError, translationSet)
+module Translate exposing
+    ( Adherence(..)
+    , ChartPhrase(..)
+    , Language
+    , LoginPhrase(..)
+    , TranslationId(..)
+    , ValidationError(..)
+    , translate
+    , translateActivePage
+    , translateAdherence
+    , translateChartPhrase
+    , translateCounselingTimingHeading
+    , translateFormError
+    , translateFormField
+    , translateHttpError
+    , translateLoginPhrase
+    , translateMonth
+    , translateValidationError
+    , translationSet
+    )
 
-import Activity.Model exposing (ActivityType(..), ChildActivityType(..), MotherActivityType(..))
-import Backend.Child.Model exposing (Gender(..))
+{-| This module has just the translations ... for types and
+general utilities, see `Translate.Model` and `Translate.Utils`.
+-}
+
+import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
+import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
-import Backend.Mother.Model exposing (EducationLevel(..))
+import Backend.Person.Model exposing (EducationLevel(..), Gender(..), HIVStatus(..), MaritalStatus(..), ModeOfDelivery(..), VaginalDelivery(..))
+import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
 import Pages.Page exposing (..)
-import Restful.Endpoint exposing (fromEntityId)
+import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
+import Translate.Model exposing (TranslationSet)
+import Translate.Utils exposing (..)
 
 
-type Language
-    = English
-    | Kinyarwanda
+{-| We re-export this one for convenience, so you don't have to import
+`Translate.Model` in simple cases. That is, you can do this, which will be
+enough for most "view" modules:
 
+    import Translate exposing (translate, Language)
 
-allLanguages : List Language
-allLanguages =
-    [ English
-    , Kinyarwanda
-    ]
+Note that importing `Language` from here gives you only the type, not the
+constructors. For more complex cases, where you need `English` and
+`Kinyarwanda` as well, you have to do this instead:
 
+    import Translate.Model exposing (Language(..))
 
-type alias TranslationSet =
-    { english : String
-    , kinyarwanda : Maybe String
-    }
+-}
+type alias Language =
+    Translate.Model.Language
 
 
 translate : Language -> TranslationId -> String
 translate lang trans =
     selectLanguage lang (translationSet trans)
-
-
-selectLanguage : Language -> TranslationSet -> String
-selectLanguage lang set =
-    case lang of
-        English ->
-            set.english
-
-        Kinyarwanda ->
-            case set.kinyarwanda of
-                Just trans ->
-                    trans
-
-                Nothing ->
-                    set.english
-
-
-languageFromString : String -> Result String Language
-languageFromString str =
-    case str of
-        "English" ->
-            Ok English
-
-        "Kinyarwanda" ->
-            Ok Kinyarwanda
-
-        _ ->
-            Err "Not a language"
-
-
-languageFromCode : String -> Result String Language
-languageFromCode str =
-    case str of
-        "en" ->
-            Ok English
-
-        "rw" ->
-            Ok Kinyarwanda
-
-        _ ->
-            Err "Not a language"
-
-
-languageToCode : Language -> String
-languageToCode lang =
-    case lang of
-        English ->
-            "en"
-
-        Kinyarwanda ->
-            "rw"
 
 
 type LoginPhrase
@@ -99,6 +73,8 @@ type LoginPhrase
     | LogoutInProgress
     | LogoutFailed
     | Password
+    | PinCode
+    | PinCodeRejected
     | SignIn
     | Username
     | WorkOffline
@@ -114,30 +90,57 @@ type ChartPhrase
     | LengthForAgeGirls
     | Months
     | OneYear
-    | TwoYears
     | WeightForAgeBoys
     | WeightForAgeGirls
     | WeightForLengthBoys
     | WeightForLengthGirls
     | WeightKg
+    | YearsPlural Int
     | ZScoreChartsAvailableAt
 
 
 type ValidationError
-    = UnknownClinic
+    = DigitsOnly
+    | InvalidBirthDate
+    | InvalidBirthDateForAdult
+    | InvalidBirthDateForChild
+    | LengthError Int
+    | LettersOnly
+    | RequiredField
+    | UnknownGroup
+    | UnknownProvince
+    | UnknownDistrict
+    | UnknownSector
+    | UnknownCell
+    | UnknownVillage
+    | DecoderError String
+
+
+type Adherence
+    = PrescribedAVRs
+    | CorrectDosage
+    | TimeOfDay
+    | Adhering
 
 
 type TranslationId
     = AccessDenied
     | Activities
     | ActivitiesCompleted Int
-    | ActivitiesHelp ActivityType
-    | ActivitiesLabel ActivityType
-    | ActivitiesTitle ActivityType
+    | ActivitiesHelp Activity
+    | ActivitiesLabel Activity
+    | ActivitiesTitle Activity
     | ActivitiesToComplete Int
-    | ActivityProgressReport ActivityType
+    | ActivityProgressReport Activity
     | ActivePage Page
+    | AddChild
+    | AddFamilyMember
+    | AddFamilyMemberFor String
+    | AddParentOrCaregiver
+    | AddToGroup
     | Admin
+    | AddressInformation
+    | Adherence Adherence
     | AgeWord
     | Age Int Int
     | AgeDays Int
@@ -153,54 +156,78 @@ type TranslationId
     | Attendance
     | Baby
     | BabyName String
+    | Back
     | BackendError
-    | BeginHealthAssessment
     | Born
     | Cancel
+    | CaregiverName
+    | CaregiverNationalId
     | CentimeterShorthand
+    | Cell
     | ChartPhrase ChartPhrase
     | CheckIn
+    | ChildDemographicInformation
     | ChildNutritionSignLabel ChildNutritionSign
     | ChildNutritionSignReport ChildNutritionSign
     | ChildOf
     | Children
     | ClickTheCheckMark
-    | ClinicNotFound
-    | Clinic
-    | Clinics
+    | GroupNotFound
+    | Group
+    | Groups
+    | GroupUnauthorized
     | Closed
-    | ConfirmDeleteTrainingSessions
+    | ConfirmationRequired
+    | ConfirmDeleteTrainingGroupEncounters
+    | ConfirmRegisterParticipant
     | Connected
+    | ContactInformation
     | Continue
-    | CreateSession
-    | CreateTrainingSessions
-    | DeleteTrainingSessions
+    | CounselingTimingHeading CounselingTiming
+    | CounselingTopic CounselingTopic
+    | CounselorReviewed
+    | CounselorSignature
+    | CreateGroupEncounter
+    | CreateTrainingGroupEncounters
+    | DeleteTrainingGroupEncounters
     | Dashboard
-    | DataIsNowSaved
     | DateOfLastAssessment
     | Day
+    | DateOfBirth
     | Days
     | Delete
-    | DownloadHealthAssessment
-    | DownloadSession1
-    | DownloadSession2
-    | DownloadSuccessful
-    | DownloadingSession1
-    | DownloadingSession2
+    | DemographicInformation
+    | Device
+    | DeviceNotAuthorized
+    | DeviceStatus
+    | District
+    | DOB
     | DropzoneDefaultMessage
-    | EndSession
+    | EditRelationship
+    | EndGroupEncounter
+    | EnterPairingCode
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
-    | ErrorFetchingCachedSessionTitle
-    | ErrorFetchingCachedSessionMessage
+    | Estimated
+    | FamilyInformation
+    | FamilyMembers
     | FamilyPlanningSignLabel FamilyPlanningSign
+    | FamilyUbudehe
     | Fetch
+    | FatherName
+    | FatherNationalId
     | FilterByName
+    | FirstName
     | FormError (ErrorValue ValidationError)
     | FormField String
-    | FutureSessions
     | Gender Gender
+    | GenderLabel
     | GoHome
+    | HaveYouSynced
+    | HealthCenter
+    | HIVStatus HIVStatus
+    | HIVStatusLabel
+    | HouseholdSize
     | HttpError Http.Error
     | KilogramShorthand
     | LastChecked
@@ -209,61 +236,104 @@ type TranslationId
     | LinkToMother
     | LoginPhrase LoginPhrase
     | MakeSureYouAreConnected
+    | MaritalStatusLabel
+    | MaritalStatus MaritalStatus
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
+    | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
+    | MiddleName
     | MinutesAgo Int
+    | ModeOfDelivery ModeOfDelivery
+    | ModeOfDeliveryLabel
+    | Month
     | MonthAbbrev
     | MonthsOld
     | Mother
+    | MotherDemographicInformation
     | MotherName String
+    | MotherNameLabel
+    | MotherNationalId
     | Mothers
     | MuacIndication MuacIndication
     | MyAccount
-    | NoActiveIncidents
+    | MyRelatedBy MyRelatedBy
+    | MyRelatedByQuestion MyRelatedBy
+    | NationalIdNumber
+    | Next
+    | No
     | NoActivitiesCompleted
     | NoActivitiesCompletedForThisParticipant
     | NoActivitiesPending
     | NoActivitiesPendingForThisParticipant
+    | NoGroupsFound
     | NoMatchesFound
     | NoParticipantsPending
     | NoParticipantsPendingForThisActivity
     | NoParticipantsCompleted
     | NoParticipantsCompletedForThisActivity
-    | NoCachedSession
     | NoChildrenRegisteredInTheSystem
     | NoParticipantsFound
     | NotAvailable
     | NotConnected
+    | NumberOfChildrenUnder5
     | OK
     | Old
-    | OnceYouEndYourSession
+    | OnceYouEndYourGroupEncounter
     | Page
     | Page404
     | PageNotFoundMsg
+    | ParticipantDirectory
     | Participants
+    | ParticipantReviewed
+    | ParticipantSignature
     | ParticipantSummary
+    | ParticipantDemographicInformation
+    | ParticipantInformation
+    | People
+    | PersistentStorage Bool
+    | Person
+    | PersonHasBeenSaved
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
+    | PlaceholderEnterParticipantName
     | PlaceholderEnterWeight
-    | PlaceholderTextGroupDate
-    | PlaceholderTextJoined
-    | PleaseSelectClinic
+    | PleaseSelectGroup
     | PreviousFloatMeasurement Float
-    | ReadyToBeginSession
+    | Profession
+    | ProgressReport
+    | Province
+    | Register
+    | RegisterAParticipant
+    | RegisterHelper
+    | RegisterNewParticipant
+    | RegistratingHealthCenter
+    | RegistrationSuccessful
+    | RegistrationSuccessfulParticipantAdded
+    | RegistrationSuccessfulSuggestAddingChild
+    | RegistrationSuccessfulSuggestAddingMother
+    | RelationSuccessful
+    | RelationSuccessfulChildWithMother
+    | RelationSuccessfulMotherWithChild
     | ReportAge String
     | ReportDOB String
     | ReportRemaining Int
-    | ReloadParticipant
-    | ReportCompleted { pending : Int, total : Int }
+    | ReportResultsOfSearch Int
+    | RecentAndUpcomingGroupEncounters
+    | ReportCompleted { pending : Int, completed : Int }
     | ResolveMonth Month
     | Retry
     | Save
     | SaveError
+    | Search
     | SearchByName
-    | SelectClinic
+    | SearchHelper
+    | SearchHelperFamilyMember
+    | SecondName
+    | Sector
+    | SelectGroup
     | SelectLanguage
-    | SelectYourClinic
+    | SelectYourGroup
     | ServiceWorkerActive
     | ServiceWorkerCurrent
     | ServiceWorkerCheckForUpdates
@@ -280,45 +350,50 @@ type TranslationId
     | ServiceWorkerRegErr
     | ServiceWorkerRegSuccess
     | ServiceWorkerStatus
-    | SessionClosed
-    | SessionClosed2 SessionId
-    | SessionInProgress
-    | SessionUnauthorized
-    | SessionUnauthorized2
+    | GroupEncounterClosed
+    | GroupEncounterClosed2 SessionId
+    | GroupEncounterLoading SessionId
+    | GroupEncounterUnauthorized
+    | GroupEncounterUnauthorized2
     | ShowAll
     | StartEndDate
     | StartDate
     | EndDate
+    | StartSyncing
+    | StopSyncing
+    | StorageQuota { usage : Int, quota : Int }
+    | Submit
+    | SubmitPairingCode
     | Success
+    | SyncGeneral
+    | TelephoneNumber
+    | TakenCareOfBy
     | ThisActionCannotBeUndone
-    | ThisClinicHasNoMothers
-    | TitleHealthAssessment
+    | ThisGroupHasNoMothers
     | Training
-    | TrainingSessionCreateSuccessMessage
-    | TrainingSessionDeleteSuccessMessage
+    | TrainingGroupEncounterCreateSuccessMessage
+    | TrainingGroupEncounterDeleteSuccessMessage
+    | TrySyncing
     | UbudeheLabel
-    | UnableToDownload
-    | UnableToUpload
+    | Unknown
     | Update
     | UpdateError
-    | UploadHealthAssessment
-    | UploadingSession1
-    | UploadingSession2
-    | UploadSuccessful
     | ValidationErrors
     | Version
     | ViewProgressReport
+    | Village
     | WelcomeUser String
+    | Year
+    | Yes
     | YouAreNotAnAdmin
-    | YouHaveACompletedSession
-    | YourSessionHasBeenSaved
+    | YourGroupEncounterHasBeenSaved
     | ZScoreHeightForAge
     | ZScoreMuacForAge
     | ZScoreWeightForAge
     | ZScoreWeightForHeight
 
 
-translationSet : TranslationId -> TranslationSet
+translationSet : TranslationId -> TranslationSet String
 translationSet trans =
     case trans of
         AccessDenied ->
@@ -326,9 +401,39 @@ translationSet trans =
             , kinyarwanda = Just "Kwinjira ntibyemera"
             }
 
+        AddChild ->
+            { english = "Add Child"
+            , kinyarwanda = Nothing
+            }
+
+        AddFamilyMember ->
+            { english = "Add Family Member"
+            , kinyarwanda = Nothing
+            }
+
+        AddFamilyMemberFor name ->
+            { english = "Add Family Member for " ++ name
+            , kinyarwanda = Nothing
+            }
+
+        AddParentOrCaregiver ->
+            { english = "Add Parent or Caregiver"
+            , kinyarwanda = Nothing
+            }
+
+        AddToGroup ->
+            { english = "Add to Group..."
+            , kinyarwanda = Nothing
+            }
+
         Admin ->
             { english = "Administration"
             , kinyarwanda = Just "Abakuriye"
+            }
+
+        AddressInformation ->
+            { english = "Address Information"
+            , kinyarwanda = Nothing
             }
 
         AgeWord ->
@@ -353,6 +458,16 @@ translationSet trans =
                     , kinyarwanda = Just "Buri mubyeyi agomba kubazwa uburyo bwo kuboneza urubyaro akoresha buri kwezi. Niba umubyeyi akeneye kuboneza urubyaro mwohereze ku kigo nderabuzima k'ubishinzwe"
                     }
 
+                {- MotherActivity ParticipantConsent ->
+                       { english = "Please review the following forms with the participant."
+                       , kinyarwanda = Nothing
+                       }
+
+                   ChildActivity Counseling ->
+                       { english = "Please refer to this list during counseling sessions and ensure that each task has been completed."
+                       , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
+                       }
+                -}
                 ChildActivity Height ->
                     { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight."
                     , kinyarwanda = Just "Saba Umubyeyi guhagarara inyuma y’umwana we agaramye, afata umutwe ku gice cy’amatwi. Sunikira akabaho ku buryo gakora mu bworo by’ibirenge byombi."
@@ -373,11 +488,6 @@ translationSet trans =
                     , kinyarwanda = Just "Fata ifoto ya buri mwana kuri buri bikorwa by'ipimwa Ifoto igomba kwerekana ibice by'umubiri wose by'umwana"
                     }
 
-                ChildActivity ProgressReport ->
-                    { english = "Progress report"
-                    , kinyarwanda = Nothing
-                    }
-
                 ChildActivity Weight ->
                     { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on."
                     , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
@@ -390,6 +500,16 @@ translationSet trans =
                     , kinyarwanda = Just "Ni ubuhe buryo, niba hari ubuhari, mu buryo bukurikira bwo kuboneza urubyaro ukoresha? Muri ubu buryo bukurikira bwo kuboneza urubyaro, ni ubuhe buryo mukoresha?"
                     }
 
+                {- MotherActivity ParticipantConsent ->
+                       { english = "Forms:"
+                       , kinyarwanda = Nothing
+                       }
+
+                   ChildActivity Counseling ->
+                       { english = "Please refer to this list during counseling sessions and ensure that each task has been completed."
+                       , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
+                       }
+                -}
                 ChildActivity Height ->
                     { english = "Height:"
                     , kinyarwanda = Just "Uburere:"
@@ -410,11 +530,6 @@ translationSet trans =
                     , kinyarwanda = Just "Ifoto"
                     }
 
-                ChildActivity ProgressReport ->
-                    { english = "Progress Report"
-                    , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
-                    }
-
                 ChildActivity Weight ->
                     { english = "Weight:"
                     , kinyarwanda = Just "Ibiro:"
@@ -427,6 +542,16 @@ translationSet trans =
                     , kinyarwanda = Just "Kuboneza Urubyaro? nticyaza muri raporo yimikurire yumwana"
                     }
 
+                {- MotherActivity ParticipantConsent ->
+                       { english = "Forms"
+                       , kinyarwanda = Nothing
+                       }
+
+                   ChildActivity Counseling ->
+                       { english = "Counseling"
+                       , kinyarwanda = Just "Ubujyanama"
+                       }
+                -}
                 ChildActivity Height ->
                     { english = "Height"
                     , kinyarwanda = Just "Uburebure"
@@ -447,11 +572,6 @@ translationSet trans =
                     , kinyarwanda = Just "Ifoto"
                     }
 
-                ChildActivity ProgressReport ->
-                    { english = "Progress Report"
-                    , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
-                    }
-
                 ChildActivity Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
@@ -464,6 +584,16 @@ translationSet trans =
                     , kinyarwanda = Just "Kuboneza Urubyaro? nticyaza muri raporo yimikurire yumwana"
                     }
 
+                {- MotherActivity ParticipantConsent ->
+                       { english = "Forms"
+                       , kinyarwanda = Nothing
+                       }
+
+                   ChildActivity Counseling ->
+                       { english = "Counseling"
+                       , kinyarwanda = Nothing
+                       }
+                -}
                 ChildActivity Height ->
                     { english = "Height"
                     , kinyarwanda = Just "Uburebure"
@@ -484,11 +614,6 @@ translationSet trans =
                     , kinyarwanda = Just "Ifoto"
                     }
 
-                ChildActivity ProgressReport ->
-                    { english = "Progress Report"
-                    , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
-                    }
-
                 ChildActivity Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
@@ -501,6 +626,9 @@ translationSet trans =
 
         ActivePage page ->
             translateActivePage page
+
+        Adherence adherence ->
+            translateAdherence adherence
 
         Age months days ->
             { english = toString months ++ " months " ++ toString days ++ " days"
@@ -572,6 +700,11 @@ translationSet trans =
             , kinyarwanda = Just <| "Umwana: " ++ name
             }
 
+        Back ->
+            { english = "Back"
+            , kinyarwanda = Nothing
+            }
+
         BackendError ->
             { english = "Error contacting backend"
             , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
@@ -582,14 +715,24 @@ translationSet trans =
             , kinyarwanda = Just "Kuvuka/ itariki y'amavuko"
             }
 
-        BeginHealthAssessment ->
-            { english = "Begin Health Assessment"
-            , kinyarwanda = Just "Gutangira igikorwa cy'ipima"
-            }
-
         Cancel ->
             { english = "Cancel"
             , kinyarwanda = Just "Guhagarika"
+            }
+
+        CaregiverName ->
+            { english = "Caregiver's Name"
+            , kinyarwanda = Nothing
+            }
+
+        CaregiverNationalId ->
+            { english = "Caregiver's National ID"
+            , kinyarwanda = Nothing
+            }
+
+        Cell ->
+            { english = "Cell"
+            , kinyarwanda = Nothing
             }
 
         CentimeterShorthand ->
@@ -603,6 +746,11 @@ translationSet trans =
         CheckIn ->
             { english = "Check in:"
             , kinyarwanda = Just "Kureba abaje"
+            }
+
+        ChildDemographicInformation ->
+            { english = "Child Demographic Information"
+            , kinyarwanda = Nothing
             }
 
         ChildNutritionSignLabel sign ->
@@ -690,23 +838,23 @@ translationSet trans =
             }
 
         ClickTheCheckMark ->
-            { english = "Click the check mark if the mother is in attendance. The check mark will appear green when a mother has been signed in."
+            { english = "Click the check mark if the mother / caregiver is in attendance. The check mark will appear green when a mother / caregiver has been signed in."
             , kinyarwanda = Just "Kanda (kuri) ku kazu niba umubyeyi ahari. Ku kazu harahita hahindura ibara habe icyaytsi niba wemeje ko umubyeyi ahari"
             }
 
-        ClinicNotFound ->
-            { english = "Clinic not found"
-            , kinyarwanda = Just "Ikigo nderabuzima nticyabonetse"
+        GroupNotFound ->
+            { english = "Group not found"
+            , kinyarwanda = Nothing
             }
 
-        Clinic ->
-            { english = "Clinic"
-            , kinyarwanda = Just "Ikigo nderabuzima"
+        Group ->
+            { english = "Group"
+            , kinyarwanda = Nothing
             }
 
-        Clinics ->
-            { english = "Clinics"
-            , kinyarwanda = Just "Ibigo nderebuzima"
+        Groups ->
+            { english = "Groups"
+            , kinyarwanda = Nothing
             }
 
         Closed ->
@@ -714,8 +862,23 @@ translationSet trans =
             , kinyarwanda = Just "Gufunga"
             }
 
-        ConfirmDeleteTrainingSessions ->
-            { english = "Are you sure you want to delete all training sessions?"
+        GroupUnauthorized ->
+            { english = "You are not authorized to work with this Group."
+            , kinyarwanda = Nothing
+            }
+
+        ConfirmDeleteTrainingGroupEncounters ->
+            { english = "Are you sure you want to delete all training Group Encounters?"
+            , kinyarwanda = Nothing
+            }
+
+        ConfirmRegisterParticipant ->
+            { english = "Are you sure you want to save this participant's data?"
+            , kinyarwanda = Nothing
+            }
+
+        ConfirmationRequired ->
+            { english = "Please confirm:"
             , kinyarwanda = Nothing
             }
 
@@ -724,23 +887,46 @@ translationSet trans =
             , kinyarwanda = Just "Ufite interineti (murandasi)"
             }
 
+        ContactInformation ->
+            { english = "Contact Information"
+            , kinyarwanda = Nothing
+            }
+
         Continue ->
             { english = "Continue"
             , kinyarwanda = Just "Gukomeza"
             }
 
-        CreateSession ->
-            { english = "Create Session"
-            , kinyarwanda = Just "Tangira igikorwa"
+        CounselingTimingHeading timing ->
+            translateCounselingTimingHeading timing
+
+        CounselingTopic topic ->
+            { english = topic.english
+            , kinyarwanda = topic.kinyarwanda
             }
 
-        CreateTrainingSessions ->
-            { english = "Create All Training Sessions"
+        CounselorReviewed ->
+            { english = "I have reviewed the above with the participant."
             , kinyarwanda = Nothing
             }
 
-        DeleteTrainingSessions ->
-            { english = "Delete All Training Sessions"
+        CounselorSignature ->
+            { english = "Entry Counselor Signature"
+            , kinyarwanda = Nothing
+            }
+
+        CreateGroupEncounter ->
+            { english = "Create Group Encounter"
+            , kinyarwanda = Just "Tangira igikorwa"
+            }
+
+        CreateTrainingGroupEncounters ->
+            { english = "Create All Training Group Encounters"
+            , kinyarwanda = Nothing
+            }
+
+        DeleteTrainingGroupEncounters ->
+            { english = "Delete All Training Group Encounters"
             , kinyarwanda = Nothing
             }
 
@@ -749,19 +935,19 @@ translationSet trans =
             , kinyarwanda = Just "Tabeau de bord"
             }
 
-        DataIsNowSaved ->
-            { english = "Data is now saved on the server."
-            , kinyarwanda = Just "Amakuru ubu abitswe kri seriveri."
-            }
-
         DateOfLastAssessment ->
             { english = "Date of last Assessment"
             , kinyarwanda = Just "Amakuru y'ipimwa ry'ubushize"
             }
 
         Day ->
-            { english = "day"
+            { english = "Day"
             , kinyarwanda = Just "Umunsi"
+            }
+
+        DateOfBirth ->
+            { english = "Date of Birth"
+            , kinyarwanda = Nothing
             }
 
         Days ->
@@ -774,24 +960,39 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        DownloadHealthAssessment ->
-            { english = "Download Health Assessment"
-            , kinyarwanda = Just "Gukurura Igikorwa cy’ipima"
+        DemographicInformation ->
+            { english = "Demographic Information"
+            , kinyarwanda = Nothing
             }
 
-        DownloadSuccessful ->
-            { english = "Download Successful"
-            , kinyarwanda = Just "Gukurura Igikorwa cy’ipima byagenze neza"
+        Device ->
+            { english = "Device"
+            , kinyarwanda = Nothing
             }
 
-        DownloadingSession1 ->
-            { english = "Downloading…"
-            , kinyarwanda = Just "Uri gukurura Igikorwa cy’ipima (gukurura amakuru y'ipima)"
+        DeviceNotAuthorized ->
+            { english =
+                """This device has not yet been authorized to sync data with the backend, or the
+                authorization has expired or been revoked. To authorize or re-authorize this
+                device, enter a pairing code below. This will permit sensitive data to be stored
+                on this device and updated to the backend. You should only authorize devices that
+                are under your control and which are secure."""
+            , kinyarwanda = Nothing
             }
 
-        DownloadingSession2 ->
-            { english = "Downloading may take a few minutes, or a few hours. Do not leave this page while data is downloading."
-            , kinyarwanda = Just "Gukurura Igikorwa cy’ipima bishobora gutwara iminota mike cg amasaha make. Ub uretse gufunga iyi paji mu gihe ugikurura amakuru."
+        DeviceStatus ->
+            { english = "Device Status"
+            , kinyarwanda = Nothing
+            }
+
+        District ->
+            { english = "District"
+            , kinyarwanda = Nothing
+            }
+
+        DOB ->
+            { english = "DOB"
+            , kinyarwanda = Nothing
             }
 
         DropzoneDefaultMessage ->
@@ -799,19 +1000,34 @@ translationSet trans =
             , kinyarwanda = Just "Kanda hano niba ushaka gufotora cg ukure ifoto mu bubiko hano."
             }
 
-        DownloadSession1 ->
-            { english = "You have no sessions loaded to this device. Your next session will be available for download the day before it is scheduled to begin."
-            , kinyarwanda = Just "Nta bikirwa ry'ipimwa byinjijwe kuri tablet, ibikorwa by'ipimwa bikurikira bazaboneka kuba byakurwa kuri internet umunsi ubanziriza ipima. "
+        EditRelationship ->
+            { english = "Edit Relationship"
+            , kinyarwanda = Nothing
             }
 
-        DownloadSession2 ->
-            { english = "You must be connected to the internet to download a session."
-            , kinyarwanda = Just "Ugomba gukoresha internet (murandasi) kugirango ubone amakuru y'ipima."
+        EndGroupEncounter ->
+            { english = "End Group Encounter"
+            , kinyarwanda = Nothing
             }
 
-        EndSession ->
-            { english = "End Session"
-            , kinyarwanda = Just "Kurangiza ipima (gupima)"
+        EnterPairingCode ->
+            { english = "Enter pairing code"
+            , kinyarwanda = Nothing
+            }
+
+        MemoryQuota quota ->
+            { english = "Memory used " ++ toString (quota.usedJSHeapSize // (1024 * 1024)) ++ " MB of available " ++ toString (quota.jsHeapSizeLimit // (1024 * 1024)) ++ " MB"
+            , kinyarwanda = Nothing
+            }
+
+        StorageQuota quota ->
+            { english = "Storage used " ++ toString (quota.usage // (1024 * 1024)) ++ " MB of available " ++ toString (quota.quota // (1024 * 1024)) ++ " MB"
+            , kinyarwanda = Nothing
+            }
+
+        SubmitPairingCode ->
+            { english = "Submit Pairing Code"
+            , kinyarwanda = Nothing
             }
 
         ErrorCheckLocalConfig ->
@@ -824,18 +1040,18 @@ translationSet trans =
             , kinyarwanda = Just "Ikosa mu igena miterere"
             }
 
-        ErrorFetchingCachedSessionTitle ->
-            { english = "Error Loading Cached Session"
+        Estimated ->
+            { english = "Estimated"
             , kinyarwanda = Nothing
             }
 
-        ErrorFetchingCachedSessionMessage ->
-            { english = """
-                There was an error loading the session data cached on this
-                device. An error report has been sent (or will be sent when the
-                device is online). Contact the Ihangane project for further
-                instructions.
-                """
+        FamilyInformation ->
+            { english = "Family Information"
+            , kinyarwanda = Nothing
+            }
+
+        FamilyMembers ->
+            { english = "Family Members"
             , kinyarwanda = Nothing
             }
 
@@ -876,6 +1092,21 @@ translationSet trans =
                     , kinyarwanda = Just "nta buryo bwo kuboneza urubyaro akoresha"
                     }
 
+        FamilyUbudehe ->
+            { english = "Family Ubudehe"
+            , kinyarwanda = Nothing
+            }
+
+        FatherName ->
+            { english = "Father's Name"
+            , kinyarwanda = Nothing
+            }
+
+        FatherNationalId ->
+            { english = "Father's National ID"
+            , kinyarwanda = Nothing
+            }
+
         Fetch ->
             { english = "Fetch"
             , kinyarwanda = Just "Gushakisha"
@@ -886,16 +1117,16 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        FirstName ->
+            { english = "First Name"
+            , kinyarwanda = Nothing
+            }
+
         FormError errorValue ->
             translateFormError errorValue
 
         FormField field ->
             translateFormField field
-
-        FutureSessions ->
-            { english = "Future Sessions"
-            , kinyarwanda = Nothing
-            }
 
         Gender gender ->
             case gender of
@@ -909,9 +1140,61 @@ translationSet trans =
                     , kinyarwanda = Just "Gore"
                     }
 
+        GenderLabel ->
+            { english = "Gender"
+            , kinyarwanda = Nothing
+            }
+
         GoHome ->
             { english = "Go to main page"
             , kinyarwanda = Just "Kujya ahabanza"
+            }
+
+        HaveYouSynced ->
+            { english = "Have you synced data for the health center you are working with?"
+            , kinyarwanda = Nothing
+            }
+
+        HealthCenter ->
+            { english = "Health Center"
+            , kinyarwanda = Nothing
+            }
+
+        HIVStatus status ->
+            case status of
+                HIVExposedInfant ->
+                    { english = "HIV-exposed Infant"
+                    , kinyarwanda = Nothing
+                    }
+
+                Negative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                NegativeDiscordantCouple ->
+                    { english = "Negative - discordant couple"
+                    , kinyarwanda = Nothing
+                    }
+
+                Positive ->
+                    { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.Person.Model.Unknown ->
+                    { english = "Unknown"
+                    , kinyarwanda = Nothing
+                    }
+
+        HIVStatusLabel ->
+            { english = "HIV Status"
+            , kinyarwanda = Nothing
+            }
+
+        HouseholdSize ->
+            { english = "Household Size"
+            , kinyarwanda = Nothing
             }
 
         HttpError error ->
@@ -928,8 +1211,8 @@ translationSet trans =
             }
 
         LevelOfEducationLabel ->
-            { english = "Level of Education: "
-            , kinyarwanda = Just <| "Amashuri wize: "
+            { english = "Level of Education"
+            , kinyarwanda = Just <| "Amashuri wize"
             }
 
         LevelOfEducation educationLevel ->
@@ -982,6 +1265,33 @@ translationSet trans =
             , kinyarwanda = Just "Banza urebe ko ufite interineti. Ikibazo nigikomeza, hamagara The Ihangane Project kuri +250 788 817 542"
             }
 
+        MaritalStatusLabel ->
+            { english = "Marital Status"
+            , kinyarwanda = Nothing
+            }
+
+        MaritalStatus status ->
+            case status of
+                Divorced ->
+                    { english = "Divorced"
+                    , kinyarwanda = Nothing
+                    }
+
+                Married ->
+                    { english = "Married"
+                    , kinyarwanda = Nothing
+                    }
+
+                Single ->
+                    { english = "Single"
+                    , kinyarwanda = Nothing
+                    }
+
+                Widowed ->
+                    { english = "Widowed"
+                    , kinyarwanda = Nothing
+                    }
+
         MeasurementNoChange ->
             { english = "No Change"
             , kinyarwanda = Just "nta cyahindutse"
@@ -997,6 +1307,11 @@ translationSet trans =
             , kinyarwanda = Just <| "Kwiyongera " ++ toString amount
             }
 
+        MiddleName ->
+            { english = "Middle Name"
+            , kinyarwanda = Nothing
+            }
+
         MinutesAgo minutes ->
             { english =
                 if minutes == 0 then
@@ -1007,6 +1322,38 @@ translationSet trans =
 
                 else
                     toString minutes ++ " minutes ago"
+            , kinyarwanda = Nothing
+            }
+
+        ModeOfDelivery mode ->
+            case mode of
+                VaginalDelivery (Spontaneous True) ->
+                    { english = "Spontaneous vaginal delivery with episiotomy"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaginalDelivery (Spontaneous False) ->
+                    { english = "Spontaneous vaginal delivery without episiotomy"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaginalDelivery WithVacuumExtraction ->
+                    { english = "Vaginal delivery with vacuum extraction"
+                    , kinyarwanda = Nothing
+                    }
+
+                CesareanDelivery ->
+                    { english = "Cesarean delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+        ModeOfDeliveryLabel ->
+            { english = "Mode of delivery"
+            , kinyarwanda = Nothing
+            }
+
+        Month ->
+            { english = "Month"
             , kinyarwanda = Nothing
             }
 
@@ -1025,9 +1372,24 @@ translationSet trans =
             , kinyarwanda = Just "Umubyeyi"
             }
 
+        MotherDemographicInformation ->
+            { english = "Mother Demographic Information"
+            , kinyarwanda = Nothing
+            }
+
         MotherName name ->
-            { english = "Mother: " ++ name
+            { english = "Mother/Caregiver: " ++ name
             , kinyarwanda = Just <| "Umubyeyi: " ++ name
+            }
+
+        MotherNameLabel ->
+            { english = "Mother's Name"
+            , kinyarwanda = Nothing
+            }
+
+        MotherNationalId ->
+            { english = "Mother's National ID"
+            , kinyarwanda = Nothing
             }
 
         Mothers ->
@@ -1057,8 +1419,24 @@ translationSet trans =
             , kinyarwanda = Just "Konti yanjye"
             }
 
-        NoActiveIncidents ->
-            { english = "No active incidents!"
+        MyRelatedBy relationship ->
+            translateMyRelatedBy relationship
+
+        MyRelatedByQuestion relationship ->
+            translateMyRelatedByQuestion relationship
+
+        NationalIdNumber ->
+            { english = "National ID Number"
+            , kinyarwanda = Nothing
+            }
+
+        Next ->
+            { english = "Next"
+            , kinyarwanda = Nothing
+            }
+
+        No ->
+            { english = "No"
             , kinyarwanda = Nothing
             }
 
@@ -1080,6 +1458,11 @@ translationSet trans =
         NoActivitiesPendingForThisParticipant ->
             { english = "All activities are completed for this participant."
             , kinyarwanda = Just "Ibikorwa byose byarangiye kubitabiriye."
+            }
+
+        NoGroupsFound ->
+            { english = "No groups found."
+            , kinyarwanda = Nothing
             }
 
         NoMatchesFound ->
@@ -1107,11 +1490,6 @@ translationSet trans =
             , kinyarwanda = Just "Ababje bose barangirijwe."
             }
 
-        NoCachedSession ->
-            { english = "No session was found on this device."
-            , kinyarwanda = Nothing
-            }
-
         NoChildrenRegisteredInTheSystem ->
             { english = "No children registered in the system"
             , kinyarwanda = Just "Ntamwana wanditswe muriyi sisiteme"
@@ -1132,6 +1510,11 @@ translationSet trans =
             , kinyarwanda = Just "Ntamurandasi"
             }
 
+        NumberOfChildrenUnder5 ->
+            { english = "Number of Children under 5"
+            , kinyarwanda = Nothing
+            }
+
         OK ->
             { english = "OK"
             , kinyarwanda = Just "Nibyo, yego"
@@ -1142,9 +1525,9 @@ translationSet trans =
             , kinyarwanda = Just "imyaka"
             }
 
-        OnceYouEndYourSession ->
-            { english = "Once you end your session, you will no longer be able to edit or add data. Remember to upload this session within the next 48 hours."
-            , kinyarwanda = Just "Igihe igikorwa cyawe ukirangije, ntubasha guhindura cyangwa kongera kubipimo, ibka kubyohereza mumasaha 48"
+        OnceYouEndYourGroupEncounter ->
+            { english = "Once you end your Group Encounter, you will no longer be able to edit or add data."
+            , kinyarwanda = Nothing
             }
 
         Page ->
@@ -1162,14 +1545,65 @@ translationSet trans =
             , kinyarwanda = Just "Mutwihanganire ntabwo ubufasha mwasabye mubashije kuboneka."
             }
 
+        ParticipantDirectory ->
+            { english = "Participant Directory"
+            , kinyarwanda = Nothing
+            }
+
         Participants ->
             { english = "Participants"
             , kinyarwanda = Just "Ubwitabire"
             }
 
+        ParticipantReviewed ->
+            { english = "I have reviewed and understand the above."
+            , kinyarwanda = Nothing
+            }
+
+        ParticipantSignature ->
+            { english = "Participant Signature"
+            , kinyarwanda = Nothing
+            }
+
         ParticipantSummary ->
             { english = "Participant Summary"
             , kinyarwanda = Just "Umwirondoro w’urera umwana"
+            }
+
+        ParticipantDemographicInformation ->
+            { english = "Participant Demographic Information"
+            , kinyarwanda = Nothing
+            }
+
+        ParticipantInformation ->
+            { english = "Participant Information"
+            , kinyarwanda = Nothing
+            }
+
+        People ->
+            { english = "People"
+            , kinyarwanda = Nothing
+            }
+
+        PersistentStorage authorized ->
+            if authorized then
+                { english = "Persistent storage has been authorized. The browser will not delete locally cached data without your approval."
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "Persistent storage has not been authorized. The browser may delete locally cached data if storage runs low."
+                , kinyarwanda = Nothing
+                }
+
+        Person ->
+            { english = "Person"
+            , kinyarwanda = Nothing
+            }
+
+        PersonHasBeenSaved ->
+            { english = "Person has been saved"
+            , kinyarwanda = Nothing
             }
 
         PlaceholderEnterHeight ->
@@ -1182,23 +1616,18 @@ translationSet trans =
             , kinyarwanda = Just "Andika uburebure hano…"
             }
 
+        PlaceholderEnterParticipantName ->
+            { english = "Enter participant name here"
+            , kinyarwanda = Nothing
+            }
+
         PlaceholderEnterWeight ->
             { english = "Enter weight here…"
             , kinyarwanda = Just "Andika ibiro hano…"
             }
 
-        PlaceholderTextGroupDate ->
-            { english = "Group Date"
-            , kinyarwanda = Just "Itariki y'itsinda"
-            }
-
-        PlaceholderTextJoined ->
-            { english = "Joined in June 2017"
-            , kinyarwanda = Just "Yinjiye muri kamena 2017"
-            }
-
-        PleaseSelectClinic ->
-            { english = "Please select the relevant clinic for the new session"
+        PleaseSelectGroup ->
+            { english = "Please select the relevant Group for the new encounter"
             , kinyarwanda = Nothing
             }
 
@@ -1207,9 +1636,79 @@ translationSet trans =
             , kinyarwanda = Just <| "Ibipimo by'ubushize: " ++ toString value
             }
 
-        ReadyToBeginSession ->
-            { english = "You are now ready to begin your session."
-            , kinyarwanda = Just "Ubu ushobora gutangira ibikorwa byawe."
+        Profession ->
+            { english = "Profession"
+            , kinyarwanda = Nothing
+            }
+
+        ProgressReport ->
+            { english = "Progress Report"
+            , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
+            }
+
+        Province ->
+            { english = "Province"
+            , kinyarwanda = Nothing
+            }
+
+        Register ->
+            { english = "Register"
+            , kinyarwanda = Nothing
+            }
+
+        RegisterAParticipant ->
+            { english = "Register a participant"
+            , kinyarwanda = Nothing
+            }
+
+        RegisterHelper ->
+            { english = "Not the participant you were looking for?"
+            , kinyarwanda = Nothing
+            }
+
+        RegisterNewParticipant ->
+            { english = "Register a new participant"
+            , kinyarwanda = Nothing
+            }
+
+        RegistratingHealthCenter ->
+            { english = "Registrating Health Center"
+            , kinyarwanda = Nothing
+            }
+
+        RegistrationSuccessful ->
+            { english = "Registration Successful"
+            , kinyarwanda = Nothing
+            }
+
+        RegistrationSuccessfulParticipantAdded ->
+            { english = "The participant has been added to E-Heza."
+            , kinyarwanda = Nothing
+            }
+
+        RegistrationSuccessfulSuggestAddingChild ->
+            { english = "The participant has been added to E-Heza. Would you like to add a child for this participant?"
+            , kinyarwanda = Nothing
+            }
+
+        RegistrationSuccessfulSuggestAddingMother ->
+            { english = "The participant has been added to E-Heza. Would you like to add a mother for this participant?"
+            , kinyarwanda = Nothing
+            }
+
+        RelationSuccessful ->
+            { english = "Relation Successful"
+            , kinyarwanda = Nothing
+            }
+
+        RelationSuccessfulChildWithMother ->
+            { english = "Child succesfully assocoated with mother."
+            , kinyarwanda = Nothing
+            }
+
+        RelationSuccessfulMotherWithChild ->
+            { english = "Mother succesfully assocoated with child."
+            , kinyarwanda = Nothing
             }
 
         ReportAge age ->
@@ -1227,14 +1726,26 @@ translationSet trans =
             , kinyarwanda = Just <| toString remaining ++ " iyibutswa rya raporo"
             }
 
-        ReloadParticipant ->
-            { english = "Re-load Participant"
-            , kinyarwanda = Just "Ishakisha ryabaritabira"
+        ReportResultsOfSearch total ->
+            case total of
+                1 ->
+                    { english = "There is 1 participant that matches your search."
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = "There are " ++ toString total ++ " participants that match your search."
+                    , kinyarwanda = Nothing
+                    }
+
+        RecentAndUpcomingGroupEncounters ->
+            { english = "Recent and upcoming Group Encounters"
+            , kinyarwanda = Nothing
             }
 
-        ReportCompleted { pending, total } ->
-            { english = toString (total - pending) ++ " / " ++ toString total ++ " Completed"
-            , kinyarwanda = Just <| toString (total - pending) ++ " / " ++ toString total ++ " Raporo irarangiye"
+        ReportCompleted { pending, completed } ->
+            { english = toString completed ++ " / " ++ toString (pending + completed) ++ " Completed"
+            , kinyarwanda = Just <| toString completed ++ " / " ++ toString (pending + completed) ++ " Raporo irarangiye"
             }
 
         ResolveMonth month ->
@@ -1255,9 +1766,34 @@ translationSet trans =
             , kinyarwanda = Just "Kubika error (ikosa mu kubika)"
             }
 
+        Search ->
+            { english = "Search"
+            , kinyarwanda = Nothing
+            }
+
         SearchByName ->
             { english = "Search by Name"
             , kinyarwanda = Just "Gushakisha izina"
+            }
+
+        SearchHelper ->
+            { english = "Search to see if the participant already exists in E-Heza. If the person you are looking for does not appear in the search, please create a new record for them."
+            , kinyarwanda = Nothing
+            }
+
+        SearchHelperFamilyMember ->
+            { english = "Search to see if the additional family member already exists in E-Heza. If the person you are looking for does not appear in the search, please create a new record for them."
+            , kinyarwanda = Nothing
+            }
+
+        SecondName ->
+            { english = "Second Name"
+            , kinyarwanda = Nothing
+            }
+
+        Sector ->
+            { english = "Sector"
+            , kinyarwanda = Nothing
             }
 
         SelectLanguage ->
@@ -1265,14 +1801,14 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        SelectClinic ->
-            { english = "Select Clinic..."
-            , kinyarwanda = Just "hitamo ikigo nderabuzima..."
+        SelectGroup ->
+            { english = "Select Group..."
+            , kinyarwanda = Nothing
             }
 
-        SelectYourClinic ->
-            { english = "Select your clinic"
-            , kinyarwanda = Just "Guhitamo ikigo nderabuzima"
+        SelectYourGroup ->
+            { english = "Select your Group"
+            , kinyarwanda = Nothing
             }
 
         ServiceWorkerActive ->
@@ -1355,34 +1891,38 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        SessionClosed ->
-            { english = "Session closed"
-            , kinyarwanda = Just "igikorwa kirafunze:"
-            }
-
-        SessionClosed2 sessionId ->
-            { english =
-                "You have stored data on the device for session "
-                    ++ toString (fromEntityId sessionId)
-                    ++ ", but it was not uploaded to the server and the session is closed. "
-                    ++ "Please contact the Ihangane project for further instructions."
+        GroupEncounterClosed ->
+            { english = "Group Encounter closed"
             , kinyarwanda = Nothing
             }
 
-        SessionInProgress ->
-            { english = "A health assessment is already in progress for another clinic."
-            , kinyarwanda = Just "Hari igikorwa cy’ipima kiri gukorwa mu kindi kigo nderabuzima."
-            }
-
-        SessionUnauthorized ->
-            { english = "Session unauthorized"
+        GroupEncounterClosed2 sessionId ->
+            { english =
+                String.join " "
+                    [ "Group Encounter"
+                    , fromEntityUuid sessionId
+                    , """is closed. If you need to make further modifications
+                    to it, please contact an administrator to have it
+                    re-opened."""
+                    ]
             , kinyarwanda = Nothing
             }
 
-        SessionUnauthorized2 ->
+        GroupEncounterLoading sessionId ->
+            { english = "Loading Group Encounter " ++ fromEntityUuid sessionId
+            , kinyarwanda = Nothing
+            }
+
+        GroupEncounterUnauthorized ->
+            { english = "Group Encounter unauthorized"
+            , kinyarwanda = Nothing
+            }
+
+        GroupEncounterUnauthorized2 ->
             { english =
-                """A health assessment is in progress on this device, but you are not authorized to view it.
-        Please contact the Ihangane project for further instructions."""
+                """You are not authorized to view this health assessment.
+                Please contact the Ihangane project for further
+                instructions."""
             , kinyarwanda = Nothing
             }
 
@@ -1406,9 +1946,39 @@ translationSet trans =
             , kinyarwanda = Just "Itariki urangirijeho"
             }
 
+        StartSyncing ->
+            { english = "Start Syncing"
+            , kinyarwanda = Nothing
+            }
+
+        StopSyncing ->
+            { english = "Stop Syncing"
+            , kinyarwanda = Nothing
+            }
+
+        Submit ->
+            { english = "Submit"
+            , kinyarwanda = Nothing
+            }
+
         Success ->
             { english = "Success"
             , kinyarwanda = Just "Byagezweho"
+            }
+
+        SyncGeneral ->
+            { english = "Sync Status (General)"
+            , kinyarwanda = Nothing
+            }
+
+        TakenCareOfBy ->
+            { english = "Taken care of by"
+            , kinyarwanda = Nothing
+            }
+
+        TelephoneNumber ->
+            { english = "Telephone Number"
+            , kinyarwanda = Nothing
             }
 
         ThisActionCannotBeUndone ->
@@ -1416,14 +1986,9 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        ThisClinicHasNoMothers ->
-            { english = "This clinic has no mothers assigned to it."
+        ThisGroupHasNoMothers ->
+            { english = "This Group has no mothers assigned to it."
             , kinyarwanda = Nothing
-            }
-
-        TitleHealthAssessment ->
-            { english = "2017 July Health Assessment"
-            , kinyarwanda = Just "Igikorwa kipima ,kamena2017"
             }
 
         Training ->
@@ -1431,13 +1996,18 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        TrainingSessionCreateSuccessMessage ->
-            { english = "Training sessions were created."
+        TrainingGroupEncounterCreateSuccessMessage ->
+            { english = "Training encounters were created."
             , kinyarwanda = Nothing
             }
 
-        TrainingSessionDeleteSuccessMessage ->
-            { english = "Training sessions were deleted."
+        TrainingGroupEncounterDeleteSuccessMessage ->
+            { english = "Training encounters were deleted."
+            , kinyarwanda = Nothing
+            }
+
+        TrySyncing ->
+            { english = "Try syncing with backend"
             , kinyarwanda = Nothing
             }
 
@@ -1446,14 +2016,9 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        UnableToDownload ->
-            { english = "Unable to Download"
-            , kinyarwanda = Just "ntibishoboka gukurura"
-            }
-
-        UnableToUpload ->
-            { english = "Unable to Upload"
-            , kinyarwanda = Just "Kwohereza ntibikunda"
+        Unknown ->
+            { english = "Unknown"
+            , kinyarwanda = Nothing
             }
 
         Update ->
@@ -1464,26 +2029,6 @@ translationSet trans =
         UpdateError ->
             { english = "Update Error"
             , kinyarwanda = Just "ikosa mwivugurura"
-            }
-
-        UploadHealthAssessment ->
-            { english = "Upload Health Assessment"
-            , kinyarwanda = Just "Kwohereza Igikorwa cy’ipima"
-            }
-
-        UploadingSession1 ->
-            { english = "Uploading…"
-            , kinyarwanda = Just "Kohereza"
-            }
-
-        UploadingSession2 ->
-            { english = "Uploading may take a few minutes, or a few hours. Do not leave this page while data is uploading."
-            , kinyarwanda = Just "Kohereza igikorwa bishobora gufata iminota mike cyangwa amasaha make. Wifunga iyi paji mugihe iki gikorwa kitararangira."
-            }
-
-        UploadSuccessful ->
-            { english = "Upload Successful"
-            , kinyarwanda = Just "Kwohereza byagenze neza"
             }
 
         ValidationErrors ->
@@ -1502,9 +2047,24 @@ translationSet trans =
             , kinyarwanda = Just "Garagaza uruhererekane rw'imikurire y'umwana"
             }
 
+        Village ->
+            { english = "Village"
+            , kinyarwanda = Nothing
+            }
+
         WelcomeUser name ->
             { english = "Welcome " ++ name
             , kinyarwanda = Just <| "Murakaza neza " ++ name
+            }
+
+        Year ->
+            { english = "Year"
+            , kinyarwanda = Nothing
+            }
+
+        Yes ->
+            { english = "Yes"
+            , kinyarwanda = Nothing
             }
 
         YouAreNotAnAdmin ->
@@ -1512,14 +2072,9 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        YouHaveACompletedSession ->
-            { english = "You have a completed session that needs to be uploaded. Please connect to the internet and upload this session within 48 hours."
-            , kinyarwanda = Just "Ufite igikorwa cyarangiye ukeneye kohereza. Jya kuri intereneti ucyohereze bitarenze  amasaha 48."
-            }
-
-        YourSessionHasBeenSaved ->
-            { english = "Your session has been saved."
-            , kinyarwanda = Just "Igikorwa cyawe cyabitswe."
+        YourGroupEncounterHasBeenSaved ->
+            { english = "Your Group Encounter has been saved."
+            , kinyarwanda = Nothing
             }
 
         ZScoreHeightForAge ->
@@ -1543,12 +2098,69 @@ translationSet trans =
             }
 
 
-translateActivePage : Page -> TranslationSet
+translateMyRelatedBy : MyRelatedBy -> TranslationSet String
+translateMyRelatedBy relationship =
+    case relationship of
+        MyChild ->
+            { english = "Child"
+            , kinyarwanda = Just "Umwana"
+            }
+
+        MyParent ->
+            { english = "Parent"
+            , kinyarwanda = Nothing
+            }
+
+        MyCaregiven ->
+            { english = "Care given"
+            , kinyarwanda = Nothing
+            }
+
+        MyCaregiver ->
+            { english = "Caregiver"
+            , kinyarwanda = Nothing
+            }
+
+
+{-| Basically, this is backwards. Our data is showing what the second
+person is from the first person's point of view, but we want to
+ask the question the opposite way.
+-}
+translateMyRelatedByQuestion : MyRelatedBy -> TranslationSet String
+translateMyRelatedByQuestion relationship =
+    case relationship of
+        MyChild ->
+            { english = "is the parent of"
+            , kinyarwanda = Nothing
+            }
+
+        MyParent ->
+            { english = "is the child of"
+            , kinyarwanda = Nothing
+            }
+
+        MyCaregiven ->
+            { english = "is the caregiver for"
+            , kinyarwanda = Nothing
+            }
+
+        MyCaregiver ->
+            { english = "is given care by"
+            , kinyarwanda = Nothing
+            }
+
+
+translateActivePage : Page -> TranslationSet String
 translateActivePage page =
     case page of
-        LoginPage ->
-            { english = "Login"
-            , kinyarwanda = Just "Kwinjira"
+        DevicePage ->
+            { english = "Device Status"
+            , kinyarwanda = Nothing
+            }
+
+        PinCodePage ->
+            { english = "PIN Code"
+            , kinyarwanda = Nothing
             }
 
         PageNotFound url ->
@@ -1561,62 +2173,130 @@ translateActivePage page =
             , kinyarwanda = Nothing
             }
 
-        SessionPage sessionPage ->
-            case sessionPage of
-                ActivitiesPage ->
-                    { english = "Activities"
-                    , kinyarwanda = Just "Ibikorwa"
-                    }
-
-                ActivityPage activityType ->
-                    { english = "Activity"
-                    , kinyarwanda = Just "Igikorwa"
-                    }
-
-                AttendancePage ->
-                    { english = "Attendance"
-                    , kinyarwanda = Just "Ubwitabire"
-                    }
-
-                ParticipantsPage ->
-                    { english = "Participants"
-                    , kinyarwanda = Just "Abagenerwabikorwa"
-                    }
-
-                ChildPage childId ->
-                    { english = "Child"
-                    , kinyarwanda = Just "Umwana"
-                    }
-
-                MotherPage motherId ->
-                    { english = "Mother"
-                    , kinyarwanda = Just "Umubyeyi"
-                    }
-
-                ProgressReportPage childId ->
-                    { english = "Progress Report"
-                    , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
-                    }
-
         UserPage userPage ->
             case userPage of
-                AdminPage ->
-                    { english = "Admin"
+                ClinicsPage _ ->
+                    { english = "Groups"
                     , kinyarwanda = Nothing
                     }
 
-                ClinicsPage _ ->
-                    { english = "Clinics"
-                    , kinyarwanda = Just "Ibigo nderabuzima"
-                    }
-
                 MyAccountPage ->
-                    { english = "'My Account'"
+                    { english = "My Account"
                     , kinyarwanda = Just "Compte"
                     }
 
+                CreatePersonPage relationId ->
+                    { english = "Create Person"
+                    , kinyarwanda = Nothing
+                    }
 
-translateChartPhrase : ChartPhrase -> TranslationSet
+                PersonPage id ->
+                    { english = "Person"
+                    , kinyarwanda = Nothing
+                    }
+
+                PersonsPage _ ->
+                    { english = "Participant Directory"
+                    , kinyarwanda = Nothing
+                    }
+
+                RelationshipPage _ _ ->
+                    { english = "Relationship"
+                    , kinyarwanda = Nothing
+                    }
+
+                SessionPage sessionId sessionPage ->
+                    case sessionPage of
+                        ActivitiesPage ->
+                            { english = "Activities"
+                            , kinyarwanda = Just "Ibikorwa"
+                            }
+
+                        ActivityPage activityType ->
+                            { english = "Activity"
+                            , kinyarwanda = Just "Igikorwa"
+                            }
+
+                        AttendancePage ->
+                            { english = "Attendance"
+                            , kinyarwanda = Just "Ubwitabire"
+                            }
+
+                        ParticipantsPage ->
+                            { english = "Participants"
+                            , kinyarwanda = Just "Abagenerwabikorwa"
+                            }
+
+                        ChildPage childId ->
+                            { english = "Child"
+                            , kinyarwanda = Just "Umwana"
+                            }
+
+                        MotherPage motherId ->
+                            { english = "Mother"
+                            , kinyarwanda = Just "Umubyeyi"
+                            }
+
+                        ProgressReportPage childId ->
+                            { english = "Progress Report"
+                            , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
+                            }
+
+
+translateAdherence : Adherence -> TranslationSet String
+translateAdherence adherence =
+    case adherence of
+        PrescribedAVRs ->
+            { english = "Ask the mother to name or describe her prescribed AVRs. Can she correctly describe her medication?"
+            , kinyarwanda = Just "Saba umubyeyi kuvuga izina ry’imiti igabanya ubukana bamuhaye. Ese abashije kuyivuga neza?"
+            }
+
+        CorrectDosage ->
+            { english = "Can she tell you the correct dosage?"
+            , kinyarwanda = Just "Yaba abasha kukubwira neza uburyo ayifata?"
+            }
+
+        TimeOfDay ->
+            { english = "Can she tell you the correct time of day to make her ARVs?"
+            , kinyarwanda = Just "Yaba abasha kukubwira amasaha ayifatiraho buri munsi?"
+            }
+
+        Adhering ->
+            { english = "Based on your conversations with her, do you think she is adhering to her ARV regimen?"
+            , kinyarwanda = Just "Ugendeye ku kiganiro mwagiranye, utekereza ko ari gufata imiti ye neza?"
+            }
+
+
+translateCounselingTimingHeading : CounselingTiming -> TranslationSet String
+translateCounselingTimingHeading timing =
+    case timing of
+        Entry ->
+            { english = "Entry Counseling Checklist:"
+            , kinyarwanda = Just "Ibigomba kugirwaho inama ku ntangiriro:"
+            }
+
+        MidPoint ->
+            { english = "Mid Program Review Checklist:"
+            , kinyarwanda = Just "Ibigomba kugirwaho inama hagati mu gusubiramo gahunda:"
+            }
+
+        Exit ->
+            { english = "Exit Counseling Checklist:"
+            , kinyarwanda = Just "Ibigomba kugirwaho inama kumuntu usohotse muri gahunda:"
+            }
+
+        BeforeMidpoint ->
+            { english = "Reminder"
+            , kinyarwanda = Just "Kwibutsa"
+            }
+
+        BeforeExit ->
+            { english = "Reminder"
+            , kinyarwanda = Just "Kwibutsa"
+            }
+
+
+translateChartPhrase : ChartPhrase -> TranslationSet String
 translateChartPhrase phrase =
     case phrase of
         AgeCompletedMonthsYears ->
@@ -1659,11 +2339,6 @@ translateChartPhrase phrase =
             , kinyarwanda = Just "Umwaka umwe"
             }
 
-        TwoYears ->
-            { english = "2 years"
-            , kinyarwanda = Just "Imyaka 2"
-            }
-
         WeightForAgeBoys ->
             { english = "Weight-for-age BOYS"
             , kinyarwanda = Just "Ibiro ku myaka umuhungu"
@@ -1689,13 +2364,18 @@ translateChartPhrase phrase =
             , kinyarwanda = Just "Ibiro kg"
             }
 
+        YearsPlural value ->
+            { english = toString value ++ " years"
+            , kinyarwanda = Just <| "Imyaka " ++ toString value
+            }
+
         ZScoreChartsAvailableAt ->
             { english = "Z-score charts available at"
             , kinyarwanda = Just "Raporo ku mikurire y'umwana"
             }
 
 
-translateLoginPhrase : LoginPhrase -> TranslationSet
+translateLoginPhrase : LoginPhrase -> TranslationSet String
 translateLoginPhrase phrase =
     case phrase of
         CheckingCachedCredentials ->
@@ -1758,6 +2438,16 @@ translateLoginPhrase phrase =
             , kinyarwanda = Just "Ijambo ry'ibanga"
             }
 
+        PinCode ->
+            { english = "PIN code"
+            , kinyarwanda = Nothing
+            }
+
+        PinCodeRejected ->
+            { english = "Your PIN code was not recognized."
+            , kinyarwanda = Nothing
+            }
+
         SignIn ->
             { english = "Sign In"
             , kinyarwanda = Just "Kwinjira"
@@ -1779,7 +2469,7 @@ translateLoginPhrase phrase =
             }
 
 
-translateMonth : Month -> TranslationSet
+translateMonth : Month -> TranslationSet String
 translateMonth month =
     case month of
         Jan ->
@@ -1843,7 +2533,7 @@ translateMonth month =
             }
 
 
-translateHttpError : Http.Error -> TranslationSet
+translateHttpError : Http.Error -> TranslationSet String
 translateHttpError error =
     case error of
         Http.NetworkError ->
@@ -1872,16 +2562,81 @@ translateHttpError error =
             }
 
 
-translateValidationError : ValidationError -> TranslationSet
+translateValidationError : ValidationError -> TranslationSet String
 translateValidationError id =
     case id of
-        UnknownClinic ->
-            { english = "is not a known clinic"
+        DigitsOnly ->
+            { english = "should contain only digit characters"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidBirthDate ->
+            { english = "is invalid"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidBirthDateForAdult ->
+            { english = "is invalid - adult should at least 13 years old"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidBirthDateForChild ->
+            { english = "is invalid - child should be below the age of 13"
+            , kinyarwanda = Nothing
+            }
+
+        LengthError correctLength ->
+            { english = "should contain " ++ toString correctLength ++ " characters"
+            , kinyarwanda = Nothing
+            }
+
+        LettersOnly ->
+            { english = "should contain only letter characters"
+            , kinyarwanda = Nothing
+            }
+
+        RequiredField ->
+            { english = "is a required field"
+            , kinyarwanda = Nothing
+            }
+
+        UnknownGroup ->
+            { english = "is not a known Group"
+            , kinyarwanda = Nothing
+            }
+
+        UnknownProvince ->
+            { english = "is not a known province"
+            , kinyarwanda = Nothing
+            }
+
+        UnknownDistrict ->
+            { english = "is not a known district"
+            , kinyarwanda = Nothing
+            }
+
+        UnknownSector ->
+            { english = "is not a known sector"
+            , kinyarwanda = Nothing
+            }
+
+        UnknownCell ->
+            { english = "is not a known cell"
+            , kinyarwanda = Nothing
+            }
+
+        UnknownVillage ->
+            { english = "is not a known village"
+            , kinyarwanda = Nothing
+            }
+
+        DecoderError err ->
+            { english = "Decoder error: " ++ err
             , kinyarwanda = Nothing
             }
 
 
-translateFormError : ErrorValue ValidationError -> TranslationSet
+translateFormError : ErrorValue ValidationError -> TranslationSet String
 translateFormError error =
     case error of
         Empty ->
@@ -1966,17 +2721,17 @@ translateFormError error =
 {-| This one is hampered by the fact that the field names in etaque/elm-form
 are untyped strings, but we do our best.
 -}
-translateFormField : String -> TranslationSet
+translateFormField : String -> TranslationSet String
 translateFormField field =
     case field of
         "clinic_id" ->
-            translationSet Clinic
+            translationSet Group
 
         "closed" ->
             translationSet Closed
 
         "training" ->
-            translationSet Clinic
+            translationSet Group
 
         "scheduled_date.start" ->
             translationSet StartDate

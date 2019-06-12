@@ -1,10 +1,12 @@
 module Pages.Activities.View exposing (view)
 
-import Activity.Utils exposing (getActivityIcon, getActivityList)
+import Activity.Utils exposing (getActivityIcon, getAllActivities, getParticipantCountForActivity)
+import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
+import Lazy exposing (force)
 import List as List
 import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
@@ -12,17 +14,15 @@ import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
 
 
-view : Language -> EditableSession -> Model -> Html Msg
-view language session model =
+view : Language -> ( SessionId, EditableSession ) -> Model -> Html Msg
+view language ( sessionId, session ) model =
     let
-        allActivityList =
-            getActivityList session
+        summary =
+            force session.summaryByActivity
 
-        pendingActivities =
-            List.filter (\activity -> activity.totals.pending > 0) allActivityList
-
-        noPendingActivities =
-            List.filter (\activity -> activity.totals.pending == 0) allActivityList
+        ( pendingActivities, noPendingActivities ) =
+            getAllActivities
+                |> List.partition (\activity -> (getParticipantCountForActivity summary activity).pending > 0)
 
         pendingTabTitle =
             translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities
@@ -36,22 +36,31 @@ view language session model =
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
                 ]
 
-        viewCard language item =
+        viewCard activity =
             div
                 [ class "card" ]
                 [ div
                     [ class "image"
-                    , onClick <| SetRedirectPage <| SessionPage <| ActivityPage item.activityType
+                    , onClick <| SetRedirectPage <| UserPage <| SessionPage sessionId <| ActivityPage activity
                     ]
-                    [ span [ class <| "icon-task icon-task-" ++ getActivityIcon item.activityType ] [] ]
+                    [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
                 , div
                     [ class "content" ]
-                    [ p [] [ text <| String.toUpper <| translate language (Trans.ActivitiesTitle item.activityType) ]
+                    [ p []
+                        [ Trans.ActivitiesTitle activity
+                            |> translate language
+                            |> String.toUpper
+                            |> text
+                        ]
                     , div
                         [ class "ui tiny progress" ]
                         [ div
                             [ class "label" ]
-                            [ text <| translate language <| Trans.ReportCompleted item.totals ]
+                            [ getParticipantCountForActivity summary activity
+                                |> Trans.ReportCompleted
+                                |> translate language
+                                |> text
+                            ]
                         ]
                     ]
                 ]
@@ -66,7 +75,7 @@ view language session model =
                         , div
                             [ class "content" ]
                             [ p []
-                                [ text <| translate language Trans.OnceYouEndYourSession ]
+                                [ text <| translate language Trans.OnceYouEndYourGroupEncounter ]
                             ]
                         , div
                             [ class "actions" ]
@@ -113,10 +122,10 @@ view language session model =
                 ]
             , ul [ class "links-head" ]
                 [ li
-                    [ onClick <| SetRedirectPage <| SessionPage AttendancePage ]
+                    [ onClick <| SetRedirectPage <| UserPage <| SessionPage sessionId AttendancePage ]
                     [ a [] [ span [ class "icon-completed" ] [] ] ]
                 , li
-                    [ onClick <| SetRedirectPage <| SessionPage ParticipantsPage ]
+                    [ onClick <| SetRedirectPage <| UserPage <| SessionPage sessionId ParticipantsPage ]
                     [ a [] [ span [ class "icon-mother" ] [] ] ]
                 , li
                     [ class "active" ]
@@ -134,7 +143,7 @@ view language session model =
                             [ span [] [ text emptySectionMessage ] ]
 
                         else
-                            List.map (viewCard language) selectedActivities
+                            List.map viewCard selectedActivities
                     ]
                 ]
             , div
@@ -143,7 +152,7 @@ view language session model =
                     [ class "ui fluid primary button"
                     , onClick <| ShowEndSessionDialog True
                     ]
-                    [ text <| translate language Trans.EndSession ]
+                    [ text <| translate language Trans.EndGroupEncounter ]
                 ]
             ]
         , viewModal endSessionDialog

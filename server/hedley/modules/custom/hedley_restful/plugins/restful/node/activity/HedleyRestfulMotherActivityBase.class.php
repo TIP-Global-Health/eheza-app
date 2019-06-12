@@ -16,16 +16,9 @@ abstract class HedleyRestfulMotherActivityBase extends HedleyRestfulActivityBase
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $public_fields['mother'] = [
-      'property' => 'field_mother',
-      'resource' => [
-        // Bundle name.
-        'mother' => [
-          // Resource name.
-          'name' => 'mothers',
-          'full_view' => FALSE,
-        ],
-      ],
+    $public_fields['person'] = [
+      'property' => 'field_person',
+      'sub_property' => 'field_uuid',
     ];
 
     return $public_fields;

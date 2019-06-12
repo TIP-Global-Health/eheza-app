@@ -1,16 +1,20 @@
-module App.Fetch exposing (fetch)
+module App.Fetch exposing (fetch, forget, shouldFetch)
 
 import App.Model exposing (..)
-import App.Utils exposing (getLoggedInModel, hasAccessToken)
+import App.Utils exposing (getLoggedInModel)
+import Backend.Fetch
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
-import Pages.Admin.Fetch
 import Pages.Clinics.Fetch
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Device.Fetch
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.People.Fetch
+import Pages.Person.Fetch
+import Pages.Relationship.Fetch
+import Pages.Session.Fetch
 
 
-{-| See the comment in Pages.OpenSessions.Fetch for an explanatio of this.
-Basically, we're following down the `view` hierarchy to determine, given
+{-| Basically, we're following down the `view` hierarchy to determine, given
 what the `view` methods are going to want, what messages we ought to send
 in order to get the data they will need.
 
@@ -32,24 +36,71 @@ fetch model =
             fromLocalDateTime (Date.fromTime model.currentTime)
     in
     case model.activePage of
+        DevicePage ->
+            List.map MsgIndexedDb Pages.Device.Fetch.fetch
+
         UserPage (ClinicsPage clinicId) ->
+            Pages.Clinics.Fetch.fetch clinicId
+                |> List.map MsgIndexedDb
+
+        UserPage (CreatePersonPage relatedId) ->
+            Pages.Person.Fetch.fetchForCreateForm relatedId
+                |> List.map MsgIndexedDb
+
+        UserPage (PersonPage id) ->
+            Pages.Person.Fetch.fetch id model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (PersonsPage relation) ->
             getLoggedInModel model
                 |> Maybe.map
-                    (\loggedIn ->
-                        Pages.Clinics.Fetch.fetch currentDate clinicId loggedIn.backend
-                            |> List.map (MsgLoggedIn << MsgBackend)
+                    (\data ->
+                        Pages.People.Fetch.fetch relation data.personsPage
+                            |> List.map MsgIndexedDb
                     )
                 |> Maybe.withDefault []
 
-        UserPage AdminPage ->
-            getLoggedInModel model
-                |> Maybe.map
-                    (\loggedIn ->
-                        Pages.Admin.Fetch.fetch currentDate loggedIn.backend loggedIn.adminPage
-                            |> List.map (MsgLoggedIn << MsgPageAdmin)
-                    )
-                |> Maybe.withDefault []
+        UserPage (RelationshipPage id1 id2) ->
+            Pages.Relationship.Fetch.fetch id1 id2 model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (SessionPage sessionId sessionPage) ->
+            Pages.Session.Fetch.fetch sessionId sessionPage model.indexedDb
+                |> List.map MsgIndexedDb
 
         _ ->
-            -- For now, we've only implemented this pattern for ClinicsPage.
             []
+
+
+{-| Given a `Msg`, do we need to fetch the data it would fetch? We only answer
+`True` if the data is `NotAsked`. So, we don't automatically re-fetch errors.
+
+Note that the data need not literally be a `RemoteData`, but that will be
+common. The answer does need to flip to `False` when a request is in progress,
+or we will enter an infinite loop.
+
+-}
+shouldFetch : Model -> Msg -> Bool
+shouldFetch model msg =
+    case msg of
+        MsgIndexedDb subMsg ->
+            Backend.Fetch.shouldFetch model.indexedDb subMsg
+
+        _ ->
+            False
+
+
+{-| Given a Msg that would fetch some data, forget that data.
+-}
+forget : Msg -> Model -> Model
+forget msg model =
+    case msg of
+        MsgIndexedDb subMsg ->
+            let
+                subModel =
+                    Backend.Fetch.forget subMsg model.indexedDb
+            in
+            { model | indexedDb = subModel }
+
+        _ ->
+            model

@@ -8,6 +8,7 @@
 include_once 'hedley_activity.features.inc';
 
 // Define the measurements content types.
+define('HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE', 'attendance');
 define('HEDLEY_ACTIVITY_FAMILY_PLANNING_CONTENT_TYPE', 'family_planning');
 define('HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE', 'height');
 define('HEDLEY_ACTIVITY_MUAC_CONTENT_TYPE', 'muac');
@@ -23,26 +24,13 @@ define('HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE', 'weight');
  */
 function hedley_activity_get_measurements_content_types() {
   return [
+    HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE,
     HEDLEY_ACTIVITY_FAMILY_PLANNING_CONTENT_TYPE,
     HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE,
     HEDLEY_ACTIVITY_MUAC_CONTENT_TYPE,
     HEDLEY_ACTIVITY_NUTRITION_CONTENT_TYPE,
     HEDLEY_ACTIVITY_PHOTO_CONTENT_TYPE,
     HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE,
-  ];
-}
-
-/**
- * Return the activity related node types and RESTful resource handler name.
- *
- * @return array
- *   Array keyed by the node type machine name, and the RESTful resource handler
- *   name as value.
- */
-function hedley_activity_get_activity_node_types_and_restful_name() {
-  return [
-    'height' => 'heights',
-    'weight' => 'weights',
   ];
 }
 
@@ -63,14 +51,14 @@ function hedley_activity_node_insert($node) {
  * Implements hook_node_update().
  */
 function hedley_activity_node_update($node) {
-  if (!in_array($node->type, ['child', 'height'])) {
+  if (!in_array($node->type, ['person', 'height'])) {
     return;
   }
 
   // Make sure we get updated data.
   entity_get_controller('node')->resetCache([$node->nid]);
 
-  if ($node->type == 'child') {
+  if ($node->type == 'person') {
     hedley_activity_handle_child_zscores($node->nid);
     return;
   }
@@ -91,7 +79,7 @@ function hedley_activity_handle_height($nid) {
   $height = entity_metadata_wrapper('node', $nid);
 
   $session_id = $height->field_session->getIdentifier();
-  $child_id = $height->field_child->getIdentifier();
+  $child_id = $height->field_person->getIdentifier();
 
   $weight_id = hedley_activity_weight_for_session($session_id, $child_id);
 
@@ -123,7 +111,7 @@ function hedley_activity_handle_child_zscores($nid) {
   $base_query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', ['height', 'weight'], 'IN')
-    ->fieldCondition('field_child', 'target_id', $nid)
+    ->fieldCondition('field_person', 'target_id', $nid)
     ->propertyCondition('status', NODE_PUBLISHED)
     ->propertyOrderBy('nid', 'ASC');
 
@@ -160,35 +148,6 @@ function hedley_activity_handle_child_zscores($nid) {
 }
 
 /**
- * Trigger a pusher event for a Item data.
- *
- * @param object $node
- *   A Item data node type.
- */
-function hedley_activity_trigger_pusher_on_item_data_change($node) {
-  if (!in_array($node->type, array_keys(hedley_activity_get_activity_node_types_and_restful_name()))) {
-    return;
-  }
-
-  if ($node->status == NODE_NOT_PUBLISHED) {
-    // Node is not published.
-    return;
-  }
-
-  $account = user_load($node->uid);
-
-  $handler_names = hedley_activity_get_activity_node_types_and_restful_name();
-
-  $handler = restful_get_restful_handler($handler_names[$node->type]);
-  $handler->setAccount($account);
-  $data = $handler->get($node->nid);
-
-  $event_name = 'activity__update';
-
-  hedley_pusher_trigger_event('general', $event_name, $data[0]);
-}
-
-/**
  * Implements hook_node_presave().
  *
  * Calculate z-scores for measurements.
@@ -200,13 +159,13 @@ function hedley_activity_node_presave($node) {
 
   $wrapper = entity_metadata_wrapper('node', $node);
 
-  if (empty($wrapper->field_child->value())) {
+  if (empty($wrapper->field_person->value())) {
     // We need the child for birthdate and gender ...
     return;
   }
 
-  $birth = $wrapper->field_child->field_date_birth->value();
-  $gender = $wrapper->field_child->field_gender->value();
+  $birth = $wrapper->field_person->field_birth_date->value();
+  $gender = $wrapper->field_person->field_gender->value();
   $measured = $wrapper->field_date_measured->value();
 
   // 86400 seconds in a day.
@@ -222,7 +181,7 @@ function hedley_activity_node_presave($node) {
     $zscore_for_age = hedley_zscore_weight_for_age($days, $gender, $wrapper->field_weight->value());
     $wrapper->field_zscore_age->set($zscore_for_age);
 
-    $child_id = $wrapper->field_child->getIdentifier();
+    $child_id = $wrapper->field_person->getIdentifier();
     $session_id = $wrapper->field_session->getIdentifier();
 
     $height_id = hedley_activity_height_for_session($session_id, $child_id);
@@ -280,7 +239,7 @@ function hedley_activity_height_for_session($session_id, $child_id) {
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'height')
     ->fieldCondition('field_session', 'target_id', $session_id)
-    ->fieldCondition('field_child', 'target_id', $child_id)
+    ->fieldCondition('field_person', 'target_id', $child_id)
     ->propertyCondition('status', NODE_PUBLISHED)
     ->range(0, 1)
     ->execute();
@@ -309,7 +268,7 @@ function hedley_activity_weight_for_session($session_id, $child_id) {
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'weight')
     ->fieldCondition('field_session', 'target_id', $session_id)
-    ->fieldCondition('field_child', 'target_id', $child_id)
+    ->fieldCondition('field_person', 'target_id', $child_id)
     ->propertyCondition('status', NODE_PUBLISHED)
     ->range(0, 1)
     ->execute();
@@ -325,8 +284,8 @@ function hedley_activity_weight_for_session($session_id, $child_id) {
  * @param string $measurement_bundle
  *   The measurement node bundle.
  *
- * @return array|null
- *   Node IDs if they exist or nothing if no nodes exist.
+ * @return array
+ *   Node IDs if they exist or empty array if no nodes exist.
  */
 function hedley_activity_get_measurements_by_session($session_id, $measurement_bundle) {
   $query = new EntityFieldQuery();
@@ -338,5 +297,5 @@ function hedley_activity_get_measurements_by_session($session_id, $measurement_b
     ->range(0, 100)
     ->execute();
 
-  return !empty($result['node']) ? array_keys($result['node']) : NULL;
+  return !empty($result['node']) ? array_keys($result['node']) : [];
 }
