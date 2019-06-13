@@ -23,9 +23,6 @@ import Translate exposing (Language, TranslationId, translate)
 view : Language -> NominalDate -> PersonId -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id activity db model =
     let
-        log =
-            Debug.log "" model
-
         content =
             AllDict.get id db.people
                 |> unwrap
@@ -67,15 +64,21 @@ viewContent : Language -> NominalDate -> PersonId -> PrenatalActivity -> Model -
 viewContent language currentDate motherId activity model =
     case activity of
         PregnancyDating ->
-            viewPregnancyDatingContent language currentDate motherId model.pregnancyDatingForm
+            viewPregnancyDatingContent language currentDate motherId model.pregnancyDatingData
+
+        History ->
+            viewHistoryContent language currentDate motherId model.historyData
 
         _ ->
             []
 
 
-viewPregnancyDatingContent : Language -> NominalDate -> PersonId -> PregnancyDatingForm -> List (Html Msg)
-viewPregnancyDatingContent language currentDate motherId form =
+viewPregnancyDatingContent : Language -> NominalDate -> PersonId -> PregnancyDatingData -> List (Html Msg)
+viewPregnancyDatingContent language currentDate motherId pregnancyDatingData =
     let
+        form =
+            pregnancyDatingData.form
+
         lmpRangeInput =
             option
                 [ value ""
@@ -125,32 +128,6 @@ viewPregnancyDatingContent language currentDate motherId form =
                     )
                 |> div [ class "form-input date" ]
 
-        confidentInput =
-            let
-                isChecked =
-                    form.lmpDateConfident == Just True
-            in
-            input
-                [ type_ "radio"
-                , checked isChecked
-                , classList [ ( "checked", isChecked ), ( "confident", True ) ]
-                , onCheck (always (SetLmpDateConfident True))
-                ]
-                []
-
-        notConfidentInput =
-            let
-                isChecked =
-                    form.lmpDateConfident == Just False
-            in
-            input
-                [ type_ "radio"
-                , checked isChecked
-                , classList [ ( "checked", isChecked ), ( "not-confident", True ) ]
-                , onCheck (always (SetLmpDateConfident False))
-                ]
-                []
-
         ( eddResult, egaResult ) =
             form.lmpDate
                 |> unwrap
@@ -181,13 +158,6 @@ viewPregnancyDatingContent language currentDate motherId form =
                         )
                     )
 
-        taskCompleted maybe =
-            if isJust maybe then
-                1
-
-            else
-                0
-
         totalTasks =
             2
 
@@ -203,12 +173,7 @@ viewPregnancyDatingContent language currentDate motherId form =
                 , div [ class "label" ] [ text <| translate language Translate.LmpDateHeader ]
                 , lmpDateInput
                 , div [ class "label" ] [ text <| translate language Translate.LmpDateConfidentHeader ]
-                , div [ class "form-input is-confident" ]
-                    [ confidentInput
-                    , label [] [ text <| translate language Translate.Yes ]
-                    , notConfidentInput
-                    , label [] [ text <| translate language Translate.No ]
-                    ]
+                , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident"
                 , div [ class "separator" ] []
                 , div [ class "results" ]
                     [ div [ class "edd-result" ]
@@ -231,3 +196,114 @@ viewPregnancyDatingContent language currentDate motherId form =
             ]
         ]
     ]
+
+
+viewHistoryContent : Language -> NominalDate -> PersonId -> HistoryData -> List (Html Msg)
+viewHistoryContent language currentDate motherId data =
+    let
+        tasks =
+            [ Obstetric, Medical, Social ]
+
+        viewTask task =
+            div [ class "column" ]
+                [ a [ classList [ ( "link-section", True ), ( "active", task == data.activeTask ) ] ]
+                    [ span [ class "icon-section icon-height" ]
+                        [ text <| toString task ]
+                    ]
+                ]
+
+        ( viewForm, tasksCompleted, totalTasks ) =
+            case data.activeTask of
+                Obstetric ->
+                    case data.obstetricForm of
+                        FirstStep form ->
+                            ( viewObstetricFormFirstStep language currentDate motherId form
+                            , ([ form.termPreganancy
+                               , form.preTermPreganancy
+                               , form.stillbirthsAtTerm
+                               , form.stillbirthsPreTerm
+                               , form.abortions
+                               , form.liveChildren
+                               ]
+                                |> List.map taskCompleted
+                                |> List.sum
+                              )
+                                + taskCompleted form.currentlyPregnant
+                            , 7
+                            )
+
+                        SecondStep form ->
+                            ( viewObstetricFormSecondStep language currentDate motherId form, 0, 16 )
+
+                _ ->
+                    ( emptyNode, 0, 0 )
+
+        actionButton =
+            div [ class "actions" ]
+                [ button
+                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+
+                    -- , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage motherId
+                    ]
+                    [ text <| translate language Translate.Save ]
+                ]
+    in
+    [ div [ class "ui task segment" ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask <|
+                tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted 7 ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actionButton
+            ]
+        ]
+    ]
+
+
+viewObstetricFormFirstStep : Language -> NominalDate -> PersonId -> ObstetricFormFirstStep -> Html Msg
+viewObstetricFormFirstStep language currentDate motherId form =
+    div [ class "form history obstetric first" ]
+        [ div [ class "label" ] [ text "First input" ]
+        , viewBoolInput language form.currentlyPregnant SetCurrentlyPregnant "currently-pregnant"
+        ]
+
+
+viewObstetricFormSecondStep : Language -> NominalDate -> PersonId -> ObstetricFormSecondStep -> Html Msg
+viewObstetricFormSecondStep language currentDate motherId form =
+    emptyNode
+
+
+viewBoolInput : Language -> Maybe Bool -> (Bool -> Msg) -> String -> Html Msg
+viewBoolInput language currentValue setFunc inputClass =
+    let
+        viewInput value currentValue setFunc =
+            let
+                isChecked =
+                    currentValue == Just value
+            in
+            input
+                [ type_ "radio"
+                , checked isChecked
+                , classList [ ( "checked", isChecked ) ]
+                , onCheck (always (setFunc value))
+                ]
+                []
+    in
+    div [ class <| "form-input " ++ inputClass ]
+        [ viewInput True currentValue setFunc
+        , label [] [ text <| translate language Translate.Yes ]
+        , viewInput False currentValue setFunc
+        , label [] [ text <| translate language Translate.No ]
+        ]
+
+
+taskCompleted : Maybe a -> Int
+taskCompleted maybe =
+    if isJust maybe then
+        1
+
+    else
+        0

@@ -20,10 +20,14 @@ update motherId activity db msg model =
         ToggleDateSelector ->
             let
                 updatedForm =
-                    model.pregnancyDatingForm
+                    model.pregnancyDatingData.form
                         |> (\form -> { form | isDateSelectorOpen = not form.isDateSelectorOpen })
+
+                updatedData =
+                    model.pregnancyDatingData
+                        |> (\data -> { data | form = updatedForm })
             in
-            ( { model | pregnancyDatingForm = updatedForm }
+            ( { model | pregnancyDatingData = updatedData }
             , Cmd.none
             , []
             )
@@ -31,10 +35,14 @@ update motherId activity db msg model =
         SetLmpDate value ->
             let
                 updatedForm =
-                    model.pregnancyDatingForm
+                    model.pregnancyDatingData.form
                         |> (\form -> { form | lmpDate = Just value })
+
+                updatedData =
+                    model.pregnancyDatingData
+                        |> (\data -> { data | form = updatedForm })
             in
-            ( { model | pregnancyDatingForm = updatedForm }
+            ( { model | pregnancyDatingData = updatedData }
             , Cmd.none
             , []
             )
@@ -42,10 +50,14 @@ update motherId activity db msg model =
         SetLmpDateConfident value ->
             let
                 updatedForm =
-                    model.pregnancyDatingForm
+                    model.pregnancyDatingData.form
                         |> (\form -> { form | lmpDateConfident = Just value })
+
+                updatedData =
+                    model.pregnancyDatingData
+                        |> (\data -> { data | form = updatedForm })
             in
-            ( { model | pregnancyDatingForm = updatedForm }
+            ( { model | pregnancyDatingData = updatedData }
             , Cmd.none
             , []
             )
@@ -57,16 +69,47 @@ update motherId activity db msg model =
 
                 ( lmpDate, isDateSelectorOpen ) =
                     if isJust range then
-                        ( model.pregnancyDatingForm.lmpDate, True )
+                        ( model.pregnancyDatingData.form.lmpDate, True )
 
                     else
                         ( Nothing, False )
 
                 updatedForm =
-                    model.pregnancyDatingForm
+                    model.pregnancyDatingData.form
                         |> (\form -> { form | lmpRange = range, lmpDate = lmpDate, isDateSelectorOpen = isDateSelectorOpen })
+
+                updatedData =
+                    model.pregnancyDatingData
+                        |> (\data -> { data | form = updatedForm })
             in
-            ( { model | pregnancyDatingForm = updatedForm }
+            ( { model | pregnancyDatingData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetCurrentlyPregnant value ->
+            let
+                updatedData =
+                    case model.historyData.activeTask of
+                        Obstetric ->
+                            case model.historyData.obstetricForm of
+                                FirstStep form ->
+                                    let
+                                        updatedForm =
+                                            { form | currentlyPregnant = Just value }
+                                    in
+                                    model.historyData
+                                        |> (\data -> { data | obstetricForm = FirstStep updatedForm })
+
+                                -- We should never get here.
+                                -- Input is set on first step.
+                                SecondStep form ->
+                                    model.historyData
+
+                        _ ->
+                            model.historyData
+            in
+            ( { model | historyData = updatedData }
             , Cmd.none
             , []
             )
